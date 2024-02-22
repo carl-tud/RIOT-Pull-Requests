@@ -232,9 +232,10 @@ void gnrc_ipv6_nib_iface_up(gnrc_netif_t *netif)
     if (gnrc_netif_ipv6_group_join_internal(netif, &ipv6_addr_all_nodes_link_local) < 0) {
         DEBUG("nib: Can't join link-local all-nodes on interface %u\n", netif->pid);
     }
+
     if (!_add_static_lladdr(netif) &&
         !_add_dynamic_lladdr(netif)) {
-        _auto_configure_addr(netif, &ipv6_addr_link_local_prefix, 64U);
+        auto_configure_addr(netif, &ipv6_addr_link_local_prefix, 64U);
     }
 
     if (_should_search_rtr(netif)) {
@@ -1771,7 +1772,7 @@ static uint32_t _handle_pio(gnrc_netif_t *netif, const icmpv6_hdr_t *icmpv6,
          * */
 #endif
         ) {
-        _auto_configure_addr(netif, &pio->prefix, pio->prefix_len);
+        auto_configure_addr(netif, &pio->prefix, pio->prefix_len);
     }
     if ((pio->flags & (NDP_OPT_PI_FLAGS_A | NDP_OPT_PI_FLAGS_L))
         || _multihop_p6c(netif, abr)) {
