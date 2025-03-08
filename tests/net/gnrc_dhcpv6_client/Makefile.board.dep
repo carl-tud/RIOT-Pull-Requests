@@ -1,3 +1,0 @@
-ifeq (,$(filter native native64,$(BOARD)))
-  USEMODULE += stdio_ethos
-endif

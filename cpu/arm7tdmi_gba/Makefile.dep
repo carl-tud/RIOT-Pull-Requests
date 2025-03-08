@@ -1,7 +1,0 @@
-USEMODULE += arm7_common
-
-ifeq (,$(filter stdio_%,$(USEMODULE)))
-  USEMODULE += stdio_fb
-endif
-
-include $(RIOTCPU)/arm7_common/Makefile.dep

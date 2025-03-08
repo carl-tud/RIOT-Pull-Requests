@@ -1,3 +1,0 @@
-INCLUDES += -I$(RIOTBOARD)/common/msb-430/include
-
-include $(RIOTBOARD)/common/msp430/Makefile.include
