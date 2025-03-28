@@ -387,44 +387,270 @@ Wrong:
 * All documentation must be in English.
 * All files contain the copyright note and the author.
 * Doxygen documentation is mandatory for all header files.
-* Every header file includes a general description about the provided
+* Every header file and group includes a general description about the provided
   functionality.
-* Every function must be documented - including parameters and return value.
+* Every symbol must be documented, including function parameters and return values.
 
-An exemplary doxygen documentation in a header file can look like this.
+Each header and source file must start with a copyright notice.
+Note that copyright notices must **not** be Doxygen comments (`/**`).
 
-```
+```c
 /*
- * Copyright (C) 2014 Peter Schmerzl <peter@schmerzl-os.org>
+ * Copyright (C) 2042 Your Name <you@example.org>
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License v2.1. See the file LICENSE in the top level directory for more
  * details.
  */
-
-/**
- * @ingroup     foobar
- * @{
- *
- * @file
- * @brief       Definitions for foo and bar functions.
- *
- * More detailed information about the file and the functionality implemented.
- *
- * @author      Peter Schmerzl <peter@schmerzl-os.org>
- *
- */
-
-/**
- * @brief   Set the state of foobar.
- *
- * @param[in]  state      The new state of foobar.
- * @param[out] old_state  The old state of foobar is written to this variable.
- *
- * @return 1 if setting the state was successful, 0 otherwise.
- */
- int set_foobar(int state, int *old_state);
 ```
+
+### Groups
+
+Documentation in RIOT is organized into Doxygen _groups_. Each group can be part of another group
+and can contain other child groups.
+
+To create a **new** group, you use the `@defgroup` command which expects a unique group identifier 
+and a human-readable group title. The identifier should be prefixed with the parent group 
+identifier followed by an underscore. You should add a new group to an existing parent group with 
+the `@ingroup` command. When creating a new group, also give a brief description.
+
+**Example**: You created a module for an Avian Carrier Network Protocol. 
+In this case, the Doxygen group for the Avian Carrier Network Protocol would best fit the existing
+`sys_net` (System > Networking) group.
+
+```c
+/**
+ * @defgroup sys_net_avian_carriers Avian Carrier Network Protocol
+ * @ingroup  sys_net
+ * @brief    Send and receive messages using avian carriers
+ * @{
+ * 
+ * ## Introduction
+ * Lorem ipsum.
+ * 
+ * ## Conclusion
+ * Lorem ipsum.
+ */
+ 
+/**
+ * @}
+ */
+```
+
+Detailed documentation and symbols (functions, macros, structures, enums, etc.) should be put
+inbetween the curly braces following the group definition. You should add a detailed description 
+inbetween the curly braces. (If the detailed description grows too large,
+[we recommend splitting textual documentation and symbol documentation](#docmd-and-docmd).) 
+This also includes files you want to document, like the header itself. 
+
+**Example**: You want to document the current file and a function for sending data.
+
+```c
+/**
+ * @file
+ * @brief  Umbrella header for Avian Carrier Network Protocol
+ * @author You <you@example.org>
+ */
+ 
+/**
+ * @brief Sends data using an avian carrier and blocks until response has been received
+ * 
+ * @param[in] request Data to send
+ * @param[out] response Data received in response
+ * @param capacity Capacity of @p response buffer
+ * @param[in,out] carrier Avian carrier instance
+ *
+ * @returns Response size in bytes or negative integer in case of a failure
+ */
+int avian_carrier_transceive(uint8_t* request, uint8_t* response, size_t capacity, avian_carrier_t* carrier);
+```
+
+### Sections
+
+It is strongly recommended to enclose closely related symbols in Doxygen sections. To create
+a section, use the `@name` command followed by curly braces. This ensures Doxygen does not create a
+long sections of all functions or all macros.
+
+**Example**: Your module exposes multiple functions for initializing an avian carrier and
+for sending data.
+
+```c
+/**
+ * @name Initializing an avian carrier
+ * @{
+ */
+/** ... */
+int avian_carrier_init(avian_carrier_t* carrier);
+
+/** ... */
+int avian_carrier_init_mode(avian_carrier_t* carrier, avian_navigation_mode_t mode);
+/** @} */
+
+/**
+ * @name Sending requests using an avian carrier
+ * @{
+ */
+/** ... */
+int avian_carrier_send(avian_carrier_t* carrier, 
+                       uint8_t* request, size_t size);
+
+/** ... */
+int avian_carrier_send_recv(avian_carrier_t* carrier, 
+                            uint8_t* request, size_t size, 
+                            uint8_t* response, size_t capacity);
+/** @} */
+``` 
+
+### `@addtogroup` and `@ingroup`
+
+If you want to _add_ documentation to an existing group, use the `@addtogroup` **or**
+`@ingroup` command. A common use case for `@addtogroup` is documentation and symbols in other
+headers. If there are many symbols to add to the group, you should use `@addtogroup`
+followed by curly braces enclosing the symbols and their documentation comments. Provided only very 
+few symbols are supposed to be added to the group, you can add `@ingroup` to each individual Doxygen 
+comment. With more than one symbol that needs to be added, `@addtogroup` is recommended. 
+Remember to create logical sections using `@name` when using `@addtogroup`, too.
+
+**Example**:
+
+```c
+/**
+ * @addtogroup sys_net_avian_carriers
+ * @{
+ */ 
+/**
+ * @name Customizing an avian carrier's average speed
+ * @{
+ */
+/** @brief ... */
+int avian_carrier_set_velocity(avian_carrier_t* carrier, int velocity);
+
+/** @brief ... */
+int avian_carrier_get_velocity(avian_carrier_t* carrier);
+/** @} */
+
+/**
+ * @name Modifying an avian carrier's navigation mode
+ * @{
+ */
+/** @brief ... */
+int avian_carrier_set_navigation_mode(avian_carrier_t* carrier, avian_navigation_mode_t mode);
+
+/** @brief ... */
+avian_navigation_mode_t avian_carrier_get_navigation_mode(avian_carrier_t* carrier);
+/** @} */
+
+/** @} */
+```
+
+**Example**: Single comment outside group definition, without enclosing `@addtogroup` comment:
+
+```c
+/**
+ * @file
+ * @ingroup sys_net_avian_carriers_multipath
+ * @brief   Multipath support for Avian Carrier Network Protocol
+ * @author  You <you@example.org>
+ */
+```
+
+### `doc.md` and `*.doc.md`
+
+If you have a larger detailed description for your group, consider moving the group
+definition with its longer description into a Markdown file named `doc.md` or `*.doc.md` close to
+the source. The Markdown file can be located anywhere in the RIOT tree, but it is recommeneded not to 
+put documentation Markdown files in `include` directories in favor of source directories.
+If the directory you would like to put the documentation Markdown file in a folder that hosts other
+content not related to your group, you should use a custom filename that ends in `.doc.md`.
+
+**Example**: In a header, you defined a `sys_net_avian_carriers_multipath` group that contains
+a large detailed description and symbols. In this case, you would move the `@defgroup`, 
+`@ingroup`, `@brief`, and the following detailed description to a separate `multipath.doc.md` file.
+The symbols remain in the header inbetween the curly braces, yet with an added `@addtogroup` command. 
+
+```c
+/**
+ * @defgroup sys_net_avian_carriers_multipath Multipath Support
+ * @ingroup  sys_net_avian_carriers
+ * @brief    Use multipath routing in the Avian Carrier Network
+ * @{
+ * 
+ * ## Introduction
+ * ...
+ */
+C Symbols, @file, etc goes here...
+/** @} */
+```
+
+`multipath.doc.md`:
+```md
+@defgroup sys_net_avian_carriers_multipath Multipath Support
+@ingroup  sys_net_avian_carriers
+@brief    Use multipath routing in the Avian Carrier Network
+
+## Introduction
+...
+```
+
+After moving the detailed description into a separate `*.doc.md` file, symbols in the header must 
+be added to the group using `@addtogroup`.
+
+#### Articles
+
+Also use this approach for articles, i.e., plain-Markdown content. 
+
+**Example**: You want to add an article entitled _The Avian Carrier Network Explained_ to the
+_System > Networking > Avian Carrier Network Protocol_ group. In this case, create a file
+named `explanation.doc.md` in the source directory of the avian carrier module that defines
+a Doxygen group. The group is like any other group, except it does not contain symbols.
+
+```md
+@defgroup sys_net_avian_carriers_explanation The Avian Carrier Network Explained
+@ingroup  sys_net_avian_carriers
+@brief    Read about the evolution and innerworkings of the Avian Carrier Network
+
+## Introduction
+Lorem ipsum.
+
+## ...
+```
+
+#### Images
+
+When adding images to `doc.md` or `*.doc.md` files, put the image in a location close to the 
+Markdown file. Then reference, the file from the Markdown file. You must add the image path
+to `HTML_EXTRA_FILES` in the Doxygen's configuration located at `doc/doxygen/riot.doxyfile`. 
+
+**Example**: Add `![Schematic of a sample feathered carrier](sample-carrier.svg)` to the Markdown
+file and include `HTML_EXTRA_FILES += ../../sys/net/network_layer/avian_carrier/sample-carrier.svg`
+to `riot.doxyfile`.
+
+This technique allows images to be shown when viewing these Markdown files on GitHub. 
+Adding the image path to `HTML_EXTRA_FILES` is necessary to ensure the image is picked up by Doxygen
+and copied to the HTML output directory.
+
+### Common directives
+
+Whenever possible, use [`@ref`](https://www.doxygen.nl/manual/commands.html#cmdref) to link to 
+other documentation content, including other groups.
+
+**Examples**: `@ref sys_net_avian_carriers_explanation`, `@ref avian_carrier_t.mode`,
+`@ref AVIAN_CARRIER_VERSION`.
+
+Use [`@note`](https://www.doxygen.nl/manual/commands.html#cmdnote), 
+[`@warning`](https://www.doxygen.nl/manual/commands.html#cmdwarning), 
+[`@remark`](https://www.doxygen.nl/manual/commands.html#cmdremark), and
+[`@attention`](https://www.doxygen.nl/manual/commands.html#cmdattention) to create a highlighted 
+note, warning, or remark. Use [`@see`](https://www.doxygen.nl/manual/commands.html#cmdsee) to 
+create a _See Also_ box.
+
+Annotate functions with [`@returns`](https://www.doxygen.nl/manual/commands.html#cmdreturns) where 
+applicable.  [`@pre`](https://www.doxygen.nl/manual/commands.html#cmdpre) and 
+[`@post`](https://www.doxygen.nl/manual/commands.html#cmdpost) can help document preconditions and 
+postconditions. You can also mark symbols as deprecated using 
+[`@deprecated`](https://www.doxygen.nl/manual/commands.html#cmddeprecated).
+
+For more information, please consult the [Doxygen documentation](https://www.doxygen.nl/manual/index.html).
 
 ## Common compilation warnings
 
