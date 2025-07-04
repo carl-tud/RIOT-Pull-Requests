@@ -26,9 +26,6 @@
 #include "periph/i2c.h"
 #include "periph/spi.h"
 
-#include "net/nfc/nfc_a.h"
-#include "net/nfc/nfc.h"
-
 #define ENABLE_DEBUG                1
 #include "debug.h"
 
@@ -714,19 +711,12 @@ int pn532_iso14443a_4_read(pn532_t *dev, char *odata, nfc_iso14443a_t *card,
     return ret;
 }
 
-int _init_as_target(pn532_t *dev, uint8_t mode, nfc_application_type_t app_type) {
+int _init_as_target(pn532_t *dev, nfc_application_type_t app_type) {
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
     buff[BUFF_CMD_START] = CMD_INIT_AS_TARGET;
 
-    if (mode == TARGET_MODE_PICC) {
-        buff[BUFF_DATA_START] = TARGET_MODE_PICC;
-    }
-    else if (mode == TARGET_MODE_P2P) {
-        buff[BUFF_DATA_START] = TARGET_MODE_P2P;
-    }
-    else {
-        buff[BUFF_DATA_START] = TARGET_MODE_PASSIVE;
-    }
+    /* target mode */
+    buff[BUFF_DATA_START] = TARGET_MODE_PICC;
 
     /* Mifare params have a length of 6 */
     uint8_t* mifare_params = &buff[BUFF_DATA_START+1];

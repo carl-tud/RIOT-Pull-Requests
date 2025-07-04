@@ -28,6 +28,8 @@ extern "C" {
 #include "periph/gpio.h"
 #include <stdint.h>
 
+#include "net/nfc/nfc.h"
+
 #if !IS_USED(MODULE_PN532_I2C) && !IS_USED(MODULE_PN532_SPI)
 #error Please use either pn532_i2c and/or pn532_spi module to enable \
     the functionality on this device
@@ -382,6 +384,8 @@ void pn532_deselect_passive(pn532_t *dev, unsigned target_id);
  * @param[in] target_id     id of the target to release (0x00 for all)
  */
 void pn532_release_passive(pn532_t *dev, unsigned target_id);
+
+int _init_as_target(pn532_t *dev, nfc_application_type_t app_type);
 
 #ifdef __cplusplus
 }
