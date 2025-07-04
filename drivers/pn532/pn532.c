@@ -26,7 +26,10 @@
 #include "periph/i2c.h"
 #include "periph/spi.h"
 
-#define ENABLE_DEBUG                0
+#include "net/nfc/nfc_a.h"
+#include "net/nfc/nfc.h"
+
+#define ENABLE_DEBUG                1
 #include "debug.h"
 
 #define PN532_I2C_ADDRESS           (0x24)
@@ -43,6 +46,7 @@
 #define CMD_DESELECT                (0x44)
 #define CMD_LIST_PASSIVE            (0x4a)
 #define CMD_RELEASE                 (0x52)
+#define CMD_INIT_AS_TARGET          (0x8c)
 
 /* Mifare specific commands */
 #define MIFARE_CMD_READ             (0x30)
@@ -68,6 +72,11 @@
 #define SPI_STATUS_READING          (0x40)
 #define SPI_DATA_READ               (0xC0)
 #define SPI_WRITE_DELAY_US          (2000)
+
+/* Target modes */
+#define TARGET_MODE_PASSIVE         (0x01)
+#define TARGET_MODE_P2P             (0x02)
+#define TARGET_MODE_PICC            (0x04)
 
 /* SPI bus parameters */
 #define SPI_MODE                    (SPI_MODE_0)
@@ -703,4 +712,58 @@ int pn532_iso14443a_4_read(pn532_t *dev, char *odata, nfc_iso14443a_t *card,
     }
 
     return ret;
+}
+
+int _init_as_target(pn532_t *dev, uint8_t mode, nfc_application_type_t app_type) {
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+    buff[BUFF_CMD_START] = CMD_INIT_AS_TARGET;
+
+    if (mode == TARGET_MODE_PICC) {
+        buff[BUFF_DATA_START] = TARGET_MODE_PICC;
+    }
+    else if (mode == TARGET_MODE_P2P) {
+        buff[BUFF_DATA_START] = TARGET_MODE_P2P;
+    }
+    else {
+        buff[BUFF_DATA_START] = TARGET_MODE_PASSIVE;
+    }
+
+    /* Mifare params have a length of 6 */
+    uint8_t* mifare_params = &buff[BUFF_DATA_START+1];
+
+    /* FeliCa params have a length of 18 */
+    uint8_t* felica_params = mifare_params + 6;
+
+    /* NFCID3t has a length of 10 */
+    uint8_t* nfcid3t = felica_params + 18;
+
+    uint8_t* len_gt = nfcid3t + 10;
+    uint8_t* len_tk = len_gt + 1;
+    
+    if (app_type == NFC_APPLICATION_TYPE_T2T) {
+        /* SENS_RES */
+        mifare_params[0] = 0x00;
+        mifare_params[1] = 0x00;
+
+        /* NFCID1t with only 3 bytes */
+        mifare_params[2] = 0x00;
+        mifare_params[3] = 0x00;
+        mifare_params[4] = 0x00;
+
+        /* SEL_RES for NFC-A tag emulation */
+        mifare_params[5] = 0x20;
+
+        (void)felica_params;
+        (void)nfcid3t;
+
+        *len_gt = 0;
+        *len_tk = 0;
+        
+    } else {
+        DEBUG("pn532: not implented\n");
+        assert(0);
+    }
+
+    /* recv len depends on the technology used */
+    return send_rcv(dev, buff, 37, 30);
 }
