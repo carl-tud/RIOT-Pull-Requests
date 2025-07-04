@@ -149,6 +149,12 @@ typedef enum {
     PN532_MIFARE_KEY_B = 0x61
 } pn532_mifare_key_t;
 
+typedef union {
+    uint8_t mifare_params[6];
+    uint8_t felica_params[18];
+    uint8_t nfcid3t[10];
+} pn532_target_params_t;
+
 /**
  * @brief   Obtain Tag 4 data length from buffer
  *
@@ -385,7 +391,7 @@ void pn532_deselect_passive(pn532_t *dev, unsigned target_id);
  */
 void pn532_release_passive(pn532_t *dev, unsigned target_id);
 
-int _init_as_target(pn532_t *dev, nfc_application_type_t app_type);
+int pn532_init_picc(pn532_t *dev, nfc_application_type_t app_type);
 
 #ifdef __cplusplus
 }

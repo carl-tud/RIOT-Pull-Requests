@@ -711,44 +711,34 @@ int pn532_iso14443a_4_read(pn532_t *dev, char *odata, nfc_iso14443a_t *card,
     return ret;
 }
 
-int _init_as_target(pn532_t *dev, nfc_application_type_t app_type) {
+static int _init_as_target(pn532_t *dev, uint8_t mode,
+    uint8_t *mifare_params, uint8_t *felica_params, uint8_t *nfcid3t) {
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
     buff[BUFF_CMD_START] = CMD_INIT_AS_TARGET;
 
     /* target mode */
-    buff[BUFF_DATA_START] = TARGET_MODE_PICC;
+    buff[BUFF_DATA_START] = mode;
 
-    /* Mifare params have a length of 6 */
-    uint8_t* mifare_params = &buff[BUFF_DATA_START+1];
+    // /* Mifare params have a length of 6 */
+    // uint8_t* mifare_params = &buff[BUFF_DATA_START+1];
 
-    /* FeliCa params have a length of 18 */
-    uint8_t* felica_params = mifare_params + 6;
+    // /* FeliCa params have a length of 18 */
+    // uint8_t* felica_params = mifare_params + 6;
 
-    /* NFCID3t has a length of 10 */
-    uint8_t* nfcid3t = felica_params + 18;
+    // /* NFCID3t has a length of 10 */
+    // uint8_t* nfcid3t = felica_params + 18;
 
-    uint8_t* len_gt = nfcid3t + 10;
-    uint8_t* len_tk = len_gt + 1;
+    // uint8_t* len_gt = nfcid3t + 10;
+    // uint8_t* len_tk = len_gt + 1;
     
-    if (app_type == NFC_APPLICATION_TYPE_T2T) {
-        /* SENS_RES */
-        mifare_params[0] = 0x00;
-        mifare_params[1] = 0x00;
-
-        /* NFCID1t with only 3 bytes */
-        mifare_params[2] = 0x00;
-        mifare_params[3] = 0x00;
-        mifare_params[4] = 0x00;
-
-        /* SEL_RES for NFC-A tag emulation */
-        mifare_params[5] = 0x20;
+    if (mifare_params != NULL) {
+        memcpy(&buff[BUFF_DATA_START + 1], mifare_params, 6);
 
         (void)felica_params;
         (void)nfcid3t;
 
-        *len_gt = 0;
-        *len_tk = 0;
-        
+        buff[BUFF_DATA_START + 7] = 0x00; /* len GT */
+        buff[BUFF_DATA_START + 8] = 0x00; /* len TK */
     } else {
         DEBUG("pn532: not implented\n");
         assert(0);
@@ -757,3 +747,24 @@ int _init_as_target(pn532_t *dev, nfc_application_type_t app_type) {
     /* recv len depends on the technology used */
     return send_rcv(dev, buff, 37, 30);
 }
+
+int pn532_init_picc(pn532_t *dev, nfc_application_type_t app_type) {
+    assert(dev != NULL);
+
+    if (dev->mode != PN532_SPI) {
+        DEBUG("pn532: only SPI mode supported for picc init\n");
+        return -1;
+    }
+
+    if (app_type == NFC_APPLICATION_TYPE_T2T) {
+        DEBUG("pn532: init picc as T2T\n");
+        uint8_t mifare_params[] = {
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x20
+        }; /* SENS_RES, NFCID1t, SEL_RES */
+        return _init_as_target(dev, TARGET_MODE_PICC, mifare_params, NULL, NULL);
+    }
+
+    return -1;
+}
+
+
