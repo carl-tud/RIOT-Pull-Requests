@@ -555,11 +555,11 @@ ssize_t unicoap_options_copy_values_joined(const unicoap_options_t* options, uni
     ssize_t res = 0;
     const uint8_t* component;
     while ((res = unicoap_options_get_next_by_number(&iterator, number, &component)) > 0) {
-        if (capacity < (size_t)(res + 1)) {
+        if (capacity < (size_t)(size + res + 1)) {
             return -ENOBUFS;
         }
 
-        /* Only insert separator between values */
+        /* Only insert separator between values, not at the beginning */
         if (size > 0) {
             *buffer = separator;
             buffer += 1;
