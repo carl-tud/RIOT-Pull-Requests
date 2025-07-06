@@ -765,7 +765,7 @@ typedef enum {
      * @brief Content type `application/link-format`
      * @see [RFC6690](https://www.iana.org/go/rfc6690)
      */
-    UNICOAP_FORMAT_LINK_FORMAT = 40,
+    UNICOAP_FORMAT_LINK = 40,
 
     /**
      * @brief Content type `application/xml`
