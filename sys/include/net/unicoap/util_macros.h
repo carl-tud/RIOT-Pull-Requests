@@ -23,8 +23,6 @@
 #  define UNICOAP_CODE_CLASS_DETAIL_FORMAT "%u.%02u"
 
 #  define _CONCAT3(a, b, c)                      CONCAT3(a, b, c)
-
-#  define _NULL_TERMINATE_STRING(_string, _size) (*(_string + _size) = '\0')
 #endif
 
 #ifdef __cplusplus
