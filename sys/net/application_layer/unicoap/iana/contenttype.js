@@ -28,6 +28,7 @@
         .replace("application/", "")
         .replace("vnd.", "")
         .replace("text/plain", "text")
+        .replace("link-format", "link")
         .replace(/\s+|-|\+|\/|\./g, "_")
         .toUpperCase()
 
