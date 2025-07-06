@@ -13,7 +13,7 @@ Protocol. `unicoap` supports different transports and several CoAP features, ena
 a **layered** and **modular** design. Support for each CoAP transport, such as UDP, is available through
 [drivers](@ref net_unicoap_drivers).
 
-`unicoap` aims to eventually replace @ref net_gcoap, @ref net_nanocoap, and @ref net_nanosock, 
+`unicoap` aims to eventually replace @ref net_gcoap, @ref net_nanocoap, and @ref net_nanosock,
 in favor of a more beginner-friendly and easily extensible design.
 
 ## CoAP
