@@ -503,7 +503,8 @@ static inline void unicoap_message_init(unicoap_message_t* message, uint8_t code
  * @param payload_size Payload size
  * @return Message structure
  */
-static inline unicoap_message_t unicoap_message_alloc(uint8_t code, uint8_t* payload, size_t payload_size)
+static inline unicoap_message_t unicoap_message_alloc(uint8_t code, uint8_t* payload,
+                                                      size_t payload_size)
 {
     return (unicoap_message_t){ .code = code, .payload = payload, .payload_size = payload_size };
 }
@@ -590,11 +591,13 @@ static inline unicoap_message_t unicoap_message_alloc_with_options(uint8_t code,
  * @pre @p message is allocated
  * @pre @p options is allocated
  */
-static inline void unicoap_message_init_string_with_options(unicoap_message_t* message, uint8_t code,
-                                                            const char* payload,
-                                                            unicoap_options_t* options)
+static inline
+void unicoap_message_init_string_with_options(unicoap_message_t* message, uint8_t code,
+                                              const char* payload,
+                                              unicoap_options_t* options)
 {
-    unicoap_message_init_with_options(message, code, (uint8_t*)payload, payload ? strlen(payload) : 0, options);
+    unicoap_message_init_with_options(message, code, (uint8_t*)payload,
+                                      payload ? strlen(payload) : 0, options);
 }
 
 /**
@@ -605,8 +608,10 @@ static inline void unicoap_message_init_string_with_options(unicoap_message_t* m
  * @returns Message structure
  * @pre @p options is allocated
  */
-static inline unicoap_message_t unicoap_message_alloc_string_with_options(uint8_t code, const char* payload,
-                                                                          unicoap_options_t* options)
+static inline
+unicoap_message_t unicoap_message_alloc_string_with_options(uint8_t code,
+                                                            const char* payload,
+                                                            unicoap_options_t* options)
 {
     return (unicoap_message_t){ .code = code,
                                 .options = options,
@@ -795,7 +800,8 @@ static inline void unicoap_request_init_string(unicoap_message_t* request, unico
  * @param[in] payload Payload string (nullable), must be null-terminated
  * @return Request structure
  */
-static inline unicoap_message_t unicoap_request_alloc_string(unicoap_method_t method, const char* payload)
+static inline unicoap_message_t unicoap_request_alloc_string(unicoap_method_t method,
+                                                             const char* payload)
 {
     return unicoap_message_alloc_string((uint8_t)method, payload);
 }
@@ -812,7 +818,8 @@ static inline unicoap_message_t unicoap_request_alloc_string(unicoap_method_t me
  * @pre @p request is allocated
  * @pre @p options is allocated
  */
-static inline void unicoap_request_init_with_options(unicoap_message_t* request, unicoap_method_t method,
+static inline void unicoap_request_init_with_options(unicoap_message_t* request,
+                                                     unicoap_method_t method,
                                                      uint8_t* payload, size_t payload_size,
                                                      unicoap_options_t* options)
 {
@@ -828,7 +835,8 @@ static inline void unicoap_request_init_with_options(unicoap_message_t* request,
  * @return Request structure
  * @pre @p options is allocated
  */
-static inline unicoap_message_t unicoap_request_alloc_with_options(unicoap_method_t method, uint8_t* payload,
+static inline unicoap_message_t unicoap_request_alloc_with_options(unicoap_method_t method,
+                                                                   uint8_t* payload,
                                                                    size_t payload_size,
                                                                    unicoap_options_t* options)
 {
@@ -847,7 +855,8 @@ static inline unicoap_message_t unicoap_request_alloc_with_options(unicoap_metho
  * @pre @p options is allocated
  */
 static inline void unicoap_request_init_string_with_options(unicoap_message_t* request,
-                                                            unicoap_method_t method, const char* payload,
+                                                            unicoap_method_t method,
+                                                            const char* payload,
                                                             unicoap_options_t* options)
 {
     unicoap_message_init_string_with_options(request, (uint8_t)method, payload, options);
@@ -861,9 +870,10 @@ static inline void unicoap_request_init_string_with_options(unicoap_message_t* r
  * @return Request structure
  * @pre @p options is allocated
  */
-static inline unicoap_message_t unicoap_request_alloc_string_with_options(unicoap_method_t method,
-                                                                          const char* payload,
-                                                                          unicoap_options_t* options)
+static inline
+unicoap_message_t unicoap_request_alloc_string_with_options(unicoap_method_t method,
+                                                            const char* payload,
+                                                            unicoap_options_t* options)
 {
     return unicoap_message_alloc_string_with_options((uint8_t)method, payload, options);
 }
@@ -1009,8 +1019,10 @@ static inline unicoap_message_t unicoap_response_alloc_string(unicoap_status_t s
  * @pre @p options is allocated
  */
 static inline void unicoap_response_init_with_options(unicoap_message_t* response,
-                                                      unicoap_status_t status, uint8_t* payload,
-                                                      size_t payload_size, unicoap_options_t* options)
+                                                      unicoap_status_t status,
+                                                      uint8_t* payload,
+                                                      size_t payload_size,
+                                                      unicoap_options_t* options)
 {
     unicoap_message_init_with_options(response, (uint8_t)status, payload, payload_size, options);
 }
@@ -1024,7 +1036,8 @@ static inline void unicoap_response_init_with_options(unicoap_message_t* respons
  * @return Response structure
  * @pre @p options is allocated
  */
-static inline unicoap_message_t unicoap_response_alloc_with_options(unicoap_status_t status, uint8_t* payload,
+static inline unicoap_message_t unicoap_response_alloc_with_options(unicoap_status_t status,
+                                                                    uint8_t* payload,
                                                                     size_t payload_size,
                                                                     unicoap_options_t* options)
 {
@@ -1058,9 +1071,10 @@ static inline void unicoap_response_init_string_with_options(unicoap_message_t* 
  * @return Response structure
  * @pre @p options is allocated
  */
-static inline unicoap_message_t unicoap_response_alloc_string_with_options(unicoap_status_t status,
-                                                                           const char* payload,
-                                                                           unicoap_options_t* options)
+static inline
+unicoap_message_t unicoap_response_alloc_string_with_options(unicoap_status_t status,
+                                                             const char* payload,
+                                                             unicoap_options_t* options)
 {
     return unicoap_message_alloc_string_with_options((uint8_t)status, payload, options);
 }
@@ -1130,10 +1144,12 @@ typedef struct {
  * it **does escape** pointers into the buffer pointed at by @p cursor in @p message . This is
  * necessary to create a lookup array for options, i.e., to avoid re-parsing the options buffer.
  * You will need to decide whether you treat the message's options as constant or not.
- * This depends on whether the buffer @p cursor passed to this function is considered constant _by you_.
- * As `unicoap` cannot guarantee you won't add/insert/remove options later, @p cursor is not qualified
- * by `const`. That hypothetical `const` depends on your usage of the message and its options.
- * That hypothetical `const` depends on your usage of the message and its options.
+ * This depends on whether the buffer @p cursor passed to this function is considered constant
+ * _by you_.
+ *
+ * As `unicoap` cannot guarantee you won't add/insert/remove options later, @p cursor is not
+ * qualified by `const`. That hypothetical `const` depends on your usage of the message and its
+ * options. That hypothetical `const` depends on your usage of the message and its options.
  */
 ssize_t unicoap_pdu_parse_options_and_payload(uint8_t* cursor, const uint8_t* end,
                                               unicoap_message_t* message);
@@ -1157,9 +1173,13 @@ ssize_t unicoap_pdu_parse_options_and_payload(uint8_t* cursor, const uint8_t* en
  * @returns Number of bytes written
  * @returns `-ENOBUFS` if buffer is too small
  */
-ssize_t unicoap_pdu_build_options_and_payload(uint8_t* cursor, size_t remaining_capacity, const unicoap_message_t* message);
+ssize_t unicoap_pdu_build_options_and_payload(uint8_t* cursor, size_t remaining_capacity,
+                                              const unicoap_message_t* message);
 
-/** @brief Number of iolists in the iolist buffer that must be passed to @ref unicoap_pdu_buildv_options_and_payload */
+/**
+ * @brief Number of iolists in the iolist buffer that must be passed to
+ * @ref unicoap_pdu_buildv_options_and_payload
+ */
 #define UNICOAP_PDU_IOLIST_COUNT (4)
 
 /**
@@ -1171,14 +1191,16 @@ ssize_t unicoap_pdu_build_options_and_payload(uint8_t* cursor, size_t remaining_
  * @param[in] header Encoded CoAP header
  * @param header_size Size of @p header
  * @param[in] message Message containing options and payload
- * @param[in,out] iolists Buffer of iolists, pre-allocated, size must be @ref UNICOAP_PDU_IOLIST_COUNT
+ * @param[in,out] iolists Buffer of iolists, pre-allocated, size must be
+ *                        @ref UNICOAP_PDU_IOLIST_COUNT
  *
  * @pre @p iolists is allocated
  *
  * @returns Zero on success, negative error number otherwise
  *
  */
-int unicoap_pdu_buildv_options_and_payload(uint8_t* header, size_t header_size, const unicoap_message_t* message,
+int unicoap_pdu_buildv_options_and_payload(uint8_t* header, size_t header_size,
+                                           const unicoap_message_t* message,
                                            iolist_t iolists[UNICOAP_PDU_IOLIST_COUNT]);
 /** @} */
 /** @} */
@@ -1204,15 +1226,19 @@ int unicoap_pdu_buildv_options_and_payload(uint8_t* header, size_t header_size, 
  *
  * @returns Zero on success or negative errno on failure
  * @retval `-EBADOPT` Bad option
- * @retval `-ENOBUFS` Options buffer in @ref unicoap_message_t::options (@ref unicoap_options_t) too small
+ * @retval `-ENOBUFS` Options buffer in @ref unicoap_message_t::options (@ref unicoap_options_t)
+ *                    too small
  *
- * @remark To allocate everything needed in one go, use @ref unicoap_pdu_parse_rfc7252_result instead.
+ * @remark To allocate everything needed in one go, use @ref unicoap_pdu_parse_rfc7252_result
+ * instead.
  *
  * @note This function does not mutate or copy the buffer pointed at by @p pdu. However,
  * it **does escape** pointers into the buffer pointed at by @p pdu in @p message . This is
  * necessary to create a lookup array for options, i.e., to avoid re-parsing the options buffer.
  * You will need to decide whether you treat the message's options as constant or not.
- * This depends on whether the buffer @p pdu passed to this function is considered constant _by you_.
+ * This depends on whether the buffer @p pdu passed to this function is considered constant
+ * _by you_.
+ *
  * As `unicoap` cannot guarantee you won't add/insert/remove options later, @p pdu is not qualified
  * by `const`. That hypothetical `const` depends on your usage of the message and its options.
  */
@@ -1230,17 +1256,21 @@ ssize_t unicoap_pdu_parse_rfc7252(uint8_t* pdu, size_t size, unicoap_message_t* 
  *
  * @returns Zero on success or negative errno on failure
  * @retval `-EBADOPT` Bad option
- * @retval `-ENOBUFS` Options buffer in @ref unicoap_message_t::options (@ref unicoap_options_t) too small
+ * @retval `-ENOBUFS` Options buffer in @ref unicoap_message_t::options (@ref unicoap_options_t)
+ *                    too small
  *
  * @note This function does not mutate or copy the buffer pointed at by @p pdu. However,
  * it **does escape** pointers into the buffer pointed at by @p pdu in @p message . This is
  * necessary to create a lookup array for options, i.e., to avoid re-parsing the options buffer.
  * You will need to decide whether you treat the message's options as constant or not.
- * This depends on whether the buffer @p pdu passed to this function is considered constant _by you_.
+ * This depends on whether the buffer @p pdu passed to this function is considered constant
+ * _by you_.
+ *
  * As `unicoap` cannot guarantee you won't add/insert/remove options later, @p pdu is not qualified
  * by `const`. That hypothetical `const` depends on your usage of the message and its options.
  */
-static inline ssize_t unicoap_pdu_parse_rfc7252_result(uint8_t* pdu, size_t size, unicoap_parser_result_t* parsed)
+static inline ssize_t unicoap_pdu_parse_rfc7252_result(uint8_t* pdu, size_t size,
+                                                       unicoap_parser_result_t* parsed)
 {
     parsed->message.options = &parsed->options;
     return unicoap_pdu_parse_rfc7252(pdu, size, &parsed->message, &parsed->properties);
@@ -1299,7 +1329,8 @@ static inline ssize_t unicoap_pdu_build_rfc7252(uint8_t* pdu, size_t capacity,
  * @param header_capacity Capacity of header buffer
  * @param[in] message Message containing options and payload
  * @param[in] properties Message properties containing ID and type
- * @param[in,out] iolists Buffer of iolists, pre-allocated, size must be be @ref UNICOAP_PDU_IOLIST_COUNT
+ * @param[in,out] iolists Buffer of iolists, pre-allocated, size must be be
+ *                        @ref UNICOAP_PDU_IOLIST_COUNT
  *
  * @pre @p iolists is allocated
  *
@@ -1307,11 +1338,15 @@ static inline ssize_t unicoap_pdu_build_rfc7252(uint8_t* pdu, size_t capacity,
  * @returns Negative integer one error
  * @retval `-ENOBUFS` Buffer too small
  */
-static inline ssize_t unicoap_pdu_buildv_rfc7252(uint8_t* header, size_t header_capacity, const unicoap_message_t* message, const unicoap_message_properties_t* properties, iolist_t iolists[UNICOAP_PDU_IOLIST_COUNT])
+static inline ssize_t unicoap_pdu_buildv_rfc7252(uint8_t* header, size_t header_capacity,
+                                                 const unicoap_message_t* message,
+                                                 const unicoap_message_properties_t* properties,
+                                                 iolist_t iolists[UNICOAP_PDU_IOLIST_COUNT])
 {
     ssize_t res = 0;
 
-    if ((res = unicoap_pdu_build_header_rfc7252(header, header_capacity, message, properties)) < 0) {
+    if ((res =
+         unicoap_pdu_build_header_rfc7252(header, header_capacity, message, properties)) < 0) {
         return res;
     }
     return unicoap_pdu_buildv_options_and_payload(header, res, message, iolists);
