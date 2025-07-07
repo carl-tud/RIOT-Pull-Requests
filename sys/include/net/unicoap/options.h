@@ -27,12 +27,14 @@
  * @brief    Access options from a CoAP message
  * @{
  *
- * To allocate an options object, use @ref UNICOAP_OPTIONS_ALLOC. Provide a name for the variable and an estimate for
- * the total number of bytes needed to represent all options. If you are unsure, consider using @ref UNICOAP_OPTIONS_ALLOC_DEFAULT.
+ * To allocate an options object, use @ref UNICOAP_OPTIONS_ALLOC. Provide a name for the variable
+ * and an estimate for the total number of bytes needed to represent all options. If you are unsure,
+ * consider using @ref UNICOAP_OPTIONS_ALLOC_DEFAULT.
  *
- * After having allocated an options object, you can access individual options using the many accessor methods.
- * Refer to @ref net_unicoap_options_predefined for typed methods adjusted to each predefined option or
- * @ref net_unicoap_options_generic for options where predefined methods are not provided.
+ * After having allocated an options object, you can access individual options using the many
+ * accessor methods. Refer to @ref net_unicoap_options_predefined for typed methods adjusted to
+ * each predefined option or @ref net_unicoap_options_generic for options where predefined methods
+ * are not provided.
  *
  * **Example**:
  * ```c
@@ -48,7 +50,7 @@
  * }
  * ```
  *
- * Should you need to dump all options, use @ref unicoap_options_dump_all.
+ * Should you need to dump all options, use @ref unicoap_options_t::unicoap_options_dump_all.
  */
 
 /**
@@ -134,7 +136,8 @@ typedef struct {
  * @param[in] storage A buffer unicoap will use to store option values in
  * @param capacity The number of usable bytes in @p storage
  */
-static inline void unicoap_options_init(unicoap_options_t* options, uint8_t* storage, size_t capacity)
+static inline void unicoap_options_init(unicoap_options_t* options, uint8_t* storage,
+                                        size_t capacity)
 {
     options->entries->data = storage;
     options->option_count = 0;
@@ -143,7 +146,9 @@ static inline void unicoap_options_init(unicoap_options_t* options, uint8_t* sto
 }
 
 /**
- * @brief Determines whether the given options container has one or more options with the given number.
+ * @brief Determines whether the given options container has one or more options with the given
+ *        number.
+ *
  * @memberof unicoap_options_t
  *
  * @param[in] options Options
@@ -185,7 +190,7 @@ static inline void unicoap_options_clear(unicoap_options_t* options)
  * @param capacity Storage buffer capacity in bytes
  *
  * Allocates a new @ref unicoap_options_t container and a storage buffer with
- * the given capacity, then calls @ref unicoap_options_init.
+ * the given capacity, then calls @ref unicoap_options_t::unicoap_options_init.
  */
 #define UNICOAP_OPTIONS_ALLOC(name, capacity) \
     _UNICOAP_OPTIONS_ALLOC(_CONCAT3(name, _storage, __LINE__), name, capacity)
@@ -197,7 +202,7 @@ static inline void unicoap_options_clear(unicoap_options_t* options)
  *
  * Allocates a new @ref unicoap_options_t container and a storage buffer with
  * @ref CONFIG_UNICOAP_OPTIONS_BUFFER_DEFAULT_CAPACITY,
- * then calls @ref unicoap_options_init.
+ * then calls @ref unicoap_options_t::unicoap_options_init.
  */
 #define UNICOAP_OPTIONS_ALLOC_DEFAULT(name) \
     UNICOAP_OPTIONS_ALLOC(name, CONFIG_UNICOAP_OPTIONS_BUFFER_DEFAULT_CAPACITY)
@@ -239,7 +244,8 @@ static inline bool unicoap_option_is_safe_to_forward(unicoap_option_number_t opt
 /**
  * @brief Determines whether the given option is **not** intended to be part of the cache key
  *
- * Whether an option is considered [NoCacheKey](https://datatracker.ietf.org/doc/html/rfc7252#section-5.4.2)
+ * Whether an option is considered
+ * [NoCacheKey](https://datatracker.ietf.org/doc/html/rfc7252#section-5.4.2)
  * is independent from the option's value.
  *
  * @param option_number The option number
@@ -253,7 +259,8 @@ static inline bool unicoap_option_is_no_cache_key(unicoap_option_number_t option
 /**
  * @brief Determines whether the given option is intended to be part of the cache key
  *
- * Whether an option is considered a [NoCacheKey](https://datatracker.ietf.org/doc/html/rfc7252#section-5.4.2)
+ * Whether an option is considered a
+ * [NoCacheKey](https://datatracker.ietf.org/doc/html/rfc7252#section-5.4.2)
  * is independent from the option's value.
  *
  * @param option_number The option number
@@ -364,7 +371,8 @@ static inline size_t unicoap_options_size(const unicoap_options_t* options)
  * @brief Adds a repeatable option with the given value.
  * @memberof unicoap_options_t
  *
- * Use this function to insert multiple options with the same number but potentially different values.
+ * Use this function to insert multiple options with the same number but potentially different
+ * values.
  *
  * @param[in] options Options
  * @param number Option number
@@ -382,7 +390,8 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
  * @brief Splits the given value into separate values and adds them as option values
  * @memberof unicoap_options_t
  *
- * Use this function to insert multiple options with the same number but potentially different values.
+ * Use this function to insert multiple options with the same number but potentially different
+ * values.
  * The @p buffer will be sliced everywhere the @p separator occurs. This is the same as calling
  * @ref unicoap_options_add for each chunk inbeetween separator bytes.
  *
@@ -398,7 +407,7 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
  * @note A leading @p separator in @p buffer will be ignored by this function.
  */
 int unicoap_options_add_values_joined(unicoap_options_t* options, unicoap_option_number_t number,
-                               const uint8_t* buffer, size_t size, uint8_t separator);
+                                      const uint8_t* buffer, size_t size, uint8_t separator);
 
 /**
  * @brief Copies the values of all options with the given number joined by the given separator
@@ -419,8 +428,9 @@ int unicoap_options_add_values_joined(unicoap_options_t* options, unicoap_option
  *
  * @warning This function does _not_ create a null-terminated C string.
  */
-ssize_t unicoap_options_copy_values_joined(const unicoap_options_t* options, unicoap_option_number_t number,
-                                    uint8_t* buffer, size_t capacity, uint8_t separator);
+ssize_t unicoap_options_copy_values_joined(const unicoap_options_t* options,
+                                           unicoap_option_number_t number, uint8_t* buffer,
+                                           size_t capacity, uint8_t separator);
 
 /**
  * @brief Removes all options with the given number, if any
@@ -450,7 +460,8 @@ int unicoap_options_remove_all(unicoap_options_t* options, unicoap_option_number
  *
  * @param[in] options Options
  * @param number Option number
- * @param[in,out] value Option value. Provide a pointer to a an `uint8_t` pointer, which may be `NULL`.
+ * @param[in,out] value Option value. Provide a pointer to a an `uint8_t` pointer, which may be
+ *                      `NULL`.
  *
  * @return Size of option value (zero or more bytes) or negative errno if the get operation failed
  * @retval `-ENOENT` Options not found
@@ -551,7 +562,8 @@ typedef struct {
  * @param[in,out] iterator Option iterator struct to initialize
  * @param[in] options Options to iterate over
  */
-static inline void unicoap_options_iterator_init(unicoap_options_iterator_t* iterator, unicoap_options_t* options)
+static inline void unicoap_options_iterator_init(unicoap_options_iterator_t* iterator,
+                                                 unicoap_options_t* options)
 {
     assert(iterator);
     assert(options);
@@ -581,7 +593,8 @@ ssize_t unicoap_options_get_next(unicoap_options_iterator_t* iterator,
  * @brief Gets the next option with the given number, potentially skipping any options in between.
  * @memberof unicoap_options_iterator_t
  *
- * This is a zero-copy API. Use this function to iterate over specific options that may occur more than once.
+ * This is a zero-copy API. Use this function to iterate over specific options that may occur more
+ * than once.
  *
  * @param[in,out] iterator Option iterator
  * @param number The option number to look out for
@@ -595,12 +608,15 @@ ssize_t unicoap_options_get_next_by_number(unicoap_options_iterator_t* iterator,
                                            unicoap_option_number_t number, const uint8_t** value);
 
 /**
- * @brief Gets the next query option matching the given name, potentially skipping any options in between.
+ * @brief Gets the next query option matching the given name, potentially skipping any options
+ *        in between.
+ *
  * @memberof unicoap_options_iterator_t
  *
  * Use this function to iterate over specific options that may occur more than once.
  *
- * This method splits query values at the `=` character. It is used both for `Uri-Query` and `Location-Query`.
+ * This method splits query values at the `=` character. It is used both for `Uri-Query`
+ * and `Location-Query`.
  *
  * @param[in,out] iterator Option iterator
  * @param[out] number Option number
@@ -612,8 +628,9 @@ ssize_t unicoap_options_get_next_by_number(unicoap_options_iterator_t* iterator,
  * @retval `-1` if the iterator is finished
  *
  * @warning @p value will not be null-terminated.
- * @note This function does not perform Unicode normalization when comparing strings. Instead, `memcmp` is used.
- * This is compliant with [RFC 7252, Section 3.2](https://datatracker.ietf.org/doc/html/rfc7252#section-3.2)
+ * @note This function does not perform Unicode normalization when comparing strings.
+ * Instead, `memcmp` is used. This is compliant with
+ * [RFC 7252, Section 3.2](https://datatracker.ietf.org/doc/html/rfc7252#section-3.2)
  */
 ssize_t unicoap_options_get_next_query_by_name(unicoap_options_iterator_t* iterator,
                                                unicoap_option_number_t number, const char* name,
@@ -640,7 +657,8 @@ void unicoap_options_dump_all(const unicoap_options_t* options);
  * @param[in] options Options
  * @param number Option number
  * @param[in] string String option value to set
- * @param count Number of characters the string is made up of, excluding null-terminator, or zero, which triggers a `strlen` call
+ * @param count Number of characters the string is made up of, excluding null-terminator, or zero,
+ *              which triggers a `strlen` call
  *
  * Specify the number of characters or zero to let `unicoap` determine the string length.
  *
@@ -659,12 +677,14 @@ static inline int unicoap_options_set_string(unicoap_options_t* options,
  * @brief Adds a repeatable option with the given string value.
  * @memberof unicoap_options_t
  *
- * Use this function to insert multiple options with the same number but potentially different values.
+ * Use this function to insert multiple options with the same number but potentially different
+ * values.
  *
  * @param[in] options Options
  * @param number Option number
  * @param[in] string String option value to set
- * @param count Number of characters the string is made up of, excluding null-terminator, or zero, which triggers a `strlen` call
+ * @param count Number of characters the string is made up of, excluding null-terminator, or zero,
+ *              which triggers a `strlen` call
  *
  * Specify the number of characters or zero to let `unicoap` determine the string length.
  *
@@ -703,8 +723,8 @@ static inline int unicoap_options_add_string(unicoap_options_t* options,
  * @pre @p max_size does not exceed `sizeof(uint32_t)`
  */
 ssize_t _unicoap_options_get_variable_uint(const unicoap_options_t* options,
-                                          unicoap_option_number_t number, uint32_t* uint,
-                                          size_t max_size);
+                                           unicoap_option_number_t number, uint32_t* uint,
+                                           size_t max_size);
 #endif
 
 /**
@@ -716,15 +736,16 @@ ssize_t _unicoap_options_get_variable_uint(const unicoap_options_t* options,
  *
  * @param[in] options Options
  * @param number Option number
- * @param[in,out] uint Provide a pointer to an allocated 32-bit unsigned integer, will have been filled after function has returned
+ * @param[in,out] uint Provide a pointer to an allocated 32-bit unsigned integer, will have been
+ *                     filled after function has returned
  *
  * @returns Number of bytes occupied by the unsigned integer in the option value or negative
  *          integer on error
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option is corrupted
  */
-static inline ssize_t unicoap_options_get_uint32(const unicoap_options_t* options, unicoap_option_number_t number,
-                                                 uint32_t* uint)
+static inline ssize_t unicoap_options_get_uint32(const unicoap_options_t* options,
+                                                 unicoap_option_number_t number, uint32_t* uint)
 {
     return _unicoap_options_get_variable_uint(options, number, uint, sizeof(uint32_t));
 }
@@ -738,15 +759,16 @@ static inline ssize_t unicoap_options_get_uint32(const unicoap_options_t* option
  *
  * @param[in] options Options
  * @param number Option number
- * @param[in,out] uint Provide a pointer to an allocated 32-bit unsigned integer, will have been filled after function has returned
+ * @param[in,out] uint Provide a pointer to an allocated 32-bit unsigned integer, will have been
+ *                     filled after function has returned
  *
  * @returns Number of bytes occupied by the unsigned integer in the option value or negative
  *          integer on error
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option is corrupted
  */
-static inline ssize_t unicoap_options_get_uint24(const unicoap_options_t* options, unicoap_option_number_t number,
-                                                 uint32_t* uint)
+static inline ssize_t unicoap_options_get_uint24(const unicoap_options_t* options,
+                                                 unicoap_option_number_t number, uint32_t* uint)
 {
     return _unicoap_options_get_variable_uint(options, number, uint, UNICOAP_UINT24_SIZE);
 }
@@ -760,15 +782,16 @@ static inline ssize_t unicoap_options_get_uint24(const unicoap_options_t* option
  *
  * @param[in] options Options
  * @param number Option number
- * @param[in,out] uint Provide a pointer to an allocated 16-bit unsigned integer, will have been filled after function has returned
+ * @param[in,out] uint Provide a pointer to an allocated 16-bit unsigned integer, will have been
+ *                     filled after function has returned
  *
  * @returns Number of bytes occupied by the unsigned integer in the option value or negative
  *          integer on error
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option is corrupted
  */
-static inline ssize_t unicoap_options_get_uint16(const unicoap_options_t* options, unicoap_option_number_t number,
-                                                 uint16_t* uint)
+static inline ssize_t unicoap_options_get_uint16(const unicoap_options_t* options,
+                                                 unicoap_option_number_t number, uint16_t* uint)
 {
     uint32_t _uint = 0;
     int res = _unicoap_options_get_variable_uint(options, number, &_uint, sizeof(uint16_t));
@@ -785,7 +808,8 @@ static inline ssize_t unicoap_options_get_uint16(const unicoap_options_t* option
  *
  * @param[in] options Options
  * @param number Option number
- * @param[in,out] uint Provide a pointer to an allocated 8-bit unsigned integer, will have been filled after function has returned
+ * @param[in,out] uint Provide a pointer to an allocated 8-bit unsigned integer, will have been
+ *                     filled after function has returned
  *
  * @returns Number of bytes occupied by the unsigned integer in the option value or negative
  *          integer on error
@@ -793,8 +817,8 @@ static inline ssize_t unicoap_options_get_uint16(const unicoap_options_t* option
  * @retval `-EBADOPT` Option is corrupted
  * @retval `-ENOBUFS` Option value was bigger than 1 byte
  */
-static inline ssize_t unicoap_options_get_uint8(const unicoap_options_t* options, unicoap_option_number_t number,
-                                  uint8_t* uint)
+static inline ssize_t unicoap_options_get_uint8(const unicoap_options_t* options,
+                                                unicoap_option_number_t number, uint8_t* uint)
 {
     return unicoap_options_copy_value(options, number, uint, sizeof(uint8_t));
 }
@@ -820,7 +844,8 @@ int unicoap_options_set_uint(unicoap_options_t* options, unicoap_option_number_t
  * @brief Adds a repeatable option with the given unsigned integer value.
  * @memberof unicoap_options_t
  *
- * Use this function to insert multiple options with the same number but potentially different values.
+ * Use this function to insert multiple options with the same number but potentially different
+ * values.
  *
  * Unsigned option values in CoAP are variable in length, i.e., uints are not zero-padded.
  * A zero may be represented by a zero-length option value.
