@@ -349,7 +349,6 @@ void _move_options_in_storage_buffer(unicoap_options_t* options, uint8_t* dest, 
     memmove(dest, src, remainder);
 }
 
-
 /**
  * @brief Adds diff to pointers in lookup array ('entries')
  *
@@ -487,7 +486,8 @@ ssize_t unicoap_pdu_parse_options_and_payload(uint8_t* cursor, const uint8_t* en
             message->payload_size = (size_t)(end - cursor);
             message->payload = message->payload_size > 0 ? cursor : NULL;
             message->options->storage_capacity = (uintptr_t)cursor - (uintptr_t)start; /* (<-) */
-            OPTIONS_DEBUG("payload size = %" PRIuSIZE " opts capacity = %" PRIuSIZE "\n", message->payload_size, message->options->storage_capacity);
+            OPTIONS_DEBUG("payload size = %" PRIuSIZE " opts capacity = %" PRIuSIZE "\n",
+                          message->payload_size, message->options->storage_capacity);
             return 0;
         }
         else if (option_size >= 0) {
@@ -503,7 +503,8 @@ ssize_t unicoap_pdu_parse_options_and_payload(uint8_t* cursor, const uint8_t* en
             message->options->storage_size += e->size;
 
             /*
-            OPTIONS_DEBUG("option nr=%u label=%s\n", (unsigned int)option_number, unicoap_string_from_option_number(option_number));
+            OPTIONS_DEBUG("option nr=%u label=%s\n", (unsigned int)option_number,
+             unicoap_string_from_option_number(option_number));
              */
             e += 1;
             message->options->option_count += 1;
@@ -610,7 +611,8 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
         size_t storage_size = options->storage_size + option_size;
         /* Option to be inserted is trailing option, can just add after last option */
         if (storage_size > options->storage_capacity) {
-            OPTIONS_DEBUG("buf too small to insert opt " _UNICOAP_NEED_HAVE "\n", storage_size, options->storage_capacity);
+            OPTIONS_DEBUG("buf too small to insert opt " _UNICOAP_NEED_HAVE "\n",
+                          storage_size, options->storage_capacity);
             return -ENOBUFS;
         }
 
@@ -901,7 +903,8 @@ static inline uint32_t _ntoh_variable(const uint8_t* variable_network_uint, size
         case sizeof(uint16_t):
             return (uint32_t)byteorder_bebuftohs(variable_network_uint);
         case UNICOAP_UINT24_SIZE:
-            return ((uint32_t)byteorder_bebuftohs(variable_network_uint) << 8) | ((uint32_t)variable_network_uint[2]);
+            return ((uint32_t)byteorder_bebuftohs(variable_network_uint) << 8) |
+                ((uint32_t)variable_network_uint[2]);
         case sizeof(uint32_t):
             return byteorder_bebuftohl(variable_network_uint);
         default:
