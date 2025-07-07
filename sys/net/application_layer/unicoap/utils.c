@@ -73,14 +73,16 @@ bool unicoap_message_payload_is_empty(const unicoap_message_t* message)
     }
 }
 
-ssize_t unicoap_message_payload_copy(const unicoap_message_t* message, uint8_t* buffer, size_t capacity)
+ssize_t unicoap_message_payload_copy(const unicoap_message_t* message, uint8_t* buffer,
+                                     size_t capacity)
 {
     switch (message->payload_representation) {
     case UNICOAP_PAYLOAD_NONCONTIGUOUS:
         return iolist_to_buffer(message->payload_chunks, buffer, capacity);
     case UNICOAP_PAYLOAD_CONTIGUOUS:
         if (message->payload_size > capacity) {
-            UNICOAP_DEBUG("buf too small " _UNICOAP_NEED_HAVE "\n", message->payload_size, capacity);
+            UNICOAP_DEBUG("buf too small " _UNICOAP_NEED_HAVE "\n",
+                          message->payload_size, capacity);
             return -ENOBUFS;
         }
         memcpy(buffer, message->payload, message->payload_size);
@@ -91,14 +93,16 @@ ssize_t unicoap_message_payload_copy(const unicoap_message_t* message, uint8_t* 
     }
 }
 
-ssize_t unicoap_message_payload_make_contiguous(unicoap_message_t* message, uint8_t* buffer, size_t capacity)
+ssize_t unicoap_message_payload_make_contiguous(unicoap_message_t* message, uint8_t* buffer,
+                                                size_t capacity)
 {
     switch (message->payload_representation) {
     case UNICOAP_PAYLOAD_NONCONTIGUOUS: {
         assert(buffer);
         ssize_t res = iolist_to_buffer(message->payload_chunks, buffer, capacity);
         if (res < 0) {
-            UNICOAP_DEBUG("buf too small " _UNICOAP_NEED_HAVE "\n", iolist_size(message->payload_chunks), capacity);
+            UNICOAP_DEBUG("buf too small " _UNICOAP_NEED_HAVE "\n",
+                          iolist_size(message->payload_chunks), capacity);
             return res;
         }
         message->payload_representation = UNICOAP_PAYLOAD_CONTIGUOUS;
@@ -125,7 +129,8 @@ void unicoap_message_payload_append_chunk(unicoap_message_t* message, iolist_t* 
     }
 }
 
-static inline iolist_t* _append_payload_to_iolist(const unicoap_message_t* message, iolist_t* element)
+static inline iolist_t* _append_payload_to_iolist(const unicoap_message_t* message,
+                                                  iolist_t* element)
 {
     switch (message->payload_representation) {
     case UNICOAP_PAYLOAD_NONCONTIGUOUS:
@@ -141,7 +146,8 @@ static inline iolist_t* _append_payload_to_iolist(const unicoap_message_t* messa
 
 static const uint8_t _payload_separator = 0xff;
 
-int unicoap_pdu_buildv_options_and_payload(uint8_t* header, size_t header_size, const unicoap_message_t* message,
+int unicoap_pdu_buildv_options_and_payload(uint8_t* header, size_t header_size,
+                                           const unicoap_message_t* message,
                                            iolist_t iolists[UNICOAP_PDU_IOLIST_COUNT])
 {
     assert(header);
@@ -169,7 +175,8 @@ int unicoap_pdu_buildv_options_and_payload(uint8_t* header, size_t header_size, 
     return 0;
 }
 
-ssize_t unicoap_pdu_build_options_and_payload(uint8_t* pdu, size_t capacity, const unicoap_message_t* message)
+ssize_t unicoap_pdu_build_options_and_payload(uint8_t* pdu, size_t capacity,
+                                              const unicoap_message_t* message)
 {
     assert(pdu);
     assert(message);
