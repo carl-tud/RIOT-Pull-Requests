@@ -192,7 +192,8 @@ static inline uint8_t* unicoap_message_payload_get(unicoap_message_t* message)
  * @param[in] payload Payload buffer
  * @param size Size of @p payload in bytes
  */
-static inline void unicoap_message_payload_set(unicoap_message_t* message, uint8_t* payload, size_t size)
+static inline void unicoap_message_payload_set(unicoap_message_t* message, uint8_t* payload,
+                                               size_t size)
 {
     message->payload_representation = UNICOAP_PAYLOAD_CONTIGUOUS;
     message->payload = payload;
@@ -244,8 +245,8 @@ void unicoap_message_payload_append_chunk(unicoap_message_t* message, iolist_t* 
  *                retrieve (contiguous payload).
  * @returns Payload size in bytes
  *
- * @note This function calls @ref iolist_size if payload is noncontiguous, thus iterates over all iolist elements.
- *       The complexity is $O(n)$.
+ * @note This function calls @ref iolist_size if payload is noncontiguous, thus iterates over all
+ *       iolist elements. The complexity is $O(n)$.
  */
 static inline size_t unicoap_message_payload_get_size(const unicoap_message_t* message)
 {
@@ -277,7 +278,8 @@ bool unicoap_message_payload_is_empty(const unicoap_message_t* message);
  *
  * You can call this method regardless of whether payload is stored contiguously or noncontiguously.
  */
-ssize_t unicoap_message_payload_copy(const unicoap_message_t* message, uint8_t* buffer, size_t capacity);
+ssize_t unicoap_message_payload_copy(const unicoap_message_t* message, uint8_t* buffer,
+                                     size_t capacity);
 
 /**
  * @brief Copies noncontiguous payload into contiguous storage buffer
@@ -289,7 +291,8 @@ ssize_t unicoap_message_payload_copy(const unicoap_message_t* message, uint8_t* 
  *
  * @returns Payload size in bytes, `-ENOBUFS` if given buffer is too small
  */
-ssize_t unicoap_message_payload_make_contiguous(unicoap_message_t* message, uint8_t* buffer, size_t capacity);
+ssize_t unicoap_message_payload_make_contiguous(unicoap_message_t* message, uint8_t* buffer,
+                                                size_t capacity);
 
 /**
  * @brief Properties of a CoAP message
