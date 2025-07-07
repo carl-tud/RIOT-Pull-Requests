@@ -46,10 +46,12 @@
  * - `HEAD`: An encoded option's first 1 to 5 bytes, contains `delta nibble` and `length nibble`,
  *    may contain `delta extended` and `length extended`.
  * - `VALUE`: Value attached to option, succeeding `HEAD`.
- * - `delta nibble`: Either `delta` value, if lower than 13, or sentinel value 13 (`0xe`), or 14 (`0xd`). 15 (`0xf`)  is disallowed.
+ * - `delta nibble`: Either `delta` value, if lower than 13, or sentinel value 13 (`0xe`),
+ *    or 14 (`0xd`). 15 (`0xf`)  is disallowed.
  * - `delta extended`: For `delta nibble` values greater or equal 13, `delta nibble - 13`.
  *    For `delta` values greater or equal `14 + 0xff`, `delta - 14 - 0xff`
- * - `length nibble`: Either `length` value, if lower than 13, or sentinel value 13 (`0xe`), or 14 (`0xd`). 15 (`0xf`)  is disallowed.
+ * - `length nibble`: Either `length` value, if lower than 13, or sentinel value 13 (`0xe`),
+ *    or 14 (`0xd`). 15 (`0xf`)  is disallowed.
  * - `length extended`: For `length nibble` values greater or equal 13, `length nibble - 13`.
  *    For `length` values greater or equal `14 + 0xff`, `length - 14 - 0xff`
  *
@@ -329,14 +331,16 @@ static inline void _write_head_partial(uint8_t** cursor, uint16_t delta, uint8_t
  * @param[in,out] src Start of memory region to move
  * @param[in,out] dest Start of target memory region where to move @p src
  *
- * Moves memory region starting at @p src and ending the last of the currently used buffer to @p dest.
+ * Moves memory region starting at @p src and ending the last of the currently used buffer
+ * to @p dest.
  *
  * @pre @p dest lies within storage buffer capacity
  * @pre @p src lies within storage buffer capacity
  *
  * @warning You must perform runtime bounds checks at the call site.
  */
-static inline void _move_options_in_storage_buffer(unicoap_options_t* options, uint8_t* dest, uint8_t* src)
+static inline
+void _move_options_in_storage_buffer(unicoap_options_t* options, uint8_t* dest, uint8_t* src)
 {
     size_t remainder = options->storage_size - ((uintptr_t)src - (uintptr_t)options->entries->data);
     assert(dest < options->entries->data + options->storage_capacity);
@@ -355,10 +359,11 @@ static inline void _move_options_in_storage_buffer(unicoap_options_t* options, u
  *
  * Positive diff shifts towards higher addresses, negative diff towards lower ones.
  *
- * Use this function to update entries in the lookup array after you have moved options in the storage buffer using
- * @ref _move_options_in_storage_buffer.
+ * Use this function to update entries in the lookup array after you have moved options in the
+ * storage buffer using @ref _move_options_in_storage_buffer.
  */
-static inline void _update_option_entries_with_storage_diff(unicoap_options_t* options, size_t i, ssize_t data_diff)
+static inline void _update_option_entries_with_storage_diff(unicoap_options_t* options,
+                                                            size_t i, ssize_t data_diff)
 {
     for (; i < options->option_count; i += 1) {
         options->entries[i].data += data_diff;
@@ -388,23 +393,28 @@ static inline void _shift_option_entries(unicoap_options_t* options, size_t i, s
 /**
  * @brief Shifts options in storage buffer and updates entries in lookup array accordingly
  *
- * @param[in,out] options Options struct whose storage buffer to mutate, with lookup array ('entries')
+ * @param[in,out] options Options struct whose storage buffer to mutate, with lookup
+ * array ('entries')
+ *
  * @param i Index in lookup array where to begin shifting (equals index of option)
  * @param data_diff Positive or negative difference.
  *
  * Positive diff shifts towards higher addresses, negative diff towards lower ones.
  *
- * This function checks if the storage buffer has enough remaining capacity and is roughly equal to calling
- * @ref _move_options_in_storage_buffer first, followed by @ref _update_option_entries_with_storage_diff.
+ * This function checks if the storage buffer has enough remaining capacity and is roughly equal
+ * to calling @ref _move_options_in_storage_buffer first, followed by
+ * @ref _update_option_entries_with_storage_diff.
  *
- * @remark If @p i is equal to the end index (one index after the last valid index, i.e., the count), this function does not shift as there is
+ * @remark If @p i is equal to the end index
+ * (one index after the last valid index, i.e., the count), this function does not shift as there is
  * nothing to shift at all.
  */
 static int _shift_options(unicoap_options_t* options, size_t i, ssize_t data_diff)
 {
     size_t new_size = options->storage_size + data_diff;
     if (new_size > options->storage_capacity) {
-        OPTIONS_DEBUG("buf too small, " _UNICOAP_NEED_HAVE "\n", new_size, options->storage_capacity);
+        OPTIONS_DEBUG("buf too small, " _UNICOAP_NEED_HAVE "\n", new_size,
+                      options->storage_capacity);
         return -ENOBUFS;
     }
 
@@ -542,8 +552,9 @@ ssize_t unicoap_options_copy_value(const unicoap_options_t* options, unicoap_opt
     return size;
 }
 
-ssize_t unicoap_options_copy_values_joined(const unicoap_options_t* options, unicoap_option_number_t number,
-                                    uint8_t* buffer, size_t capacity, uint8_t separator)
+ssize_t unicoap_options_copy_values_joined(const unicoap_options_t* options,
+                                           unicoap_option_number_t number,
+                                           uint8_t* buffer, size_t capacity, uint8_t separator)
 {
     assert(buffer && capacity > 0);
 
@@ -626,10 +637,11 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
          * If it is smaller, the entire option shrinks. */
         e->size += diff;
 
-        /* If the options grows due to the delta field becoming wider, we extend the option in the leading
-         * direction. Otherwise, we would need to move once to adjust for the delta width and once
-         * again to accommodate the new option. We already created exactly enough space to fit the
-         * new delta width AND the new option by calling _shift_options(options, i, total_diff) above.
+        /* If the options grows due to the delta field becoming wider, we extend the option in the
+         * leading direction. Otherwise, we would need to move once to adjust for the delta width
+         * and once again to accommodate the new option. We already created exactly enough space to
+         * fit the new delta width AND the new option by calling
+         * _shift_options(options, i, total_diff) above.
          *
          * Before:
          * ... value ] [ Nibbles (1B) | extended delta | extended length | value ]
@@ -638,7 +650,7 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
          *    New opt goes here
          *
          * After making space for new option + changed delta of successor option:
-         * ... value ]                    [ Nibbles (1B) | extended delta | extended length | value ]
+         * ... value ]                    [ Nibbles (1B) | extended delta | extended length | value]
          *            ^                   ^
          *            |                   |
          *    New opt goes here        e->data
@@ -851,7 +863,8 @@ ssize_t unicoap_options_get_next_query_by_name(unicoap_options_iterator_t* itera
     char* _name = NULL;
     const char* component = NULL;
     ssize_t res = -1;
-    while ((res = unicoap_options_get_next_by_number(iterator, number, (const uint8_t**)&component)) >= 0) {
+    while ((res =unicoap_options_get_next_by_number(iterator, number,
+                                                    (const uint8_t**)&component)) >= 0) {
         assert(component);
         _name = (char*)component;
 
