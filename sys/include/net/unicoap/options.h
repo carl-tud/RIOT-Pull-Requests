@@ -888,7 +888,8 @@ int unicoap_options_add_uint(unicoap_options_t* options, unicoap_option_number_t
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_uri_host(const unicoap_options_t* options, const char** host)
+static inline ssize_t unicoap_options_get_uri_host(const unicoap_options_t* options,
+                                                   const char** host)
 {
     return unicoap_options_get(options, UNICOAP_OPTION_URI_HOST, (const uint8_t**)host);
 }
@@ -899,7 +900,8 @@ static inline ssize_t unicoap_options_get_uri_host(const unicoap_options_t* opti
  *
  * @param[in,out] options Options to write to
  * @param[in] host `Uri-Host` value as buffer of UTF-8 code units
- * @param length Number of UTF-8 code units in @p host, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p host, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to set option
@@ -907,7 +909,8 @@ static inline ssize_t unicoap_options_get_uri_host(const unicoap_options_t* opti
  * @pre @p host must be at least of size 1 bytes
  * @pre @p host size must not exceed 255 bytes
  */
-static inline ssize_t unicoap_options_set_uri_host(unicoap_options_t* options, char* host, size_t length)
+static inline ssize_t unicoap_options_set_uri_host(unicoap_options_t* options, char* host,
+                                                   size_t length)
 {
     assert(length > 0 && length <= 255);
     return unicoap_options_set(options, UNICOAP_OPTION_URI_HOST, (uint8_t*)host, length);
@@ -987,7 +990,6 @@ static inline ssize_t unicoap_options_set_if_none_match(unicoap_options_t* optio
     else {
         return unicoap_options_set(options, UNICOAP_OPTION_IF_NONE_MATCH, NULL, 0);
     }
-
 }
 /** @} */ /* If-None-Match */
 
@@ -1059,7 +1061,8 @@ static inline int unicoap_options_remove_uri_port(unicoap_options_t* options)
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_content_format(const unicoap_options_t* options, unicoap_content_format_t* format)
+static inline ssize_t unicoap_options_get_content_format(const unicoap_options_t* options,
+                                                         unicoap_content_format_t* format)
 {
     return unicoap_options_get_uint16(options, UNICOAP_OPTION_CONTENT_FORMAT, (uint16_t*)format);
 }
@@ -1074,7 +1077,8 @@ static inline ssize_t unicoap_options_get_content_format(const unicoap_options_t
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to set option
  */
-static inline ssize_t unicoap_options_set_content_format(unicoap_options_t* options, unicoap_content_format_t format)
+static inline ssize_t unicoap_options_set_content_format(unicoap_options_t* options,
+                                                         unicoap_content_format_t format)
 {
     return unicoap_options_set_uint(options, UNICOAP_OPTION_CONTENT_FORMAT, (uint32_t)format);
 }
@@ -1161,7 +1165,8 @@ static inline int unicoap_options_remove_max_age(unicoap_options_t* options)
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_accept(const unicoap_options_t* options, unicoap_content_format_t* format)
+static inline ssize_t unicoap_options_get_accept(const unicoap_options_t* options,
+                                                 unicoap_content_format_t* format)
 {
     return unicoap_options_get_uint16(options, UNICOAP_OPTION_ACCEPT, (uint16_t*)format);
 }
@@ -1176,7 +1181,8 @@ static inline ssize_t unicoap_options_get_accept(const unicoap_options_t* option
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to set option
  */
-static inline ssize_t unicoap_options_set_accept(unicoap_options_t* options, unicoap_content_format_t format)
+static inline ssize_t unicoap_options_set_accept(unicoap_options_t* options,
+                                                 unicoap_content_format_t format)
 {
     return unicoap_options_set_uint(options, UNICOAP_OPTION_ACCEPT, (uint32_t)format);
 }
@@ -1212,7 +1218,8 @@ static inline int unicoap_options_remove_accept(unicoap_options_t* options)
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_proxy_scheme(const unicoap_options_t* options, const char** scheme)
+static inline ssize_t unicoap_options_get_proxy_scheme(const unicoap_options_t* options,
+                                                       const char** scheme)
 {
     return unicoap_options_get(options, UNICOAP_OPTION_PROXY_SCHEME, (const uint8_t**)scheme);
 }
@@ -1223,13 +1230,15 @@ static inline ssize_t unicoap_options_get_proxy_scheme(const unicoap_options_t* 
  *
  * @param[in,out] options Options to write to
  * @param[in] scheme `Proxy-Scheme` value as buffer of UTF-8 code units
- * @param length Number of UTF-8 code units in @p scheme, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p scheme, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to set option
  *
  */
-static inline ssize_t unicoap_options_set_proxy_scheme(unicoap_options_t* options, char* scheme, size_t length)
+static inline ssize_t unicoap_options_set_proxy_scheme(unicoap_options_t* options, char* scheme,
+                                                       size_t length)
 {
     return unicoap_options_set(options, UNICOAP_OPTION_PROXY_SCHEME, (uint8_t*)scheme, length);
 }
@@ -1248,7 +1257,8 @@ static inline ssize_t unicoap_options_set_proxy_scheme(unicoap_options_t* option
  * Uses `strlen` to calculate the number of code units.
  * @see @ref unicoap_options_set_proxy_scheme
  */
-static inline ssize_t unicoap_options_set_proxy_scheme_string(unicoap_options_t* options, char* scheme)
+static inline ssize_t unicoap_options_set_proxy_scheme_string(unicoap_options_t* options,
+                                                              char* scheme)
 {
     return unicoap_options_set_proxy_scheme(options, scheme, strlen(scheme));
 }
@@ -1284,7 +1294,8 @@ static inline int unicoap_options_remove_proxy_scheme(unicoap_options_t* options
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_proxy_uri(const unicoap_options_t* options, const char** uri)
+static inline ssize_t unicoap_options_get_proxy_uri(const unicoap_options_t* options,
+                                                    const char** uri)
 {
     return unicoap_options_get(options, UNICOAP_OPTION_PROXY_URI, (const uint8_t**)uri);
 }
@@ -1295,7 +1306,8 @@ static inline ssize_t unicoap_options_get_proxy_uri(const unicoap_options_t* opt
  *
  * @param[in,out] options Options to write to
  * @param[in] uri `Proxy-Uri` value as buffer of UTF-8 code units
- * @param length Number of UTF-8 code units in @p uri, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p uri, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to set option
@@ -1303,7 +1315,8 @@ static inline ssize_t unicoap_options_get_proxy_uri(const unicoap_options_t* opt
  * @pre @p uri must be at least of size 1 bytes
  * @pre @p uri size must not exceed 1034 bytes
  */
-static inline ssize_t unicoap_options_set_proxy_uri(unicoap_options_t* options, char* uri, size_t length)
+static inline ssize_t unicoap_options_set_proxy_uri(unicoap_options_t* options, char* uri,
+                                                    size_t length)
 {
     assert(length > 0 && length <= 1034);
     return unicoap_options_set(options, UNICOAP_OPTION_PROXY_URI, (uint8_t*)uri, length);
@@ -1361,7 +1374,8 @@ static inline int unicoap_options_remove_proxy_uri(unicoap_options_t* options)
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_no_response(const unicoap_options_t* options, uint8_t* value)
+static inline ssize_t unicoap_options_get_no_response(const unicoap_options_t* options,
+                                                      uint8_t* value)
 {
     return unicoap_options_get_uint8(options, UNICOAP_OPTION_NO_RESPONSE, value);
 }
@@ -1412,7 +1426,8 @@ static inline int unicoap_options_remove_no_response(unicoap_options_t* options)
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_first_if_match(const unicoap_options_t* options, const uint8_t** value)
+static inline ssize_t unicoap_options_get_first_if_match(const unicoap_options_t* options,
+                                                         const uint8_t** value)
 {
     return unicoap_options_get(options, UNICOAP_OPTION_IF_MATCH, value);
 }
@@ -1430,7 +1445,8 @@ static inline ssize_t unicoap_options_get_first_if_match(const unicoap_options_t
  * @retval `-EBADOPT` Option corrupted
  * @retval `-1` if the iterator is finished
  */
-static inline ssize_t unicoap_options_get_next_if_match(unicoap_options_iterator_t* iterator, const uint8_t** value)
+static inline ssize_t unicoap_options_get_next_if_match(unicoap_options_iterator_t* iterator,
+                                                        const uint8_t** value)
 {
     return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_IF_MATCH, value);
 }
@@ -1448,7 +1464,8 @@ static inline ssize_t unicoap_options_get_next_if_match(unicoap_options_iterator
  *
  * @pre @p value size must not exceed 8 bytes
  */
-static inline ssize_t unicoap_options_add_if_match(unicoap_options_t* options, uint8_t* value, size_t size)
+static inline ssize_t unicoap_options_add_if_match(unicoap_options_t* options, uint8_t* value,
+                                                   size_t size)
 {
     assert(size <= 8);
     return unicoap_options_add(options, UNICOAP_OPTION_IF_MATCH, value, size);
@@ -1485,7 +1502,8 @@ static inline int unicoap_options_remove_all_if_match(unicoap_options_t* options
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_first_etag(const unicoap_options_t* options, const uint8_t** etag)
+static inline ssize_t unicoap_options_get_first_etag(const unicoap_options_t* options,
+                                                     const uint8_t** etag)
 {
     return unicoap_options_get(options, UNICOAP_OPTION_ETAG, etag);
 }
@@ -1503,7 +1521,8 @@ static inline ssize_t unicoap_options_get_first_etag(const unicoap_options_t* op
  * @retval `-EBADOPT` Option corrupted
  * @retval `-1` if the iterator is finished
  */
-static inline ssize_t unicoap_options_get_next_etag(unicoap_options_iterator_t* iterator, const uint8_t** etag)
+static inline ssize_t unicoap_options_get_next_etag(unicoap_options_iterator_t* iterator,
+                                                    const uint8_t** etag)
 {
     return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_ETAG, etag);
 }
@@ -1522,7 +1541,8 @@ static inline ssize_t unicoap_options_get_next_etag(unicoap_options_iterator_t* 
  * @pre @p etag must be at least of size 1 bytes
  * @pre @p etag size must not exceed 8 bytes
  */
-static inline ssize_t unicoap_options_add_etag(unicoap_options_t* options, uint8_t* etag, size_t size)
+static inline ssize_t unicoap_options_add_etag(unicoap_options_t* options, uint8_t* etag,
+                                               size_t size)
 {
     assert(size > 0 && size <= 8);
     return unicoap_options_add(options, UNICOAP_OPTION_ETAG, etag, size);
@@ -1559,7 +1579,9 @@ static inline int unicoap_options_remove_etags(unicoap_options_t* options)
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_first_location_path_component(const unicoap_options_t* options, const char** component)
+static inline ssize_t
+unicoap_options_get_first_location_path_component(const unicoap_options_t* options,
+                                                  const char** component)
 {
     return unicoap_options_get(options, UNICOAP_OPTION_LOCATION_PATH, (const uint8_t**)component);
 }
@@ -1577,9 +1599,12 @@ static inline ssize_t unicoap_options_get_first_location_path_component(const un
  * @retval `-EBADOPT` Option corrupted
  * @retval `-1` if the iterator is finished
  */
-static inline ssize_t unicoap_options_get_next_location_path_component(unicoap_options_iterator_t* iterator, const char** component)
+static inline ssize_t
+unicoap_options_get_next_location_path_component(unicoap_options_iterator_t* iterator,
+                                                 const char** component)
 {
-    return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_LOCATION_PATH, (const uint8_t**)component);
+    return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_LOCATION_PATH,
+                                              (const uint8_t**)component);
 }
 
 /**
@@ -1596,17 +1621,20 @@ static inline ssize_t unicoap_options_get_next_location_path_component(unicoap_o
  *
  * @pre @p capacity must be greater than zero
  *
- * This function creates a string from all `Location-Path` options by joining them with the `/` separator.
+ * This function creates a string from all `Location-Path` options
+ * by joining them with the `/` separator.
  * The string will bear the `/` prefix even if there is no `Location-Path` option.
  * The string will not be null-terminated. The resulting string uses UTF-8 encoding.
  */
-static inline ssize_t unicoap_options_copy_location_path(const unicoap_options_t* options, char* path, size_t capacity)
+static inline ssize_t unicoap_options_copy_location_path(const unicoap_options_t* options,
+                                                         char* path, size_t capacity)
 {
     assert(capacity > 0);
     *path = '/';
     path += 1;
     capacity -= 1;
-    int res = unicoap_options_copy_values_joined(options, UNICOAP_OPTION_LOCATION_PATH, (uint8_t*)path, capacity, '/');
+    int res = unicoap_options_copy_values_joined(options, UNICOAP_OPTION_LOCATION_PATH,
+                                                 (uint8_t*)path, capacity, '/');
     return res < 0 ? res : res + 1;
 }
 
@@ -1616,13 +1644,15 @@ static inline ssize_t unicoap_options_copy_location_path(const unicoap_options_t
  *
  * @param[in,out] options Options to write to
  * @param[in] component `Location-Path` value as buffer of UTF-8 code units
- * @param length Number of UTF-8 code units in @p component, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p component, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  *
  */
-static inline ssize_t unicoap_options_add_location_path_component(unicoap_options_t* options, char* component, size_t length)
+static inline ssize_t unicoap_options_add_location_path_component(unicoap_options_t* options,
+                                                                  char* component, size_t length)
 {
     return unicoap_options_add(options, UNICOAP_OPTION_LOCATION_PATH, (uint8_t*)component, length);
 }
@@ -1641,7 +1671,8 @@ static inline ssize_t unicoap_options_add_location_path_component(unicoap_option
  * Uses `strlen` to calculate the number of code units.
  * @see @ref unicoap_options_add_location_path_component
  */
-static inline ssize_t unicoap_options_add_location_path_component_string(unicoap_options_t* options, char* component)
+static inline ssize_t unicoap_options_add_location_path_component_string(unicoap_options_t* options,
+                                                                         char* component)
 {
     return unicoap_options_add_location_path_component(options, component, strlen(component));
 }
@@ -1652,16 +1683,20 @@ static inline ssize_t unicoap_options_add_location_path_component_string(unicoap
  *
  * @param[in,out] options Options to write to
  * @param[in] path as buffer of UTF-8 code units with values separated by `/`
- * @param length Number of UTF-8 code units in @p path, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p path, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  *
- * If the string with the values you want to add _starts_ with the separator, you can still use this function.
+ * If the string with the values you want to add _starts_ with the separator,
+ * you can still use this function.
  */
-static inline ssize_t unicoap_options_add_location_path(unicoap_options_t* options, char* path, size_t length)
+static inline ssize_t unicoap_options_add_location_path(unicoap_options_t* options, char* path,
+                                                        size_t length)
 {
-    return unicoap_options_add_values_joined(options, UNICOAP_OPTION_LOCATION_PATH, (uint8_t*)path, length, '/');
+    return unicoap_options_add_values_joined(options, UNICOAP_OPTION_LOCATION_PATH, (uint8_t*)path,
+                                             length, '/');
 }
 
 /**
@@ -1674,12 +1709,14 @@ static inline ssize_t unicoap_options_add_location_path(unicoap_options_t* optio
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  *
- * If the string with the values you want to add _starts_ with the separator, you can still use this function.
+ * If the string with the values you want to add _starts_ with the separator,
+ * you can still use this function.
  * Uses `strlen` to calculate the number of code units.
  *
  * @see @ref unicoap_options_add_location_path
  */
-static inline ssize_t unicoap_options_add_location_path_string(unicoap_options_t* options, char* path)
+static inline ssize_t unicoap_options_add_location_path_string(unicoap_options_t* options,
+                                                               char* path)
 {
     return unicoap_options_add_location_path(options, path, strlen(path));
 }
@@ -1715,7 +1752,8 @@ static inline int unicoap_options_remove_location_path(unicoap_options_t* option
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_first_uri_path_component(const unicoap_options_t* options, const char** component)
+static inline ssize_t unicoap_options_get_first_uri_path_component(const unicoap_options_t* options,
+                                                                   const char** component)
 {
     return unicoap_options_get(options, UNICOAP_OPTION_URI_PATH, (const uint8_t**)component);
 }
@@ -1733,9 +1771,12 @@ static inline ssize_t unicoap_options_get_first_uri_path_component(const unicoap
  * @retval `-EBADOPT` Option corrupted
  * @retval `-1` if the iterator is finished
  */
-static inline ssize_t unicoap_options_get_next_uri_path_component(unicoap_options_iterator_t* iterator, const char** component)
+static inline ssize_t
+unicoap_options_get_next_uri_path_component(unicoap_options_iterator_t* iterator,
+                                            const char** component)
 {
-    return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_URI_PATH, (const uint8_t**)component);
+    return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_URI_PATH,
+                                              (const uint8_t**)component);
 }
 
 /**
@@ -1752,17 +1793,20 @@ static inline ssize_t unicoap_options_get_next_uri_path_component(unicoap_option
  *
  * @pre @p capacity must be greater than zero
  *
- * This function creates a string from all `Uri-Path` options by joining them with the `/` separator.
+ * This function creates a string from all `Uri-Path` options
+ * by joining them with the `/` separator.
  * The string will bear the `/` prefix even if there is no `Uri-Path` option.
  * The string will not be null-terminated. The resulting string uses UTF-8 encoding.
  */
-static inline ssize_t unicoap_options_copy_uri_path(const unicoap_options_t* options, char* path, size_t capacity)
+static inline ssize_t unicoap_options_copy_uri_path(const unicoap_options_t* options, char* path,
+                                                    size_t capacity)
 {
     assert(capacity > 0);
     *path = '/';
     path += 1;
     capacity -= 1;
-    int res = unicoap_options_copy_values_joined(options, UNICOAP_OPTION_URI_PATH, (uint8_t*)path, capacity, '/');
+    int res = unicoap_options_copy_values_joined(options, UNICOAP_OPTION_URI_PATH, (uint8_t*)path,
+                                                 capacity, '/');
     return res < 0 ? res : res + 1;
 }
 
@@ -1772,14 +1816,16 @@ static inline ssize_t unicoap_options_copy_uri_path(const unicoap_options_t* opt
  *
  * @param[in,out] options Options to write to
  * @param[in] component `Uri-Path` value as buffer of UTF-8 code units
- * @param length Number of UTF-8 code units in @p component, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p component, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  *
  * @pre @p component size must not exceed 255 bytes
  */
-static inline ssize_t unicoap_options_add_uri_path_component(unicoap_options_t* options, char* component, size_t length)
+static inline ssize_t unicoap_options_add_uri_path_component(unicoap_options_t* options,
+                                                             char* component, size_t length)
 {
     assert(length <= 255);
     return unicoap_options_add(options, UNICOAP_OPTION_URI_PATH, (uint8_t*)component, length);
@@ -1800,7 +1846,8 @@ static inline ssize_t unicoap_options_add_uri_path_component(unicoap_options_t* 
  * Uses `strlen` to calculate the number of code units.
  * @see @ref unicoap_options_add_uri_path_component
  */
-static inline ssize_t unicoap_options_add_uri_path_component_string(unicoap_options_t* options, char* component)
+static inline ssize_t unicoap_options_add_uri_path_component_string(unicoap_options_t* options,
+                                                                    char* component)
 {
     return unicoap_options_add_uri_path_component(options, component, strlen(component));
 }
@@ -1811,17 +1858,21 @@ static inline ssize_t unicoap_options_add_uri_path_component_string(unicoap_opti
  *
  * @param[in,out] options Options to write to
  * @param[in] path as buffer of UTF-8 code units with values separated by `/`
- * @param length Number of UTF-8 code units in @p path, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p path, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  * @pre components' size must not exceed 255 bytes
  *
- * If the string with the values you want to add _starts_ with the separator, you can still use this function.
+ * If the string with the values you want to add _starts_ with the separator,
+ * you can still use this function.
  */
-static inline ssize_t unicoap_options_add_uri_path(unicoap_options_t* options, char* path, size_t length)
+static inline ssize_t unicoap_options_add_uri_path(unicoap_options_t* options, char* path,
+                                                   size_t length)
 {
-    return unicoap_options_add_values_joined(options, UNICOAP_OPTION_URI_PATH, (uint8_t*)path, length, '/');
+    return unicoap_options_add_values_joined(options, UNICOAP_OPTION_URI_PATH, (uint8_t*)path,
+                                             length, '/');
 }
 
 /**
@@ -1835,7 +1886,8 @@ static inline ssize_t unicoap_options_add_uri_path(unicoap_options_t* options, c
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  * @pre components size must not exceed 255 bytes
  *
- * If the string with the values you want to add _starts_ with the separator, you can still use this function.
+ * If the string with the values you want to add _starts_ with the separator,
+ * you can still use this function.
  * Uses `strlen` to calculate the number of code units.
  *
  * @see @ref unicoap_options_add_uri_path
@@ -1876,7 +1928,8 @@ static inline int unicoap_options_remove_uri_path(unicoap_options_t* options)
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_first_uri_query(const unicoap_options_t* options, const char** query)
+static inline ssize_t unicoap_options_get_first_uri_query(const unicoap_options_t* options,
+                                                          const char** query)
 {
     return unicoap_options_get(options, UNICOAP_OPTION_URI_QUERY, (const uint8_t**)query);
 }
@@ -1894,26 +1947,33 @@ static inline ssize_t unicoap_options_get_first_uri_query(const unicoap_options_
  * @retval `-EBADOPT` Option corrupted
  * @retval `-1` if the iterator is finished
  */
-static inline ssize_t unicoap_options_get_next_uri_query(unicoap_options_iterator_t* iterator, const char** query)
+static inline ssize_t unicoap_options_get_next_uri_query(unicoap_options_iterator_t* iterator,
+                                                         const char** query)
 {
-    return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_URI_QUERY, (const uint8_t**)query);
+    return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_URI_QUERY,
+                                              (const uint8_t**)query);
 }
 
 /**
- * @brief Gets the next `Uri-Query` option matching the given name, potentially skipping any options in between.
+ * @brief Gets the next `Uri-Query` option matching the given name,
+ * potentially skipping any options in between.
+ *
  * @memberof unicoap_options_t
  *
  * This method splits `Uri-Query` options at the `=` character.
  *
  * @param[in,out] iterator Option iterator
  * @param[in] name Name of query parameter to find
- * @param[out] value Pointer to a UTF-8 string variable that will store the entire option, including the `name=` part
+ * @param[out] value Pointer to a UTF-8 string variable that will store the entire option,
+ * including the `name=` part
  *
  * @returns Size of option value in bytes on success, negative error number otherwise
  * @retval `-EBADOPT` Option corrupted
  * @retval `-1` if the iterator is finished
  */
-static inline ssize_t unicoap_options_get_next_uri_query_by_name(unicoap_options_iterator_t* iterator, const char* name, const char** value)
+static inline ssize_t
+unicoap_options_get_next_uri_query_by_name(unicoap_options_iterator_t* iterator, const char* name,
+                                           const char** value)
 {
     return unicoap_options_get_next_query_by_name(iterator, UNICOAP_OPTION_URI_QUERY, name, value);
 }
@@ -1926,7 +1986,8 @@ static inline ssize_t unicoap_options_get_next_uri_query_by_name(unicoap_options
  *
  * @param[in] options Options to read from
  * @param[in] name Name of query parameter to find
- * @param[out] value Pointer to a UTF-8 string variable that will store the entire option, including the `name=` part
+ * @param[out] value Pointer to a UTF-8 string variable that will store the entire option,
+ * including the `name=` part
  *
  * @returns Size of option value in bytes on success, negative error number otherwise
  * @retval `-EBADOPT` Option corrupted
@@ -1935,7 +1996,9 @@ static inline ssize_t unicoap_options_get_next_uri_query_by_name(unicoap_options
  * @note If you already have an @ref unicoap_options_iterator_t instance allocated somewhere, use
  * it and call @ref unicoap_options_get_next_uri_query_by_name instead.
  */
-static inline ssize_t unicoap_options_get_first_uri_query_by_name(unicoap_options_t* options, const char* name, const char** value)
+static inline ssize_t unicoap_options_get_first_uri_query_by_name(unicoap_options_t* options,
+                                                                  const char* name,
+                                                                  const char** value)
 {
     unicoap_options_iterator_t iterator;
     unicoap_options_iterator_init(&iterator, options);
@@ -1954,12 +2017,15 @@ static inline ssize_t unicoap_options_get_first_uri_query_by_name(unicoap_option
  * @retval `-EBADOPT` Option corrupted
  * @retval `-ENOBUFS` @p queries lacks sufficient capacity to copy values
  *
- * This function creates a string from all `Uri-Query` options by joining them with the `&` separator.
+ * This function creates a string from all `Uri-Query` options
+ * by joining them with the `&` separator.
  * The string will not be null-terminated. The resulting string uses UTF-8 encoding.
  */
-static inline ssize_t unicoap_options_copy_uri_queries(const unicoap_options_t* options, char* queries, size_t capacity)
+static inline ssize_t unicoap_options_copy_uri_queries(const unicoap_options_t* options,
+                                                       char* queries, size_t capacity)
 {
-    return unicoap_options_copy_values_joined(options, UNICOAP_OPTION_URI_QUERY, (uint8_t*)queries, capacity, '&');
+    return unicoap_options_copy_values_joined(options, UNICOAP_OPTION_URI_QUERY, (uint8_t*)queries,
+                                              capacity, '&');
 }
 
 /**
@@ -1968,14 +2034,16 @@ static inline ssize_t unicoap_options_copy_uri_queries(const unicoap_options_t* 
  *
  * @param[in,out] options Options to write to
  * @param[in] query `Uri-Query` value as buffer of UTF-8 code units
- * @param length Number of UTF-8 code units in @p query, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p query, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  *
  * @pre @p query size must not exceed 255 bytes
  */
-static inline ssize_t unicoap_options_add_uri_query(unicoap_options_t* options, char* query, size_t length)
+static inline ssize_t unicoap_options_add_uri_query(unicoap_options_t* options, char* query,
+                                                    size_t length)
 {
     assert(length <= 255);
     return unicoap_options_add(options, UNICOAP_OPTION_URI_QUERY, (uint8_t*)query, length);
@@ -2007,17 +2075,21 @@ static inline ssize_t unicoap_options_add_uri_query_string(unicoap_options_t* op
  *
  * @param[in,out] options Options to write to
  * @param[in] queries as buffer of UTF-8 code units with values separated by `&`
- * @param length Number of UTF-8 code units in @p queries, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p queries, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  * @pre queries' size must not exceed 255 bytes
  *
- * If the string with the values you want to add _starts_ with the separator, you can still use this function.
+ * If the string with the values you want to add _starts_ with the separator,
+ * you can still use this function.
  */
-static inline ssize_t unicoap_options_add_uri_queries(unicoap_options_t* options, char* queries, size_t length)
+static inline ssize_t unicoap_options_add_uri_queries(unicoap_options_t* options, char* queries,
+                                                      size_t length)
 {
-    return unicoap_options_add_values_joined(options, UNICOAP_OPTION_URI_QUERY, (uint8_t*)queries, length, '&');
+    return unicoap_options_add_values_joined(options, UNICOAP_OPTION_URI_QUERY, (uint8_t*)queries,
+                                             length, '&');
 }
 
 /**
@@ -2031,12 +2103,14 @@ static inline ssize_t unicoap_options_add_uri_queries(unicoap_options_t* options
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  * @pre queries size must not exceed 255 bytes
  *
- * If the string with the values you want to add _starts_ with the separator, you can still use this function.
+ * If the string with the values you want to add _starts_ with the separator,
+ * you can still use this function.
  * Uses `strlen` to calculate the number of code units.
  *
  * @see @ref unicoap_options_add_uri_queries
  */
-static inline ssize_t unicoap_options_add_uri_queries_string(unicoap_options_t* options, char* queries)
+static inline ssize_t unicoap_options_add_uri_queries_string(unicoap_options_t* options,
+                                                             char* queries)
 {
     return unicoap_options_add_uri_queries(options, queries, strlen(queries));
 }
@@ -2072,7 +2146,8 @@ static inline int unicoap_options_remove_uri_queries(unicoap_options_t* options)
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_first_location_query(const unicoap_options_t* options, const char** query)
+static inline ssize_t unicoap_options_get_first_location_query(const unicoap_options_t* options,
+                                                               const char** query)
 {
     return unicoap_options_get(options, UNICOAP_OPTION_LOCATION_QUERY, (const uint8_t**)query);
 }
@@ -2090,28 +2165,36 @@ static inline ssize_t unicoap_options_get_first_location_query(const unicoap_opt
  * @retval `-EBADOPT` Option corrupted
  * @retval `-1` if the iterator is finished
  */
-static inline ssize_t unicoap_options_get_next_location_query(unicoap_options_iterator_t* iterator, const char** query)
+static inline ssize_t unicoap_options_get_next_location_query(unicoap_options_iterator_t* iterator,
+                                                              const char** query)
 {
-    return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_LOCATION_QUERY, (const uint8_t**)query);
+    return unicoap_options_get_next_by_number(iterator, UNICOAP_OPTION_LOCATION_QUERY,
+                                              (const uint8_t**)query);
 }
 
 /**
- * @brief Gets the next `Location-Query` option matching the given name, potentially skipping any options in between.
+ * @brief Gets the next `Location-Query` option matching the given name,
+ * potentially skipping any options in between.
+ *
  * @memberof unicoap_options_t
  *
  * This method splits `Location-Query` options at the `=` character.
  *
  * @param[in,out] iterator Option iterator
  * @param[in] name Name of query parameter to find
- * @param[out] value Pointer to a UTF-8 string variable that will store the entire option, including the `name=` part
+ * @param[out] value Pointer to a UTF-8 string variable that will store the entire option,
+ * including the `name=` part
  *
  * @returns Size of option value in bytes on success, negative error number otherwise
  * @retval `-EBADOPT` Option corrupted
  * @retval `-1` if the iterator is finished
  */
-static inline ssize_t unicoap_options_get_next_location_query_by_name(unicoap_options_iterator_t* iterator, const char* name, const char** value)
+static inline ssize_t
+unicoap_options_get_next_location_query_by_name(unicoap_options_iterator_t* iterator,
+                                                const char* name, const char** value)
 {
-    return unicoap_options_get_next_query_by_name(iterator, UNICOAP_OPTION_LOCATION_QUERY, name, value);
+    return unicoap_options_get_next_query_by_name(iterator, UNICOAP_OPTION_LOCATION_QUERY, name,
+                                                  value);
 }
 
 /**
@@ -2122,7 +2205,8 @@ static inline ssize_t unicoap_options_get_next_location_query_by_name(unicoap_op
  *
  * @param[in] options Options to read from
  * @param[in] name Name of query parameter to find
- * @param[out] value Pointer to a UTF-8 string variable that will store the entire option, including the `name=` part
+ * @param[out] value Pointer to a UTF-8 string variable that will store the entire option,
+ * including the `name=` part
  *
  * @returns Size of option value in bytes on success, negative error number otherwise
  * @retval `-EBADOPT` Option corrupted
@@ -2131,7 +2215,9 @@ static inline ssize_t unicoap_options_get_next_location_query_by_name(unicoap_op
  * @note If you already have an @ref unicoap_options_iterator_t instance allocated somewhere, use
  * it and call @ref unicoap_options_get_next_location_query_by_name instead.
  */
-static inline ssize_t unicoap_options_get_first_location_query_by_name(unicoap_options_t* options, const char* name, const char** value)
+static inline ssize_t unicoap_options_get_first_location_query_by_name(unicoap_options_t* options,
+                                                                       const char* name,
+                                                                       const char** value)
 {
     unicoap_options_iterator_t iterator;
     unicoap_options_iterator_init(&iterator, options);
@@ -2150,12 +2236,15 @@ static inline ssize_t unicoap_options_get_first_location_query_by_name(unicoap_o
  * @retval `-EBADOPT` Option corrupted
  * @retval `-ENOBUFS` @p queries lacks sufficient capacity to copy values
  *
- * This function creates a string from all `Location-Query` options by joining them with the `&` separator.
+ * This function creates a string from all `Location-Query` options
+ * by joining them with the `&` separator.
  * The string will not be null-terminated. The resulting string uses UTF-8 encoding.
  */
-static inline ssize_t unicoap_options_copy_location_queries(const unicoap_options_t* options, char* queries, size_t capacity)
+static inline ssize_t unicoap_options_copy_location_queries(const unicoap_options_t* options,
+                                                            char* queries, size_t capacity)
 {
-    return unicoap_options_copy_values_joined(options, UNICOAP_OPTION_LOCATION_QUERY, (uint8_t*)queries, capacity, '&');
+    return unicoap_options_copy_values_joined(options, UNICOAP_OPTION_LOCATION_QUERY,
+                                              (uint8_t*)queries, capacity, '&');
 }
 
 /**
@@ -2164,14 +2253,16 @@ static inline ssize_t unicoap_options_copy_location_queries(const unicoap_option
  *
  * @param[in,out] options Options to write to
  * @param[in] query `Location-Query` value as buffer of UTF-8 code units
- * @param length Number of UTF-8 code units in @p query, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p query, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  *
  * @pre @p query size must not exceed 255 bytes
  */
-static inline ssize_t unicoap_options_add_location_query(unicoap_options_t* options, char* query, size_t length)
+static inline ssize_t unicoap_options_add_location_query(unicoap_options_t* options, char* query,
+                                                         size_t length)
 {
     assert(length <= 255);
     return unicoap_options_add(options, UNICOAP_OPTION_LOCATION_QUERY, (uint8_t*)query, length);
@@ -2192,7 +2283,8 @@ static inline ssize_t unicoap_options_add_location_query(unicoap_options_t* opti
  * Uses `strlen` to calculate the number of code units.
  * @see @ref unicoap_options_add_location_query
  */
-static inline ssize_t unicoap_options_add_location_query_string(unicoap_options_t* options, char* query)
+static inline ssize_t unicoap_options_add_location_query_string(unicoap_options_t* options,
+                                                                char* query)
 {
     return unicoap_options_add_location_query(options, query, strlen(query));
 }
@@ -2203,17 +2295,21 @@ static inline ssize_t unicoap_options_add_location_query_string(unicoap_options_
  *
  * @param[in,out] options Options to write to
  * @param[in] queries as buffer of UTF-8 code units with values separated by `&`
- * @param length Number of UTF-8 code units in @p queries, excluding null-terminator (if present) in bytes
+ * @param length Number of UTF-8 code units in @p queries, excluding null-terminator
+ * (if present) in bytes
  *
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  * @pre queries' size must not exceed 255 bytes
  *
- * If the string with the values you want to add _starts_ with the separator, you can still use this function.
+ * If the string with the values you want to add _starts_ with the separator,
+ * you can still use this function.
  */
-static inline ssize_t unicoap_options_add_location_queries(unicoap_options_t* options, char* queries, size_t length)
+static inline ssize_t unicoap_options_add_location_queries(unicoap_options_t* options,
+                                                           char* queries, size_t length)
 {
-    return unicoap_options_add_values_joined(options, UNICOAP_OPTION_LOCATION_QUERY, (uint8_t*)queries, length, '&');
+    return unicoap_options_add_values_joined(options, UNICOAP_OPTION_LOCATION_QUERY,
+                                             (uint8_t*)queries, length, '&');
 }
 
 /**
@@ -2227,12 +2323,14 @@ static inline ssize_t unicoap_options_add_location_queries(unicoap_options_t* op
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to add options
  * @pre queries size must not exceed 255 bytes
  *
- * If the string with the values you want to add _starts_ with the separator, you can still use this function.
+ * If the string with the values you want to add _starts_ with the separator,
+ * you can still use this function.
  * Uses `strlen` to calculate the number of code units.
  *
  * @see @ref unicoap_options_add_location_queries
  */
-static inline ssize_t unicoap_options_add_location_queries_string(unicoap_options_t* options, char* queries)
+static inline ssize_t unicoap_options_add_location_queries_string(unicoap_options_t* options,
+                                                                  char* queries)
 {
     return unicoap_options_add_location_queries(options, queries, strlen(queries));
 }
@@ -2274,7 +2372,8 @@ static inline int unicoap_options_remove_location_queries(unicoap_options_t* opt
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_observe(const unicoap_options_t* options, uint32_t* observe)
+static inline ssize_t unicoap_options_get_observe(const unicoap_options_t* options,
+                                                  uint32_t* observe)
 {
     return unicoap_options_get_uint24(options, UNICOAP_OPTION_OBSERVE, observe);
 }
@@ -2328,7 +2427,8 @@ int unicoap_options_set_observe_generated(unicoap_options_t* options);
 
 /**
  * @brief Sentinel value for @ref unicoap_block_option_t indicating an uninitialized value
- * @note This constant occupies 4 bytes and does thus not represent a valid `Block1` or `Block2` value.
+ * @note This constant occupies 4 bytes and does thus not represent a valid `Block1` or `Block2`
+ * value.
  */
 #define UNICOAP_BLOCK_OPTION_NONE (0x0f000000)
 
@@ -2386,7 +2486,8 @@ static inline int unicoap_options_set_block(unicoap_options_t* options,
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_block1(const unicoap_options_t* options, unicoap_block_option_t* block)
+static inline ssize_t unicoap_options_get_block1(const unicoap_options_t* options,
+                                                 unicoap_block_option_t* block)
 {
     return unicoap_options_get_block(options, UNICOAP_OPTION_BLOCK1, block);
 }
@@ -2401,7 +2502,8 @@ static inline ssize_t unicoap_options_get_block1(const unicoap_options_t* option
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to set option
  */
-static inline ssize_t unicoap_options_set_block1(unicoap_options_t* options, unicoap_block_option_t block)
+static inline ssize_t unicoap_options_set_block1(unicoap_options_t* options,
+                                                 unicoap_block_option_t block)
 {
     return unicoap_options_set_block(options, UNICOAP_OPTION_BLOCK1, block);
 }
@@ -2430,7 +2532,8 @@ static inline int unicoap_options_remove_block1(unicoap_options_t* options)
  * @retval `-ENOENT` Option not found
  * @retval `-EBADOPT` Option corrupted
  */
-static inline ssize_t unicoap_options_get_block2(const unicoap_options_t* options, unicoap_block_option_t* block)
+static inline ssize_t unicoap_options_get_block2(const unicoap_options_t* options,
+                                                 unicoap_block_option_t* block)
 {
     return unicoap_options_get_block(options, UNICOAP_OPTION_BLOCK2, block);
 }
@@ -2445,7 +2548,8 @@ static inline ssize_t unicoap_options_get_block2(const unicoap_options_t* option
  * @returns Zero on success, negative error number otherwise
  * @retval `-ENOBUFS` Options buffer lacks sufficient capacity to set option
  */
-static inline ssize_t unicoap_options_set_block2(unicoap_options_t* options, unicoap_block_option_t block)
+static inline ssize_t unicoap_options_set_block2(unicoap_options_t* options,
+                                                 unicoap_block_option_t block)
 {
     return unicoap_options_set_block(options, UNICOAP_OPTION_BLOCK2, block);
 }
