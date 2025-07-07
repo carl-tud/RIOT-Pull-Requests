@@ -27,18 +27,22 @@
 #include <sys/types.h>
 
 #ifndef DOXYGEN
-#  define sizeof_string(str)                      (sizeof(str) - 1)
+#  define static_strlen(str) (sizeof(str) - 1)
 
-#  define _TEST_ASSERT_EQUAL_BYTES(a, b, size)    TEST_ASSERT_EQUAL_INT(memcmp((uint8_t*)a, (uint8_t*)b, size), 0)
-#  define _TEST_ASSERT_EQUAL_BYTES_STRING(a, str) _TEST_ASSERT_EQUAL_BYTES(a, str, sizeof_string(str))
+#  define _TEST_ASSERT_EQUAL_BYTES(a, b, size) \
+    TEST_ASSERT_EQUAL_INT(memcmp((uint8_t*)a, (uint8_t*)b, size), 0)
 
-#  define _TEST_ASSERT_EQUAL_POINTER(a, b)        TEST_ASSERT_EQUAL_INT((uintptr_t)a, (uintptr_t)b)
+#  define _TEST_ASSERT_EQUAL_BYTES_STRING(a, str) \
+    _TEST_ASSERT_EQUAL_BYTES(a, str, static_strlen(str))
 
-#  define _BYTES(...)                             ((uint8_t[]){ __VA_ARGS__ })
+#  define _TEST_ASSERT_EQUAL_POINTER(a, b) \
+    TEST_ASSERT_EQUAL_INT((uintptr_t)a, (uintptr_t)b)
 
-#  define _UINT4_MAX                              (12)
-#  define _UINT12_MAX                             (13 + 0xff)
-#  define _UINT20_MAX                             (14 + 0xff + 0xffff)
+#  define _BYTES(...) ((uint8_t[]){ __VA_ARGS__ })
+
+#  define _UINT4_MAX  (12)
+#  define _UINT12_MAX (13 + 0xff)
+#  define _UINT20_MAX (14 + 0xff + 0xffff)
 #endif
 
 #ifdef __cplusplus
