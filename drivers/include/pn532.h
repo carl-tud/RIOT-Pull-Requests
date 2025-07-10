@@ -98,6 +98,86 @@ typedef struct {
 #define PN532_FW_FEATURES(fwver) ((fwver) & 0xff)
 /** @} */
 
+#define PN532_PARAM_NAD_USED              (0x01) 
+#define PN532_PARAM_DID_USED              (0x02) 
+#define PN532_PARAM_AUTOMATIC_ATR_RES     (0x04) 
+#define PN532_PARAM_AUTOMATIC_RATS        (0x10)
+#define PN532_PARAM_ISO14443A_4_PICC      (0x20) 
+#define PN532_PARAM_REMOVE_PRE_POST_AMBLE (0x40)
+
+// Register addresses
+#define PN532_REG_Control_switch_rng 0x6106
+#define PN532_REG_CIU_Mode 0x6301
+#define PN532_REG_CIU_TxMode 0x6302
+#define PN532_REG_CIU_RxMode 0x6303
+#define PN532_REG_CIU_TxControl 0x6304
+#define PN532_REG_CIU_TxAuto 0x6305
+#define PN532_REG_CIU_TxSel 0x6306
+#define PN532_REG_CIU_RxSel 0x6307
+#define PN532_REG_CIU_RxThreshold 0x6308
+#define PN532_REG_CIU_Demod 0x6309
+#define PN532_REG_CIU_FelNFC1 0x630A
+#define PN532_REG_CIU_FelNFC2 0x630B
+#define PN532_REG_CIU_MifNFC 0x630C
+#define PN532_REG_CIU_ManualRCV 0x630D
+#define PN532_REG_CIU_TypeB 0x630E
+// #define PN532_REG_- 0x630F
+// #define PN532_REG_- 0x6310
+#define PN532_REG_CIU_CRCResultMSB 0x6311
+#define PN532_REG_CIU_CRCResultLSB 0x6312
+#define PN532_REG_CIU_GsNOFF 0x6313
+#define PN532_REG_CIU_ModWidth 0x6314
+#define PN532_REG_CIU_TxBitPhase 0x6315
+#define PN532_REG_CIU_RFCfg 0x6316
+#define PN532_REG_CIU_GsNOn 0x6317
+#define PN532_REG_CIU_CWGsP 0x6318
+#define PN532_REG_CIU_ModGsP 0x6319
+#define PN532_REG_CIU_TMode 0x631A
+#define PN532_REG_CIU_TPrescaler 0x631B
+#define PN532_REG_CIU_TReloadVal_hi 0x631C
+#define PN532_REG_CIU_TReloadVal_lo 0x631D
+#define PN532_REG_CIU_TCounterVal_hi 0x631E
+#define PN532_REG_CIU_TCounterVal_lo 0x631F
+// #define PN532_REG_- 0x6320
+#define PN532_REG_CIU_TestSel1 0x6321
+#define PN532_REG_CIU_TestSel2 0x6322
+#define PN532_REG_CIU_TestPinEn 0x6323
+#define PN532_REG_CIU_TestPinValue 0x6324
+#define PN532_REG_CIU_TestBus 0x6325
+#define PN532_REG_CIU_AutoTest 0x6326
+#define PN532_REG_CIU_Version 0x6327
+#define PN532_REG_CIU_AnalogTest 0x6328
+#define PN532_REG_CIU_TestDAC1 0x6329
+#define PN532_REG_CIU_TestDAC2 0x632A
+#define PN532_REG_CIU_TestADC 0x632B
+// #define PN532_REG_- 0x632C
+// #define PN532_REG_- 0x632D
+// #define PN532_REG_- 0x632E
+#define PN532_REG_CIU_RFlevelDet 0x632F
+#define PN532_REG_CIU_SIC_CLK_en 0x6330
+#define PN532_REG_CIU_Command 0x6331
+#define PN532_REG_CIU_CommIEn 0x6332
+#define PN532_REG_CIU_DivIEn 0x6333
+#define PN532_REG_CIU_CommIrq 0x6334
+#define PN532_REG_CIU_DivIrq 0x6335
+#define PN532_REG_CIU_Error 0x6336
+#define PN532_REG_CIU_Status1 0x6337
+#define PN532_REG_CIU_Status2 0x6338
+#define PN532_REG_CIU_FIFOData 0x6339
+#define PN532_REG_CIU_FIFOLevel 0x633A
+#define PN532_REG_CIU_WaterLevel 0x633B
+#define PN532_REG_CIU_Control 0x633C
+#define PN532_REG_CIU_BitFraming 0x633D
+#define PN532_REG_CIU_Coll 0x633E
+
+#define PN532_SFR_P3 0xFFB0
+
+#define PN532_SFR_P3CFGA 0xFFFC
+#define PN532_SFR_P3CFGB 0xFFFD
+#define PN532_SFR_P7CFGA 0xFFF4
+#define PN532_SFR_P7CFGB 0xFFF5
+#define PN532_SFR_P7 0xFFF7
+
 /**
  * @brief   Possible SAM configurations
  */
@@ -262,6 +342,8 @@ int pn532_read_reg(pn532_t *dev, char *out, unsigned addr);
  */
 int pn532_write_reg(pn532_t *dev, unsigned addr, char val);
 
+int pn532_update_reg(pn532_t *dev, unsigned addr, char val, char mask);
+
 /**
  * @brief   Set new settings for the Security Access Module
  *
@@ -390,6 +472,8 @@ void pn532_deselect_passive(pn532_t *dev, unsigned target_id);
  * @param[in] target_id     id of the target to release (0x00 for all)
  */
 void pn532_release_passive(pn532_t *dev, unsigned target_id);
+
+void pn532_set_parameters(pn532_t *dev, uint8_t flags);
 
 int pn532_init_picc(pn532_t *dev, nfc_application_type_t app_type);
 

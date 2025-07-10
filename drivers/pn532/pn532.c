@@ -37,6 +37,7 @@
 #define CMD_WRITE_REG               (0x08)
 #define CMD_READ_GPIO               (0x0c)
 #define CMD_WRITE_GPIO              (0x0E)
+#define CMD_SET_PARAMETERS          (0x12)
 #define CMD_SAM_CONFIG              (0x14)
 #define CMD_RF_CONFIG               (0x32)
 #define CMD_DATA_EXCHANGE           (0x40)
@@ -51,6 +52,8 @@
 
 /* RF register settings */
 #define RF_CONFIG_MAX_RETRIES       (0x05)
+#define RF_CONFIGURATION            (0x32)
+#define RF_REGULATION_TEST          (0x58)
 
 /* Buffer operations */
 #define BUFF_CMD_START              (6)
@@ -78,6 +81,11 @@
 /* SPI bus parameters */
 #define SPI_MODE                    (SPI_MODE_0)
 #define SPI_CLK                     (SPI_CLK_1MHZ)
+
+/* PN53X_REG_CIU_TxAuto */
+#define SYMBOL_FORCE_100_ASK      (0x40)
+#define SYMBOL_AUTO_WAKE_UP       (0x20)
+#define SYMBOL_INITIAL_RF_ON      (0x04)
 
 /* Length for passive listings */
 #define LIST_PASSIVE_LEN_14443(num)   (num * 20)
@@ -431,6 +439,20 @@ int pn532_write_reg(pn532_t *dev, unsigned addr, char val)
     return send_rcv(dev, buff, 3, 0);
 }
 
+int pn532_update_reg(pn532_t *dev, unsigned addr, char val, char mask)
+{
+    char reg_val;
+    int ret = pn532_read_reg(dev, &reg_val, addr);
+    if (ret < 0) {
+        return ret;
+    }
+
+    reg_val &= ~mask;
+    reg_val |= (val & mask);
+
+    return pn532_write_reg(dev, addr, reg_val);
+}
+
 static int _rf_configure(pn532_t *dev, uint8_t *buff, unsigned cfg_item, char *config,
                          unsigned cfg_len)
 {
@@ -711,25 +733,24 @@ int pn532_iso14443a_4_read(pn532_t *dev, char *odata, nfc_iso14443a_t *card,
     return ret;
 }
 
+static int change_rf_field(pn532_t *dev, bool on) {
+    uint8_t command[] = {RF_CONFIGURATION, 0x01, (on) ? 0x01 : 0x00};
+    return send_rcv(dev, command, 2, 0);
+}
+
 static int _init_as_target(pn532_t *dev, uint8_t mode,
     uint8_t *mifare_params, uint8_t *felica_params, uint8_t *nfcid3t) {
+    pn532_set_parameters(dev, PN532_PARAM_ISO14443A_4_PICC);
+    change_rf_field(dev, false);    
+    int error;
+    if ((error = pn532_update_reg(dev, PN532_REG_CIU_TxAuto, SYMBOL_INITIAL_RF_ON,  0x04)) < 0)
+        return error;
+
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
     buff[BUFF_CMD_START] = CMD_INIT_AS_TARGET;
 
     /* target mode */
     buff[BUFF_DATA_START] = mode;
-
-    // /* Mifare params have a length of 6 */
-    // uint8_t* mifare_params = &buff[BUFF_DATA_START+1];
-
-    // /* FeliCa params have a length of 18 */
-    // uint8_t* felica_params = mifare_params + 6;
-
-    // /* NFCID3t has a length of 10 */
-    // uint8_t* nfcid3t = felica_params + 18;
-
-    // uint8_t* len_gt = nfcid3t + 10;
-    // uint8_t* len_tk = len_gt + 1;
     
     if (mifare_params != NULL) {
         memcpy(&buff[BUFF_DATA_START + 1], mifare_params, 6);
@@ -737,15 +758,26 @@ static int _init_as_target(pn532_t *dev, uint8_t mode,
         (void)felica_params;
         (void)nfcid3t;
 
-        buff[BUFF_DATA_START + 7] = 0x00; /* len GT */
-        buff[BUFF_DATA_START + 8] = 0x00; /* len TK */
+        memset(&buff[BUFF_DATA_START + 1 + 6], 0, 18 + 10 + 2);
     } else {
         DEBUG("pn532: not implented\n");
         assert(0);
     }
 
+    DEBUG("pn532: init as target mode %i\n", mode);
     /* recv len depends on the technology used */
-    return send_rcv(dev, buff, 37, 30);
+    return send_rcv(dev, buff, 37, 1);
+}
+
+void pn532_set_parameters(pn532_t *dev, uint8_t flags) {
+    assert(dev != NULL);
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+
+    buff[BUFF_CMD_START] = CMD_SET_PARAMETERS;
+    buff[BUFF_DATA_START] = flags;
+
+    send_rcv(dev, buff, 1, 1);
 }
 
 int pn532_init_picc(pn532_t *dev, nfc_application_type_t app_type) {
@@ -757,11 +789,11 @@ int pn532_init_picc(pn532_t *dev, nfc_application_type_t app_type) {
     }
 
     if (app_type == NFC_APPLICATION_TYPE_T2T) {
-        DEBUG("pn532: init picc as T2T\n");
+        DEBUG("pn532: init target as T2T\n");
         uint8_t mifare_params[] = {
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x20
+            0x04, 0x00, 0x0A, 0x0B, 0x0C, 0x20
         }; /* SENS_RES, NFCID1t, SEL_RES */
-        return _init_as_target(dev, TARGET_MODE_PICC, mifare_params, NULL, NULL);
+        return _init_as_target(dev, TARGET_MODE_PASSIVE, mifare_params, NULL, NULL);
     }
 
     return -1;
