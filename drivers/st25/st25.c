@@ -1,5 +1,7 @@
 #include "st25.h"
 #include "periph/spi.h"
+#include "ztimer.h"
+#include "memory.h"
 
 #define CMD_SET_DEFAULT             (0xC0)
 #define CMD_STOP                    (0xC2)  
@@ -45,6 +47,16 @@
 /* Buffer length for SPI transfers */
 #define BUFFER_LENGTH (128)  
 
+
+static void wait_ready(pn532_t *dev)
+{
+    mutex_lock(&dev->trap);
+}
+
+static void _nfc_event(void *dev)
+{
+    mutex_unlock(&((pn532_t *)dev)->trap);
+}
 
 static int _write(const st25_t *dev, const uint8_t *buff, unsigned len)
 {
@@ -139,15 +151,38 @@ static int _read_fifo(const st25_t *dev, uint8_t *data, unsigned len)
 static int _send_cmd(const st25_t *dev, uint8_t cmd)
 {
     assert(dev != NULL);
-    assert(data != NULL);
 
-    return _write(dev, cmd, 1);
+    return _write(dev, &cmd, 1);
 }
 
-int st25_poll() {
+int st25_poll_nfc_a(st25_t *dev) {
     _send_cmd(dev, CMD_STOP);
     _send_cmd(dev, CMD_RESET_RX_GAIN);
 
-    /* Configure timers */
-    _send_cmd();
+    /* TODO: Configure timers */
+    _send_cmd(dev, CMD_TRANSMIT_REQA);
+
+    
+    return 0;
+}
+
+
+int st25_init(st25_t *dev, const st25_params_t *params)
+{
+    assert(dev != NULL);
+    assert(params != NULL);
+
+    dev->conf = params;
+
+    /* Initialize SPI */
+
+    /* we handle the CS line manually... */
+    gpio_init(dev->conf->nss, GPIO_OUT);
+    gpio_set(dev->conf->nss);
+
+    gpio_init_int(dev->conf->irq, GPIO_IN_PU, GPIO_FALLING,
+                  _nfc_event, (void *)dev);
+
+
+    return 0;
 }
