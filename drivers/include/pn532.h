@@ -475,7 +475,7 @@ void pn532_release_passive(pn532_t *dev, unsigned target_id);
 
 void pn532_set_parameters(pn532_t *dev, uint8_t flags);
 
-int pn532_init_picc(pn532_t *dev, nfc_application_type_t app_type);
+int pn532_init_tag(pn532_t *dev, nfc_application_type_t app_type);
 
 #ifdef __cplusplus
 }

@@ -738,15 +738,49 @@ static int change_rf_field(pn532_t *dev, bool on) {
     return send_rcv(dev, command, 2, 0);
 }
 
+static void _load_fifo_data(pn532_t *dev, uint8_t *data, unsigned len) {
+    /* clear FIFO data */
+    pn532_write_reg(dev, PN532_REG_FIFO_LEVEL, 0x80);
+
+    for (unsigned i = 0; i < len; i++) {
+        pn532_write_reg(dev, PN532_REG_CIU_FIFOData, data)
+    }
+}
+
+static int _init_as_target_nfc_a(pn532_t *dev, uint8_t *mifare_params) {
+    /* TODO: manual writing to registers, inspired by nfcpy's implementation of NFC-F
+    functionality */
+    pn532_write_reg(dev, PN532_REG_CIU_COMMAND, 0x00);
+
+    /* load the mifare params into FIFO */
+    _load_fifo_data(dev, mifare_params, 6);
+
+    pn532_write_reg(dev, PN532_REG_CIU_Control. 0x00);
+    pn532_write_reg(dev, PN532_REG_CIU_Mode, 0b00111111);
+    pn532_write_reg(dev, PN532_REG_CIU_FelNFC2, 0b10000000);
+    pn532_write_reg(dev, PN532_REG_CIU_TxMode, 0b10000010);
+    pn532_write_reg(dev, PN532_REG_CIU_RxMode, 0b10001010);
+    pn532_write_reg(dev, PN532_REG_CIU_TxControl, 0b10000000);
+    pn532_write_reg(dev, PN532_REG_CIU_TxAuto, 0b00100000);
+    pn532_write_reg(dev, PN532_REG_CIU_Demod, 0xb01100001);
+    pn532_write_reg(dev, PN532_REG_CIU_CommIRq, 0b01111111);
+    pn532_write_reg(dev, PN532_REG_CIU_DivIRq, 0b01111111);
+    pn532_write_reg(dev, PN532_REG_CIU_Command, 0x00001101);
+
+    
+}
+
 static int _init_as_target(pn532_t *dev, uint8_t mode,
     uint8_t *mifare_params, uint8_t *felica_params, uint8_t *nfcid3t) {
-    pn532_set_parameters(dev, PN532_PARAM_ISO14443A_4_PICC);
-    change_rf_field(dev, false);    
-    int error;
-    if ((error = pn532_update_reg(dev, PN532_REG_CIU_TxAuto, SYMBOL_INITIAL_RF_ON,  0x04)) < 0)
-        return error;
+    // pn532_set_parameters(dev, PN532_PARAM_ISO14443A_4_PICC);
+    // change_rf_field(dev, false);    
 
-    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+    pn532_write_reg(dev, PN532_REG_CIU_Mode, 0b00111111);
+    /* int error;*/
+/*     if ((error = pn532_update_reg(dev, PN532_REG_CIU_TxAuto, SYMBOL_INITIAL_RF_ON,  0x04)) < 0)
+        return error; */
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN] = {0};
     buff[BUFF_CMD_START] = CMD_INIT_AS_TARGET;
 
     /* target mode */
@@ -754,19 +788,19 @@ static int _init_as_target(pn532_t *dev, uint8_t mode,
     
     if (mifare_params != NULL) {
         memcpy(&buff[BUFF_DATA_START + 1], mifare_params, 6);
+    }
 
-        (void)felica_params;
-        (void)nfcid3t;
+    if (felica_params != NULL) {
+        memcpy(&buff[BUFF_DATA_START + 1 + 6], felica_params, 18);
+    }
 
-        memset(&buff[BUFF_DATA_START + 1 + 6], 0, 18 + 10 + 2);
-    } else {
-        DEBUG("pn532: not implented\n");
-        assert(0);
+    if (nfcid3t != NULL) {
+        memcpy(&buff[BUFF_DATA_START + 1 + 6 + 18], nfcid3t, 10);
     }
 
     DEBUG("pn532: init as target mode %i\n", mode);
     /* recv len depends on the technology used */
-    return send_rcv(dev, buff, 37, 1);
+    return send_rcv(dev, buff, 1 + 6 + 18 + 10 + 2, 10);
 }
 
 void pn532_set_parameters(pn532_t *dev, uint8_t flags) {
@@ -780,7 +814,7 @@ void pn532_set_parameters(pn532_t *dev, uint8_t flags) {
     send_rcv(dev, buff, 1, 1);
 }
 
-int pn532_init_picc(pn532_t *dev, nfc_application_type_t app_type) {
+int pn532_init_tag(pn532_t *dev, nfc_application_type_t app_type) {
     assert(dev != NULL);
 
     if (dev->mode != PN532_SPI) {
@@ -791,12 +825,18 @@ int pn532_init_picc(pn532_t *dev, nfc_application_type_t app_type) {
     if (app_type == NFC_APPLICATION_TYPE_T2T) {
         DEBUG("pn532: init target as T2T\n");
         uint8_t mifare_params[] = {
-            0x04, 0x00, 0x0A, 0x0B, 0x0C, 0x20
+            0x01, 0x01, 0x0A, 0x0B, 0x0C, 0x00
         }; /* SENS_RES, NFCID1t, SEL_RES */
-        return _init_as_target(dev, TARGET_MODE_PASSIVE, mifare_params, NULL, NULL);
+        return _init_as_target(dev, TARGET_MODE_PASSIVE | TARGET_MODE_PICC, mifare_params, NULL, NULL);
+    } else if (app_type == NFC_APPLICATION_TYPE_T3T) {
+        DEBUG("pn532: init target as T3T\n");
+        uint8_t felica_params[] = {
+            0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, /* NFCID2t */
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, /* PAD */
+            0xFF, 0xFF /* System Code */
+        };
+        return _init_as_target(dev, TARGET_MODE_PASSIVE, NULL, felica_params, NULL);
     }
 
     return -1;
 }
-
-
