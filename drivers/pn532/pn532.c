@@ -738,34 +738,64 @@ static int change_rf_field(pn532_t *dev, bool on) {
     return send_rcv(dev, command, 2, 0);
 }
 
-static void _load_fifo_data(pn532_t *dev, uint8_t *data, unsigned len) {
+static void _load_fifo_data(pn532_t *dev, const uint8_t *data, unsigned len) {
     /* clear FIFO data */
-    pn532_write_reg(dev, PN532_REG_FIFO_LEVEL, 0x80);
+    pn532_write_reg(dev, PN532_REG_CIU_FIFOLevel, 0x80);
 
     for (unsigned i = 0; i < len; i++) {
-        pn532_write_reg(dev, PN532_REG_CIU_FIFOData, data)
+        pn532_write_reg(dev, PN532_REG_CIU_FIFOData, data[i]);
+    }
+}
+
+static void _read_fifo_data(pn532_t *dev, char *data, unsigned len) {
+    for (unsigned i = 0; i < len; i++) {
+        pn532_read_reg(dev, &(data[i]), PN532_REG_CIU_FIFOData);
     }
 }
 
 static int _init_as_target_nfc_a(pn532_t *dev, uint8_t *mifare_params) {
     /* TODO: manual writing to registers, inspired by nfcpy's implementation of NFC-F
     functionality */
-    pn532_write_reg(dev, PN532_REG_CIU_COMMAND, 0x00);
+    pn532_write_reg(dev, PN532_REG_CIU_Command, 0x00);
 
     /* load the mifare params into FIFO */
     _load_fifo_data(dev, mifare_params, 6);
 
-    pn532_write_reg(dev, PN532_REG_CIU_Control. 0x00);
+    pn532_write_reg(dev, PN532_REG_CIU_Control, 0b00000000);
     pn532_write_reg(dev, PN532_REG_CIU_Mode, 0b00111111);
     pn532_write_reg(dev, PN532_REG_CIU_FelNFC2, 0b10000000);
-    pn532_write_reg(dev, PN532_REG_CIU_TxMode, 0b10000010);
-    pn532_write_reg(dev, PN532_REG_CIU_RxMode, 0b10001010);
+    pn532_write_reg(dev, PN532_REG_CIU_TxMode, 0b10000000);
+    pn532_write_reg(dev, PN532_REG_CIU_RxMode, 0b10001000);
     pn532_write_reg(dev, PN532_REG_CIU_TxControl, 0b10000000);
     pn532_write_reg(dev, PN532_REG_CIU_TxAuto, 0b00100000);
-    pn532_write_reg(dev, PN532_REG_CIU_Demod, 0xb01100001);
-    pn532_write_reg(dev, PN532_REG_CIU_CommIRq, 0b01111111);
-    pn532_write_reg(dev, PN532_REG_CIU_DivIRq, 0b01111111);
-    pn532_write_reg(dev, PN532_REG_CIU_Command, 0x00001101);
+    pn532_write_reg(dev, PN532_REG_CIU_Demod, 0b01100001);
+    pn532_write_reg(dev, PN532_REG_CIU_CommIrq, 0b01111111);
+    pn532_write_reg(dev, PN532_REG_CIU_DivIrq, 0b01111111);
+    pn532_write_reg(dev, PN532_REG_CIU_Command, 0b00001101);
+
+
+    char commirq;
+    while (true) {
+        pn532_read_reg(dev, &commirq, PN532_REG_CIU_CommIrq);
+        if ((commirq & 0b00110000) == 0b00110000) {
+            pn532_write_reg(dev, PN532_REG_CIU_CommIrq, 0b00110000); /* clear IRQ */
+            char fifo_size;
+            pn532_read_reg(dev, &fifo_size, PN532_REG_CIU_FIFOLevel);
+
+            char fifo_data[128] = {0};
+            _read_fifo_data(dev, fifo_data, fifo_size);
+
+            if (fifo_size == 0) {
+                return -1; /* no data in FIFO */
+            }
+
+            if (fifo_size == fifo_data[0]) {
+                return 0;
+            }
+            pn532_write_reg(dev, PN532_REG_CIU_Command, 0b00001101); /* restart command */
+        }
+        
+    }
 
     
 }
@@ -827,7 +857,7 @@ int pn532_init_tag(pn532_t *dev, nfc_application_type_t app_type) {
         uint8_t mifare_params[] = {
             0x01, 0x01, 0x0A, 0x0B, 0x0C, 0x00
         }; /* SENS_RES, NFCID1t, SEL_RES */
-        return _init_as_target(dev, TARGET_MODE_PASSIVE | TARGET_MODE_PICC, mifare_params, NULL, NULL);
+        return _init_as_target_nfc_a(dev, mifare_params);
     } else if (app_type == NFC_APPLICATION_TYPE_T3T) {
         DEBUG("pn532: init target as T3T\n");
         uint8_t felica_params[] = {
