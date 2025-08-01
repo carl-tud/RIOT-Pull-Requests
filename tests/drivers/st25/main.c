@@ -2,13 +2,15 @@
 #include "board.h"
 #include <stdio.h>
 #include "log.h"
+#include "ztimer.h"
 
 int main(void) {
     puts("Starting ST25 NFC driver test...\n");
     st25_params_t params = {
-        .spi = SPI_DEV(0),
-        .nss = GPIO_PIN(0, 0),
-        .irq = GPIO_PIN(0, 1)
+        .spi = SPI_DEV(0), // Use SPI device 0
+        .nss = GPIO_PIN(1, 12),
+        .irq = GPIO_PIN(1, 11),
+        .mode = ST25_SPI
     };
 
     st25_t device;
@@ -19,8 +21,7 @@ int main(void) {
         return ret;
     }
 
-    ret = st25_poll_nfc_a(&device);
-    while (true) {}
+    st25_poll_nfc_a(&device);
 
     return 0;
 }
