@@ -81,9 +81,9 @@
 #define REG_RX_CONF2                              0x0CU    /*!< RW Receiver Configuration Register 2                 */
 #define REG_RX_CONF3                              0x0DU    /*!< RW Receiver Configuration Register 3                 */
 #define REG_RX_CONF4                              0x0EU    /*!< RW Receiver Configuration Register 4                 */
-#define REG_P2P_RX_CONF        (SPACE_B|0x0BU)   /*!< RW P2P Receiver Configuration Register 1             */
-#define REG_CORR_CONF1         (SPACE_B|0x0CU)   /*!< RW Correlator configuration register 1               */
-#define REG_CORR_CONF2         (SPACE_B|0x0DU)   /*!< RW Correlator configuration register 2               */
+#define REG_P2P_RX_CONF                  (SPACE_B|0x0BU)   /*!< RW P2P Receiver Configuration Register 1             */
+#define REG_CORR_CONF1                   (SPACE_B|0x0CU)   /*!< RW Correlator configuration register 1               */
+#define REG_CORR_CONF2                   (SPACE_B|0x0DU)   /*!< RW Correlator configuration register 2               */
 
 /* Timer definition registers */
 #define REG_MASK_RX_TIMER                         0x0FU    /*!< RW Mask Receive Timer Register                       */
@@ -93,8 +93,8 @@
 #define REG_GPT1                                  0x13U    /*!< RW General Purpose Timer Register 1                  */
 #define REG_GPT2                                  0x14U    /*!< RW General Purpose Timer Register 2                  */
 #define REG_PPON2                                 0x15U    /*!< RW PPON2 Field waiting Timer Register                */
-#define REG_SQUELCH_TIMER      (SPACE_B|0x0FU)   /*!< RW Squelch timeout Register                          */
-#define REG_FIELD_ON_GT        (SPACE_B|0x15U)   /*!< RW NFC Field on guard time                           */
+#define REG_SQUELCH_TIMER                (SPACE_B|0x0FU)   /*!< RW Squelch timeout Register                          */
+#define REG_FIELD_ON_GT                  (SPACE_B|0x15U)   /*!< RW NFC Field on guard time                           */
 
 /* Interrupt and associated reporting registers */
 #define REG_IRQ_MASK_MAIN                         0x16U    /*!< RW Mask Main Interrupt Register                      */
@@ -1205,9 +1205,9 @@ static int _write(const st25_t *dev, uint8_t *buff, unsigned len)
     assert(buff != NULL);
     assert(len > 0);
 
-    if (dev->mode == ST25_SPI) {
+    if (dev->conf->mode == ST25_SPI) {
 
-        spi_acquire(dev->conf->spi, dev->conf->nss, SPI_MODE_1, SPI_CLK_5MHZ);
+        spi_acquire(dev->conf->spi, dev->conf->nss, SPI_MODE_1, SPI_CLK_1MHZ);
         gpio_clear(dev->conf->nss);
 
         spi_transfer_bytes(dev->conf->spi, SPI_CS_UNDEF, true, buff, NULL, len);
@@ -1236,8 +1236,8 @@ static int _write_and_read(const st25_t *dev, uint8_t *read, unsigned len,
     assert(read != NULL);
     assert(len > 0);
 
-    if (dev->mode == ST25_SPI) {
-        spi_acquire(dev->conf->spi, dev->conf->nss, SPI_MODE_1, SPI_CLK_5MHZ);
+    if (dev->conf->mode == ST25_SPI) {
+        spi_acquire(dev->conf->spi, dev->conf->nss, SPI_MODE_1, SPI_CLK_1MHZ);
         gpio_clear(dev->conf->nss);
 
         spi_transfer_bytes(dev->conf->spi, SPI_CS_UNDEF, true,
@@ -1309,11 +1309,14 @@ static int _read_reg(const st25_t *dev, uint8_t reg, uint8_t *data)
     assert(data != NULL);
     assert(reg <= 0x3F);
 
+    *data = 0;
+
     uint8_t buff[BUFFER_LENGTH];
     uint8_t to_send = 0;
     if ((reg & SPACE_B) != 0U) {
         /* we are in register space B */
         buff[0] = CMD_REGISTER_SPACE_B_ACCESS;
+        reg = reg & ~SPACE_B; // clear the SPACE_B bit
         buff[1] = SPI_MODE_REGISTER_READ | reg;
         to_send = 2;
     } else {
@@ -1388,6 +1391,11 @@ static int _read_fifo(const st25_t *dev, uint8_t *data, uint16_t *len)
         return -1;
     }
 
+    if (*len > BUFFER_LENGTH - 1) {
+        DEBUG("st25: FIFO size %u is too large, max is %u\n", *len, BUFFER_LENGTH - 1);
+        return -1;
+    }
+
     uint8_t operation_mode = SPI_MODE_FIFO_READ;
 
     /* read the bytes from the FIFO */
@@ -1443,7 +1451,7 @@ static void _nfc_event(void *dev)
     mutex_unlock(&(((st25_t *)dev)->trap));
 }
 
-/* waits until any one of the IRQs defined by mask is triggered */
+/* waits until any one of the IRQs defined by mask are triggered */
 static void wait_for(st25_t *dev, uint32_t mask) {
     assert(dev != NULL);
 
@@ -1452,8 +1460,10 @@ static void wait_for(st25_t *dev, uint32_t mask) {
         mutex_lock(&(dev->trap));
         DEBUG("st25: NFC event triggered\n");
         _read_interrupts(dev, &(((st25_t *)dev)->irq_status));
-        DEBUG("st25 irq: %lu\n", dev->irq_status);
+        DEBUG("st25 irq: %08" PRIx32 "\n", dev->irq_status);
     } while((dev->irq_status & mask) == 0);
+
+    DEBUG("st25: Continuing...\n");
 }
 
 static int _write_test_reg(st25_t *dev, uint8_t byte) {
@@ -1486,12 +1496,35 @@ static void _set_general_purpose_timer(st25_t *dev, uint16_t time) {
     _write_reg(dev, REG_GPT2, reg_content);
 }
 
+static void _busy_wait_for(st25_t *dev, uint32_t mask) {
+    assert(dev != NULL);
+
+    DEBUG("st25: Busy waiting for mask: %lu\n", mask);
+    while(true) {
+        uint32_t irq_status = 0;
+        _read_interrupts(dev, &irq_status);
+
+        if ((irq_status & mask) != 0) {
+            DEBUG("st25: Mask %lu triggered\n", mask);
+            break;
+        }
+        ztimer_sleep(ZTIMER_USEC, 100); /* sleep for 0.1 ms */
+    }
+}
+
 static void _send_sens_req(st25_t *dev) {
+    uint8_t reg_content = 0;
     // uint8_t sens_req = 0x26;
 
     // _disable_all_interrupts(dev);
 
-    // _write_interrupt_mask(dev, ~(IRQ_MASK_TXE | IRQ_MASK_RXE | IRQ_MASK_RXS | IRQ_MASK_COL));
+    _write_interrupt_mask(dev, ~(IRQ_MASK_TXE | IRQ_MASK_RXE | IRQ_MASK_RXS | IRQ_MASK_COL));
+
+    reg_content = OPERATION_EN | OPERATION_RX_EN | OPERATION_TX_EN;
+    _write_reg(dev, REG_OP_CONTROL, reg_content);
+
+    _read_reg(dev, REG_OP_CONTROL, &reg_content);
+    assert((reg_content & OPERATION_EN) != 0);
 
     /* mode configuratin */
     _write_reg(dev, REG_MODE, REG_MODE_om_iso14443a);
@@ -1500,49 +1533,56 @@ static void _send_sens_req(st25_t *dev) {
     _send_cmd(dev, CMD_STOP);
     _send_cmd(dev, CMD_RESET_RX_GAIN);
 
-
-
-    uint8_t reg_content = OPERATION_TX_EN;
-    _write_reg(dev, REG_OP_CONTROL, reg_content);
-
-    /* check register */
-    _read_reg(dev, REG_OP_CONTROL, &reg_content);
-    assert((reg_content & OPERATION_TX_EN) != 0);
-
     reg_content = REG_ISO14443A_NFC_no_tx_par | REG_ISO14443A_NFC_no_rx_par | 
     REG_ISO14443A_NFC_nfc_f0;
     _write_reg(dev, REG_ISO14443A_NFC, reg_content);
 
     _write_reg(dev, REG_AUX, REG_AUX_no_crc_rx);
 
-
-
-
     // _enable_all_interrupts(dev);
 
-    _write_interrupt_mask(dev, ~(IRQ_MASK_GPE)); /* disable all but */
+    // _write_interrupt_mask(dev, ~(IRQ_MASK_GPE)); /* disable all but */
     _write_reg(dev, REG_NUM_TX_BYTES2, 0x00);
 
 
-    _set_general_purpose_timer(dev, 0xFFFF);
-
-    /* _send_cmd(dev, CMD_START_GENERAL_PURPOSE_TIMER);
-    wait_for(dev, IRQ_MASK_GPE); */
+    // _set_general_purpose_timer(dev, 0xFFFA);
 
     /* check if the timer is on */
-    _read_reg(dev, REG_NFCIP1_BIT_RATE, &reg_content);
     // assert((reg_content & REG_NFCIP1_BIT_RATE_gpt_on) != 0);
+
+    //_busy_wait_for(dev, IRQ_MASK_TXE | IRQ_MASK_RXE | IRQ_MASK_RXS | IRQ_MASK_COL | IRQ_MASK_GPE);
+
 
     DEBUG("st25: Sending SENS_REQ\n");
     _send_cmd(dev, CMD_TRANSMIT_REQA);
-
     wait_for(dev, IRQ_MASK_TXE);
 
+    ztimer_sleep(ZTIMER_USEC, 10);
+
+
     DEBUG("st25: SENS_REQ sent, waiting for response...\n");
+
+    /* TODO: we only get 4 bits here. why? */
+    uint8_t fifo_buffer[BUFFER_LENGTH] = {0};
+    uint16_t len = 0;
+    _read_fifo(dev, fifo_buffer, &len);
+}
+
+static void _configure_device(st25_t *dev) {
+    assert(dev != NULL);
+
+    _send_cmd(dev, CMD_SET_DEFAULT);
+
+    // set to 3V
+    // _write_reg(dev, REG_IO_CONF2, REG_IO_CONF2_sup3V_3V);
 }
 
 int st25_poll_nfc_a(st25_t *dev) {
     DEBUG("st25: Polling for NFC-A...\n");
+
+    _configure_device(dev);
+
+    _enable_all_interrupts(dev);
 
 /*     uint8_t reg_content = 0;
     _read_reg(dev, 0x0D, &reg_content);
@@ -1553,8 +1593,6 @@ int st25_poll_nfc_a(st25_t *dev) {
 /*     uint8_t operation_control = 0;
     _read_reg(dev, REG_OPERATION_CONTROL, &operation_control);
     DEBUG("st25: Operation Control Register: 0x%02X\n", operation_control); */
-
-    _send_cmd(dev, CMD_NFC_INITIAL_FIELD_ON);
 
     _send_sens_req(dev);
 
@@ -1572,7 +1610,7 @@ int st25_init(st25_t *dev, const st25_params_t *params)
 
     /* Initialize SPI */
 
-    if (dev->mode == ST25_SPI) {
+    if (dev->conf->mode == ST25_SPI) {
         /* we handle the CS line manually... */
         gpio_init(dev->conf->nss, GPIO_OUT);
         gpio_set(dev->conf->nss);

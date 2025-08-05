@@ -27,7 +27,6 @@ typedef struct {
 typedef struct {
     const st25_params_t *conf;      /**< Configuration struct */
     mutex_t trap;                   /**< Mutex to wait for chip response */
-    st25_mode_t mode;               /**< Working mode (i2c, spi) */
     uint32_t irq_status;             /**< contents of the main interrupt register  */
 } st25_t;
 
