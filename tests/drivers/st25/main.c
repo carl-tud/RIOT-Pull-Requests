@@ -21,7 +21,9 @@ int main(void) {
         return ret;
     }
 
-    st25_poll_nfc_a(&device);
+    st25_listen_nfc_a(&device);
+
+    while(true) {}
 
     return 0;
 }

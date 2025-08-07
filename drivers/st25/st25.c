@@ -49,11 +49,12 @@
 /* TODO: add more commands */
 
 
-#define SPI_MODE_REGISTER_WRITE       (0x00)
-#define SPI_MODE_REGISTER_READ        (0x40)
-#define SPI_MODE_FIFO_LOAD            (0x80)
-#define SPI_MODE_FIFO_READ            (0x9F)
-#define SPI_MODE_DIRECT_COMMAND       (0xC0)
+#define SPI_MODE_REGISTER_WRITE          (0x00)
+#define SPI_MODE_REGISTER_READ           (0x40)
+#define SPI_MODE_FIFO_LOAD               (0x80)
+#define SPI_MODE_PT_MEMORY_LOAD_A_CONFIG (0xA0)
+#define SPI_MODE_FIFO_READ               (0x9F)
+#define SPI_MODE_DIRECT_COMMAND          (0xC0)
 /* TODO: add more SPI modes */
 
 
@@ -68,9 +69,9 @@
 
 /* Protocol Configuration registers */
 #define REG_ISO14443A_NFC                         0x05U    /*!< RW ISO14443A and NFC 106 kBit/s Settings Register    */
-#define REG_EMD_SUP_CONF       (SPACE_B|0x05U)   /*!< RW EMD Suppression Configuration Register            */
+#define REG_EMD_SUP_CONF                 (SPACE_B|0x05U)   /*!< RW EMD Suppression Configuration Register            */
 #define REG_ISO14443B_1                           0x06U    /*!< RW ISO14443B Settings Register 1                     */
-#define REG_SUBC_START_TIME    (SPACE_B|0x06U)   /*!< RW Subcarrier Start Time Register                    */
+#define REG_SUBC_START_TIME              (SPACE_B|0x06U)   /*!< RW Subcarrier Start Time Register                    */
 #define REG_ISO14443B_2                           0x07U    /*!< RW ISO14443B Settings Register 2                     */
 #define REG_PASSIVE_TARGET                        0x08U    /*!< RW Passive Target Definition Register                */
 #define REG_STREAM_MODE                           0x09U    /*!< RW Stream Mode Definition Register                   */
@@ -127,10 +128,10 @@
 /* Antenna Driver and Modulation registers */
 #define REG_TX_DRIVER                             0x28U    /*!< RW TX driver register                                */
 #define REG_PT_MOD                                0x29U    /*!< RW PT modulation Register                            */
-#define REG_AUX_MOD            (SPACE_B|0x28U)   /*!< RW Aux Modulation setting Register                   */
-#define REG_TX_DRIVER_TIMING   (SPACE_B|0x29U)   /*!< RW TX driver timing Register                         */
-#define REG_RES_AM_MOD         (SPACE_B|0x2AU)   /*!< RW Resistive AM modulation register                  */
-#define REG_TX_DRIVER_STATUS   (SPACE_B|0x2BU)   /*!< R  TX driver timing readout Register                 */
+#define REG_AUX_MOD                      (SPACE_B|0x28U)   /*!< RW Aux Modulation setting Register                   */
+#define REG_TX_DRIVER_TIMING             (SPACE_B|0x29U)   /*!< RW TX driver timing Register                         */
+#define REG_RES_AM_MOD                   (SPACE_B|0x2AU)   /*!< RW Resistive AM modulation register                  */
+#define REG_TX_DRIVER_STATUS             (SPACE_B|0x2BU)   /*!< R  TX driver timing readout Register                 */
 
 /* External Field Detector Threshold Registers */
 #define REG_FIELD_THRESHOLD_ACTV                  0x2AU    /*!< RW External Field Detector Activation Threshold Reg  */
@@ -138,7 +139,7 @@
 
 /* Regulator registers */
 #define REG_REGULATOR_CONTROL                     0x2CU    /*!< RW Regulated Voltage Control Register                */
-#define REG_REGULATOR_RESULT   (SPACE_B|0x2CU)   /*!< R Regulator Display Register                         */
+#define REG_REGULATOR_RESULT             (SPACE_B|0x2CU)   /*!< R Regulator Display Register                         */
 
 /* Receiver State Display Register */
 #define REG_RSSI_RESULT                           0x2DU    /*!< R RSSI Display Register                              */
@@ -148,10 +149,10 @@
 #define REG_AUX_DISPLAY                           0x31U    /*!< R Auxiliary Display Register                         */
 
 /* Over/Undershoot Protection Configuration Registers */
-#define REG_OVERSHOOT_CONF1    (SPACE_B|0x30U)   /*!< RW  Overshoot Protection Configuration Register 1    */
-#define REG_OVERSHOOT_CONF2    (SPACE_B|0x31U)   /*!< RW  Overshoot Protection Configuration Register 2    */
-#define REG_UNDERSHOOT_CONF1   (SPACE_B|0x32U)   /*!< RW  Undershoot Protection Configuration Register 1   */
-#define REG_UNDERSHOOT_CONF2   (SPACE_B|0x33U)   /*!< RW  Undershoot Protection Configuration Register 2   */
+#define REG_OVERSHOOT_CONF1              (SPACE_B|0x30U)   /*!< RW  Overshoot Protection Configuration Register 1    */
+#define REG_OVERSHOOT_CONF2              (SPACE_B|0x31U)   /*!< RW  Overshoot Protection Configuration Register 2    */
+#define REG_UNDERSHOOT_CONF1             (SPACE_B|0x32U)   /*!< RW  Undershoot Protection Configuration Register 1   */
+#define REG_UNDERSHOOT_CONF2             (SPACE_B|0x33U)   /*!< RW  Undershoot Protection Configuration Register 2   */
 
 #ifdef ST25R3916B
   /* AWS Configuration Registers */
@@ -1177,6 +1178,8 @@
 
 #define I2C_ADDRESS        (0x50)
 
+#define NFC_A_CONFIG_SIZE   (15U)
+
 /* Buffer length for SPI transfers */
 #define BUFFER_LENGTH (128)
 
@@ -1328,7 +1331,7 @@ static int _read_reg(const st25_t *dev, uint8_t reg, uint8_t *data)
     return ret;
 }
 
-static int _load_fifo(const st25_t *dev, const uint8_t *data, unsigned len)
+static int _fifo_load(const st25_t *dev, const uint8_t *data, unsigned len)
 {
     assert(dev != NULL);
     assert(data != NULL);
@@ -1358,7 +1361,7 @@ static int _read_interrupts(st25_t *dev, uint32_t *interrupts) {
     return 0;
 }
 
-static int _fifo_status(const st25_t *dev, uint16_t *size) {
+static int _fifo_status(const st25_t *dev, uint16_t *byte_size, uint8_t *bit_size) {
     assert(dev != NULL);
 
     uint8_t status_1 = 0;
@@ -1367,39 +1370,43 @@ static int _fifo_status(const st25_t *dev, uint16_t *size) {
     _read_reg(dev, REG_FIFO_STATUS1, &status_1);
     _read_reg(dev, REG_FIFO_STATUS2, &status_2);
 
-    if (status_2 & 0x01 || status_2 & 0x02) {
+    if (status_2 & 0x10 || status_2 & 0x20) {
         DEBUG("st25: FIFO underflow/overflow\n");
         return -1;
     }
 
-    *size = (status_1) | (((uint16_t) (status_2 & 0xC0)) << 2);
+    *byte_size = (status_1) | (((uint16_t) (status_2 & 0xC0)) << 2);
+    *bit_size  = (status_2 & 0x0E) >> 1;
 
     return 0;
 }
 
-static int _read_fifo(const st25_t *dev, uint8_t *data, uint16_t *len)
+static int _fifo_read(const st25_t *dev, uint8_t *data, uint16_t *bytes, uint8_t *bits)
 {
     assert(dev != NULL);
     assert(data != NULL);
 
     /* get the amount of bytes in the FIFO */
-    _fifo_status(dev, len);
+    _fifo_status(dev, bytes, bits);
 
-    if (*len == 0) {
+    if (*bytes == 0 && *bits == 0) {
         /* no data in FIFO */
         DEBUG("st25: FIFO is empty\n");
         return -1;
     }
 
-    if (*len > BUFFER_LENGTH - 1) {
-        DEBUG("st25: FIFO size %u is too large, max is %u\n", *len, BUFFER_LENGTH - 1);
+    if (*bytes > BUFFER_LENGTH - 1) {
+        DEBUG("st25: FIFO size %u is too large, max is %u\n", *bytes, BUFFER_LENGTH - 1);
         return -1;
     }
+
+    DEBUG("st25: Reading %u bytes and %u bits from FIFO\n", *bytes, *bits);
 
     uint8_t operation_mode = SPI_MODE_FIFO_READ;
 
     /* read the bytes from the FIFO */
-    int ret = _write_and_read(dev, data, (unsigned) len, &operation_mode, 1);
+    int ret = _write_and_read(dev, data, *bits > 0 ? (unsigned) *bytes + 1 : (unsigned) *bytes, 
+                              &operation_mode, 1);
     return ret;
 }
 
@@ -1533,9 +1540,9 @@ static void _send_sens_req(st25_t *dev) {
     _send_cmd(dev, CMD_STOP);
     _send_cmd(dev, CMD_RESET_RX_GAIN);
 
-    reg_content = REG_ISO14443A_NFC_no_tx_par | REG_ISO14443A_NFC_no_rx_par | 
+/*     reg_content = REG_ISO14443A_NFC_no_tx_par | REG_ISO14443A_NFC_no_rx_par | 
     REG_ISO14443A_NFC_nfc_f0;
-    _write_reg(dev, REG_ISO14443A_NFC, reg_content);
+    _write_reg(dev, REG_ISO14443A_NFC, reg_content); */
 
     _write_reg(dev, REG_AUX, REG_AUX_no_crc_rx);
 
@@ -1557,16 +1564,34 @@ static void _send_sens_req(st25_t *dev) {
     _send_cmd(dev, CMD_TRANSMIT_REQA);
     wait_for(dev, IRQ_MASK_TXE);
 
-    ztimer_sleep(ZTIMER_USEC, 10);
-
+    ztimer_sleep(ZTIMER_USEC, 100);
 
     DEBUG("st25: SENS_REQ sent, waiting for response...\n");
 
     /* TODO: we only get 4 bits here. why? */
     uint8_t fifo_buffer[BUFFER_LENGTH] = {0};
-    uint16_t len = 0;
-    _read_fifo(dev, fifo_buffer, &len);
+    uint16_t bytes = 0;
+    uint8_t bits = 0;
+    _fifo_read(dev, fifo_buffer, &bytes, &bits);
+
+    DEBUG("st25: SENS_RES received with byte 1: 0x%02x and byte 2: 0x%02x\n",
+          fifo_buffer[0], fifo_buffer[1]);
 }
+
+/* changes only certain bits and leaves the rest unchanged */
+static void _change_bits_reg(st25_t *dev, uint8_t reg, uint8_t mask, uint8_t value) {
+    assert(dev != NULL);
+    assert(reg <= 0x3F);
+
+    uint8_t reg_content = 0;
+    _read_reg(dev, reg, &reg_content);
+
+    reg_content &= ~mask; // clear the bits defined by mask
+    reg_content |= (value & mask); // set the bits defined by value
+
+    _write_reg(dev, reg, reg_content);
+}
+
 
 static void _configure_device(st25_t *dev) {
     assert(dev != NULL);
@@ -1577,25 +1602,77 @@ static void _configure_device(st25_t *dev) {
     // _write_reg(dev, REG_IO_CONF2, REG_IO_CONF2_sup3V_3V);
 }
 
+static void _load_pt_memory_a_config(st25_t *dev, const uint8_t *nfc_a_config) {
+    assert(dev != NULL);
+
+    uint8_t buff[NFC_A_CONFIG_SIZE + 1];
+    buff[0] = SPI_MODE_PT_MEMORY_LOAD_A_CONFIG;
+    memcpy(&buff[1], nfc_a_config, NFC_A_CONFIG_SIZE);
+    int ret = _write(dev, buff, NFC_A_CONFIG_SIZE + 1);
+    if (ret < 0) {
+        DEBUG("st25: Error loading NFC-A configuration\n");
+    }
+
+    return;
+
+}
+
+static void _clear_interrupts(st25_t *dev) {
+    assert(dev != NULL);
+
+    /* Clear all interrupts */
+    uint32_t reg_content = 0;
+    _read_interrupts(dev, &reg_content);
+}   
+
 int st25_poll_nfc_a(st25_t *dev) {
     DEBUG("st25: Polling for NFC-A...\n");
 
-    _configure_device(dev);
-
     _enable_all_interrupts(dev);
 
-/*     uint8_t reg_content = 0;
-    _read_reg(dev, 0x0D, &reg_content);
-    DEBUG("st25: Initial register content: 0x%02X\n", reg_content); */
-
     _write_reg(dev, REG_BIT_RATE, 0x00);
-    
-/*     uint8_t operation_control = 0;
-    _read_reg(dev, REG_OPERATION_CONTROL, &operation_control);
-    DEBUG("st25: Operation Control Register: 0x%02X\n", operation_control); */
 
     _send_sens_req(dev);
 
+    return 0;
+}
+
+int st25_listen_nfc_a(st25_t *dev) {
+    assert(dev != NULL);
+
+    DEBUG("st25: Listening for NFC-A...\n");
+
+    uint8_t buff[] = {
+        0x74, 0x34, 0x48, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* NFCID1 */
+        0x00, 0x00, /* SENS_RES */
+        0x20, /* SAK L1 */
+        0x20, /* SAK L2 */
+        0x00, /* SAK L3 RFU */
+    };
+    
+    _load_pt_memory_a_config(dev, buff);
+
+    _write_reg(dev, REG_BIT_RATE, 0x00);
+    _write_reg(dev, REG_MODE, REG_MODE_om_targ_nfca | REG_MODE_targ | 0x01);
+    
+
+    _write_reg(dev, REG_OP_CONTROL, OPERATION_EN | 
+                    OPERATION_RX_EN | OPERATION_TX_EN);
+
+
+    _clear_interrupts(dev);
+    _write_interrupt_mask(dev, ~(IRQ_MASK_NFCT | IRQ_MASK_WU_A | IRQ_MASK_WU_A_X));
+
+    _change_bits_reg(dev, REG_PASSIVE_TARGET, REG_PASSIVE_TARGET_d_106_ac_a, 0x00);
+
+
+    _send_cmd(dev, CMD_GO_TO_SENSE);
+    
+    uint8_t target_state = 0;
+    _read_reg(dev, REG_PASSIVE_TARGET, &target_state);
+    DEBUG("st25: Passive target state: 0x%02x\n", target_state);
+
+    wait_for(dev, IRQ_MASK_NFCT);
     return 0;
 }
 
@@ -1623,6 +1700,9 @@ int st25_init(st25_t *dev, const st25_params_t *params)
 
     mutex_init(&(dev->trap));
     mutex_lock(&(dev->trap));
+
+    _configure_device(dev);
+    _disable_all_interrupts(dev);
     
     DEBUG("st25: Initialized ST25 device\n");
 
