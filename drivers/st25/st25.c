@@ -14,7 +14,7 @@
 /* REMOVE AT SOME POINT */
 #define ST25R3916B 1
 
-#define CMD_SET_DEFAULT             (0xC0)
+#define CMD_SET_DEFAULT             (0xC1)
 #define CMD_STOP                    (0xC2)
 #define CMD_TRANSMIT_WITH_CRC       (0xC4)
 #define CMD_TRANSMIT_WITHOUT_CRC    (0xC5)
@@ -25,7 +25,7 @@
 #define CMD_GO_TO_SENSE             (0xCD)
 #define CMD_GO_TO_SLEEP             (0xCE)
 #define CMD_MASK_RECEIVE_DATA       (0xD0)
-#define CMD_MASK_TRANSMIT_DATA      (0xD1)
+#define CMD_UNMASK_RECEIVE_DATA      (0xD1)
 #define CMD_CHANGE_AM_AMPLITUDE_STATE (0xD2)
 #define CMD_MEASURE_AMPLTIUDE        (0xD3)
 #define CMD_RESET_RX_GAIN               (0xD5)
@@ -53,6 +53,7 @@
 #define SPI_MODE_REGISTER_READ           (0x40)
 #define SPI_MODE_FIFO_LOAD               (0x80)
 #define SPI_MODE_PT_MEMORY_LOAD_A_CONFIG (0xA0)
+#define SPI_MODE_PT_MEMORY_READ          (0xBF)
 #define SPI_MODE_FIFO_READ               (0x9F)
 #define SPI_MODE_DIRECT_COMMAND          (0xC0)
 /* TODO: add more SPI modes */
@@ -1179,6 +1180,7 @@
 #define I2C_ADDRESS        (0x50)
 
 #define NFC_A_CONFIG_SIZE   (15U)
+#define NFC_F_CONFIG_SIZE   (33U)
 
 /* Buffer length for SPI transfers */
 #define BUFFER_LENGTH (128)
@@ -1617,6 +1619,21 @@ static void _load_pt_memory_a_config(st25_t *dev, const uint8_t *nfc_a_config) {
 
 }
 
+static void _read_pt_memory_a_config(st25_t *dev, uint8_t *nfc_a_config) {
+    assert(dev != NULL);
+    assert(nfc_a_config != NULL);
+
+    uint8_t buff[NFC_A_CONFIG_SIZE + 1];
+    buff[0] = SPI_MODE_PT_MEMORY_READ;
+
+    int ret = _write_and_read(dev, nfc_a_config, NFC_A_CONFIG_SIZE + NFC_F_CONFIG_SIZE, buff, 1);
+    if (ret < 0) {
+        DEBUG("st25: Error reading NFC-A configuration\n");
+    }
+
+    return;
+}
+
 static void _clear_interrupts(st25_t *dev) {
     assert(dev != NULL);
 
@@ -1642,37 +1659,61 @@ int st25_listen_nfc_a(st25_t *dev) {
 
     DEBUG("st25: Listening for NFC-A...\n");
 
+    uint8_t a = 0;
+
+    _read_reg(dev, REG_PASSIVE_TARGET, &a);
+    DEBUG("st25: Passive target state before configuration: 0x%02x\n", a);
+
+    _enable_all_interrupts(dev);
+
     uint8_t buff[] = {
         0x74, 0x34, 0x48, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* NFCID1 */
         0x00, 0x00, /* SENS_RES */
-        0x20, /* SAK L1 */
-        0x20, /* SAK L2 */
+        0x00, /* SAK L1 */
+        0x00, /* SAK L2 */
         0x00, /* SAK L3 RFU */
     };
+    _write_reg(dev, REG_OP_CONTROL, OPERATION_RX_EN | OPERATION_EN | OPERATION_TX_EN | 0x03);
+
+    wait_for(dev, IRQ_MASK_OSC);
+
+    _send_cmd(dev, CMD_UNMASK_RECEIVE_DATA);
     
     _load_pt_memory_a_config(dev, buff);
 
     _write_reg(dev, REG_BIT_RATE, 0x00);
-    _write_reg(dev, REG_MODE, REG_MODE_om_targ_nfca | REG_MODE_targ | 0x01);
-    
-
-    _write_reg(dev, REG_OP_CONTROL, OPERATION_EN | 
-                    OPERATION_RX_EN | OPERATION_TX_EN);
+    _write_reg(dev, REG_MODE, REG_MODE_om_targ_nfca | REG_MODE_targ);
 
 
-    _clear_interrupts(dev);
-    _write_interrupt_mask(dev, ~(IRQ_MASK_NFCT | IRQ_MASK_WU_A | IRQ_MASK_WU_A_X));
+    _read_reg(dev, REG_MODE, &a);
+    DEBUG("st25: Mode register: 0x%02x\n", a);
 
-    _change_bits_reg(dev, REG_PASSIVE_TARGET, REG_PASSIVE_TARGET_d_106_ac_a, 0x00);
+    _read_reg(dev, REG_OP_CONTROL, &a);
+    DEBUG("st25: Operation control register: 0x%02x\n", a);
 
 
-    _send_cmd(dev, CMD_GO_TO_SENSE);
-    
+
+    // _clear_interrupts(dev);
+    // _write_interrupt_mask(dev, ~(IRQ_MASK_NFCT | IRQ_MASK_WU_A | IRQ_MASK_WU_A_X 
+    //                             | IRQ_MASK_RXE_PTA | IRQ_MASK_EON));
+
+    _change_bits_reg(dev, REG_PASSIVE_TARGET, REG_PASSIVE_TARGET_d_106_ac_a | REG_PASSIVE_TARGET_d_212_424_1r
+        | REG_PASSIVE_TARGET_d_ac_ap2p, 0x0C);
+
+    // _change_bits_reg(dev, REG_TIMER_EMV_CONTROL, REG_TIMER_EMV_CONTROL_mrt_step_512, 0x08);
+
+    /* set antenna tuning to 0 */
+    _write_reg(dev, REG_ANT_TUNE_A, 0x00);
+    _write_reg(dev, REG_ANT_TUNE_B, 0x00);   
+
+
+
     uint8_t target_state = 0;
     _read_reg(dev, REG_PASSIVE_TARGET, &target_state);
     DEBUG("st25: Passive target state: 0x%02x\n", target_state);
 
-    wait_for(dev, IRQ_MASK_NFCT);
+    wait_for(dev, 0xFFFFFFFFU); /* wait for any interrupt */
+
     return 0;
 }
 
