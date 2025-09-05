@@ -10,7 +10,7 @@
  * @file
  * @brief   PN532 driver
  *
- * @author  Víctor Ariño <victor.arino@triagnosys.com>
+ * @author   <victor.arino@triagnosys.com>
  * @}
  */
 
@@ -25,6 +25,8 @@
 #include "periph/gpio.h"
 #include "periph/i2c.h"
 #include "periph/spi.h"
+#include "periph/uart.h"
+#include "msg.h"
 
 #define ENABLE_DEBUG                1
 #include "debug.h"
@@ -39,11 +41,13 @@
 #define CMD_WRITE_GPIO              (0x0E)
 #define CMD_SET_PARAMETERS          (0x12)
 #define CMD_SAM_CONFIG              (0x14)
+#define CMD_POWER_DOWN              (0x16)
 #define CMD_RF_CONFIG               (0x32)
 #define CMD_DATA_EXCHANGE           (0x40)
 #define CMD_DESELECT                (0x44)
 #define CMD_LIST_PASSIVE            (0x4a)
 #define CMD_RELEASE                 (0x52)
+#define CMD_GET_TARGET_STATUS       (0x8a)
 #define CMD_INIT_AS_TARGET          (0x8c)
 
 /* Mifare specific commands */
@@ -90,6 +94,10 @@
 /* Length for passive listings */
 #define LIST_PASSIVE_LEN_14443(num)   (num * 20)
 
+#define UART_BAUDRATE               (115200U)
+
+static kernel_pid_t main_thread_pid;
+
 #if IS_ACTIVE(ENABLE_DEBUG)
 #define PRINTBUFF printbuff
 static void printbuff(uint8_t *buff, unsigned len)
@@ -103,6 +111,7 @@ static void printbuff(uint8_t *buff, unsigned len)
 #else
 #define PRINTBUFF(...)
 #endif
+static int send_rcv(pn532_t *dev, uint8_t *buff, unsigned sendl, unsigned recvl);
 
 static void _nfc_event(void *dev)
 {
@@ -120,14 +129,22 @@ void pn532_reset(const pn532_t *dev)
     ztimer_sleep(ZTIMER_MSEC, RESET_BACKOFF_MS);
 }
 
+static void uart_rx_cb(void *uart, uint8_t byte) {
+    (void) uart;
+    DEBUG("pn532: uart irq triggered with byte %02x\n", byte);
+    msg_t msg;
+    msg.content.value = (uint32_t) byte;
+    msg_send(&msg, main_thread_pid);
+}
+
 int pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode)
 {
     assert(dev != NULL);
 
     dev->conf = params;
 
-    gpio_init_int(dev->conf->irq, GPIO_IN_PU, GPIO_FALLING,
-                  _nfc_event, (void *)dev);
+    gpio_init_int(dev->conf->irq, GPIO_IN_PD, GPIO_FALLING,
+                   _nfc_event, (void *)dev);
 
     gpio_init(dev->conf->reset, GPIO_OUT);
     gpio_set(dev->conf->reset);
@@ -138,12 +155,24 @@ int pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode)
         gpio_init(dev->conf->nss, GPIO_OUT);
         gpio_set(dev->conf->nss);
 #endif
+    } else if (mode == PN532_UART) {
+#if IS_USED(MODULE_PN532_UART)
+        DEBUG("pn532: initializing uart\n");
+        main_thread_pid = thread_getpid();
+        int ret = uart_init(dev->conf->uart, UART_BAUDRATE, uart_rx_cb, NULL);
+        if (ret < 0) {
+            DEBUG("pn532: uart_init failed with %d\n", ret);
+            return ret;
+        }
+#endif
     }
 
     pn532_reset(dev);
 
     mutex_init(&dev->trap);
     mutex_lock(&dev->trap);
+
+    DEBUG("pn532: init complete\n");
 
     return 0;
 }
@@ -158,7 +187,7 @@ static uint8_t chksum(uint8_t *b, unsigned len)
     return c;
 }
 
-#if IS_USED(MODULE_PN532_SPI)
+#if IS_USED(MODULE_PN532_SPI) || IS_USED(MODULE_PN532_UART)
 static void reverse(uint8_t *buff, unsigned len)
 {
     while (len--) {
@@ -168,6 +197,73 @@ static void reverse(uint8_t *buff, unsigned len)
     }
 }
 #endif
+
+#if IS_USED(MODULE_PN532_SPI)
+static int _read_status(const pn532_t *dev, uint8_t *status)
+{
+
+    if (dev->mode == PN532_SPI) {
+        spi_acquire(dev->conf->spi, SPI_CS_UNDEF, SPI_MODE, SPI_CLK);
+        gpio_clear(dev->conf->nss);
+        spi_transfer_byte(dev->conf->spi, SPI_CS_UNDEF, true, SPI_STATUS_READING);
+        spi_transfer_bytes(dev->conf->spi, SPI_CS_UNDEF, true, NULL, status, 1);
+        gpio_set(dev->conf->nss);
+        spi_release(dev->conf->spi);
+        return 0;
+    }
+
+    return -1;
+}
+#endif
+
+static int _read_blocking(const pn532_t *dev, uint8_t *buff, unsigned len) {
+
+    int ret = -1;
+#if IS_USED(MODULE_PN532_SPI)
+    if (dev->mode == PN532_SPI) {
+        uint8_t status = 0x00;
+        /* receive the status byte */
+        do {
+            _read_status(dev, &status);
+            ztimer_sleep(ZTIMER_USEC, 100000);
+        } while ((status & 0x80) == 0);
+        /* status is 0x01 (0x80 reversed) here */
+
+        spi_acquire(dev->conf->spi, SPI_CS_UNDEF, SPI_MODE, SPI_CLK);
+        gpio_clear(dev->conf->nss);
+
+        spi_transfer_byte(dev->conf->spi, SPI_CS_UNDEF, true, SPI_DATA_READ);
+        spi_transfer_bytes(dev->conf->spi, SPI_CS_UNDEF, true, NULL, &buff[1], len);
+        gpio_set(dev->conf->nss);
+        spi_release(dev->conf->spi);
+
+        buff[0] = 0x80;
+
+        reverse(buff, len);
+        ret = (int) len + 1;
+    }
+#endif
+#if IS_USED(MODULE_PN532_UART)
+    if (dev->mode == PN532_UART) {
+        unsigned received = 0;
+        msg_t msg;
+        uint8_t byte;
+
+        /* uart does not have a status byte, simply block until we have read the required 
+        amount of bytes */;
+        while (received < len) {
+            DEBUG("pn532: waiting for byte %u/%u\n", received + 1, len);
+            msg_receive(&msg);
+            byte = (uint8_t) msg.content.value;
+            buff[received++] = byte;
+        }
+        ret = (int) received;
+    }
+#endif
+    DEBUG("pn532: <- ");
+    PRINTBUFF(buff, len);
+    return ret;
+}
 
 static int _write(const pn532_t *dev, uint8_t *buff, unsigned len)
 {
@@ -200,11 +296,20 @@ static int _write(const pn532_t *dev, uint8_t *buff, unsigned len)
         ret = (int)len;
         break;
 #endif
+#if IS_USED(MODULE_PN532_UART)
+    case PN532_UART:
+        DEBUG("pn532: writing uart\n");
+        // reverse(buff, len);
+        uart_write(dev->conf->uart, buff, len);
+        ret = (int)len;
+        break;
+#endif
     default:
         DEBUG("pn532: invalid mode (%i)!\n", dev->mode);
     }
     DEBUG("pn532: -> ");
     PRINTBUFF(buff, len);
+    ztimer_sleep(ZTIMER_USEC, 1000);
     return ret;
 }
 
@@ -248,6 +353,9 @@ static int _read(const pn532_t *dev, uint8_t *buff, unsigned len)
         DEBUG("pn532: <- ");
         PRINTBUFF(buff, len);
     }
+
+    /* wait for a while */
+    ztimer_sleep(ZTIMER_USEC, SPI_WRITE_DELAY_US);
     return ret;
 }
 
@@ -288,7 +396,19 @@ static int send_cmd(const pn532_t *dev, uint8_t *buff, unsigned len)
 
 static void wait_ready(pn532_t *dev)
 {
+    // DEBUG("pn532: wait ready\n");
     mutex_lock(&dev->trap);
+    // DEBUG("pn532: ready\n");
+}
+
+static void busy_wait_ready(const pn532_t *dev) {
+    uint8_t status = 0x00;
+
+    while ((status & 0x01) == 0) {
+        DEBUG("pn532: busy wait...\n");
+        _read(dev, &status, 1);
+        ztimer_sleep(ZTIMER_USEC, 10000);
+    }
 }
 
 /* Returns >0 payload len (or <0 received len but not as expected) */
@@ -303,7 +423,7 @@ static int read_command(const pn532_t *dev, uint8_t *buff, unsigned len, int exp
         len += 3;
     }
 
-    r = _read(dev, buff, len);
+    r = _read_blocking(dev, buff, len);
 
     /* Validate frame structure and CRCs
      *
@@ -361,19 +481,22 @@ static int send_check_ack(pn532_t *dev, uint8_t *buff, unsigned len)
     if (send_cmd(dev, buff, len) > 0) {
         static char ack[] = { 0x00, 0x00, 0xff, 0x00, 0xff, 0x00 };
 
-        wait_ready(dev);
-        if (_read(dev, buff, sizeof(ack)) != sizeof(ack) + 1) {
+        // wait_ready(dev);
+        if (_read_blocking(dev, buff, sizeof(ack)) != sizeof(ack) + 1) {
+            DEBUG("pn532: ack read error\n");
             return -2;
         }
-
+ 
         if (memcmp(&buff[1], ack, sizeof(ack)) != 0) {
+            DEBUG("pn532: invalid ack\n");
             return -3;
         }
 
-        wait_ready(dev);
+        // wait_ready(dev);
         return 0;
     }
 
+    DEBUG("pn532: send error\n");
     return -1;
 }
 
@@ -420,7 +543,7 @@ int pn532_read_reg(pn532_t *dev, char *out, unsigned addr)
     buff[BUFF_DATA_START + 1] = addr & 0xff;
 
     if (send_rcv(dev, buff, 2, 1) == 1) {
-        *out = buff[0];
+        *out = buff[8];
         ret = 0;
     }
 
@@ -453,9 +576,11 @@ int pn532_update_reg(pn532_t *dev, unsigned addr, char val, char mask)
     return pn532_write_reg(dev, addr, reg_val);
 }
 
-static int _rf_configure(pn532_t *dev, uint8_t *buff, unsigned cfg_item, char *config,
+static int _rf_configure(pn532_t *dev, unsigned cfg_item, uint8_t *config,
                          unsigned cfg_len)
 {
+    DEBUG("pn532: rf config %02x\n", cfg_item);
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
     buff[BUFF_CMD_START ] = CMD_RF_CONFIG;
     buff[BUFF_DATA_START] = cfg_item;
     for (unsigned i = 1; i <= cfg_len; i++) {
@@ -465,11 +590,11 @@ static int _rf_configure(pn532_t *dev, uint8_t *buff, unsigned cfg_item, char *c
     return send_rcv(dev, buff, cfg_len + 1, 0);
 }
 
-static int _set_act_retries(pn532_t *dev, uint8_t *buff, unsigned max_retries)
+static int _set_act_retries(pn532_t *dev, unsigned max_retries)
 {
-    char rtrcfg[] = { 0xff, 0x01, max_retries & 0xff };
+    uint8_t rtrcfg[] = { 0xff, 0x01, max_retries & 0xff };
 
-    return _rf_configure(dev, buff, RF_CONFIG_MAX_RETRIES, rtrcfg, sizeof(rtrcfg));
+    return _rf_configure(dev, RF_CONFIG_MAX_RETRIES, rtrcfg, sizeof(rtrcfg));
 }
 
 int pn532_sam_configuration(pn532_t *dev, pn532_sam_conf_mode_t mode, unsigned timeout)
@@ -501,7 +626,7 @@ int pn532_get_passive_iso14443a(pn532_t *dev, nfc_iso14443a_t *out,
     int ret = -1;
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
 
-    if (_set_act_retries(dev, buff, max_retries) == 0) {
+    if (_set_act_retries(dev, max_retries) == 0) {
         ret = _list_passive_targets(dev, buff, PN532_BR_106_ISO_14443_A, 1,
                                     LIST_PASSIVE_LEN_14443(1));
     }
@@ -805,7 +930,21 @@ static int _init_as_target(pn532_t *dev, uint8_t mode,
     // pn532_set_parameters(dev, PN532_PARAM_ISO14443A_4_PICC);
     // change_rf_field(dev, false);    
 
-    pn532_write_reg(dev, PN532_REG_CIU_Mode, 0b00111111);
+
+    DEBUG("pn532: setting CIU Mode\n");
+    int ret = 0;
+    ret = pn532_write_reg(dev, PN532_REG_CIU_Mode, 0b00111111);
+    if (ret != 0) {
+        return ret;
+    }
+
+    char dummy = 0x00;
+    ret = pn532_read_reg(dev, &dummy, PN532_REG_CIU_Mode);
+    if (ret < 0) {
+        return ret;
+    }
+    DEBUG("pn532: CIU Mode is now 0x%02x\n", dummy);
+    // pn532_write_reg(dev, PN532_REG_CIU_RFlevelDet, 0x00);
     /* int error;*/
 /*     if ((error = pn532_update_reg(dev, PN532_REG_CIU_TxAuto, SYMBOL_INITIAL_RF_ON,  0x04)) < 0)
         return error; */
@@ -827,9 +966,12 @@ static int _init_as_target(pn532_t *dev, uint8_t mode,
     if (nfcid3t != NULL) {
         memcpy(&buff[BUFF_DATA_START + 1 + 6 + 18], nfcid3t, 10);
     }
+    uint8_t enable_auto_rfca = 0b00000010;
+    _rf_configure(dev, 0x01, &enable_auto_rfca, 1); /* AutoRFCA: on, RFCA: off*/
 
     DEBUG("pn532: init as target mode %i\n", mode);
     /* recv len depends on the technology used */
+
     return send_rcv(dev, buff, 1 + 6 + 18 + 10 + 2, 10);
 }
 
@@ -844,20 +986,59 @@ void pn532_set_parameters(pn532_t *dev, uint8_t flags) {
     send_rcv(dev, buff, 1, 1);
 }
 
+void pn532_set_power_down(pn532_t *dev, uint8_t wake_up_enable, uint8_t generate_irq) {
+    assert(dev != NULL);
+    DEBUG("pn532: setting power down\n");
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+
+    buff[BUFF_CMD_START     ] = CMD_POWER_DOWN;
+    buff[BUFF_DATA_START    ] = wake_up_enable;
+    buff[BUFF_DATA_START + 1] = generate_irq;
+
+    send_rcv(dev, buff, 2, 0);
+}
+
+uint8_t pn532_get_target_status(pn532_t *dev) {
+    assert(dev != NULL);
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+    uint8_t status = 0xff;
+    buff[BUFF_CMD_START] = CMD_GET_TARGET_STATUS;
+    if (send_rcv(dev, buff, 0, 2) == 2) {
+        status = buff[0];
+        /* discard baud rate in byte 2 */
+    }
+
+    return status;
+}
+
 int pn532_init_tag(pn532_t *dev, nfc_application_type_t app_type) {
     assert(dev != NULL);
 
-    if (dev->mode != PN532_SPI) {
+/*     if (dev->mode != PN532_SPI) {
         DEBUG("pn532: only SPI mode supported for picc init\n");
         return -1;
-    }
+    } */
+
+    /* static uint8_t nfc_a_rf_config[] = {
+        0x59, 0xF4, 0x3F, 0x11, 0x4D, 0x85, 0x61, 0x6F, 0x26, 0x62, 0x87
+    };
+
+
+    _rf_configure(dev, 0x0A, nfc_a_rf_config, 11); */
+
+    // pn532_set_power_down(dev, 0b00101000, 0b00000001);
+
+    // DEBUG("pn532: setting parameters\n");
+    // pn532_set_parameters(dev, 0b00000000);
 
     if (app_type == NFC_APPLICATION_TYPE_T2T) {
         DEBUG("pn532: init target as T2T\n");
         uint8_t mifare_params[] = {
-            0x01, 0x01, 0x0A, 0x0B, 0x0C, 0x00
+            0x00, 0x00, 0x34, 0x48, 0x03, 0x00
         }; /* SENS_RES, NFCID1t, SEL_RES */
-        return _init_as_target_nfc_a(dev, mifare_params);
+        return _init_as_target(dev, 0b00000000, mifare_params, NULL, NULL);
     } else if (app_type == NFC_APPLICATION_TYPE_T3T) {
         DEBUG("pn532: init target as T3T\n");
         uint8_t felica_params[] = {
@@ -865,7 +1046,7 @@ int pn532_init_tag(pn532_t *dev, nfc_application_type_t app_type) {
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, /* PAD */
             0xFF, 0xFF /* System Code */
         };
-        return _init_as_target(dev, TARGET_MODE_PASSIVE, NULL, felica_params, NULL);
+        return _init_as_target(dev, 0b00000000, NULL, felica_params, NULL);
     }
 
     return -1;

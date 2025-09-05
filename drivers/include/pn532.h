@@ -25,13 +25,14 @@ extern "C" {
 #include "mutex.h"
 #include "periph/i2c.h"
 #include "periph/spi.h"
+#include "periph/uart.h"
 #include "periph/gpio.h"
 #include <stdint.h>
 
 #include "net/nfc/nfc.h"
 
-#if !IS_USED(MODULE_PN532_I2C) && !IS_USED(MODULE_PN532_SPI)
-#error Please use either pn532_i2c and/or pn532_spi module to enable \
+#if !IS_USED(MODULE_PN532_I2C) && !IS_USED(MODULE_PN532_SPI) && !IS_USED(MODULE_PN532_UART)
+#error Please use either pn532_i2c, pn532_spi and/or pn532_uart module to enable \
     the functionality on this device
 #endif
 
@@ -46,6 +47,9 @@ typedef struct {
 #if IS_USED(MODULE_PN532_SPI) || DOXYGEN
         spi_t spi;              /**< SPI device */
 #endif
+#if IS_USED(MODULE_PN532_UART) || DOXYGEN
+        uart_t uart;            /**< UART device */
+#endif
     };
     gpio_t reset;               /**< Reset pin */
     gpio_t irq;                 /**< Interrupt pin */
@@ -59,7 +63,8 @@ typedef struct {
  */
 typedef enum {
     PN532_I2C,
-    PN532_SPI
+    PN532_SPI,
+    PN532_UART
 } pn532_mode_t;
 
 /**
@@ -264,8 +269,8 @@ void pn532_reset(const pn532_t *dev);
  *  @param[in]  mode        initialization mode
  *
  * @return                  0 on success
- * @return                  <0 i2c/spi initialization error, the value is given
- *                          by the i2c/spi init method.
+ * @return                  <0 i2c/spi/uart initialization error, the value is given
+ *                          by the i2c/spi/uart init method.
  */
 int pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode);
 
@@ -292,6 +297,13 @@ static inline int pn532_init_i2c(pn532_t *dev, const pn532_params_t *params)
 static inline int pn532_init_spi(pn532_t *dev, const pn532_params_t *params)
 {
     return pn532_init(dev, params, PN532_SPI);
+}
+#endif
+
+#if IS_USED(MODULE_PN532_UART) || DOXYGEN
+static inline int pn532_init_uart(pn532_t *dev, const pn532_params_t *params)
+{
+    return pn532_init(dev, params, PN532_UART);
 }
 #endif
 
