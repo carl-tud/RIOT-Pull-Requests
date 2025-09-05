@@ -28,14 +28,12 @@ typedef struct {
  * @brief Mask for the NFCID1 size field in the anticollision
  * information byte of SENS_RES
  */
-#define SENS_RES_ANTICOLLISION_NFCID1_SIZE_MASK (0xC0)
+#define NFC_A_SENS_RES_ANTICOLLISION_NFCID1_SIZE_MASK (0xC0)
 
 typedef struct {
     uint8_t anticollision_information;
     uint8_t platform_information;
 } nfc_a_sens_res_t;
 
-typedef struct {
-    uint8_t data;
-} nfc_a_sel_res_t;
-
+/* also known as SAK */
+typedef uint8_t nfc_a_sel_res_t; 
