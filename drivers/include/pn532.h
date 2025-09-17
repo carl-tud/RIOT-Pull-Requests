@@ -74,6 +74,9 @@ typedef struct {
     const pn532_params_t *conf;     /**< Configuration struct */
     pn532_mode_t mode;              /**< Working mode (i2c, spi) */
     mutex_t trap;                   /**< Mutex to wait for chip response */
+    #if IS_USED(MODULE_PN532_UART) || DOXYGEN
+    mutex_t cb;                     /**< Mutex to protect callbacks */
+    #endif
 } pn532_t;
 
 /**
@@ -217,13 +220,13 @@ typedef enum {
  * @brief   ISO14443A tag description
  */
 typedef struct {
-    char target;                /**< Target */
-    char auth;                  /**< Card has been authenticated. Do not modify manually */
-    char id_len;                /**< Length of the ID field */
-    char sel_res;               /**< SEL_RES */
+    uint8_t target;                /**< Target */
+    uint8_t auth;                  /**< Card has been authenticated. Do not modify manually */
+    uint8_t id_len;                /**< Length of the ID field */
+    uint8_t sel_res;               /**< SEL_RES */
     unsigned sns_res;           /**< SNS_RES */
     nfc_iso14443a_type_t type;  /**< Type of ISO14443A card */
-    char id[8];                 /**< Card ID (length given by id_len) */
+    uint8_t id[8];                 /**< Card ID (length given by id_len) */
 } nfc_iso14443a_t;
 
 /**
@@ -337,7 +340,7 @@ int pn532_fw_version(pn532_t *dev, uint32_t *fw_ver);
  *
  * @return                  0 on success
  */
-int pn532_read_reg(pn532_t *dev, char *out, unsigned addr);
+int pn532_read_reg(pn532_t *dev, uint8_t *out, unsigned addr);
 
 /**
  * @brief   Write register of the pn532
@@ -352,9 +355,9 @@ int pn532_read_reg(pn532_t *dev, char *out, unsigned addr);
  *
  * @return                  0 on success
  */
-int pn532_write_reg(pn532_t *dev, unsigned addr, char val);
+int pn532_write_reg(pn532_t *dev, unsigned addr, uint8_t val);
 
-int pn532_update_reg(pn532_t *dev, unsigned addr, char val, char mask);
+int pn532_update_reg(pn532_t *dev, unsigned addr, uint8_t val, uint8_t mask);
 
 /**
  * @brief   Set new settings for the Security Access Module
@@ -366,7 +369,7 @@ int pn532_update_reg(pn532_t *dev, unsigned addr, char val, char mask);
  *
  * @return                  0 on success
  */
-int pn532_sam_configuration(pn532_t *dev, pn532_sam_conf_mode_t mode, unsigned timeout);
+int pn532_sam_configuration(pn532_t *dev, pn532_sam_conf_mode_t mode, unsigned timeout, bool use_irq);
 
 /**
  * @brief   Get one ISO14443-A passive target
@@ -397,7 +400,7 @@ int pn532_get_passive_iso14443a(pn532_t *dev, nfc_iso14443a_t *out, unsigned max
  * @return                  0 on success
  */
 int pn532_mifareclassic_authenticate(pn532_t *dev, nfc_iso14443a_t *card,
-                                     pn532_mifare_key_t keyid, char *key, unsigned block);
+                                     pn532_mifare_key_t keyid, uint8_t *key, unsigned block);
 
 /**
  * @brief   Read a block of a Mifare classic card
@@ -411,7 +414,7 @@ int pn532_mifareclassic_authenticate(pn532_t *dev, nfc_iso14443a_t *card,
  *
  * @return                  0 on success
  */
-int pn532_mifareclassic_read(pn532_t *dev, char *odata, nfc_iso14443a_t *card, unsigned block);
+int pn532_mifareclassic_read(pn532_t *dev, uint8_t *odata, nfc_iso14443a_t *card, unsigned block);
 
 /**
  * @brief   Write a block of a Mifare classic card
@@ -425,7 +428,7 @@ int pn532_mifareclassic_read(pn532_t *dev, char *odata, nfc_iso14443a_t *card, u
  *
  * @return                  0 on success
  */
-int pn532_mifareclassic_write(pn532_t *dev, char *idata, nfc_iso14443a_t *card, unsigned block);
+int pn532_mifareclassic_write(pn532_t *dev, uint8_t *idata, nfc_iso14443a_t *card, unsigned block);
 
 /**
  * @brief   Read a block of a Mifare Ultralight card
@@ -439,7 +442,7 @@ int pn532_mifareclassic_write(pn532_t *dev, char *idata, nfc_iso14443a_t *card, 
  *
  * @return                  0 on success
  */
-int pn532_mifareulight_read(pn532_t *dev, char *odata, nfc_iso14443a_t *card, unsigned page);
+int pn532_mifareulight_read(pn532_t *dev, uint8_t *odata, nfc_iso14443a_t *card, unsigned page);
 
 /**
  * @brief   Activate the NDEF file of a ISO14443-A Type 4 tag
@@ -466,8 +469,8 @@ int pn532_iso14443a_4_activate(pn532_t *dev, nfc_iso14443a_t *card);
  *
  * @return                  0 on success
  */
-int pn532_iso14443a_4_read(pn532_t *dev, char *odata, nfc_iso14443a_t *card, unsigned offset,
-                           char len);
+int pn532_iso14443a_4_read(pn532_t *dev, uint8_t *odata, nfc_iso14443a_t *card, unsigned offset,
+                           uint8_t len);
 
 /**
  * @brief   Deselect a previously selected passive card
