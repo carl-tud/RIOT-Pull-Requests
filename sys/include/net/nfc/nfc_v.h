@@ -1,5 +1,4 @@
 #pragma once
 
-
 typedef struct {
-} nfc_b_listener_config_t;
+} nfc_v_listener_config_t;

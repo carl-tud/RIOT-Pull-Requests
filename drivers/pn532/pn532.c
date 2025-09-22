@@ -28,6 +28,8 @@
 #include "periph/uart.h"
 #include "msg.h"
 
+#include "log.h"
+
 #define ENABLE_DEBUG                1
 #include "debug.h"
 
@@ -151,7 +153,7 @@ static void uart_rx_cb(void *dev, uint8_t byte) {
 
 
 
-int pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode)
+int _pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode)
 {
     assert(dev != NULL);
 
@@ -216,6 +218,12 @@ int pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode)
     DEBUG("pn532: init complete\n");
 
     return 0;
+}
+
+int pn532_init(nfcdev_t *nfcdev, const void *dev_config) {
+    pn532_t *dev = (pn532_t *)nfcdev->dev;
+    const pn532_config_t *config = (const pn532_config_t *)dev_config;
+    return _pn532_init(dev, &config->params, config->mode);
 }
 
 static uint8_t chksum(uint8_t *b, unsigned len)
@@ -985,27 +993,12 @@ static int _init_as_target_nfc_f(pn532_t *dev, uint8_t *nfc_f_params) {
 }
 
 static int _init_as_target(pn532_t *dev, uint8_t mode,
-    uint8_t *mifare_params, uint8_t *felica_params, uint8_t *nfcid3t) {
-    // pn532_set_parameters(dev, PN532_PARAM_ISO14443A_4_PICC);
-    // change_rf_field(dev, false);    
-
-
+    uint8_t *mifare_params, uint8_t *felica_params, uint8_t *nfcid3t) {   
     DEBUG("pn532: setting CIU Mode\n");
     int ret = pn532_write_reg(dev, PN532_REG_CIU_Mode, 0b00111111);
     if (ret != 0) {
         return ret;
     }
-
-/*     uint8_t dummy = 0x00;
-    ret = pn532_read_reg(dev, &dummy, PN532_REG_CIU_Mode);
-    if (ret < 0) {
-        return ret;
-    }
-    DEBUG("pn532: CIU Mode is now 0x%02x\n", dummy); */
-    // pn532_write_reg(dev, PN532_REG_CIU_RFlevelDet, 0x00);
-/*     int error;
-    if ((error = pn532_update_reg(dev, PN532_REG_CIU_TxAuto, SYMBOL_INITIAL_RF_ON,  0x04)) < 0)
-        return error; */
 
     uint8_t buff[CONFIG_PN532_BUFFER_LEN] = {0};
     buff[BUFF_CMD_START] = CMD_INIT_AS_TARGET;
@@ -1073,40 +1066,134 @@ uint8_t pn532_get_target_status(pn532_t *dev) {
     return status;
 }
 
-int pn532_init_tag(pn532_t *dev, nfc_application_type_t app_type) {
+/* int pn532_init_tag(pn532_t *dev, nfc_application_type_t app_type) {
     assert(dev != NULL);
-
-/*     if (dev->mode != PN532_SPI) {
-        DEBUG("pn532: only SPI mode supported for picc init\n");
-        return -1;
-    } */
-
-    /* static uint8_t nfc_a_rf_config[] = {
-        0x59, 0xF4, 0x3F, 0x11, 0x4D, 0x85, 0x61, 0x6F, 0x26, 0x62, 0x87
-    };
-
-
-    _rf_configure(dev, 0x0A, nfc_a_rf_config, 11); */
-
-    // pn532_set_power_down(dev, 0b00101000, 0b00000001);
-
-
 
     if (app_type == NFC_APPLICATION_TYPE_T2T) {
         DEBUG("pn532: init target as T2T\n");
         uint8_t mifare_params[] = {
             0x00, 0x00, 0x58, 0xC8, 0xB5, 0x00
-        }; /* SENS_RES, NFCID1t, SEL_RES */
+        };
         return _init_as_target(dev, 0b00000000, mifare_params, NULL, NULL);
     } else if (app_type == NFC_APPLICATION_TYPE_T3T) {
         DEBUG("pn532: init target as T3T\n");
         uint8_t felica_params[] = {
-            0x02, 0xFE, 0x04, 0x04, 0x05, 0x06, 0x07, 0x08, /* NFCID2t */
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, /* PAD */
-            0x12, 0xFC /* System Code */
+            0x02, 0xFE, 0x04, 0x04, 0x05, 0x06, 0x07, 0x08,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+            0x12, 0xFC 
         };
         return _init_as_target_nfc_f(dev, felica_params);
     }
 
     return -1;
+} */
+
+int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
+    assert(nfcdev != NULL);
+    assert(config != NULL);
+
+    assert(config->nfcid1.len == 4); /* only 4 byte nfcid1 supported */
+    assert(config->nfcid1.nfcid[0] == 0x08); /* the first byte must be 0x08 for the PN532*/
+
+    /* the NFC-A params are called Mifare params in the PN532 manual */
+    uint8_t mifare_params[6] = {0};  /* SENS_RES, NFCID1t, SEL_RES */
+
+    mifare_params[0] = config->sens_res.anticollision_information;
+    mifare_params[1] = config->sens_res.platform_information;
+
+    mifare_params[2] = config->nfcid1.nfcid[1];
+    mifare_params[3] = config->nfcid1.nfcid[2];
+    mifare_params[4] = config->nfcid1.nfcid[3];
+
+    mifare_params[5] = config->sel_res;
+
+    return _init_as_target((pn532_t *) nfcdev->dev, 0b00000000, mifare_params, NULL, NULL);
+}
+
+/* Polls for an NFC-A tag */
+int pn532_poll_a(nfcdev_t *nfcdev) {
+    assert(nfcdev != NULL);
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+    _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_A, 1,
+                         LIST_PASSIVE_LEN_14443(1));
+
+    
+
+    if (buff[0] != 1) {
+        LOG_DEBUG("pn532: error during polling\n");
+        return -1;
+    }
+
+    LOG_DEBUG("pn532: found 1 target\n");
+
+    // uint8_t *target_data = buff[1];
+    return 0;
+}
+
+/* Polls for an NFC-B tag */
+int pn532_poll_b(nfcdev_t *nfcdev) {
+    assert(nfcdev != NULL);
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+    _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_B, 1,
+                         LIST_PASSIVE_LEN_14443(1));
+
+    
+
+    if (buff[0] != 1) {
+        LOG_DEBUG("pn532: error during polling\n");
+        return -1;
+    }
+
+    // uint8_t *target_data = buff[1];
+    return 0;
+}
+
+/* Polls for an NFC-F tag */
+/* int pn532_poll_f(nfcdev_t *nfcdev) {
+    assert(nfcdev != NULL);
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+    _list_passive_targets(nfcdev->dev, buff, PN532_BR_212_ISO_18092_F, 1,
+                         10);
+
+    if (buff[0] != 1) {
+        LOG_DEBUG("pn532: error during polling\n");
+        return -1;
+    }
+
+    // uint8_t *target_data = buff[1];
+    return 0;
+} */
+
+int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
+                                  uint8_t *rcv, size_t *receive_len) {
+    assert(nfcdev != NULL);
+    assert(nfcdev->dev != NULL);
+    assert(send_len <= CONFIG_PN532_BUFFER_LEN - 2);
+    assert(receive_len != NULL);
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+
+    buff[BUFF_CMD_START     ] = CMD_DATA_EXCHANGE;
+    buff[BUFF_DATA_START    ] = 1; /* tg number must always be 1 */
+
+    memcpy(&buff[BUFF_DATA_START + 1], send, send_len);
+
+    int ret_len = send_rcv(nfcdev->dev, buff, send_len + 1, CONFIG_PN532_BUFFER_LEN - 1);
+    if (ret_len > 0) {
+        if (buff[0] != 0x00) {
+            /* error */
+            DEBUG("pn532: error in data exchange %02x\n", buff[0]);
+            *receive_len = 0;
+            return -1;
+        }
+        /* copy the data into the receive buffer, excluding the status byte */
+        memcpy(rcv, &buff[1], ret_len - 1);
+    }
+    /* receive_len is only the data received, not the status byte */
+    *receive_len = ret_len - 1;
+
+    return 0;
 }

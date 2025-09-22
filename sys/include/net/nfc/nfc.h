@@ -1,9 +1,5 @@
 #pragma once
 
-typedef struct {
-} nfc_target_t;
-
-
 typedef enum {
     NFC_APPLICATION_TYPE_UNKNOWN = 0,
     NFC_APPLICATION_TYPE_T2T,

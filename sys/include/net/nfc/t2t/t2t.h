@@ -27,6 +27,14 @@
 #include "tlv.h"
 #include "net/nfc/ndef/ndef.h"
 
+/* commands for T2t */
+#define NFC_T2T_ACK 0x0A
+#define NFC_T2T_NACK 0x0B
+
+#define NFC_T2T_READ_COMMAND 0x30
+#define NFC_T2T_WRITE_COMMAND 0xA2
+#define NFC_T2T_SECTOR_SELECT_COMMAND 0xC2
+
 
 // ISO-1443 specific defines
 #define NFC_ISO14443A_UID_SINGLE_SIZE 4
@@ -377,6 +385,10 @@ int t2t_create_terminator_tlv(nfc_t2t_t *tag);
  * @return uint8_t* pointer to the memory or NULL if not enough space
  */
 uint8_t* t2t_reserve_ndef_space(nfc_t2t_t *tag, size_t msg_size);
+
+int t2t_read_blocks(const nfc_t2t_t *tag, uint8_t block_no, uint8_t *buf);
+
+int t2t_write_block(nfc_t2t_t *tag, uint8_t block_no, const uint8_t *block);
 
 //misc
 uint32_t t2t_get_size(nfc_t2t_t *tag); //returns size of used memory

@@ -3,6 +3,29 @@
 #include <string.h>
 #include "log.h"
 
+#define T2T_BLOCK_SIZE 4
+#define T2T_READ_BLOCK_COUNT 4
+#define T2T_WRITE_BLOCK_COUNT 1
+
+int t2t_write_block(nfc_t2t_t *t2t, uint8_t block_no, const uint8_t *block) {
+    for (int i = 0; i < T2T_BLOCK_SIZE; i++) {
+        t2t->memory[i + block_no * T2T_BLOCK_SIZE] = block[i];
+    }
+
+    LOG_DEBUG("[T2T] Wrote block no. %d\n", block_no);
+
+    return 0;
+}
+
+int t2t_read_blocks(const nfc_t2t_t *t2t, uint8_t block_no, uint8_t *block) {
+    for (int i = 0; i < T2T_BLOCK_SIZE * T2T_READ_BLOCK_COUNT; i++) {
+        block[i] = t2t->memory[i + block_no * T2T_BLOCK_SIZE];
+    }
+
+    LOG_DEBUG("[T2T] Read from block no. %d\n", block_no);
+    return 0;
+}
+
 /**
  * @brief Find portion of usable memory in given memory blob
  * 

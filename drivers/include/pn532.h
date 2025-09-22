@@ -30,11 +30,14 @@ extern "C" {
 #include <stdint.h>
 
 #include "net/nfc/nfc.h"
+#include "net/nfcdev.h"
 
 #if !IS_USED(MODULE_PN532_I2C) && !IS_USED(MODULE_PN532_SPI) && !IS_USED(MODULE_PN532_UART)
 #error Please use either pn532_i2c, pn532_spi and/or pn532_uart module to enable \
     the functionality on this device
 #endif
+
+
 
 /**
  * @brief   Data structure with the configuration parameters
@@ -66,6 +69,11 @@ typedef enum {
     PN532_SPI,
     PN532_UART
 } pn532_mode_t;
+
+typedef struct {
+    pn532_params_t params;
+    pn532_mode_t mode;
+} pn532_config_t;
 
 /**
  * @brief   Device descriptor for the PN532
@@ -275,7 +283,10 @@ void pn532_reset(const pn532_t *dev);
  * @return                  <0 i2c/spi/uart initialization error, the value is given
  *                          by the i2c/spi/uart init method.
  */
-int pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode);
+int _pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode);
+
+int pn532_init(nfcdev_t *nfcdev, const void *dev_config);
+
 
 #if IS_USED(MODULE_PN532_I2C) || DOXYGEN
 /**
@@ -299,7 +310,7 @@ static inline int pn532_init_i2c(pn532_t *dev, const pn532_params_t *params)
  */
 static inline int pn532_init_spi(pn532_t *dev, const pn532_params_t *params)
 {
-    return pn532_init(dev, params, PN532_SPI);
+    return _pn532_init(dev, params, PN532_SPI);
 }
 #endif
 
@@ -490,7 +501,10 @@ void pn532_release_passive(pn532_t *dev, unsigned target_id);
 
 void pn532_set_parameters(pn532_t *dev, uint8_t flags);
 
-int pn532_init_tag(pn532_t *dev, nfc_application_type_t app_type);
+int pn532_poll_a(nfcdev_t *nfcdev);
+
+int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
+                               uint8_t *rcv, size_t *receive_len);
 
 #ifdef __cplusplus
 }
