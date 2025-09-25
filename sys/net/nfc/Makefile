@@ -4,5 +4,11 @@ endif
 ifneq (,$(filter nfc_t2t,$(USEMODULE)))
   DIRS += t2t
 endif
+ifneq (,$(filter nfc_t4t,$(USEMODULE)))
+  DIRS += t4t
+endif
+ifneq (,$(filter nfc_apdu,$(USEMODULE)))
+  DIRS += apdu
+endif
 
 include $(RIOTBASE)/Makefile.base

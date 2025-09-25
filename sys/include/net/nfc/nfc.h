@@ -14,3 +14,5 @@ typedef enum {
 #include "nfc_a.h"
 #include "nfc_b.h"
 #include "nfc_f.h"
+
+#include "nfc_error.h"

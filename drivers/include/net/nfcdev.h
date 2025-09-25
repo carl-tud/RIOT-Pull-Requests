@@ -20,8 +20,6 @@ typedef enum {
 
 struct nfcdev;
 
-struct nfcdev; // Forward declaration
-
 typedef struct {
     int (*init)(struct nfcdev *nfcdev, const void *dev_config);
 
@@ -46,12 +44,17 @@ typedef struct {
     int (*target_exchange_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len, 
         uint8_t *recv, size_t *recv_len);
 
+    int (*target_send_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len);
+
+    int (*target_receive_data)(struct nfcdev *nfcdev, uint8_t *recv, size_t *recv_len);
+
     int (*initiator_exchange_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len, 
         uint8_t *recv, size_t *recv_len);
 } nfcdev_ops_t;
 
 typedef struct nfcdev {
     void *dev; /**< Pointer to the device specific structure */
+    void *config; /**< Pointer to the device specific configuration structure */
     const nfcdev_ops_t *ops; /**< Pointer to the device operations */
     nfcdev_state_t state; /**< Current state of the NFC device */
 } nfcdev_t;

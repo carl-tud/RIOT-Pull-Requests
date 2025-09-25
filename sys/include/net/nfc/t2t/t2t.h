@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef NET_NFC_TYPE_2_TAG_H
-#define NET_NFC_TYPE_2_TAG_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -34,7 +33,6 @@
 #define NFC_T2T_READ_COMMAND 0x30
 #define NFC_T2T_WRITE_COMMAND 0xA2
 #define NFC_T2T_SECTOR_SELECT_COMMAND 0xC2
-
 
 // ISO-1443 specific defines
 #define NFC_ISO14443A_UID_SINGLE_SIZE 4
@@ -56,7 +54,10 @@
 #define NFC_T2T_BLOCKS_PER_SECTOR 256
 #define NFC_T2T_STATIC_MEMORY_SIZE 64
 #define NFC_T2T_STATIC_MEMORY_DATA_AREA_SIZE 64
+#define NFC_T2T_STATIC_BLOCKS 16
+
 #define NFC_T2T_DEFAULT_MEM_SIZE NFC_T2T_STATIC_MEMORY_SIZE
+
 #define NFC_T2T_SIZE_UID 10
 #define NFC_T2T_SIZE_STATIC_LOCK_BYTES 2
 #define NFC_T2T_SIZE_STATIC_DATA_AREA 48
@@ -399,5 +400,3 @@ int t2t_set_read_only(nfc_t2t_t *tag); // sets tag read only in CC
 int t2t_clear_mem(nfc_t2t_t *tag); // clears complete reserved tag memory
 int t2t_clear_data_area(nfc_t2t_t *tag); //clears data area of tag
 void t2t_dump_tag_memory(nfc_t2t_t *tag); //dumps the tags memory to stdout
-
-#endif

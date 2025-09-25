@@ -62,7 +62,8 @@ static size_t process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *c
     return 0;
 }
 
-void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *tag) {
+void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *tag,
+    nfc_a_nfcid1_t nfcid1) {
     assert (emulator != NULL);
     assert (dev != NULL);
     assert (tag != NULL);

@@ -75,6 +75,8 @@ typedef struct {
     pn532_mode_t mode;
 } pn532_config_t;
 
+#define CONFIG_PN532_INITIATOR_COMMAND_BUFFER_LEN   (32)
+
 /**
  * @brief   Device descriptor for the PN532
  */
@@ -85,6 +87,9 @@ typedef struct {
     #if IS_USED(MODULE_PN532_UART) || DOXYGEN
     mutex_t cb;                     /**< Mutex to protect callbacks */
     #endif
+    uint8_t initiator_command[CONFIG_PN532_INITIATOR_COMMAND_BUFFER_LEN];      /**< Buffer to store the data received from the initiator */
+    size_t initiator_command_len;       /**< Length of the command received from the initiator */
+    bool iso_dep;                    /**< Whether ISO-DEP is enabled */
 } pn532_t;
 
 /**
@@ -504,7 +509,26 @@ void pn532_set_parameters(pn532_t *dev, uint8_t flags);
 int pn532_poll_a(nfcdev_t *nfcdev);
 
 int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
+                                  uint8_t *rcv, size_t *receive_len);
+
+int pn532_target_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
                                uint8_t *rcv, size_t *receive_len);
+
+int pn532_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_len);
+
+int pn532_target_send_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len);
+
+int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config);
+
+static const nfcdev_ops_t pn532_ops = {
+    .init = pn532_init,
+    .poll_a = pn532_poll_a,
+    .listen_a = pn532_listen_a,
+    .initiator_exchange_data = pn532_initiator_exchange_data,
+    .target_exchange_data = pn532_target_exchange_data,
+    .target_send_data = pn532_target_send_data,
+    .target_receive_data = pn532_target_receive_data
+};
 
 #ifdef __cplusplus
 }

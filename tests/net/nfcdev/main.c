@@ -12,6 +12,7 @@
     // Add other function pointers as needed
 }; */
 
+/* move to header */
 static const nfcdev_ops_t pn532_ops = {
     .init = pn532_init,
     .poll_a = pn532_poll_a,
@@ -64,6 +65,8 @@ int test_pn532(void) {
 
     nfc_dev.ops->init(&nfc_dev, (void *) &config);
     nfc_dev.ops->poll_a(&nfc_dev);
+
+    /* data exchange */
 
     return 0;
 }

@@ -678,6 +678,16 @@ void t2t_dump_tag_memory(nfc_t2t_t *tag){
     
 }
 
+void t2t_print(const nfc_t2t_t *tag) {
+    /* only uses memory and memory size */
+    for (uint32_t i = 0; i < tag->memory_size; i++) {
+        printf("%02x ", tag->memory[i]);
+        if ((i + 1) % 4 == 0) {
+            printf("\n");
+        }
+    }
+}
+
 int t2t_clear_data_area(nfc_t2t_t *tag){
     LOG_DEBUG("Setting data area of type 2 tag to 0x00\n");
     memset(tag->data_area_start, 0x00, tag->data_area_size);
