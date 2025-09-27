@@ -525,7 +525,6 @@ static const nfcdev_ops_t pn532_ops = {
     .poll_a = pn532_poll_a,
     .listen_a = pn532_listen_a,
     .initiator_exchange_data = pn532_initiator_exchange_data,
-    .target_exchange_data = pn532_target_exchange_data,
     .target_send_data = pn532_target_send_data,
     .target_receive_data = pn532_target_receive_data
 };

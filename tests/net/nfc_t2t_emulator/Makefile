@@ -1,7 +1,7 @@
 BOARD ?= nrf52840dk
 include ../Makefile.net_common
 
-USEMODULE += nrfx_nfct_dev
+USEMODULE += pn532_spi
 USEMODULE += nfc_t2t
 
 CFLAGS += -DISR_STACKSIZE=1024*2

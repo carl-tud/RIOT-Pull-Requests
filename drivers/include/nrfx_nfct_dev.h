@@ -35,7 +35,6 @@
 #define NRFX_NFCT_NFCDEV_OPS (nfcdev_ops_t) { \
     .init = init, \
     .listen_a = listen_a, \
-    .target_exchange_data = target_exchange_data, \
 }
 
 /* As the NFCT driver depends solely on the NRFX's hardware we can only have one 
@@ -50,8 +49,12 @@ int init(nfcdev_t *nfcdev, const void *dev_config);
 
 int listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config);
 
-int target_exchange_data(nfcdev_t *nfcdev, const uint8_t *tx, size_t tx_len,
-                         uint8_t *rx, size_t *rx_len);
+/* int target_exchange_data(nfcdev_t *nfcdev, const uint8_t *tx, size_t tx_len,
+                         uint8_t *rx, size_t *rx_len); */
+
+int target_send_data(nfcdev_t *nfcdev, const uint8_t *tx, size_t tx_len);
+
+int target_receive_data(nfcdev_t *nfcdev, uint8_t *rx, size_t *rx_len);
 
 
 /** @} */

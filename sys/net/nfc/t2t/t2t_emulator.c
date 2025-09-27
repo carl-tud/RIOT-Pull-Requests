@@ -7,20 +7,19 @@
 static int send_ack_nack(nfc_t2t_emulator_t *emulator, bool ack) {
     uint8_t tx_buffer[1];
     if (ack) {
-        LOG_DEBUG("[T2T Emulator] Sending ACK");
+        LOG_DEBUG("[T2T Emulator] Sending ACK\n");
         tx_buffer[0] = NFC_T2T_ACK;
     }
     else {
-        LOG_DEBUG("[T2T Emulator] Sending NACK");
+        LOG_DEBUG("[T2T Emulator] Sending NACK\n");
         tx_buffer[0] = NFC_T2T_NACK;
     }
 
-    emulator->dev->ops->target_exchange_data(emulator->dev, tx_buffer, 1, 
-        NULL, NULL);
+    emulator->dev->ops->target_send_data(emulator->dev, tx_buffer, 1);
     return 0;
 }
 
-static size_t process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd, uint8_t cmd_len) {
+static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd, uint8_t cmd_len) {
     if (cmd_len == 0) {
         LOG_DEBUG("[T2T Emulator] Received empty data\n");
         return 0;
@@ -39,50 +38,52 @@ static size_t process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *c
         uint8_t data_buffer[16];
         LOG_DEBUG("[T2T Emulator] Read command received for block %d\n", block_address);
         t2t_read_blocks(emulator->tag, block_address, data_buffer);
-        emulator->dev->ops->target_exchange_data(emulator->dev, data_buffer, 16, NULL, NULL);
+        emulator->dev->ops->target_send_data(emulator->dev, data_buffer, 16);
         return 0;
     }
     else if (command == NFC_T2T_WRITE_COMMAND) {
         if (data_size != 5) {
-            LOG_WARNING("[T2T Emulator] Write command does not contain the correct amount of bytes");
+            LOG_WARNING("[T2T Emulator] Write command does not contain the correct amount of bytes\n");
             return -1;
         }
         t2t_write_block(emulator->tag, *data_buffer, data_buffer + 1);
-        send_ack_nack(emulator, true);
+        return send_ack_nack(emulator, true);
         // process_write_command(*data_buffer, data_buffer + 1);
     }
     else if (command == NFC_T2T_SECTOR_SELECT_COMMAND) {
         LOG_DEBUG("[T2T Emulator] Sector select command received\n");
-        send_ack_nack(emulator, false);
+        return send_ack_nack(emulator, false);
+    } else if (command == NFC_T2T_HALT_COMMAND) {
+        LOG_DEBUG("[T2T Emulator] Halt command received\n");
+        emulator->state = NFC_T2T_STATE_SLEEPING;
+        return send_ack_nack(emulator, true);
     } else {
         LOG_ERROR("[T2T Emulator] Unknown command received: 0x%02X\n", command);
-        send_ack_nack(emulator, false);
+        emulator->state = NFC_T2T_STATE_IDLE;
+        return send_ack_nack(emulator, false);
     }
 
     return 0;
 }
 
 void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *tag,
-    nfc_a_nfcid1_t nfcid1) {
+    nfc_a_nfcid1_t *nfcid1) {
     assert (emulator != NULL);
     assert (dev != NULL);
     assert (tag != NULL);
 
     emulator->dev = dev;
     emulator->tag = tag;
-    emulator->dev->state = NFCDEV_STATE_DISABLED;
 
-    emulator->dev->ops->init(emulator->dev, NULL);
+    emulator->dev->ops->init(emulator->dev, emulator->dev->config);
 
     nfc_a_listener_config_t config = {
-        .nfcid1 = {
-            .len = NFC_A_NFCID1_LEN4,
-            .nfcid = {0xDE, 0xAD, 0xBE, 0xEF}
-        },
-        .sel_res = NFC_A_SEL_RES_T2T_VALUE
+        .sel_res = NFC_A_SEL_RES_T2T_VALUE,
+        .nfcid1 = *nfcid1
     };
+
     emulator->dev->ops->listen_a(emulator->dev, &config);
-    emulator->dev->state = NFCDEV_STATE_LISTENING;
+    emulator->state = NFC_T2T_STATE_ACTIVE;
 
     uint8_t rx_buffer[32];
     size_t rx_len = 0;
@@ -90,10 +91,23 @@ void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *
     /* infinite loop */
     while (true) {
         /* receive data */
-        emulator->dev->ops->target_exchange_data(emulator->dev, NULL, 0, rx_buffer, &rx_len);
+        int ret = emulator->dev->ops->target_receive_data(emulator->dev, rx_buffer, &rx_len);
+        if (ret < 0) {
+            LOG_ERROR("[T2T Emulator] Error receiving data\n");
+            return;
+        }
+
+        if (emulator->state == NFC_T2T_STATE_SLEEPING) {
+            LOG_DEBUG("[T2T Emulator] In sleep mode, ignoring received data\n");
+            return;
+        }
 
         /* process data and send response */
-        process_t2t_command(emulator, rx_buffer, rx_len);
+        ret = process_t2t_command(emulator, rx_buffer, rx_len);
+        if (ret < 0) {
+            LOG_ERROR("[T2T Emulator] Error processing command\n");
+            return;
+        }
     }
 
     return;

@@ -140,10 +140,14 @@ void t4t_emulator_start(nfc_t4t_emulator_t *emulator, nfcdev_t *dev,
     /* infinite loop */
     while (true) {
         /* receive data */
-        emulator->dev->ops->target_receive_data(emulator->dev, rx_buffer, &rx_len);
+        int ret = emulator->dev->ops->target_receive_data(emulator->dev, rx_buffer, &rx_len);
+        if (ret < 0) {
+            LOG_DEBUG("[T4T Emulator] Error receiving data\n");
+            return;
+        }
 
         LOG_DEBUG("[T4T Emulator] Received %u bytes\n", rx_len);
-        int ret = process_t4t_command(emulator, rx_buffer, rx_len);
+        ret = process_t4t_command(emulator, rx_buffer, rx_len);
         if (ret < 0) {
             LOG_DEBUG("[T4T Emulator] Error processing command\n");
             return;

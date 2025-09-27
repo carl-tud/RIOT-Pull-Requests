@@ -51,7 +51,7 @@ typedef struct {
  * @brief The ISO/IEC-7816 select command to select the NDEF file
  * for an NFC Type 4 Tag.
  */
-const uint8_t T4T_APDU_NDEF_FILE_SELECT[] = {
+static const uint8_t T4T_APDU_NDEF_FILE_SELECT[] = {
     APDU_CLA_DEFAULT, 
     APDU_INS_SELECT,
     APDU_SELECT_P1_SELECT_MF_DF_OR_EF, 
@@ -65,7 +65,7 @@ const uint8_t T4T_APDU_NDEF_FILE_SELECT[] = {
  * @brief The ISO/IEC-7816 select command to select the Capability Container (CC) file
  * for an NFC Type 4 Tag.
  */
-const uint8_t T4T_APDU_CC_FILE_SELECT[] = {
+static const uint8_t T4T_APDU_CC_FILE_SELECT[] = {
     APDU_CLA_DEFAULT, 
     APDU_INS_SELECT,
     APDU_SELECT_P1_SELECT_MF_DF_OR_EF, 
@@ -79,7 +79,7 @@ const uint8_t T4T_APDU_CC_FILE_SELECT[] = {
  * @brief The ISO/IEC-7816 select command to select the NDEF Tag Application
  * for an NFC Type 4 Tag.
  */
-const uint8_t T4T_APDU_NDEF_TAG_APPLICATION_SELECT[] = {
+static const uint8_t T4T_APDU_NDEF_TAG_APPLICATION_SELECT[] = {
     APDU_CLA_DEFAULT, APDU_INS_SELECT,
     APDU_SELECT_P1_SELECT_BY_DF_NAME, APDU_SELECT_P2_FIRST_OR_ONLY_OCCURRENCE,
     0x07, /* Length of Command*/

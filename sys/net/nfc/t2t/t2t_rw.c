@@ -44,7 +44,7 @@ int nfc_t2t_rw_read(nfc_t2t_rw_t *rw) {
             return -1;
         }
 
-        memcpy(&(rw->tag->memory[block_no * NFC_T2T_BLOCK_SIZE]), resp_buffer, 16);
+        memcpy(&(((uint8_t *)(rw->tag))[block_no * NFC_T2T_BLOCK_SIZE]), resp_buffer, 16);
         block_no += 4;
     }
     return 0;

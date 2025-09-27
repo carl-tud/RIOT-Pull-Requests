@@ -312,8 +312,8 @@ int _read_blocking(pn532_t *dev, uint8_t *buff, unsigned len) {
         uart_index = 0;
     }
 #endif
-    DEBUG("pn532: <- ");
-    PRINTBUFF(buff, len);
+    // DEBUG("pn532: <- ");
+    // PRINTBUFF(buff, len);
     return ret;
 }
 
@@ -325,8 +325,8 @@ static int _write(const pn532_t *dev, uint8_t *buff, unsigned len)
     (void)len;
 
     #if IS_USED(MODULE_PN532_SPI)
-    DEBUG("pn532: -> ");
-    PRINTBUFF(buff, len);
+    // DEBUG("pn532: -> ");
+    // PRINTBUFF(buff, len);
     #endif
 
     switch (dev->mode) {
@@ -407,8 +407,8 @@ static int _read(const pn532_t *dev, uint8_t *buff, unsigned len)
         DEBUG("pn532: invalid mode (%i)!\n", dev->mode);
     }
     if (ret > 0) {
-        DEBUG("pn532: <- ");
-        PRINTBUFF(buff, len);
+        // DEBUG("pn532: <- ");
+        // PRINTBUFF(buff, len);
     }
 
     /* wait for a while */
@@ -1366,20 +1366,30 @@ int pn532_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_le
     assert(rcv != NULL);
     assert(receive_len != NULL);
 
-    if (((pn532_t *) nfcdev->dev)->iso_dep) {
+    /* the PN532 init as target command returns after receiving the first command */
+    pn532_t *dev = (pn532_t *) nfcdev->dev;
+
+    if (dev->initiator_command_len > 0) {
+        assert(dev->initiator_command_len <= CONFIG_PN532_INITIATOR_COMMAND_BUFFER_LEN);
+        memcpy(rcv, dev->initiator_command, dev->initiator_command_len);
+        *receive_len = dev->initiator_command_len;
+        dev->initiator_command_len = 0; /* clear the buffer */
+        return *receive_len;
+    }
+
+    if (dev->iso_dep) {
         return _tg_get_data(nfcdev->dev, rcv, receive_len);
     } else {
         return _tg_get_initiator_command(nfcdev->dev, rcv, receive_len);
     }
 }
 
-int pn532_target_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
+/* int pn532_target_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
                                uint8_t *rcv, size_t *receive_len) {
     assert(nfcdev != NULL);
     assert(nfcdev->dev != NULL);
     assert(BUFF_DATA_START + 1 + send_len <= CONFIG_PN532_BUFFER_LEN);
 
-    /* send data */
     if (send != NULL && send_len > 0) {
         int ret = pn532_target_send_data(nfcdev, send, send_len);
         if (ret < 0) {
@@ -1387,7 +1397,6 @@ int pn532_target_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t sen
         }
     }
 
-    /* receive data */
     if (rcv != NULL && receive_len != NULL) {
         int ret = pn532_target_receive_data(nfcdev, rcv, receive_len);
         if (ret < 0) {
@@ -1396,4 +1405,4 @@ int pn532_target_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t sen
     }
 
     return 0;
-}
+} */

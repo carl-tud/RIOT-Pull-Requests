@@ -5,7 +5,7 @@ USEMODULE += ztimer_msec
 
 # select if you want to build the SPI or the I2C version of the driver:
 #USEMODULE += pn532_i2c
-USEMODULE += pn532_uart
+USEMODULE += pn532_spi
 USEMODULE += ztimer_usec
 
 # set default device parameters in case they are undefined

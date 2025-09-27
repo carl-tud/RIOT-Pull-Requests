@@ -41,8 +41,8 @@ typedef struct {
     int (*dep_exchange_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len, 
         uint8_t *recv, size_t *recv_len);
 
-    int (*target_exchange_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len, 
-        uint8_t *recv, size_t *recv_len);
+    /* int (*target_exchange_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len, 
+        uint8_t *recv, size_t *recv_len); */
 
     int (*target_send_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len);
 
