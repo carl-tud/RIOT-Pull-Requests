@@ -219,7 +219,7 @@ typedef struct {
     ndef_buffer_t buffer;
 
     /**
-     * @brief Array of NDEF record descriptors
+     * @brief Array of NDEF record pointers
      */
     uint8_t *records[MAX_NDEF_RECORD_COUNT];
 
@@ -371,6 +371,8 @@ int ndef_record_add_text(ndef_t *ndef, const char *text, uint32_t text_length,
  * @return Size of the text record
  */
 size_t ndef_record_calculate_text_size(uint32_t text_length, uint8_t lang_code_length);
+
+int ndef_from_buffer(ndef_t *ndef);
 
 /**
  * @brief NDEF URI types
