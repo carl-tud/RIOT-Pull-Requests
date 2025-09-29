@@ -64,6 +64,9 @@
 #define NFC_T2T_CC_SIZE 4
 #define NFC_T2T_LOCK_BYTES_SIZE 2
 
+#define NFC_T2T_NDEF_TLV_TYPE 0x03
+#define NFC_T2T_TERMINATOR_TLV_TYPE 0xFE
+
 // typedefs
 
 /**
