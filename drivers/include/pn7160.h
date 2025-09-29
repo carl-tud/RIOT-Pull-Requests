@@ -4,6 +4,7 @@
 #include "mutex.h"
 #include "periph/i2c.h"
 #include "periph/spi.h"
+#include "net/nfcdev.h"
 
 typedef enum {
     PN7160_I2C,
@@ -30,6 +31,17 @@ typedef struct {
     mutex_t trap;                   /**< Mutex to wait for chip response */
 } pn7160_t;
 
-int pn7160_init(pn7160_t *dev, const pn7160_params_t *params);
+int pn7160_init(nfcdev_t *dev, const void *params);
+
+int pn7160_poll_a(nfcdev_t *nfcdev);
+
+int pn7160_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
+                                  uint8_t *rcv, size_t *receive_len);
 
 int pn7160_reset(pn7160_t *dev);
+
+static const nfcdev_ops_t pn7160_ops = {
+    .init = pn7160_init,
+    .poll_a = pn7160_poll_a,
+    .initiator_exchange_data = pn7160_initiator_exchange_data
+};

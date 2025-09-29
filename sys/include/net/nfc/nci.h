@@ -30,14 +30,14 @@
 
 /* RF Management Group OIDs (NCI_GID_RF_MGMT) */
 #define NCI_OID_RF_DISCOVER_MAP         0x00 /* Map RF interfaces to protocols */
-#define NCI_OID_RF_DISCOVER             0x01 /* Start discovery */
-#define NCI_OID_RF_DISCOVER_SELECT      0x02 /* Select a discovered target */
-#define NCI_OID_RF_DEACTIVATE           0x03 /* Deactivate RF interface */
-#define NCI_OID_RF_T3T_POLLING         0x04 /* T3T (Type 3 Tag) polling */
-#define NCI_OID_RF_PARAMETER_UPDATE     0x05 /* Update RF communication parameters */
-#define NCI_OID_RF_ISO_DEP_NAK_PRESENCE 0x06 /* ISO-DEP NAK presence check */
-#define NCI_OID_RF_T4T_NTF             0x07 /* T4T (Type 4 Tag) notification */
-#define NCI_OID_RF_DISCOVER_NTF        0x08 /* Discovery notification */
+#define NCI_OID_RF_SET_LISTEN_MODE_ROUTING 0x01 /* Set routing for listen mode */
+#define NCI_OID_RF_GET_LISTEN_MODE_ROUTING 0x02 /* Get routing for listen mode */
+#define NCI_OID_RF_DISCOVER             0x03 /* Start RF discovery */
+#define NCI_OID_RF_DISCOVER_SELECT      0x04 /* Select discovered RF target */
+#define NCI_OID_RF_INTF_ACTIVATED       0x05 /* RF interface activated notification */
+#define NCI_OID_RF_DEACTIVATE           0x06 /* Deactivate RF interface */
+#define NCI_OID_RF_FIELD_INFO           0x07 /* Field information notification */
+#define NCI_OID_RF_T3T_POLLING          0x08 /* Polling for Type 3 Tag */
 
 /* NFCEE Management Group OIDs (NCI_GID_NFCEE_MGMT) */
 #define NCI_OID_NFCEE_DISCOVER          0x00 /* Discover NFCEEs */
@@ -53,6 +53,39 @@
 #define NCI_MT_CMD              0x1 /* Command message */
 #define NCI_MT_RSP              0x2 /* Response message */
 #define NCI_MT_NTF              0x3 /* Notification message */
+
+/* RF Technologies */
+#define NCI_NFC_RF_TECHNOLOGY_A     0x00 /* NFC-A (ISO/IEC 14443 Type A) */
+#define NCI_NFC_RF_TECHNOLOGY_B     0x01 /* NFC-B (ISO/IEC 14443 Type B) */
+#define NCI_NFC_RF_TECHNOLOGY_F     0x02 /* NFC-F (FeliCa) */
+#define NCI_NFC_RF_TECHNOLOGY_V     0x03 /* NFC-V (ISO/IEC 15693) */
+
+/* RF Technology and Mode */
+#define NCI_NFC_A_PASSIVE_POLL_MODE    0x00 /* NFC-A Passive Polling */
+#define NCI_NFC_B_PASSIVE_POLL_MODE    0x01 /* NFC-B Passive Polling */
+#define NCI_NFC_F_PASSIVE_POLL_MODE    0x02 /* NFC-F Passive Polling */
+#define NCI_NFC_ACTIVE_POLL_MODE       0x03 /* NFC Active Polling */
+#define NCI_NFC_V_PASSIVE_POLL_MODE    0x06 /* NFC-V Passive Polling */
+#define NCI_NFC_A_PASSIVE_LISTEN_MODE  0x80 /* NFC-A Passive Listening */
+#define NCI_NFC_B_PASSIVE_LISTEN_MODE  0x81 /* NFC-B Passive Listening */
+#define NCI_NFC_F_PASSIVE_LISTEN_MODE  0x82 /* NFC-F Passive Listening */
+#define NCI_NFC_ACTIVE_LISTEN_MODE     0x83 /* NFC Active Listening */
+
+/* NCI Status */
+#define NCI_STATUS_OK              0x00 /* Operation successful */
+#define NCI_STATUS_REJECTED        0x01 /* Operation rejected */
+#define NCI_STATUS_FAILED          0x03 /* Operation failed */
+#define NCI_STATUS_NOT_INITIALIZED 0x04 /* NFC Controller not initialized */
+#define NCI_STATUS_SYNTAX_ERROR    0x05 /* Syntax error in command */
+#define NCI_STATUS_SEMANTIC_ERROR  0x06 /* Semantic error in command */
+#define NCI_STATUS_INVALID_PARAM   0x09 /* Invalid parameter */
+#define NCI_STATUS_MESSAGE_SIZE_EXCEEDED 0x0A /* Message size exceeded */
+
+#define NCI_RF_FRAME_CORRUPTED  0x02 /* RF frame corrupted */
+#define NCI_RF_TRANSMISSION_EXCEPTION 0xB0 /* RF transmission exception */
+#define NCI_RF_PROTOCOL_EXCEPTION   0xB1 /* RF protocol error */
+#define NCI_RF_TIMEOUT_EXCEPTION    0xB2 /* RF timeout error */
+#define NCI_RF_UNEXPECTED_DATA    0xB3 /* Unexpected RF data */
 
 /**
  * @brief Macro to construct NCI Packet Control Byte

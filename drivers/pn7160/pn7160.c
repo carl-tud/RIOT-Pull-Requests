@@ -3,6 +3,8 @@
 #include "periph/spi.h"
 #include "net/nfc/nci.h"
 #include "log.h"
+#include "ztimer.h"
+#include "memory.h"
 
 #define PN7160_PAYLOAD_START                (3u)
 
@@ -16,46 +18,35 @@
 
 #define PN7160_BUFFER_LEN                     (128u)
 
+static const uint8_t PN7160_CORE_CONFIG[] = { 0x01, 0xA0, 0x0E, 0x0B, 0x11, 0x01, 0x02, 
+    0xB2, 0x00, 0xB2, 0x1E, 0x11, 0x00, 0x10, 0x0C };
+
+// #if IS_ACTIVE(ENABLE_DEBUG)
+#define PRINTBUFF printbuff
+static void printbuff(uint8_t *buff, unsigned len)
+{
+    while (len) {
+        len--;
+        printf("%02x ", *buff++);
+    }
+    printf("\n");
+}
+/* #else
+#define PRINTBUFF(...)
+#endif */
+
 static void nfc_event(void *dev)
 {
-    LOG_DEBUG("pn7160: event\n");
     mutex_unlock(&((pn7160_t *)dev)->trap);
 }
 
-int pn7160_init(pn7160_t *dev, const pn7160_params_t *params)
-{
-    assert(dev != NULL);
-    assert(params != NULL);
-    dev->conf = params;
-
-    if (dev->conf->mode == PN7160_SPI) {
-    #if IS_USED(MODULE_PN7160_SPI)
-        /* we handle the CS line manually... */
-        gpio_init(dev->conf->nss, GPIO_OUT);
-        gpio_set(dev->conf->nss);
-    #endif
-    } else {
-        /* not implemented yet */
-        return -1;
-    }
-
-    mutex_init(&dev->trap);
-    mutex_lock(&dev->trap);
-
-    gpio_init_int(dev->conf->irq, GPIO_IN_PU, GPIO_RISING, nfc_event, (void *)dev);
 
 
-    // gpio_init(dev->conf->reset, GPIO_OUT);
-    // gpio_set(dev->conf->reset);
 
-    return 0;
-}
 
 static int _read(const pn7160_t *dev, uint8_t *buff)
 {
     int ret = -1;
-    LOG_DEBUG("pn7160: read\n");
-
     switch (dev->conf->mode) {
     case PN7160_SPI:
         /* SPI read implementation */
@@ -75,11 +66,12 @@ static int _read(const pn7160_t *dev, uint8_t *buff)
             spi_release(dev->conf->spi);
             return -1;
         }
-        spi_transfer_bytes(dev->conf->spi, SPI_CS_UNDEF, true, NULL, buff + NCI_HEADER_SIZE, payload_len);
+        spi_transfer_bytes(dev->conf->spi, SPI_CS_UNDEF, true, NULL, buff + NCI_HEADER_SIZE, 
+            payload_len);
 
         gpio_set(dev->conf->nss);
         spi_release(dev->conf->spi);
-        LOG_DEBUG("pn7160: read %u bytes\n", (unsigned)(NCI_HEADER_SIZE + payload_len));
+
         ret = (int)(NCI_HEADER_SIZE + payload_len);
         break;
     case PN7160_I2C:
@@ -89,6 +81,8 @@ static int _read(const pn7160_t *dev, uint8_t *buff)
         break;
     }
 
+    LOG_DEBUG("pn7160: <- ");
+    PRINTBUFF(buff, ret > 0 ? (size_t)ret : 0);
     return ret;
 }
 
@@ -117,6 +111,35 @@ static int _write(const pn7160_t *dev, const uint8_t *buff, size_t len)
         break;
     }
 
+    ztimer_sleep(ZTIMER_MSEC, 1);
+
+    LOG_DEBUG("pn7160: -> ");
+    PRINTBUFF((uint8_t *)buff, len);
+
+    return ret;
+}
+
+/* returns the length of the received data */
+static int send_recv(pn7160_t *dev, uint8_t *buff, size_t len)
+{
+    int ret = -1;
+
+    if (dev == NULL || buff == NULL || len == 0) {
+        return -1;
+    }
+
+    ret = _write(dev, buff, len);
+    if (ret < 0) {
+        return ret;
+    }
+
+    mutex_lock(&dev->trap);
+
+    ret = _read(dev, buff);
+    if (ret < 0) {
+        return ret;
+    }
+
     return ret;
 }
 
@@ -143,45 +166,248 @@ static int construct_packet_header(uint8_t *buff, uint8_t mt, uint8_t pbf,
     return 0;
 }
 
-static int send_recv(pn7160_t *dev, uint8_t *buff, size_t len)
+static int send_cmd_rcv_rsp(pn7160_t *dev, uint8_t gid, uint8_t oid, 
+    uint8_t *buff, uint8_t payload_len)
 {
-    int ret = -1;
+    assert (dev != NULL);
+    construct_packet_header(buff, NCI_MT_CMD, 0, gid, oid, payload_len);
+    int len = send_recv((pn7160_t *)dev, buff, PN7160_PAYLOAD_START + payload_len);
 
-    if (dev == NULL || buff == NULL || len == 0) {
+        /* check the header if it contains the correct mt, gid and oid */
+    if (len < (int) NCI_HEADER_SIZE) {
+        LOG_ERROR("pn7160: invalid len (%i)!\n", len);
         return -1;
     }
 
-    ret = _write(dev, buff, len);
+    if (NCI_GET_MT(buff[0]) != NCI_MT_RSP) {
+        LOG_ERROR("pn7160: invalid mt (%i)!\n", NCI_GET_MT(buff[0]));
+        return -1;
+    }
+
+    if (NCI_GET_GID(buff[0]) != gid) {
+        LOG_ERROR("pn7160: invalid gid (%i)!\n", NCI_GET_GID(buff[0]));
+        return -1;
+    }
+
+    if (NCI_GET_OID(buff[1]) != oid) {
+        LOG_ERROR("pn7160: invalid oid (%i)!\n", NCI_GET_OID(buff[1]));
+        return -1;
+    }
+
+    /* the first byte of the payload is the status */
+    if (buff[PN7160_PAYLOAD_START] != NCI_STATUS_OK) {
+        LOG_ERROR("pn7160: rsp not ok (%i)!\n", buff[PN7160_PAYLOAD_START]);
+        return -1;
+    }
+
+    return 0;
+}
+
+static int send_cmd_rcv_ntf(pn7160_t *dev, uint8_t gid, uint8_t oid, 
+    uint8_t *buff, uint8_t payload_len)
+{
+    assert (dev != NULL);
+    int ret = send_cmd_rcv_rsp(dev, gid, oid, buff, payload_len);
     if (ret < 0) {
         return ret;
+    }
+
+
+    /* wait for the NTF */
+    mutex_lock(&dev->trap);
+
+    _read((pn7160_t *)dev, buff);
+
+
+    return 0;
+}
+
+static int _core_set_config_cmd(pn7160_t *dev) {
+    assert (dev != NULL);
+    uint8_t buff[PN7160_BUFFER_LEN];
+    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_CORE_CONFIG, sizeof(PN7160_CORE_CONFIG));
+
+    send_cmd_rcv_rsp(dev, NCI_GID_CORE, 
+        NCI_OID_CORE_SET_CONFIG, buff, sizeof(PN7160_CORE_CONFIG));
+
+    return 0;
+}
+
+static int _rf_discover_map_cmd(const pn7160_t *dev) {
+    assert (dev != NULL);
+    uint8_t buff[PN7160_BUFFER_LEN];
+    buff[PN7160_PAYLOAD_START] = 0x01; /* num of configurations */
+    buff[PN7160_PAYLOAD_START + 1] = 0x00; /* Undetermined */
+    buff[PN7160_PAYLOAD_START + 2] = 0x01; /* Poll Mode */
+    buff[PN7160_PAYLOAD_START + 3] = 0x01; /* RF interface */
+
+    send_cmd_rcv_rsp((pn7160_t *)dev, NCI_GID_RF_MGMT, 
+        NCI_OID_RF_DISCOVER_MAP, buff, 4);
+
+    return 0;
+}
+
+static int _rf_discover_cmd(const pn7160_t *dev, uint8_t technology) {
+    assert (dev != NULL);
+    uint8_t buff[PN7160_BUFFER_LEN];
+    buff[PN7160_PAYLOAD_START] = 0x01; /* num of configurations */
+    buff[PN7160_PAYLOAD_START + 1] = technology; /* NFC-A technology */
+    buff[PN7160_PAYLOAD_START + 2] = 0x01;
+
+    send_cmd_rcv_ntf((pn7160_t *)dev, NCI_GID_RF_MGMT, 
+        NCI_OID_RF_DISCOVER, buff, 3);
+
+    if (NCI_GET_OID(buff[1]) != NCI_OID_RF_INTF_ACTIVATED) {
+        LOG_ERROR("pn7160: invalid ntf oid (%i)!\n", NCI_GET_OID(buff[1]));
+        return -1;
+    }
+
+    return 0;
+}
+
+
+
+int pn7160_init(nfcdev_t *nfcdev, const void *params)
+{
+    assert(nfcdev != NULL);
+    assert(params != NULL);
+    pn7160_t *dev = (pn7160_t *) nfcdev->dev;
+    dev->conf = (pn7160_params_t *) params;
+
+    if (dev->conf->mode == PN7160_SPI) {
+    #if IS_USED(MODULE_PN7160_SPI)
+        /* we handle the CS line manually... */
+        gpio_init(dev->conf->nss, GPIO_OUT);
+        gpio_set(dev->conf->nss);
+    #endif
+    } else {
+        /* not implemented yet */
+        return -1;
+    }
+
+    mutex_init(&dev->trap);
+    mutex_lock(&dev->trap);
+
+    gpio_init_int(dev->conf->irq, GPIO_IN_PU, GPIO_RISING, nfc_event, (void *)dev);
+
+
+    // gpio_init(dev->conf->reset, GPIO_OUT);
+    // gpio_set(dev->conf->reset);
+
+    LOG_DEBUG("pn7160: init done\n");
+
+    pn7160_reset(dev);
+    
+    /* this is done so the device operates properly at 3.3V */
+    _core_set_config_cmd(dev);
+
+    nfcdev->state = NFCDEV_STATE_DISABLED;
+
+    return 0;
+}
+
+int pn7160_poll_a(nfcdev_t *dev) {
+    assert (dev != NULL);
+
+    _rf_discover_map_cmd((pn7160_t *)dev->dev);
+
+    int ret = _rf_discover_cmd((pn7160_t *)dev->dev, 
+        NCI_NFC_A_PASSIVE_POLL_MODE); /* NFC-A technology */
+
+    if (ret < 0) {
+        LOG_ERROR("pn7160: poll for NFC-A device failed\n");
+        return ret;
+    }
+
+    return 0;
+}
+
+static int _send_and_rcv_data_message(pn7160_t *dev, uint8_t *buff, size_t len) {
+    assert (dev != NULL);
+    construct_packet_header(buff, NCI_MT_DATA, 0, 0, 0, len);
+    int ret = send_recv((pn7160_t *)dev, buff, NCI_HEADER_SIZE + len);
+
+    /* this should be a credits NTF */
+    if (NCI_GET_MT(buff[0]) != NCI_MT_NTF) {
+        LOG_ERROR("pn7160: invalid mt (%i)!\n", NCI_GET_MT(buff[0]));
+        return -1;
+    }
+
+    if (NCI_GET_GID(buff[0]) != NCI_GID_CORE) {
+        LOG_ERROR("pn7160: invalid gid (%i)!\n", NCI_GET_GID(buff[0]));
+        return -1;
+    }
+
+    if (NCI_GET_OID(buff[1]) != NCI_OID_CORE_CONN_CREDITS) {
+        LOG_ERROR("pn7160: invalid oid (%i)!\n", NCI_GET_OID(buff[1]));
+        return -1;
     }
 
     mutex_lock(&dev->trap);
 
-    ret = _read(dev, buff);
+    ret = _read((pn7160_t *)dev, buff);
     if (ret < 0) {
         return ret;
+    }
+
+    if (NCI_GET_MT(buff[0]) != NCI_MT_DATA) {
+        LOG_ERROR("pn7160: invalid mt (%i)!\n", NCI_GET_MT(buff[0]));
+        return -1;
+    }
+
+    ret -= 1;
+    /* the last byte must be 0x00 */
+    if (buff[ret] != 0x00) {
+        LOG_ERROR("pn7160: invalid last byte (%i)!\n", buff[ret]);
+        return -1;
     }
 
     return ret;
 }
 
+int pn7160_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
+                                  uint8_t *rcv, size_t *receive_len)
+{
+    assert(nfcdev != NULL);
+    assert(send != NULL);
+    assert(send_len > 0);
+    assert(rcv != NULL);
+    assert(receive_len != NULL);
+
+    pn7160_t *dev = (pn7160_t *) nfcdev->dev;
+    uint8_t buff[PN7160_BUFFER_LEN];
+
+    if (send_len > (PN7160_BUFFER_LEN - NCI_HEADER_SIZE)) {
+        LOG_ERROR("pn7160: send_len too large (%u)!\n", (unsigned)send_len);
+        return -1;
+    }
+
+    memcpy(&buff[PN7160_PAYLOAD_START], send, send_len);
+
+    *receive_len = _send_and_rcv_data_message(dev, buff, send_len) - NCI_HEADER_SIZE;
+    memcpy(rcv, &buff[PN7160_PAYLOAD_START], *receive_len);
+
+    return 0;
+}
+
+
+
 int pn7160_reset(pn7160_t *dev)
 {
-    LOG_DEBUG("pn7160: reset\n");
     assert(dev != NULL);
     uint8_t buff[PN7160_BUFFER_LEN];
 
-    construct_packet_header(buff, NCI_MT_CMD, 0, NCI_GID_CORE, NCI_OID_CORE_RESET, 1);
-    buff[PN7160_PAYLOAD_START] = 0x01; /* reset configuration */
-    send_recv(dev, buff, PN7160_PAYLOAD_START + 1);
+    buff[PN7160_PAYLOAD_START] = 0x01; /* reset type: core reset */
 
-    if (buff[PN7160_PAYLOAD_START] == 0x00) {
-        LOG_DEBUG("pn7160: reset ok\n");
-        return 0;
-    }
+    send_cmd_rcv_ntf((pn7160_t *)dev, NCI_GID_CORE, NCI_OID_CORE_RESET, buff, 1);
 
-    return -1;
+    buff[PN7160_PAYLOAD_START] = 0x00;
+    buff[PN7160_PAYLOAD_START + 1] = 0x00; 
+    send_cmd_rcv_rsp((pn7160_t *)dev, NCI_GID_CORE, NCI_OID_CORE_INIT, buff, 2);
+
+    LOG_DEBUG("pn7160: reset done\n");
+
+    return 0;
 }
 
 
