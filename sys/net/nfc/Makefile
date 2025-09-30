@@ -1,3 +1,5 @@
+MODULE += nfc
+
 ifneq (,$(filter nfc_ndef,$(USEMODULE)))
   DIRS += ndef
 endif

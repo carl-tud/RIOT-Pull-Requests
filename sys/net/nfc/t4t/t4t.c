@@ -53,7 +53,7 @@ static int t4t_init_cc_file(nfc_t4t_t *tag, size_t max_ndef_file_size) {
     return 0;
 }
 
-int t4t_init(nfc_t4t_t *tag, uint8_t *ndef_file, size_t max_ndef_file_size) {
+int t4t_init(nfc_t4t_t *tag, uint8_t *ndef_file,  size_t max_ndef_file_size) {
     if (tag == NULL || ndef_file == NULL || max_ndef_file_size == 0) {
         return -1;
     }

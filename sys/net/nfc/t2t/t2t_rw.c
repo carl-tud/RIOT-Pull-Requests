@@ -20,22 +20,19 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
         return -1;
     }
 
-    rw->dev->ops->poll_a(dev, NULL);
+    nfc_a_listener_config_t config = {0};
+    rw->dev->ops->poll_a(dev, &config);
+
+    /* print as hex */
+    LOG_DEBUG("[T2T RW] Tag found with SENS_RES: %04X, SEL_RES: %02X\n", 
+    (uint16_t)(config.sens_res.anticollision_information << 8) 
+    | (uint16_t)(config.sens_res.platform_information), 
+    (uint16_t)(config.sel_res));
 
     /* read the first 2 blocks to get the length of the NDEF message */
     uint8_t cmd_buffer[5];
     uint8_t resp_buffer[16];
     size_t resp_len = 0;
-    cmd_buffer[0] = NFC_T2T_READ_COMMAND;
-    cmd_buffer[1] = 0x00; /* block 0 */
-    // if(rw->dev->ops->initiator_exchange_data(rw->dev, cmd_buffer, 2, resp_buffer, &resp_len) != 0) {
-    //     LOG_ERROR("[T2T RW] Error during data exchange\n");
-    //     return -1;
-    // }
-    // if(resp_len != 16) {
-    //     LOG_DEBUG("[T2T RW] Did not receive 16 bytes, stopping read\n");
-    //     return -1;
-    // }
 
     /* read the block 4, block 4 must contain the NDEF TLV (T = 0x03) */
     cmd_buffer[0] = NFC_T2T_READ_COMMAND;
@@ -126,10 +123,16 @@ int nfc_t2t_rw_read(nfc_t2t_rw_t *rw, nfc_t2t_t *tag, nfcdev_t *dev) {
      the end of the tag is */
 
     /* Poll for card presence */
-    if (NFC_ERR_POLL_NO_TARGET == rw->dev->ops->poll_a(rw->dev, NULL)) {
+    nfc_a_listener_config_t config = {0};
+    if (rw->dev->ops->poll_a(rw->dev, &config) != 0) {
         LOG_DEBUG("[T2T RW] No tag found\n");
         return -1;
     }
+
+    LOG_DEBUG("[T2T RW] Tag found with SENS_RES: %u, SEL_RES: %u\n", 
+        (uint16_t)(config.sens_res.anticollision_information << 8) 
+        | (uint16_t)(config.sens_res.platform_information), 
+        (uint16_t)(config.sel_res));
 
     uint8_t block_no = 0;
     while (resp_buffer[0] != NFC_T2T_NACK && block_no < 16) {
@@ -144,7 +147,7 @@ int nfc_t2t_rw_read(nfc_t2t_rw_t *rw, nfc_t2t_t *tag, nfcdev_t *dev) {
         }
 
         if(resp_len != 16) {
-            LOG_DEBUG("Did not receive 16 bytes, stopping read\n");
+            LOG_ERROR("Did not receive 16 bytes, stopping read\n");
             return -1;
         }
 

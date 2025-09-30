@@ -95,4 +95,5 @@ typedef struct {
     uint8_t *ndef_file;
 } nfc_t4t_t;
 
-int t4t_init(nfc_t4t_t *tag, uint8_t *ndef_file, size_t max_ndef_file_size);
+int t4t_init(nfc_t4t_t *tag, uint8_t *ndef_file, uint16_t max_capdu_size, 
+    size_t max_ndef_file_size);

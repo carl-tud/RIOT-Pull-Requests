@@ -33,15 +33,24 @@ typedef struct {
 
 int pn7160_init(nfcdev_t *dev, const void *params);
 
-int pn7160_poll_a(nfcdev_t *nfcdev);
+int pn7160_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config);
+
+int pn7160_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config);
 
 int pn7160_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
                                   uint8_t *rcv, size_t *receive_len);
+
+int pn7160_target_send_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len);
+
+int pn7160_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_len);
 
 int pn7160_reset(pn7160_t *dev);
 
 static const nfcdev_ops_t pn7160_ops = {
     .init = pn7160_init,
     .poll_a = pn7160_poll_a,
-    .initiator_exchange_data = pn7160_initiator_exchange_data
+    .listen_a = pn7160_listen_a,
+    .initiator_exchange_data = pn7160_initiator_exchange_data,
+    .target_send_data = pn7160_target_send_data,
+    .target_receive_data = pn7160_target_receive_data
 };

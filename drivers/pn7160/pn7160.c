@@ -2,6 +2,7 @@
 
 #include "periph/spi.h"
 #include "net/nfc/nci.h"
+#include "net/nfc/nfc_a.h"
 #include "log.h"
 #include "ztimer.h"
 #include "memory.h"
@@ -39,10 +40,6 @@ static void nfc_event(void *dev)
 {
     mutex_unlock(&((pn7160_t *)dev)->trap);
 }
-
-
-
-
 
 static int _read(const pn7160_t *dev, uint8_t *buff)
 {
@@ -212,7 +209,6 @@ static int send_cmd_rcv_ntf(pn7160_t *dev, uint8_t gid, uint8_t oid,
         return ret;
     }
 
-
     /* wait for the NTF */
     mutex_lock(&dev->trap);
 
@@ -222,40 +218,41 @@ static int send_cmd_rcv_ntf(pn7160_t *dev, uint8_t gid, uint8_t oid,
     return 0;
 }
 
-static int _core_set_config_cmd(pn7160_t *dev) {
+static int _core_set_config_cmd(pn7160_t *dev, const uint8_t *config, size_t len) {
     assert (dev != NULL);
     uint8_t buff[PN7160_BUFFER_LEN];
-    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_CORE_CONFIG, sizeof(PN7160_CORE_CONFIG));
+    memcpy(&buff[PN7160_PAYLOAD_START], config, len);
 
-    send_cmd_rcv_rsp(dev, NCI_GID_CORE, 
-        NCI_OID_CORE_SET_CONFIG, buff, sizeof(PN7160_CORE_CONFIG));
-
-    return 0;
+    return send_cmd_rcv_rsp(dev, NCI_GID_CORE, NCI_OID_CORE_SET_CONFIG, buff, len);
 }
 
-static int _rf_discover_map_cmd(const pn7160_t *dev) {
+// static int _rf_discover_map_cmd(const pn7160_t *dev) {
+//     assert (dev != NULL);
+//     uint8_t buff[PN7160_BUFFER_LEN];
+//     buff[PN7160_PAYLOAD_START] = 0x01; /* num of configurations */
+//     buff[PN7160_PAYLOAD_START + 1] = 0x00; /* Undetermined */
+//     buff[PN7160_PAYLOAD_START + 2] = 0x01; /* Poll Mode */
+//     buff[PN7160_PAYLOAD_START + 3] = 0x01; /* RF interface */
+
+//     send_cmd_rcv_rsp((pn7160_t *)dev, NCI_GID_RF_MGMT, 
+//         NCI_OID_RF_DISCOVER_MAP, buff, 4);
+
+//     return 0;
+// }
+
+static int _rf_discover_cmd(const pn7160_t *dev, uint8_t technology_and_mode, uint8_t *buff) {
     assert (dev != NULL);
-    uint8_t buff[PN7160_BUFFER_LEN];
-    buff[PN7160_PAYLOAD_START] = 0x01; /* num of configurations */
-    buff[PN7160_PAYLOAD_START + 1] = 0x00; /* Undetermined */
-    buff[PN7160_PAYLOAD_START + 2] = 0x01; /* Poll Mode */
-    buff[PN7160_PAYLOAD_START + 3] = 0x01; /* RF interface */
-
-    send_cmd_rcv_rsp((pn7160_t *)dev, NCI_GID_RF_MGMT, 
-        NCI_OID_RF_DISCOVER_MAP, buff, 4);
-
-    return 0;
-}
-
-static int _rf_discover_cmd(const pn7160_t *dev, uint8_t technology) {
-    assert (dev != NULL);
-    uint8_t buff[PN7160_BUFFER_LEN];
-    buff[PN7160_PAYLOAD_START] = 0x01; /* num of configurations */
-    buff[PN7160_PAYLOAD_START + 1] = technology; /* NFC-A technology */
+    buff[PN7160_PAYLOAD_START]     = 0x01;       /* num of configurations */
+    buff[PN7160_PAYLOAD_START + 1] = technology_and_mode; /* NFC-A technology */
     buff[PN7160_PAYLOAD_START + 2] = 0x01;
 
-    send_cmd_rcv_ntf((pn7160_t *)dev, NCI_GID_RF_MGMT, 
+    send_cmd_rcv_ntf((pn7160_t *)dev, NCI_GID_RF_MGMT,
         NCI_OID_RF_DISCOVER, buff, 3);
+
+    if (NCI_GET_GID(buff[0]) != NCI_GID_RF_MGMT) {
+        LOG_ERROR("pn7160: invalid gid (%i)!\n", NCI_GET_GID(buff[0]));
+        return -1;
+    }
 
     if (NCI_GET_OID(buff[1]) != NCI_OID_RF_INTF_ACTIVATED) {
         LOG_ERROR("pn7160: invalid ntf oid (%i)!\n", NCI_GET_OID(buff[1]));
@@ -264,8 +261,6 @@ static int _rf_discover_cmd(const pn7160_t *dev, uint8_t technology) {
 
     return 0;
 }
-
-
 
 int pn7160_init(nfcdev_t *nfcdev, const void *params)
 {
@@ -299,27 +294,103 @@ int pn7160_init(nfcdev_t *nfcdev, const void *params)
     pn7160_reset(dev);
     
     /* this is done so the device operates properly at 3.3V */
-    _core_set_config_cmd(dev);
+    _core_set_config_cmd(dev, PN7160_CORE_CONFIG, sizeof(PN7160_CORE_CONFIG));
 
     nfcdev->state = NFCDEV_STATE_DISABLED;
 
     return 0;
 }
 
-int pn7160_poll_a(nfcdev_t *dev) {
+int pn7160_poll_f(nfcdev_t *dev, nfc_f_listener_config_t *config) {
+    (void)dev;
+    (void)config;
+    return -1;
+}
+
+int pn7160_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config) {
     assert (dev != NULL);
+    assert (config != NULL);
 
-    _rf_discover_map_cmd((pn7160_t *)dev->dev);
+    uint8_t buff[PN7160_BUFFER_LEN];
+    /* LOG_DEBUG("pn7160: discover map...\n");
+    _rf_discover_map_cmd((pn7160_t *)dev->dev); */
 
+
+    LOG_DEBUG("pn7160: poll for NFC-A device...\n");
     int ret = _rf_discover_cmd((pn7160_t *)dev->dev, 
-        NCI_NFC_A_PASSIVE_POLL_MODE); /* NFC-A technology */
+        NCI_NFC_A_PASSIVE_POLL_MODE, buff); /* NFC-A technology */
 
     if (ret < 0) {
         LOG_ERROR("pn7160: poll for NFC-A device failed\n");
         return ret;
     }
 
+    /* we now have the discovered technologies */
+    if (buff[PN7160_PAYLOAD_START + 3] != NCI_NFC_A_PASSIVE_POLL_MODE) {
+        LOG_ERROR("pn7160: not NFC-A passive poll mode (%u)!\n", 
+            (unsigned)buff[PN7160_PAYLOAD_START + 3]);
+        return -1;
+    }
+
+    // uint8_t length_of_parameters = buff[PN7160_PAYLOAD_START + 6];
+
+    /* RF technology specific parameters (NFC-A) */
+    config->sens_res.anticollision_information = buff[PN7160_PAYLOAD_START + 7];
+    config->sens_res.platform_information      = buff[PN7160_PAYLOAD_START + 8];
+
+    config->nfcid1.len =                         buff[PN7160_PAYLOAD_START + 9];
+    memcpy(config->nfcid1.nfcid, &buff[PN7160_PAYLOAD_START + 10], config->nfcid1.len);
+
+    uint8_t sel_res_len = buff[PN7160_PAYLOAD_START + 10 + config->nfcid1.len];
+    assert (sel_res_len == 1);
+    config->sel_res = buff[PN7160_PAYLOAD_START + 11 + config->nfcid1.len];
+
     return 0;
+}
+
+
+int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
+    assert (dev != NULL);
+    assert (config != NULL);
+
+    uint8_t buff[PN7160_BUFFER_LEN];
+    if ((config->sel_res & NFC_A_SEL_RES_T2T_MASK) == NFC_A_SEL_RES_T2T_VALUE) {
+        LOG_ERROR("pn7160: T2T emulation not supported\n");
+        return -1;
+    } else if ((config->sel_res & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
+        // _core_set_config_cmd(dev, buff, sizeof(buff));
+    } else {
+        LOG_ERROR("pn7160: unsupported SEL_RES (%02X)!\n", config->sel_res);
+        return -1;
+    }
+
+    assert(config->nfcid1.len == 4 || config->nfcid1.len == 7 || config->nfcid1.len == 10);
+
+    buff[PN7160_PAYLOAD_START] = 0x04;       /* num of parameters */
+
+    /* The buffer will be filled with correct NFC-A listener config data */
+    /* SEL_RES */
+    buff[PN7160_PAYLOAD_START + 1] = NCI_LA_SEL_INFO;
+    buff[PN7160_PAYLOAD_START + 2] = 0x01;
+    buff[PN7160_PAYLOAD_START + 3] = config->sel_res;
+
+    /* SENS_RES anticollision */
+    buff[PN7160_PAYLOAD_START + 4] = NCI_LA_BIT_FRAME_SDD;
+    buff[PN7160_PAYLOAD_START + 5] = 0x01;
+    buff[PN7160_PAYLOAD_START + 6] = config->sens_res.anticollision_information;
+
+    /* SENS_RES platform information */
+    buff[PN7160_PAYLOAD_START + 7] = NCI_LA_PLATFORM_CONFIG;
+    buff[PN7160_PAYLOAD_START + 8] = 0x01;
+    buff[PN7160_PAYLOAD_START + 9] = config->sens_res.platform_information;
+
+    /* NFCID1 */
+    buff[PN7160_PAYLOAD_START + 10] = NCI_LA_NFCID1;
+    buff[PN7160_PAYLOAD_START + 11] = config->nfcid1.len;
+    memcpy(&buff[PN7160_PAYLOAD_START + 12], config->nfcid1.nfcid, config->nfcid1.len);
+
+
+    return _core_set_config_cmd((pn7160_t *)dev->dev, &buff[PN7160_PAYLOAD_START], 12 + config->nfcid1.len);
 }
 
 static int _send_and_rcv_data_message(pn7160_t *dev, uint8_t *buff, size_t len) {
@@ -390,8 +461,6 @@ int pn7160_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t
     return 0;
 }
 
-
-
 int pn7160_reset(pn7160_t *dev)
 {
     assert(dev != NULL);
@@ -401,11 +470,60 @@ int pn7160_reset(pn7160_t *dev)
 
     send_cmd_rcv_ntf((pn7160_t *)dev, NCI_GID_CORE, NCI_OID_CORE_RESET, buff, 1);
 
-    buff[PN7160_PAYLOAD_START] = 0x00;
+    buff[PN7160_PAYLOAD_START    ] = 0x00;
     buff[PN7160_PAYLOAD_START + 1] = 0x00; 
     send_cmd_rcv_rsp((pn7160_t *)dev, NCI_GID_CORE, NCI_OID_CORE_INIT, buff, 2);
 
     LOG_DEBUG("pn7160: reset done\n");
+
+    return 0;
+}
+
+int pn7160_target_send_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len)
+{
+    assert(nfcdev != NULL);
+    assert(send != NULL);
+    assert(send_len > 0);
+
+    pn7160_t *dev = (pn7160_t *) nfcdev->dev;
+    uint8_t buff[PN7160_BUFFER_LEN];
+
+    if (send_len > (PN7160_BUFFER_LEN - NCI_HEADER_SIZE)) {
+        LOG_ERROR("pn7160: send_len too large (%u)!\n", (unsigned)send_len);
+        return -1;
+    }
+
+    memcpy(&buff[PN7160_PAYLOAD_START], send, send_len);
+
+    int ret = _send_and_rcv_data_message(dev, buff, send_len);
+    if (ret < 0) {
+        return ret;
+    }
+
+    return 0;
+}
+
+int pn7160_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_len) {
+    assert(nfcdev != NULL);
+    assert(rcv != NULL);
+    assert(receive_len != NULL);
+
+    pn7160_t *dev = (pn7160_t *) nfcdev->dev;
+    uint8_t buff[PN7160_BUFFER_LEN];
+
+    mutex_lock(&dev->trap);
+    *receive_len = _read(dev, buff);
+    if (*receive_len == 0) {
+        return -1;
+    }
+
+    if (NCI_GET_MT(buff[0]) != NCI_MT_DATA) {
+        LOG_ERROR("pn7160: invalid mt (%i)!\n", NCI_GET_MT(buff[0]));
+        return -1;
+    }
+
+    *receive_len -= NCI_HEADER_SIZE;
+    memcpy(rcv, &buff[PN7160_PAYLOAD_START], *receive_len);
 
     return 0;
 }

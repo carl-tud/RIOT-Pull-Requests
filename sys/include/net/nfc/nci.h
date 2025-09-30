@@ -87,6 +87,12 @@
 #define NCI_RF_TIMEOUT_EXCEPTION    0xB2 /* RF timeout error */
 #define NCI_RF_UNEXPECTED_DATA    0xB3 /* Unexpected RF data */
 
+/* Listen Mode - NFC-A Discovery Parameters*/
+#define NCI_LA_BIT_FRAME_SDD        0x30 /* SENS_RES Bit Frame SDD (anticollision) */
+#define NCI_LA_PLATFORM_CONFIG      0x31 /* SENS_RES Platform Configuration */
+#define NCI_LA_SEL_INFO             0x32 /* SEL_RES */
+#define NCI_LA_NFCID1               0x33 /* NFCID1 (4, 7 or 10 bytes) */
+
 /**
  * @brief Macro to construct NCI Packet Control Byte
  * @param mt Message Type (NCI_MT_xxx)

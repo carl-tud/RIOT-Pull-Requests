@@ -2,39 +2,39 @@
 #include "net/nfcdev.h"
 #include "net/nfc/t2t/t2t.h"
 #include "net/nfc/t2t/t2t_rw.h"
-#include "net/nfc/t2t/t2t_emulator.h"
+#include "net/nfc/t4t/t4t_emulator.h"
 #include "net/nfc/nfc_a.h"
 
 #include "log.h"
 
 #define MAX_NDEF_RECORDS 8
 
-static const uint8_t tag_memory[] = {
-    '\x04', '\x12', '\x34', '\x56', // Internal
-    '\x78', '\x9A', '\xBC', '\xF8', // Serial Number
-    '\x4D', '\x00', '\x00', '\x00', // Internal / Lock
-    '\xE1', '\x10', '\x06', '\x00', // Capability Container
-    '\x03', '\x0C', '\xD1', '\x01', 
-    '\x08',                         // TLV for NDEF message (Type, Length, Payload)
-    '\x54', '\x02', 'e', 'n',
-    'H',    'e',    'l', 'l', 
-    'o',    '\xFE', '\x00', '\x00', 
-    '\x00', '\x00', '\x00', '\x00', // Data
-    '\x00', '\x00', '\x00', '\x00',  // Data
-    '\x00', '\x00', '\x00', '\x00',  // Data
-    '\x00', '\x00', '\x00', '\x00',  // Data
-    '\x00', '\x00', '\x00', '\x00',  // Data
-    '\x00', '\x00', '\x00', '\x00',  // Data
-    '\x00', '\x00', '\x00', '\x00',  // Data
-    '\x00', '\x00', '\x00'
-};
+// static const uint8_t tag_memory[] = {
+//     '\x04', '\x12', '\x34', '\x56', // Internal
+//     '\x78', '\x9A', '\xBC', '\xF8', // Serial Number
+//     '\x4D', '\x00', '\x00', '\x00', // Internal / Lock
+//     '\xE1', '\x10', '\x06', '\x00', // Capability Container
+//     '\x03', '\x0C', '\xD1', '\x01', 
+//     '\x08',                         // TLV for NDEF message (Type, Length, Payload)
+//     '\x54', '\x02', 'e', 'n',
+//     'H',    'e',    'l', 'l', 
+//     'o',    '\xFE', '\x00', '\x00', 
+//     '\x00', '\x00', '\x00', '\x00', // Data
+//     '\x00', '\x00', '\x00', '\x00',  // Data
+//     '\x00', '\x00', '\x00', '\x00',  // Data
+//     '\x00', '\x00', '\x00', '\x00',  // Data
+//     '\x00', '\x00', '\x00', '\x00',  // Data
+//     '\x00', '\x00', '\x00', '\x00',  // Data
+//     '\x00', '\x00', '\x00', '\x00',  // Data
+//     '\x00', '\x00', '\x00'
+// };
 
 static void _test_rw(nfc_t2t_rw_t *rw, nfcdev_t *dev) {
     ndef_t ndef;
     uint8_t ndef_buf[256];
     ndef_init(&ndef, ndef_buf, sizeof(ndef_buf));
 
-    nfc_t2t_rw_read_ndef(&t2t_rw, &ndef, dev);
+    nfc_t2t_rw_read_ndef(rw, &ndef, dev);
 
     ndef_record_desc_t records[MAX_NDEF_RECORDS];
     ndef_parse(&ndef, records, MAX_NDEF_RECORDS);
@@ -42,13 +42,19 @@ static void _test_rw(nfc_t2t_rw_t *rw, nfcdev_t *dev) {
     LOG_DEBUG("pn7160 rw test done\n");
 }
 
-static void _test_emulator(nfc_t2t_emulator_t *emulator, nfcdev_t *dev) {
-    nfc_t2t_t *tag = (nfc_t2t_t *) memory;
+/* the PN7160 does not support T2T because it can only communicatewith the ISO-DEP interface */
+static void _test_emulator(nfc_t4t_emulator_t *emulator, nfcdev_t *dev) {
+    nfc_t4t_t t4t;
+    ndef_t ndef;
+    uint8_t ndef_buf[256];
+    ndef_init(&ndef, ndef_buf, sizeof(ndef_buf));
+    ndef_record_add_text(&ndef, "Hello from PN7160 T4T Emulator", 20, "en", 2, UTF8);
+    t4t_init(&t4t, ndef_buf, 64, sizeof(ndef_buf));
     nfc_a_nfcid1_t nfcid = {
-        .nfcid = {0x04, 0x12, 0x34, 0x56},
+        .nfcid = {0x08, 0x12, 0x34, 0x56},
         .len = 4
     };
-    t2t_start_emulation(emulator, dev, tag, nfcid);
+    t4t_emulator_start(emulator, dev, &t4t, &nfcid);
 }
 
 int main(void) {
@@ -71,9 +77,12 @@ int main(void) {
     };
 
     nfc_t2t_rw_t t2t_rw;
+    nfc_t4t_emulator_t t4t_emulator;
     nfc_device.ops->init(&nfc_device, &params);
 
     _test_rw(&t2t_rw, &nfc_device);
+
+    _test_emulator(&t4t_emulator, &nfc_device);
 
 
     return 0;
