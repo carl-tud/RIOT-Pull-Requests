@@ -1,4 +1,4 @@
 USEPKG += nrfx
 USEMODULE += nrfx_nfct
 
-USEMODULE += ztimer_msec
+USEMODULE += ztimer_sec

@@ -24,16 +24,18 @@ struct nfcdev;
 typedef struct {
     int (*init)(struct nfcdev *nfcdev, const void *dev_config);
 
-    int (*poll_a)(struct nfcdev *nfcdev);
+    int (*autopoll) (struct nfcdev *nfcdev);
+
+    int (*poll_a)(struct nfcdev *nfcdev,  nfc_a_listener_config_t *config);
     int (*listen_a)(struct nfcdev *nfcdev, const nfc_a_listener_config_t *config);
 
-    int (*poll_b)(struct nfcdev *nfcdev);
+    int (*poll_b)(struct nfcdev *nfcdev, nfc_b_listener_config_t *config);
     int (*listen_b)(struct nfcdev *nfcdev, const nfc_b_listener_config_t *config);
 
-    int (*poll_f)(struct nfcdev *nfcdev);
+    int (*poll_f)(struct nfcdev *nfcdev, nfc_f_listener_config_t *config);
     int (*listen_f)(struct nfcdev *nfcdev, const nfc_f_listener_config_t *config);
 
-    int (*poll_v)(struct nfcdev *nfcdev);
+    int (*poll_v)(struct nfcdev *nfcdev, nfc_v_listener_config_t *config);
     int (*listen_v)(struct nfcdev *nfcdev, const nfc_v_listener_config_t *config);
 
     int (*dep_initiator_init)(struct nfcdev *nfcdev);

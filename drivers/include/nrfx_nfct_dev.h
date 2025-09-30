@@ -32,29 +32,31 @@
 #include "net/nfcdev.h"
 #include "net/nfc/t2t/t2t.h"
 
-#define NRFX_NFCT_NFCDEV_OPS (nfcdev_ops_t) { \
-    .init = init, \
-    .listen_a = listen_a, \
-}
+
+
+int nrfx_nfct_dev_init(nfcdev_t *nfcdev, const void *dev_config);
+
+int nrfx_nfct_dev_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config);
+
+int nrfx_nfct_dev_target_send_data(nfcdev_t *nfcdev, const uint8_t *tx, size_t tx_len);
+
+int nrfx_nfct_dev_target_receive_data(nfcdev_t *nfcdev, uint8_t *rx, size_t *rx_len);
+
 
 /* As the NFCT driver depends solely on the NRFX's hardware we can only have one 
 NRFX NFCT device driver instance */
+#define NRFX_NFCT_NFCDEV_OPS (nfcdev_ops_t) { \
+    .init = nrfx_nfct_dev_init, \
+    .listen_a = nrfx_nfct_dev_listen_a, \
+    .target_send_data = nrfx_nfct_dev_target_send_data, \
+    .target_receive_data = nrfx_nfct_dev_target_receive_data \
+}
+
 #define NRFX_NFCT_DEV_DEFAULT (nfcdev_t) { \
     .dev = NULL, \
     .ops = &NRFX_NFCT_NFCDEV_OPS, \
     .state = NFCDEV_STATE_DISABLED, \
 }
-
-int init(nfcdev_t *nfcdev, const void *dev_config);
-
-int listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config);
-
-/* int target_exchange_data(nfcdev_t *nfcdev, const uint8_t *tx, size_t tx_len,
-                         uint8_t *rx, size_t *rx_len); */
-
-int target_send_data(nfcdev_t *nfcdev, const uint8_t *tx, size_t tx_len);
-
-int target_receive_data(nfcdev_t *nfcdev, uint8_t *rx, size_t *rx_len);
 
 
 /** @} */

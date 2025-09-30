@@ -372,6 +372,12 @@ int ndef_record_add_text(ndef_t *ndef, const char *text, uint32_t text_length,
  */
 size_t ndef_record_calculate_text_size(uint32_t text_length, uint8_t lang_code_length);
 
+/**
+ * @brief Creates an NDEF message using the internal buffer
+ * 
+ * @param[in,out] ndef NDEF message with a filled buffer 
+ * @return int 
+ */
 int ndef_from_buffer(ndef_t *ndef);
 
 /**

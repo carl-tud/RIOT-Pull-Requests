@@ -20,7 +20,7 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
         return -1;
     }
 
-    rw->dev->ops->poll_a(dev);
+    rw->dev->ops->poll_a(dev, NULL);
 
     /* read the first 2 blocks to get the length of the NDEF message */
     uint8_t cmd_buffer[5];
@@ -126,7 +126,7 @@ int nfc_t2t_rw_read(nfc_t2t_rw_t *rw, nfc_t2t_t *tag, nfcdev_t *dev) {
      the end of the tag is */
 
     /* Poll for card presence */
-    if (NFC_ERR_POLL_NO_TARGET == rw->dev->ops->poll_a(rw->dev)) {
+    if (NFC_ERR_POLL_NO_TARGET == rw->dev->ops->poll_a(rw->dev, NULL)) {
         LOG_DEBUG("[T2T RW] No tag found\n");
         return -1;
     }

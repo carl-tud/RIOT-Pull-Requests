@@ -3,6 +3,8 @@
 #include "net/nfc/t2t/t2t_emulator.h"
 #include "log.h"
 
+#define T2T_NACK_ERROR -1
+
 /* Generic NFC Forum T2T emulator making use of nfcdev */
 static int send_ack_nack(nfc_t2t_emulator_t *emulator, bool ack) {
     uint8_t tx_buffer[1];
@@ -75,7 +77,10 @@ void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *
     emulator->dev = dev;
     emulator->tag = tag;
 
-    emulator->dev->ops->init(emulator->dev, emulator->dev->config);
+    if (emulator->dev->state == NFCDEV_STATE_UNINITIALIZED) {
+        LOG_ERROR("[T2T Emulator] Device not initialized\n");
+        return;
+    }
 
     nfc_a_listener_config_t config = {
         .sel_res = NFC_A_SEL_RES_T2T_VALUE,
@@ -83,7 +88,7 @@ void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *
     };
 
     emulator->dev->ops->listen_a(emulator->dev, &config);
-    emulator->state = NFC_T2T_STATE_ACTIVE;
+    LOG_DEBUG("[T2T Emulator] FINISHED LISTEN_A\n");
 
     uint8_t rx_buffer[32];
     size_t rx_len = 0;
@@ -91,9 +96,10 @@ void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *
     /* infinite loop */
     while (true) {
         /* receive data */
+        LOG_DEBUG("[T2T Emulator] Waiting for data...\n");
         int ret = emulator->dev->ops->target_receive_data(emulator->dev, rx_buffer, &rx_len);
         if (ret < 0) {
-            LOG_ERROR("[T2T Emulator] Error receiving data\n");
+            LOG_ERROR("[T2T Emulator] Error receiving data: %d\n", ret);
             return;
         }
 
@@ -108,6 +114,7 @@ void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *
             LOG_ERROR("[T2T Emulator] Error processing command\n");
             return;
         }
+        LOG_DEBUG("[T2T Emulator] Sent data...\n");
     }
 
     return;
