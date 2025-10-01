@@ -506,7 +506,7 @@ void pn532_release_passive(pn532_t *dev, unsigned target_id);
 
 void pn532_set_parameters(pn532_t *dev, uint8_t flags);
 
-int pn532_poll_a(nfcdev_t *nfcdev);
+int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config);
 
 int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
                                   uint8_t *rcv, size_t *receive_len);

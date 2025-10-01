@@ -668,8 +668,8 @@ int pn532_sam_configuration(pn532_t *dev, pn532_sam_conf_mode_t mode, unsigned t
 static int _list_passive_targets(pn532_t *dev, uint8_t *buff, pn532_target_t target,
                                  unsigned max, unsigned recvl)
 {
-    buff[BUFF_CMD_START] = CMD_LIST_PASSIVE;
-    buff[BUFF_DATA_START] = (uint8_t) max;
+    buff[BUFF_CMD_START]      = CMD_LIST_PASSIVE;
+    buff[BUFF_DATA_START]     = (uint8_t) max;
     buff[BUFF_DATA_START + 1] = (uint8_t)target;
 
     /* requested len depends on expected target num and type */
@@ -1154,8 +1154,9 @@ int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
 }
 
 /* Polls for an NFC-A tag */
-int pn532_poll_a(nfcdev_t *nfcdev) {
+int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
     assert(nfcdev != NULL);
+    assert(config != NULL);
 
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
     _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_A, 1,
@@ -1165,6 +1166,12 @@ int pn532_poll_a(nfcdev_t *nfcdev) {
         LOG_DEBUG("pn532: error during polling\n");
         return NFC_ERR_POLL_NO_TARGET;
     }
+
+    config->sens_res.anticollision_information = buff[2];
+    config->sens_res.platform_information      = buff[3];
+    config->sel_res = buff[4];
+    config->nfcid1.len = buff[5];
+    memcpy(config->nfcid1.nfcid, &buff[6], config->nfcid1.len);
 
     LOG_DEBUG("pn532: found 1 target\n");
 
