@@ -1521,46 +1521,33 @@ static void _busy_wait_for(st25_t *dev, uint32_t mask) {
     }
 }
 
-static void _send_sens_req(st25_t *dev) {
-    uint8_t reg_content = 0;
-    // uint8_t sens_req = 0x26;
+static void _send_sdd_req(st25_t *dev, uint8_t *sdd_req, uint8_t *sdd_res) {
+    /* write FIFO with SSD_REQ */
+    _fifo_load(dev, sdd_req, 2);
+    _send_cmd(dev, CMD_TRANSMIT_WITHOUT_CRC);
+    wait_for(dev, IRQ_MASK_TXE);
 
-    // _disable_all_interrupts(dev);
+    ztimer_sleep(ZTIMER_USEC, 100);
+
+    uint16_t bytes = 0;
+    uint8_t bits = 0;
+    _fifo_read(dev, sdd_res, &bytes, &bits);
+}
+
+static void _send_sens_req(st25_t *dev, uint8_t *sens_res) {
 
     _write_interrupt_mask(dev, ~(IRQ_MASK_TXE | IRQ_MASK_RXE | IRQ_MASK_RXS | IRQ_MASK_COL));
 
-    reg_content = OPERATION_EN | OPERATION_RX_EN | OPERATION_TX_EN;
+    uint8_t reg_content = OPERATION_EN | OPERATION_RX_EN | OPERATION_TX_EN;
     _write_reg(dev, REG_OP_CONTROL, reg_content);
-
-    _read_reg(dev, REG_OP_CONTROL, &reg_content);
-    assert((reg_content & OPERATION_EN) != 0);
-
-    /* mode configuratin */
-    _write_reg(dev, REG_MODE, REG_MODE_om_iso14443a);
 
     /* prepare transmission */
     _send_cmd(dev, CMD_STOP);
     _send_cmd(dev, CMD_RESET_RX_GAIN);
 
-/*     reg_content = REG_ISO14443A_NFC_no_tx_par | REG_ISO14443A_NFC_no_rx_par | 
-    REG_ISO14443A_NFC_nfc_f0;
-    _write_reg(dev, REG_ISO14443A_NFC, reg_content); */
-
     _write_reg(dev, REG_AUX, REG_AUX_no_crc_rx);
 
-    // _enable_all_interrupts(dev);
-
-    // _write_interrupt_mask(dev, ~(IRQ_MASK_GPE)); /* disable all but */
     _write_reg(dev, REG_NUM_TX_BYTES2, 0x00);
-
-
-    // _set_general_purpose_timer(dev, 0xFFFA);
-
-    /* check if the timer is on */
-    // assert((reg_content & REG_NFCIP1_BIT_RATE_gpt_on) != 0);
-
-    //_busy_wait_for(dev, IRQ_MASK_TXE | IRQ_MASK_RXE | IRQ_MASK_RXS | IRQ_MASK_COL | IRQ_MASK_GPE);
-
 
     DEBUG("st25: Sending SENS_REQ\n");
     _send_cmd(dev, CMD_TRANSMIT_REQA);
@@ -1572,12 +1559,16 @@ static void _send_sens_req(st25_t *dev) {
 
     /* TODO: we only get 4 bits here. why? */
     uint8_t fifo_buffer[BUFFER_LENGTH] = {0};
-    uint16_t bytes = 0;
+    uint8_t bytes[2];
     uint8_t bits = 0;
     _fifo_read(dev, fifo_buffer, &bytes, &bits);
 
     DEBUG("st25: SENS_RES received with byte 1: 0x%02x and byte 2: 0x%02x\n",
           fifo_buffer[0], fifo_buffer[1]);
+}
+
+static void _nfc_a_anticollision(uin8_t sens_res, nfc_) {
+
 }
 
 /* changes only certain bits and leaves the rest unchanged */
@@ -1642,19 +1633,23 @@ static void _clear_interrupts(st25_t *dev) {
     _read_interrupts(dev, &reg_content);
 }   
 
-int st25_poll_nfc_a(st25_t *dev) {
+int st25_poll_a(nfcdev_t *dev) {
     DEBUG("st25: Polling for NFC-A...\n");
 
-    _enable_all_interrupts(dev);
+    _enable_all_interrupts(dev->dev);
 
-    _write_reg(dev, REG_BIT_RATE, 0x00);
+    _write_reg(dev->dev, REG_BIT_RATE, 0x00);
 
-    _send_sens_req(dev);
+    /* mode configuration */
+    _write_reg(dev->dev, REG_MODE, REG_MODE_om_iso14443a);
+
+    uint8_t sens_res[2];
+    _send_sens_req(dev->dev, sens_res);
 
     return 0;
 }
 
-int st25_listen_nfc_a(st25_t *dev) {
+int st25_listen_a(st25_t *dev) {
     assert(dev != NULL);
 
     DEBUG("st25: Listening for NFC-A...\n");
@@ -1691,8 +1686,6 @@ int st25_listen_nfc_a(st25_t *dev) {
     _read_reg(dev, REG_OP_CONTROL, &a);
     DEBUG("st25: Operation control register: 0x%02x\n", a);
 
-
-
     // _clear_interrupts(dev);
     // _write_interrupt_mask(dev, ~(IRQ_MASK_NFCT | IRQ_MASK_WU_A | IRQ_MASK_WU_A_X 
     //                             | IRQ_MASK_RXE_PTA | IRQ_MASK_EON));
@@ -1716,8 +1709,6 @@ int st25_listen_nfc_a(st25_t *dev) {
 
     return 0;
 }
-
-
 
 int st25_init(st25_t *dev, const st25_params_t *params)
 {

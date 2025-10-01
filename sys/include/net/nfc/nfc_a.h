@@ -87,6 +87,20 @@
 #define NFC_A_ATS_TC1_DRC_MASK          (0x0E)
 #define NFC_A_ATS_TC1_DSI_MASK          (0x01)
 
+/** 
+ * @brief Cascade Tag
+ *
+ */
+#define NFC_A_NFCID1_CT        (0x88)
+
+/**
+ * @brief Cascade Level of Select Command as part of SDD_REQ
+ * 
+ */
+#define NFC_A_SEL_CMD_CL1      (0x93)
+#define NFC_A_SEL_CMD_CL2      (0x95)
+#define NFC_A_SEL_CMD_CL3      (0x97)
+
 
 typedef enum {
     NFC_A_BITRATE_106 = 0,

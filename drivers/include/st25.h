@@ -6,6 +6,9 @@
 #include "periph/i2c.h"
 #include "mutex.h"
 
+#include "net/nfcdev.h"
+#include "net/nfc/nfc_a.h"
+
 typedef enum {
     ST25_I2C,
     ST25_SPI
@@ -32,6 +35,12 @@ typedef struct {
 
 int st25_init(st25_t *dev, const st25_params_t *params);
 
-int st25_poll_nfc_a(st25_t *dev);
+int st25_poll_a(st25_t *dev);
 
-int st25_listen_nfc_a(st25_t *dev);
+int st25_listen_a(st25_t *dev);
+
+static const nfcdev_ops_t st25_nfcdev_ops = {
+    .init = (nfcdev_init_t)st25_init,
+    .poll_a = (nfcdev_poll_t)st25_poll_a,
+    .listen = (nfcdev_listen_t)st25_listen_a,
+};
