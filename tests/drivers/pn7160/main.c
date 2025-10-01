@@ -29,9 +29,12 @@
 //     '\x00', '\x00', '\x00'
 // };
 
+static uint8_t ndef_buf[256];
+
+static nfc_t4t_t t4t;
+
 static void _test_rw(nfc_t2t_rw_t *rw, nfcdev_t *dev) {
     ndef_t ndef;
-    uint8_t ndef_buf[256];
     ndef_init(&ndef, ndef_buf, sizeof(ndef_buf));
 
     nfc_t2t_rw_read_ndef(rw, &ndef, dev);
@@ -44,12 +47,11 @@ static void _test_rw(nfc_t2t_rw_t *rw, nfcdev_t *dev) {
 
 /* the PN7160 does not support T2T because it can only communicatewith the ISO-DEP interface */
 static void _test_emulator(nfc_t4t_emulator_t *emulator, nfcdev_t *dev) {
-    nfc_t4t_t t4t;
     ndef_t ndef;
-    uint8_t ndef_buf[256];
+
     ndef_init(&ndef, ndef_buf, sizeof(ndef_buf));
     ndef_record_add_text(&ndef, "Hello from PN7160 T4T Emulator", 20, "en", 2, UTF8);
-    t4t_init(&t4t, ndef_buf, 64, sizeof(ndef_buf));
+    t4t_init(&t4t, 64, ndef_buf, sizeof(ndef_buf));
     nfc_a_nfcid1_t nfcid = {
         .nfcid = {0x08, 0x12, 0x34, 0x56},
         .len = 4

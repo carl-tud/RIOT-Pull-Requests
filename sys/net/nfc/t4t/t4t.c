@@ -33,15 +33,15 @@ int t4t_is_writable(nfc_t4t_t *tag) {
     }
 }
 
-static int t4t_init_cc_file(nfc_t4t_t *tag, size_t max_ndef_file_size) {
+static int t4t_init_cc_file(nfc_t4t_t *tag, uint16_t max_apdu_size, size_t max_ndef_file_size) {
     if (tag == NULL) {
         return -1;
     }
 
     tag->cc_file.cc_len = sizeof(t4t_cc_file);
     tag->cc_file.mapping_version = 0x20; /* version 2.0 */
-    tag->cc_file.mle = tag->cc_file.ndef_file_control_tlv.max_ndef_size;
-    tag->cc_file.mlc = 0xFF; /* 255 blocks of 8 bytes */
+    tag->cc_file.mle = max_apdu_size;
+    tag->cc_file.mlc = max_apdu_size;
 
     tag->cc_file.ndef_file_control_tlv.type = T4T_NDEF_FILE_TLV_TYPE;
     tag->cc_file.ndef_file_control_tlv.length = T4T_NDEF_FILE_TLV_LEN;
@@ -53,7 +53,8 @@ static int t4t_init_cc_file(nfc_t4t_t *tag, size_t max_ndef_file_size) {
     return 0;
 }
 
-int t4t_init(nfc_t4t_t *tag, uint8_t *ndef_file,  size_t max_ndef_file_size) {
+int t4t_init(nfc_t4t_t *tag, uint16_t max_capdu_size, uint8_t *ndef_file, 
+    size_t max_ndef_file_size) {
     if (tag == NULL || ndef_file == NULL || max_ndef_file_size == 0) {
         return -1;
     }
@@ -62,7 +63,7 @@ int t4t_init(nfc_t4t_t *tag, uint8_t *ndef_file,  size_t max_ndef_file_size) {
     tag->selected_ndef_application = false;
     tag->selected_cc_file = false;
     tag->selected_ndef_file = false;
-    int ret = t4t_init_cc_file(tag, max_ndef_file_size);
+    int ret = t4t_init_cc_file(tag, max_capdu_size, max_ndef_file_size);
     if (ret != 0) {
         return ret;
     }

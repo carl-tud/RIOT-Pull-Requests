@@ -125,14 +125,18 @@ void t4t_emulator_start(nfc_t4t_emulator_t *emulator, nfcdev_t *dev,
 
 
     nfc_a_listener_config_t config = {
-        .sel_res = NFC_A_SEL_RES_T4T_VALUE
+        .sel_res = NFC_A_SEL_RES_T4T_VALUE,
+        .sens_res = {
+            .anticollision_information = 0x01,
+            .platform_information = 0x00
+        }
     };
     memcpy(&(config.nfcid1), nfcid1, sizeof(nfc_a_nfcid1_t));
 
 
-    LOG_DEBUG("[T4T Emulator] Starting emulation with NFCID1: ");
+    LOG_DEBUG("[T4T Emulator] Starting emulation\n");
     emulator->dev->ops->listen_a(emulator->dev, &config);
-    // emulator->dev->state = NFCDEV_STATE_ACTIVATED;
+    // emulator->dev->state = NFCDEV_STATE_ENABLED;
 
     uint8_t rx_buffer[128];
     size_t rx_len = 0;

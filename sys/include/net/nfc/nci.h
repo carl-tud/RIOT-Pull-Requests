@@ -81,17 +81,38 @@
 #define NCI_STATUS_INVALID_PARAM   0x09 /* Invalid parameter */
 #define NCI_STATUS_MESSAGE_SIZE_EXCEEDED 0x0A /* Message size exceeded */
 
-#define NCI_RF_FRAME_CORRUPTED  0x02 /* RF frame corrupted */
+#define NCI_RF_FRAME_CORRUPTED        0x02 /* RF frame corrupted */
 #define NCI_RF_TRANSMISSION_EXCEPTION 0xB0 /* RF transmission exception */
-#define NCI_RF_PROTOCOL_EXCEPTION   0xB1 /* RF protocol error */
-#define NCI_RF_TIMEOUT_EXCEPTION    0xB2 /* RF timeout error */
-#define NCI_RF_UNEXPECTED_DATA    0xB3 /* Unexpected RF data */
+#define NCI_RF_PROTOCOL_EXCEPTION     0xB1 /* RF protocol error */
+#define NCI_RF_TIMEOUT_EXCEPTION      0xB2 /* RF timeout error */
+#define NCI_RF_UNEXPECTED_DATA        0xB3 /* Unexpected RF data */
 
 /* Listen Mode - NFC-A Discovery Parameters*/
 #define NCI_LA_BIT_FRAME_SDD        0x30 /* SENS_RES Bit Frame SDD (anticollision) */
 #define NCI_LA_PLATFORM_CONFIG      0x31 /* SENS_RES Platform Configuration */
 #define NCI_LA_SEL_INFO             0x32 /* SEL_RES */
 #define NCI_LA_NFCID1               0x33 /* NFCID1 (4, 7 or 10 bytes) */
+
+#define NCI_PROTOCOL_UNDETERMINED   0x00
+#define NCI_PROTOCOL_T2T            0x02
+#define NCI_PROTOCOL_T3T            0x03
+#define NCI_PROTOCOL_ISO_DEP        0x04
+#define NCI_PROTOCOL_NFC_DEP        0x05
+#define NCI_PROTOCOL_T5T            0x06
+#define NCI_PROTOCOL_NDEF           0x07
+#define NCI_PROTOCOL_WLC            0x08
+
+#define NCI_RF_INTERFACE_NFCEE     0x00 /* NFC Execution Environment */
+#define NCI_RF_INTERFACE_FRAME     0x01 /* Frame */
+#define NCI_RF_INTERFACE_ISO_DEP   0x02 /* ISO-DEP */
+#define NCI_RF_INTERFACE_NFC_DEP   0x03 /* NFC-DEP */
+#define NCI_RF_INTERFACE_NDEF      0x06 /* NDEF */
+#define NCI_RF_INTERFACE_WLC_P     0x07 /* Wired Logical Connection */
+
+#define NCI_RF_MODE_POLL               0x01 /* Poll mode */
+#define NCI_RF_MODE_LISTEN             0x02 /* Listen mode */
+#define NCI_RF_MODE_POLL_AND_LISTEN    0x03 /* Poll and Listen mode */
+
 
 /**
  * @brief Macro to construct NCI Packet Control Byte
