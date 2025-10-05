@@ -1179,6 +1179,27 @@ int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
     return 0;
 }
 
+/* Polls for all targets in the area */
+int pn532_poll(nfcdev_t *nfcdev, nfc_listener_config_t *config) {
+    assert(nfcdev != NULL);
+    assert(config != NULL);
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+    _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_A, 1,
+                         LIST_PASSIVE_LEN_14443(1));
+
+    if (buff[0] != 1) {
+        LOG_DEBUG("pn532: error during polling\n");
+        return NFC_ERR_POLL_NO_TARGET;
+    }
+
+    switch (buff[2]) {
+        
+    }
+
+    return 0;
+}
+
 /* Polls for an NFC-B tag */
 int pn532_poll_b(nfcdev_t *nfcdev) {
     assert(nfcdev != NULL);

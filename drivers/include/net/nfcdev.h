@@ -21,10 +21,20 @@ typedef enum {
 
 struct nfcdev;
 
+typedef struct nfc_listener_config_t {
+    uint8_t technology;
+    union {
+        nfc_a_listener_config_t a;
+        nfc_b_listener_config_t b;
+        nfc_f_listener_config_t f;
+        nfc_v_listener_config_t v;
+    } config;
+};
+
 typedef struct {
     int (*init)(struct nfcdev *nfcdev, const void *dev_config);
 
-    int (*autopoll) (struct nfcdev *nfcdev);
+    int (*poll) (struct nfcdev *nfcdev);
 
     int (*poll_a)(struct nfcdev *nfcdev,  nfc_a_listener_config_t *config);
     int (*listen_a)(struct nfcdev *nfcdev, const nfc_a_listener_config_t *config);

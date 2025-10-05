@@ -33,7 +33,7 @@ static bool check_for_mifare_ultralight(nfc_a_sens_res_t sens_res, uint8_t sel_r
 }
 
 nfc_application_type_t nfc_a_get_application_type(nfc_a_sens_res_t sens_res, uint8_t sel_res) {
-    /* infers the application type by looking at the sel res */
+    /* infers the application type by looking at the sel res (SAK) */
     nfc_application_type_t app_type = NFC_APPLICATION_TYPE_UNKNOWN;
     if ((sel_res & NFC_A_SEL_RES_T2T_MASK) == NFC_A_SEL_RES_T2T_VALUE) {
         app_type = NFC_APPLICATION_TYPE_T2T;

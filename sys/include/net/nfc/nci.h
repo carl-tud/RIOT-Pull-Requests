@@ -93,6 +93,13 @@
 #define NCI_LA_SEL_INFO             0x32 /* SEL_RES */
 #define NCI_LA_NFCID1               0x33 /* NFCID1 (4, 7 or 10 bytes) */
 
+/* Listen Mode - ISO-DEP Parameters */
+#define NCI_LI_A_RATS_TB1           0x58
+#define NCI_LI_A_HIST_BY            0x59
+#define NCI_LI_B_INFO_RESP          0x5A
+#define NCI_LI_A_BIT_RATE           0x5B
+#define NCI_LI_A_RATS_TC1           0x5C
+
 #define NCI_PROTOCOL_UNDETERMINED   0x00
 #define NCI_PROTOCOL_T2T            0x02
 #define NCI_PROTOCOL_T3T            0x03

@@ -17,13 +17,41 @@
 #define SPI_MODE                            (SPI_MODE_0)
 #define SPI_CLK                             (1000000)
 
-#define PN7160_BUFFER_LEN                     (64u)
+#define PN7160_BUFFER_LEN                     (128u)
 
-static const uint8_t PN7160_CORE_CONFIG[] = { 0x01, 0xA0, 0x0E, 0x0B, 0x11, 0x01, 0x02, 
-    0xB2, 0x00, 0xB2, 0x1E, 0x11, 0x00, 0x10, 0x0C };
+static const uint8_t PN7160_CORE_CONFIG[] = { 0x01, 0xA0, 0x0E, 0x0B, 
+    0x11, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x10, 0x0C};
 
 static const uint8_t PN7160_NFC_A_LISTEN_MODE_ROUTING[] = {
-    0x00, 0x02, 0x01, 0x03, 0x00, 0x3F, 0x04, 0x00, 0x03, 0x00, 0x3F, 0x00
+    0x00, 0x02, 
+    0x01, 0x03, 0x00, 0x01, 0x04,  /* protocol based routing (ISO-DEP) */
+    0x00, 0x03, 0x00, 0x01, 0x00   /* technology based routing (NFC-A) */
+};
+
+static const uint8_t PN7160_RF_CONFIG[] = {
+    0x09,
+    0xA0, 0x0D, 0x03, 0x78, 0x0D, 0x02,
+    0xA0, 0x0D, 0x03, 0x78, 0x14, 0x02,
+    0xA0, 0x0D, 0x06, 0x4C, 0x44, 0x65, 0x09, 0x00, 0x00,
+    0xA0, 0x0D, 0x06, 0x4C, 0x2D, 0x05, 0x35, 0x1E, 0x01,
+    0xA0, 0x0D, 0x06, 0x82, 0x4A, 0x55, 0x07, 0x00, 0x07,
+    0xA0, 0x0D, 0x06, 0x44, 0x44, 0x03, 0x04, 0xC4, 0x00,
+    0xA0, 0x0D, 0x06, 0x46, 0x30, 0x50, 0x00, 0x18, 0x00,
+    0xA0, 0x0D, 0x06, 0x48, 0x30, 0x50, 0x00, 0x18, 0x00,
+    0xA0, 0x0D, 0x06, 0x4A, 0x30, 0x50, 0x00, 0x08, 0x00
+};
+
+static const uint8_t PN7160_TAG_DETECTOR_DISABLE[] = {
+     0x01, 0xA0, 0x40, 0x01, 0x00
+};
+
+static const uint8_t PN7160_TOTAL_DURATION[]={
+    0x01,         /* CORE_SET_CONFIG_CMD */
+    0x00, 0x02, 0xFE, 0x01                            
+};
+
+static const uint8_t PN7160_CLOCK_SEL_XTAL[] = {
+     0x01, 0xA0, 0x0E, 0x01, 0x00
 };
 
 // #if IS_ACTIVE(ENABLE_DEBUG)
@@ -222,16 +250,28 @@ static int send_cmd_rcv_ntf(pn7160_t *dev, uint8_t gid, uint8_t oid,
     return 0;
 }
 
+static void _disable_standby(pn7160_t *dev, uint8_t *buff)
+{
+    buff[PN7160_PAYLOAD_START] = 0x00; /* disable standby */
+    construct_packet_header(buff, NCI_MT_CMD, 0, NCI_GID_PROPRIETARY, 0x00, 1);
+    send_cmd_rcv_rsp(dev, NCI_GID_PROPRIETARY, 0x0, buff, 1);
+}
+
+static int _core_init(pn7160_t *dev, uint8_t *buff) {
+    assert (dev != NULL);
+    buff[PN7160_PAYLOAD_START    ] = 0x00;
+    buff[PN7160_PAYLOAD_START + 1] = 0x00; 
+    return send_cmd_rcv_rsp(dev, NCI_GID_CORE, NCI_OID_CORE_INIT, buff, 2);
+}
+
 static int _reset_sequence(pn7160_t *dev, uint8_t *buff) {
     assert(dev != NULL);
 
-    buff[PN7160_PAYLOAD_START] = 0x01; /* reset type: core reset */
+    buff[PN7160_PAYLOAD_START] = 0x01; /* reset type: soft reset */
 
     send_cmd_rcv_ntf(dev, NCI_GID_CORE, NCI_OID_CORE_RESET, buff, 1);
 
-    buff[PN7160_PAYLOAD_START    ] = 0x00;
-    buff[PN7160_PAYLOAD_START + 1] = 0x00; 
-    send_cmd_rcv_rsp(dev, NCI_GID_CORE, NCI_OID_CORE_INIT, buff, 2);
+    _core_init(dev, buff);
 
     LOG_DEBUG("pn7160: reset done\n");
 
@@ -297,6 +337,13 @@ static int _configuration_3_3V(pn7160_t *dev, uint8_t *buff) {
     memcpy(&buff[PN7160_PAYLOAD_START], PN7160_CORE_CONFIG, sizeof(PN7160_CORE_CONFIG));
     return _core_set_config_cmd(dev, buff, sizeof(PN7160_CORE_CONFIG));
 }
+
+static int _set_rf_config(pn7160_t *dev, uint8_t *buff) {
+    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_RF_CONFIG, sizeof(PN7160_RF_CONFIG));
+    return _core_set_config_cmd(dev, buff, sizeof(PN7160_RF_CONFIG));
+}
+
+
 
 int pn7160_init(nfcdev_t *nfcdev, const void *params)
 {
@@ -387,6 +434,24 @@ int pn7160_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config) {
     return 0;
 }
 
+static int _clock_sel_xtal(pn7160_t *dev, uint8_t *buff) {
+    assert (dev != NULL);
+    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_CLOCK_SEL_XTAL, sizeof(PN7160_CLOCK_SEL_XTAL));
+    return _core_set_config_cmd(dev, buff, sizeof(PN7160_CLOCK_SEL_XTAL));
+}
+
+static int _disable_tag_detector(pn7160_t *dev, uint8_t *buff) {
+    assert (dev != NULL);
+    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_TAG_DETECTOR_DISABLE, sizeof(PN7160_TAG_DETECTOR_DISABLE));
+    return _core_set_config_cmd(dev, buff, sizeof(PN7160_TAG_DETECTOR_DISABLE));
+}
+
+static int _set_total_duration(pn7160_t *dev, uint8_t *buff) {
+    assert (dev != NULL);
+    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_TOTAL_DURATION, sizeof(PN7160_TOTAL_DURATION));
+    return _core_set_config_cmd(dev, buff, sizeof(PN7160_TOTAL_DURATION));
+}
+
 int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
     assert (dev != NULL);
     assert (config != NULL);
@@ -402,9 +467,14 @@ int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
     }
     uint8_t buff[PN7160_BUFFER_LEN];
 
-    _reset_sequence(dev->dev, buff);
+
     /* this is done so the device operates properly at 3.3V */
     _configuration_3_3V(dev->dev, buff);
+    _disable_standby(dev->dev, buff);
+    // _set_rf_config(dev->dev, buff);
+    // _set_total_duration(dev->dev, buff);
+
+    _reset_sequence(dev->dev, buff);
 
     _rf_discover_map_cmd(dev->dev, 
         NCI_PROTOCOL_ISO_DEP,       /* RF protocol */
@@ -416,7 +486,7 @@ int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
     assert(config->nfcid1.len == 4 || config->nfcid1.len == 7 || config->nfcid1.len == 10);
 
 
-    buff[PN7160_PAYLOAD_START] = 0x04;       /* num of parameters */
+    buff[PN7160_PAYLOAD_START] = 0x06;       /* num of parameters */
 
     /* The buffer will be filled with correct NFC-A listener config data */
     /* SEL_RES */
@@ -434,16 +504,26 @@ int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
     buff[PN7160_PAYLOAD_START + 8] = 0x01;
     buff[PN7160_PAYLOAD_START + 9] = config->sens_res.platform_information;
 
-    /* NFCID1 */
-    buff[PN7160_PAYLOAD_START + 10] = NCI_LA_NFCID1;
-    buff[PN7160_PAYLOAD_START + 11] = config->nfcid1.len;
-    memcpy(&buff[PN7160_PAYLOAD_START + 12], config->nfcid1.nfcid, config->nfcid1.len);
+    buff[PN7160_PAYLOAD_START + 10] = NCI_LI_A_RATS_TB1;
+    buff[PN7160_PAYLOAD_START + 11] = 0x01;
+    buff[PN7160_PAYLOAD_START + 12] = 0xF0;
 
-    int ret = _core_set_config_cmd((pn7160_t *)dev->dev, &buff[PN7160_PAYLOAD_START], 12 + config->nfcid1.len);
+    buff[PN7160_PAYLOAD_START + 13] = NCI_LI_A_RATS_TC1;
+    buff[PN7160_PAYLOAD_START + 14] = 0x01;
+    buff[PN7160_PAYLOAD_START + 15] = 0x00;
+
+    /* NFCID1 */
+    buff[PN7160_PAYLOAD_START + 16] = NCI_LA_NFCID1;
+    buff[PN7160_PAYLOAD_START + 17] = config->nfcid1.len;
+    memcpy(&buff[PN7160_PAYLOAD_START + 18], config->nfcid1.nfcid, config->nfcid1.len);
+
+    int ret = _core_set_config_cmd((pn7160_t *)dev->dev, buff, 18 + config->nfcid1.len);
     if (ret < 0) {
         LOG_ERROR("pn7160: set config failed\n");
         return ret;
     }
+
+    _nfc_a_set_listen_mode_routing((pn7160_t *)dev->dev, buff);
 
     /* prepare buffer for discover command */
     buff[PN7160_PAYLOAD_START]     = 0x01; /* num of configurations */

@@ -13,6 +13,13 @@ typedef enum {
     NFC_APPLICATION_MIFARE_DESFIRE,     /* based on T4T */
 } nfc_application_type_t;
 
+typedef enum {
+    NFC_TECHNOLOGY_A = 0,
+    NFC_TECHNOLOGY_B,
+    NFC_TECHNOLOGY_F,
+    NFC_TECHNOLOGY_V,
+} nfc_technology_t;
+
 #include "nfc_a.h"
 #include "nfc_b.h"
 #include "nfc_f.h"
