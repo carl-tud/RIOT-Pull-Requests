@@ -2,12 +2,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <net/nfc/nfc.h>
 #include <net/nfc/nfc_a.h>
 #include <net/nfc/nfc_b.h>
 #include <net/nfc/nfc_f.h>
 #include <net/nfc/nfc_v.h>
+
+
 
 typedef enum {
     NFCDEV_STATE_UNINITIALIZED = 0,
@@ -21,7 +24,7 @@ typedef enum {
 
 struct nfcdev;
 
-typedef struct nfc_listener_config_t {
+typedef struct {
     uint8_t technology;
     union {
         nfc_a_listener_config_t a;
@@ -29,12 +32,12 @@ typedef struct nfc_listener_config_t {
         nfc_f_listener_config_t f;
         nfc_v_listener_config_t v;
     } config;
-};
+}  nfc_listener_config_t;
 
 typedef struct {
     int (*init)(struct nfcdev *nfcdev, const void *dev_config);
 
-    int (*poll) (struct nfcdev *nfcdev);
+    int (*poll) (struct nfcdev *nfcdev, nfc_listener_config_t *config);
 
     int (*poll_a)(struct nfcdev *nfcdev,  nfc_a_listener_config_t *config);
     int (*listen_a)(struct nfcdev *nfcdev, const nfc_a_listener_config_t *config);
@@ -48,8 +51,8 @@ typedef struct {
     int (*poll_v)(struct nfcdev *nfcdev, nfc_v_listener_config_t *config);
     int (*listen_v)(struct nfcdev *nfcdev, const nfc_v_listener_config_t *config);
 
-    int (*dep_initiator_init)(struct nfcdev *nfcdev);
-    int (*dep_target_init)(struct nfcdev *nfcdev);
+    int (*dep_initiator_init)(struct nfcdev *nfcdev, nfc_baudrate_t baudrate);
+    int (*dep_target_init)(struct nfcdev *nfcdev, nfc_baudrate_t baudrate);
 
     int (*dep_exchange_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len, 
         uint8_t *recv, size_t *recv_len);
@@ -63,6 +66,10 @@ typedef struct {
 
     int (*initiator_exchange_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len, 
         uint8_t *recv, size_t *recv_len);
+
+    int (*mifare_classic_authenticate) (struct nfcdev *nfcdev, uint8_t block_number, 
+        const nfc_a_nfcid1_t *nfcid1, bool use_key_a, 
+        const uint8_t *key);
 } nfcdev_ops_t;
 
 typedef struct nfcdev {

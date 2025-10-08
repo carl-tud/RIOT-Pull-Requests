@@ -1,5 +1,11 @@
 MODULE += nfc
 
+ifneq (,$(filter nfc_apdu,$(USEMODULE)))
+  DIRS += apdu
+endif
+ifneq (,$(filter nfc_mifare,$(USEMODULE)))
+  DIRS += mifare
+endif
 ifneq (,$(filter nfc_ndef,$(USEMODULE)))
   DIRS += ndef
 endif
@@ -8,9 +14,6 @@ ifneq (,$(filter nfc_t2t,$(USEMODULE)))
 endif
 ifneq (,$(filter nfc_t4t,$(USEMODULE)))
   DIRS += t4t
-endif
-ifneq (,$(filter nfc_apdu,$(USEMODULE)))
-  DIRS += apdu
 endif
 
 include $(RIOTBASE)/Makefile.base

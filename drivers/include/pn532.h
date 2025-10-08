@@ -27,6 +27,7 @@ extern "C" {
 #include "periph/spi.h"
 #include "periph/uart.h"
 #include "periph/gpio.h"
+#include "net/nfc/mifare/mifare_classic.h"
 #include <stdint.h>
 
 #include "net/nfc/nfc.h"
@@ -89,7 +90,7 @@ typedef struct {
     #endif
     uint8_t initiator_command[CONFIG_PN532_INITIATOR_COMMAND_BUFFER_LEN];      /**< Buffer to store the data received from the initiator */
     size_t initiator_command_len;       /**< Length of the command received from the initiator */
-    bool iso_dep;                    /**< Whether ISO-DEP is enabled */
+    bool iso_dep;                       /**< Whether ISO-DEP is enabled */
 } pn532_t;
 
 /**
@@ -415,8 +416,8 @@ int pn532_get_passive_iso14443a(pn532_t *dev, nfc_iso14443a_t *out, unsigned max
  *
  * @return                  0 on success
  */
-int pn532_mifareclassic_authenticate(pn532_t *dev, nfc_iso14443a_t *card,
-                                     pn532_mifare_key_t keyid, uint8_t *key, unsigned block);
+// int pn532_mifareclassic_authenticate(pn532_t *dev, nfc_iso14443a_t *card,
+//                                     pn532_mifare_key_t keyid, uint8_t *key, unsigned block);
 
 /**
  * @brief   Read a block of a Mifare classic card
@@ -506,7 +507,13 @@ void pn532_release_passive(pn532_t *dev, unsigned target_id);
 
 void pn532_set_parameters(pn532_t *dev, uint8_t flags);
 
+int pn532_poll(nfcdev_t *nfcdev, nfc_listener_config_t *config);
+
 int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config);
+
+int pn532_poll_b(nfcdev_t *nfcdev, nfc_b_listener_config_t *config);
+
+int pn532_poll_f(nfcdev_t *nfcdev, nfc_f_listener_config_t *config);
 
 int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
                                   uint8_t *rcv, size_t *receive_len);
@@ -520,13 +527,20 @@ int pn532_target_send_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_le
 
 int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config);
 
+int pn532_mifare_classic_authenticate(nfcdev_t *nfcdev, uint8_t block_number, 
+    const nfc_a_nfcid1_t *nfcid1, bool is_key_a, const uint8_t *key);
+
 static const nfcdev_ops_t pn532_ops = {
     .init = pn532_init,
     .poll_a = pn532_poll_a,
+    .poll_b = pn532_poll_b,
+    .poll_f = pn532_poll_f,
+    .poll = pn532_poll,
     .listen_a = pn532_listen_a,
-    .initiator_exchange_data = pn532_initiator_exchange_data,
     .target_send_data = pn532_target_send_data,
-    .target_receive_data = pn532_target_receive_data
+    .target_receive_data = pn532_target_receive_data,
+    
+    .mifare_classic_authenticate = pn532_mifare_classic_authenticate,
 };
 
 #ifdef __cplusplus

@@ -76,7 +76,6 @@
 #define CAPDU_MAX_DATA_LEN          (CONFIG_PN532_BUFFER_LEN - BUFF_DATA_START - 1)
 
 /* Constants and magic numbers */
-#define MIFARE_CLASSIC_BLOCK_SIZE   (16)
 #define RESET_TOGGLE_SLEEP_MS       (400)
 #define RESET_BACKOFF_MS            (10)
 #define HOST_TO_PN532               (0xD4)
@@ -1173,67 +1172,103 @@ int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
     config->nfcid1.len = buff[5];
     memcpy(config->nfcid1.nfcid, &buff[6], config->nfcid1.len);
 
-    LOG_DEBUG("pn532: found 1 target\n");
-
     // uint8_t *target_data = buff[1];
     return 0;
 }
 
-/* Polls for all targets in the area */
+/* Polls for targets in the area independent of technology */
 int pn532_poll(nfcdev_t *nfcdev, nfc_listener_config_t *config) {
     assert(nfcdev != NULL);
     assert(config != NULL);
 
-    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-    _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_A, 1,
-                         LIST_PASSIVE_LEN_14443(1));
+    nfc_a_listener_config_t a_config;
+    nfc_b_listener_config_t b_config;
+    nfc_f_listener_config_t f_config;
 
-    if (buff[0] != 1) {
-        LOG_DEBUG("pn532: error during polling\n");
+    if (0 == pn532_poll_a(nfcdev, &a_config)) {
+        config->technology = NFC_TECHNOLOGY_A;
+        memcpy(&config->config.a, &a_config, sizeof(nfc_a_listener_config_t));
+    } else if (0 == pn532_poll_b(nfcdev, &b_config)) {
+        config->technology = NFC_TECHNOLOGY_B;
+        memcpy(&config->config.b, &b_config, sizeof(nfc_b_listener_config_t));
+    } else if (0 == pn532_poll_f(nfcdev, &f_config)) {
+        config->technology = NFC_TECHNOLOGY_F;
+        memcpy(&config->config.f, &f_config, sizeof(nfc_f_listener_config_t));
+    } else {
         return NFC_ERR_POLL_NO_TARGET;
-    }
-
-    switch (buff[2]) {
-        
     }
 
     return 0;
 }
 
 /* Polls for an NFC-B tag */
-int pn532_poll_b(nfcdev_t *nfcdev) {
+int pn532_poll_b(nfcdev_t *nfcdev, nfc_b_listener_config_t *config) {
     assert(nfcdev != NULL);
+    assert(config != NULL);
 
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
     _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_B, 1,
-                         LIST_PASSIVE_LEN_14443(1));
+                         21);
 
     if (buff[0] != 1) {
         LOG_DEBUG("pn532: error during polling\n");
         return NFC_ERR_POLL_NO_TARGET;
     }
 
+    memcpy(&(config->sensb_res.nfcid0), &buff[2], NFC_B_NFCID0_LEN);
+    memcpy(&(config->sensb_res.application_data), &buff[2 + NFC_B_NFCID0_LEN], NFC_B_APP_DATA_LEN);
+    memcpy(&(config->sensb_res.protocol_info), &buff[2 + NFC_B_NFCID0_LEN + NFC_B_APP_DATA_LEN],
+           NFC_B_PROT_INFO_LEN);
+
     // uint8_t *target_data = buff[1];
     return 0;
 }
 
-/*
-int pn532_poll_f(nfcdev_t *nfcdev) {
+int pn532_poll_f(nfcdev_t *nfcdev, nfc_f_listener_config_t *config) {
     assert(nfcdev != NULL);
+    assert(config != NULL);
 
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-    _list_passive_targets(nfcdev->dev, buff, PN532_BR_212_ISO_18092_F, 1,
-                         10);
+    _list_passive_targets(nfcdev->dev, buff, PN532_BR_212_FELICA, 1, 21);
 
     if (buff[0] != 1) {
         LOG_DEBUG("pn532: error during polling\n");
         return -1;
     }
 
+    memcpy(config->sensf_res.nfcid2, &buff[5], NFC_F_NFCID2_LEN);
+
     // uint8_t *target_data = buff[1];
     return 0;
 }
-    */
+
+int pn532_mifare_classic_authenticate(nfcdev_t *nfcdev, uint8_t block, 
+    const nfc_a_nfcid1_t *nfcid1, bool is_key_a, const uint8_t *key) {
+    assert(nfcdev != NULL);
+    assert(key != NULL);
+    assert(nfcid1 != NULL);
+    assert(nfcid1->len == NFC_A_NFCID1_LEN4);
+
+    int ret = -1;
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+
+    buff[BUFF_CMD_START     ] = CMD_DATA_EXCHANGE;
+    buff[BUFF_DATA_START    ] = 1; /* tg number must always be 1 */
+    buff[BUFF_DATA_START + 1] = is_key_a ? MIFARE_CLASSIC_AUTH_A : MIFARE_CLASSIC_AUTH_B;
+    buff[BUFF_DATA_START + 2] = block; /* current block */
+
+
+    memcpy(&buff[BUFF_DATA_START + 3], key, 6);
+
+    memcpy(&buff[BUFF_DATA_START + 9], nfcid1->nfcid, nfcid1->len);
+
+    ret = send_rcv((pn532_t *) nfcdev->dev, buff, 9 + nfcid1->len, 1);
+    if (ret != 0) {
+        ret = buff[0];
+    }
+
+    return ret;
+}
 
 int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
                                   uint8_t *rcv, size_t *receive_len) {
@@ -1248,7 +1283,6 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
     buff[BUFF_DATA_START    ] = 1; /* tg number must always be 1 */
 
     memcpy(&buff[BUFF_DATA_START + 1], send, send_len);
-
     int ret_len = send_rcv(nfcdev->dev, buff, send_len + 1, CONFIG_PN532_BUFFER_LEN - 8);
 
     /* receive_len is only the data received, not the status byte */
@@ -1411,26 +1445,3 @@ int pn532_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_le
         return _tg_get_initiator_command(nfcdev->dev, rcv, receive_len);
     }
 }
-
-/* int pn532_target_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
-                               uint8_t *rcv, size_t *receive_len) {
-    assert(nfcdev != NULL);
-    assert(nfcdev->dev != NULL);
-    assert(BUFF_DATA_START + 1 + send_len <= CONFIG_PN532_BUFFER_LEN);
-
-    if (send != NULL && send_len > 0) {
-        int ret = pn532_target_send_data(nfcdev, send, send_len);
-        if (ret < 0) {
-            return ret;
-        }
-    }
-
-    if (rcv != NULL && receive_len != NULL) {
-        int ret = pn532_target_receive_data(nfcdev, rcv, receive_len);
-        if (ret < 0) {
-            return ret;
-        }
-    }
-
-    return 0;
-} */

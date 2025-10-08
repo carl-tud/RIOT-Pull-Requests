@@ -125,6 +125,9 @@ endif
 ifneq (,$(filter nfc_apdu,$(USEMODULE)))
   DIRS += net/nfc/apdu
 endif
+ifneq (,$(filter nfc_mifare,$(USEMODULE)))
+  DIRS += net/nfc/mifare
+endif
 ifneq (,$(filter nfc_t2t,$(USEMODULE)))
   DIRS += net/nfc/t2t
 endif

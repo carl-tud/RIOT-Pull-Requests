@@ -8,9 +8,10 @@ typedef enum {
     NFC_APPLICATION_TYPE_T4T,
     NFC_APPLICATION_TYPE_T5T,
     NFC_APPLICATION_NFC_DEP,
-    NFC_APPLICATION_MIFARE_CLASSIC,     /* partially T2T compliant */
     NFC_APPLICATION_MIFARE_ULTRALIGHT,  /* fully T2T compliant */
+    NFC_APPLICATION_MIFARE_CLASSIC,     /* partially T2T compliant */
     NFC_APPLICATION_MIFARE_DESFIRE,     /* based on T4T */
+    NFC_APPLICATION_MIFARE_PLUS,        /* based on T4T */
 } nfc_application_type_t;
 
 typedef enum {
@@ -19,6 +20,12 @@ typedef enum {
     NFC_TECHNOLOGY_F,
     NFC_TECHNOLOGY_V,
 } nfc_technology_t;
+
+typedef enum {
+    NFC_BAUDRATE_106K = 0,
+    NFC_BAUDRATE_212K,
+    NFC_BAUDRATE_424K,
+} nfc_baudrate_t;
 
 #include "nfc_a.h"
 #include "nfc_b.h"

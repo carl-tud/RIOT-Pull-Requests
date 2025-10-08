@@ -1,5 +1,11 @@
 ifneq (,$(filter nfc_t2t,$(USEMODULE)))
   USEMODULE += nfc_ndef
 endif
+ifneq (,$(filter nfc_t4t,$(USEMODULE)))
+  USEMODULE += nfc_ndef
+endif
+ifneq (,$(filter nfc_mifare,$(USEMODULE)))
+  USEMODULE += nfc_ndef
+endif
 
 
