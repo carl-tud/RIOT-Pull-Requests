@@ -51,11 +51,8 @@ typedef struct {
     int (*poll_v)(struct nfcdev *nfcdev, nfc_v_listener_config_t *config);
     int (*listen_v)(struct nfcdev *nfcdev, const nfc_v_listener_config_t *config);
 
-    int (*dep_initiator_init)(struct nfcdev *nfcdev, nfc_baudrate_t baudrate);
-    int (*dep_target_init)(struct nfcdev *nfcdev, nfc_baudrate_t baudrate);
-
-    int (*dep_exchange_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len, 
-        uint8_t *recv, size_t *recv_len);
+    int (*poll_dep) (struct nfcdev *nfcdev, nfc_baudrate_t baudrate);
+    int (*listen_dep) (struct nfcdev *nfcdev, nfc_baudrate_t baudrate);
 
     /* int (*target_exchange_data)(struct nfcdev *nfcdev, const uint8_t *send, size_t send_len, 
         uint8_t *recv, size_t *recv_len); */

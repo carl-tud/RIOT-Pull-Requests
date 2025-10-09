@@ -58,6 +58,9 @@
 #define CMD_GET_DATA                (0x86)
 #define CMD_SET_DATA                (0x8e)
 
+#define TG_INIT_AS_TARGET_PASSIVE_ONLY (0x01)
+#define TG_INIT_AS_TARGET_DEP_ONLY     (0x02)
+#define TG_INIT_AS_TARGET_ISO_DEP      (0x04)
 
 /* Mifare specific commands */
 #define MIFARE_CMD_READ             (0x30)
@@ -1009,7 +1012,7 @@ int _init_as_target_nfc_f(pn532_t *dev, uint8_t *nfc_f_params) {
     }
 }
 
-static int _init_as_target(pn532_t *dev, uint8_t mode,
+static int _tg_init_as_target(pn532_t *dev, uint8_t mode,
     uint8_t *mifare_params, uint8_t *felica_params, uint8_t *nfcid3t, uint8_t *buff) {
     assert(dev != NULL);
     assert(buff != NULL);
@@ -1323,6 +1326,8 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
     return 0;
 }
 
+
+
 /* returns the length of bytes sent */
 static int _tg_response_to_initiator(pn532_t *dev, const uint8_t *send, size_t send_len) {
     DEBUG("pn532: response to initiator\n");
@@ -1465,3 +1470,46 @@ int pn532_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_le
         return _tg_get_initiator_command(nfcdev->dev, rcv, receive_len);
     }
 }
+
+int pn532_poll_dep(nfcdev_t *nfcdev, nfc_baudrate_t br) {
+    assert(nfcdev != NULL);
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+    uint8_t target_type;
+    switch (br) {
+        case NFC_BAUDRATE_106K:
+            target_type = 0x00;
+            break;
+        case NFC_BAUDRATE_212K:
+            target_type = 0x01;
+            break;
+        case NFC_BAUDRATE_424K:
+            target_type = 0x02;
+            break;
+        default:
+            return -1;
+    }
+
+    int ret = _list_passive_targets(nfcdev->dev, buff, target_type, 1, 30);
+    if (ret <= 0) {
+        return -1;
+    }
+
+    if (buff[0] != 1) {
+        LOG_DEBUG("pn532: error during polling\n");
+        return NFC_ERR_POLL_NO_TARGET;
+    }
+
+    return 0;
+
+}
+
+int pn532_listen_dep(nfcdev_t *nfcdev, nfc_baudrate_t br, const uint8_t *nfcid3t) {
+    assert(nfcdev != NULL);
+
+    uint8_t mode = TG_INIT_AS_TARGET_DEP_ONLY;
+
+    uint8_t buff[CONFIG_PN532_BUFFER_LEN] = {0};
+
+    _tg_init_as_target(nfcdev->dev, mode, NULL, NULL, (uint8_t *) nfcid3t, buff);
+};
