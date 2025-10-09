@@ -13,7 +13,7 @@ static int mifare_classic_rw_send_authenticate(nfc_mifare_classic_rw_t *rw,
     int ret = rw->dev->ops->mifare_classic_authenticate(rw->dev, block, nfcid1, use_key_a, key);
     if (ret != 0) {
         LOG_ERROR("mifare classic: authenticate block %u failed\n", (unsigned)block);
-        return -1;
+        return NFC_ERR_AUTH;
     }
 
     return 0;
@@ -24,8 +24,8 @@ static int mifare_classic_rw_read_block(nfc_mifare_classic_rw_t *rw, uint8_t blo
     assert(data != NULL);
 
     uint8_t send_buff[2];
-    send_buff[0] = block; /* current block */
-    send_buff[1] = 0x00; /* read command */
+    send_buff[0] = MIFARE_CLASSIC_READ; /* current block */
+    send_buff[1] = block; /* read command */
 
     size_t resp_len = 0;
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, send_buff, sizeof(send_buff), data, &resp_len);
@@ -80,8 +80,8 @@ static bool is_trailer_block(uint8_t block) {
     }
 }
 
-static inline bool is_mad_block(uint8_t block) {
-    return (block == 0x00);
+static inline bool is_mad_sector(uint8_t sector) {
+    return (sector == 0x00);
 }
 
 // static uint8_t block_to_sector(uint8_t block) {
@@ -119,21 +119,14 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
 
     rw->dev = dev;
     if (dev->state == NFCDEV_STATE_UNINITIALIZED) {
-        LOG_ERROR("[T2T RW] Device not initialized\n");
+        LOG_ERROR("[MIFARE CLASSIC RW] Device not initialized\n");
         return -1;
     }
 
     nfc_a_listener_config_t config = {0};
     rw->dev->ops->poll_a(dev, &config);
 
-    LOG_DEBUG("[MIFARE CLASSIC RW] Card found");
-
-    /* Now we authenticate the first block */
-    if (mifare_classic_rw_send_authenticate(rw, &config.nfcid1, 0, true,
-        MIFARE_CLASSIC_SECTOR_PUBLIC_KEY_A) < 0) {
-        LOG_ERROR("[MIFARE CLASSIC RW] Authentication failed\n");
-        return -1;
-    }
+    LOG_DEBUG("[MIFARE CLASSIC RW] Card found\n");
 
     const nfc_mifare_classic_size_t size = nfc_mifare_classic_get_size(&config);
 
@@ -159,17 +152,21 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
 
         /* iterate over every block in the sector */
         for (uint8_t block = 0; block < blocks_in_sector; block++) {
-            if (remaining_ndef_length > 0) {
+            if (remaining_ndef_length <= 0) {
                 /* we already read the entire NDEF message */
                 break;
             }
 
+            if (current_sector == 0x00) {
+                continue; /* skip MAD sector */
+            }
 
             const uint8_t block_number = sector_to_block(current_sector) + block;
 
             if (!is_authenticated) {
                 /* Authenticate the sector before reading */
-                if (is_mad_block(block_number)) {
+                LOG_DEBUG("[MIFARE CLASSIC RW] Authenticating block %u\n", (unsigned)block_number);
+                if (is_mad_sector(current_sector)) {
                     /* MAD block, use MAD key */
                     if (mifare_classic_rw_send_authenticate(rw, &config.nfcid1,
                         block_number, true, MIFARE_CLASSIC_MAD_PUBLIC_KEY_A) < 0) {
@@ -187,14 +184,6 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
                 }
                 is_authenticated = true;
             }
-
-
-
-            if (is_mad_block(block_number)) {
-                /* skip MAD block */
-                continue;
-            }
-
 
             if (is_trailer_block(block_number)) {
                 /* 
@@ -214,7 +203,7 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
             }
 
             /* This block should contain the NDEF TLV */
-            if (block_number == 2) {
+            if (block_number == 0x04) {
                 if (block_data[0] != 0x03) {
                     LOG_ERROR("[MIFARE CLASSIC RW] No NDEF message TLV found in block 2\n");
                     return -1;
@@ -249,6 +238,8 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
     }
 
     ndef_from_buffer(ndef);
+
+    LOG_DEBUG("[MIFARE CLASSIC RW] Read NDEF message\n");
     return 0;
 }
 

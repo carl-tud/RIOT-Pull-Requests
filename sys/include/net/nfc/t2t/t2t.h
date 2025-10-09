@@ -67,6 +67,12 @@
 #define NFC_T2T_NDEF_TLV_TYPE 0x03
 #define NFC_T2T_TERMINATOR_TLV_TYPE 0xFE
 
+
+/* the memory size is issued via kconfig, otherwise, use static memory size */
+#ifndef CONFIG_NFC_T2T_MEMORY_SIZE
+#define NFC_T2T_MEMORY_SIZE NFC_T2T_STATIC_MEMORY_SIZE
+#endif
+
 // typedefs
 
 /**
@@ -111,6 +117,9 @@ typedef struct {
     uint8_t bytes_per_page;
 }t2t_dynamic_t; */
 
+
+
+
 /**
  * @brief Type 2 Tag container.
  * 
@@ -121,7 +130,7 @@ typedef struct{
     uint8_t uid[NFC_T2T_UID_SIZE];
     uint8_t lock_bytes[NFC_T2T_LOCK_BYTES_SIZE];
     t2t_cc_t cc[NFC_T2T_CC_SIZE];
-    uint8_t data_array[NFC_T2T_STATIC_MEMORY_SIZE - NFC_T2T_UID_SIZE - 
+    uint8_t data_array[NFC_T2T_MEMORY_SIZE - NFC_T2T_UID_SIZE - 
         NFC_T2T_LOCK_BYTES_SIZE - NFC_T2T_CC_SIZE];
 } nfc_t2t_t;
 

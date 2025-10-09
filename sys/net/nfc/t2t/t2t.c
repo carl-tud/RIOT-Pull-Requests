@@ -26,6 +26,36 @@ int t2t_read_blocks(const nfc_t2t_t *t2t, uint8_t block_no, uint8_t *blocks) {
     return 0;
 }
 
+int t2t_get_ndef(const nfc_t2t_t *t2t, ndef_t *ndef) {
+    assert (t2t != NULL);
+    assert (ndef != NULL);
+
+    if (t2t->data_array[0] != NFC_T2T_NDEF_TLV_TYPE) {
+        LOG_ERROR("[T2T] No NDEF TLV found\n");
+        return -1;
+    }
+
+    uint16_t ndef_length;
+    uint8_t start_position;
+    if (t2t->data_array[1] == 0xFF) {
+        /* 3 byte length field */
+        ndef_length = (t2t->data_array[2] << 8) | t2t->data_array[3];
+        LOG_DEBUG("[T2T] NDEF length: %u (3 bytes length field)\n", (unsigned)ndef_length);
+        ndef_put_into_buffer(ndef, &t2t->data_array[4], ndef_length);
+        start_position = 4;
+    } else {
+        /* 1 byte length field */
+        ndef_length = t2t->data_array[1];
+        LOG_DEBUG("[T2T] NDEF length: %u (1 byte length field)\n", (unsigned)ndef_length);
+        ndef_put_into_buffer(ndef, &t2t->data_array[2], ndef_length);
+        start_position = 2;
+    }
+
+    memcpy(ndef->buffer.memory, t2t->data_array + start_position, ndef_length);
+
+    return 0;
+}
+
 /**
  * @brief Find portion of usable memory in given memory blob
  * 

@@ -4,3 +4,4 @@ FEATURES_REQUIRED += periph_gpio_irq
 USEMODULE += ztimer
 USEMODULE += ztimer_msec
 USEMODULE += ztimer_usec
+USEMODULE += ztimer_sec

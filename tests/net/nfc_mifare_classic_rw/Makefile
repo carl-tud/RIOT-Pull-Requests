@@ -1,3 +1,4 @@
+BOARD ?= nrf52840dk
 include ../Makefile.net_common
 
 USEMODULE += nfc_mifare

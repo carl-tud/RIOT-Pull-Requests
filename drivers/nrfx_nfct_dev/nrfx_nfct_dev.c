@@ -62,7 +62,6 @@ static nrfx_nfct_data_desc_t tx_desc = {
 };
 
 int block_with_timeout(uint32_t timeout_sec) {
-
     if (timeout_sec == 0) {
         mutex_lock(&lock);
         return 0;

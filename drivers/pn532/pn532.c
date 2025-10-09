@@ -128,6 +128,24 @@ static void printbuff(uint8_t *buff, unsigned len)
 static int send_rcv(pn532_t *dev, uint8_t *buff, unsigned sendl, unsigned recvl);
 static int _rf_configure(pn532_t *dev, unsigned cfg_item, const uint8_t *data, unsigned len);
 
+static int block_with_timeout(pn532_t *dev, uint32_t timeout_sec) {
+
+    if (timeout_sec == 0) {
+        mutex_lock(&dev->trap);
+        return 0;
+    } else {
+        ztimer_t timer = {0};
+        ztimer_mutex_unlock(ZTIMER_SEC, &timer, timeout_sec, &dev->trap);
+        mutex_lock(&dev->trap);
+        bool triggered = !ztimer_remove(ZTIMER_SEC, &timer);
+        if (triggered) {
+            return NFC_ERR_TIMEOUT;
+        } else {
+            return 0;
+        }
+    }
+}
+
 
 static void _nfc_event(void *dev)
 {
@@ -229,7 +247,13 @@ int _pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode)
 int pn532_init(nfcdev_t *nfcdev, const void *dev_config) {
     pn532_t *dev = (pn532_t *)nfcdev->dev;
     const pn532_config_t *config = (const pn532_config_t *)dev_config;
-    return _pn532_init(dev, &config->params, config->mode);
+    int ret = _pn532_init(dev, &config->params, config->mode);
+    if (ret != 0) {
+        return -1;
+    }
+    nfcdev->state = NFCDEV_STATE_DISABLED;
+    return 0;
+
 }
 
 static uint8_t chksum(uint8_t *b, unsigned len)
@@ -324,8 +348,8 @@ static int _write(const pn532_t *dev, uint8_t *buff, unsigned len)
     (void)len;
 
     #if IS_USED(MODULE_PN532_SPI)
-    // DEBUG("pn532: -> ");
-    // PRINTBUFF(buff, len);
+    DEBUG("pn532: -> ");
+    PRINTBUFF(buff, len);
     #endif
 
     switch (dev->mode) {
@@ -363,7 +387,7 @@ static int _write(const pn532_t *dev, uint8_t *buff, unsigned len)
     default:
         DEBUG("pn532: invalid mode (%i)!\n", dev->mode);
     }
-    // DEBUG("pn532: -> ");
+    //DEBUG("pn532: -> ");
     // PRINTBUFF(buff, len);
     ztimer_sleep(ZTIMER_USEC, 1000);
     return ret;
@@ -406,8 +430,8 @@ static int _read(const pn532_t *dev, uint8_t *buff, unsigned len)
         DEBUG("pn532: invalid mode (%i)!\n", dev->mode);
     }
     if (ret > 0) {
-        // DEBUG("pn532: <- ");
-        // PRINTBUFF(buff, len);
+        DEBUG("pn532: <- ");
+        PRINTBUFF(buff, len);
     }
 
     /* wait for a while */
@@ -448,21 +472,6 @@ static int send_cmd(const pn532_t *dev, uint8_t *buff, unsigned len)
     buff[len++] = 0x00;
 
     return _write(dev, buff, len);
-}
-
-static void wait_ready(pn532_t *dev)
-{
-    mutex_lock(&dev->trap);
-}
-
-void busy_wait_ready(const pn532_t *dev) {
-    uint8_t status = 0x00;
-
-    while ((status & 0x01) == 0) {
-        DEBUG("pn532: busy wait...\n");
-        _read(dev, &status, 1);
-        ztimer_sleep(ZTIMER_USEC, 10000);
-    }
 }
 
 /* Returns >0 payload len (or <0 received len but not as expected) */
@@ -535,7 +544,7 @@ static int send_check_ack(pn532_t *dev, uint8_t *buff, unsigned len)
     if (send_cmd(dev, buff, len) > 0) {
         static uint8_t ack[] = { 0x00, 0x00, 0xff, 0x00, 0xff, 0x00 };
 
-        wait_ready(dev);
+        block_with_timeout(dev, 2);
         if (_read(dev, buff, sizeof(ack)) != sizeof(ack) + 1) {
             DEBUG("pn532: ack read error\n");
             return -2;
@@ -546,7 +555,7 @@ static int send_check_ack(pn532_t *dev, uint8_t *buff, unsigned len)
             return -3;
         }
 
-        wait_ready(dev);
+        block_with_timeout(dev, 2);
         return 0;
     }
 
@@ -554,7 +563,9 @@ static int send_check_ack(pn532_t *dev, uint8_t *buff, unsigned len)
     return -1;
 }
 
-/* sendl: send length, recvl: receive payload length */
+/* sendl: send length, recvl: receive payload length
+    returns received length or <0 on error
+*/
 static int send_rcv(pn532_t *dev, uint8_t *buff, unsigned sendl, unsigned recvl)
 {
     assert(dev != NULL);
@@ -1249,7 +1260,6 @@ int pn532_mifare_classic_authenticate(nfcdev_t *nfcdev, uint8_t block,
     assert(nfcid1 != NULL);
     assert(nfcid1->len == NFC_A_NFCID1_LEN4);
 
-    int ret = -1;
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
 
     buff[BUFF_CMD_START     ] = CMD_DATA_EXCHANGE;
@@ -1262,12 +1272,17 @@ int pn532_mifare_classic_authenticate(nfcdev_t *nfcdev, uint8_t block,
 
     memcpy(&buff[BUFF_DATA_START + 9], nfcid1->nfcid, nfcid1->len);
 
-    ret = send_rcv((pn532_t *) nfcdev->dev, buff, 9 + nfcid1->len, 1);
-    if (ret != 0) {
-        ret = buff[0];
+    int ret_len = send_rcv((pn532_t *) nfcdev->dev, buff, 9 + nfcid1->len, 1);
+    if (ret_len > 0) {
+        if (buff[0] != 0x00) {
+            /* error */
+            DEBUG("pn532: error in mifare classic auth %02x\n", buff[0]);
+            return NFC_ERR_AUTH;
+        }
+        return 0;
+    } else {
+        return NFC_ERR_AUTH;
     }
-
-    return ret;
 }
 
 int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
@@ -1276,6 +1291,8 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
     assert(nfcdev->dev != NULL);
     assert(BUFF_DATA_START + 1 + send_len <= CONFIG_PN532_BUFFER_LEN);
     assert(receive_len != NULL);
+
+    *receive_len = 0;
 
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
 
@@ -1286,8 +1303,9 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
     int ret_len = send_rcv(nfcdev->dev, buff, send_len + 1, CONFIG_PN532_BUFFER_LEN - 8);
 
     /* receive_len is only the data received, not the status byte */
-    *receive_len = ret_len - 1;
+
     if (ret_len > 0) {
+        *receive_len = ret_len - 1;
         if (buff[0] != 0x00) {
             /* error */
             DEBUG("pn532: error in data exchange %02x\n", buff[0]);
@@ -1299,6 +1317,8 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
         /* copy the data into the receive buffer, excluding the status byte */
         memcpy(rcv, buff + 1, *receive_len);
     }
+
+
 
     return 0;
 }

@@ -90,6 +90,8 @@ static int t2t_poll(nfc_t2t_rw_t *rw, nfc_a_listener_config_t *config) {
         return -1;
     }
 
+    LOG_DEBUG("[T2T RW] Found Type 2 Tag\n");
+
     return 0;
 }
 
@@ -115,7 +117,7 @@ int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
 
     /* write the NDEF message */
     uint8_t data[16];
-    uint32_t ndef_length = ndef->buffer.length;
+    uint32_t ndef_length = ndef_get_size(ndef);
     uint32_t remaining_ndef_length = ndef_length;
     uint16_t first_byte_position = 0;
 
@@ -174,7 +176,7 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
 
     /* read block 4, block 4 must contain the NDEF TLV (T = 0x03) */
     uint8_t data[16];
-    ret = nfc_t2t_send_read(rw, 4, data);
+    ret = nfc_t2t_rw_send_read(rw, 4, data);
     if (ret != 0) {
         LOG_ERROR("[T2T RW] Error reading block 4\n");
         return ret;
@@ -209,7 +211,7 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     uint8_t block_no = 5;
     while (remaining_ndef_length > 0) {
 
-        int ret = nfc_t2t_rw_read_send_read(rw, block_no, data);
+        int ret = nfc_t2t_rw_send_read(rw, block_no, data);
         if (ret != 0) {
             LOG_ERROR("[T2T RW] Error reading block %u\n", block_no);
             return ret;
@@ -246,19 +248,20 @@ int nfc_t2t_rw_read(nfc_t2t_rw_t *rw, nfc_t2t_t *tag, nfcdev_t *dev) {
 
     uint8_t cmd_buffer[5];
     uint8_t resp_buffer[16];
-    size_t resp_len = 0;
+
 
     /* Poll for card presence */
     nfc_a_listener_config_t config = {0};
     t2t_poll(rw, &config);
 
     uint8_t block_no = 0;
-    while (resp_buffer[0] != NFC_T2T_NACK && block_no < 16) {
+    while (resp_buffer[0] != NFC_T2T_NACK && block_no < (NFC_T2T_MEMORY_SIZE / NFC_T2T_BLOCK_SIZE)) {
         cmd_buffer[0] = NFC_T2T_READ_COMMAND;
         cmd_buffer[1] = block_no;
 
         printf("[T2T RW] Reading block %u to %u\n", block_no, block_no + 3);
 
+        size_t resp_len = 0;
         if(rw->dev->ops->initiator_exchange_data(rw->dev, cmd_buffer, 2, resp_buffer, &resp_len) != 0) {
             LOG_ERROR("Error during data exchange\n");
             return -1;
@@ -272,6 +275,8 @@ int nfc_t2t_rw_read(nfc_t2t_rw_t *rw, nfc_t2t_t *tag, nfcdev_t *dev) {
         memcpy(&(((uint8_t *)(rw->tag))[block_no * NFC_T2T_BLOCK_SIZE]), resp_buffer, 16);
         block_no += 4;
     }
+    LOG_DEBUG("[T2T RW] Read entire tag, total blocks: %u\n", block_no);
+
     return 0;
 
 }

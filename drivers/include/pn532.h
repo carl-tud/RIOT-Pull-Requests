@@ -539,7 +539,7 @@ static const nfcdev_ops_t pn532_ops = {
     .listen_a = pn532_listen_a,
     .target_send_data = pn532_target_send_data,
     .target_receive_data = pn532_target_receive_data,
-    
+    .initiator_exchange_data = pn532_initiator_exchange_data,
     .mifare_classic_authenticate = pn532_mifare_classic_authenticate,
 };
 

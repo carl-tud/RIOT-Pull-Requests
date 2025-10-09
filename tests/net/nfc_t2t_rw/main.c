@@ -23,15 +23,10 @@ int main(void) {
         .config = &config,
     };
 
-    uint8_t memory[128] = {0};
-    nfc_t2t_t tag = {
-        .memory = memory,
-        .memory_size = sizeof(memory),
-    };
+    nfc_t2t_t tag;
 
     nfc_t2t_rw_t rw = {
         .dev = &dev,
-        .tag = &tag,
     };
 
     dev.ops->init(&dev, &config);
@@ -39,5 +34,5 @@ int main(void) {
     /* Initialized PN532 device */
     LOG_DEBUG("Initialized PN532 device\n");
 
-    nfc_t2t_rw_read(&rw);
+    nfc_t2t_rw_read(&rw, &tag, &dev);
 }

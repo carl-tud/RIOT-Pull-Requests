@@ -5,7 +5,7 @@
 #include "net/nfc/ndef/ndef.h"
 
 typedef struct {
-    nfc_mifare_classic_tag_t tag;  /* Information about the tag */
+    nfc_mifare_classic_tag_t *tag;  /* Information about the tag */
     nfcdev_t *dev;                 /* NFC device */
 } nfc_mifare_classic_rw_t;
 
