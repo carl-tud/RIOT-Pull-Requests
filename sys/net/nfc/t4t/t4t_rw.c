@@ -1,7 +1,7 @@
 
 #include "net/nfc/t4t/t4t.h"
 
-int nfc_t4t_select_ndef_application(nfc_t4t_rw_t *rw) {
+static int nfc_t4t_select_ndef_application(nfc_t4t_rw_t *rw) {
     assert(rw != NULL);
 
     uint8_t response[256];
@@ -24,6 +24,47 @@ int nfc_t4t_select_ndef_application(nfc_t4t_rw_t *rw) {
     return 0;
 }
 
+static int nfc_t4t_select_cc_file(nfc_t4t_rw_t *rw) {
+    assert(rw != NULL);
+
+    uint8_t response[16];
+    size_t response_len = 0;
+
+    int ret = rw->dev->ops->initiator_exchange_data(rw->dev, select_cc_file_apdu,
+        sizeof(select_cc_file_apdu), response, &response_len);
+    if (ret != 0) {
+        LOG_ERROR("[T4T RW] Failed to send SELECT CC file APDU\n");
+        return -1;
+    }
+
+    if (response_len < 2 || response[response_len - 2] != 0x90 || response[response_len - 1] != 0x00) {
+        LOG_ERROR("[T4T RW] SELECT CC file failed with status %02X%02X\n",
+            response[response_len - 2], response[response_len - 1]);
+        return -1;
+    }
+
+    LOG_DEBUG("[T4T RW] SELECT CC file successful\n");
+    return 0;
+}
+
+static int nfc_t4t_read_cc_file(nfc_t4t_rw_t *rw, nfc_t4t_cc_file_t *cc_file) {
+    assert(rw != NULL);
+    assert(cc_buffer != NULL);
+    assert(cc_length != NULL);
+
+    uint8_t response[16];
+    size_t response_len = 0;
+
+    int ret = rw->dev->ops->initiator_exchange_data(rw->dev, read_cc_file_apdu,
+        sizeof(read_cc_file_apdu), response, &response_len);
+    if (ret != 0) {
+        LOG_ERROR("[T4T RW] Failed to send READ CC file APDU\n");
+        return -1;
+    }
+    
+    
+}
+
 int nfc_t4t_rw_read_tag(nfc_t4t_rw_t *rw, nfc_t4t_t *tag, nfcdev_t *dev) {
     assert(rw != NULL);
     assert(tag != NULL);
@@ -42,7 +83,18 @@ int nfc_t4t_rw_read_tag(nfc_t4t_rw_t *rw, nfc_t4t_t *tag, nfcdev_t *dev) {
         return -1;
     }
 
-    nfc_t4t_select_ndef_application(rw);
+    ret = nfc_t4t_select_ndef_application(rw);
+    if (ret != 0) {
+        LOG_ERROR("[T4T RW] Selecting NDEF application failed\n");
+        return -1;
+    }
+
+    /* first select the CC container */
+    ret = nfc_t4t_select_file(rw, );
+    if (ret != 0) {
+        LOG_ERROR("[T4T RW] Selecting CC file failed\n");
+        return -1;
+    }
 
     return 0;
 }

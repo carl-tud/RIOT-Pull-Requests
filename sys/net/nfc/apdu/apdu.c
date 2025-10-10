@@ -36,3 +36,23 @@ inline const uint8_t *apdu_get_data(const uint8_t *apdu, size_t apdu_len) {
     }
     return &apdu[APDU_DATA_POS];
 }
+
+bool apdu_is_valid(const uint8_t *apdu, size_t apdu_len) {
+    if (apdu_len < 4) {
+        return false;  // Minimum length for APDU is 4 bytes
+    }
+
+    uint8_t lc = apdu_get_lc(apdu, apdu_len);
+    size_t expected_len = 4 + 1 + lc; // CLA, INS, P1, P2 + LC + Data
+
+    if (apdu_len != expected_len) {
+        return false;  // Not enough data
+    }
+
+    /* check the status code */
+    if (apdu[apdu_len - 2] != APDU_SW1_NO_ERROR || apdu[apdu_len - 1] != APDU_SW2_NO_ERROR) {
+        return false;
+    }
+
+    return true;
+}

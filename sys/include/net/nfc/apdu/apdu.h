@@ -15,8 +15,6 @@
 #define APDU_INS_READ_BINARY 0xB0
 #define APDU_INS_UPDATE_BINARY 0xD6
 
-
-
 /* P1 parameters for the SELECT command */
 #define APDU_SELECT_P1_SELECT_MF_DF_OR_EF 0x00
 #define APDU_SELECT_P1_SELECT_CHILD_DF 0x01
@@ -51,6 +49,8 @@ uint8_t apdu_get_p2(const uint8_t *apdu, size_t apdu_len);
 
 uint8_t apdu_get_lc(const uint8_t *apdu, size_t apdu_len);
 
-uint8_t apdu_get_le(const uint8_t *apdu, size_t apdu_len);
-
 const uint8_t *apdu_get_data(const uint8_t *apdu, size_t apdu_len);
+
+bool apdu_is_valid(const uint8_t *apdu, size_t apdu_len);
+
+
