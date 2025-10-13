@@ -6,6 +6,7 @@
 #define T2T_NACK_ERROR -1
 
 /* Generic NFC Forum T2T emulator making use of nfcdev */
+
 static int send_ack_nack(nfc_t2t_emulator_t *emulator, bool ack) {
     uint8_t tx_buffer[1];
     if (ack) {

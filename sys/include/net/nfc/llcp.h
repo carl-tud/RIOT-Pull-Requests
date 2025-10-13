@@ -1,0 +1,17 @@
+#pragma once
+
+#define LLCP_PDU_PTYPE_SYMM 0x00
+#define LLCP_PDU_PTYPE_PAX  0x01
+#define LLCP_PDU_PTYPE_AGF  0x02
+#define LLCP_PDU_PTYPE_UI   0x03
+#define LLCP_PDU_PTYPE_CONNECT 0x04
+#define LLCP_PDU_PTYPE_DISC    0x05
+#define LLCP_PDU_PTYPE_CC     0x06
+#define LLCP_PDU_PTYPE_DM     0x07
+#define LLCP_PDU_PTYPE_FRMR   0x08
+#define LLCP_PDU_PTYPE_I      0x0C
+#define LLCP_PDU_PTYPE_RR     0x0D
+#define LLCP_PDU_PTYPE_RNR    0x0E
+
+#define LLCP_PDU_HEADER_LEN   (3u)
+

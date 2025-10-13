@@ -37,15 +37,15 @@ typedef struct {
     uint16_t max_ndef_size;
     uint8_t read_access;
     uint8_t write_access;
-} t4t_ndef_file_control_tlv;
+} t4t_ndef_file_control_tlv_t;
 
 typedef struct {
     uint16_t cc_len;
     uint8_t mapping_version;
     uint16_t mle;
     uint16_t mlc;
-    t4t_ndef_file_control_tlv ndef_file_control_tlv;
-} t4t_cc_file;
+    t4t_ndef_file_control_tlv_t ndef_file_control_tlv;
+} t4t_cc_file_t;
 
 /**
  * @brief The ISO/IEC-7816 select command to select the NDEF file
@@ -91,7 +91,7 @@ typedef struct {
     bool selected_ndef_application;
     bool selected_cc_file;
     bool selected_ndef_file;
-    t4t_cc_file cc_file;
+    t4t_cc_file_t cc_file;
     uint8_t *ndef_file;
 } nfc_t4t_t;
 

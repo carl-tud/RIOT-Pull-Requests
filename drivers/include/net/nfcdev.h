@@ -18,14 +18,12 @@ typedef enum {
     NFCDEV_STATE_IDLE,
     NFCDEV_STATE_POLLING,
     NFCDEV_STATE_LISTENING,
-    NFCDEV_STATE_DEP_INITIATOR,
-    NFCDEV_STATE_DEP_TARGET,
 } nfcdev_state_t;
 
 struct nfcdev;
 
 typedef struct {
-    uint8_t technology;
+    nfc_technology_t technology;
     union {
         nfc_a_listener_config_t a;
         nfc_b_listener_config_t b;

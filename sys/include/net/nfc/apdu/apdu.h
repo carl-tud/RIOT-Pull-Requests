@@ -2,7 +2,10 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
+
+/* This is taken from ISO 7816-4 */
 #define APDU_CLA_DEFAULT 0x00
 
 #define APDU_INS_POS 1
@@ -41,16 +44,16 @@
 #define APDU_SW1_CLASS_NOT_SUPPORTED 0x6E
 #define APDU_SW1_UNKNOWN 0x6F
 
-uint8_t apdu_get_ins(const uint8_t *apdu, size_t apdu_len);
+uint8_t capdu_get_ins(const uint8_t *apdu, size_t apdu_len);
 
-uint8_t apdu_get_p1(const uint8_t *apdu, size_t apdu_len);
+uint8_t capdu_get_p1(const uint8_t *apdu, size_t apdu_len);
 
-uint8_t apdu_get_p2(const uint8_t *apdu, size_t apdu_len);
+uint8_t capdu_get_p2(const uint8_t *apdu, size_t apdu_len);
 
-uint8_t apdu_get_lc(const uint8_t *apdu, size_t apdu_len);
+uint8_t capdu_get_lc(const uint8_t *apdu, size_t apdu_len);
 
-const uint8_t *apdu_get_data(const uint8_t *apdu, size_t apdu_len);
+const uint8_t *capdu_get_data(const uint8_t *apdu, size_t apdu_len);
 
-bool apdu_is_valid(const uint8_t *apdu, size_t apdu_len);
+bool capdu_is_valid(const uint8_t *apdu, size_t apdu_len);
 
-
+bool rapdu_is_valid(const uint8_t *apdu, size_t apdu_len);

@@ -1326,8 +1326,6 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
     return 0;
 }
 
-
-
 /* returns the length of bytes sent */
 static int _tg_response_to_initiator(pn532_t *dev, const uint8_t *send, size_t send_len) {
     DEBUG("pn532: response to initiator\n");

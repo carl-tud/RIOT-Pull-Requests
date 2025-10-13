@@ -414,3 +414,9 @@ int ndef_from_buffer(ndef_t *ndef) {
 
     return 0;
 }
+
+size_t ndef_get_capacity(const ndef_t *ndef) {
+    assert(ndef != NULL);
+
+    return (size_t)(ndef->buffer.memory_end - ndef->buffer.memory + 1);
+}

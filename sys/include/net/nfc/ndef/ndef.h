@@ -380,6 +380,8 @@ size_t ndef_record_calculate_text_size(uint32_t text_length, uint8_t lang_code_l
  */
 int ndef_from_buffer(ndef_t *ndef);
 
+size_t ndef_get_capacity(const ndef_t *ndef);
+
 /**
  * @brief NDEF URI types
  */
