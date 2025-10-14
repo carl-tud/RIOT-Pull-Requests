@@ -1567,7 +1567,7 @@ static void _send_sens_req(st25_t *dev, uint8_t *sens_res) {
           fifo_buffer[0], fifo_buffer[1]);
 }
 
-static void _nfc_a_anticollision(uin8_t sens_res, nfc_) {
+static void _nfc_a_anticollision(st25_t *dev, uint8_t sens_res) {
 
 }
 

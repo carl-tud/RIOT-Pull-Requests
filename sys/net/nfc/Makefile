@@ -3,6 +3,9 @@ MODULE += nfc
 ifneq (,$(filter nfc_apdu,$(USEMODULE)))
   DIRS += apdu
 endif
+ifneq (,$(filter nfc_llcp,$(USEMODULE)))
+  DIRS += llcp
+endif
 ifneq (,$(filter nfc_mifare,$(USEMODULE)))
   DIRS += mifare
 endif

@@ -18,7 +18,13 @@ typedef enum {
     NFCDEV_STATE_IDLE,
     NFCDEV_STATE_POLLING,
     NFCDEV_STATE_LISTENING,
+    NFCDEV_STATE_NFC_DEP_CONNECTED,
 } nfcdev_state_t;
+
+typedef enum {
+    NFCDEV_MODE_TARGET = 0,
+    NFCDEV_MODE_INITIATOR,
+} nfcdev_mode_t;
 
 struct nfcdev;
 

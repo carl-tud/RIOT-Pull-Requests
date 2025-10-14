@@ -205,20 +205,17 @@ int nfc_t4t_rw_read_tag(nfc_t4t_rw_t *rw, nfc_t4t_t *tag, nfcdev_t *dev) {
     assert(rw != NULL);
     assert(tag != NULL);
 
-    nfc_listener_config_t config;
     rw->dev = dev;
     rw->tag = tag;
-    if (dev->state == NFCDEV_STATE_UNINITIALIZED) {
-        LOG_ERROR("[T4T RW] Device not initialized\n");
-        return -1;
-    }
 
-    int ret = rw->dev->ops->poll_a(dev, &config);
+    nfc_listener_config_t config;
+    int ret = nfc_t4t_rw_poll(rw, dev, &config);
     if (ret != 0) {
         LOG_ERROR("[T4T RW] Polling failed\n");
         return -1;
     }
 
+    /* select the NDEF application */
     ret = nfc_t4t_select_ndef_application(rw);
     if (ret != 0) {
         LOG_ERROR("[T4T RW] Selecting NDEF application failed\n");
@@ -232,6 +229,7 @@ int nfc_t4t_rw_read_tag(nfc_t4t_rw_t *rw, nfc_t4t_t *tag, nfcdev_t *dev) {
         return -1;
     }
 
+    /* read the CC file */
     ret = nfc_t4t_read_cc_file(rw, &tag->cc_file);
     if (ret != 0) {
         LOG_ERROR("[T4T RW] Reading CC file failed\n");
@@ -246,12 +244,14 @@ int nfc_t4t_rw_read_tag(nfc_t4t_rw_t *rw, nfc_t4t_t *tag, nfcdev_t *dev) {
         return -1;
     }
 
+    /* select the NDEF file*/
     ret = nfc_t4t_select_ndef_file(rw);
     if (ret != 0) {
         LOG_ERROR("[T4T RW] Selecting NDEF file failed\n");
         return -1;
     }
 
+    /* read the NDEF file*/
     ret = nfc_t4t_read_ndef_file(rw, maximum_capdu_size);
     if (ret != 0) {
         LOG_ERROR("[T4T RW] Reading NDEF file failed\n");
@@ -266,11 +266,8 @@ int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef) {
     assert(ndef != NULL);
     assert(ndef_len != NULL);
 
-    int ret = rw->dev->ops->poll_a(dev, &config);
-    if (ret != 0) {
-        LOG_ERROR("[T4T RW] Polling failed\n");
-        return -1;
-    }
+    nfc_listener_config_t config;
+    nfc_t4t_rw_poll(rw, rw->dev, &config);
 
     ret = nfc_t4t_select_ndef_application(rw);
     if (ret != 0) {
@@ -313,4 +310,11 @@ int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef) {
     }
 
     return 0;
+}
+
+int nfc_t4t_rw_write_ndef(nfc_t4t_rw_t *rw, const ndef_t *ndef) {
+    assert(rw != NULL);
+    assert(ndef != NULL);
+
+    
 }
