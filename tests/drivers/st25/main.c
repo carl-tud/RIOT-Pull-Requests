@@ -15,13 +15,19 @@ int main(void) {
 
     st25_t device;
 
-    int ret = st25_init(&device, &params);
+    nfcdev_t device_desc = {
+        .dev = &device,
+        .ops = &st25_nfcdev_ops,
+    };
+
+    int ret = st25_init(&device_desc, &params);
     if (ret < 0) {
         printf("Failed to initialize ST25 device: %d\n", ret);
         return ret;
     }
 
-    st25_listen_nfc_a(&device);
+    nfc_a_listener_config_t config;
+    st25_poll_a(&device_desc, &config);
 
     while(true) {}
 

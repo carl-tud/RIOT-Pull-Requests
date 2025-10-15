@@ -603,7 +603,15 @@ int pn7160_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t
 
     memcpy(&buff[PN7160_PAYLOAD_START], send, send_len);
 
-    *receive_len = _send_and_rcv_data_message(dev, buff, send_len) - NCI_HEADER_SIZE;
+    int data_len = _send_and_rcv_data_message(dev, buff, send_len) - NCI_HEADER_SIZE;
+    if (data_len > *receive_len) {
+        LOG_ERROR("pn7160: buffer is too small (%u < %u)!\n", (unsigned)*receive_len, 
+            (unsigned)data_len);
+        *receive_len = 0;
+        return -1;
+    }
+
+    *receive_len = data_len;
     memcpy(rcv, &buff[PN7160_PAYLOAD_START], *receive_len);
 
     return 0;

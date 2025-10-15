@@ -14,7 +14,7 @@ static int nfc_t2t_rw_send_read(nfc_t2t_rw_t *rw, uint8_t block_no, uint8_t *dat
     cmd_buffer[1] = block_no;
 
 
-    size_t response_len = 0;
+    size_t response_len = 16;
     LOG_DEBUG("[T2T RW] Sending READ command for block %u\n", block_no);
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, cmd_buffer, 2, data, 
         &response_len);
@@ -44,7 +44,7 @@ static int nfc_t2t_rw_send_write(nfc_t2t_rw_t *rw, uint8_t block_no, const uint8
     memcpy(&cmd_buffer[2], data, 4);
 
     uint8_t resp_buffer[16];
-    size_t resp_len = 0;
+    size_t resp_len = 16;
 
     LOG_DEBUG("[T2T RW] Sending WRITE command for block %u\n", block_no);
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, cmd_buffer, 6, resp_buffer, &resp_len);
@@ -145,8 +145,6 @@ int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     }
 
     memcpy(&data[first_byte_position], ndef->buffer.memory, to_write);
-
-
 
     return 0;
 }

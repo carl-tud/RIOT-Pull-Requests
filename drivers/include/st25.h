@@ -33,14 +33,14 @@ typedef struct {
     uint32_t irq_status;             /**< contents of the main interrupt register  */
 } st25_t;
 
-int st25_init(st25_t *dev, const st25_params_t *params);
+int st25_init(nfcdev_t *dev, const void *config);
 
-int st25_poll_a(st25_t *dev);
+int st25_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config);
 
-int st25_listen_a(st25_t *dev);
+int st25_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config);
 
 static const nfcdev_ops_t st25_nfcdev_ops = {
-    .init = (nfcdev_init_t)st25_init,
-    .poll_a = (nfcdev_poll_t)st25_poll_a,
-    .listen = (nfcdev_listen_t)st25_listen_a,
+    .init = st25_init,
+    .poll_a = st25_poll_a,
+    .listen_a = st25_listen_a,
 };

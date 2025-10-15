@@ -1295,8 +1295,6 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
     assert(BUFF_DATA_START + 1 + send_len <= CONFIG_PN532_BUFFER_LEN);
     assert(receive_len != NULL);
 
-    *receive_len = 0;
-
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
 
     buff[BUFF_CMD_START     ] = CMD_DATA_EXCHANGE;
@@ -1308,6 +1306,13 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
     /* receive_len is only the data received, not the status byte */
 
     if (ret_len > 0) {
+        if (*receive_len < (size_t)(ret_len - 1)) {
+            /* the receive buffer is too small */
+            DEBUG("pn532: receive buffer too small\n");
+            *receive_len = 0;
+            return -1;
+        }
+
         *receive_len = ret_len - 1;
         if (buff[0] != 0x00) {
             /* error */
@@ -1367,6 +1372,13 @@ static int _tg_get_initiator_command(pn532_t *dev, uint8_t *rcv, size_t *receive
         return NFC_ERR_COMMUNICATION;
     }
 
+    /* check if ret_len is bigger than receive_len */
+    if (ret_len - 1 > (int)*receive_len) {
+        DEBUG("pn532: receive buffer too small\n");
+        *receive_len = 0;
+        return -1;
+    }
+
     if (buff[0] != 0x00) {
         DEBUG("pn532: error in get initiator command %02x\n", buff[0]);
         *receive_len = 0;
@@ -1394,6 +1406,13 @@ static int _tg_get_data(pn532_t *dev, uint8_t *rcv, size_t *receive_len) {
     if (ret_len <= 1) {
         *receive_len = 0;
         return NFC_ERR_COMMUNICATION;
+    }
+
+    /* check if ret_len is bigger than receive_len */
+    if (ret_len - 1 > (int)*receive_len) {
+        DEBUG("pn532: receive buffer too small\n");
+        *receive_len = 0;
+        return -1;
     }
 
     if (buff[0] != 0x00) {

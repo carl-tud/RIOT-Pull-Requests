@@ -5,7 +5,7 @@ static int nfc_t4t_select_ndef_application(nfc_t4t_rw_t *rw) {
     assert(rw != NULL);
 
     uint8_t response[256];
-    size_t response_len = 0;
+    size_t response_len = 256;
 
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, select_ndef_apdu,
         sizeof(select_ndef_apdu), response, &response_len);
@@ -28,7 +28,7 @@ static int nfc_t4t_select_cc_file(nfc_t4t_rw_t *rw) {
     assert(rw != NULL);
 
     uint8_t response[16];
-    size_t response_len = 0;
+    size_t response_len = 16;
 
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, select_cc_file_apdu,
         sizeof(select_cc_file_apdu), response, &response_len);
@@ -54,7 +54,7 @@ static int nfc_t4t_read_cc_file(nfc_t4t_rw_t *rw, nfc_t4t_cc_file_t *cc_file) {
     assert(cc_length != NULL);
 
     uint8_t response[32];
-    size_t response_len = 0;
+    size_t response_len = 32;
 
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, read_cc_file_apdu,
         sizeof(read_cc_file_apdu), response, &response_len);
@@ -84,7 +84,7 @@ static int nfc_t4t_select_ndef_file(nfc_t4t_rw_t *rw) {
     assert(rw != NULL);
 
     uint8_t response[32];
-    size_t response_len = 0;
+    size_t response_len = 32;
 
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, select_ndef_file_apdu,
         sizeof(select_ndef_file_apdu), response, &response_len);
@@ -111,7 +111,7 @@ static int nfc_t4t_read_ndef_file(nfc_t4t_rw_t *rw, uint8_t *ndef_file, size_t n
     const uint8_t le = 64;
 
     uint8_t response[64];
-    uint8_t response_len = 0;
+    uint8_t response_len = 64;
 
     uint8_t read_nlen_apdu[] = {
         APDU_CLA_DEFAULT,

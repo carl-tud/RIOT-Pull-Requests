@@ -7,6 +7,11 @@
  */
 #define NFC_A_SENS_RES_ANTICOLLISION_NFCID1_SIZE_MASK (0xC0)
 
+/**
+ * @brief Select Response (SEL_RES) command
+ */
+#define NFC_A_SEL_RES_LEN  (1u)
+
 #define NFC_A_SEL_RES_T2T_VALUE (0x00)
 #define NFC_A_SEL_RES_T2T_MASK  (0x60)
 
@@ -94,13 +99,16 @@
 #define NFC_A_NFCID1_CT        (0x88)
 
 /**
- * @brief Cascade Level of Select Command as part of SDD_REQ
+ * @brief Cascade Level of Select Command as part of SDD_REQ and SEL_REQ
  * 
  */
 #define NFC_A_SEL_CMD_CL1      (0x93)
 #define NFC_A_SEL_CMD_CL2      (0x95)
 #define NFC_A_SEL_CMD_CL3      (0x97)
 
+#define NFC_A_SEL_REQ_LEN  (7u)
+
+#define NFC_A_CRC_LEN  (2u)
 
 typedef enum {
     NFC_A_BITRATE_106 = 0,

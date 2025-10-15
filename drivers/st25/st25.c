@@ -7,6 +7,7 @@
 #include "log.h"
 #include "board.h"
 #include "kernel_defines.h"
+#include "net/nfc/nfc_a.h"
 
 #define ENABLE_DEBUG 1
 #include "debug.h"
@@ -1363,6 +1364,36 @@ static int _read_interrupts(st25_t *dev, uint32_t *interrupts) {
     return 0;
 }
 
+static void _clear_interrupts(st25_t *dev) {
+    assert(dev != NULL);
+
+    /* Clear all interrupts */
+    uint32_t reg_content = 0;
+    _read_interrupts(dev, &reg_content);
+}   
+
+static int _set_number_of_transmitted_bytes_and_bits(const st25_t *dev, 
+    uint16_t bytes, uint8_t bits) {
+    assert(dev != NULL);
+
+    if (bits > 7) {
+        DEBUG("st25: Number of bits %u is too large, max is 7\n", bits);
+        return -1;
+    }
+
+    if (bytes > 8191) {
+        DEBUG("st25: Number of bytes %u is too large, max is 8191\n", bytes);
+        return -1;
+    }
+
+    /* the bytes are identified in two registers*/
+    _write_reg(dev, REG_NUM_TX_BYTES1, (uint8_t) (bytes & 0xFF00));
+    _write_reg(dev, REG_NUM_TX_BYTES2, (uint8_t) ((bytes << 3) & 0xF8) | bits);
+
+
+    return 0;
+}
+
 static int _fifo_status(const st25_t *dev, uint16_t *byte_size, uint8_t *bit_size) {
     assert(dev != NULL);
 
@@ -1389,7 +1420,11 @@ static int _fifo_read(const st25_t *dev, uint8_t *data, uint16_t *bytes, uint8_t
     assert(data != NULL);
 
     /* get the amount of bytes in the FIFO */
-    _fifo_status(dev, bytes, bits);
+    int ret = _fifo_status(dev, bytes, bits);
+    if (ret < 0) {
+        bytes = 0;
+        bits = 0;
+    }
 
     if (*bytes == 0 && *bits == 0) {
         /* no data in FIFO */
@@ -1407,7 +1442,7 @@ static int _fifo_read(const st25_t *dev, uint8_t *data, uint16_t *bytes, uint8_t
     uint8_t operation_mode = SPI_MODE_FIFO_READ;
 
     /* read the bytes from the FIFO */
-    int ret = _write_and_read(dev, data, *bits > 0 ? (unsigned) *bytes + 1 : (unsigned) *bytes, 
+    ret = _write_and_read(dev, data, *bits > 0 ? (unsigned) *bytes + 1 : (unsigned) *bytes, 
                               &operation_mode, 1);
     return ret;
 }
@@ -1457,6 +1492,7 @@ static int _send_cmd(st25_t *dev, uint8_t cmd)
 
 static void _nfc_event(void *dev)
 {
+    DEBUG("st25: IRQ triggered\n");
     mutex_unlock(&(((st25_t *)dev)->trap));
 }
 
@@ -1465,7 +1501,7 @@ static void wait_for(st25_t *dev, uint32_t mask) {
     assert(dev != NULL);
 
     do {
-        DEBUG("st25 wait for mask: %lu\n", mask);
+        DEBUG("st25 wait for mask: %lX\n", mask);
         mutex_lock(&(dev->trap));
         DEBUG("st25: NFC event triggered\n");
         _read_interrupts(dev, &(((st25_t *)dev)->irq_status));
@@ -1473,6 +1509,24 @@ static void wait_for(st25_t *dev, uint32_t mask) {
     } while((dev->irq_status & mask) == 0);
 
     DEBUG("st25: Continuing...\n");
+}
+
+static int _verify_bcc(uint8_t *nfcid, unsigned len) {
+    assert(nfcid != NULL);
+    assert(len > 0);
+
+    uint8_t bcc = 0;
+    for (unsigned i = 0; i < len - 1; i++) {
+        bcc ^= nfcid[i];
+    }
+
+    if (bcc != nfcid[len - 1]) {
+        DEBUG("st25: BCC check failed\n");
+        return -1;
+    } else {
+        DEBUG("st25: BCC check passed\n");
+        return 0;
+    }
 }
 
 static int _write_test_reg(st25_t *dev, uint8_t byte) {
@@ -1523,20 +1577,108 @@ static void _busy_wait_for(st25_t *dev, uint32_t mask) {
 
 static void _send_sdd_req(st25_t *dev, uint8_t *sdd_req, uint8_t *sdd_res) {
     /* write FIFO with SSD_REQ */
-    _fifo_load(dev, sdd_req, 2);
+    _write_reg(dev, REG_ISO14443A_NFC, REG_ISO14443A_NFC_antcl);
+
+    _clear_interrupts(dev);
+    _write_interrupt_mask(dev, ~(IRQ_MASK_RXE));
+
+    /* the highest nibble stores the byte count */
+    uint16_t bytes = (sdd_req[1] & 0xF0) >> 4;
+
+    /* an sdd_req has at least a size of 2 */
+    assert(bytes >= 2);
+
+    /* the lowest nibble stores the bit count */
+    uint8_t bits = sdd_req[1] & 0x0F;
+    _set_number_of_transmitted_bytes_and_bits(dev, bytes, bits);
+
+    _send_cmd(dev, CMD_CLEAR_FIFO);
+    _fifo_load(dev, sdd_req, bytes);
     _send_cmd(dev, CMD_TRANSMIT_WITHOUT_CRC);
-    wait_for(dev, IRQ_MASK_TXE);
 
-    ztimer_sleep(ZTIMER_USEC, 100);
+    /* 
+     * we assume here, that no collision occurs, i.e. only one NFC-A tag
+     * is in the area of operation
+     */
+    wait_for(dev, IRQ_MASK_RXE);
 
-    uint16_t bytes = 0;
-    uint8_t bits = 0;
-    _fifo_read(dev, sdd_res, &bytes, &bits);
+    uint16_t fifo_bytes = 0;
+    uint8_t fifo_bits = 0;
+    _fifo_read(dev, sdd_res, &fifo_bytes, &fifo_bits);
+
+    int ret = _verify_bcc(sdd_res, (uint8_t) fifo_bytes);
+    if (ret < 0) {
+        DEBUG("st25: BCC check failed for SDD_RES\n");
+    }
+
+    return;
+}
+
+static int _verify_crc_a(uint8_t *data, unsigned len) {
+    assert(data != NULL);
+    assert(len > 1);
+
+    uint16_t crc = 0x6363; /* ITU-V.41 */
+
+    for (unsigned i = 0; i < len - 2; i++) {
+        crc ^= data[i];
+        for (unsigned j = 0; j < 8; j++) {
+            if (crc & 0x0001) {
+                crc = (crc >> 1) ^ 0x8408;
+            } else {
+                crc = (crc >> 1);
+            }
+        }
+    }
+
+    /* the CRC is stored LSB first */
+    uint16_t received_crc = ((uint16_t) data[len - 2]) | (((uint16_t) data[len - 1]) << 8);
+
+    if (crc != received_crc) {
+        DEBUG("st25: CRC check failed\n");
+        return -1;
+    } else {
+        DEBUG("st25: CRC check passed\n");
+        return 0;
+    }
+}
+
+static void _send_sel_req(st25_t *dev, uint8_t *sel_req, uint8_t *sel_res) {
+    assert(dev != NULL);
+    assert(sel_req != NULL);
+    assert(sel_res != NULL);
+    _write_reg(dev, REG_ISO14443A_NFC, 0x00); /* disable anticollision */
+
+    _clear_interrupts(dev);
+    _write_interrupt_mask(dev, ~(IRQ_MASK_RXE));
+
+    /* sel_req always has a length of 7 */
+    _set_number_of_transmitted_bytes_and_bits(dev, 7, 0);
+
+    _send_cmd(dev, CMD_CLEAR_FIFO);
+    _fifo_load(dev, sel_req, 7);
+    _send_cmd(dev, CMD_TRANSMIT_WITH_CRC);
+
+    wait_for(dev, IRQ_MASK_RXE);
+
+    uint16_t fifo_bytes = 0;
+    uint8_t fifo_bits = 0;
+
+    uint8_t sel_res_with_crc[NFC_A_SEL_RES_LEN + NFC_A_CRC_LEN] = {0};
+    _fifo_read(dev, sel_res_with_crc, &fifo_bytes, &fifo_bits);
+    assert(fifo_bytes == 1 + NFC_A_CRC_LEN);
+    assert(fifo_bits == 0);
+
+    _verify_crc_a(sel_res_with_crc, fifo_bytes);
+
+    sel_res[0] = sel_res_with_crc[0];
+
+    return;
 }
 
 static void _send_sens_req(st25_t *dev, uint8_t *sens_res) {
-
-    _write_interrupt_mask(dev, ~(IRQ_MASK_TXE | IRQ_MASK_RXE | IRQ_MASK_RXS | IRQ_MASK_COL));
+    _clear_interrupts(dev);
+    _write_interrupt_mask(dev, ~(IRQ_MASK_RXE));
 
     uint8_t reg_content = OPERATION_EN | OPERATION_RX_EN | OPERATION_TX_EN;
     _write_reg(dev, REG_OP_CONTROL, reg_content);
@@ -1546,29 +1688,31 @@ static void _send_sens_req(st25_t *dev, uint8_t *sens_res) {
     _send_cmd(dev, CMD_RESET_RX_GAIN);
 
     _write_reg(dev, REG_AUX, REG_AUX_no_crc_rx);
-
     _write_reg(dev, REG_NUM_TX_BYTES2, 0x00);
+
 
     DEBUG("st25: Sending SENS_REQ\n");
     _send_cmd(dev, CMD_TRANSMIT_REQA);
-    wait_for(dev, IRQ_MASK_TXE);
 
-    ztimer_sleep(ZTIMER_USEC, 100);
+    wait_for(dev, IRQ_MASK_RXE);
 
     DEBUG("st25: SENS_REQ sent, waiting for response...\n");
 
-    /* TODO: we only get 4 bits here. why? */
     uint8_t fifo_buffer[BUFFER_LENGTH] = {0};
-    uint8_t bytes[2];
+    uint16_t bytes = 0;
     uint8_t bits = 0;
     _fifo_read(dev, fifo_buffer, &bytes, &bits);
 
     DEBUG("st25: SENS_RES received with byte 1: 0x%02x and byte 2: 0x%02x\n",
           fifo_buffer[0], fifo_buffer[1]);
+    
+    sens_res[0] = fifo_buffer[1];
+    sens_res[1] = fifo_buffer[0];
 }
 
 static void _nfc_a_anticollision(st25_t *dev, uint8_t sens_res) {
-
+    (void) dev;
+    (void) sens_res;
 }
 
 /* changes only certain bits and leaves the rest unchanged */
@@ -1625,32 +1769,124 @@ static void _read_pt_memory_a_config(st25_t *dev, uint8_t *nfc_a_config) {
     return;
 }
 
-static void _clear_interrupts(st25_t *dev) {
-    assert(dev != NULL);
-
-    /* Clear all interrupts */
-    uint32_t reg_content = 0;
-    _read_interrupts(dev, &reg_content);
-}   
-
-int st25_poll_a(nfcdev_t *dev) {
+int st25_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
     DEBUG("st25: Polling for NFC-A...\n");
 
-    _enable_all_interrupts(dev->dev);
+    st25_t *dev = (st25_t *)nfcdev->dev;
 
-    _write_reg(dev->dev, REG_BIT_RATE, 0x00);
+    // _enable_all_interrupts(dev);
+
+    _write_reg(dev, REG_BIT_RATE, 0x00);
 
     /* mode configuration */
-    _write_reg(dev->dev, REG_MODE, REG_MODE_om_iso14443a);
+    _write_reg(dev, REG_MODE, REG_MODE_om_iso14443a);
 
     uint8_t sens_res[2];
-    _send_sens_req(dev->dev, sens_res);
+    _send_sens_req(dev, sens_res);
+
+    printf("st25: SENS_RES: 0x%02x 0x%02x\n", sens_res[0], sens_res[1]);
+
+    config->sens_res.anticollision_information = sens_res[0];
+    config->sens_res.platform_information = sens_res[1];
+
+    uint8_t sdd_res[5];
+    uint8_t sdd_req_cl1[] = {NFC_A_SEL_CMD_CL1, 0x20}; /* 0x20 for first part of anticollision */
+
+    /* Cascade Level 1 */
+    _send_sdd_req(dev, sdd_req_cl1, sdd_res);
+
+    uint8_t sel_req[7] = {NFC_A_SEL_CMD_CL1, 0x70, /* NVB = 0x70 for SEL_CL1 */
+                          sdd_res[0], sdd_res[1], sdd_res[2], sdd_res[3], sdd_res[4]};
+    uint8_t sel_res;
+    _send_sel_req(dev, sel_req, &sel_res);
+
+    if ((sel_res & NFC_A_SEL_RES_NFCID1_COMPLETE_MASK) == NFC_A_SEL_RES_NFCID1_COMPLETE_VALUE) {
+        DEBUG("st25: NFCID1 complete with length 4\n");
+        config->nfcid1.len = NFC_A_NFCID1_LEN4;
+        memcpy(config->nfcid1.nfcid + 0, &sdd_res[0], NFC_A_NFCID1_LEN4);
+    } else {
+        /* copy only three bytes into the nfcid */
+        memcpy(config->nfcid1.nfcid + 0, &sdd_res[1], 3);
+        DEBUG("st25: NFCID1 not complete, further anticollision needed\n");
+
+        /* Cascade Level 2 */
+        _send_sdd_req(dev, (uint8_t[]){NFC_A_SEL_CMD_CL2, 0x20}, sdd_res);
+        sel_req[0] = NFC_A_SEL_CMD_CL2;
+        sel_req[1] = 0x70; /* NVB = 0x70 for SEL_CL2 */
+        memcpy(&sel_req[2], sdd_res, 5);
+        _send_sel_req(dev, sel_req, &sel_res);
+
+        if ((sel_res & NFC_A_SEL_RES_NFCID1_COMPLETE_MASK) == NFC_A_SEL_RES_NFCID1_COMPLETE_VALUE) {
+            DEBUG("st25: NFCID1 complete with length 7\n");
+            config->nfcid1.len = NFC_A_NFCID1_LEN7;
+            memcpy(config->nfcid1.nfcid + 3, &sdd_res[0], 4);
+        } else {
+            memcpy(config->nfcid1.nfcid + 3, &sdd_res[1], 3);
+            DEBUG("st25: NFCID1 not complete, further anticollision needed\n");
+
+            /* Cascade Level 3 */
+            _send_sdd_req(dev, (uint8_t[]){NFC_A_SEL_CMD_CL3, 0x20}, sdd_res);
+            sel_req[0] = NFC_A_SEL_CMD_CL3;
+            sel_req[1] = 0x70; /* NVB = 0x70 for SEL_CL3 */
+            memcpy(&sel_req[2], sdd_res, 5);
+            _send_sel_req(dev, sel_req, &sel_res);
+
+            assert((sel_res & NFC_A_SEL_RES_NFCID1_COMPLETE_MASK) == 
+                NFC_A_SEL_RES_NFCID1_COMPLETE_VALUE);
+
+            DEBUG("st25: NFCID1 complete with length 10\n");
+            config->nfcid1.len = NFC_A_NFCID1_LEN10;
+            memcpy(config->nfcid1.nfcid + 6, &sdd_res[0], 4);
+        }
+    }
+
+    config->sel_res = sel_res;
 
     return 0;
 }
 
-int st25_listen_a(st25_t *dev) {
-    assert(dev != NULL);
+int st25_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, unsigned send_len,
+    uint8_t *recv, unsigned *recv_len) {
+    assert(nfcdev != NULL);
+    assert(send != NULL);
+    assert(send_len > 0);
+    assert(recv != NULL);
+    assert(recv_len != NULL);
+
+    st25_t *dev = (st25_t *)nfcdev->dev;
+
+    _clear_interrupts(dev);
+    _write_interrupt_mask(dev, ~(IRQ_MASK_RXE));
+
+    _set_number_of_transmitted_bytes_and_bits(dev, (uint16_t) send_len, 0);
+
+    _send_cmd(dev, CMD_CLEAR_FIFO);
+    _fifo_load(dev, (uint8_t *) send, send_len);
+    _send_cmd(dev, CMD_TRANSMIT_WITH_CRC);
+
+    wait_for(dev, IRQ_MASK_RXE);
+
+    uint16_t fifo_bytes = 0;
+    uint8_t fifo_bits = 0;
+    _fifo_read(dev, recv, &fifo_bytes, &fifo_bits);
+
+    if (fifo_bytes > *recv_len) {
+        DEBUG("st25: Received data length %u is larger than buffer size %u\n", 
+            fifo_bytes, *recv_len);
+        fifo_bytes = (uint16_t) *recv_len; /* truncate the data */
+    }
+
+    *recv_len = fifo_bytes;
+
+    return 0;
+
+}
+
+int st25_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
+    (void) config;
+
+    assert(nfcdev != NULL);
+    st25_t *dev = (st25_t *)nfcdev->dev;
 
     DEBUG("st25: Listening for NFC-A...\n");
 
@@ -1710,15 +1946,16 @@ int st25_listen_a(st25_t *dev) {
     return 0;
 }
 
-int st25_init(st25_t *dev, const st25_params_t *params)
+int st25_init(nfcdev_t *nfcdev, const void *config)
 {
-    assert(dev != NULL);
-    assert(params != NULL);
+    assert(nfcdev != NULL);
+    assert(config != NULL);
 
-    dev->conf = params;
+    st25_t *dev = (st25_t *)nfcdev->dev;
+
+    dev->conf = (st25_params_t *) config;
 
     /* Initialize SPI */
-
     if (dev->conf->mode == ST25_SPI) {
         /* we handle the CS line manually... */
         gpio_init(dev->conf->nss, GPIO_OUT);
@@ -1726,7 +1963,6 @@ int st25_init(st25_t *dev, const st25_params_t *params)
     }
 
     dev->irq_status = 0;
-
     gpio_init_int(dev->conf->irq, GPIO_IN_PD, GPIO_RISING,
             _nfc_event, (void *)dev);
 
@@ -1735,7 +1971,7 @@ int st25_init(st25_t *dev, const st25_params_t *params)
 
     _configure_device(dev);
     _disable_all_interrupts(dev);
-    
+
     DEBUG("st25: Initialized ST25 device\n");
 
     return 0;
