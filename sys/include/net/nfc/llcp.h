@@ -67,15 +67,13 @@ uint8_t nfc_llcp_pdu_get_ssap(const uint8_t *pdu);
 uint8_t nfc_llcp_pdu_get_ptype(const uint8_t *pdu);
 
 /* LLCP Controller */
-void nfc_llcp_controller_init();
+int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, nfcdev_mode_t mode);
 
-void nfc_llcp_controller_start();
+void nfc_llcp_controller_stop(nfc_llcp_controller_t *controller)
 
-void nfc_llcp_controller_stop();
+void nfc_llcp_controller_add_socket(nfc_llcp_controller_t *controller, nfc_llcp_socket_t *socket)
 
-void nfc_llcp_controller_add_socket(llcp_socket_t *socket);
-
-void nfc_llcp_controller_remove_socket(llcp_socket_t *socket);
+void nfc_llcp_controller_remove_socket(nfc_llcp_controller_t *controller, nfc_llcp_socket_t *socket)
 
 /* LLCP Socket */
 int nfc_llcp_socket_init(llcp_socket_t *socket, uint8_t ssap, uint8_t dsap,
@@ -83,4 +81,4 @@ int nfc_llcp_socket_init(llcp_socket_t *socket, uint8_t ssap, uint8_t dsap,
 
 int nfc_llcp_socket_receive(llcp_socket_t *socket, uint8_t *buffer, size_t *buffer_len);
 
-int nfc_llcp_socket_send(llcp_socket_t *socket, const uint8_t *data, size_t data_len);
+int nfc_llcp_socket_send(llcp_socket_t *socket, const uint8_t *data, uint8_t data_len);

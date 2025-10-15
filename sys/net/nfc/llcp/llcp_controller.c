@@ -92,7 +92,6 @@ static void llcp_run(void *arg) {
     }
 }
 
-/* LLCP Controller */
 int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, nfcdev_mode_t mode) {
     assert(controller != NULL);
     assert(dev != NULL);
@@ -174,7 +173,8 @@ void nfc_llcp_controller_add_socket(nfc_llcp_controller_t *controller, nfc_llcp_
     mutex_unlock(&controller->sockets_mutex);
 }
 
-void nfc_llcp_controller_remove_socket(nfc_llcp_controller_t *controller, nfc_llcp_socket_t *socket) {
+void nfc_llcp_controller_remove_socket(nfc_llcp_controller_t *controller, 
+    nfc_llcp_socket_t *socket) {
     assert(socket != NULL);
     assert(controller != NULL);
 
@@ -190,4 +190,48 @@ void nfc_llcp_controller_remove_socket(nfc_llcp_controller_t *controller, nfc_ll
         }
     }
     mutex_unlock(&controller->sockets_mutex);
+}
+
+int nfc_llcp_socket_receive(llcp_socket_t *socket, uint8_t *buffer, size_t *buffer_len) {
+    assert(socket != NULL);
+    assert(buffer != NULL);
+    assert(buffer_len != NULL);
+
+    int received_len = tsrb_get_one(&socket->rx_buffer);
+    if (received_len <= 0) {
+        return -1; /* no data available */
+    }
+
+    if (*buffer_len < (size_t)received_len) {
+        return -1; /* buffer too small */
+    }
+
+    int ret  = tsrb_get(&socket->rx_buffer, buffer, received_len);
+    if (ret < 0) {
+        return -1; /* error */
+    }
+
+    *buffer_len = received_len;
+
+    return 0;
+}
+
+int nfc_llcp_socket_send(llcp_socket_t *socket, const uint8_t *data, uint8_t data_len) {
+    assert(socket != NULL);
+    assert(data != NULL);
+    assert(data_len > 0);
+    assert(data_len <= LLCP_MAX_PDU_SIZE - 2); /* 2 bytes for DSAP, SSAP, PTYPE */
+
+    /* first put the length byte into the buffer */
+    int ret = tsrb_add_one(&socket->tx_buffer, data_len);
+    if (ret < 0) {
+        return -1; /* error */
+    }
+
+    ret = tsrb_put(&socket->tx_buffer, data, data_len);
+    if (ret < 0) {
+        return -1; /* error */
+    }
+
+    return 0;
 }
