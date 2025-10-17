@@ -10,3 +10,6 @@ typedef struct {
 } nfc_mifare_classic_rw_t;
 
 int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev);
+
+int nfc_mifare_classic_rw_read_tag(nfc_mifare_classic_rw_t *rw, nfc_mifare_classic_tag_t *tag, 
+    nfcdev_t *dev);

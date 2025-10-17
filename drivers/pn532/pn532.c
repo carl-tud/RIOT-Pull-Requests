@@ -1141,7 +1141,7 @@ int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
     }
 
 
-    int ret = _init_as_target((pn532_t *) nfcdev->dev, mode, mifare_params, NULL, NULL, buff);
+    int ret = _tg_init_as_target((pn532_t *) nfcdev->dev, mode, mifare_params, NULL, NULL, buff);
     if (ret <= 1) {
         return ret;
     }
@@ -1523,10 +1523,13 @@ int pn532_poll_dep(nfcdev_t *nfcdev, nfc_baudrate_t br) {
 
 int pn532_listen_dep(nfcdev_t *nfcdev, nfc_baudrate_t br, const uint8_t *nfcid3t) {
     assert(nfcdev != NULL);
+    (void) br;
 
     uint8_t mode = TG_INIT_AS_TARGET_DEP_ONLY;
 
     uint8_t buff[CONFIG_PN532_BUFFER_LEN] = {0};
 
     _tg_init_as_target(nfcdev->dev, mode, NULL, NULL, (uint8_t *) nfcid3t, buff);
+
+    return 0;
 };

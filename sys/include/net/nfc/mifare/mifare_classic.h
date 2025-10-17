@@ -106,7 +106,7 @@ typedef struct {
     union {
         nfc_mifare_classic_1k_t mifare_1k;
         nfc_mifare_classic_4k_t mifare_4k;
-    };
+    } data;
 } nfc_mifare_classic_tag_t;
 
 nfc_mifare_classic_size_t nfc_mifare_classic_get_size(const nfc_a_listener_config_t *config);

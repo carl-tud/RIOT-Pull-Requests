@@ -10,6 +10,8 @@ static uint8_t ndef_buf[256];
 
 static pn532_t pn532_dev;
 
+static nfc_mifare_classic_tag_t tag;
+
 int main(void) {
     printf("Hello, World!\n");
     LOG_DEBUG("MIFARE Classic Read/Write example\n");
@@ -50,6 +52,9 @@ int main(void) {
     ndef_parse(&ndef, record_descs, MAX_NDEF_RECORD_COUNT);
 
     ndef_pretty_print(record_descs, ndef.record_count);
+
+
+    nfc_mifare_classic_rw_read_tag(&rw, &tag, &dev);
 
     return 0;
 }
