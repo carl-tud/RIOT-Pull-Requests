@@ -23,7 +23,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "tlv.h"
+#include "net/nfc/tlv.h"
 #include "net/nfc/ndef/ndef.h"
 #include "net/nfc/nfc_a.h"
 
@@ -36,14 +36,7 @@
 #define NFC_T2T_SECTOR_SELECT_COMMAND 0xC2
 #define NFC_T2T_HALT_COMMAND 0x50
 
-// ISO-1443 specific defines
-#define NFC_ISO14443A_UID_SINGLE_SIZE 4
-#define	NFC_ISO14443A_UID_DOUBLE_SIZE 7
-#define NFC_ISO14443A_UID_TRIPLE_SIZE 10
-#define NFC_ISO14443A_UID_MAX_LEN NFC_ISO14443A_UID_TRIPLE_SIZE
-
-// NFC specific constants
-#define NFC_T2T_CASCADE_TAG_BYTE 0x88
+/* T2T specific constants */
 #define NFC_T2T_VERSION_1_1 0x11
 #define NFC_T2T_CC_MAGIC_NUMBER 0xE1
 #define NFC_T2T_CC_READ_WRITE 0x00
@@ -51,7 +44,7 @@
 #define NFC_T2T_LOCK_BYTES_READ_ONLY 0xFF
 #define NFC_T2T_LOCK_BYTES_READ_WRITE 0x00
 
-//sizes
+/* T2T sizes */
 #define NFC_T2T_BLOCK_SIZE 4
 #define NFC_T2T_BLOCKS_PER_SECTOR 256
 #define NFC_T2T_STATIC_MEMORY_SIZE 64
@@ -60,10 +53,13 @@
 
 #define NFC_T2T_DEFAULT_MEM_SIZE NFC_T2T_STATIC_MEMORY_SIZE
 
-#define NFC_T2T_UID_SIZE 10
-#define NFC_T2T_CC_SIZE 4
+#define NFC_T2T_INTERNAL_SIZE   10
+#define NFC_T2T_CC_SIZE         4
 #define NFC_T2T_LOCK_BYTES_SIZE 2
 
+#define NFC_T2T_RESERVED_SIZE (NFC_T2T_INTERNAL_SIZE + NFC_T2T_LOCK_BYTES_SIZE + NFC_T2T_CC_SIZE)
+
+/* common tlv types */
 #define NFC_T2T_NDEF_TLV_TYPE 0x03
 #define NFC_T2T_TERMINATOR_TLV_TYPE 0xFE
 
@@ -72,8 +68,6 @@
 #ifndef CONFIG_NFC_T2T_MEMORY_SIZE
 #define NFC_T2T_MEMORY_SIZE NFC_T2T_STATIC_MEMORY_SIZE
 #endif
-
-// typedefs
 
 /**
  * @brief Struct for Lock Bytes
@@ -100,279 +94,27 @@ typedef struct {
 } t2t_cc_t;
 
 /**
- * @brief Information about dynamic memory parts.
+ * @brief Type 2 Tag
  * 
- * t2t_dynamic_t holds information specific for dynamic memory layout.
- * Lock and Memory bytes information is used by t2t library to calculate 
- * positions in tag memory.
- * 
- */
-/* typedef struct{
-    bool default_lock_bits_set;
-    uint8_t *start_default_lock_bits;
-    uint32_t default_lock_bits;
-    uint32_t default_lock_bytes;
-    uint32_t custom_lock_bytes;
-    uint32_t custom_reserved_bytes;
-    uint8_t bytes_per_page;
-}t2t_dynamic_t; */
-
-
-
-
-/**
- * @brief Type 2 Tag container.
- * 
- * nfc_t2t_t holds meta information about the type 2 tag memory.
+ * @note Type 2 Tag container holding the entire memory layout.
  * 
  */
 typedef struct{
-    uint8_t uid[NFC_T2T_UID_SIZE];
+    uint8_t internal[NFC_T2T_INTERNAL_SIZE];
     uint8_t lock_bytes[NFC_T2T_LOCK_BYTES_SIZE];
     t2t_cc_t cc[NFC_T2T_CC_SIZE];
-    uint8_t data_array[NFC_T2T_MEMORY_SIZE - NFC_T2T_UID_SIZE - 
+    uint8_t data_array[NFC_T2T_MEMORY_SIZE - NFC_T2T_INTERNAL_SIZE - 
         NFC_T2T_LOCK_BYTES_SIZE - NFC_T2T_CC_SIZE];
 } nfc_t2t_t;
-
-//functions
-/** 
- * @brief Creates an empty tag using given memory and creates an empty ndef message
-*/
-/* int t2t_create_empty_default_tag(nfc_t2t_t *tag, uint32_t memory_size, uint8_t *memory); */
-//creates an empty tag with requested size and an empty ndef message
-
-/**
- * @brief Creates tag using given memory and ndef message
- * 
- * @param tag 
- * @param memory_size 
- * @param memory 
- * @param msg 
- * @return int negative in case of error
- */
-/* int t2t_create_default_tag_with_ndef(nfc_t2t_t *tag, uint32_t memory_size, uint8_t *memory, ndef_t *msg); */
-
-/**
- * @brief Create a Type 2 Tag object with given parameters
- * 
- * @param tag 
- * @param sn 
- * @param cc 
- * @param lb 
- * @param memory_size 
- * @param memory 
- * @return int 
- */
-/* int t2t_create_type_2_tag(nfc_t2t_t *tag, t2t_sn_t *sn, t2t_cc_t *cc, t2t_static_lock_bytes_t *lb, 
-                                uint32_t memory_size, uint8_t *memory); */
-
-/**
- * @brief Create a Type 2 Tag with given ndef message
- * 
- * @param tag 
- * @param sn 
- * @param cc 
- * @param lb 
- * @param memory_size 
- * @param memory 
- * @param msg 
- * @return int 
- */
-/* int t2t_create_type_2_tag_with_ndef(nfc_t2t_t *tag, t2t_sn_t *sn, t2t_cc_t *cc, t2t_static_lock_bytes_t *lb, 
-                                uint32_t memory_size, uint8_t *memory, ndef_t *msg); */
-
-/**
- * @brief Creates a tag with the given memory block without adding or removing any data.
- * 
- * This function takes the given memory as is and does not modify its content. 
- * The content is not parsed and cannot be extended using t2t functions other then
- * t2t_handle_write(). The uid_size is needed to determine how many of the 10 possible bytes
- * are the actual uid. If set to a value other then NFC_ISO14443A_UID_SINGLE, 
- * DOUBLE or TRIPLE_SIZE it will default to NFC_ISO14443A_UID_TRIPLE_SIZE.
- * 
- * @param tag 
- * @param memory_size 
- * @param memory 
- * @param uid_size
- * @return int 
- */
-int t2t_create_tag_from_given_memory(nfc_t2t_t *tag, uint32_t memory_size, uint8_t *memory, uint8_t uid_size);
-
-//operations
-/**
- * @brief Handles NDEF Write command
- * 
- * Overwrites data in block (4 Bytes) identified by block_no with data from buf.
- * For CC block existing data is bitwise or'd with given data.
- * For lockbytes data is also or'd and remainder of block is not overwritten.
- * @param tag 
- * @param block_no block to write to
- * @param buf buffer with data to write in block
- * @return int negative in case of error
- */
-int t2t_handle_write(nfc_t2t_t *tag, uint8_t block_no, uint8_t const *buf);
-
-/**
- * @brief Handles NDEF Read command
- * 
- * Reads 16 byte (4 blocks) beginning from block address of block_no and
- * stores values in buf
- * 
- * @param tag 
- * @param block_no block to start reading from
- * @param buf buffer to write 16 bytes to
- * @return int negative in case of error
- */
-int t2t_handle_read(nfc_t2t_t *tag, uint8_t block_no, uint8_t *buf);
-//int t2t_handle_sector_select(nfc_t2t_t *tag, uint8_t *buf); //TODO - this way or as above?
-/**
- * @brief Handles NDEF Sector Select Command
- * 
- * @param tag 
- * @param sector 
- * @return int 
- */
-// int t2t_handle_sector_select(nfc_t2t_t *tag, uint8_t sector);
-
-/**
- * @brief Writes UID to correct position in memory pointed to by tag.
- * 
- * @param tag 
- * @return int 
- */
-// int t2t_create_uid(nfc_t2t_t *tag);
-
-/**
- * @brief Creates and returns a default serial number for the tag of length 4.
- * 
- * @return t2t_sn_t 
- */
-// t2t_sn_t t2t_create_default_sn(void); //TODO - only accept predefined? offer to roll one?
-
-/**
- * @brief Creates capacity container bytes in memory pointed to by tag.
- * 
- * Creates default values for capacity container given the arguments. Magic value is
- * set to NDEF message content.
- * @param readable 
- * @param writeable 
- * @param size_data_area 
- * @param tag 
- * @return int 
- */
-int t2t_create_cc(bool readable, bool writeable, uint32_t size_data_area, nfc_t2t_t *tag);
-/**
- * @brief Sets capacity container bytes in memory pointed to by tag to values taken 
- * from cap_cont.
- * 
- * Does not create any defaults but simply copies values from given cap_cont.
- * 
- * @param cap_cont 
- * @param tag 
- * @return int 
- */
-int t2t_set_cc(t2t_cc_t * cap_cont, nfc_t2t_t *tag);
-
-/**
- * @brief Sets Lock Bytes in memory pointed to by tag.
- * 
- * Sets all lock bytes to read only or read write setting depending on read_write
- * argument.
- * 
- * @param read_write 
- * @param tag 
- * @return int 
- */
-int t2t_create_static_lock_bytes(bool read_write, nfc_t2t_t *tag);
-
-/**
- * @brief Sets static lock bytes in memory pointed to by tag to values from lock_bytes.
- * 
- * Does not create any defaults but just sets the values found in lock_bytes.
- * 
- * @param lock_bytes 
- * @param tag 
- * @return int 
- */
-int t2t_set_static_lock_bytes(t2t_static_lock_bytes_t * lock_bytes, nfc_t2t_t *tag);
-
-
-//content 
-/**
- * @brief Adds the ndef message to the current end of the tags data area
- * 
- * @param tag 
- * @param msg 
- * @return int negative in case of error
- */
-int t2t_add_ndef_msg(nfc_t2t_t *tag, ndef_t const *msg);
-/**
- * @brief Adds an empty NDEF TLV to the current end of the tags data area.
- * 
- * @param tag 
- * @return int 
- */
-int t2t_add_empty_ndef_tlv(nfc_t2t_t *tag);
-
-/**
- * @brief Creates a memory control tlv to a dynamic memory layout tag and adds the
- * given data to the reserved bytes.
- * 
- * The TLV block is created at the current end of the data area. 
- * The data for the reserved bytes is read from data and written to the end of
- * the memory area. The data area in the CC block is shrunk trough this operation.
- * @param tag 
- * @param data 
- * @param size 
- * @return int 
- */
-/*
-commenting this function as it currently does not work - see explanation in t2t.c
-int t2t_create_memory_control_tlv(nfc_t2t_t *tag, uint8_t * data, uint32_t size);
-*/
-
-/**
- * @brief Adds a NULL TLV to the current end of the data area.
- * 
- * @param tag 
- * @return int 
- */
-int t2t_create_null_tlv(nfc_t2t_t *tag);
-
-/**
- * @brief Adds a Terminator TLV to the current end of the data area.
- * 
- * @param tag 
- * @return int 
- */
-int t2t_create_terminator_tlv(nfc_t2t_t *tag);
-
-/**
- * @brief Reserves the requested amount of space for a ndef message
- * 
- * This method can be used if a NDEF message shall be written directly
- * into the tag memory. It will create an TLV header for a message of the 
- * requested size and move the cursor behind the expected message 
- * and will create a terminator TLV.
- * A pointer to the beginning of the reserved area (i.e. the V section
- * of the TLV block) will be returned.
- * 
- * @param tag the type 2 tag in which the message shall be written
- * @param msg_size the size of the ndef message
- * @return uint8_t* pointer to the memory or NULL if not enough space
- */
-uint8_t* t2t_reserve_ndef_space(nfc_t2t_t *tag, size_t msg_size);
 
 int t2t_read_blocks(const nfc_t2t_t *tag, uint8_t block_no, uint8_t *blocks);
 
 int t2t_write_block(nfc_t2t_t *tag, uint8_t block_no, const uint8_t *block);
 
-//misc
-uint32_t t2t_get_size(nfc_t2t_t *tag); //returns size of used memory
-uint32_t t2t_get_reserved_size(nfc_t2t_t *tag); //returns size of reserved memory
-bool t2t_is_writeable(nfc_t2t_t *tag); // true if tag is writeable
-int t2t_set_writeable(nfc_t2t_t *tag); // sets tag writable in CC
-int t2t_set_read_only(nfc_t2t_t *tag); // sets tag read only in CC
-int t2t_clear_mem(nfc_t2t_t *tag); // clears complete reserved tag memory
-int t2t_clear_data_area(nfc_t2t_t *tag); //clears data area of tag
-void t2t_dump_tag_memory(nfc_t2t_t *tag); //dumps the tags memory to stdout
+uint16_t t2t_get_memory_size(const nfc_t2t_t *tag);
+
+bool t2t_is_read_only(const nfc_t2t_t *tag);
+
+void t2t_set_read_only(nfc_t2t_t *tag);
+
+int t2t_get_ndef(const nfc_t2t_t *tag, ndef_t *ndef);

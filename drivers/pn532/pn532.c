@@ -233,11 +233,23 @@ int _pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode)
     }
 
     uint8_t cfg1[] = {0x00, 0x0B, 0x0A};
-    _rf_configure(dev, 0x02, cfg1, sizeof(cfg1));
+    int ret = _rf_configure(dev, 0x02, cfg1, sizeof(cfg1));
+    if (ret != 0) {
+        DEBUG("pn532: rf configuration 1 failed with %d\n", ret);
+        return ret;
+    }
     uint8_t cfg2[] = {0x00};
-    _rf_configure(dev, 0x04, cfg2, sizeof(cfg2));
+    ret = _rf_configure(dev, 0x04, cfg2, sizeof(cfg2));
+    if (ret != 0) {
+        DEBUG("pn532: rf configuration 2 failed with %d\n", ret);
+        return ret;
+    }
     uint8_t cfg3[] = {0x01, 0x00, 0x01};
-    _rf_configure(dev, 0x05, cfg3, sizeof(cfg3));
+    ret = _rf_configure(dev, 0x05, cfg3, sizeof(cfg3));
+    if (ret != 0) {
+        DEBUG("pn532: rf configuration 3 failed with %d\n", ret);
+        return ret;
+    }
 
     DEBUG("pn532: setting parameters to 0\n");
     pn532_set_parameters(dev, 0b00000000);
@@ -547,7 +559,12 @@ static int send_check_ack(pn532_t *dev, uint8_t *buff, unsigned len)
     if (send_cmd(dev, buff, len) > 0) {
         static uint8_t ack[] = { 0x00, 0x00, 0xff, 0x00, 0xff, 0x00 };
 
-        block_with_timeout(dev, 2);
+        int ret = block_with_timeout(dev, 2);
+        if (ret < 0) {
+            DEBUG("pn532: ack wait timeout\n");
+            return ret;
+        }
+
         if (_read(dev, buff, sizeof(ack)) != sizeof(ack) + 1) {
             DEBUG("pn532: ack read error\n");
             return -2;
@@ -557,8 +574,12 @@ static int send_check_ack(pn532_t *dev, uint8_t *buff, unsigned len)
             DEBUG("pn532: invalid ack\n");
             return -3;
         }
-
-        block_with_timeout(dev, 2);
+        
+        ret = block_with_timeout(dev, 2);
+        if (ret) {
+            DEBUG("pn532: response wait timeout\n");
+            return ret;
+        }
         return 0;
     }
 
@@ -575,8 +596,9 @@ static int send_rcv(pn532_t *dev, uint8_t *buff, unsigned sendl, unsigned recvl)
 
     int expected_cmd = buff[BUFF_CMD_START] + 1;
 
-    if (send_check_ack(dev, buff, sendl + 1)) {
-        return 0;
+    int ret = send_check_ack(dev, buff, sendl + 1);
+    if (ret) {
+        return ret;
     }
 
     recvl += 1; /* cmd response */
@@ -1172,8 +1194,12 @@ int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
     assert(config != NULL);
 
     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-    _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_A, 1,
+    int ret = _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_A, 1,
                          LIST_PASSIVE_LEN_14443(1));
+    if (ret <= 0) {
+        LOG_DEBUG("pn532: error during polling\n");
+        return NFC_ERR_POLL_NO_TARGET;
+    }
 
     if (buff[0] != 1) {
         LOG_DEBUG("pn532: error during polling\n");

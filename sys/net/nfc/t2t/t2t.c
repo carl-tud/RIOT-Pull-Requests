@@ -1,11 +1,16 @@
 #include "net/nfc/t2t/t2t.h"
+#include "net/nfc/tlv.h"
 #include <stdio.h>
 #include <string.h>
 #include "log.h"
 
+#include "net/nfc/nfc_a.h"
+
 #define T2T_BLOCK_SIZE 4
 #define T2T_READ_BLOCK_COUNT 4
 #define T2T_WRITE_BLOCK_COUNT 1
+
+#define T2T_DEFAULT_UID (&(nfc_a_nfcid1_t){ .nfcid = {0x04,0x25,0x85,0x93}, .len = NFC_A_NFCID1_LEN4 })
 
 int t2t_write_block(nfc_t2t_t *t2t, uint8_t block_no, const uint8_t *block) {
     for (int i = 0; i < T2T_BLOCK_SIZE; i++) {
@@ -54,6 +59,113 @@ int t2t_get_ndef(const nfc_t2t_t *t2t, ndef_t *ndef) {
     memcpy(ndef->buffer.memory, t2t->data_array + start_position, ndef_length);
 
     return 0;
+}
+
+/* fills the CC with the correct values */
+int t2t_create_cc(nfc_t2t_t *tag, bool writeable, uint16_t memory_size) {
+    tag->cc->magic_number = NFC_T2T_CC_MAGIC_NUMBER;
+    tag->cc->version_number = NFC_T2T_VERSION_1_1;
+
+    /* the memory needs to be divided by 8 */
+    tag->cc->memory_size = (uint8_t)(memory_size / 8);
+
+    if (writeable) {
+        tag->cc->read_write_access = NFC_T2T_CC_READ_WRITE;
+    } else {
+        tag->cc->read_write_access = NFC_T2T_CC_READ_ONLY;
+    }
+
+    return 0;
+}
+
+int t2t_create_internal(nfc_t2t_t *tag, const nfc_a_nfcid1_t *nfcid1) {
+    if (nfcid1->len == NFC_A_NFCID1_LEN4) {
+        tag->internal[0] = nfcid1->nfcid[0];
+        tag->internal[1] = nfcid1->nfcid[1];
+        tag->internal[2] = nfcid1->nfcid[2];
+        tag->internal[3] = nfcid1->nfcid[3];
+        tag->internal[4] = tag->internal[0] ^ tag->internal[1] ^ tag->internal[2] ^ 
+            tag->internal[3];
+        tag->internal[5] = 0xFF;
+        tag->internal[6] = 0xFF;
+        tag->internal[7] = 0xFF;
+        tag->internal[8] = 0xFF;
+        tag->internal[9] = NFC_T2T_VERSION_1_1;
+    } else if (nfcid1->len == NFC_A_NFCID1_LEN7) {
+        tag->internal[0] = nfcid1->nfcid[0];
+        tag->internal[1] = nfcid1->nfcid[1];
+        tag->internal[2] = nfcid1->nfcid[2];
+        tag->internal[3] = NFC_A_NFCID1_CT ^ tag->internal[0] ^ tag->internal[1] ^ 
+            tag->internal[2];
+        tag->internal[4] = nfcid1->nfcid[3];
+        tag->internal[5] = nfcid1->nfcid[4];
+        tag->internal[6] = nfcid1->nfcid[5];
+        tag->internal[7] = nfcid1->nfcid[6];
+        tag->internal[8] = tag->internal[4] ^ tag->internal[5] ^ tag->internal[6] ^ 
+            tag->internal[7];
+        tag->internal[9] = NFC_T2T_VERSION_1_1;
+    } else if (nfcid1->len == NFC_A_NFCID1_LEN10) {
+        /* we have no BCC bytes here */
+        memcpy(&tag->internal[0], &nfcid1->nfcid[0], nfcid1->len);
+    } else {
+        LOG_ERROR("Invalid NFCID1 length: %d\n", nfcid1->len);
+        return -1;
+    }
+
+    return 0;
+}
+
+/* fills the T2T with an NDEF message */
+int t2t_init_with_ndef(nfc_t2t_t *t2t, ndef_t *ndef, const nfc_a_nfcid1_t *nfcid1) {
+    assert(t2t != NULL);
+    assert(ndef != NULL);
+
+    if (nfcid1 == NULL) {
+        nfcid1 = T2T_DEFAULT_UID;
+    }
+
+    /* create internal */
+    int err = t2t_create_internal(t2t, nfcid1);
+    if (err) {
+        LOG_ERROR("Failed to create T2T internal\n");
+        return err;
+    }
+
+    /* create CC */
+    err = t2t_create_cc(t2t, true, NFC_T2T_MEMORY_SIZE);
+    if (err) {
+        LOG_ERROR("Failed to create T2T CC\n");
+        return err;
+    }
+
+    err = tlv_add(t2t->data_array, NFC_T2T_NDEF_TLV_TYPE, ndef_get_size(ndef), ndef->buffer.memory);
+    if (err < 0) {
+        LOG_ERROR("Failed to add NDEF TLV to T2T\n");
+        return err;
+    }
+
+    /* add terminator TLV */
+    err = tlv_add(t2t->data_array, NFC_T2T_TERMINATOR_TLV_TYPE, 0, NULL);
+    if (err < 0) {
+        LOG_ERROR("Failed to add terminator TLV to T2T\n");
+        return err;
+    }
+
+    return 0;
+}
+
+uint16_t t2t_get_memory_size(const nfc_t2t_t *tag) {
+    (void) tag;
+    /* the memory size of a T2T is defined at compile time, for more flexible tags see T4T */
+    return NFC_T2T_MEMORY_SIZE;
+}
+
+bool t2t_is_read_only(const nfc_t2t_t *tag) {
+    return (tag->cc->read_write_access == (uint8_t) 0xFF);
+}
+
+void t2t_set_read_only(nfc_t2t_t *tag) {
+    tag->cc->read_write_access = (uint8_t) NFC_T2T_CC_READ_ONLY;
 }
 
 /**

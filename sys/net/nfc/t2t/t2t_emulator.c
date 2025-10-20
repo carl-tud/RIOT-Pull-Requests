@@ -4,6 +4,7 @@
 #include "log.h"
 
 #define T2T_NACK_ERROR -1
+#define T2T_EMULATOR_HALTED -2
 
 /* Generic NFC Forum T2T emulator making use of nfcdev */
 
@@ -46,9 +47,16 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
     }
     else if (command == NFC_T2T_WRITE_COMMAND) {
         if (data_size != 5) {
-            LOG_WARNING("[T2T Emulator] Write command does not contain the correct amount of bytes\n");
+            LOG_WARNING("[T2T Emulator] Write command does not contain the correct "
+                "amount of bytes\n");
             return -1;
         }
+
+        if (emulator->tag->cc->read_write_access == NFC_T2T_CC_READ_ONLY) {
+            LOG_WARNING("[T2T Emulator] Tag is read-only, cannot process write command\n");
+            return send_ack_nack(emulator, false);
+        }
+
         t2t_write_block(emulator->tag, *data_buffer, data_buffer + 1);
         return send_ack_nack(emulator, true);
         // process_write_command(*data_buffer, data_buffer + 1);
@@ -59,7 +67,8 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
     } else if (command == NFC_T2T_HALT_COMMAND) {
         LOG_DEBUG("[T2T Emulator] Halt command received\n");
         emulator->state = NFC_T2T_STATE_SLEEPING;
-        return send_ack_nack(emulator, true);
+        send_ack_nack(emulator, true);
+        return T2T_EMULATOR_HALTED;
     } else {
         LOG_ERROR("[T2T Emulator] Unknown command received: 0x%02X\n", command);
         emulator->state = NFC_T2T_STATE_IDLE;
@@ -111,7 +120,10 @@ void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *
 
         /* process data and send response */
         ret = process_t2t_command(emulator, rx_buffer, rx_len);
-        if (ret < 0) {
+        if (ret == T2T_EMULATOR_HALTED) {
+            LOG_DEBUG("[T2T Emulator] Emulator halted\n");
+            return;
+        } else if (ret < 0) {
             LOG_ERROR("[T2T Emulator] Error processing command\n");
             return;
         }
