@@ -15,6 +15,7 @@ typedef struct {
     nfcdev_t *dev;
     nfc_t2t_t *tag;
     nfc_t2t_state_t state;
+    uint8_t sector;
 } nfc_t2t_emulator_t;
 
 

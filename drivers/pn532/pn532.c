@@ -1347,7 +1347,7 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
             return -1;
         }
 
-        DEBUG("pn532: received %u bytes\n", *receive_len);
+        DEBUG("pn532: received %lu bytes\n", *receive_len);
         /* copy the data into the receive buffer, excluding the status byte */
         memcpy(rcv, buff + 1, *receive_len);
     }

@@ -7,6 +7,7 @@
 #include <memory.h>
 
 #include "log.h"
+#include "assert.h"
 
 static int nfc_t2t_rw_send_read(nfc_t2t_rw_t *rw, uint8_t block_no, uint8_t *data) {
     uint8_t cmd_buffer[2];

@@ -2,6 +2,7 @@
 
 #include "net/nfc/t2t/t2t_emulator.h"
 #include "log.h"
+#include "assert.h"
 
 #define T2T_NACK_ERROR -1
 #define T2T_EMULATOR_HALTED -2

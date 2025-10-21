@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "log.h"
+#include "assert.h"
 
 #include "net/nfc/nfc_a.h"
 

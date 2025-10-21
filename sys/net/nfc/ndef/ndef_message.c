@@ -51,7 +51,7 @@ void ndef_pretty_print(const ndef_record_desc_t *ndef_record_descriptors, size_t
     printf("\n");
     for (size_t i = 0; i < (size_t)record_count; ++i) {
         const ndef_record_desc_t *record = &ndef_record_descriptors[i];
-        printf("Record %d\n", i);
+        printf("Record %ld\n", i);
         printf("----\n");
         printf("MB: %d\n", (record->header[0] & RECORD_MB_MASK) != 0);
         printf("ME: %d\n", (record->header[0] & RECORD_ME_MASK) != 0);
