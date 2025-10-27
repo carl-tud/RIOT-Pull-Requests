@@ -87,11 +87,21 @@ static const uint8_t T4T_APDU_NDEF_TAG_APPLICATION_SELECT[] = {
     0x00  /* Length of Expected Response */
 };
 
+static const uint8_t T4T_APDU_CC_FILE_READ[] = {
+    APDU_CLA_DEFAULT,
+    APDU_INS_READ_BINARY,
+    0x00,
+    0x00,
+    0x00 /* Le = 0 means read maximum allowed */
+};
+
 typedef struct {
     bool selected_ndef_application;
     bool selected_cc_file;
     bool selected_ndef_file;
     t4t_cc_file_t cc_file;
+
+    size_t max_ndef_file_size;
     uint8_t *ndef_file;
 } nfc_t4t_t;
 

@@ -6,6 +6,8 @@
  * details.
  */
 
+#pragma once
+
 /**
  * @ingroup     sys/net/nfc
  * @{
@@ -15,11 +17,10 @@
  *
  * Typedefs and function definitions for NFC Forum Type 2 Tags.
  *
- * @author      Max Stolze <max_karl.stolze@mailbox.tu-dresden.de>
+ * @author     Max Stolze   <max_karl.stolze@mailbox.tu-dresden.de>
+ * @author     Nico Behrens <nifrabe@outlook.de>
  *
  */
-
-#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>

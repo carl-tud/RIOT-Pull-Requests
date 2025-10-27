@@ -1,12 +1,15 @@
 #include "net/nfc/llcp.h"
 
-#define THREAD_DELAY_MS 20
+#include "log.h"
+#include "ztimer.h"
+
+#define THREAD_DELAY_MS 10
 
 #define MSG_STOP_CONTROLLER 0x0001
 
 #define MSG_QUEUE_SIZE 8
 
-static void llcp_process_event(uint16_t message_type) {
+static void llcp_process_message(uint16_t message_type) {
     switch (message_type) {
         case MSG_STOP_CONTROLLER:
             thread_zombify();
@@ -21,27 +24,27 @@ static void llcp_run(void *arg) {
     msg_init_queue(msg, MSG_QUEUE_SIZE);
 
     msg_t receive_msg;
-    if (msg_try_receive(&receive_msg) == 0) {
-        llcp_process_event(receive_msg.type);
-    } 
 
-    nfc_llcp_controller_t *controller = (nfc_llcp_controller_t *)arg;
+
+    nfc_llcp_controller_t *controller = (nfc_llcp_controller_t *) arg;
 
     while (1) {
-        /* check for events in the event queue */
-        event_queue_process(controller->evq);
+
+        if (msg_try_receive(&receive_msg) == 0) {
+            llcp_process_message(receive_msg.type);
+        } 
 
         mutex_lock(&controller->sockets_mutex);
         /* check all sockets and their respective ring buffers */
         for (size_t i = 0; i < controller->socket_count; ++i) {
             nfc_llcp_socket_t *socket = &controller->sockets[i];
-            int send_data_len;
-            int receive_data_len;
+            size_t send_data_len;
+            size_t receive_data_len = LLCP_MAX_PDU_SIZE;
             uint8_t send_buff[LLCP_MAX_PDU_SIZE];
             uint8_t receive_buff[LLCP_MAX_PDU_SIZE];
     
             /* check if there is data to send in the tx_buffer */
-            if (int send_data_len = tsrb_get_one(&socket->tx_buffer) > 0) {
+            if ((send_data_len = tsrb_get_one(&socket->tx_buffer)) > 0) {
                 /* we need to read the rest of the data */
                 tsrb_get(&socket->tx_buffer, send_buff + 2, send_data_len);
 
@@ -56,7 +59,7 @@ static void llcp_run(void *arg) {
             }
 
             if (controller->mode == NFCDEV_MODE_INITIATOR) {
-                controller->dev->ops->initiator_send_data(controller->dev, send_buff, 
+                controller->dev->ops->initiator_exchange_data(controller->dev, send_buff, 
                     send_data_len + 2, receive_buff, &receive_data_len);
             } else {
                 controller->dev->ops->target_send_data(controller->dev, send_buff, send_data_len);
@@ -74,7 +77,7 @@ static void llcp_run(void *arg) {
             switch (pdu_type) {
                 case LLCP_PDU_PTYPE_UI:
                     /* store the data in the rx_buffer */
-                    tsrb_put(&socket->rx_buffer, receive_buff + 2, receive_data_len - 2);
+                    tsrb_add(&socket->rx_buffer, receive_buff + 2, receive_data_len - 2);
                     break;
                 case LLCP_PDU_PTYPE_I:
                     /* NOT SUPPORTED */
@@ -95,8 +98,6 @@ static void llcp_run(void *arg) {
 int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, nfcdev_mode_t mode) {
     assert(controller != NULL);
     assert(dev != NULL);
-    event_queue_create(controller->evq, controller->thread_stack,
-        sizeof(controller->thread_stack));
     mutex_init(&controller->sockets_mutex);
 
     controller->socket_count = 0;
@@ -117,26 +118,7 @@ int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, n
 
     assert(controller->pid == 0);
     controller->pid = thread_create(controller->thread_stack, sizeof(controller->thread_stack),
-        THREAD_PRIORITY_MAIN - 1, 0, llcp_run, controller, "LLCP Controller");
-
-    return 0;
-}
-
-int nfc_llcp_socket_init(nfc_llcp_socket_t *socket, uint8_t ssap, uint8_t dsap,
-    nfc_llcp_socket_mode_t mode) {
-    assert(socket != NULL);
-    assert(ssap <= 0x3F);
-    assert(dsap <= 0x3F);
-    
-    if (mode != LLCP_SOCKET_MODE_CONNECTIONLESS) {
-        LOG_ERROR("[LLCP Socket] Only connectionless mode is supported\n");
-        return -1;
-    }
-
-    tsrb_init(&socket->rx_buffer, socket->rx_buffer_data, sizeof(socket->rx_buffer_data));
-    tsrb_init(&socket->tx_buffer, socket->tx_buffer_data, sizeof(socket->tx_buffer_data));
-    socket->ssap = ssap;
-    socket->dsap = dsap;
+        THREAD_PRIORITY_MAIN - 1, 0, (void *) &llcp_run, controller, "LLCP Controller");
 
     return 0;
 }
@@ -145,13 +127,13 @@ void nfc_llcp_controller_stop(nfc_llcp_controller_t *controller) {
     assert(controller != NULL);
 
     msg_t stop_msg = {
-        type = MSG_STOP_CONTROLLER,
+        .type = MSG_STOP_CONTROLLER,
     };
 
     msg_send(&stop_msg, controller->pid);
     controller->pid = 0;
 
-    while(thread_getstatus(controller->pid) != THREAD_STATUS_ZOMBIE) {
+    while(thread_getstatus(controller->pid) != STATUS_ZOMBIE) {
         ztimer_sleep(ZTIMER_MSEC, 10);
     }
 
@@ -190,48 +172,4 @@ void nfc_llcp_controller_remove_socket(nfc_llcp_controller_t *controller,
         }
     }
     mutex_unlock(&controller->sockets_mutex);
-}
-
-int nfc_llcp_socket_receive(llcp_socket_t *socket, uint8_t *buffer, size_t *buffer_len) {
-    assert(socket != NULL);
-    assert(buffer != NULL);
-    assert(buffer_len != NULL);
-
-    int received_len = tsrb_get_one(&socket->rx_buffer);
-    if (received_len <= 0) {
-        return -1; /* no data available */
-    }
-
-    if (*buffer_len < (size_t)received_len) {
-        return -1; /* buffer too small */
-    }
-
-    int ret  = tsrb_get(&socket->rx_buffer, buffer, received_len);
-    if (ret < 0) {
-        return -1; /* error */
-    }
-
-    *buffer_len = received_len;
-
-    return 0;
-}
-
-int nfc_llcp_socket_send(llcp_socket_t *socket, const uint8_t *data, uint8_t data_len) {
-    assert(socket != NULL);
-    assert(data != NULL);
-    assert(data_len > 0);
-    assert(data_len <= LLCP_MAX_PDU_SIZE - 2); /* 2 bytes for DSAP, SSAP, PTYPE */
-
-    /* first put the length byte into the buffer */
-    int ret = tsrb_add_one(&socket->tx_buffer, data_len);
-    if (ret < 0) {
-        return -1; /* error */
-    }
-
-    ret = tsrb_put(&socket->tx_buffer, data, data_len);
-    if (ret < 0) {
-        return -1; /* error */
-    }
-
-    return 0;
 }

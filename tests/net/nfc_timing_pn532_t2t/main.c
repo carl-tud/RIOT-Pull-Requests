@@ -2,6 +2,7 @@
 #include "net/nfcdev.h"
 #include "pn532.h"
 #include "ztimer.h"
+#include "net/nfc/llcp.h"
 
 #include "log.h"
 

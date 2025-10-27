@@ -38,7 +38,7 @@ static int t4t_init_cc_file(nfc_t4t_t *tag, uint16_t max_apdu_size, size_t max_n
         return -1;
     }
 
-    tag->cc_file.cc_len = sizeof(t4t_cc_file);
+    tag->cc_file.cc_len = sizeof(t4t_cc_file_t);
     tag->cc_file.mapping_version = 0x20; /* version 2.0 */
     tag->cc_file.mle = max_apdu_size;
     tag->cc_file.mlc = max_apdu_size;

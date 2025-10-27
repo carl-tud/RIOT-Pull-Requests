@@ -2,9 +2,11 @@ ifneq (,$(filter nfc_generic,$(USEMODULE)))
   USEMODULE += nfc_ndef
   USEMODULE += nfc_t2t
   USEMODULE += nfc_t4t
+  USEMODULE += nfc_mifare
 endif
 ifneq (,$(filter nfc_t2t,$(USEMODULE)))
   USEMODULE += nfc_ndef
+  USEMODULE += nfc_tlv
 endif
 ifneq (,$(filter nfc_t4t,$(USEMODULE)))
   USEMODULE += nfc_ndef
@@ -13,7 +15,9 @@ ifneq (,$(filter nfc_mifare,$(USEMODULE)))
   USEMODULE += nfc_ndef
 endif
 ifneq (,$(filter nfc_llcp,$(USEMODULE)))
-  USEMODULE += nfc_llcp
+  USEMODULE += tsrb
+  USEMODULE += ztimer_msec
 endif
+
 
 

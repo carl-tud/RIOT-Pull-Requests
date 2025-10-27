@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "net/nfc/nfc.h"
 
 /**
  * @brief Sense Response (SENS_RES) command
@@ -145,3 +146,5 @@ typedef struct {
 
 /* also known as SAK */
 typedef uint8_t nfc_a_sel_res_t; 
+
+nfc_application_type_t nfc_a_get_application_type(nfc_a_sens_res_t sens_res, uint8_t sel_res);

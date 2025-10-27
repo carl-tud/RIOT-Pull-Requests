@@ -1,5 +1,7 @@
 
 #include "net/nfc/generic/generic_rw.h"
+#include "assert.h"
+#include "log.h"
 
 int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     assert(rw != NULL);

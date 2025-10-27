@@ -11,6 +11,7 @@
  * @brief   PN532 driver
  *
  * @author   <victor.arino@triagnosys.com>
+ * @author   Nico Behrens <nifrabe@outlook.de>
  * @}
  */
 
@@ -187,7 +188,7 @@ int _pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode)
     dev->conf = params;
 
     #if IS_USED(MODULE_PN532_I2C) || IS_USED(MODULE_PN532_SPI)
-    gpio_init_int(dev->conf->irq, GPIO_IN_PD, GPIO_FALLING,
+    gpio_init_int(dev->conf->irq, GPIO_IN_PU, GPIO_FALLING,
                    _nfc_event, (void *)dev);
     
     #endif
@@ -262,6 +263,7 @@ int _pn532_init(pn532_t *dev, const pn532_params_t *params, pn532_mode_t mode)
 int pn532_init(nfcdev_t *nfcdev, const void *dev_config) {
     pn532_t *dev = (pn532_t *)nfcdev->dev;
     const pn532_config_t *config = (const pn532_config_t *)dev_config;
+    nfcdev->ops = &pn532_ops;
     int ret = _pn532_init(dev, &config->params, config->mode);
     if (ret != 0) {
         return -1;
@@ -1347,7 +1349,7 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
             return -1;
         }
 
-        DEBUG("pn532: received %lu bytes\n", *receive_len);
+        DEBUG("pn532: received %u bytes\n", *receive_len);
         /* copy the data into the receive buffer, excluding the status byte */
         memcpy(rcv, buff + 1, *receive_len);
     }

@@ -85,18 +85,6 @@ static inline bool is_mad_sector(uint8_t sector) {
     return (sector == 0x00);
 }
 
-/* Returns the first block number of a sector */
-// static uint8_t sector_to_block(uint8_t sector) {
-//     if (sector >= MIFARE_CLASSIC_4K_SMALL_SECTOR_COUNT) {
-//         /* large sector */
-//         return MIFARE_CLASSIC_4K_SMALL_SECTOR_COUNT * MIFARE_CLASSIC_BLOCKS_IN_SMALL_SECTOR +
-//             (sector - MIFARE_CLASSIC_4K_SMALL_SECTOR_COUNT) * MIFARE_CLASSIC_BLOCKS_IN_LARGE_SECTOR;
-//     } else {
-//         /* small sector */
-//         return sector * MIFARE_CLASSIC_BLOCKS_IN_SMALL_SECTOR;
-//     }
-// }
-
 static uint8_t block_to_sector(uint8_t block) {
     if (block >= MIFARE_CLASSIC_4K_SMALL_SECTOR_COUNT * MIFARE_CLASSIC_BLOCKS_IN_SMALL_SECTOR) {
         /* large sector */
@@ -278,7 +266,6 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
     size_t remaining_ndef_length = ndef_get_size(ndef);
 
     uint8_t block_number = 0;
-    uint8_t block_data[MIFARE_CLASSIC_BLOCK_SIZE];
 
     size_t ndef_offset = 0;
     /* now write the NDEF message */
@@ -326,9 +313,9 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
                     first_byte_position = 2;
                 }
 
-                const int bytes_in_this_block = MIFARE_CLASSIC_BLOCK_SIZE - first_byte_position;
+                const size_t bytes_in_this_block = MIFARE_CLASSIC_BLOCK_SIZE - first_byte_position;
 
-                const int bytes_to_copy = (remaining_ndef_length < bytes_in_this_block) ?
+                const size_t bytes_to_copy = (remaining_ndef_length < bytes_in_this_block) ?
                     remaining_ndef_length : bytes_in_this_block;
 
                 memcpy(&block_data[first_byte_position], &ndef->buffer.memory[ndef_offset], bytes_to_copy);
@@ -336,11 +323,11 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
                 /* do not write this block as it does not contain NDEF data */
             } else if (remaining_ndef_length > 0) {
                 /* continue writing the NDEF message for all blocks > 4*/
-                const int bytes_to_copy = (remaining_ndef_length < MIFARE_CLASSIC_BLOCK_SIZE) ?
+                const size_t bytes_to_copy = (remaining_ndef_length < MIFARE_CLASSIC_BLOCK_SIZE) ?
                     remaining_ndef_length : MIFARE_CLASSIC_BLOCK_SIZE;
 
-                memcpy(ndef->memory)
-                mifare_classic_write_block(rw, block_number, block_data);
+                memcpy(block_data, &ndef->buffer.memory[ndef_offset], bytes_to_copy);
+                mifare_classic_rw_write_block(rw, block_number, block_data);
                 if (bytes_to_copy > remaining_ndef_length) {
                     remaining_ndef_length = 0;
                 } else {
@@ -349,6 +336,8 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
             }
         }
     }
+
+    return 0;
 }
 
 uint8_t *get_pointer_to_block(nfc_mifare_classic_tag_t *tag, uint8_t block) {

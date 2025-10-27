@@ -10,5 +10,5 @@ uint8_t nfc_llcp_pdu_get_ssap(const uint8_t *pdu) {
 }
 
 uint8_t nfc_llcp_pdu_get_ptype(const uint8_t *pdu) {
-    return (pdu[0] & 0x03) << 2 | (pdu[1] >> 6) & 0x03;
+    return ((pdu[0] & 0x03) << 2) | ((pdu[1] >> 6) & 0x03);
 }

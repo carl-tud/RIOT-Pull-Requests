@@ -1,5 +1,3 @@
-#pragma once
-
 #include "net/nfc/apdu/apdu.h"
 
 inline uint8_t capdu_get_ins(const uint8_t *apdu, size_t apdu_len) {
@@ -60,7 +58,7 @@ bool capdu_is_valid(const uint8_t *apdu, size_t apdu_len) {
 
 bool rapdu_is_valid(const uint8_t *apdu, size_t apdu_len) {
     if (apdu_len < 2) {
-        return false;  // Minimum length for RAPDU is 2 bytes
+        return false;  /* Minimum length for RAPDU is 2 bytes */
     }
 
     /* check the status code */
