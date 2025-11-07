@@ -1358,11 +1358,10 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
         STANDARD_TIMEOUT_SEC);
 
     /* receive_len is only the data received, not the status byte */
-
     if (ret_len > 0) {
         if (*receive_len < (size_t)(ret_len - 1)) {
             /* the receive buffer is too small */
-            LOG_DEBUG("pn532: receive buffer too small\n");
+            LOG_ERROR("pn532: receive buffer too small\n");
             *receive_len = 0;
             return -1;
         }
@@ -1370,7 +1369,7 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
         *receive_len = ret_len - 1;
         if (buff[0] != 0x00) {
             /* error */
-            LOG_DEBUG("pn532: error in data exchange %02x\n", buff[0]);
+            LOG_ERROR("pn532: error in data exchange %02x\n", buff[0]);
             *receive_len = 0;
             return -1;
         }
@@ -1379,9 +1378,6 @@ int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t 
         /* copy the data into the receive buffer, excluding the status byte */
         memcpy(rcv, buff + 1, *receive_len);
     }
-
-
-
     return 0;
 }
 

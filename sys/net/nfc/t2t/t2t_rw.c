@@ -386,7 +386,7 @@ int nfc_t2t_rw_read(nfc_t2t_rw_t *rw, nfc_t2t_t *tag, nfcdev_t *dev) {
 
         printf("[T2T RW] Reading block %u to %u\n", block_no, block_no + 3);
 
-        size_t resp_len = 0;
+        size_t resp_len = 16;
         if(rw->dev->ops->initiator_exchange_data(rw->dev, cmd_buffer, 2, resp_buffer, &resp_len) != 0) {
             LOG_ERROR("Error during data exchange\n");
             return -1;

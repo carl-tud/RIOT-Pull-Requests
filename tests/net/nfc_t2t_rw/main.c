@@ -8,9 +8,9 @@ int main(void) {
     pn532_config_t config = {
         .params = {
             .spi = SPI_DEV(0),
-            .nss = GPIO_PIN(1, 3),
-            .reset = GPIO_PIN(1, 1),
-            .irq = GPIO_PIN(1, 2)
+            .nss = GPIO_PIN(1, 1),
+            .reset = GPIO_PIN(1, 2),
+            .irq = GPIO_PIN(1, 3)
         },
         .mode = PN532_SPI
     };
@@ -34,5 +34,6 @@ int main(void) {
     /* Initialized PN532 device */
     LOG_DEBUG("Initialized PN532 device\n");
 
+    /* reads the entire tag */
     nfc_t2t_rw_read(&rw, &tag, &dev);
 }
