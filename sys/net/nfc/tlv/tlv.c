@@ -1,5 +1,6 @@
 #include <string.h>
 #include "log.h"
+#include <stdint.h>
 
 /* fills a TLV structure into a buffer */
 int tlv_add(uint8_t *buffer, uint8_t type, uint16_t length, uint8_t const *value) {
