@@ -1850,7 +1850,6 @@ int st25_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, unsigned
     assert(nfcdev != NULL);
     assert(send != NULL);
     assert(send_len > 0);
-    assert(recv != NULL);
     assert(recv_len != NULL);
 
     st25_t *dev = (st25_t *)nfcdev->dev;
@@ -1866,20 +1865,23 @@ int st25_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, unsigned
 
     wait_for(dev, IRQ_MASK_RXE);
 
-    uint16_t fifo_bytes = 0;
-    uint8_t fifo_bits = 0;
-    _fifo_read(dev, recv, &fifo_bytes, &fifo_bits);
+    /* only receive data if the buffer is not NULL */
+    if (*recv_len > 0 && recv != NULL) {
+        uint16_t fifo_bytes = 0;
+        uint8_t fifo_bits = 0;
+        _fifo_read(dev, recv, &fifo_bytes, &fifo_bits);
 
-    if (fifo_bytes > *recv_len) {
-        DEBUG("st25: Received data length %u is larger than buffer size %u\n", 
-            fifo_bytes, *recv_len);
-        fifo_bytes = (uint16_t) *recv_len; /* truncate the data */
+        if (fifo_bytes > *recv_len) {
+            DEBUG("st25: Received data length %u is larger than buffer size %u\n", 
+                fifo_bytes, *recv_len);
+            fifo_bytes = (uint16_t) *recv_len; /* truncate the data */
+            return -1;
+        }
+
+        *recv_len = fifo_bytes;
     }
 
-    *recv_len = fifo_bytes;
-
     return 0;
-
 }
 
 int st25_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {

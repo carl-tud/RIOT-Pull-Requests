@@ -45,7 +45,7 @@ size_t ndef_get_size(const ndef_t *ndef)
     return ndef->buffer.cursor - ndef->buffer.memory;
 }
 
-void ndef_pretty_print(const ndef_record_desc_t *ndef_record_descriptors, size_t record_count)
+static void _ndef_record_descriptors_pretty_print(const ndef_record_desc_t *ndef_record_descriptors, size_t record_count)
 {
     printf("----------------\n");
     printf("\n");
@@ -87,6 +87,12 @@ void ndef_pretty_print(const ndef_record_desc_t *ndef_record_descriptors, size_t
     }
     printf("----------------");
     printf("\n");
+}
+
+void ndef_pretty_print(const ndef_t *ndef) {
+    ndef_record_desc_t ndef_record_descriptors[MAX_NDEF_RECORD_COUNT];
+    ndef_parse(ndef, ndef_record_descriptors, MAX_NDEF_RECORD_COUNT);
+    _ndef_record_descriptors_pretty_print(ndef_record_descriptors, ndef->record_count);
 }
 
 uint8_t *ndef_put_into_buffer(ndef_t *ndef, const uint8_t *data, uint32_t data_length)

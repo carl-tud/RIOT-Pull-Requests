@@ -67,7 +67,9 @@
 
 /* the memory size is issued via kconfig, otherwise, use static memory size */
 #ifndef CONFIG_NFC_T2T_MEMORY_SIZE
-#define NFC_T2T_MEMORY_SIZE NFC_T2T_STATIC_MEMORY_SIZE
+    #define NFC_T2T_MEMORY_SIZE NFC_T2T_STATIC_MEMORY_SIZE
+#else
+    #define NFC_T2T_MEMORY_SIZE CONFIG_NFC_T2T_MEMORY_SIZE
 #endif
 
 /**
@@ -95,15 +97,15 @@ typedef struct {
 } t2t_cc_t;
 
 /**
- * @brief Type 2 Tag
+ * @brief Type 2 Tag struct
  * 
  * @note Type 2 Tag container holding the entire memory layout.
  * 
  */
-typedef struct{
+typedef struct {
     uint8_t internal[NFC_T2T_INTERNAL_SIZE];
     uint8_t lock_bytes[NFC_T2T_LOCK_BYTES_SIZE];
-    t2t_cc_t cc[NFC_T2T_CC_SIZE];
+    t2t_cc_t cc;
     uint8_t data_array[NFC_T2T_MEMORY_SIZE - NFC_T2T_INTERNAL_SIZE - 
         NFC_T2T_LOCK_BYTES_SIZE - NFC_T2T_CC_SIZE];
 } nfc_t2t_t;
@@ -119,3 +121,9 @@ bool t2t_is_read_only(const nfc_t2t_t *tag);
 void t2t_set_read_only(nfc_t2t_t *tag);
 
 int t2t_get_ndef(const nfc_t2t_t *tag, ndef_t *ndef);
+
+int t2t_init_with_ndef(nfc_t2t_t *tag, ndef_t *ndef, const nfc_a_nfcid1_t *nfcid1);
+
+void t2t_get_nfcid1(const nfc_t2t_t *tag, nfc_a_nfcid1_t *nfcid1, nfc_a_nfcid1_len_t len);
+
+void t2t_print(nfc_t2t_t *tag);

@@ -12,7 +12,7 @@ static int mifare_classic_rw_send_authenticate(nfc_mifare_classic_rw_t *rw,
 
     int ret = rw->dev->ops->mifare_classic_authenticate(rw->dev, block, nfcid1, use_key_a, key);
     if (ret != 0) {
-        LOG_ERROR("mifare classic: authenticate block %u failed\n", (unsigned)block);
+        LOG_ERROR("MFC: authenticate block %u failed\n", (unsigned)block);
         return NFC_ERR_AUTH;
     }
 
@@ -30,12 +30,12 @@ static int mifare_classic_rw_read_block(nfc_mifare_classic_rw_t *rw, uint8_t blo
     size_t resp_len = MIFARE_CLASSIC_BLOCK_SIZE;
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, send_buff, sizeof(send_buff), data, &resp_len);
     if (ret != 0) {
-        LOG_ERROR("mifare classic: read block %u failed\n", (unsigned)block);
+        LOG_ERROR("MFC: read block %u failed\n", (unsigned)block);
         return -1;
     }
 
     if (resp_len != MIFARE_CLASSIC_BLOCK_SIZE) {
-        LOG_ERROR("mifare classic: read block %u returned wrong length %u\n",
+        LOG_ERROR("MFC: read block %u returned wrong length %u\n",
             (unsigned)block, (unsigned)resp_len);
         return -1;
     }
@@ -58,12 +58,12 @@ static int mifare_classic_rw_write_block(nfc_mifare_classic_rw_t *rw, uint8_t bl
 
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, send_buff, sizeof(send_buff), resp_buffer, &resp_len);
     if (ret != 0) {
-        LOG_ERROR("mifare classic: write block %u failed\n", (unsigned)block);
+        LOG_ERROR("MFC: write block %u failed\n", (unsigned)block);
         return -1;
     }
 
     if (resp_len != 1 || resp_buffer[0] != MIFARE_CLASSIC_ACK) {
-        LOG_ERROR("mifare classic: write block %u returned error %u\n",
+        LOG_ERROR("MFC: write block %u returned error %u\n",
             (unsigned)block, (unsigned)resp_buffer[0]);
         return -1;
     }
@@ -83,6 +83,22 @@ static bool is_trailer_block(uint8_t block) {
 
 static inline bool is_mad_sector(uint8_t sector) {
     return (sector == 0x00);
+}
+
+static int send_halt(nfc_mifare_classic_rw_t *rw) {
+    uint8_t cmd_buffer[1];
+    cmd_buffer[0] = MIFARE_CLASSIC_HALT_COMMAND;
+
+    size_t response_len = 0;
+    LOG_DEBUG("[MFC RW] Sending HALT command\n");
+    int ret = rw->dev->ops->initiator_exchange_data(rw->dev, cmd_buffer, 1, NULL, 
+        &response_len);
+    if (ret != 0) {
+        LOG_ERROR("[MFC RW] Error during HALT command\n");
+        return ret;
+    }
+
+    return 0;
 }
 
 static uint8_t block_to_sector(uint8_t block) {
@@ -107,19 +123,19 @@ static int authenticate_block(nfc_mifare_classic_rw_t *rw, nfc_a_listener_config
     uint8_t sector = block_to_sector(block_number);
 
     /* trys to authenticate the block and uses the correct key */
-    LOG_DEBUG("[MIFARE CLASSIC RW] Authenticating block %u\n", (unsigned)block_number);
+    LOG_DEBUG("[MFC RW] Authenticating block %u\n", (unsigned)block_number);
     if (is_mad_sector(sector)) {
         /* MAD block, use MAD key */
         if (mifare_classic_rw_send_authenticate(rw, &config->nfcid1,
             block_number, true, MIFARE_CLASSIC_MAD_PUBLIC_KEY_A) < 0) {
-            LOG_ERROR("[MIFARE CLASSIC RW] Authentication failed for MAD block\n");
+            LOG_ERROR("[MFC RW] Authentication failed for MAD block\n");
             return -1;
         }
     } else {
         /* use public key */
         if (mifare_classic_rw_send_authenticate(rw, &config->nfcid1,
             block_number, true, MIFARE_CLASSIC_SECTOR_PUBLIC_KEY_A) < 0) {
-            LOG_ERROR("[MIFARE CLASSIC RW] Authentication failed for sector %u\n",
+            LOG_ERROR("[MFC RW] Authentication failed for sector %u\n",
                 (unsigned)sector);
             return -1;
         }
@@ -134,14 +150,14 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
 
     rw->dev = dev;
     if (dev->state == NFCDEV_STATE_UNINITIALIZED) {
-        LOG_ERROR("[MIFARE CLASSIC RW] Device not initialized\n");
+        LOG_ERROR("[MFC RW] Device not initialized\n");
         return -1;
     }
 
     nfc_a_listener_config_t config = {0};
     rw->dev->ops->poll_a(dev, &config);
 
-    LOG_DEBUG("[MIFARE CLASSIC RW] Card found\n");
+    LOG_DEBUG("[MFC RW] Tag found\n");
 
     const nfc_mifare_classic_size_t size = nfc_mifare_classic_get_size(&config);
 
@@ -156,7 +172,8 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
     /* set this to one so the loop is executed at least once */
     int remaining_ndef_length = 1;
 
-    uint8_t block_number = 0;
+    /* start at block 4 */
+    uint8_t block_number = 4;
 
     /* now read the NDEF message */
     for (uint8_t current_sector = 0; current_sector < small_sector_count + large_sector_count;
@@ -188,7 +205,7 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
             /* perform a 16 byte read */
             if (mifare_classic_rw_read_block(rw, block_number,
                 block_data) < 0) {
-                LOG_ERROR("[MIFARE CLASSIC RW] Read failed for sector %u block %u\n",
+                LOG_ERROR("[MFC RW] Read failed for sector %u block %u\n",
                     (unsigned)current_sector, (unsigned)block);
                 return -1;
             }
@@ -196,7 +213,7 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
             /* This block should contain the NDEF TLV */
             if (block_number == 0x04) {
                 if (block_data[0] != 0x03) {
-                    LOG_ERROR("[MIFARE CLASSIC RW] No NDEF message TLV found in block 4\n");
+                    LOG_ERROR("[MFC RW] No NDEF message TLV found in block 4\n");
                     return -1;
                 }
 
@@ -231,10 +248,12 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
             block_number += 1;
         }
     }
+    /* send HALT command */
+    // send_halt(rw);
 
     ndef_from_buffer(ndef);
 
-    LOG_DEBUG("[MIFARE CLASSIC RW] Read NDEF message\n");
+    LOG_DEBUG("[MFC RW] Read NDEF message\n");
     return 0;
 }
 
@@ -244,14 +263,14 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
 
     rw->dev = dev;
     if (dev->state == NFCDEV_STATE_UNINITIALIZED) {
-        LOG_ERROR("[MIFARE CLASSIC RW] Device not initialized\n");
+        LOG_ERROR("[MFC RW] Device not initialized\n");
         return -1;
     }
 
     nfc_a_listener_config_t config;
     rw->dev->ops->poll_a(dev, &config);
 
-    LOG_DEBUG("[MIFARE CLASSIC RW] Card found\n");
+    LOG_DEBUG("[MFC RW] Card found\n");
 
     const nfc_mifare_classic_size_t size = nfc_mifare_classic_get_size(&config);
 
@@ -355,7 +374,7 @@ uint8_t *get_pointer_to_block(nfc_mifare_classic_tag_t *tag, uint8_t block) {
         large_sector_count * MIFARE_CLASSIC_BLOCKS_IN_LARGE_SECTOR;
 
     if (block >= total_block_count) {
-        LOG_ERROR("mifare classic: block %u out of range (max %u)\n",
+        LOG_ERROR("MFC: block %u out of range (max %u)\n",
             (unsigned)block, (unsigned)(total_block_count - 1));
         return NULL;
     }
@@ -382,7 +401,7 @@ int nfc_mifare_classic_rw_read(nfc_mifare_classic_rw_t *rw, nfc_mifare_classic_t
     nfc_mifare_classic_size_t size = nfc_mifare_classic_get_size(&config);
     tag->size = size;
 
-    LOG_DEBUG("[MIFARE CLASSIC RW] Card found");
+    LOG_DEBUG("[MFC RW] Card found");
 
     const uint8_t small_sector_count = (size == NFC_MIFARE_CLASSIC_SIZE_4K) ?
     MIFARE_CLASSIC_4K_SMALL_SECTOR_COUNT : MIFARE_CLASSIC_1K_SMALL_SECTOR_COUNT;
@@ -412,7 +431,7 @@ int nfc_mifare_classic_rw_read(nfc_mifare_classic_rw_t *rw, nfc_mifare_classic_t
 
             /* perform a 16 byte read */
             if (mifare_classic_rw_read_block(rw, block_number, block_ptr) < 0) {
-                LOG_ERROR("[MIFARE CLASSIC RW] Read failed for sector %u block %u\n",
+                LOG_ERROR("[MFC RW] Read failed for sector %u block %u\n",
                     (unsigned)current_sector, (unsigned)block);
                 return -1;
             }

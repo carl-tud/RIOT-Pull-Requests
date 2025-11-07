@@ -96,21 +96,23 @@ static int t2t_poll(nfc_t2t_rw_t *rw, nfc_a_listener_config_t *config) {
     return 0;
 }
 
-static int nfc_t2t_rw_send_halt(nfc_t2t_rw_t *rw) {
-    uint8_t cmd_buffer[1];
-    cmd_buffer[0] = NFC_T2T_HALT_COMMAND;
+// static int nfc_t2t_rw_send_halt(nfc_t2t_rw_t *rw) {
+//     uint8_t cmd_buffer[1];
+//     cmd_buffer[0] = NFC_T2T_HALT_COMMAND;
 
-    size_t response_len = 0;
-    LOG_DEBUG("[T2T RW] Sending HALT command\n");
-    int ret = rw->dev->ops->initiator_exchange_data(rw->dev, cmd_buffer, 1, NULL, 
-        &response_len);
-    if (ret != 0) {
-        LOG_ERROR("[T2T RW] Error during HALT command\n");
-        return ret;
-    }
+//     size_t response_len = 0;
+//     LOG_DEBUG("[T2T RW] Sending HALT command\n");
+//     /* don't receive a response as the tag won't return anything */
+//     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, cmd_buffer, 1, NULL, 
+//         &response_len);
 
-    return 0;
-}
+//     if (ret != 0) {
+//         LOG_ERROR("[T2T RW] Error during HALT command\n");
+//         return ret;
+//     }
+
+//     return 0;
+// }
 
 /* writes the NDEF message to a type 2 tag */
 int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
@@ -122,7 +124,6 @@ int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     nfc_a_listener_config_t config = {0};
     int ret = t2t_poll(rw, &config);
     if (ret != 0) {
-        LOG_ERROR("[T2T RW] Error polling for T2T\n");
         return ret;
     }
 
@@ -194,7 +195,6 @@ int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
             written_terminator_tlv = true;
         }
 
-
         memcpy(&data, ndef->buffer.memory + ndef_offset, to_write);
         nfc_t2t_rw_send_write(rw, block_no, data, NFC_T2T_BLOCK_SIZE);
 
@@ -210,11 +210,11 @@ int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     }
 
     /* send HALT command */
-    ret = nfc_t2t_rw_send_halt(rw);
+    /* ret = nfc_t2t_rw_send_halt(rw);
     if (ret != 0) {
         LOG_ERROR("[T2T RW] Error sending HALT command\n");
         return ret;
-    }
+    } */
 
     return 0;
 }
@@ -227,7 +227,6 @@ int nfc_t2t_rw_set_read_only(nfc_t2t_rw_t *rw, nfcdev_t *dev) {
     nfc_a_listener_config_t config = {0};
     int ret = t2t_poll(rw, &config);
     if (ret != 0) {
-        LOG_ERROR("[T2T RW] Error polling for T2T\n");
         return ret;
     }
 
@@ -258,11 +257,11 @@ int nfc_t2t_rw_set_read_only(nfc_t2t_rw_t *rw, nfcdev_t *dev) {
     }
 
     /* send HALT command */
-    ret = nfc_t2t_rw_send_halt(rw);
+    /* ret = nfc_t2t_rw_send_halt(rw);
     if (ret != 0) {
         LOG_ERROR("[T2T RW] Error sending HALT command\n");
         return ret;
-    }
+    } */
 
     return 0;
 }
@@ -272,7 +271,6 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     assert(ndef != NULL);
 
     rw->dev = dev;
-    /* reads the NDEF message from a type */
 
     if (dev->state == NFCDEV_STATE_UNINITIALIZED) {
         LOG_ERROR("[T2T RW] Device not initialized\n");
@@ -282,7 +280,6 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     nfc_a_listener_config_t config = {0};
     int ret = t2t_poll(rw, &config);
     if (ret != 0) {
-        LOG_ERROR("[T2T RW] Error polling for T2T\n");
         return ret;
     }
 
@@ -310,10 +307,10 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
 
     /* identify NDEF TLV */
     int remaining_ndef_length = 0;
-    uint16_t first_byte_position = 0;
+    int first_byte_position = 0;
     if (data[1] == 0xFF) {
         /* 3 bytes length field */
-        remaining_ndef_length = (data[2] << 8) | data[3];
+        remaining_ndef_length = (((uint16_t) (data[2])) << 8) | data[3];
         LOG_DEBUG("[T2T RW] NDEF length: %u (3 bytes length field)\n", 
             (unsigned)remaining_ndef_length);
         first_byte_position = 4;
@@ -328,9 +325,9 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     ndef_put_into_buffer(ndef, &data[first_byte_position], remaining_ndef_length);
     remaining_ndef_length -= (16 - first_byte_position);
 
-    uint8_t block_no = 5;
+    /* we have already read blocks 4 to 7 */
+    uint8_t block_no = 8;
     while (remaining_ndef_length > 0) {
-
         int ret = nfc_t2t_rw_send_read(rw, block_no, data);
         if (ret != 0) {
             LOG_ERROR("[T2T RW] Error reading block %u\n", block_no);
@@ -349,13 +346,14 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     }
 
     /* send HALT command */
-    ret = nfc_t2t_rw_send_halt(rw);
-    if (ret != 0) {
-        LOG_ERROR("[T2T RW] Error sending HALT command\n");
-        return ret;
-    }
+    // ret = nfc_t2t_rw_send_halt(rw);
+    // if (ret != 0) {
+    //     LOG_ERROR("[T2T RW] Error sending HALT command\n");
+    //     return ret;
+    // }
 
     ndef_from_buffer(ndef);
+
     return 0;
 }
 

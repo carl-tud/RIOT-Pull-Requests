@@ -11,24 +11,39 @@
 #define T2T_READ_BLOCK_COUNT 4
 #define T2T_WRITE_BLOCK_COUNT 1
 
-#define T2T_DEFAULT_UID (&(nfc_a_nfcid1_t){ .nfcid = {0x04,0x25,0x85,0x93}, .len = NFC_A_NFCID1_LEN4 })
+static const nfc_a_nfcid1_t T2T_DEFAULT_UID = {
+    .nfcid = { 0x04, 0x25, 0x85, 0x93 },
+    .len   = NFC_A_NFCID1_LEN4,
+};
 
 int t2t_write_block(nfc_t2t_t *t2t, uint8_t block_no, const uint8_t *block) {
-    for (int i = 0; i < T2T_BLOCK_SIZE; i++) {
-        ((uint8_t *) t2t)[i + block_no * T2T_BLOCK_SIZE] = block[i];
+    assert(t2t != NULL);
+    assert(block != NULL);
+
+    const size_t off = (size_t)block_no * T2T_BLOCK_SIZE;
+    if ((off + T2T_BLOCK_SIZE) > NFC_T2T_MEMORY_SIZE) {
+        LOG_ERROR("[T2T] write OOB (block %u)\n", (unsigned)block_no);
+        return -1;
     }
 
-    LOG_DEBUG("[T2T] Wrote block no. %d\n", block_no);
-
+    memcpy(((uint8_t *) t2t) + off, block, T2T_BLOCK_SIZE);
+    LOG_DEBUG("[T2T] Wrote block no. %u\n", (unsigned)block_no);
     return 0;
 }
 
 int t2t_read_blocks(const nfc_t2t_t *t2t, uint8_t block_no, uint8_t *blocks) {
-    for (int i = 0; i < T2T_BLOCK_SIZE * T2T_READ_BLOCK_COUNT; i++) {
-        blocks[i] = ((uint8_t *) t2t)[i + block_no * T2T_BLOCK_SIZE];
+    assert(t2t != NULL);
+    assert(blocks != NULL);
+
+    const size_t off = (size_t)block_no * T2T_BLOCK_SIZE;
+    const size_t len = T2T_BLOCK_SIZE * T2T_READ_BLOCK_COUNT;
+    if ((off + len) > NFC_T2T_MEMORY_SIZE) {
+        LOG_ERROR("[T2T] read OOB (block %u)\n", (unsigned)block_no);
+        return -1;
     }
 
-    LOG_DEBUG("[T2T] Read from block no. %d\n", block_no);
+    memcpy(blocks, ((uint8_t *) t2t) + off, len);
+    LOG_DEBUG("[T2T] Read from block no. %u\n", (unsigned)block_no);
     return 0;
 }
 
@@ -62,18 +77,26 @@ int t2t_get_ndef(const nfc_t2t_t *t2t, ndef_t *ndef) {
     return 0;
 }
 
+void t2t_print(nfc_t2t_t *tag) {
+    /* print the entire tag memory in blocks of 4 bytes, also internal and cc bytes */
+    for (size_t i = 0; i < NFC_T2T_MEMORY_SIZE; i += T2T_BLOCK_SIZE) {
+        uint8_t *block = ((uint8_t *)tag) + i;
+        printf("Block %03u: %02X %02X %02X %02X\n", i / 4, block[0], block[1], block[2], block[3]);
+    }
+}
+
 /* fills the CC with the correct values */
 int t2t_create_cc(nfc_t2t_t *tag, bool writeable, uint16_t memory_size) {
-    tag->cc->magic_number = NFC_T2T_CC_MAGIC_NUMBER;
-    tag->cc->version_number = NFC_T2T_VERSION_1_1;
+    tag->cc.magic_number = NFC_T2T_CC_MAGIC_NUMBER;
+    tag->cc.version_number = NFC_T2T_VERSION_1_1;
 
     /* the memory needs to be divided by 8 */
-    tag->cc->memory_size = (uint8_t)(memory_size / 8);
+    tag->cc.memory_size = (uint8_t)(memory_size / 8);
 
     if (writeable) {
-        tag->cc->read_write_access = NFC_T2T_CC_READ_WRITE;
+        tag->cc.read_write_access = NFC_T2T_CC_READ_WRITE;
     } else {
-        tag->cc->read_write_access = NFC_T2T_CC_READ_ONLY;
+        tag->cc.read_write_access = NFC_T2T_CC_READ_ONLY;
     }
 
     return 0;
@@ -121,8 +144,16 @@ int t2t_init_with_ndef(nfc_t2t_t *t2t, ndef_t *ndef, const nfc_a_nfcid1_t *nfcid
     assert(t2t != NULL);
     assert(ndef != NULL);
 
+    printf("T2T MEMORY SIZE: %u\n", NFC_T2T_MEMORY_SIZE);
+
     if (nfcid1 == NULL) {
-        nfcid1 = T2T_DEFAULT_UID;
+        nfcid1 = &T2T_DEFAULT_UID;
+    }
+
+    if (ndef_get_size(ndef) + NFC_T2T_RESERVED_SIZE + 2 * NFC_TLV_MINIMUM_SIZE >
+        NFC_T2T_MEMORY_SIZE) {
+        LOG_ERROR("NDEF message too large for T2T memory\n");
+        return -1;
     }
 
     /* create internal */
@@ -139,6 +170,7 @@ int t2t_init_with_ndef(nfc_t2t_t *t2t, ndef_t *ndef, const nfc_a_nfcid1_t *nfcid
         return err;
     }
 
+    /* add NDEF TLV */
     err = tlv_add(t2t->data_array, NFC_T2T_NDEF_TLV_TYPE, ndef_get_size(ndef), ndef->buffer.memory);
     if (err < 0) {
         LOG_ERROR("Failed to add NDEF TLV to T2T\n");
@@ -146,7 +178,7 @@ int t2t_init_with_ndef(nfc_t2t_t *t2t, ndef_t *ndef, const nfc_a_nfcid1_t *nfcid
     }
 
     /* add terminator TLV */
-    err = tlv_add(t2t->data_array, NFC_T2T_TERMINATOR_TLV_TYPE, 0, NULL);
+    err = tlv_add(t2t->data_array + ndef_get_size(ndef), NFC_T2T_TERMINATOR_TLV_TYPE, 0, NULL);
     if (err < 0) {
         LOG_ERROR("Failed to add terminator TLV to T2T\n");
         return err;
@@ -162,11 +194,35 @@ uint16_t t2t_get_memory_size(const nfc_t2t_t *tag) {
 }
 
 bool t2t_is_read_only(const nfc_t2t_t *tag) {
-    return (tag->cc->read_write_access == (uint8_t) 0xFF);
+    return (tag->cc.read_write_access == (uint8_t) 0xFF);
 }
 
 void t2t_set_read_only(nfc_t2t_t *tag) {
-    tag->cc->read_write_access = (uint8_t) NFC_T2T_CC_READ_ONLY;
+    tag->cc.read_write_access = (uint8_t) NFC_T2T_CC_READ_ONLY;
+}
+
+void t2t_get_nfcid1(const nfc_t2t_t *tag, nfc_a_nfcid1_t *nfcid1, nfc_a_nfcid1_len_t len) {
+    switch (len) {
+        case NFC_A_NFCID1_LEN4:
+            nfcid1->len = NFC_A_NFCID1_LEN4;
+            memcpy(nfcid1->nfcid, &tag->internal[0], 4);
+            break;
+        case NFC_A_NFCID1_LEN7:
+            nfcid1->len = NFC_A_NFCID1_LEN7;
+            memcpy(nfcid1->nfcid, &tag->internal[0], 3);
+            memcpy(&nfcid1->nfcid[3], &tag->internal[4], 4);
+            break;
+        case NFC_A_NFCID1_LEN10:
+            nfcid1->len = NFC_A_NFCID1_LEN10;
+            memcpy(nfcid1->nfcid, &tag->internal[0], 10);
+            break;
+        default:
+            LOG_ERROR("Invalid NFCID1 length: %d\n", len);
+            nfcid1->len = 0;
+            break;
+    }
+    
+    return;
 }
 
 /**

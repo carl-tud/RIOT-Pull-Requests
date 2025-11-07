@@ -40,10 +40,10 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
 
     if (command == NFC_T2T_READ_COMMAND) {
         uint8_t block_address = data_buffer[0];
-        uint8_t data_buffer[16];
+        uint8_t data[16];
         LOG_DEBUG("[T2T Emulator] Read command received for block %d\n", block_address);
-        t2t_read_blocks(emulator->tag, block_address, data_buffer);
-        emulator->dev->ops->target_send_data(emulator->dev, data_buffer, 16);
+        t2t_read_blocks(emulator->tag, block_address, data);
+        emulator->dev->ops->target_send_data(emulator->dev, data, 16);
         return 0;
     }
     else if (command == NFC_T2T_WRITE_COMMAND) {
@@ -53,7 +53,7 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
             return -1;
         }
 
-        if (emulator->tag->cc->read_write_access == NFC_T2T_CC_READ_ONLY) {
+        if (emulator->tag->cc.read_write_access == NFC_T2T_CC_READ_ONLY) {
             LOG_WARNING("[T2T Emulator] Tag is read-only, cannot process write command\n");
             return send_ack_nack(emulator, false);
         }
@@ -68,7 +68,6 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
     } else if (command == NFC_T2T_HALT_COMMAND) {
         LOG_DEBUG("[T2T Emulator] Halt command received\n");
         emulator->state = NFC_T2T_STATE_SLEEPING;
-        send_ack_nack(emulator, true);
         return T2T_EMULATOR_HALTED;
     } else {
         LOG_ERROR("[T2T Emulator] Unknown command received: 0x%02X\n", command);
@@ -79,7 +78,7 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
     return 0;
 }
 
-void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *tag,
+int t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *tag,
     nfc_a_nfcid1_t *nfcid1) {
     assert (emulator != NULL);
     assert (dev != NULL);
@@ -90,7 +89,13 @@ void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *
 
     if (emulator->dev->state == NFCDEV_STATE_UNINITIALIZED) {
         LOG_ERROR("[T2T Emulator] Device not initialized\n");
-        return;
+        return -1;
+    }
+
+    nfc_a_nfcid1_t default_nfcid1;
+    if (nfcid1 == NULL) {
+        t2t_get_nfcid1(tag, &default_nfcid1, NFC_A_NFCID1_LEN4);
+        nfcid1 = &default_nfcid1;
     }
 
     nfc_a_listener_config_t config = {
@@ -98,38 +103,43 @@ void t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *
         .nfcid1 = *nfcid1
     };
 
-    emulator->dev->ops->listen_a(emulator->dev, &config);
+    int ret = emulator->dev->ops->listen_a(emulator->dev, &config);
+    if (ret != 0) {
+        LOG_ERROR("[T2T Emulator] Error listening for RW\n");
+        return ret;
+    }
     LOG_DEBUG("[T2T Emulator] FINISHED LISTEN_A\n");
 
     uint8_t rx_buffer[32];
-    size_t rx_len = 0;
 
     /* infinite loop */
     while (true) {
         /* receive data */
         LOG_DEBUG("[T2T Emulator] Waiting for data...\n");
+        size_t rx_len = sizeof(rx_buffer);
+
         int ret = emulator->dev->ops->target_receive_data(emulator->dev, rx_buffer, &rx_len);
         if (ret < 0) {
             LOG_ERROR("[T2T Emulator] Error receiving data: %d\n", ret);
-            return;
+            return NFC_ERR_COMMUNICATION;
         }
 
         if (emulator->state == NFC_T2T_STATE_SLEEPING) {
             LOG_DEBUG("[T2T Emulator] In sleep mode, ignoring received data\n");
-            return;
+            return 0;
         }
 
         /* process data and send response */
         ret = process_t2t_command(emulator, rx_buffer, rx_len);
         if (ret == T2T_EMULATOR_HALTED) {
             LOG_DEBUG("[T2T Emulator] Emulator halted\n");
-            return;
+            return 0;
         } else if (ret < 0) {
             LOG_ERROR("[T2T Emulator] Error processing command\n");
-            return;
+            return NFC_ERR_COMMUNICATION;
         }
         LOG_DEBUG("[T2T Emulator] Sent data...\n");
     }
 
-    return;
+    return 0;
 }

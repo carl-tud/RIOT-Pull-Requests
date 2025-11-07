@@ -229,13 +229,7 @@ typedef struct {
     uint32_t record_count;
 } ndef_t;
 
-/**
- * @brief Pretty prints the NDEF message descriptors in human-readable format.
- *
- * @param[in] ndef_record_descriptors 	Pointer to the array of record descriptors
- * @param[in] record_count 				Number of records in the array
- */
-void ndef_pretty_print(const ndef_record_desc_t *ndef_record_descriptors, size_t record_count);
+void ndef_pretty_print(const ndef_t *ndef);
 
 /**
  * @brief Writes the data buffer to the given NDEF message.
@@ -460,7 +454,7 @@ int ndef_record_add_mime(ndef_t *ndef, const char *mime_type, uint32_t mime_type
                          const uint8_t *mime_payload, uint32_t mime_payload_length);
 
 /**
- * @brief Calculates the size of an NDEF mime record
+ * @brief Calculates the size of an NDEF MIME record
  *
  * @param[in] mime_type_length      Length of the MIME type
  * @param[in] mime_payload_length   Length of the MIME payload
