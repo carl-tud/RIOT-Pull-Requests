@@ -349,11 +349,11 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     }
 
     /* send HALT command */
-    ret = nfc_t2t_rw_send_halt(rw);
+    /* ret = nfc_t2t_rw_send_halt(rw);
     if (ret != 0) {
         LOG_ERROR("[T2T RW] Error sending HALT command\n");
         return ret;
-    }
+    } */
 
     ndef_from_buffer(ndef);
 

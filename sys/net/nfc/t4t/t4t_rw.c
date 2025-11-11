@@ -160,6 +160,8 @@ static int nfc_t4t_read_ndef_file(nfc_t4t_rw_t *rw, uint8_t *buffer, size_t buff
 
     /* the first two bytes contain the size of the NDEF message */
     uint16_t nlen = response[0] << 8 | response[1];
+    buffer[0] = response[0];
+    buffer[1] = response[1];
 
     LOG_DEBUG("[T4T RW] NDEF file length: %u bytes\n", nlen);
 
@@ -276,17 +278,27 @@ static int nfc_t4t_write_ndef_file(nfc_t4t_rw_t *rw, const uint8_t *buffer, size
     
 }
 
-static int nfc_t4t_read_ndef(nfc_t4t_rw_t *rw, uint8_t *buffer, size_t buffer_size,
-     uint16_t file_size, uint16_t maximum_capdu_size) {
+static int nfc_t4t_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef,
+     uint16_t file_size, uint16_t maximum_rapdu_size) {
     
     int ret;
-    ret = nfc_t4t_read_ndef_file(rw, buffer, buffer_size, file_size, maximum_capdu_size);
+    ret = nfc_t4t_read_ndef_file(rw, ndef->buffer.memory, ndef_get_capacity(ndef), 
+    file_size, maximum_rapdu_size);
     if (ret != 0) {
         return ret;
     }
 
-    uint16_t ndef_length = (buffer[0] << 8) | buffer[1];
-    memcpy(buffer, buffer + 2, ndef_length);
+    uint16_t ndef_length = (ndef->buffer.memory[0] << 8) | ndef->buffer.memory[1];
+
+    /* this removes the 2-byte nlen */
+    memmove(ndef->buffer.memory, ndef->buffer.memory + 2, ndef_length);
+
+    /* adjust the ndef cursor because we do a manual memcpy instead of using the NDEF API */
+    ndef->buffer.cursor = ndef->buffer.memory + ndef_length;
+
+    printf("[T4T RW] NDEF message read, length: %u bytes\n", ndef_length);
+
+    ndef_from_buffer(ndef);
     return 0;
 }
 
@@ -303,6 +315,7 @@ int nfc_t4t_rw_poll(nfc_t4t_rw_t *rw, nfcdev_t *dev, nfc_listener_config_t *conf
     if (rw->dev->ops->poll_a != NULL) {
         int ret = rw->dev->ops->poll_a(dev, (nfc_a_listener_config_t *) &config->config);
         if (ret == 0) {
+            rw->is_tag_selected = true;
             config->technology = NFC_TECHNOLOGY_A;
             return 0;
         }
@@ -311,6 +324,7 @@ int nfc_t4t_rw_poll(nfc_t4t_rw_t *rw, nfcdev_t *dev, nfc_listener_config_t *conf
     if (rw->dev->ops->poll_b != NULL) {
         int ret = rw->dev->ops->poll_b(dev, (nfc_b_listener_config_t *) &config->config);
         if (ret == 0) {
+            rw->is_tag_selected = true;
             config->technology = NFC_TECHNOLOGY_B;
             return 0;
         }
@@ -374,7 +388,7 @@ int nfc_t4t_rw_read_tag(nfc_t4t_rw_t *rw, nfc_t4t_t *tag, nfcdev_t *dev) {
     return 0;
 }
 
-int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev, bool is_selected) {
+int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     assert(rw != NULL);
     assert(ndef != NULL);
 
@@ -383,7 +397,7 @@ int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev, bool is_
     nfc_listener_config_t config;
 
     int ret;
-    if (!is_selected) {
+    if (!rw->is_tag_selected) {
         ret = nfc_t4t_rw_poll(rw, rw->dev, &config);
         if (ret != 0) {
             LOG_ERROR("[T4T RW] Polling failed\n");
@@ -411,7 +425,7 @@ int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev, bool is_
         return ret;
     }
 
-    uint16_t maximum_capdu_size = cc_file.mlc;
+    uint16_t maximum_rapdu_size = cc_file.mle;
     uint16_t ndef_file_size = cc_file.ndef_file_control_tlv.max_ndef_size;
 
     ret = nfc_t4t_select_ndef_file(rw);
@@ -420,19 +434,16 @@ int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev, bool is_
         return -1;
     }
 
-    ret = nfc_t4t_read_ndef(rw, ndef->buffer.memory, ndef_get_capacity(ndef), ndef_file_size,
-        maximum_capdu_size);
+    ret = nfc_t4t_read_ndef(rw, ndef, ndef_file_size, maximum_rapdu_size);
     if (ret != 0) {
         LOG_ERROR("[T4T RW] Reading NDEF file failed\n");
         return -1;
     }
 
-    ndef_from_buffer(ndef);
-
     return 0;
 }
 
-int nfc_t4t_rw_write_ndef(nfc_t4t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev, bool is_selected) {
+int nfc_t4t_rw_write_ndef(nfc_t4t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev) {
     assert(rw != NULL);
     assert(ndef != NULL);
 
@@ -441,7 +452,7 @@ int nfc_t4t_rw_write_ndef(nfc_t4t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev, b
 
     nfc_listener_config_t config;
     int ret;
-    if (!is_selected) {
+    if (!rw->is_tag_selected) {
         ret = nfc_t4t_rw_poll(rw, rw->dev, &config);
         if (ret != 0) {
             LOG_ERROR("[T4T RW] Polling failed\n");
@@ -494,7 +505,6 @@ int nfc_t4t_rw_write_ndef(nfc_t4t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev, b
         LOG_ERROR("[T4T RW] Writing NDEF file failed\n");
         return -1;
     }
-
 
     return 0;
 }

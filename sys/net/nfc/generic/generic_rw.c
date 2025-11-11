@@ -37,12 +37,13 @@ static int interact_with_ndef_on_tag(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_
                 } else if (app == NFC_APPLICATION_TYPE_T4T || app == NFC_APPLICATION_MIFARE_DESFIRE) {
                     nfc_t4t_rw_t t4t_rw = {
                         .dev = dev,
+                        .is_tag_selected = true,
                     };
                     LOG_DEBUG("Detected T4T A compliant NFC tag\n");
                     if (read) {
-                        return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev, true);
+                        return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev);
                     } else {
-                        return nfc_t4t_rw_write_ndef(&t4t_rw, ndef, dev, true);
+                        return nfc_t4t_rw_write_ndef(&t4t_rw, ndef, dev);
                     }
                 } else if (app == NFC_APPLICATION_MIFARE_CLASSIC) {
                     nfc_mifare_classic_rw_t mc_rw = {
@@ -68,9 +69,9 @@ static int interact_with_ndef_on_tag(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_
                 };
                 LOG_DEBUG("Detected T4T B compliant NFC tag\n");
                 if (read) {
-                    return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev, true);
+                    return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev);
                 } else {
-                    return nfc_t4t_rw_write_ndef(&t4t_rw, ndef, dev, true);
+                    return nfc_t4t_rw_write_ndef(&t4t_rw, ndef, dev);
                 }
             }
             break;

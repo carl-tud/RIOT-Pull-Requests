@@ -1276,8 +1276,6 @@ int pn532_poll(nfcdev_t *nfcdev, nfc_listener_config_t *config) {
         return NFC_ERR_POLL_NO_TARGET;
     }
 
-    pn532_deselect_passive(nfcdev->dev);
-
     return 0;
 }
 
