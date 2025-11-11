@@ -495,7 +495,7 @@ int pn532_iso14443a_4_read(pn532_t *dev, uint8_t *odata, nfc_iso14443a_t *card, 
  * @param[in]  dev          target device
  * @param[in] target_id     id of the target to deselect (0x00 for all)
  */
-void pn532_deselect_passive(pn532_t *dev, unsigned target_id);
+void pn532_deselect_passive(pn532_t *dev);
 
 /**
  * @brief   Release an active passive card
@@ -503,7 +503,7 @@ void pn532_deselect_passive(pn532_t *dev, unsigned target_id);
  * @param[in]  dev          target device
  * @param[in] target_id     id of the target to release (0x00 for all)
  */
-void pn532_release_passive(pn532_t *dev, unsigned target_id);
+void pn532_release_passive(pn532_t *dev);
 
 void pn532_set_parameters(pn532_t *dev, uint8_t flags);
 

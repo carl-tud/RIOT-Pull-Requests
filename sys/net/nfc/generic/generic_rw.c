@@ -2,11 +2,14 @@
 #include "net/nfc/generic/generic_rw.h"
 #include "assert.h"
 #include "log.h"
+#include "test_utils/print_stack_usage.h"
 
 int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     assert(rw != NULL);
     assert(ndef != NULL);
     assert(dev != NULL);
+
+    test_utils_print_stack_usage();
 
     rw->dev = dev;
     if (dev->state == NFCDEV_STATE_UNINITIALIZED) {
@@ -26,16 +29,19 @@ int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) 
                 nfc_t2t_rw_t t2t_rw = {
                     .dev = dev,
                 };
+                LOG_DEBUG("Detected T2T compliant NFC tag\n");
                 return nfc_t2t_rw_read_ndef(&t2t_rw, ndef, dev);
             } else if (app == NFC_APPLICATION_TYPE_T4T || app == NFC_APPLICATION_MIFARE_DESFIRE) {
                 nfc_t4t_rw_t t4t_rw = {
                     .dev = dev,
                 };
-                return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev);
+                LOG_DEBUG("Detected T4T A compliant NFC tag\n");
+                return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev, true);
             } else if (app == NFC_APPLICATION_MIFARE_CLASSIC) {
                 nfc_mifare_classic_rw_t mc_rw = {
                     .dev = dev,
                 };
+                LOG_DEBUG("Detected MFC NFC tag");
                 return nfc_mifare_classic_rw_read_ndef(&mc_rw, ndef, dev);
             } else {
                 LOG_ERROR("Unknown or unsupported NFC-A application type\n");
@@ -47,7 +53,8 @@ int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) 
             nfc_t4t_rw_t t4t_rw = {
                 .dev = dev,
             };
-            return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev);
+            LOG_DEBUG("Detected T4T B compliant NFC tag\n");
+            return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev, true);
             break; /* End of file reached */
         case NFC_TECHNOLOGY_F:
             return -1; /* Not implemented yet */

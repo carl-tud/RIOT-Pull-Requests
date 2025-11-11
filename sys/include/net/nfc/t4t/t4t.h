@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "net/nfc/apdu/apdu.h"
+#include "net/nfc/ndef/ndef.h"
 
 #define T4T_MAX_NDEF_SIZE 2048
 
@@ -17,6 +18,7 @@
 #define T4T_CC_FILE_MLC_LEN 2
 #define T4T_CC_FILE_NDEF_FILE_CONTROL_TLV_POS 7
 #define T4T_CC_FILE_NDEF_FILE_CONTROL_TLV_LEN 8
+#define T4T_CC_FILE_SIZE 15
 
 #define T4T_NDEF_FILE_TLV_TYPE 0x03
 #define T4T_NDEF_FILE_TLV_LEN  0x06
@@ -107,3 +109,9 @@ typedef struct {
 
 int t4t_init(nfc_t4t_t *tag, uint16_t max_capdu_size, uint8_t *ndef_file, 
     size_t max_ndef_file_size);
+
+int t4t_from_ndef(nfc_t4t_t *tag, const ndef_t *ndef_msg);
+
+bool t4t_is_writable(const nfc_t4t_t *tag);
+
+void t4t_cc_file_print(const t4t_cc_file_t *cc);

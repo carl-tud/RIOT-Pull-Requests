@@ -54,7 +54,6 @@ void print_stack_usage_metric(const char *name, void *stack, unsigned max_size)
     }
 }
 
-#ifdef DEVELHELP
 void test_utils_print_stack_usage(void)
 {
     for (kernel_pid_t i = KERNEL_PID_FIRST; i <= KERNEL_PID_LAST; i++) {
@@ -67,4 +66,3 @@ void test_utils_print_stack_usage(void)
                                      p), thread_get_stacksize(p));
     }
 }
-#endif

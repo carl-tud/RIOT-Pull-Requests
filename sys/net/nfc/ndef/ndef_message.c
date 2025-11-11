@@ -42,7 +42,7 @@
 
 size_t ndef_get_size(const ndef_t *ndef)
 {
-    return ndef->buffer.cursor - ndef->buffer.memory;
+    return (size_t) (ndef->buffer.cursor - ndef->buffer.memory);
 }
 
 static void _ndef_record_descriptors_pretty_print(const ndef_record_desc_t *ndef_record_descriptors, size_t record_count)
@@ -381,6 +381,7 @@ int ndef_from_buffer(ndef_t *ndef) {
     uint8_t *current_pointer = ndef->buffer.memory;
 
     while (current_pointer < ndef->buffer.cursor) {
+        LOG_DEBUG("Remaining NDEF length: %u\n", (size_t) (ndef->buffer.cursor - current_pointer));
         ndef_record_desc_t record_desc;
         ndef_parse_record(current_pointer, &record_desc);
 

@@ -26,6 +26,7 @@ static char unit[TEXT_BUF_SIZE / 2];
 #  define MIN_SIZE (THREAD_STACKSIZE_TINY + THREAD_EXTRA_STACKSIZE_PRINTF)
 #endif
 
+#ifdef DEVELHELP
 void print_stack_usage_metric(const char *name, void *stack, unsigned max_size)
 {
     unsigned free = measure_stack_free_internal(stack, max_size);
@@ -59,6 +60,7 @@ void test_utils_print_stack_usage(void)
         print_stack_usage_metric(thread_get_name(p), thread_get_stackstart(p), thread_get_stacksize(p));
     }
 }
+#endif
 
 static void write_temp_to_text_buf(phydat_t *temperature, char *text_buf)
 {

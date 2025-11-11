@@ -3,33 +3,31 @@
 
 #include <memory.h>
 #include <assert.h>
+#include <stdio.h>
 
 #define T4T_NDEF_FILE_ID 0xE104
 
 int t4t_from_ndef(nfc_t4t_t *tag, const ndef_t *ndef_msg) {
-    if (tag == NULL || ndef_msg == NULL) {
-        return -1;
-    }
+    assert(tag != NULL);
+    assert(ndef_msg != NULL);
 
-    if (ndef_get_size(ndef_msg) > tag->cc_file.ndef_file_control_tlv.max_ndef_size) {
+    if (ndef_get_size(ndef_msg) + 2 > tag->cc_file.ndef_file_control_tlv.max_ndef_size) {
         return -1;
     } else {
-        memcpy(tag->ndef_file, ndef_msg->buffer.memory, ndef_get_size(ndef_msg));
+        memcpy(tag->ndef_file + 2, ndef_msg->buffer.memory, ndef_get_size(ndef_msg));
         return 0;
     }
 }
 
-int t4t_is_writable(nfc_t4t_t *tag) {
-    if (tag == NULL) {
-        return -1;
-    }
+bool t4t_is_writable(const nfc_t4t_t *tag) {
+    assert(tag != NULL);
 
     if (tag->cc_file.ndef_file_control_tlv.write_access == 0x00) {
-        return 1; /* writable without any security */
+        return true; /* writable without any security */
     } else if (tag->cc_file.ndef_file_control_tlv.write_access == 0xFF) {
-        return 0; /* not writable */
+        return false; /* not writable */
     } else {
-        return -1; /* write access with some security, not implemented yet */
+        return false; /* write access with some security, not implemented yet */
     }
 }
 
@@ -69,4 +67,19 @@ int t4t_init(nfc_t4t_t *tag, uint16_t max_capdu_size, uint8_t *ndef_file,
     }
 
     return 0;
+}
+
+void t4t_cc_file_print(const t4t_cc_file_t *cc) {
+    printf("T4T CC File:\n");
+    printf("  CC Length: %u\n", cc->cc_len);
+    printf("  Mapping Version: 0x%02X\n", cc->mapping_version);
+    printf("  MLE: %u\n", cc->mle);
+    printf("  MLC: %u\n", cc->mlc);
+    printf("  NDEF File Control TLV:\n");
+    printf("    Type: 0x%02X\n", cc->ndef_file_control_tlv.type);
+    printf("    Length: %u\n", cc->ndef_file_control_tlv.length);
+    printf("    File ID: 0x%04X\n", cc->ndef_file_control_tlv.file_id);
+    printf("    Max NDEF Size: %u\n", cc->ndef_file_control_tlv.max_ndef_size);
+    printf("    Read Access: 0x%02X\n", cc->ndef_file_control_tlv.read_access);
+    printf("    Write Access: 0x%02X\n", cc->ndef_file_control_tlv.write_access);
 }

@@ -249,7 +249,7 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
         }
     }
     /* send HALT command */
-    // send_halt(rw);
+    send_halt(rw);
 
     ndef_from_buffer(ndef);
 

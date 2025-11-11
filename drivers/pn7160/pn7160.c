@@ -36,31 +36,31 @@ static const uint8_t PN7160_NFC_A_LISTEN_MODE_ROUTING[] = {
     0x00, 0x03, 0x00, 0x01, 0x00   /* technology based routing (NFC-A) */
 };
 
-static const uint8_t PN7160_RF_CONFIG[] = {
-    0x09,
-    0xA0, 0x0D, 0x03, 0x78, 0x0D, 0x02,
-    0xA0, 0x0D, 0x03, 0x78, 0x14, 0x02,
-    0xA0, 0x0D, 0x06, 0x4C, 0x44, 0x65, 0x09, 0x00, 0x00,
-    0xA0, 0x0D, 0x06, 0x4C, 0x2D, 0x05, 0x35, 0x1E, 0x01,
-    0xA0, 0x0D, 0x06, 0x82, 0x4A, 0x55, 0x07, 0x00, 0x07,
-    0xA0, 0x0D, 0x06, 0x44, 0x44, 0x03, 0x04, 0xC4, 0x00,
-    0xA0, 0x0D, 0x06, 0x46, 0x30, 0x50, 0x00, 0x18, 0x00,
-    0xA0, 0x0D, 0x06, 0x48, 0x30, 0x50, 0x00, 0x18, 0x00,
-    0xA0, 0x0D, 0x06, 0x4A, 0x30, 0x50, 0x00, 0x08, 0x00
-};
+// static const uint8_t PN7160_RF_CONFIG[] = {
+//     0x09,
+//     0xA0, 0x0D, 0x03, 0x78, 0x0D, 0x02,
+//     0xA0, 0x0D, 0x03, 0x78, 0x14, 0x02,
+//     0xA0, 0x0D, 0x06, 0x4C, 0x44, 0x65, 0x09, 0x00, 0x00,
+//     0xA0, 0x0D, 0x06, 0x4C, 0x2D, 0x05, 0x35, 0x1E, 0x01,
+//     0xA0, 0x0D, 0x06, 0x82, 0x4A, 0x55, 0x07, 0x00, 0x07,
+//     0xA0, 0x0D, 0x06, 0x44, 0x44, 0x03, 0x04, 0xC4, 0x00,
+//     0xA0, 0x0D, 0x06, 0x46, 0x30, 0x50, 0x00, 0x18, 0x00,
+//     0xA0, 0x0D, 0x06, 0x48, 0x30, 0x50, 0x00, 0x18, 0x00,
+//     0xA0, 0x0D, 0x06, 0x4A, 0x30, 0x50, 0x00, 0x08, 0x00
+// };
 
-static const uint8_t PN7160_TAG_DETECTOR_DISABLE[] = {
-     0x01, 0xA0, 0x40, 0x01, 0x00
-};
+// static const uint8_t PN7160_TAG_DETECTOR_DISABLE[] = {
+//      0x01, 0xA0, 0x40, 0x01, 0x00
+// };
 
-static const uint8_t PN7160_TOTAL_DURATION[]={
-    0x01,         /* CORE_SET_CONFIG_CMD */
-    0x00, 0x02, 0xFE, 0x01                            
-};
+// static const uint8_t PN7160_TOTAL_DURATION[]={
+//     0x01,         /* CORE_SET_CONFIG_CMD */
+//     0x00, 0x02, 0xFE, 0x01                            
+// };
 
-static const uint8_t PN7160_CLOCK_SEL_XTAL[] = {
-     0x01, 0xA0, 0x0E, 0x01, 0x00
-};
+// static const uint8_t PN7160_CLOCK_SEL_XTAL[] = {
+//      0x01, 0xA0, 0x0E, 0x01, 0x00
+// };
 
 #if DEVELHELP == 1
 #define PRINTBUFF printbuff
@@ -348,26 +348,26 @@ static int _rf_discover_map_cmd(const pn7160_t *dev, uint8_t rf_protocol,
     return 0;
 }
 
-static int _rf_deactivate_cmd(const pn7160_t *dev, uint8_t type) {
-    assert (dev != NULL);
-    uint8_t buff[PN7160_BUFFER_LEN];
-    buff[PN7160_PAYLOAD_START] = type; /* Deactivation type */
+// static int _rf_deactivate_cmd(const pn7160_t *dev, uint8_t type) {
+//     assert (dev != NULL);
+//     uint8_t buff[PN7160_BUFFER_LEN];
+//     buff[PN7160_PAYLOAD_START] = type; /* Deactivation type */
 
-    send_cmd_rcv_ntf((pn7160_t *)dev, NCI_GID_RF_MGMT,
-        NCI_OID_RF_DEACTIVATE, buff, 1);
+//     send_cmd_rcv_ntf((pn7160_t *)dev, NCI_GID_RF_MGMT,
+//         NCI_OID_RF_DEACTIVATE, buff, 1);
 
-    if (NCI_GET_GID(buff[0]) != NCI_GID_RF_MGMT) {
-        LOG_ERROR("pn7160: invalid gid (%i)!\n", NCI_GET_GID(buff[0]));
-        return -1;
-    }
+//     if (NCI_GET_GID(buff[0]) != NCI_GID_RF_MGMT) {
+//         LOG_ERROR("pn7160: invalid gid (%i)!\n", NCI_GET_GID(buff[0]));
+//         return -1;
+//     }
 
-    if (NCI_GET_OID(buff[1]) != NCI_OID_RF_DEACTIVATE) {
-        LOG_ERROR("pn7160: invalid ntf oid (%i)!\n", NCI_GET_OID(buff[1]));
-        return -1;
-    }
+//     if (NCI_GET_OID(buff[1]) != NCI_OID_RF_DEACTIVATE) {
+//         LOG_ERROR("pn7160: invalid ntf oid (%i)!\n", NCI_GET_OID(buff[1]));
+//         return -1;
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
 static int _rf_discover_cmd(pn7160_t *dev, uint8_t technology_and_mode, uint8_t *buff) {
     assert (dev != NULL);
@@ -403,10 +403,10 @@ static int _configuration_3_3V(pn7160_t *dev, uint8_t *buff) {
     return _core_set_config_cmd(dev, buff, sizeof(PN7160_CORE_CONFIG));
 }
 
-static int _set_rf_config(pn7160_t *dev, uint8_t *buff) {
-    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_RF_CONFIG, sizeof(PN7160_RF_CONFIG));
-    return _core_set_config_cmd(dev, buff, sizeof(PN7160_RF_CONFIG));
-}
+// static int _set_rf_config(pn7160_t *dev, uint8_t *buff) {
+//     memcpy(&buff[PN7160_PAYLOAD_START], PN7160_RF_CONFIG, sizeof(PN7160_RF_CONFIG));
+//     return _core_set_config_cmd(dev, buff, sizeof(PN7160_RF_CONFIG));
+// }
 
 
 
@@ -510,29 +510,31 @@ int pn7160_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config) {
     memcpy(config->nfcid1.nfcid, &buff[PN7160_PAYLOAD_START + 10], config->nfcid1.len);
 
     uint8_t sel_res_len = buff[PN7160_PAYLOAD_START + 10 + config->nfcid1.len];
-    assert (sel_res_len == 1);
+    if (sel_res_len != 1) {
+        return NFC_ERR_POLL_NO_TARGET;
+    }
     config->sel_res = buff[PN7160_PAYLOAD_START + 11 + config->nfcid1.len];
 
     return 0;
 }
 
-static int _clock_sel_xtal(pn7160_t *dev, uint8_t *buff) {
-    assert (dev != NULL);
-    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_CLOCK_SEL_XTAL, sizeof(PN7160_CLOCK_SEL_XTAL));
-    return _core_set_config_cmd(dev, buff, sizeof(PN7160_CLOCK_SEL_XTAL));
-}
+// static int _clock_sel_xtal(pn7160_t *dev, uint8_t *buff) {
+//     assert (dev != NULL);
+//     memcpy(&buff[PN7160_PAYLOAD_START], PN7160_CLOCK_SEL_XTAL, sizeof(PN7160_CLOCK_SEL_XTAL));
+//     return _core_set_config_cmd(dev, buff, sizeof(PN7160_CLOCK_SEL_XTAL));
+// }
 
-static int _disable_tag_detector(pn7160_t *dev, uint8_t *buff) {
-    assert (dev != NULL);
-    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_TAG_DETECTOR_DISABLE, sizeof(PN7160_TAG_DETECTOR_DISABLE));
-    return _core_set_config_cmd(dev, buff, sizeof(PN7160_TAG_DETECTOR_DISABLE));
-}
+// static int _disable_tag_detector(pn7160_t *dev, uint8_t *buff) {
+//     assert (dev != NULL);
+//     memcpy(&buff[PN7160_PAYLOAD_START], PN7160_TAG_DETECTOR_DISABLE, sizeof(PN7160_TAG_DETECTOR_DISABLE));
+//     return _core_set_config_cmd(dev, buff, sizeof(PN7160_TAG_DETECTOR_DISABLE));
+// }
 
-static int _set_total_duration(pn7160_t *dev, uint8_t *buff) {
-    assert (dev != NULL);
-    memcpy(&buff[PN7160_PAYLOAD_START], PN7160_TOTAL_DURATION, sizeof(PN7160_TOTAL_DURATION));
-    return _core_set_config_cmd(dev, buff, sizeof(PN7160_TOTAL_DURATION));
-}
+// static int _set_total_duration(pn7160_t *dev, uint8_t *buff) {
+//     assert (dev != NULL);
+//     memcpy(&buff[PN7160_PAYLOAD_START], PN7160_TOTAL_DURATION, sizeof(PN7160_TOTAL_DURATION));
+//     return _core_set_config_cmd(dev, buff, sizeof(PN7160_TOTAL_DURATION));
+// }
 
 int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
     assert (dev != NULL);
@@ -627,6 +629,9 @@ static int _send_and_rcv_ntf_message(pn7160_t *dev, uint8_t *buff, size_t len) {
     assert (dev != NULL);
     construct_packet_header(buff, NCI_MT_DATA, 0, 0, 0, len);
     int ret = send_recv((pn7160_t *)dev, buff, NCI_HEADER_SIZE + len);
+    if (ret <= 0) {
+        return -1;
+    }
 
     /* this should be a credits NTF */
     if (NCI_GET_MT(buff[0]) != NCI_MT_NTF) {

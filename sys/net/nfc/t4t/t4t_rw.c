@@ -74,12 +74,37 @@ static int nfc_t4t_read_cc_file(nfc_t4t_rw_t *rw, t4t_cc_file_t *cc_file) {
         return -1;
     }
 
-    if (response_len - 2 != sizeof(t4t_cc_file_t)) {
-        LOG_ERROR("[T4T RW] CC file too short\n");
+    if (response_len - 2 != T4T_CC_FILE_SIZE) {
+        LOG_ERROR("[T4T RW] Wrong CC file size, must be %u but is %u\n", T4T_CC_FILE_SIZE, 
+        response_len - 2);
         return -1;
     }
 
-    memcpy(cc_file, response, sizeof(t4t_cc_file_t));
+    /* copy t4t_cc_file */
+    cc_file->cc_len = 
+        ((uint16_t)response[0] << 8) | response[1];
+    
+    cc_file->mapping_version = response[2];
+    
+    cc_file->mle = 
+        ((uint16_t)response[3] << 8) | response[4];
+    
+    cc_file->mlc = 
+        ((uint16_t)response[5] << 8) | response[6];
+
+    /* NDEF file control TLV */
+    cc_file->ndef_file_control_tlv.type = response[7];
+    cc_file->ndef_file_control_tlv.length = response[8];
+    
+    cc_file->ndef_file_control_tlv.file_id = 
+        ((uint16_t)response[9] << 8) | response[10];
+    
+    cc_file->ndef_file_control_tlv.max_ndef_size = 
+        ((uint16_t)response[11] << 8) | response[12];
+    
+    cc_file->ndef_file_control_tlv.read_access = response[13];
+    cc_file->ndef_file_control_tlv.write_access = response[14];
+
     return 0;
 }
 
@@ -112,7 +137,6 @@ static int nfc_t4t_read_ndef_file(nfc_t4t_rw_t *rw, uint8_t *buffer, size_t buff
     assert(rw != NULL);
 
     /* read maximum_capdu_size bytes at once, but never read more than  */
-    const uint8_t le = (maximum_capdu_size < 64) ? maximum_capdu_size : 64;
 
     uint8_t response[READ_RESPONSE_LENGTH];
     size_t response_len = READ_RESPONSE_LENGTH;
@@ -122,7 +146,7 @@ static int nfc_t4t_read_ndef_file(nfc_t4t_rw_t *rw, uint8_t *buffer, size_t buff
         APDU_INS_READ_BINARY,
         0x00,
         0x00,
-        0x02, // Le = 2 to read NLEN
+        0x02, /* Le = 2 to read NLEN */
     };
 
     int ret = rw->dev->ops->initiator_exchange_data(rw->dev, read_nlen_apdu,
@@ -135,19 +159,23 @@ static int nfc_t4t_read_ndef_file(nfc_t4t_rw_t *rw, uint8_t *buffer, size_t buff
     /* the first two bytes contain the size of the NDEF message */
     uint16_t nlen = response[0] << 8 | response[1];
 
+    LOG_DEBUG("[T4T RW] NDEF file length: %u bytes\n", nlen);
 
     uint16_t offset = 2;
     /* read until the entire NDEF file is read */
-    while ((offset < nlen) && (offset < file_size) && ((offset - 2u) < buffer_size)) {
+    while (((offset - 2u) < nlen) && (offset < file_size) && (offset < buffer_size)) {
+        uint16_t le = (nlen - (offset - 2) < (READ_RESPONSE_LENGTH - 2)) ?
+            (nlen - (offset - 2)) : (READ_RESPONSE_LENGTH - 2);
+        le = (le < maximum_capdu_size - 2) ? le : (maximum_capdu_size - 2);
         uint8_t read_ndef_apdu[] = {
             APDU_CLA_DEFAULT,
             APDU_INS_READ_BINARY,
             (offset >> 8) & 0xFF,
             offset & 0xFF,
-            le, // Le
+            le,
         };
 
-        size_t response_len = 0;
+        response_len = 64;
         ret = rw->dev->ops->initiator_exchange_data(rw->dev, read_ndef_apdu,
             sizeof(read_ndef_apdu), response, &response_len);
         if (ret != 0) {
@@ -155,23 +183,21 @@ static int nfc_t4t_read_ndef_file(nfc_t4t_rw_t *rw, uint8_t *buffer, size_t buff
             return -1;
         }
 
+        uint16_t payload_len = response_len - 2;
+
         if (!rapdu_is_valid(response, response_len)) {
             LOG_ERROR("[T4T RW] READ NDEF file APDU response invalid\n");
             return -1;
         }
 
-        if (offset - 2 + response_len - 2 > buffer_size) {
+        if (offset + payload_len > buffer_size) {
             LOG_ERROR("[T4T RW] NDEF file buffer too small\n");
             return -1;
         }
 
-        memcpy(buffer + (offset - 2), response, response_len - 2);
+        memcpy(buffer + offset, response, payload_len);
 
-        offset += response_len - 2;
-
-        if ((response_len - 2) < le) {
-            break; /* End of file reached */
-        }
+        offset += payload_len;
     }
 
     return 0;
@@ -188,7 +214,7 @@ static int nfc_t4t_read_ndef(nfc_t4t_rw_t *rw, uint8_t *buffer, size_t buffer_si
     }
 
     uint16_t ndef_length = (buffer[0] << 8) | buffer[1];
-    memmove(buffer, buffer + 2, ndef_length);
+    memcpy(buffer, buffer + 2, ndef_length);
     return 0;
 }
 
@@ -276,17 +302,21 @@ int nfc_t4t_rw_read_tag(nfc_t4t_rw_t *rw, nfc_t4t_t *tag, nfcdev_t *dev) {
     return 0;
 }
 
-int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
+int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev, bool is_selected) {
     assert(rw != NULL);
     assert(ndef != NULL);
 
     rw->dev = dev;
 
     nfc_listener_config_t config;
-    int ret = nfc_t4t_rw_poll(rw, rw->dev, &config);
-    if (ret != 0) {
-        LOG_ERROR("[T4T RW] Polling failed\n");
-        return ret;
+
+    int ret;
+    if (!is_selected) {
+        ret = nfc_t4t_rw_poll(rw, rw->dev, &config);
+        if (ret != 0) {
+            LOG_ERROR("[T4T RW] Polling failed\n");
+            return ret;
+        }
     }
 
     ret = nfc_t4t_select_ndef_application(rw);
@@ -310,7 +340,7 @@ int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     }
 
     uint16_t maximum_capdu_size = cc_file.mlc;
-    uint16_t ndef_file_size = ndef_file_size;
+    uint16_t ndef_file_size = cc_file.ndef_file_control_tlv.max_ndef_size;
 
     ret = nfc_t4t_select_ndef_file(rw);
     if (ret != 0) {
@@ -318,8 +348,8 @@ int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
         return -1;
     }
 
-    ret = nfc_t4t_read_ndef(rw, ndef->buffer.memory, ndef_get_capacity(ndef), 
-        ndef_file_size, maximum_capdu_size);
+    ret = nfc_t4t_read_ndef(rw, ndef->buffer.memory, ndef_get_capacity(ndef), ndef_file_size,
+        maximum_capdu_size);
     if (ret != 0) {
         LOG_ERROR("[T4T RW] Reading NDEF file failed\n");
         return -1;
@@ -333,6 +363,10 @@ int nfc_t4t_rw_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
 int nfc_t4t_rw_write_ndef(nfc_t4t_rw_t *rw, const ndef_t *ndef) {
     assert(rw != NULL);
     assert(ndef != NULL);
+
+    (void) rw;
+    (void) ndef;
+    
 
     return -1;
 }
