@@ -4,12 +4,10 @@
 #include "log.h"
 #include "test_utils/print_stack_usage.h"
 
-int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
+static int interact_with_ndef_on_tag(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev, bool read) {
     assert(rw != NULL);
     assert(ndef != NULL);
     assert(dev != NULL);
-
-    test_utils_print_stack_usage();
 
     rw->dev = dev;
     if (dev->state == NFCDEV_STATE_UNINITIALIZED) {
@@ -22,40 +20,60 @@ int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) 
 
     switch (config.technology) {
         case NFC_TECHNOLOGY_A:
-            nfc_application_type_t app = nfc_a_get_application_type(config.config.a.sens_res, 
-                config.config.a.sel_res);
+            {
+                nfc_application_type_t app = nfc_a_get_application_type(config.config.a.sens_res, 
+                    config.config.a.sel_res);
 
-            if (app == NFC_APPLICATION_TYPE_T2T || app == NFC_APPLICATION_MIFARE_ULTRALIGHT) {
-                nfc_t2t_rw_t t2t_rw = {
-                    .dev = dev,
-                };
-                LOG_DEBUG("Detected T2T compliant NFC tag\n");
-                return nfc_t2t_rw_read_ndef(&t2t_rw, ndef, dev);
-            } else if (app == NFC_APPLICATION_TYPE_T4T || app == NFC_APPLICATION_MIFARE_DESFIRE) {
+                if (app == NFC_APPLICATION_TYPE_T2T || app == NFC_APPLICATION_MIFARE_ULTRALIGHT) {
+                    nfc_t2t_rw_t t2t_rw = {
+                        .dev = dev,
+                    };
+                    LOG_DEBUG("Detected T2T compliant NFC tag\n");
+                    if (read) {
+                        return nfc_t2t_rw_read_ndef(&t2t_rw, ndef, dev);
+                    } else {
+                        return nfc_t2t_rw_write_ndef(&t2t_rw, ndef, dev);
+                    }
+                } else if (app == NFC_APPLICATION_TYPE_T4T || app == NFC_APPLICATION_MIFARE_DESFIRE) {
+                    nfc_t4t_rw_t t4t_rw = {
+                        .dev = dev,
+                    };
+                    LOG_DEBUG("Detected T4T A compliant NFC tag\n");
+                    if (read) {
+                        return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev, true);
+                    } else {
+                        return nfc_t4t_rw_write_ndef(&t4t_rw, ndef, dev, true);
+                    }
+                } else if (app == NFC_APPLICATION_MIFARE_CLASSIC) {
+                    nfc_mifare_classic_rw_t mc_rw = {
+                        .dev = dev,
+                    };
+                    LOG_DEBUG("Detected MFC NFC tag");
+                    if (read) {
+                        return nfc_mifare_classic_rw_read_ndef(&mc_rw, ndef, dev);
+                    } else {
+                        return nfc_mifare_classic_rw_write_ndef(&mc_rw, ndef, dev);
+                    }
+                } else {
+                    LOG_ERROR("Unknown or unsupported NFC-A application type\n");
+                    return -1;
+                }
+            }
+            break;
+        case NFC_TECHNOLOGY_B:
+            {
+                /* this must be a T4T */
                 nfc_t4t_rw_t t4t_rw = {
                     .dev = dev,
                 };
-                LOG_DEBUG("Detected T4T A compliant NFC tag\n");
-                return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev, true);
-            } else if (app == NFC_APPLICATION_MIFARE_CLASSIC) {
-                nfc_mifare_classic_rw_t mc_rw = {
-                    .dev = dev,
-                };
-                LOG_DEBUG("Detected MFC NFC tag");
-                return nfc_mifare_classic_rw_read_ndef(&mc_rw, ndef, dev);
-            } else {
-                LOG_ERROR("Unknown or unsupported NFC-A application type\n");
-                return -1;
+                LOG_DEBUG("Detected T4T B compliant NFC tag\n");
+                if (read) {
+                    return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev, true);
+                } else {
+                    return nfc_t4t_rw_write_ndef(&t4t_rw, ndef, dev, true);
+                }
             }
-            break; /* End of file reached */
-        case NFC_TECHNOLOGY_B:
-            /* this must be a T4T */
-            nfc_t4t_rw_t t4t_rw = {
-                .dev = dev,
-            };
-            LOG_DEBUG("Detected T4T B compliant NFC tag\n");
-            return nfc_t4t_rw_read_ndef(&t4t_rw, ndef, dev, true);
-            break; /* End of file reached */
+            break;
         case NFC_TECHNOLOGY_F:
             return -1; /* Not implemented yet */
         case NFC_TECHNOLOGY_V:
@@ -64,4 +82,13 @@ int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) 
             LOG_ERROR("Unknown technology\n");
             return -1;
     }
+    return 0;
+}
+
+int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
+    return interact_with_ndef_on_tag(rw, ndef, dev, true);
+}
+
+int nfc_generic_rw_write_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
+    return interact_with_ndef_on_tag(rw, ndef, dev, false);
 }

@@ -337,11 +337,12 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
                 const size_t bytes_to_copy = (remaining_ndef_length < bytes_in_this_block) ?
                     remaining_ndef_length : bytes_in_this_block;
 
-                memcpy(&block_data[first_byte_position], &ndef->buffer.memory[ndef_offset], bytes_to_copy);
+                memcpy(&block_data[first_byte_position], &ndef->buffer.memory[ndef_offset], 
+                    bytes_to_copy);
             } else if (is_trailer_block(block_number)) {
                 /* do not write this block as it does not contain NDEF data */
             } else if (remaining_ndef_length > 0) {
-                /* continue writing the NDEF message for all blocks > 4*/
+                /* continue writing the NDEF message for all blocks > 4 */
                 const size_t bytes_to_copy = (remaining_ndef_length < MIFARE_CLASSIC_BLOCK_SIZE) ?
                     remaining_ndef_length : MIFARE_CLASSIC_BLOCK_SIZE;
 

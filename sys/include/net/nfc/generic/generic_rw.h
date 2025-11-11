@@ -12,3 +12,5 @@ typedef struct {
 } nfc_generic_rw_t;
 
 int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev);
+
+int nfc_generic_rw_write_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev);

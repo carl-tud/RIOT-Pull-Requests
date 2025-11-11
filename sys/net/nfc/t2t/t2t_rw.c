@@ -115,7 +115,7 @@ static int nfc_t2t_rw_send_halt(nfc_t2t_rw_t *rw) {
 }
 
 /* writes the NDEF message to a type 2 tag */
-int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
+int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev) {
     assert(rw != NULL);
     assert(ndef != NULL);
 
