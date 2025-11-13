@@ -141,9 +141,10 @@ int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev) {
     }
 
     uint16_t ndef_length = ndef_get_size(ndef);
-    uint8_t maximum_ndef_size = cc.memory_size * 8;
+    uint16_t maximum_ndef_size = cc.memory_size * 8;
     if (ndef_length + NFC_T2T_RESERVED_SIZE + NFC_TLV_MINIMUM_SIZE > maximum_ndef_size) {
-        LOG_ERROR("[T2T RW] NDEF message too large for tag\n");
+        LOG_ERROR("[T2T RW] NDEF message too large for tag (%u bytes > %u bytes)\n", ndef_length
+            + NFC_T2T_RESERVED_SIZE + NFC_TLV_MINIMUM_SIZE, maximum_ndef_size);
         return -1;
     }
 
@@ -353,7 +354,7 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     if (ret != 0) {
         LOG_ERROR("[T2T RW] Error sending HALT command\n");
         return ret;
-    } */
+    } */    
 
     ndef_from_buffer(ndef);
 

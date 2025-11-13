@@ -1202,7 +1202,7 @@ int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
 
     /* the buff now contains the first command we received from the initiator */
     if (0b00001000 & buff[0]) {
-        printf("pn532: received ISO-DEP RATS\n");
+        LOG_DEBUG("pn532: received ISO-DEP RATS\n");
         /* The PN532 is initialized as ISO14443A-4 target (NFC-DEP), the buffer should
          * contain the RATS sent by the initiator. We don't need to save it inside the
          * initiator buffer. Therefore, we do nothing.
@@ -1211,7 +1211,7 @@ int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
     } else if ((0b00001000 & buff[0]) == 0x00) {
         /* We should be a passive target. Potentially a T2T or a proprietary tag. */
         dev->initiator_command_len = ret - 1;
-        printf("pn532: received initiator command len %d\n", dev->initiator_command_len);
+        LOG_DEBUG("pn532: received initiator command len %d\n", dev->initiator_command_len);
         assert(dev->initiator_command_len <= CONFIG_PN532_INITIATOR_COMMAND_BUFFER_LEN);
         memcpy(dev->initiator_command, &buff[1], dev->initiator_command_len);
         dev->iso_dep = false;
@@ -1424,23 +1424,23 @@ static int _tg_response_to_initiator(pn532_t *dev, const uint8_t *send, size_t s
     return ret_len;
 }
 
-static int _tg_get_target_status(pn532_t *dev, uint8_t *status, uint8_t *baud_rate) {
-    LOG_DEBUG("pn532: get target status\n");
-    assert(status != NULL);
-    assert(baud_rate != NULL);
+// static int _tg_get_target_status(pn532_t *dev, uint8_t *status, uint8_t *baud_rate) {
+//     LOG_DEBUG("pn532: get target status\n");
+//     assert(status != NULL);
+//     assert(baud_rate != NULL);
 
-    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-    buff[BUFF_CMD_START] = CMD_GET_TARGET_STATUS;
+//     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+//     buff[BUFF_CMD_START] = CMD_GET_TARGET_STATUS;
 
-    int ret_len = send_rcv(dev, buff, 0, 1, STANDARD_TIMEOUT_SEC);
-    if (ret_len != 1) {
-        return NFC_ERR_COMMUNICATION;
-    }
+//     int ret_len = send_rcv(dev, buff, 0, 1, STANDARD_TIMEOUT_SEC);
+//     if (ret_len != 1) {
+//         return NFC_ERR_COMMUNICATION;
+//     }
 
-    *status = buff[0];
-    *baud_rate = buff[1];
-    return ret_len;
-}
+//     *status = buff[0];
+//     *baud_rate = buff[1];
+//     return ret_len;
+// }
 
 /* this is used to receive */
 static int _tg_get_initiator_command(pn532_t *dev, uint8_t *rcv, size_t *receive_len) {
@@ -1555,11 +1555,6 @@ int pn532_target_send_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_le
     } else {
         /* for communication with a non-ISO-DEP target (T2T, MIFARE Classic, etc.) */
         _tg_response_to_initiator(nfcdev->dev, send, send_len);
-        uint8_t status = 0;
-        uint8_t baud_rate = 0;
-        _tg_get_target_status(nfcdev->dev, &status, &baud_rate);
-        printf("pn532: target status %02x, baud rate %02x\n", status, baud_rate);
-
         return 0;
     }
 
@@ -1578,7 +1573,7 @@ int pn532_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_le
     if (dev->initiator_command_len > 0) {
         assert(dev->initiator_command_len <= CONFIG_PN532_INITIATOR_COMMAND_BUFFER_LEN);
         memcpy(rcv, dev->initiator_command, dev->initiator_command_len);
-        printf("pn532: returning cached initiator command of length %zu\n", dev->initiator_command_len);
+        LOG_DEBUG("pn532: returning cached initiator command of length %zu\n", dev->initiator_command_len);
         *receive_len = dev->initiator_command_len;
         dev->initiator_command_len = 0; /* clear the buffer */
         return *receive_len;

@@ -27,11 +27,12 @@ static int send_ack_nack(nfc_t2t_emulator_t *emulator, bool ack) {
 static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd, uint8_t cmd_len) {
     if (cmd_len == 0) {
         LOG_DEBUG("[T2T Emulator] Received empty data\n");
-        return 0;
+        /* emulation can be halted */
+        return T2T_EMULATOR_HALTED;
     }
     else if (cmd_len == 1) {
         LOG_DEBUG("[T2T Emulator] Received command byte only\n");
-        return 0;
+        return -1;
     }
 
     uint8_t command = cmd[0];
@@ -84,6 +85,8 @@ int t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *t
     assert (dev != NULL);
     assert (tag != NULL);
 
+    emulator->state = NFC_T2T_STATE_IDLE;
+
     emulator->dev = dev;
     emulator->tag = tag;
 
@@ -108,7 +111,7 @@ int t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *t
         LOG_ERROR("[T2T Emulator] Error listening for RW\n");
         return ret;
     }
-    LOG_DEBUG("[T2T Emulator] FINISHED LISTEN_A\n");
+    emulator->state = NFC_T2T_STATE_ACTIVE;
 
     uint8_t rx_buffer[32];
 
