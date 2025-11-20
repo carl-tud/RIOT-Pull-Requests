@@ -24,7 +24,12 @@ static int nfc_t4t_select_ndef_application(nfc_t4t_rw_t *rw) {
         return -1;
     }
 
-    if (response_len < 2 || response[response_len - 2] != 0x90 || response[response_len - 1] != 0x00) {
+    if (response_len < 2) {
+        LOG_ERROR("[T4T RW] SELECT NDEF application response too short\n");
+        return -1;
+    }
+
+    if (response[response_len - 2] != 0x90 || response[response_len - 1] != 0x00) {
         LOG_ERROR("[T4T RW] SELECT NDEF application failed with status %02X%02X\n",
             response[response_len - 2], response[response_len - 1]);
         return -1;
@@ -214,7 +219,7 @@ static int nfc_t4t_write_ndef_file(nfc_t4t_rw_t *rw, const uint8_t *buffer, size
     assert(buffer != NULL);
 
     /* write the 2 byte nlen first */
-    uint16_t nlen = buffer_size;
+    uint16_t nlen = (uint16_t) buffer_size;
 
     uint8_t write_nlen_apdu[] = {
         APDU_CLA_DEFAULT,
@@ -234,14 +239,18 @@ static int nfc_t4t_write_ndef_file(nfc_t4t_rw_t *rw, const uint8_t *buffer, size
         LOG_ERROR("[T4T RW] Failed to send UPDATE NDEF file NLEN APDU\n");
         return -1;
     }
-    uint16_t offset = 2;
+#define NLEN_SIZE 2u
+    uint16_t file_offset = NLEN_SIZE;
 
     uint8_t update_capdu[UPDATE_CAPDU_LENGTH];
 
     /* write until the entire NDEF file is written */
-    while (offset - 2u < buffer_size) {
-        uint16_t lc = (buffer_size - (offset - 2u) < maximum_capdu_size) ?
-            (buffer_size - (offset - 2u)) : maximum_capdu_size;
+    while (file_offset - NLEN_SIZE < buffer_size) {
+        // uint16_t lc = maximum_capdu_size;
+        uint16_t remaining = buffer_size - (file_offset - NLEN_SIZE);
+        // this is set low to avoid chaining
+        uint16_t lc = remaining < maximum_capdu_size ? remaining 
+            : maximum_capdu_size;
 
         /* lc + 5 bytes header can't be bigger than UPDATE_RAPDU_LENGTH */
         if (lc + 5 > UPDATE_CAPDU_LENGTH) {
@@ -249,10 +258,10 @@ static int nfc_t4t_write_ndef_file(nfc_t4t_rw_t *rw, const uint8_t *buffer, size
         }
         update_capdu[0] = APDU_CLA_DEFAULT;
         update_capdu[1] = APDU_INS_UPDATE_BINARY;
-        update_capdu[2] = (offset >> 8) & 0xFF;
-        update_capdu[3] = offset & 0xFF;
+        update_capdu[2] = (file_offset >> 8) & 0xFF;
+        update_capdu[3] = file_offset & 0xFF;
         update_capdu[4] = lc;
-        memcpy(&update_capdu[5], &buffer[offset - 2], lc);
+        memcpy(&update_capdu[5], &buffer[file_offset - 2], lc);
 
         uint8_t update_rapdu[UPDATE_RAPDU_LENGTH];
         size_t response_len = UPDATE_RAPDU_LENGTH;
@@ -271,7 +280,7 @@ static int nfc_t4t_write_ndef_file(nfc_t4t_rw_t *rw, const uint8_t *buffer, size
             return -1;
         }
 
-        offset += lc;
+        file_offset += lc;
     }
 
     return 0;
@@ -295,8 +304,6 @@ static int nfc_t4t_read_ndef(nfc_t4t_rw_t *rw, ndef_t *ndef,
 
     /* adjust the ndef cursor because we do a manual memcpy instead of using the NDEF API */
     ndef->buffer.cursor = ndef->buffer.memory + ndef_length;
-
-    printf("[T4T RW] NDEF message read, length: %u bytes\n", ndef_length);
 
     ndef_from_buffer(ndef);
     return 0;
@@ -343,6 +350,7 @@ int nfc_t4t_rw_read_tag(nfc_t4t_rw_t *rw, nfc_t4t_t *tag, nfcdev_t *dev) {
     nfc_listener_config_t config;
     int ret = nfc_t4t_rw_poll(rw, dev, &config);
     if (ret != 0) {
+        printf("POLL FAILED\n");
         LOG_ERROR("[T4T RW] Polling failed\n");
         return -1;
     }
@@ -499,7 +507,7 @@ int nfc_t4t_rw_write_ndef(nfc_t4t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev) {
         return -1;
     }
 
-    ret = nfc_t4t_write_ndef_file(rw, ndef->buffer.memory, ndef_get_size(ndef) + 2, 
+    ret = nfc_t4t_write_ndef_file(rw, ndef->buffer.memory, ndef_get_size(ndef), 
         maximum_capdu_size);
     if (ret != 0) {
         LOG_ERROR("[T4T RW] Writing NDEF file failed\n");

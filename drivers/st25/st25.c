@@ -8,6 +8,8 @@
 #include "board.h"
 #include "kernel_defines.h"
 #include "net/nfc/nfc_a.h"
+#include "net/nfc/nfc_error.h"
+#include "net/nfc/iso_dep.h"
 
 #define ENABLE_DEBUG 1
 #include "debug.h"
@@ -1186,7 +1188,7 @@
 /* Buffer length for SPI transfers */
 #define BUFFER_LENGTH (128)
 
-#if IS_ACTIVE(ENABLE_DEBUG)
+#if DEVELHELP == 1
 #define PRINTBUFF printbuff
 static void printbuff(uint8_t *buff, unsigned len)
 {
@@ -1200,10 +1202,10 @@ static void printbuff(uint8_t *buff, unsigned len)
 #define PRINTBUFF(...)
 #endif
 
-static void wait_ready(st25_t *dev)
-{
-    mutex_lock(&(dev->trap));
-}
+// static void wait_ready(st25_t *dev)
+// {
+//     mutex_lock(&(dev->trap));
+// }
 
 static int _write(const st25_t *dev, uint8_t *buff, unsigned len)
 {
@@ -1228,8 +1230,10 @@ static int _write(const st25_t *dev, uint8_t *buff, unsigned len)
         i2c_release(dev->conf->i2c);
     }
 
-    DEBUG("st25 -> ");
+    LOG_DEBUG("st25 -> ");
     PRINTBUFF(buff, len);
+
+    // ztimer_sleep(ZTIMER_USEC, 50);
 
     return 0;
 }
@@ -1261,34 +1265,36 @@ static int _write_and_read(const st25_t *dev, uint8_t *read, unsigned len,
         i2c_release(dev->conf->i2c);
     }
 
-    DEBUG("st25 -> ");
+    LOG_DEBUG("st25 -> ");
     PRINTBUFF(to_write, to_write_len);
 
-    DEBUG("st25 <- ");
+    LOG_DEBUG("st25 <- ");
     PRINTBUFF(read, len);
+
+    ztimer_sleep(ZTIMER_USEC, 100);
 
     return len;
 }
 
-static int _write_multiple_reg(const st25_t *dev, uint8_t reg, const uint8_t *data, unsigned len)
-{
-    assert(dev != NULL);
-    assert(data != NULL);
-    assert(reg <= 0x3F);
+// static int _write_multiple_reg(const st25_t *dev, uint8_t reg, const uint8_t *data, unsigned len)
+// {
+//     assert(dev != NULL);
+//     assert(data != NULL);
+//     assert(reg <= 0x3F);
 
-    uint8_t buff[BUFFER_LENGTH];
-    if ((reg & SPACE_B) != 0U) {
-        /* we are in register space B */
-        buff[0] = CMD_REGISTER_SPACE_B_ACCESS;
-        buff[1] = SPI_MODE_REGISTER_WRITE | reg;
-        memcpy(&buff[2], data, len);
-    } else {
-        buff[0] = SPI_MODE_REGISTER_WRITE | reg;
-        memcpy(&buff[1], data, len);
-    }
+//     uint8_t buff[BUFFER_LENGTH];
+//     if ((reg & SPACE_B) != 0U) {
+//         /* we are in register space B */
+//         buff[0] = CMD_REGISTER_SPACE_B_ACCESS;
+//         buff[1] = SPI_MODE_REGISTER_WRITE | reg;
+//         memcpy(&buff[2], data, len);
+//     } else {
+//         buff[0] = SPI_MODE_REGISTER_WRITE | reg;
+//         memcpy(&buff[1], data, len);
+//     }
 
-    return _write(dev, buff, len + 1);
-}
+//     return _write(dev, buff, len + 1);
+// }
 
 static int _write_reg(const st25_t *dev, uint8_t reg, uint8_t data)
 {
@@ -1377,17 +1383,17 @@ static int _set_number_of_transmitted_bytes_and_bits(const st25_t *dev,
     assert(dev != NULL);
 
     if (bits > 7) {
-        DEBUG("st25: Number of bits %u is too large, max is 7\n", bits);
+        LOG_ERROR("st25: Number of bits %u is too large, max is 7\n", bits);
         return -1;
     }
 
     if (bytes > 8191) {
-        DEBUG("st25: Number of bytes %u is too large, max is 8191\n", bytes);
+        LOG_ERROR("st25: Number of bytes %u is too large, max is 8191\n", bytes);
         return -1;
     }
 
     /* the bytes are identified in two registers*/
-    _write_reg(dev, REG_NUM_TX_BYTES1, (uint8_t) (bytes & 0xFF00));
+    _write_reg(dev, REG_NUM_TX_BYTES1, (uint8_t) ((bytes >> 8) & 0xFF));
     _write_reg(dev, REG_NUM_TX_BYTES2, (uint8_t) ((bytes << 3) & 0xF8) | bits);
 
 
@@ -1404,11 +1410,11 @@ static int _fifo_status(const st25_t *dev, uint16_t *byte_size, uint8_t *bit_siz
     _read_reg(dev, REG_FIFO_STATUS2, &status_2);
 
     if (status_2 & 0x10 || status_2 & 0x20) {
-        DEBUG("st25: FIFO underflow/overflow\n");
+        LOG_DEBUG("st25: FIFO underflow/overflow\n");
         return -1;
     }
 
-    *byte_size = (status_1) | (((uint16_t) (status_2 & 0xC0)) << 2);
+    *byte_size = (status_1) | (((uint16_t) (status_2 & 0xC0)) << 10);
     *bit_size  = (status_2 & 0x0E) >> 1;
 
     return 0;
@@ -1428,21 +1434,20 @@ static int _fifo_read(const st25_t *dev, uint8_t *data, uint16_t *bytes, uint8_t
 
     if (*bytes == 0 && *bits == 0) {
         /* no data in FIFO */
-        DEBUG("st25: FIFO is empty\n");
+        LOG_ERROR("st25: FIFO is empty\n");
         return -1;
     }
 
     if (*bytes > BUFFER_LENGTH - 1) {
-        DEBUG("st25: FIFO size %u is too large, max is %u\n", *bytes, BUFFER_LENGTH - 1);
+        LOG_ERROR("st25: FIFO size %u is too large, max is %u\n", *bytes, BUFFER_LENGTH - 1);
         return -1;
     }
 
-    DEBUG("st25: Reading %u bytes and %u bits from FIFO\n", *bytes, *bits);
-
+    LOG_DEBUG("st25: Reading %u bytes and %u bits from FIFO\n", *bytes, *bits);
     uint8_t operation_mode = SPI_MODE_FIFO_READ;
 
     /* read the bytes from the FIFO */
-    ret = _write_and_read(dev, data, *bits > 0 ? (unsigned) *bytes + 1 : (unsigned) *bytes, 
+    ret = _write_and_read(dev, data, *bytes, 
                               &operation_mode, 1);
     return ret;
 }
@@ -1492,23 +1497,50 @@ static int _send_cmd(st25_t *dev, uint8_t cmd)
 
 static void _nfc_event(void *dev)
 {
-    DEBUG("st25: IRQ triggered\n");
+    LOG_DEBUG("st25: IRQ triggered\n");
     mutex_unlock(&(((st25_t *)dev)->trap));
 }
 
-/* waits until any one of the IRQs defined by mask are triggered */
-static void wait_for(st25_t *dev, uint32_t mask) {
-    assert(dev != NULL);
+static int block_with_timeout(st25_t *dev, uint32_t timeout_sec) {
+    if (timeout_sec == 0) {
+        mutex_lock(&dev->trap);
+        return 0;
+    } else {
+        ztimer_t timer = {0};
+        ztimer_mutex_unlock(ZTIMER_SEC, &timer, timeout_sec, &dev->trap);
+        mutex_lock(&dev->trap);
+        bool triggered = !ztimer_remove(ZTIMER_SEC, &timer);
+        if (triggered) {
+            return NFC_ERR_TIMEOUT;
+        } else {
+            return 0;
+        }
+    }
+}
 
-    do {
-        DEBUG("st25 wait for mask: %lX\n", mask);
-        mutex_lock(&(dev->trap));
-        DEBUG("st25: NFC event triggered\n");
-        _read_interrupts(dev, &(((st25_t *)dev)->irq_status));
-        DEBUG("st25 irq: %08" PRIx32 "\n", dev->irq_status);
-    } while((dev->irq_status & mask) == 0);
+static int wait_for(st25_t *dev, uint32_t mask) {
+    uint32_t polled;
 
-    DEBUG("st25: Continuing...\n");
+    /* if the IRQ is already triggered, we do not want to block */
+    if ((dev->irq_status & mask) != 0) {
+        /* unset the IRQ status bit  */
+        dev->irq_status &= ~mask;
+        return 0;
+    }
+
+    int ret = block_with_timeout(dev, 2);
+    if (ret) return ret;
+
+    _read_interrupts(dev, &polled);
+    // printf("POLLED: %08lx\n", polled);
+    dev->irq_status |= polled;
+    if ((dev->irq_status & mask) == 0) {
+        return NFC_ERR_TIMEOUT;
+    } else {
+        /* unset the IRQ status bit  */
+        dev->irq_status &= ~mask;
+    }
+    return 0;
 }
 
 static int _verify_bcc(uint8_t *nfcid, unsigned len) {
@@ -1521,61 +1553,61 @@ static int _verify_bcc(uint8_t *nfcid, unsigned len) {
     }
 
     if (bcc != nfcid[len - 1]) {
-        DEBUG("st25: BCC check failed\n");
+        LOG_DEBUG("st25: BCC check failed\n");
         return -1;
     } else {
-        DEBUG("st25: BCC check passed\n");
+        LOG_DEBUG("st25: BCC check passed\n");
         return 0;
     }
 }
 
-static int _write_test_reg(st25_t *dev, uint8_t byte) {
-    assert(dev != NULL);
+// static int _write_test_reg(st25_t *dev, uint8_t byte) {
+//     assert(dev != NULL);
 
-    uint8_t buff[3]  = {0};
+//     uint8_t buff[3]  = {0};
 
-    buff[0] = 0xFC;
-    buff[1] = SPI_MODE_REGISTER_WRITE | 0x01;
-    buff[2] = byte;
+//     buff[0] = 0xFC;
+//     buff[1] = SPI_MODE_REGISTER_WRITE | 0x01;
+//     buff[2] = byte;
 
-    int ret = _write(dev, buff, 3);
-    if (ret < 0) {
-        DEBUG("st25: Error writing test register\n");
-    }
+//     int ret = _write(dev, buff, 3);
+//     if (ret < 0) {
+//         LOG_DEBUG("st25: Error writing test register\n");
+//     }
 
-    return ret;
+//     return ret;
 
-}
+// }
 
-static void _set_general_purpose_timer(st25_t *dev, uint16_t time) {
-    assert(dev != NULL);
-    /* the timer is defined in steps of 8 / fc (590 ns) */
+// static void _set_general_purpose_timer(st25_t *dev, uint16_t time) {
+//     assert(dev != NULL);
+//     /* the timer is defined in steps of 8 / fc (590 ns) */
 
-    /* Set the general purpose timer */
-    uint8_t reg_content = (time >> 8) & 0xFF;
-    _write_reg(dev, REG_GPT1, reg_content); /* contains the msb */
+//     /* Set the general purpose timer */
+//     uint8_t reg_content = (time >> 8) & 0xFF;
+//     _write_reg(dev, REG_GPT1, reg_content); /* contains the msb */
 
-    reg_content = time & 0xFF;
-    _write_reg(dev, REG_GPT2, reg_content);
-}
+//     reg_content = time & 0xFF;
+//     _write_reg(dev, REG_GPT2, reg_content);
+// }
 
-static void _busy_wait_for(st25_t *dev, uint32_t mask) {
-    assert(dev != NULL);
+// static void _busy_wait_for(st25_t *dev, uint32_t mask) {
+//     assert(dev != NULL);
 
-    DEBUG("st25: Busy waiting for mask: %lu\n", mask);
-    while(true) {
-        uint32_t irq_status = 0;
-        _read_interrupts(dev, &irq_status);
+//     LOG_DEBUG("st25: Busy waiting for mask: %lu\n", mask);
+//     while(true) {
+//         uint32_t irq_status = 0;
+//         _read_interrupts(dev, &irq_status);
 
-        if ((irq_status & mask) != 0) {
-            DEBUG("st25: Mask %lu triggered\n", mask);
-            break;
-        }
-        ztimer_sleep(ZTIMER_USEC, 100); /* sleep for 0.1 ms */
-    }
-}
+//         if ((irq_status & mask) != 0) {
+//             LOG_DEBUG("st25: Mask %lu triggered\n", mask);
+//             break;
+//         }
+//         ztimer_sleep(ZTIMER_USEC, 100); /* sleep for 0.1 ms */
+//     }
+// }
 
-static void _send_sdd_req(st25_t *dev, uint8_t *sdd_req, uint8_t *sdd_res) {
+static int _send_sdd_req(st25_t *dev, uint8_t *sdd_req, uint8_t *sdd_res) {
     /* write FIFO with SSD_REQ */
     _write_reg(dev, REG_ISO14443A_NFC, REG_ISO14443A_NFC_antcl);
 
@@ -1600,18 +1632,26 @@ static void _send_sdd_req(st25_t *dev, uint8_t *sdd_req, uint8_t *sdd_res) {
      * we assume here, that no collision occurs, i.e. only one NFC-A tag
      * is in the area of operation
      */
-    wait_for(dev, IRQ_MASK_RXE);
+    int ret = wait_for(dev, IRQ_MASK_RXE);
+    if (ret != 0) {
+        return ret;
+    }
 
     uint16_t fifo_bytes = 0;
     uint8_t fifo_bits = 0;
-    _fifo_read(dev, sdd_res, &fifo_bytes, &fifo_bits);
-
-    int ret = _verify_bcc(sdd_res, (uint8_t) fifo_bytes);
+    ret = _fifo_read(dev, sdd_res, &fifo_bytes, &fifo_bits);
     if (ret < 0) {
-        DEBUG("st25: BCC check failed for SDD_RES\n");
+        LOG_ERROR("st25: Error reading SDD_RES from FIFO\n");
+        return ret;
     }
 
-    return;
+    ret = _verify_bcc(sdd_res, (uint8_t) fifo_bytes);
+    if (ret < 0) {
+        LOG_ERROR("st25: BCC check failed for SDD_RES\n");
+        return ret;
+    }
+
+    return 0;
 }
 
 static int _verify_crc_a(uint8_t *data, unsigned len) {
@@ -1635,15 +1675,15 @@ static int _verify_crc_a(uint8_t *data, unsigned len) {
     uint16_t received_crc = ((uint16_t) data[len - 2]) | (((uint16_t) data[len - 1]) << 8);
 
     if (crc != received_crc) {
-        DEBUG("st25: CRC check failed\n");
+        LOG_ERROR("st25: CRC check failed\n");
         return -1;
     } else {
-        DEBUG("st25: CRC check passed\n");
+        LOG_DEBUG("st25: CRC check passed\n");
         return 0;
     }
 }
 
-static void _send_sel_req(st25_t *dev, uint8_t *sel_req, uint8_t *sel_res) {
+static int _send_sel_req(st25_t *dev, uint8_t *sel_req, uint8_t *sel_res) {
     assert(dev != NULL);
     assert(sel_req != NULL);
     assert(sel_res != NULL);
@@ -1659,29 +1699,39 @@ static void _send_sel_req(st25_t *dev, uint8_t *sel_req, uint8_t *sel_res) {
     _fifo_load(dev, sel_req, 7);
     _send_cmd(dev, CMD_TRANSMIT_WITH_CRC);
 
-    wait_for(dev, IRQ_MASK_RXE);
+    int ret = wait_for(dev, IRQ_MASK_RXE);
+    if (ret != 0) {
+        return ret;
+    }
 
     uint16_t fifo_bytes = 0;
     uint8_t fifo_bits = 0;
 
     uint8_t sel_res_with_crc[NFC_A_SEL_RES_LEN + NFC_A_CRC_LEN] = {0};
-    _fifo_read(dev, sel_res_with_crc, &fifo_bytes, &fifo_bits);
+    ret = _fifo_read(dev, sel_res_with_crc, &fifo_bytes, &fifo_bits);
+    if (ret < 0) {
+        LOG_ERROR("st25: Error reading SEL_RES from FIFO\n");
+        return ret;
+    }
     assert(fifo_bytes == 1 + NFC_A_CRC_LEN);
     assert(fifo_bits == 0);
 
-    _verify_crc_a(sel_res_with_crc, fifo_bytes);
+    ret = _verify_crc_a(sel_res_with_crc, fifo_bytes);
+    if (ret < 0) {
+        return ret;
+    }
 
     sel_res[0] = sel_res_with_crc[0];
 
-    return;
+    return 0;
 }
 
-static void _send_sens_req(st25_t *dev, uint8_t *sens_res) {
+/* this sends a short frame */
+static int _send_sens_req(st25_t *dev, uint8_t *sens_res) {
     _clear_interrupts(dev);
     _write_interrupt_mask(dev, ~(IRQ_MASK_RXE));
 
-    uint8_t reg_content = OPERATION_EN | OPERATION_RX_EN | OPERATION_TX_EN;
-    _write_reg(dev, REG_OP_CONTROL, reg_content);
+    // ztimer_sleep(ZTIMER_USEC, 1000); /* wait for 100 us */
 
     /* prepare transmission */
     _send_cmd(dev, CMD_STOP);
@@ -1690,29 +1740,114 @@ static void _send_sens_req(st25_t *dev, uint8_t *sens_res) {
     _write_reg(dev, REG_AUX, REG_AUX_no_crc_rx);
     _write_reg(dev, REG_NUM_TX_BYTES2, 0x00);
 
-
-    DEBUG("st25: Sending SENS_REQ\n");
+    LOG_DEBUG("st25: Sending SENS_REQ\n");
+    /* putting a print here somehow makes it work? */
+    // printf("LOL\n");
     _send_cmd(dev, CMD_TRANSMIT_REQA);
+    int ret = wait_for(dev, IRQ_MASK_RXE);
+    if (ret != 0) {
+        printf("RXE ERROR\n");
+        return ret;
+    }
 
-    wait_for(dev, IRQ_MASK_RXE);
-
-    DEBUG("st25: SENS_REQ sent, waiting for response...\n");
+    LOG_DEBUG("st25: SENS_REQ sent, waiting for response...\n");
 
     uint8_t fifo_buffer[BUFFER_LENGTH] = {0};
     uint16_t bytes = 0;
     uint8_t bits = 0;
     _fifo_read(dev, fifo_buffer, &bytes, &bits);
 
-    DEBUG("st25: SENS_RES received with byte 1: 0x%02x and byte 2: 0x%02x\n",
+    LOG_DEBUG("st25: SENS_RES received with byte 1: 0x%02x and byte 2: 0x%02x\n",
           fifo_buffer[0], fifo_buffer[1]);
     
     sens_res[0] = fifo_buffer[1];
     sens_res[1] = fifo_buffer[0];
+
+    return 0;
 }
 
-static void _nfc_a_anticollision(st25_t *dev, uint8_t sens_res) {
-    (void) dev;
-    (void) sens_res;
+static int _nfc_a_anticollision(st25_t *dev, nfc_a_listener_config_t *config) {
+    uint8_t *sens_res = (uint8_t *) &config->sens_res;
+    uint8_t *sel_res = &config->sel_res;
+    int ret = _send_sens_req(dev, sens_res);
+    if (ret < 0) {
+        printf("HERE\n");
+        LOG_DEBUG("st25: Error during SENS_REQ\n");
+        return ret;
+    }
+
+    LOG_DEBUG("st25: SENS_RES: 0x%02x 0x%02x\n", sens_res[0], sens_res[1]);
+
+    uint8_t sdd_res[5];
+    uint8_t sdd_req_cl1[] = {NFC_A_SEL_CMD_CL1, 0x20}; /* 0x20 for first part of anticollision */
+
+    /* Cascade Level 1 */
+    ret = _send_sdd_req(dev, sdd_req_cl1, sdd_res);
+    if (ret < 0) {
+        return ret;
+    }
+
+    uint8_t sel_req[7] = {NFC_A_SEL_CMD_CL1, 0x70, /* NVB = 0x70 for SEL_CL1 */
+                          sdd_res[0], sdd_res[1], sdd_res[2], sdd_res[3], sdd_res[4]};
+    ret = _send_sel_req(dev, sel_req, sel_res);
+    if (ret < 0) {
+        return ret;
+    }
+
+    if ((*sel_res & NFC_A_SEL_RES_NFCID1_COMPLETE_MASK) == NFC_A_SEL_RES_NFCID1_COMPLETE_VALUE) {
+        LOG_DEBUG("st25: NFCID1 complete with length 4\n");
+        config->nfcid1.len = NFC_A_NFCID1_LEN4;
+        memcpy(config->nfcid1.nfcid + 0, &sdd_res[0], NFC_A_NFCID1_LEN4);
+    } else {
+        /* copy only three bytes into the nfcid */
+        memcpy(config->nfcid1.nfcid + 0, &sdd_res[1], 3);
+        LOG_DEBUG("st25: NFCID1 not complete, further anticollision needed\n");
+
+        /* Cascade Level 2 */
+        ret = _send_sdd_req(dev, (uint8_t[]){NFC_A_SEL_CMD_CL2, 0x20}, sdd_res);
+        if (ret < 0) {
+            return ret;
+        }
+        sel_req[0] = NFC_A_SEL_CMD_CL2;
+        sel_req[1] = 0x70; /* NVB = 0x70 for SEL_CL2 */
+        memcpy(&sel_req[2], sdd_res, 5);
+
+        ret = _send_sel_req(dev, sel_req, sel_res);
+        if (ret < 0) {
+            return ret;
+        }
+
+        if ((*sel_res & NFC_A_SEL_RES_NFCID1_COMPLETE_MASK) == NFC_A_SEL_RES_NFCID1_COMPLETE_VALUE) {
+            LOG_DEBUG("st25: NFCID1 complete with length 7\n");
+            config->nfcid1.len = NFC_A_NFCID1_LEN7;
+            memcpy(config->nfcid1.nfcid + 3, &sdd_res[0], 4);
+        } else {
+            memcpy(config->nfcid1.nfcid + 3, &sdd_res[1], 3);
+            LOG_DEBUG("st25: NFCID1 not complete, further anticollision needed\n");
+
+            /* Cascade Level 3 */
+            ret = _send_sdd_req(dev, (uint8_t[]){NFC_A_SEL_CMD_CL3, 0x20}, sdd_res);
+            if (ret < 0) {
+                return ret;
+            }
+            sel_req[0] = NFC_A_SEL_CMD_CL3;
+            sel_req[1] = 0x70; /* NVB = 0x70 for SEL_CL3 */
+            memcpy(&sel_req[2], sdd_res, 5);
+
+            ret = _send_sel_req(dev, sel_req, sel_res);
+            if (ret < 0) {
+                return ret;
+            }
+
+            assert((sel_res & NFC_A_SEL_RES_NFCID1_COMPLETE_MASK) == 
+                NFC_A_SEL_RES_NFCID1_COMPLETE_VALUE);
+
+            LOG_DEBUG("st25: NFCID1 complete with length 10\n");
+            config->nfcid1.len = NFC_A_NFCID1_LEN10;
+            memcpy(config->nfcid1.nfcid + 6, &sdd_res[0], 4);
+        }
+    }
+    return 0;
 }
 
 /* changes only certain bits and leaves the rest unchanged */
@@ -1747,141 +1882,271 @@ static void _load_pt_memory_a_config(st25_t *dev, const uint8_t *nfc_a_config) {
     memcpy(&buff[1], nfc_a_config, NFC_A_CONFIG_SIZE);
     int ret = _write(dev, buff, NFC_A_CONFIG_SIZE + 1);
     if (ret < 0) {
-        DEBUG("st25: Error loading NFC-A configuration\n");
+        LOG_DEBUG("st25: Error loading NFC-A configuration\n");
     }
 
     return;
 
 }
 
-static void _read_pt_memory_a_config(st25_t *dev, uint8_t *nfc_a_config) {
-    assert(dev != NULL);
-    assert(nfc_a_config != NULL);
+// static void _read_pt_memory_a_config(st25_t *dev, uint8_t *nfc_a_config) {
+//     assert(dev != NULL);
+//     assert(nfc_a_config != NULL);
 
-    uint8_t buff[NFC_A_CONFIG_SIZE + 1];
-    buff[0] = SPI_MODE_PT_MEMORY_READ;
+//     uint8_t buff[NFC_A_CONFIG_SIZE + 1];
+//     buff[0] = SPI_MODE_PT_MEMORY_READ;
 
-    int ret = _write_and_read(dev, nfc_a_config, NFC_A_CONFIG_SIZE + NFC_F_CONFIG_SIZE, buff, 1);
-    if (ret < 0) {
-        DEBUG("st25: Error reading NFC-A configuration\n");
+//     int ret = _write_and_read(dev, nfc_a_config, NFC_A_CONFIG_SIZE + NFC_F_CONFIG_SIZE, buff, 1);
+//     if (ret < 0) {
+//         LOG_DEBUG("st25: Error reading NFC-A configuration\n");
+//     }
+
+//     return;
+// }
+
+/* afterwards the fifo contains the received frame */
+static int _send_and_receive_nfc_a_frame(st25_t *dev, const uint8_t *data, unsigned data_len) {
+    assert(data != NULL);
+    assert(data_len > 0);
+
+    _clear_interrupts(dev);
+    _write_interrupt_mask(dev, ~(IRQ_MASK_RXE));
+
+    _set_number_of_transmitted_bytes_and_bits(dev, (uint16_t) data_len, 0);
+
+    _send_cmd(dev, CMD_CLEAR_FIFO);
+    _fifo_load(dev, (uint8_t *) data, data_len);
+    _send_cmd(dev, CMD_TRANSMIT_WITH_CRC);
+
+    int ret = wait_for(dev, IRQ_MASK_RXE);
+    if (ret != 0) {
+        return ret;
     }
 
-    return;
+    return NFC_SUCCESS;
+}
+
+static int _send_rats_and_receive_ats(st25_t *dev) {
+    assert(dev != NULL);
+    uint8_t rats_cmd[] = {0xE0, 0x50}; /* magic number for RATS and FSD (0x50 -> 64 bytes)*/
+    int ret = _send_and_receive_nfc_a_frame(dev, rats_cmd, sizeof(rats_cmd));
+    if (ret != NFC_SUCCESS) {
+        LOG_ERROR("st25: Error sending RATS\n");
+        return ret;
+    }
+
+    uint16_t fifo_bytes = 0;
+    uint8_t fifo_bits = 0;
+    ret = _fifo_read(dev, dev->buff, &fifo_bytes, &fifo_bits);
+    if (ret < 0) {
+        return ret;
+    }
+
+    LOG_DEBUG("st25: ATS received with %u bytes and %u bits\n", fifo_bytes, fifo_bits);
+
+    ret = _verify_crc_a(dev->buff, fifo_bytes);
+    if (ret < 0) {
+        printf("CRC FAILED\n");
+        LOG_ERROR("st25: CRC check failed for ATS\n");
+        return ret;
+    }
+
+    LOG_DEBUG("ATS Len: %u\n", dev->buff[0]);
+    LOG_DEBUG("ATS FSCI: %u\n", (fifo_bytes > 1) ? dev->buff[1] & 0x0F : 0);
+    dev->fsci = (fifo_bytes > 1) ? (dev->buff[1] & 0x0F) : 0;
+
+    return 0;
 }
 
 int st25_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
-    DEBUG("st25: Polling for NFC-A...\n");
-
+    LOG_DEBUG("st25: Polling for NFC-A...\n");
     st25_t *dev = (st25_t *)nfcdev->dev;
+    dev->iso_dep = false;
+    dev->active_technology = NFC_TECHNOLOGY_A;
 
+    int ret;
     // _enable_all_interrupts(dev);
+
+    _write_interrupt_mask(dev, ~(IRQ_MASK_OSC));
 
     _write_reg(dev, REG_BIT_RATE, 0x00);
 
     /* mode configuration */
     _write_reg(dev, REG_MODE, REG_MODE_om_iso14443a);
 
-    uint8_t sens_res[2];
-    _send_sens_req(dev, sens_res);
+    uint8_t reg_content = OPERATION_EN | OPERATION_RX_EN | OPERATION_TX_EN;
+    _write_reg(dev, REG_OP_CONTROL, reg_content);
 
-    printf("st25: SENS_RES: 0x%02x 0x%02x\n", sens_res[0], sens_res[1]);
+    ret = wait_for(dev, IRQ_MASK_OSC);
+    if (ret != 0) {
+        printf("OSC ERROR\n");
+        return ret;
+    }
 
-    config->sens_res.anticollision_information = sens_res[0];
-    config->sens_res.platform_information = sens_res[1];
+    ret = _nfc_a_anticollision(dev, config);
+    if (ret < 0) {
+        LOG_ERROR("st25: Error during NFC-A anticollision\n");
+        return ret;
+    }
 
-    uint8_t sdd_res[5];
-    uint8_t sdd_req_cl1[] = {NFC_A_SEL_CMD_CL1, 0x20}; /* 0x20 for first part of anticollision */
-
-    /* Cascade Level 1 */
-    _send_sdd_req(dev, sdd_req_cl1, sdd_res);
-
-    uint8_t sel_req[7] = {NFC_A_SEL_CMD_CL1, 0x70, /* NVB = 0x70 for SEL_CL1 */
-                          sdd_res[0], sdd_res[1], sdd_res[2], sdd_res[3], sdd_res[4]};
-    uint8_t sel_res;
-    _send_sel_req(dev, sel_req, &sel_res);
-
-    if ((sel_res & NFC_A_SEL_RES_NFCID1_COMPLETE_MASK) == NFC_A_SEL_RES_NFCID1_COMPLETE_VALUE) {
-        DEBUG("st25: NFCID1 complete with length 4\n");
-        config->nfcid1.len = NFC_A_NFCID1_LEN4;
-        memcpy(config->nfcid1.nfcid + 0, &sdd_res[0], NFC_A_NFCID1_LEN4);
-    } else {
-        /* copy only three bytes into the nfcid */
-        memcpy(config->nfcid1.nfcid + 0, &sdd_res[1], 3);
-        DEBUG("st25: NFCID1 not complete, further anticollision needed\n");
-
-        /* Cascade Level 2 */
-        _send_sdd_req(dev, (uint8_t[]){NFC_A_SEL_CMD_CL2, 0x20}, sdd_res);
-        sel_req[0] = NFC_A_SEL_CMD_CL2;
-        sel_req[1] = 0x70; /* NVB = 0x70 for SEL_CL2 */
-        memcpy(&sel_req[2], sdd_res, 5);
-        _send_sel_req(dev, sel_req, &sel_res);
-
-        if ((sel_res & NFC_A_SEL_RES_NFCID1_COMPLETE_MASK) == NFC_A_SEL_RES_NFCID1_COMPLETE_VALUE) {
-            DEBUG("st25: NFCID1 complete with length 7\n");
-            config->nfcid1.len = NFC_A_NFCID1_LEN7;
-            memcpy(config->nfcid1.nfcid + 3, &sdd_res[0], 4);
-        } else {
-            memcpy(config->nfcid1.nfcid + 3, &sdd_res[1], 3);
-            DEBUG("st25: NFCID1 not complete, further anticollision needed\n");
-
-            /* Cascade Level 3 */
-            _send_sdd_req(dev, (uint8_t[]){NFC_A_SEL_CMD_CL3, 0x20}, sdd_res);
-            sel_req[0] = NFC_A_SEL_CMD_CL3;
-            sel_req[1] = 0x70; /* NVB = 0x70 for SEL_CL3 */
-            memcpy(&sel_req[2], sdd_res, 5);
-            _send_sel_req(dev, sel_req, &sel_res);
-
-            assert((sel_res & NFC_A_SEL_RES_NFCID1_COMPLETE_MASK) == 
-                NFC_A_SEL_RES_NFCID1_COMPLETE_VALUE);
-
-            DEBUG("st25: NFCID1 complete with length 10\n");
-            config->nfcid1.len = NFC_A_NFCID1_LEN10;
-            memcpy(config->nfcid1.nfcid + 6, &sdd_res[0], 4);
+    /* check for T4T in SEL_RES */
+    if ((config->sel_res & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
+        LOG_DEBUG("st25: ISO-DEP capable tag detected\n");
+        dev->iso_dep = true;
+        ret = _send_rats_and_receive_ats(dev);
+        if (ret != NFC_SUCCESS) {
+            LOG_ERROR("st25: Error sending RATS and receiving ATS\n");
+            return ret;
         }
     }
 
-    config->sel_res = sel_res;
-
-    return 0;
+    return NFC_SUCCESS;
 }
 
-int st25_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, unsigned send_len,
-    uint8_t *recv, unsigned *recv_len) {
+static nfc_iso_dep_block_type_t get_iso_dep_block_type(uint8_t *data, size_t data_len) {
+    assert(data != NULL);
+    assert(data_len > 0);
+
+    uint8_t pcb = data[0];
+
+    if (data_len < 1) {
+        return NFC_ISO_DEP_BLOCK_TYPE_UNKNOWN;
+    }
+
+    /* check if I-Block */
+    if ((pcb & NFC_ISO_DEP_PCB_BLOCK_TYPE_MASK) == NFC_ISO_DEP_PCB_BLOCK_TYPE_I_VALUE) {
+        return NFC_ISO_DEP_BLOCK_TYPE_I;
+    }
+
+    /* check if R-Block */
+    if ((pcb & NFC_ISO_DEP_PCB_BLOCK_TYPE_MASK) == NFC_ISO_DEP_PCB_BLOCK_TYPE_R_VALUE) {
+        return NFC_ISO_DEP_BLOCK_TYPE_R;
+    }
+
+    /* check if S-Block */
+    if ((pcb & NFC_ISO_DEP_PCB_BLOCK_TYPE_MASK) == NFC_ISO_DEP_PCB_BLOCK_TYPE_S_VALUE) {
+        return NFC_ISO_DEP_BLOCK_TYPE_S;
+    }
+
+    return NFC_ISO_DEP_BLOCK_TYPE_UNKNOWN;
+}
+
+/* make use of the iso-dep header */
+static int get_length_of_iso_dep_sod(uint8_t *data, size_t data_len) {
+    assert(data != NULL);
+    assert(data_len > 0);
+
+    if (data_len < 1) {
+        LOG_ERROR("st25: Data length too short to determine ISO-DEP SOD length\n");
+        return -1;
+    }
+
+    uint8_t pcb = data[0];
+    int start_of_data_length = 1;
+
+    /* check for DID */
+    if (pcb & NFC_ISO_DEP_PCB_DID_MASK) {
+        start_of_data_length += 1;
+    }
+
+    /* check for NAD */
+    if (pcb & NFC_ISO_DEP_PCB_NAD_MASK) {
+        start_of_data_length += 1;
+    }
+
+    return start_of_data_length;
+}
+
+int st25_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
+    uint8_t *recv, size_t *recv_len) {
     assert(nfcdev != NULL);
     assert(send != NULL);
     assert(send_len > 0);
     assert(recv_len != NULL);
+    assert(*recv_len > 0);
 
     st25_t *dev = (st25_t *)nfcdev->dev;
 
-    _clear_interrupts(dev);
-    _write_interrupt_mask(dev, ~(IRQ_MASK_RXE));
-
-    _set_number_of_transmitted_bytes_and_bits(dev, (uint16_t) send_len, 0);
-
-    _send_cmd(dev, CMD_CLEAR_FIFO);
-    _fifo_load(dev, (uint8_t *) send, send_len);
-    _send_cmd(dev, CMD_TRANSMIT_WITH_CRC);
-
-    wait_for(dev, IRQ_MASK_RXE);
-
-    /* only receive data if the buffer is not NULL */
-    if (*recv_len > 0 && recv != NULL) {
-        uint16_t fifo_bytes = 0;
-        uint8_t fifo_bits = 0;
-        _fifo_read(dev, recv, &fifo_bytes, &fifo_bits);
-
-        if (fifo_bytes > *recv_len) {
-            DEBUG("st25: Received data length %u is larger than buffer size %u\n", 
-                fifo_bytes, *recv_len);
-            fifo_bytes = (uint16_t) *recv_len; /* truncate the data */
-            return -1;
-        }
-
-        *recv_len = fifo_bytes;
+    if (dev->iso_dep) {
+        dev->buff[0] = NFC_ISO_DEP_PCB_BLOCK_TYPE_I_VALUE | NFC_ISO_DEP_PCB_I_BLOCK_FIXED_VALUE;
+        memcpy(&dev->buff[1], send, send_len);
+        send = dev->buff;
+        send_len += 1;
     }
 
-    return 0;
+    int ret = _send_and_receive_nfc_a_frame(dev, send, send_len);
+    if (ret != NFC_SUCCESS) {
+        LOG_ERROR("st25: Error sending and receiving NFC-A frame\n");
+        return ret;
+    }
+
+    /* only receive data if the buffer is not NULL */
+    if (*recv_len <= 0 || recv == NULL) {
+        return -1;
+    }
+    uint16_t fifo_bytes = 0;
+    uint8_t fifo_bits = 0;
+    ret = _fifo_read(dev, dev->buff, &fifo_bytes, &fifo_bits);
+    if (ret < 0) {
+        return ret;
+    }
+
+    if (fifo_bytes > ST25_BUFFER_LENGTH) {
+        LOG_ERROR("st25: Received data length %u is larger than buffer size %u\n", 
+            fifo_bytes, ST25_BUFFER_LENGTH);
+        fifo_bytes = (uint16_t) ST25_BUFFER_LENGTH; /* truncate the data */
+        return NFC_ERR_COMMUNICATION;
+    }
+
+    if (fifo_bytes == 0 && fifo_bits == 0) {
+        LOG_ERROR("st25: No data received from NFC-A tag\n");
+        return NFC_ERR_COMMUNICATION;
+    }
+
+    switch (dev->active_technology) {
+        case NFC_TECHNOLOGY_A:
+            if (fifo_bytes > NFC_A_CRC_LEN) {
+                int ret = _verify_crc_a(dev->buff, fifo_bytes);
+                if (ret < 0) {
+                LOG_ERROR("st25: CRC check failed for received data\n");
+                return NFC_ERR_COMMUNICATION;
+                }
+            }
+
+            /* only supports I-Blocks */
+            if (dev->iso_dep == true) {
+                nfc_iso_dep_block_type_t block_type = get_iso_dep_block_type(dev->buff, fifo_bytes);
+                if (block_type != NFC_ISO_DEP_BLOCK_TYPE_I) {
+                    LOG_ERROR("st25: Received non I-Block in ISO-DEP communication\n");
+                    return NFC_ERR_COMMUNICATION;
+                }
+
+                /* first byte is PCB */
+                int start_of_data_length = get_length_of_iso_dep_sod(dev->buff, fifo_bytes);
+
+                memcpy(recv, dev->buff + start_of_data_length, fifo_bytes - NFC_A_CRC_LEN 
+                    - start_of_data_length);
+                *recv_len = fifo_bytes - NFC_A_CRC_LEN - start_of_data_length;
+                return NFC_SUCCESS;
+            }
+
+            if (fifo_bytes == 1 && fifo_bits > 0) {
+                LOG_DEBUG("st25: Short frame\n");
+                /* might be ACK or NACK */
+                memcpy(recv, dev->buff, 1);
+                *recv_len = 1;
+            } else {
+                /* don't copy the last two bytes */
+                memcpy(recv, dev->buff, fifo_bytes - NFC_A_CRC_LEN);
+                *recv_len = fifo_bytes - NFC_A_CRC_LEN;
+            }
+
+            return NFC_SUCCESS;
+        default:
+            break;
+    }
+
+    return NFC_ERR_GENERIC;
 }
 
 int st25_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
@@ -1890,12 +2155,12 @@ int st25_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
     assert(nfcdev != NULL);
     st25_t *dev = (st25_t *)nfcdev->dev;
 
-    DEBUG("st25: Listening for NFC-A...\n");
+    LOG_DEBUG("st25: Listening for NFC-A...\n");
 
     uint8_t a = 0;
 
     _read_reg(dev, REG_PASSIVE_TARGET, &a);
-    DEBUG("st25: Passive target state before configuration: 0x%02x\n", a);
+    LOG_DEBUG("st25: Passive target state before configuration: 0x%02x\n", a);
 
     _enable_all_interrupts(dev);
 
@@ -1908,7 +2173,10 @@ int st25_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
     };
     _write_reg(dev, REG_OP_CONTROL, OPERATION_RX_EN | OPERATION_EN | OPERATION_TX_EN | 0x03);
 
-    wait_for(dev, IRQ_MASK_OSC);
+    int ret = wait_for(dev, IRQ_MASK_OSC);
+    if (ret != 0) {
+        return ret;
+    }
 
     _send_cmd(dev, CMD_UNMASK_RECEIVE_DATA);
     
@@ -1919,10 +2187,10 @@ int st25_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
 
 
     _read_reg(dev, REG_MODE, &a);
-    DEBUG("st25: Mode register: 0x%02x\n", a);
+    LOG_DEBUG("st25: Mode register: 0x%02x\n", a);
 
     _read_reg(dev, REG_OP_CONTROL, &a);
-    DEBUG("st25: Operation control register: 0x%02x\n", a);
+    LOG_DEBUG("st25: Operation control register: 0x%02x\n", a);
 
     // _clear_interrupts(dev);
     // _write_interrupt_mask(dev, ~(IRQ_MASK_NFCT | IRQ_MASK_WU_A | IRQ_MASK_WU_A_X 
@@ -1941,9 +2209,12 @@ int st25_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
 
     uint8_t target_state = 0;
     _read_reg(dev, REG_PASSIVE_TARGET, &target_state);
-    DEBUG("st25: Passive target state: 0x%02x\n", target_state);
+    LOG_DEBUG("st25: Passive target state: 0x%02x\n", target_state);
 
-    wait_for(dev, 0xFFFFFFFFU); /* wait for any interrupt */
+    ret = wait_for(dev, 0xFFFFFFFFU); /* wait for any interrupt */
+    if (ret != 0) {
+        return ret;
+    }
 
     return 0;
 }
@@ -1974,7 +2245,11 @@ int st25_init(nfcdev_t *nfcdev, const void *config)
     _configure_device(dev);
     _disable_all_interrupts(dev);
 
-    DEBUG("st25: Initialized ST25 device\n");
+    /* wait a while */
+    ztimer_sleep(ZTIMER_MSEC, 100);
+
+    nfcdev->state = NFCDEV_STATE_IDLE;
+    LOG_DEBUG("st25: Initialized ST25 device\n");
 
     return 0;
 }

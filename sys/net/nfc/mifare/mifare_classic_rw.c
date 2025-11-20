@@ -48,6 +48,8 @@ static int mifare_classic_rw_write_block(nfc_mifare_classic_rw_t *rw, uint8_t bl
     assert(rw != NULL);
     assert(data != NULL);
 
+    LOG_DEBUG("MFC: writing block %u\n", (unsigned)block);
+
     uint8_t send_buff[2 + MIFARE_CLASSIC_BLOCK_SIZE];
     send_buff[0] = MIFARE_CLASSIC_WRITE;                      /* write command */
     send_buff[1] = block;                                     /* current block */
@@ -62,11 +64,18 @@ static int mifare_classic_rw_write_block(nfc_mifare_classic_rw_t *rw, uint8_t bl
         return -1;
     }
 
-    if (resp_len != 1 || resp_buffer[0] != MIFARE_CLASSIC_ACK) {
-        LOG_ERROR("MFC: write block %u returned error %u\n",
-            (unsigned)block, (unsigned)resp_buffer[0]);
-        return -1;
-    }
+    // if (resp_len != 1 ) {
+    //     LOG_ERROR("MFC: write block %u returned wrong length %u\n",
+    //         (unsigned)block, (unsigned)resp_len);
+    //     return -1;
+    // }
+
+    // if ((resp_buffer[0] & 0x0F) != MIFARE_CLASSIC_ACK) {
+    //     LOG_ERROR("MFC: write block %u NACK received %02X\n",
+    //         (unsigned)block, (unsigned)resp_buffer[0]);
+    //     return -1;
+        
+    // }
 
     return 0;
 }
@@ -284,13 +293,13 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
 
     size_t remaining_ndef_length = ndef_get_size(ndef);
 
-    uint8_t block_number = 0;
+    uint8_t block_number = 4;
 
     size_t ndef_offset = 0;
     /* now write the NDEF message */
-    for (uint8_t current_sector = 0; 
-        current_sector < small_sector_count + large_sector_count;
-        current_sector++) {
+    for (uint8_t current_sector = 1; 
+         current_sector < small_sector_count + large_sector_count;
+         current_sector++) {
         const uint8_t blocks_in_sector = is_small_sector(current_sector) ?
         MIFARE_CLASSIC_BLOCKS_IN_SMALL_SECTOR : MIFARE_CLASSIC_BLOCKS_IN_LARGE_SECTOR;
 
@@ -299,17 +308,14 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
             break;
         }
 
-        if (is_mad_sector(current_sector)) {
-            continue; /* skip MAD sector */
-        }
-
         /* we need to authenticate here */
         if (authenticate_block(rw, &config, block_number) < 0) {
             return -1;
         }
 
         /* iterate over every block in the sector */
-        for (uint8_t block = 0; block < blocks_in_sector; block++) {
+        uint8_t start_block_number = block_number;
+        for (; block_number < (start_block_number + blocks_in_sector); block_number++) {
             if (remaining_ndef_length <= 0) {
                 /* we already wrote the entire NDEF message */
                 break;
@@ -339,15 +345,31 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
 
                 memcpy(&block_data[first_byte_position], &ndef->buffer.memory[ndef_offset], 
                     bytes_to_copy);
+
+                int ret = mifare_classic_rw_write_block(rw, block_number, block_data);
+                if (ret < 0) {
+                    return -1;
+                }
+                ndef_offset += bytes_to_copy;
+                if (bytes_to_copy > remaining_ndef_length) {
+                    remaining_ndef_length = 0;
+                } else {
+                    remaining_ndef_length -= bytes_to_copy;
+                }
             } else if (is_trailer_block(block_number)) {
                 /* do not write this block as it does not contain NDEF data */
+                continue;
             } else if (remaining_ndef_length > 0) {
                 /* continue writing the NDEF message for all blocks > 4 */
                 const size_t bytes_to_copy = (remaining_ndef_length < MIFARE_CLASSIC_BLOCK_SIZE) ?
                     remaining_ndef_length : MIFARE_CLASSIC_BLOCK_SIZE;
 
                 memcpy(block_data, &ndef->buffer.memory[ndef_offset], bytes_to_copy);
-                mifare_classic_rw_write_block(rw, block_number, block_data);
+                int ret = mifare_classic_rw_write_block(rw, block_number, block_data);
+                if (ret < 0) {
+                    return -1;
+                }
+                ndef_offset += bytes_to_copy;
                 if (bytes_to_copy > remaining_ndef_length) {
                     remaining_ndef_length = 0;
                 } else {

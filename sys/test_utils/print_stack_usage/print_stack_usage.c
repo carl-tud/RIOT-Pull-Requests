@@ -36,7 +36,7 @@ void print_stack_usage_metric(const char *name, void *stack, unsigned max_size)
 {
     unsigned free = measure_stack_free_internal(stack, max_size);
 
-    if ((LOG_LEVEL >= LOG_INFO) &&
+    if ((true) &&
         (thread_get_stacksize(thread_get_active()) >= MIN_SIZE)) {
 #if MODULE_FMT
         print_str("{ \"threads\": [{ \"name\": \"");

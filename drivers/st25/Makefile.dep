@@ -1,4 +1,5 @@
 USEMODULE += periph_spi
+USEMODULE += periph_i2c
 USEMODULE += periph_gpio
 USEMODULE += ztimer_usec
 USEMODULE += periph_gpio_irq

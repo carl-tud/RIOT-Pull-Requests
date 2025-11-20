@@ -211,11 +211,11 @@ int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev) {
     }
 
     /* send HALT command */
-    ret = nfc_t2t_rw_send_halt(rw);
-    if (ret != 0) {
-        LOG_ERROR("[T2T RW] Error sending HALT command\n");
-        return ret;
-    }
+    // ret = nfc_t2t_rw_send_halt(rw);
+    // if (ret != 0) {
+    //     LOG_ERROR("[T2T RW] Error sending HALT command\n");
+    //     return ret;
+    // }
 
     return 0;
 }
@@ -302,7 +302,7 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
 
     /* Check if the block contains the NDEF TLV */
     if(data[0] != NFC_T2T_NDEF_TLV_TYPE) {
-        LOG_ERROR("[T2T RW] Block 4 does not contain NDEF TLV\n");
+        LOG_ERROR("[T2T RW] Block 4 does not contain NDEF TLV (%02X)\n", data[0]);
         return -1;
     }
 

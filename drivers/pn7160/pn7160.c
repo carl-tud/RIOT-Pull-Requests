@@ -369,6 +369,40 @@ static int _rf_discover_map_cmd(const pn7160_t *dev, uint8_t rf_protocol,
 //     return 0;
 // }
 
+#define SIZE_OF_DISCOVERY_CONFIG   (2u)
+
+static int _rf_discover_cmd_multiple(pn7160_t *dev, uint8_t *tech_and_modes, size_t num_tech_and_modes,
+    uint8_t *buff) {
+    assert (dev != NULL);
+    assert (tech_and_modes != NULL);
+    assert (num_tech_and_modes > 0);
+
+    buff[PN7160_PAYLOAD_START]     = (uint8_t)num_tech_and_modes;       /* num of configurations */
+    memcpy(&buff[PN7160_PAYLOAD_START + 1], tech_and_modes, num_tech_and_modes * SIZE_OF_DISCOVERY_CONFIG);
+
+    send_cmd_rcv_ntf((pn7160_t *)dev, NCI_GID_RF_MGMT,
+        NCI_OID_RF_DISCOVER, buff, 1 + (uint8_t)num_tech_and_modes * SIZE_OF_DISCOVERY_CONFIG);
+
+    if (NCI_GET_GID(buff[0]) != NCI_GID_RF_MGMT) {
+        LOG_ERROR("pn7160: invalid gid (%i)!\n", NCI_GET_GID(buff[0]));
+        return -1;
+    }
+
+    if (NCI_GET_OID(buff[1]) != NCI_OID_RF_INTF_ACTIVATED) {
+        LOG_ERROR("pn7160: invalid ntf oid (%i)!\n", NCI_GET_OID(buff[1]));
+        return -1;
+    }
+
+    /* check if the tag is a MIFARE Classic tag */
+    if (buff[PN7160_PAYLOAD_START + 1] == PN7160_NCI_PROTOCOL_MIFARE_CLASSIC) {
+        dev->is_mifare_classic = true;
+    } else {
+        dev->is_mifare_classic = false;
+    }
+
+    return 0;
+}
+
 static int _rf_discover_cmd(pn7160_t *dev, uint8_t technology_and_mode, uint8_t *buff) {
     assert (dev != NULL);
     buff[PN7160_PAYLOAD_START]     = 0x01;       /* num of configurations */
@@ -461,22 +495,18 @@ int pn7160_poll_f(nfcdev_t *dev, nfc_f_listener_config_t *config) {
     return -1;
 }
 
+
+
 int pn7160_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config) {
     assert (dev != NULL);
     assert (config != NULL);
 
     uint8_t buff[PN7160_BUFFER_LEN];
 
+    pn7160_t *pn7160_dev = (pn7160_t *) dev->dev;
+
     /* put the device into idle state */
     _reset_sequence(dev->dev, buff);
-
-    // _rf_deactivate_cmd((pn7160_t *)dev->dev, 0x00); /* idle mode */
-
-
-    /* this is done so the device operates properly at 3.3V */
-    // _configuration_3_3V(dev->dev, buff);
-
-    /* LOG_DEBUG("pn7160: discover map...\n"); */
 
     /* we need to map the TAG-CMD interface to the MIFARE Classic Protocol*/
     _rf_discover_map_cmd((pn7160_t *)dev->dev,
@@ -501,8 +531,6 @@ int pn7160_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config) {
         return -1;
     }
 
-    // uint8_t length_of_parameters = buff[PN7160_PAYLOAD_START + 6];
-
     /* RF technology specific parameters (NFC-A) */
     config->sens_res.anticollision_information = buff[PN7160_PAYLOAD_START + 7];
     config->sens_res.platform_information      = buff[PN7160_PAYLOAD_START + 8];
@@ -514,6 +542,84 @@ int pn7160_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config) {
         return NFC_ERR_POLL_NO_TARGET;
     }
     config->sel_res = buff[PN7160_PAYLOAD_START + 11 + config->nfcid1.len];
+
+    /* check for T4T/ISO-DEP*/
+    if ((config->sel_res & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
+        LOG_DEBUG("pn7160: ISO-DEP protocol (%u)!\n", 
+            (unsigned)buff[PN7160_PAYLOAD_START + 1]);
+
+        pn7160_dev->is_iso_dep = true;
+    } else {
+        pn7160_dev->is_iso_dep = false;
+    }
+
+    return 0;
+}
+
+static uint8_t poll_discovery_configurations[] = {
+    NCI_NFC_A_PASSIVE_POLL_MODE, 0x01, 
+    NCI_NFC_B_PASSIVE_POLL_MODE, 0x01, 
+    NCI_NFC_F_PASSIVE_POLL_MODE, 0x01, 
+    NCI_NFC_V_PASSIVE_POLL_MODE, 0x01, 
+};
+
+int pn7160_poll(nfcdev_t *dev, nfc_listener_config_t *config) {
+    assert (dev != NULL);
+    assert (config != NULL);
+
+    uint8_t buff[PN7160_BUFFER_LEN];
+
+    pn7160_t *pn7160_dev = (pn7160_t *) dev->dev;
+
+    /* put the device into idle state */
+    _reset_sequence(dev->dev, buff);
+
+    /* we need to map the TAG-CMD interface to the MIFARE Classic Protocol*/
+    _rf_discover_map_cmd((pn7160_t *)dev->dev,
+        PN7160_NCI_PROTOCOL_MIFARE_CLASSIC, /* RF protocol */
+        NCI_RF_MODE_POLL,                   /* Poll mode */
+        NCI_RF_INTERFACE_TAG_CMD);          /* RF interface */
+
+    LOG_DEBUG("pn7160: poll for NFC device...\n");
+
+    int ret = _rf_discover_cmd_multiple((pn7160_t *)dev->dev, 
+        poll_discovery_configurations, sizeof(poll_discovery_configurations) / 2, buff);
+
+    if (ret < 0) {
+        LOG_ERROR("pn7160: poll for NFC device failed\n");
+        return ret;
+    }
+
+    /* we now have the discovered technologies, currently this only supports NFC-A */
+    if (buff[PN7160_PAYLOAD_START + 3] != NCI_NFC_A_PASSIVE_POLL_MODE) {
+        LOG_ERROR("pn7160: not NFC-A passive poll mode (%u)!\n", 
+            (unsigned)buff[PN7160_PAYLOAD_START + 3]);
+        return -1;
+    }
+
+    config->technology = NFC_TECHNOLOGY_A;
+
+    /* RF technology specific parameters (NFC-A) */
+    config->config.a.sens_res.anticollision_information = buff[PN7160_PAYLOAD_START + 7];
+    config->config.a.sens_res.platform_information      = buff[PN7160_PAYLOAD_START + 8];
+    config->config.a.nfcid1.len                         = buff[PN7160_PAYLOAD_START + 9];
+    memcpy(config->config.a.nfcid1.nfcid, &buff[PN7160_PAYLOAD_START + 10], config->config.a.nfcid1.len);
+
+    uint8_t sel_res_len = buff[PN7160_PAYLOAD_START + 10 + config->config.a.nfcid1.len];
+    if (sel_res_len != 1) {
+        return NFC_ERR_POLL_NO_TARGET;
+    }
+    config->config.a.sel_res = buff[PN7160_PAYLOAD_START + 11 + config->config.a.nfcid1.len];
+
+    /* check for T4T/ISO-DEP*/
+    if ((config->config.a.sel_res & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
+        LOG_DEBUG("pn7160: ISO-DEP protocol (%u)!\n", 
+            (unsigned)buff[PN7160_PAYLOAD_START + 1]);
+
+        pn7160_dev->is_iso_dep = true;
+    } else {
+        pn7160_dev->is_iso_dep = false;
+    }
 
     return 0;
 }
@@ -688,15 +794,31 @@ static int _send_and_rcv_data_message(pn7160_t *dev, uint8_t *buff, size_t len) 
         return -1;
     }
 
-    ret--;
-
-    /* the last byte must be 0x00 */
-    if (buff[ret] != 0x00) {
-        LOG_ERROR("pn7160: invalid last byte (%i)!\n", buff[ret]);
-        return -1;
+    if (dev->is_iso_dep) {
+        /* just return */
+        return ret;
+    } else {
+        /* the last byte must be 0x00 or 0x1X */
+        if (buff[ret - 1] != 0x00 && (buff[ret - 1] & 0xF0) != 0x10) {
+            LOG_ERROR("pn7160: invalid last byte (%i)!\n", buff[ret]);
+            return -1;
+        }
+        return --ret;
     }
 
-    return ret;
+}
+
+static bool is_mifare_write_command(const uint8_t *cmd, size_t cmd_len) {
+    if (cmd_len < 2) {
+        return false;
+    }
+
+    /* MIFARE Classic write command */
+    if (cmd[0] == 0xA0) {
+        return true;
+    }
+
+    return false;
 }
 
 int pn7160_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
@@ -714,16 +836,38 @@ int pn7160_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t
         return -1;
     }
 
+    int data_len = 0;
     if (!dev->is_mifare_classic) {
         memcpy(&buff[PN7160_PAYLOAD_START], send, send_len);
     } else {
-        /* MIFARE Classic tags operate with the TAG CMD interface and need a header */
-        memcpy(&buff[PN7160_PAYLOAD_START + 1], send, send_len);
+        /* this if only for MFC compatibility */
         buff[PN7160_PAYLOAD_START] = PN7160_TAG_CMD_XCHG_DATA_ID;
-        send_len++;
+        if (is_mifare_write_command(send, send_len)) {
+            /* the exchanges happens in two steps: first we send the write command + block number then
+            we send the actual write data (16 bytes) */
+            memcpy(&buff[PN7160_PAYLOAD_START + 1], send, 2);
+            data_len = _send_and_rcv_data_message(dev, buff, 1 + 2) - NCI_HEADER_SIZE - 1;
+            /* this must now have an ACK */
+            if (data_len != 1 || buff[PN7160_PAYLOAD_START + 1] != MIFARE_CLASSIC_ACK) {
+                LOG_ERROR("pn7160: MIFARE Classic write command not acknowledged!\n");
+                return -1;
+            }
+            /* the rest of send_len should only contain the write data */
+            send_len = send_len - 2;
+
+            memcpy(&buff[PN7160_PAYLOAD_START + 1], &send[2], send_len);
+
+            send_len += 1; /* for the TAG CMD header */
+        } else {
+            /* for a write command we acutally split the process into two exchanges */
+            memcpy(&buff[PN7160_PAYLOAD_START + 1], send, send_len); /* TODO CHANGE THIS BACK*/
+
+            /* MIFARE Classic tags operate with the TAG CMD interface and needs a header */
+            send_len += 1;
+        }
     }
 
-    int data_len = 0;
+
     if (*receive_len == 0 || rcv == NULL) {
         /* don't wait for data and return after receiving the NTF */
         return _send_and_rcv_ntf_message(dev, buff, send_len);

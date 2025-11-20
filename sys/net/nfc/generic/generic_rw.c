@@ -45,7 +45,7 @@ static int interact_with_ndef_on_tag(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_
                     } else {
                         return nfc_t4t_rw_write_ndef(&t4t_rw, ndef, dev);
                     }
-                } else if (app == NFC_APPLICATION_MIFARE_CLASSIC) {
+                } else if (app == NFC_APPLICATION_MIFARE_CLASSIC && dev->ops->mifare_classic_authenticate != NULL) {
                     nfc_mifare_classic_rw_t mc_rw = {
                         .dev = dev,
                     };
@@ -83,7 +83,7 @@ static int interact_with_ndef_on_tag(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_
             LOG_ERROR("Unknown technology\n");
             return -1;
     }
-    return 0;
+    return -1;
 }
 
 int nfc_generic_rw_read_ndef(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {

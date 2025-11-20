@@ -1244,8 +1244,8 @@ int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
         return NFC_ERR_POLL_NO_TARGET;
     }
 
-    config->sens_res.anticollision_information = buff[2];
-    config->sens_res.platform_information      = buff[3];
+    config->sens_res.anticollision_information = buff[3];
+    config->sens_res.platform_information      = buff[2];
     config->sel_res = buff[4];
     config->nfcid1.len = buff[5];
     memcpy(config->nfcid1.nfcid, &buff[6], config->nfcid1.len);
