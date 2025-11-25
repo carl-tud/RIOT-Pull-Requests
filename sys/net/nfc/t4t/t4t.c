@@ -7,7 +7,7 @@
 
 #define T4T_NDEF_FILE_ID 0xE104
 
-int t4t_from_ndef(nfc_t4t_t *tag, const ndef_t *ndef_msg) {
+int t4t_add_ndef(nfc_t4t_t *tag, const ndef_t *ndef_msg) {
     assert(tag != NULL);
     assert(ndef_msg != NULL);
 
@@ -15,6 +15,10 @@ int t4t_from_ndef(nfc_t4t_t *tag, const ndef_t *ndef_msg) {
         return -1;
     } else {
         memcpy(tag->ndef_file + 2, ndef_msg->buffer.memory, ndef_get_size(ndef_msg));
+
+        /* write NDEF length at the beginning of the NDEF file */
+        tag->ndef_file[0] = (uint8_t)((ndef_get_size(ndef_msg) >> 8) & 0xFF);
+        tag->ndef_file[1] = (uint8_t)(ndef_get_size(ndef_msg) & 0xFF);
         return 0;
     }
 }
@@ -56,7 +60,7 @@ int t4t_init(nfc_t4t_t *tag, uint16_t max_capdu_size, uint8_t *ndef_file,
     if (tag == NULL || ndef_file == NULL || max_ndef_file_size == 0) {
         return -1;
     }
-
+    tag->max_ndef_file_size = max_ndef_file_size;
     tag->ndef_file = ndef_file;
     tag->selected_ndef_application = false;
     tag->selected_cc_file = false;

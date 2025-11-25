@@ -1495,9 +1495,16 @@ static int _tg_get_data(pn532_t *dev, uint8_t *rcv, size_t *receive_len) {
 
     int ret_len = send_rcv(dev, buff, 0, CONFIG_PN532_BUFFER_LEN - 8, STANDARD_TIMEOUT_SEC);
 
-    if (ret_len <= 1) {
+    if (ret_len < 0) {
         *receive_len = 0;
         return NFC_ERR_COMMUNICATION;
+    }
+
+#define ERROR_CODE_DESELECTED 0x29
+    if (buff[0] == ERROR_CODE_DESELECTED) {
+        LOG_ERROR("pn532: target deselected by initiator\n");
+        *receive_len = 0;
+        return NFC_ERR_DESELECTED;
     }
 
     /* check if ret_len is bigger than receive_len */
@@ -1548,6 +1555,11 @@ static int _tg_set_data(pn532_t *dev, const uint8_t *send, size_t send_len) {
 int pn532_target_send_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len) {
     assert(nfcdev != NULL);
     assert(nfcdev->dev != NULL);
+
+    if (send_len > CONFIG_PN532_BUFFER_LEN - 8) {
+        LOG_ERROR("pn532: send buffer too large (%u bytes, max %d)\n", send_len, CONFIG_PN532_BUFFER_LEN - 8);
+        return -1;
+    }
 
     if (((pn532_t *) nfcdev->dev)->iso_dep) {
         /* for communication with an ISO 14443-4 PICC (ISO-DEP) */

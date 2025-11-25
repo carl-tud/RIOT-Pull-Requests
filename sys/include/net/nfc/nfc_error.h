@@ -11,3 +11,4 @@
 #define NFC_ERR_POLL_NO_TARGET  -6   /**< No tag found */
 #define NFC_ERR_COMMUNICATION   -7   /**< Communication error */
 #define NFC_ERR_AUTH            -8   /**< Authentication error */
+#define NFC_ERR_DESELECTED      -9   /**< Tag deselected */

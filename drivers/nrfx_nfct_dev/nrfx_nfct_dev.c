@@ -124,6 +124,9 @@ static void configure_fdt(uint32_t fdt, uint32_t fdt_min)
     nrfx_nfct_parameter_set(&param_fdt_min);
 }
 
+ztimer_now_t start;
+ztimer_now_t end;
+
 /**
  * @brief IRQ event handler called by the NRFX NFCT driver
  *
@@ -140,6 +143,7 @@ static void irq_event_handler(const nrfx_nfct_evt_t *event)
             if (data_length_rx > BUFFER_SIZE) {
                 data_length_rx = BUFFER_SIZE;
             }
+
 
 
             if (event->params.rx_frameend.rx_status &    (NRF_NFCT_RX_FRAME_STATUS_CRC_MASK    |
@@ -217,15 +221,15 @@ int nrfx_nfct_dev_init(nfcdev_t *nfcdev, const void *dev_config) {
 
     nrfx_err_t error = nrfx_nfct_init(&nrfx_nfct_config);
     if (error != NRFX_SUCCESS) {
+        LOG_ERROR("NRFX NFCT initialization failed with error %d\n", error);
         return -1;
     }
 
-    nrf_nfct_shorts_enable(NRF_NFCT, NRF_NFCT_SHORT_FIELDDETECTED_ACTIVATE_MASK |
-                                     NRF_NFCT_SHORT_FIELDLOST_SENSE_MASK);
+    nrf_nfct_shorts_enable(NRF_NFCT, NRF_NFCT_SHORT_FIELDDETECTED_ACTIVATE_MASK);
 
     mutex_init(&lock);
     mutex_lock(&lock);
-    nfcdev->state = NFCDEV_STATE_DISABLED;
+    nfcdev->state = NFCDEV_STATE_IDLE;
 
     return 0;
 }
@@ -245,6 +249,7 @@ int nrfx_nfct_dev_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *conf
     if (ret != 0) {
         return ret;
     }
+    start = ztimer_now(ZTIMER_MSEC);
 
     rx = true;
     tx = false;
@@ -301,6 +306,14 @@ static int receive_data(nfcdev_t *nfcdev, uint8_t *data, size_t *len) {
 
     tx = false;
     rx = true;
+
+    printf("data[1] is %d\n", data[1]);
+
+    if (data[1] == 52) {
+        /* do time calc */
+        end = ztimer_now(ZTIMER_MSEC);
+        printf("time: %u ms\n", (unsigned)(end - start));
+    }
 
     return 0;
 }

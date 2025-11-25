@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "net/nfc/apdu/apdu.h"
+#include "ztimer.h"
 
 /* T4T communicate with APDUs. There are two types of APDUs:
 command APDU (C-APDU) and response APDU (R-APDU). APDUs have a format */
@@ -19,8 +20,14 @@ static int send_not_found_response(nfc_t4t_emulator_t *emulator) {
     return emulator->dev->ops->target_send_data(emulator->dev, response, sizeof(response));
 }
 
+static int send_class_not_supported_response(nfc_t4t_emulator_t *emulator) {
+    const uint8_t response[] = {APDU_SW1_CLASS_NOT_SUPPORTED, 0x00};
+    return emulator->dev->ops->target_send_data(emulator->dev, response, sizeof(response));
+}
+
 static int process_select_command(nfc_t4t_emulator_t *emulator, const uint8_t *cmd, uint8_t cmd_len) {
     (void) cmd_len;
+
     if (!emulator->tag->selected_ndef_application) {
         /* NDEF Application is not selected and we need to check whether 
         the command is for the selection of the NDEF application */
@@ -32,7 +39,7 @@ static int process_select_command(nfc_t4t_emulator_t *emulator, const uint8_t *c
             /* Send response: 90 00 (Success) */
             return send_success_response(emulator);
         } else {
-            LOG_DEBUG("[T4T Emulator] SELECT command received but NDEF application not selected\n");
+            LOG_ERROR("[T4T Emulator] SELECT command received but NDEF application not selected\n");
             return NFC_ERR_GENERIC;
         }
     }
@@ -41,15 +48,127 @@ static int process_select_command(nfc_t4t_emulator_t *emulator, const uint8_t *c
     if (memcmp(cmd, T4T_APDU_CC_FILE_SELECT, sizeof(T4T_APDU_CC_FILE_SELECT)) == 0) {
         LOG_DEBUG("[T4T Emulator] Received CC file SELECT command\n");
         emulator->tag->selected_cc_file = true;
+        emulator->tag->selected_ndef_file = false;
+
+        /* Send response: 90 00 (Success) */
+        return send_success_response(emulator);
+    } else if (memcmp(cmd, T4T_APDU_NDEF_FILE_SELECT, sizeof(T4T_APDU_NDEF_FILE_SELECT)) == 0) {
+        LOG_DEBUG("[T4T Emulator] Received NDEF file SELECT command\n");
+        emulator->tag->selected_ndef_file = true;
+        emulator->tag->selected_cc_file = false;
 
         /* Send response: 90 00 (Success) */
         return send_success_response(emulator);
     } else {
-        LOG_DEBUG("[T4T Emulator] SELECT command not recognized\n");
+        LOG_ERROR("[T4T Emulator] SELECT command not recognized\n");
         return send_not_found_response(emulator);
     }
+}
 
-    /* TODO: work with T4T_APDU_NDEF_FILE_SELECT */
+static void copy_cc_file_to_buffer(const t4t_cc_file_t *cc_file, uint8_t *buffer) {
+    /* Copy the CC file structure to the buffer in big-endian format */
+    buffer[0] = (cc_file->cc_len >> 8) & 0xFF;
+    buffer[1] = cc_file->cc_len & 0xFF;
+    buffer[2] = cc_file->mapping_version;
+    buffer[3] = (cc_file->mle >> 8) & 0xFF;
+    buffer[4] = cc_file->mle & 0xFF;
+    buffer[5] = (cc_file->mlc >> 8) & 0xFF;
+    buffer[6] = cc_file->mlc & 0xFF;
+    buffer[7] = cc_file->ndef_file_control_tlv.type;
+    buffer[8] = cc_file->ndef_file_control_tlv.length;
+    buffer[9] = (cc_file->ndef_file_control_tlv.file_id >> 8) & 0xFF;
+    buffer[10] = cc_file->ndef_file_control_tlv.file_id & 0xFF;
+    buffer[11] = (cc_file->ndef_file_control_tlv.max_ndef_size >> 8) & 0xFF;
+    buffer[12] = cc_file->ndef_file_control_tlv.max_ndef_size & 0xFF;
+    buffer[13] = cc_file->ndef_file_control_tlv.read_access;
+    buffer[14] = cc_file->ndef_file_control_tlv.write_access;
+}
+
+static int process_update_binary_command(nfc_t4t_emulator_t *emulator, const uint8_t *cmd, uint8_t cmd_len) {
+    (void) cmd_len;
+
+
+    if (emulator->tag->selected_ndef_application == false) {
+        LOG_DEBUG("[T4T Emulator] UPDATE BINARY command received but NDEF application not selected\n");
+        return NFC_ERR_GENERIC;
+    }
+
+    LOG_DEBUG("[T4T Emulator] UPDATE BINARY command received\n");
+
+    uint16_t offset = (cmd[APDU_P1_POS] << 8) | cmd[APDU_P2_POS];
+    uint8_t data_length = cmd[APDU_LC_POS];
+
+    if (emulator->tag->selected_ndef_file == false) {
+        LOG_DEBUG("[T4T Emulator] UPDATE BINARY command received but NDEF file not selected\n");
+        return NFC_ERR_GENERIC;
+    }
+
+    if ((offset + data_length) > emulator->tag->max_ndef_file_size) {
+        LOG_DEBUG("[T4T Emulator] UPDATE BINARY command exceeds NDEF file size\n");
+        return NFC_ERR_GENERIC;
+    }
+
+    memcpy(emulator->tag->ndef_file + offset, &cmd[APDU_DATA_POS], data_length);
+
+    return send_success_response(emulator);
+}
+
+static int process_read_binary_command(nfc_t4t_emulator_t *emulator, const uint8_t *cmd, uint8_t cmd_len) {
+    (void) cmd_len;
+
+    if (emulator->tag->selected_ndef_application == false) {
+        LOG_DEBUG("[T4T Emulator] READ BINARY command received but NDEF application not selected\n");
+        return NFC_ERR_GENERIC;
+    }
+
+    uint16_t offset = (cmd[APDU_P1_POS] << 8) | cmd[APDU_P2_POS];
+
+    /* the length is the last byte */
+    uint8_t length = cmd[cmd_len - 1];
+
+#define MAX_T4T_READ_RESPONSE 128
+    uint8_t response[MAX_T4T_READ_RESPONSE + 2];
+
+    if (emulator->tag->selected_cc_file) {
+        /* reading from CC file */
+        LOG_DEBUG("[T4T Emulator] READ BINARY command for CC file, offset: %u, length: %u\n",
+            offset, length);
+
+        if ((offset + length) > T4T_CC_FILE_SIZE) {
+            LOG_DEBUG("[T4T Emulator] READ BINARY command exceeds CC file size\n");
+            return NFC_ERR_GENERIC;
+        }
+
+        if (offset != 0) {
+            LOG_DEBUG("[T4T Emulator] READ BINARY command with non-zero offset for CC file not supported\n");
+            return NFC_ERR_GENERIC;
+        }
+ 
+        copy_cc_file_to_buffer(&(emulator->tag->cc_file), response);
+        response[length    ] = APDU_SW1_NO_ERROR;
+        response[length + 1] = APDU_SW2_NO_ERROR;
+
+        return emulator->dev->ops->target_send_data(emulator->dev, response, length + 2);
+    } else if (emulator->tag->selected_ndef_file) {
+        /* reading from NDEF file */
+        LOG_DEBUG("[T4T Emulator] READ BINARY command for NDEF file, offset: %u, length: %u\n",
+            offset, length);
+
+        if ((offset + length) > emulator->tag->max_ndef_file_size) {
+            LOG_DEBUG("[T4T Emulator] READ BINARY command exceeds NDEF file size\n");
+            return NFC_ERR_GENERIC;
+        }
+
+        memcpy(response, emulator->tag->ndef_file + offset, length);
+        response[length    ] = APDU_SW1_NO_ERROR;
+        response[length + 1] = APDU_SW2_NO_ERROR;
+
+        return emulator->dev->ops->target_send_data(emulator->dev, response, length + 2);
+    } else {
+        LOG_DEBUG("[T4T Emulator] READ BINARY command received but no file selected\n");
+        return NFC_ERR_GENERIC;
+
+    }
 }
 
 static int process_t4t_command(nfc_t4t_emulator_t *emulator, const uint8_t *cmd, uint8_t cmd_len) {
@@ -65,50 +184,25 @@ static int process_t4t_command(nfc_t4t_emulator_t *emulator, const uint8_t *cmd,
 
     LOG_DEBUG("[T4T Emulator] Data size: %d\n", cmd_len);
 
-
-    switch (cmd[APDU_INS_POS]) {
-        case APDU_INS_SELECT:
-            return process_select_command(emulator, cmd, cmd_len);
-            
-        case APDU_INS_READ_BINARY:
-            
-            return NFC_ERR_GENERIC;
-
-        case APDU_INS_UPDATE_BINARY:
-            
-            return NFC_ERR_GENERIC;
-        default:
-            
-            return NFC_ERR_GENERIC;
-    }
-
     if (cmd_len == NFC_A_RATS_LENGTH && cmd[0] == NFC_A_RATS_MAGIC_NUMBER) {
         LOG_DEBUG("[T4T Emulator] Received RATS command\n");
         /* this shouldn't happen, as RATS is handled by the underlying driver */
         return NFC_ERR_GENERIC;
     } 
 
-    if (emulator->tag->selected_ndef_application) {
-        /* we are selected, so we can process the commands */
-        switch (cmd[APDU_INS_POS]) {
-            case APDU_INS_SELECT:
-                LOG_DEBUG("[T4T Emulator] Received SELECT command\n");
-                /* Process the SELECT command */
-                return send_success_response(emulator);
-        }
-    } else {
-        /* we are not selected and need to check whether the command is for the selection of 
-        the NDEF application */
-        if (memcmp(cmd, T4T_APDU_NDEF_TAG_APPLICATION_SELECT, sizeof(T4T_APDU_NDEF_TAG_APPLICATION_SELECT)) == 0) {
-            LOG_DEBUG("[T4T Emulator] Received NDEF Tag Application Select command\n");
-            emulator->tag->selected_ndef_application = true;
-
-            /* Send response: 90 00 (Success) */
-            return send_success_response(emulator);
-        }
+    switch (cmd[APDU_INS_POS]) {
+        case APDU_INS_SELECT:
+            return process_select_command(emulator, cmd, cmd_len);
+        case APDU_INS_READ_BINARY:
+            return process_read_binary_command(emulator, cmd, cmd_len);
+        case APDU_INS_UPDATE_BINARY:
+            return process_update_binary_command(emulator, cmd, cmd_len);
+        default:
+            LOG_DEBUG("[T4T Emulator] Command not recognized or not implemented\n");
+            return NFC_ERR_GENERIC;
     }
 
-    LOG_DEBUG("[T4T Emulator] Command not recognized or not implemented\n");
+    /* UNREACHABLE */
     return NFC_ERR_GENERIC;
 }
 
@@ -122,7 +216,6 @@ void t4t_emulator_start(nfc_t4t_emulator_t *emulator, nfcdev_t *dev,
     emulator->dev = dev;
     emulator->tag = tag;
     emulator->dev->state = NFCDEV_STATE_DISABLED;
-
 
     nfc_a_listener_config_t config = {
         .sel_res = NFC_A_SEL_RES_T4T_VALUE,
@@ -141,21 +234,31 @@ void t4t_emulator_start(nfc_t4t_emulator_t *emulator, nfcdev_t *dev,
     LOG_DEBUG("[T4T Emulator] RW found\n");
 
     uint8_t rx_buffer[128];
-    size_t rx_len = 0;
 
     /* infinite loop */
     while (true) {
         /* receive data */
+        size_t rx_len = sizeof(rx_buffer);
         int ret = emulator->dev->ops->target_receive_data(emulator->dev, rx_buffer, &rx_len);
-        if (ret < 0) {
+        if (ret == NFC_ERR_DESELECTED) {
+            LOG_DEBUG("[T4T Emulator] Tag deselected by initiator, stopping emulation\n");
+            return;
+        } else if (ret < 0) {
             LOG_DEBUG("[T4T Emulator] Error receiving data\n");
+            return;
+        }
+
+        /* first byte needs to be 0x00 (CLA) */
+        if (rx_buffer[0] != 0x00) {
+            LOG_ERROR("[T4T Emulator] Invalid command class\n");
+            send_class_not_supported_response(emulator);
             return;
         }
 
         LOG_DEBUG("[T4T Emulator] Received %u bytes\n", rx_len);
         ret = process_t4t_command(emulator, rx_buffer, rx_len);
-        if (ret < 0) {
-            LOG_DEBUG("[T4T Emulator] Error processing command\n");
+        if (ret == NFC_ERR_DESELECTED) {
+            LOG_ERROR("[T4T Emulator] Error processing command\n");
             return;
         }
     }

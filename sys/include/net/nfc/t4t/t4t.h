@@ -20,7 +20,7 @@
 #define T4T_CC_FILE_NDEF_FILE_CONTROL_TLV_LEN 8
 #define T4T_CC_FILE_SIZE 15
 
-#define T4T_NDEF_FILE_TLV_TYPE 0x03
+#define T4T_NDEF_FILE_TLV_TYPE 0x04
 #define T4T_NDEF_FILE_TLV_LEN  0x06
 
 #define T4T_NDEF_FILE_TLV_FILE_ID_POS 1
@@ -32,7 +32,7 @@
 #define T4T_NDEF_FILE_TLV_WRITE_ACCESS_POS 6
 #define T4T_NDEF_FILE_TLV_WRITE_ACCESS_LEN 1
 
-typedef struct {
+typedef struct __attribute__((packed)) {
     uint8_t type;
     uint8_t length;
     uint16_t file_id;
@@ -41,7 +41,7 @@ typedef struct {
     uint8_t write_access;
 } t4t_ndef_file_control_tlv_t;
 
-typedef struct {
+typedef struct __attribute__((packed)) {
     uint16_t cc_len;
     uint8_t mapping_version;
     uint16_t mle;
@@ -110,7 +110,7 @@ typedef struct {
 int t4t_init(nfc_t4t_t *tag, uint16_t max_capdu_size, uint8_t *ndef_file, 
     size_t max_ndef_file_size);
 
-int t4t_from_ndef(nfc_t4t_t *tag, const ndef_t *ndef_msg);
+int t4t_add_ndef(nfc_t4t_t *tag, const ndef_t *ndef_msg);
 
 bool t4t_is_writable(const nfc_t4t_t *tag);
 
