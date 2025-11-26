@@ -30,10 +30,14 @@
 #define MIFARE_CLASSIC_BLOCKS_IN_LARGE_SECTOR 16
 
 /* Works for non proprietary sectors */
+#ifndef CONFIG_MIFARE_CLASSIC_SECTOR_PUBLIC_KEY_A
 #define MIFARE_CLASSIC_SECTOR_PUBLIC_KEY_A ((uint8_t[]){0xD3, 0xF7, 0xD3, 0xF7, 0xD3, 0xF7})
+#endif
 
 /* Works for the MIFARE Application Directory (MAD), usually Sector 0 */
+#ifndef CONFIG_MIFARE_CLASSIC_MAD_PUBLIC_KEY_A
 #define MIFARE_CLASSIC_MAD_PUBLIC_KEY_A ((uint8_t[]){0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5})
+#endif
 
 /* MIFARE commands */
 

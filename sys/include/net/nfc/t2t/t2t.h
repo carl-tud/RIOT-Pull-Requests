@@ -110,9 +110,9 @@ typedef struct {
         NFC_T2T_LOCK_BYTES_SIZE - NFC_T2T_CC_SIZE];
 } nfc_t2t_t;
 
-int t2t_read_blocks(const nfc_t2t_t *tag, uint8_t block_no, uint8_t *blocks);
+int t2t_read_blocks(const nfc_t2t_t *tag, uint8_t block_no, uint8_t *blocks, uint8_t sector);
 
-int t2t_write_block(nfc_t2t_t *tag, uint8_t block_no, const uint8_t *block);
+int t2t_write_block(nfc_t2t_t *tag, uint8_t block_no, const uint8_t *block, uint8_t sector);
 
 uint16_t t2t_get_memory_size(const nfc_t2t_t *tag);
 

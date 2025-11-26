@@ -43,7 +43,7 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
         uint8_t block_address = data_buffer[0];
         uint8_t data[16];
         LOG_DEBUG("[T2T Emulator] Read command received for block %d\n", block_address);
-        t2t_read_blocks(emulator->tag, block_address, data);
+        t2t_read_blocks(emulator->tag, block_address, data, emulator->sector);
         emulator->dev->ops->target_send_data(emulator->dev, data, 16);
         return 0;
     }
@@ -59,13 +59,24 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
             return send_ack_nack(emulator, false);
         }
 
-        t2t_write_block(emulator->tag, *data_buffer, data_buffer + 1);
+        t2t_write_block(emulator->tag, *data_buffer, data_buffer + 1, emulator->sector);
         return send_ack_nack(emulator, true);
         // process_write_command(*data_buffer, data_buffer + 1);
     }
     else if (command == NFC_T2T_SECTOR_SELECT_COMMAND) {
         LOG_DEBUG("[T2T Emulator] Sector select command received\n");
-        return send_ack_nack(emulator, false);
+
+        send_ack_nack(emulator, true);
+        /* receive data again */
+        size_t rx_len = 4;
+        uint8_t rx_buffer[4];
+        int ret = emulator->dev->ops->target_receive_data(emulator->dev, rx_buffer, &rx_len);
+        if (ret < 0) {
+            LOG_ERROR("[T2T Emulator] Error receiving sector select data: %d\n", ret);
+            return NFC_ERR_COMMUNICATION;
+        }
+        LOG_DEBUG("[T2T Emulator] Switching to sector %d\n", rx_buffer[0]);
+        emulator->sector = rx_buffer[0];
     } else if (command == NFC_T2T_HALT_COMMAND) {
         LOG_DEBUG("[T2T Emulator] Halt command received\n");
         emulator->state = NFC_T2T_STATE_SLEEPING;

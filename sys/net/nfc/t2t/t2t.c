@@ -16,11 +16,11 @@ static const nfc_a_nfcid1_t T2T_DEFAULT_UID = {
     .len   = NFC_A_NFCID1_LEN4,
 };
 
-int t2t_write_block(nfc_t2t_t *t2t, uint8_t block_no, const uint8_t *block) {
+int t2t_write_block(nfc_t2t_t *t2t, uint8_t block_no, const uint8_t *block, uint8_t sector) {
     assert(t2t != NULL);
     assert(block != NULL);
 
-    const size_t off = (size_t)block_no * T2T_BLOCK_SIZE;
+    const size_t off = (size_t)block_no * T2T_BLOCK_SIZE + (sector * 256 * T2T_BLOCK_SIZE);
     if ((off + T2T_BLOCK_SIZE) > NFC_T2T_MEMORY_SIZE) {
         LOG_ERROR("[T2T] write OOB (block %u)\n", (unsigned)block_no);
         return -1;
@@ -31,11 +31,11 @@ int t2t_write_block(nfc_t2t_t *t2t, uint8_t block_no, const uint8_t *block) {
     return 0;
 }
 
-int t2t_read_blocks(const nfc_t2t_t *t2t, uint8_t block_no, uint8_t *blocks) {
+int t2t_read_blocks(const nfc_t2t_t *t2t, uint8_t block_no, uint8_t *blocks, uint8_t sector) {
     assert(t2t != NULL);
     assert(blocks != NULL);
 
-    const size_t off = (size_t)block_no * T2T_BLOCK_SIZE;
+    const size_t off = (size_t)block_no * T2T_BLOCK_SIZE + (sector * 256 * T2T_BLOCK_SIZE);
     const size_t len = T2T_BLOCK_SIZE * T2T_READ_BLOCK_COUNT;
     if ((off + len) > NFC_T2T_MEMORY_SIZE) {
         LOG_ERROR("[T2T] read OOB (block %u)\n", (unsigned)block_no);
