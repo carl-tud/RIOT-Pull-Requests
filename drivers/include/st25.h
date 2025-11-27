@@ -45,6 +45,8 @@ int st25_init(nfcdev_t *dev, const void *config);
 
 int st25_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config);
 
+int st25_poll(nfcdev_t *dev, nfc_listener_config_t *config);
+
 int st25_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config);
 
 int st25_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, unsigned send_len,
@@ -53,6 +55,7 @@ int st25_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, unsigned
 static const nfcdev_ops_t st25_ops = {
     .init = st25_init,
     .poll_a = st25_poll_a,
+    .poll = st25_poll,
     .listen_a = st25_listen_a,
     .initiator_exchange_data = st25_initiator_exchange_data,
 };

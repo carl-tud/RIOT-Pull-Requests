@@ -27,6 +27,7 @@ static int interact_with_ndef_on_tag(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_
                 if (app == NFC_APPLICATION_TYPE_T2T || app == NFC_APPLICATION_MIFARE_ULTRALIGHT) {
                     nfc_t2t_rw_t t2t_rw = {
                         .dev = dev,
+                        .is_tag_selected = true,
                     };
                     LOG_DEBUG("Detected T2T compliant NFC tag\n");
                     if (read) {

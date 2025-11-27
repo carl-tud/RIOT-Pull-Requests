@@ -122,11 +122,15 @@ int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev) {
     rw->dev = dev;
 
     nfc_a_listener_config_t config = {0};
-    int ret = t2t_poll(rw, &config);
-    if (ret != 0) {
-        return ret;
+    
+    int ret;
+    if (!rw->is_tag_selected) {
+        ret = t2t_poll(rw, &config);
+        if (ret != 0) {
+            return ret;
+        }
+        rw->is_tag_selected = true;
     }
-
     /* read the first 4 blocks to get the length of the NDEF message */
     t2t_cc_t cc;
     ret = nfc_t2t_rw_read_cc(rw, &cc);
@@ -278,10 +282,14 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
         return -1;
     }
 
+    int ret;
     nfc_a_listener_config_t config = {0};
-    int ret = t2t_poll(rw, &config);
-    if (ret != 0) {
-        return ret;
+    if (!rw->is_tag_selected) {
+        ret = t2t_poll(rw, &config);
+        if (ret != 0) {
+            return ret;
+        }
+        rw->is_tag_selected = true;
     }
 
     /* read the first 4 blocks to get the length of the NDEF message */

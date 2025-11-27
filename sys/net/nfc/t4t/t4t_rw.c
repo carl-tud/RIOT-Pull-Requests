@@ -244,13 +244,19 @@ static int nfc_t4t_write_ndef_file(nfc_t4t_rw_t *rw, const uint8_t *buffer, size
 
     uint8_t update_capdu[UPDATE_CAPDU_LENGTH];
 
+    /* only for st25 */
+    // maximum_capdu_size = maximum_capdu_size < (25) ? 
+    //      maximum_capdu_size : (25);
+
     /* write until the entire NDEF file is written */
     while (file_offset - NLEN_SIZE < buffer_size) {
+
         // uint16_t lc = maximum_capdu_size;
         uint16_t remaining = buffer_size - (file_offset - NLEN_SIZE);
         // this is set low to avoid chaining
         uint16_t lc = remaining < maximum_capdu_size ? remaining 
             : maximum_capdu_size;
+
 
         /* lc + 5 bytes header can't be bigger than UPDATE_RAPDU_LENGTH */
         if (lc + 5 > UPDATE_CAPDU_LENGTH) {
@@ -264,7 +270,7 @@ static int nfc_t4t_write_ndef_file(nfc_t4t_rw_t *rw, const uint8_t *buffer, size
         memcpy(&update_capdu[5], &buffer[file_offset - 2], lc);
 
         uint8_t update_rapdu[UPDATE_RAPDU_LENGTH];
-        size_t response_len = UPDATE_RAPDU_LENGTH;
+        response_len = UPDATE_RAPDU_LENGTH;
 
         int ret = rw->dev->ops->initiator_exchange_data(rw->dev, update_capdu,
             lc + 5, update_rapdu, &response_len);

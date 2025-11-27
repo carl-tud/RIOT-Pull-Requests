@@ -1731,8 +1731,6 @@ static int _send_sens_req(st25_t *dev, uint8_t *sens_res) {
     _clear_interrupts(dev);
     _write_interrupt_mask(dev, ~(IRQ_MASK_RXE));
 
-    // ztimer_sleep(ZTIMER_USEC, 1000); /* wait for 100 us */
-
     /* prepare transmission */
     _send_cmd(dev, CMD_STOP);
     _send_cmd(dev, CMD_RESET_RX_GAIN);
@@ -1741,12 +1739,10 @@ static int _send_sens_req(st25_t *dev, uint8_t *sens_res) {
     _write_reg(dev, REG_NUM_TX_BYTES2, 0x00);
 
     LOG_DEBUG("st25: Sending SENS_REQ\n");
-    /* putting a print here somehow makes it work? */
-    // printf("LOL\n");
     _send_cmd(dev, CMD_TRANSMIT_REQA);
     int ret = wait_for(dev, IRQ_MASK_RXE);
     if (ret != 0) {
-        printf("RXE ERROR\n");
+        LOG_ERROR("RXE ERROR\n");
         return ret;
     }
 
@@ -1771,8 +1767,7 @@ static int _nfc_a_anticollision(st25_t *dev, nfc_a_listener_config_t *config) {
     uint8_t *sel_res = &config->sel_res;
     int ret = _send_sens_req(dev, sens_res);
     if (ret < 0) {
-        printf("HERE\n");
-        LOG_DEBUG("st25: Error during SENS_REQ\n");
+        LOG_ERROR("st25: Error during SENS_REQ\n");
         return ret;
     }
 
@@ -1967,8 +1962,6 @@ int st25_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
     int ret;
     // _enable_all_interrupts(dev);
 
-    _write_interrupt_mask(dev, ~(IRQ_MASK_OSC));
-
     _write_reg(dev, REG_BIT_RATE, 0x00);
 
     /* mode configuration */
@@ -1977,11 +1970,6 @@ int st25_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
     uint8_t reg_content = OPERATION_EN | OPERATION_RX_EN | OPERATION_TX_EN;
     _write_reg(dev, REG_OP_CONTROL, reg_content);
 
-    ret = wait_for(dev, IRQ_MASK_OSC);
-    if (ret != 0) {
-        printf("OSC ERROR\n");
-        return ret;
-    }
 
     ret = _nfc_a_anticollision(dev, config);
     if (ret < 0) {
@@ -1999,6 +1987,22 @@ int st25_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config) {
             return ret;
         }
     }
+
+    return NFC_SUCCESS;
+}
+
+int st25_poll(nfcdev_t *nfcdev, nfc_listener_config_t *config) {
+    LOG_DEBUG("st25: Polling for NFC-A...\n");
+
+    nfc_a_listener_config_t *a_config = (nfc_a_listener_config_t *) &config->config;
+
+    /* do up to three times */
+    int ret = st25_poll_a(nfcdev, a_config);
+    if (ret != NFC_SUCCESS) {
+        return ret;
+    }
+
+    config->technology = NFC_TECHNOLOGY_A;
 
     return NFC_SUCCESS;
 }
@@ -2244,6 +2248,20 @@ int st25_init(nfcdev_t *nfcdev, const void *config)
 
     _configure_device(dev);
     _disable_all_interrupts(dev);
+
+    _send_cmd(dev, CMD_STOP);
+    _send_cmd(dev, CMD_RESET_RX_GAIN);
+
+    /* enable osc irq */
+    _write_interrupt_mask(dev, ~(IRQ_MASK_OSC));
+
+    _write_reg(dev, REG_OP_CONTROL, OPERATION_RX_EN | OPERATION_TX_EN | OPERATION_EN);
+
+    int ret = wait_for(dev, IRQ_MASK_OSC);
+    if (ret != 0) {
+        LOG_ERROR("OSC ERROR\n");
+        return ret;
+    }
 
     /* wait a while */
     ztimer_sleep(ZTIMER_MSEC, 100);
