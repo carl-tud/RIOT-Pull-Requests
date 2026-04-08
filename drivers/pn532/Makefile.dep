@@ -1,6 +1,11 @@
 FEATURES_REQUIRED += periph_gpio
 FEATURES_REQUIRED += periph_gpio_irq
 
-USEMODULE += ztimer_msec
-USEMODULE += ztimer_usec
-USEMODULE += ztimer_sec
+USEMODULE += pn53x
+
+ifeq (,$(filter pn532_spi pn532_i2c pn532_uart,$(USEMODULE)))
+  $(error PN532 NFC controllers requires at least SPI, I²C, or UART support)
+  $(info +++ FIXIT: Makefile: USEMODULE += pn532_spi for SPI)
+  $(info +++ FIXIT: Makefile: USEMODULE += pn532_i2c for I²C)
+  $(info +++ FIXIT: Makefile: USEMODULE += pn532_uart for UART)
+endif

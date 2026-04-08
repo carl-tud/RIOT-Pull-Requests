@@ -592,6 +592,24 @@ PSEUDOMODULES += stm32_periph_%
 PSEUDOMODULES += periph_%
 NO_PSEUDOMODULES += periph_common
 
+# Host-controller interface over SPI for PN53* family of NFC controllers
+PSEUDOMODULES += pn53x_spi
+
+# Host-controller interface over I²C for PN53* family of NFC controllers
+PSEUDOMODULES += pn53x_i2c
+
+# Host-controller interface over UART for PN53* family of NFC controllers
+PSEUDOMODULES += pn53x_uart
+
+# Host-controller interface over SPI for PN532 NFC controller
+PSEUDOMODULES += pn532_spi
+
+# Host-controller interface over I²C for PN532 NFC controller
+PSEUDOMODULES += pn532_i2c
+
+# Host-controller interface over UART for PN532 NFC controller
+PSEUDOMODULES += pn532_uart
+
 # Modules to automatically start PIO programs
 PSEUDOMODULES += pio_autostart_%
 

@@ -5449,10 +5449,6 @@ warning: Member pm_periph_power_off(void) (function) of file cpu_pm.h is not doc
 warning: Member PM_POWERDOWN (macro definition) of group cpu_arm7_common is not documented.
 warning: Member PM_SLEEP (macro definition) of group cpu_arm7_common is not documented.
 warning: Member PM_UNBLOCK(x) (macro definition) of file periph_cpu.h is not documented.
-warning: Member PN532_FW_FEATURES(fwver) (macro definition) of group drivers_pn532 is not documented.
-warning: Member PN532_FW_REVISION(fwver) (macro definition) of group drivers_pn532 is not documented.
-warning: Member PN532_FW_VERSION(fwver) (macro definition) of group drivers_pn532 is not documented.
-warning: Member PN532_IC_VERSION(fwver) (macro definition) of group drivers_pn532 is not documented.
 warning: Member PORT_delayRx (macro definition) of file board_info.h is not documented.
 warning: Member PORT_delayTx (macro definition) of file board_info.h is not documented.
 warning: Member PORT_delayTx (macro definition) of file openwsn_defs.h is not documented.

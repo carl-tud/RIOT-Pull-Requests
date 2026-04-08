@@ -12,7 +12,7 @@ int main(void) {
             .reset = GPIO_PIN(1, 2),
             .irq = GPIO_PIN(1, 3)
         },
-        .mode = PN532_SPI
+        .mode = PN53_BUS_SPI
     };
 
     pn532_t pn532_dev;

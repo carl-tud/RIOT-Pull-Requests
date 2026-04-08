@@ -5,6 +5,7 @@ USEMODULE += pn532_spi
 USEMODULE += nfc_t4t
 USEMODULE += ztimer_usec
 USEMODULE += nfc_ndef
+USEMODULE += test_utils_interactive_sync
 
 CFLAGS += -DISR_STACKSIZE=1024*2
 CFLAGS += -Wno-error=cast-align
