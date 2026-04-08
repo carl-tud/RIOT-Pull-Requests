@@ -1,4 +1,4 @@
-#include "net/nfc/nfct/nfct.h"
+#include "net/nfc/nfc.h
 #include <stddef.h>
 #include <stdio.h>
 #include "board.h"

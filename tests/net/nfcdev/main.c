@@ -55,7 +55,7 @@ int test_pn532(void) {
 
     pn532_config_t config = {
         .params = initiator_params,
-        .mode = PN532_SPI
+        .mode = PN53_BUS_SPI
     };
 
     nfcdev_t nfc_dev  = {

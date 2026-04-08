@@ -22,7 +22,7 @@ int main(void) {
             .reset = GPIO_PIN(1, 1),
             .irq = GPIO_PIN(1, 2)
         },
-        .mode = PN532_SPI
+        .mode = PN53_BUS_SPI
     };
 
 

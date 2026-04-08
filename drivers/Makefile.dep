@@ -178,19 +178,34 @@ ifneq (,$(filter periph_usbdev_hs,$(USEMODULE)))
   FEATURES_REQUIRED += periph_usbdev_hs
 endif
 
+ifneq (,$(filter pn53x_i2c,$(USEMODULE)))
+  FEATURES_REQUIRED += periph_i2c
+  USEMODULE += pn53x
+endif
+
+ifneq (,$(filter pn53x_spi,$(USEMODULE)))
+  FEATURES_REQUIRED += periph_spi
+  USEMODULE += pn53x
+endif
+
+ifneq (,$(filter pn53x_uart,$(USEMODULE)))
+  FEATURES_REQUIRED += periph_uart
+  USEMODULE += pn53x
+endif
+
 ifneq (,$(filter pn532_i2c,$(USEMODULE)))
   FEATURES_REQUIRED += periph_i2c
-  USEMODULE += pn532
+  USEMODULE += pn53x_i2c
 endif
 
 ifneq (,$(filter pn532_spi,$(USEMODULE)))
   FEATURES_REQUIRED += periph_spi
-  USEMODULE += pn532
+  USEMODULE += pn53x_spi
 endif
 
 ifneq (,$(filter pn532_uart,$(USEMODULE)))
   FEATURES_REQUIRED += periph_uart
-  USEMODULE += pn532
+  USEMODULE += pn53x_uart
 endif
 
 ifneq (,$(filter pn7160_spi,$(USEMODULE)))

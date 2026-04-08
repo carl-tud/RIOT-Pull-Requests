@@ -25,6 +25,7 @@ typedef enum {
     NFC_BAUDRATE_106K = 0,
     NFC_BAUDRATE_212K,
     NFC_BAUDRATE_424K,
+    NFC_BAUDRATE_848K,
 } nfc_baudrate_t;
 
 #include "nfc_a.h"

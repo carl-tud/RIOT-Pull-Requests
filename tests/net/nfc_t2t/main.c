@@ -1,5 +1,5 @@
 #include "net/nfc/t2t/t2t.h"
-
+#include "periph_conf.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
