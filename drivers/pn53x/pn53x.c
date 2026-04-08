@@ -113,19 +113,31 @@ int pn53_check_communication(pn53_dev_t* dev) {
     return 0;
 }
 
-typedef struct __attribute((packed)) {
-    bool nfc_a : 1;
-    bool nfc_b : 1;
-    bool nfc_dep : 1;
-    uint8_t _padding : 5;
-} _protocol_support_t;
+int pn53_get_firmware_version(pn53_dev_t* dev, pn53_firmware_version_t* version) {
+    uint8_t command = (uint8_t)PN53_COMMAND_GET_FIRMWARE_VERSION;
+    uint8_t* response;
+    int res = 0;
 
-typedef struct __attribute((packed)) {
-    uint8_t ic;
-    uint8_t version;
-    uint8_t revision;
-    _protocol_support_t support;
-} _firmware_version_t;
+    if ((res = _hci_execute(&dev->connection, &command, sizeof(command), &response, CONFIG_PN53_COMMAND_TIMEOUT_DEFAULT_MS)) < 0) {
+        PN53_DEBUG("unable to get firmware version\n");
+        return res;
+    }
+
+    pn53_firmware_version_t* fw = (pn53_firmware_version_t*)response;
+    if (IS_ACTIVE(ENABLE_DEBUG)) {
+        PN53_DEBUG("connected to <pn53x ic=0x%02X version=%i revision=%i nfc={a=%i b=%i dep=%i}>\n",
+                   fw->ic, (int)fw->version, (int)fw->revision,
+                   PN53_FIRMWARE_SUPPORTS_NFC_A(fw->support),
+                   PN53_FIRMWARE_SUPPORTS_NFC_B(fw->support),
+                   PN53_FIRMWARE_SUPPORTS_NFC_DEP(fw->support)
+                  );
+    }
+
+    if (version) {
+        *version = *fw;
+    }
+    return 0;
+}
 
 int pn53_init(pn53_dev_t* dev, const pn53_connection_config_t* config) {
     assert(dev);
@@ -153,19 +165,8 @@ int pn53_init(pn53_dev_t* dev, const pn53_connection_config_t* config) {
         }
     }
 
-    uint8_t command = (uint8_t)PN53_COMMAND_GET_FIRMWARE_VERSION;
-    uint8_t* response;
-
-    if ((res = _hci_execute(&dev->connection, &command, sizeof(command), &response, CONFIG_PN53_COMMAND_TIMEOUT_DEFAULT_MS)) < 0) {
-        PN53_DEBUG("unable to get firmware version\n");
+    if ((res = pn53_get_firmware_version(dev, NULL)) < 0) {
         return res;
-    }
-
-    _firmware_version_t* fw = (_firmware_version_t*)response;
-    if (IS_ACTIVE(ENABLE_DEBUG)) {
-        PN53_DEBUG("connected to <pn53x ic=0x%02X version=%i revision=%i nfc={a=%i b=%i dep=%i}>\n",
-                   fw->ic, (int)fw->version, (int)fw->revision,
-                   fw->support.nfc_a, fw->support.nfc_b, fw->support.nfc_dep);
     }
 
 

@@ -122,20 +122,24 @@ typedef struct {
     const pn53_parameters_t* parameters;
 } pn53_dev_t;
 
+#ifndef DOXYGEN
+#  define PN53_ERRNO(code) (5300 | code)
+#endif
+
 typedef enum {
-    PN53_ERROR_CONNECTION_TEST_FAILED = 0,
-    PN53_ERROR_CONNECTION_CHECKSUM_MISMATCH,
-    PN53_ERROR_CONNECTION_CORRUPTED,
-    PN53_ERROR_CONNECTION_PACKET_TRUNCATED,
-    PN53_ERROR_CONNECTION_PACKET_LENGTH_OUT_OF_RANGE,
-    PN53_ERROR_CONNECTION_UNEXPECTED_FRAME_DIRECTION,
-    PN53_ERROR_CONNECTION_PACKET_EMPTY,
-    PN53_ERROR_CONNECTION_RESPONSE_MISSING,
-    PN53_ERROR_CONNECTION_RESPONSE_MISMATCH,
-    PN53_ERROR_CONNECTION_TIMEOUT,
-    PN53_ERROR_CONNECTION_ACK,
-    PN53_ERROR_CONNECTION_NACK,
-    PN53_ERROR_CONNECTION_FRAME_SYNTAX,
+    PN53_ERROR_CONNECTION_TEST_FAILED                   = PN53_ERRNO(1),
+    PN53_ERROR_CONNECTION_CHECKSUM_MISMATCH             = PN53_ERRNO(2),
+    PN53_ERROR_CONNECTION_CORRUPTED                     = PN53_ERRNO(3),
+    PN53_ERROR_CONNECTION_PACKET_TRUNCATED              = PN53_ERRNO(4),
+    PN53_ERROR_CONNECTION_PACKET_LENGTH_OUT_OF_RANGE    = PN53_ERRNO(5),
+    PN53_ERROR_CONNECTION_UNEXPECTED_FRAME_DIRECTION    = PN53_ERRNO(6),
+    PN53_ERROR_CONNECTION_PACKET_EMPTY                  = PN53_ERRNO(7),
+    PN53_ERROR_CONNECTION_RESPONSE_MISSING              = PN53_ERRNO(8),
+    PN53_ERROR_CONNECTION_RESPONSE_MISMATCH             = PN53_ERRNO(9),
+    PN53_ERROR_CONNECTION_TIMEOUT                       = PN53_ERRNO(10),
+    PN53_ERROR_CONNECTION_ACK                           = PN53_ERRNO(11),
+    PN53_ERROR_CONNECTION_NACK                          = PN53_ERRNO(12),
+    PN53_ERROR_CONNECTION_FRAME_SYNTAX                  = PN53_ERRNO(13),
 } pn53_hci_error_t;
 
 ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
@@ -153,6 +157,18 @@ typedef enum __attribute((packed)) {
     PN53_COMMAND_SAM_CONFIGURATION = 0x14,
 } pn53_command_code_t;
 
+typedef struct __attribute((packed)) {
+    uint8_t ic;
+    uint8_t version;
+    uint8_t revision;
+    uint8_t support;
+} pn53_firmware_version_t;
+
+#define PN53_FIRMWARE_SUPPORTS_NFC_A(support) ((support) & 1)
+#define PN53_FIRMWARE_SUPPORTS_NFC_B(support) ((support) & (1 << 1))
+#define PN53_FIRMWARE_SUPPORTS_NFC_DEP(support) ((support) & (1 << 2))
+
+int pn53_get_firmware_version(pn53_dev_t* dev, pn53_firmware_version_t* version);
 
 #define PN53_TIMEOUT_FIELD_FROM_MS(ms) (uint8_t)((ms) / 50)
 #define PN53_TIMEOUT_FIELD_TO_MS(timeout) ((timeout) * 50)
