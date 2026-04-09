@@ -1,6 +1,6 @@
-#include "net/nfc/nfc.h"
-#include "log.h"
 #include <stdbool.h>
+#include "log.h"
+#include "net/nfc/constants.h"
 
 static bool check_for_mifare_classic(nfc_a_sens_res_t sens_res, uint8_t sel_res) {
     /* checks if the sens res and sel res match a MIFARE Classic */
