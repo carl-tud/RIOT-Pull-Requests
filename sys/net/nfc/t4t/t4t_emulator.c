@@ -207,24 +207,24 @@ static int process_t4t_command(nfc_t4t_emulator_t *emulator, const uint8_t *cmd,
 }
 
 void t4t_emulator_start(nfc_t4t_emulator_t *emulator, nfcdev_t *dev, 
-    nfc_t4t_t *tag, nfc_a_nfcid1_t *nfcid1) {
+    nfc_t4t_t *tag, nfc_a_uid_t *uid) {
     assert (emulator != NULL);
     assert (dev != NULL);
     assert (tag != NULL);
-    assert (nfcid1 != NULL);
+    assert (uid != NULL);
 
     emulator->dev = dev;
     emulator->tag = tag;
     emulator->dev->state = NFCDEV_STATE_DISABLED;
 
-    nfc_a_listener_config_t config = {
-        .sel_res = NFC_A_SEL_RES_T4T_VALUE,
-        .sens_res = {
+    nfc_a_listen_config_t config = {
+        .acknowledgement = NFC_A_SEL_RES_T4T_VALUE,
+        .polling_response = {
             .anticollision_information = 0x04,
             .platform_information = 0x04
         }
     };
-    memcpy(&(config.nfcid1), nfcid1, sizeof(nfc_a_nfcid1_t));
+    memcpy(&(config.uid), uid, sizeof(nfc_a_uid_t));
 
 
     LOG_DEBUG("[T4T Emulator] Starting emulation\n");

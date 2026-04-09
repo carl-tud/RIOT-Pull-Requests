@@ -20,4 +20,4 @@ typedef struct {
 
 
 int t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, 
-    nfc_t2t_t *tag, nfc_a_nfcid1_t *nfcid1);
+    nfc_t2t_t *tag, nfc_a_uid_t *uid);

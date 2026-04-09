@@ -11,7 +11,7 @@
 #define T2T_READ_BLOCK_COUNT 4
 #define T2T_WRITE_BLOCK_COUNT 1
 
-static const nfc_a_nfcid1_t T2T_DEFAULT_UID = {
+static const nfc_a_uid_t T2T_DEFAULT_UID = {
     .nfcid = { 0x04, 0x25, 0x85, 0x93 },
     .len   = NFC_A_NFCID1_LEN4,
 };
@@ -102,12 +102,12 @@ int t2t_create_cc(nfc_t2t_t *tag, bool writeable, uint16_t memory_size) {
     return 0;
 }
 
-int t2t_create_internal(nfc_t2t_t *tag, const nfc_a_nfcid1_t *nfcid1) {
-    if (nfcid1->len == NFC_A_NFCID1_LEN4) {
-        tag->internal[0] = nfcid1->nfcid[0];
-        tag->internal[1] = nfcid1->nfcid[1];
-        tag->internal[2] = nfcid1->nfcid[2];
-        tag->internal[3] = nfcid1->nfcid[3];
+int t2t_create_internal(nfc_t2t_t *tag, const nfc_a_uid_t *uid) {
+    if (uid->len == NFC_A_NFCID1_LEN4) {
+        tag->internal[0] = uid->nfcid[0];
+        tag->internal[1] = uid->nfcid[1];
+        tag->internal[2] = uid->nfcid[2];
+        tag->internal[3] = uid->nfcid[3];
         tag->internal[4] = tag->internal[0] ^ tag->internal[1] ^ tag->internal[2] ^ 
             tag->internal[3];
         tag->internal[5] = 0xFF;
@@ -115,24 +115,24 @@ int t2t_create_internal(nfc_t2t_t *tag, const nfc_a_nfcid1_t *nfcid1) {
         tag->internal[7] = 0xFF;
         tag->internal[8] = 0xFF;
         tag->internal[9] = NFC_T2T_VERSION_1_1;
-    } else if (nfcid1->len == NFC_A_NFCID1_LEN7) {
-        tag->internal[0] = nfcid1->nfcid[0];
-        tag->internal[1] = nfcid1->nfcid[1];
-        tag->internal[2] = nfcid1->nfcid[2];
+    } else if (uid->len == NFC_A_NFCID1_LEN7) {
+        tag->internal[0] = uid->nfcid[0];
+        tag->internal[1] = uid->nfcid[1];
+        tag->internal[2] = uid->nfcid[2];
         tag->internal[3] = NFC_A_NFCID1_CT ^ tag->internal[0] ^ tag->internal[1] ^ 
             tag->internal[2];
-        tag->internal[4] = nfcid1->nfcid[3];
-        tag->internal[5] = nfcid1->nfcid[4];
-        tag->internal[6] = nfcid1->nfcid[5];
-        tag->internal[7] = nfcid1->nfcid[6];
+        tag->internal[4] = uid->nfcid[3];
+        tag->internal[5] = uid->nfcid[4];
+        tag->internal[6] = uid->nfcid[5];
+        tag->internal[7] = uid->nfcid[6];
         tag->internal[8] = tag->internal[4] ^ tag->internal[5] ^ tag->internal[6] ^ 
             tag->internal[7];
         tag->internal[9] = NFC_T2T_VERSION_1_1;
-    } else if (nfcid1->len == NFC_A_NFCID1_LEN10) {
+    } else if (uid->len == NFC_A_NFCID1_LEN10) {
         /* we have no BCC bytes here */
-        memcpy(&tag->internal[0], &nfcid1->nfcid[0], nfcid1->len);
+        memcpy(&tag->internal[0], &uid->nfcid[0], uid->len);
     } else {
-        LOG_ERROR("Invalid NFCID1 length: %d\n", nfcid1->len);
+        LOG_ERROR("Invalid NFCID1 length: %d\n", uid->len);
         return -1;
     }
 
@@ -140,14 +140,14 @@ int t2t_create_internal(nfc_t2t_t *tag, const nfc_a_nfcid1_t *nfcid1) {
 }
 
 /* fills the T2T with an NDEF message */
-int t2t_init_with_ndef(nfc_t2t_t *t2t, ndef_t *ndef, const nfc_a_nfcid1_t *nfcid1) {
+int t2t_init_with_ndef(nfc_t2t_t *t2t, ndef_t *ndef, const nfc_a_uid_t *uid) {
     assert(t2t != NULL);
     assert(ndef != NULL);
 
     printf("T2T MEMORY SIZE: %u\n", NFC_T2T_MEMORY_SIZE);
 
-    if (nfcid1 == NULL) {
-        nfcid1 = &T2T_DEFAULT_UID;
+    if (uid == NULL) {
+        uid = &T2T_DEFAULT_UID;
     }
 
     if (ndef_get_size(ndef) + NFC_T2T_RESERVED_SIZE + 2 * NFC_TLV_MINIMUM_SIZE >
@@ -157,7 +157,7 @@ int t2t_init_with_ndef(nfc_t2t_t *t2t, ndef_t *ndef, const nfc_a_nfcid1_t *nfcid
     }
 
     /* create internal */
-    int err = t2t_create_internal(t2t, nfcid1);
+    int err = t2t_create_internal(t2t, uid);
     if (err) {
         LOG_ERROR("Failed to create T2T internal\n");
         return err;
@@ -201,24 +201,24 @@ void t2t_set_read_only(nfc_t2t_t *tag) {
     tag->cc.read_write_access = (uint8_t) NFC_T2T_CC_READ_ONLY;
 }
 
-void t2t_get_nfcid1(const nfc_t2t_t *tag, nfc_a_nfcid1_t *nfcid1, nfc_a_nfcid1_len_t len) {
+void t2t_get_uid(const nfc_t2t_t *tag, nfc_a_uid_t *uid, nfc_a_uid_size_t len) {
     switch (len) {
         case NFC_A_NFCID1_LEN4:
-            nfcid1->len = NFC_A_NFCID1_LEN4;
-            memcpy(nfcid1->nfcid, &tag->internal[0], 4);
+            uid->len = NFC_A_NFCID1_LEN4;
+            memcpy(uid->nfcid, &tag->internal[0], 4);
             break;
         case NFC_A_NFCID1_LEN7:
-            nfcid1->len = NFC_A_NFCID1_LEN7;
-            memcpy(nfcid1->nfcid, &tag->internal[0], 3);
-            memcpy(&nfcid1->nfcid[3], &tag->internal[4], 4);
+            uid->len = NFC_A_NFCID1_LEN7;
+            memcpy(uid->nfcid, &tag->internal[0], 3);
+            memcpy(&uid->nfcid[3], &tag->internal[4], 4);
             break;
         case NFC_A_NFCID1_LEN10:
-            nfcid1->len = NFC_A_NFCID1_LEN10;
-            memcpy(nfcid1->nfcid, &tag->internal[0], 10);
+            uid->len = NFC_A_NFCID1_LEN10;
+            memcpy(uid->nfcid, &tag->internal[0], 10);
             break;
         default:
             LOG_ERROR("Invalid NFCID1 length: %d\n", len);
-            nfcid1->len = 0;
+            uid->len = 0;
             break;
     }
     

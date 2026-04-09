@@ -326,7 +326,7 @@ int nfc_t4t_rw_poll(nfc_t4t_rw_t *rw, nfcdev_t *dev, nfc_listener_config_t *conf
     }
 
     if (rw->dev->ops->poll_a != NULL) {
-        int ret = rw->dev->ops->poll_a(dev, (nfc_a_listener_config_t *) &config->config);
+        int ret = rw->dev->ops->poll_a(dev, (nfc_a_listen_config_t *) &config->config);
         if (ret == 0) {
             rw->is_tag_selected = true;
             config->technology = NFC_TECHNOLOGY_A;
