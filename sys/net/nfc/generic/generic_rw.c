@@ -21,8 +21,8 @@ static int interact_with_ndef_on_tag(nfc_generic_rw_t *rw, ndef_t *ndef, nfcdev_
     switch (config.technology) {
         case NFC_TECHNOLOGY_A:
             {
-                nfc_application_type_t app = nfc_a_get_application_type(config.config.a.sens_res, 
-                    config.config.a.sel_res);
+                nfc_application_type_t app = nfc_a_get_application_type(config.config.a.polling_response, 
+                    config.config.a.acknowledgement);
 
                 if (app == NFC_APPLICATION_TYPE_T2T || app == NFC_APPLICATION_MIFARE_ULTRALIGHT) {
                     nfc_t2t_rw_t t2t_rw = {

@@ -6,11 +6,11 @@
 #include "log.h"
 
 static int mifare_classic_rw_send_authenticate(nfc_mifare_classic_rw_t *rw,
-    const nfc_a_nfcid1_t *nfcid1, uint8_t block, bool use_key_a, const uint8_t *key) {
+    const nfc_a_uid_t *uid, uint8_t block, bool use_key_a, const uint8_t *key) {
     assert(rw != NULL);
     assert(key != NULL);
 
-    int ret = rw->dev->ops->mifare_classic_authenticate(rw->dev, block, nfcid1, use_key_a, key);
+    int ret = rw->dev->ops->mifare_classic_authenticate(rw->dev, block, uid, use_key_a, key);
     if (ret != 0) {
         LOG_ERROR("MFC: authenticate block %u failed\n", (unsigned)block);
         return NFC_ERR_AUTH;
@@ -127,7 +127,7 @@ static inline bool is_small_sector(uint8_t sector) {
     return sector < 32;
 }
 
-static int authenticate_block(nfc_mifare_classic_rw_t *rw, nfc_a_listener_config_t *config,
+static int authenticate_block(nfc_mifare_classic_rw_t *rw, nfc_a_listen_config_t *config,
     uint8_t block_number) {
     uint8_t sector = block_to_sector(block_number);
 
@@ -135,14 +135,14 @@ static int authenticate_block(nfc_mifare_classic_rw_t *rw, nfc_a_listener_config
     LOG_DEBUG("[MFC RW] Authenticating block %u\n", (unsigned)block_number);
     if (is_mad_sector(sector)) {
         /* MAD block, use MAD key */
-        if (mifare_classic_rw_send_authenticate(rw, &config->nfcid1,
+        if (mifare_classic_rw_send_authenticate(rw, &config->uid,
             block_number, true, MIFARE_CLASSIC_MAD_PUBLIC_KEY_A) < 0) {
             LOG_ERROR("[MFC RW] Authentication failed for MAD block\n");
             return -1;
         }
     } else {
         /* use public key */
-        if (mifare_classic_rw_send_authenticate(rw, &config->nfcid1,
+        if (mifare_classic_rw_send_authenticate(rw, &config->uid,
             block_number, true, MIFARE_CLASSIC_SECTOR_PUBLIC_KEY_A) < 0) {
             LOG_ERROR("[MFC RW] Authentication failed for sector %u\n",
                 (unsigned)sector);
@@ -163,7 +163,7 @@ int nfc_mifare_classic_rw_read_ndef(nfc_mifare_classic_rw_t *rw, ndef_t *ndef, n
         return -1;
     }
 
-    nfc_a_listener_config_t config = {0};
+    nfc_a_listen_config_t config = {0};
     rw->dev->ops->poll_a(dev, &config);
 
     LOG_DEBUG("[MFC RW] Tag found\n");
@@ -276,7 +276,7 @@ int nfc_mifare_classic_rw_write_ndef(nfc_mifare_classic_rw_t *rw, const ndef_t *
         return -1;
     }
 
-    nfc_a_listener_config_t config;
+    nfc_a_listen_config_t config;
     rw->dev->ops->poll_a(dev, &config);
 
     LOG_DEBUG("[MFC RW] Card found\n");
@@ -418,7 +418,7 @@ int nfc_mifare_classic_rw_read(nfc_mifare_classic_rw_t *rw, nfc_mifare_classic_t
         return -1;
     }
 
-    nfc_a_listener_config_t config;
+    nfc_a_listen_config_t config;
     rw->dev->ops->poll_a(dev, &config);
 
     nfc_mifare_classic_size_t size = nfc_mifare_classic_get_size(&config);

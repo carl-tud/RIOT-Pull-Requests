@@ -91,7 +91,7 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
 }
 
 int t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *tag,
-    nfc_a_nfcid1_t *nfcid1) {
+    nfc_a_uid_t *uid) {
     assert (emulator != NULL);
     assert (dev != NULL);
     assert (tag != NULL);
@@ -106,15 +106,15 @@ int t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *t
         return -1;
     }
 
-    nfc_a_nfcid1_t default_nfcid1;
-    if (nfcid1 == NULL) {
-        t2t_get_nfcid1(tag, &default_nfcid1, NFC_A_NFCID1_LEN4);
-        nfcid1 = &default_nfcid1;
+    nfc_a_uid_t default_uid;
+    if (uid == NULL) {
+        t2t_get_uid(tag, &default_uid, NFC_A_NFCID1_LEN4);
+        uid = &default_uid;
     }
 
-    nfc_a_listener_config_t config = {
-        .sel_res = NFC_A_SEL_RES_T2T_VALUE,
-        .nfcid1 = *nfcid1
+    nfc_a_listen_config_t config = {
+        .acknowledgement = NFC_A_SEL_RES_T2T_VALUE,
+        .uid = *uid
     };
 
     int ret = emulator->dev->ops->listen_a(emulator->dev, &config);

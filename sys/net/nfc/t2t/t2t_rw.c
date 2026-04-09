@@ -79,15 +79,15 @@ static int nfc_t2t_rw_read_cc(nfc_t2t_rw_t *rw, t2t_cc_t *cc) {
     return 0;
 }
 
-static int t2t_poll(nfc_t2t_rw_t *rw, nfc_a_listener_config_t *config) {
+static int t2t_poll(nfc_t2t_rw_t *rw, nfc_a_listen_config_t *config) {
     int ret = rw->dev->ops->poll_a(rw->dev, config);
     if (ret != 0) {
         LOG_ERROR("[T2T RW] Error polling for T2T\n");
         return ret;
     }
 
-    if ((config->sel_res & NFC_A_SEL_RES_T2T_MASK) != NFC_A_SEL_RES_T2T_VALUE) {
-        LOG_ERROR("[T2T RW] Not a Type 2 Tag (SEL_RES: %02X)\n", config->sel_res);
+    if ((config->acknowledgement & NFC_A_SEL_RES_T2T_MASK) != NFC_A_SEL_RES_T2T_VALUE) {
+        LOG_ERROR("[T2T RW] Not a Type 2 Tag (SEL_RES: %02X)\n", config->acknowledgement);
         return -1;
     }
 
@@ -121,7 +121,7 @@ int nfc_t2t_rw_write_ndef(nfc_t2t_rw_t *rw, const ndef_t *ndef, nfcdev_t *dev) {
 
     rw->dev = dev;
 
-    nfc_a_listener_config_t config = {0};
+    nfc_a_listen_config_t config = {0};
     
     int ret;
     if (!rw->is_tag_selected) {
@@ -229,7 +229,7 @@ int nfc_t2t_rw_set_read_only(nfc_t2t_rw_t *rw, nfcdev_t *dev) {
 
     rw->dev = dev;
 
-    nfc_a_listener_config_t config = {0};
+    nfc_a_listen_config_t config = {0};
     int ret = t2t_poll(rw, &config);
     if (ret != 0) {
         return ret;
@@ -283,7 +283,7 @@ int nfc_t2t_rw_read_ndef(nfc_t2t_rw_t *rw, ndef_t *ndef, nfcdev_t *dev) {
     }
 
     int ret;
-    nfc_a_listener_config_t config = {0};
+    nfc_a_listen_config_t config = {0};
     if (!rw->is_tag_selected) {
         ret = t2t_poll(rw, &config);
         if (ret != 0) {
@@ -388,7 +388,7 @@ int nfc_t2t_rw_read(nfc_t2t_rw_t *rw, nfc_t2t_t *tag, nfcdev_t *dev) {
 
 
     /* Poll for card presence */
-    nfc_a_listener_config_t config = {0};
+    nfc_a_listen_config_t config = {0};
     t2t_poll(rw, &config);
 
     uint8_t block_no = 0;

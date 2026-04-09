@@ -17,7 +17,7 @@ typedef enum {
     NFC_APPLICATION_MIFARE_PLUS,        /* based on T4T */
 } nfc_application_type_t;
 
-typedef enum {
+typedef enum __attribute__((packed)) {
     NFC_TECHNOLOGY_A = 0,
     NFC_TECHNOLOGY_B,
     NFC_TECHNOLOGY_F,
@@ -44,7 +44,7 @@ typedef enum {
 /// - `bitRate = D · fc/128`
 ///
 /// - Note: You should use the ``BitRate(_:)`` macro instead of directly accessing this enum's cases.
-typedef enum {
+typedef enum __attribute__((packed)) {
     NFC_BITRATE_106K   = NFC_BITRATE_DIVISOR_FC_128,
     NFC_BITRATE_212K   = NFC_BITRATE_DIVISOR_FC_64,
     NFC_BITRATE_424K   = NFC_BITRATE_DIVISOR_FC_32,
