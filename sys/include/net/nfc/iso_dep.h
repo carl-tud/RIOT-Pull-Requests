@@ -67,3 +67,27 @@ typedef union __attribute__((packed)) {
 
     uint8_t byte;
 } iso_dep_bitrate_capabilities_t;
+
+#define ISO_DEP_BITRATE_FROM_DIVISOR_POWER(power) ((nfc_bitrate_t)(1 << (power)))
+
+static inline nfc_bitrate_t iso_dep_bitrate_from_divisor_power(uint8_t power) {
+    assert(power <= 3);
+    return ISO_DEP_BITRATE_FROM_DIVISOR_POWER(power);
+}
+
+#define ISO_DEP_BITRATE_DIVISOR_POWER(bitrate) ((uint8_t)__builtin_ctz((uint8_t)(bitrate)))
+
+static inline uint8_t iso_dep_bitrate_divisor_power(nfc_bitrate_t bitrate) {
+    assert(bitrate >= NFC_BITRATE_106K);
+    assert(bitrate <= NFC_BITRATE_848K);
+    return ISO_DEP_BITRATE_DIVISOR_POWER(bitrate);
+}
+
+typedef struct {
+    nfc_bitrate_set supported_bitrates;
+} iso_dep_listen_config;
+
+typedef struct {
+    nfc_bitrate_set supported_bitrates;
+    nfc_bitrate_selection_strategy_t bitrate_strategy;
+} iso_dep_poll_config;

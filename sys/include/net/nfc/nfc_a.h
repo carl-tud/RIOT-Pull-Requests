@@ -25,17 +25,16 @@ typedef enum __attribute__((packed)) {
     NFC_A_UID_SIZE_TRIPLE_10 = 10,
 } nfc_a_uid_size_t;
 
-
-#define _nfc_a_uid_size_indicator(size) (((uint8_t)(size) - 4) / 3)
+#define NFC_A_UID_SIZE_INDICATOR(size) (((uint8_t)(size) - 4) / 3)
 
 static inline uint8_t nfc_a_uid_size_indictor(nfc_a_uid_size_t size) {
-    return _nfc_a_uid_size_indicator(size);
+    return NFC_A_UID_SIZE_INDICATOR(size);
 }
 
-#define _nfc_a_uid_size(indicator) (3 * (indicator) + 4)
+#define NFC_A_UID_SIZE(indicator) (3 * (indicator) + 4)
 
 static inline nfc_a_uid_size_t nfc_a_uid_size(uint8_t indicator) {
-    return _nfc_a_uid_size(indicator);
+    return NFC_A_UID_SIZE(indicator);
 }
 
 typedef union __attribute__((packed)) {
@@ -177,21 +176,6 @@ typedef union __attribute__((packed)) {
     uint8_t raw;
 } nfc_a_pps_request_t;
 
-#define _iso_dep_bitrate_from_divisor_power(power) ((nfc_bitrate_t)(1 << (power)))
-
-static inline nfc_bitrate_t iso_dep_bitrate_from_divisor_power(uint8_t power) {
-    assert(power <= 3);
-    return _iso_dep_bitrate_from_divisor_power(power);
-}
-
-#define _iso_dep_bitrate_divisor_power(bitrate) ((uint8_t)__builtin_ctz((uint8_t)(bitrate)))
-
-static inline uint8_t iso_dep_bitrate_divisor_power(nfc_bitrate_t bitrate) {
-    assert(bitrate >= NFC_BITRATE_106K);
-    assert(bitrate <= NFC_BITRATE_848K);
-    return _iso_dep_bitrate_divisor_power(bitrate);
-}
-
 typedef union __attribute__((packed)) {
     struct {
         union {
@@ -233,7 +217,6 @@ typedef struct {
 typedef struct {
     nfc_a_polling_command_t polling_command;
     nfc_a_uid_t uid;
-    uint8_t acknowledgement;
 } nfc_a_poll_config_t;
 
 typedef struct {
@@ -247,23 +230,9 @@ typedef struct {
     nfc_a_polling_response_t polling_response;
     nfc_a_uid_t uid;
     nfc_a_acknowledgement_t acknowledgement;
-    
-    struct {
-        struct {
-            nfc_bitrate_t upstream;
-            nfc_bitrate_t downstream;
-            bool allow_lower_bitrates : 1;
-            bool same_bitrate_both_directions : 1;
-            uint8_t historical[];
-        } iso_dep;
-
-        struct {
-
-        } nfc_dep;
-    } higher_layer;
 } nfc_a_listen_config_t;
 
-nfc_application_type_t nfc_a_get_application_type(nfc_a_polling_response_t polling_response, uint8_t acknowledgement);
+nfc_application_type_t nfc_a_determine_application_type(nfc_a_polling_response_t* polling_response, uint8_t acknowledgement);
 
 /// @name Proprietary polling responses and acknowledgements
 /// @{

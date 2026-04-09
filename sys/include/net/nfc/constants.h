@@ -67,3 +67,19 @@ static inline uint16_t nfc_time_index_ms(nfc_time_index_t index) {
     return 256 * 16/NFC_CARRIER_FREQUENCY_HZ * 1000 * (1 << index);
 }
 
+/// Set of bitrates
+///
+/// ## Example
+/// ```c
+/// nfc_bitrate_set my_bitrates = NFC_BITRATE_106K | NFC_BITRATE_212K | NFC_BITRATE_424K;
+/// ```
+///
+/// @remark This field only works for bitrates with integer divisors. Hence,
+/// @ref NFC_BITRATE_10170K, @ref NFC_BITRATE_DIVISOR_FC3_4, @ref NFC_BITRATE_20340K,
+/// @ref NFC_BITRATE_DIVISOR_FC3_2 are not supported.
+typedef uint16_t nfc_bitrate_set;
+
+typedef enum {
+    NFC_BITRATE_CHOOSE_FASTEST = 0,
+    NFC_BITRATE_CHOOSE_SLOWEST = 1,
+} nfc_bitrate_selection_strategy_t;

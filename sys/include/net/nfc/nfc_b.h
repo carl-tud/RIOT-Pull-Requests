@@ -21,17 +21,17 @@ typedef union __attribute__((packed)) {
     uint8_t raw[3];
 } nfc_b_polling_command_t;
 
-#define _nfc_b_slot_count(power) (1 << (power))
+#define NFC_B_SLOT_COUNT(power) (1 << (power))
 
 static inline uint8_t nfc_b_slot_count(uint8_t power) {
     assert(power <= 0b111);
-    return _nfc_b_slot_count(power);
+    return NFC_B_SLOT_COUNT(power);
 }
 
-#define _nfc_b_slot_count_power(count) ((uint8_t)__builtin_ctz((uint8_t)count))
+#define NFC_B_SLOT_COUNT_POWER(count) ((uint8_t)__builtin_ctz((uint8_t)count))
 
 static inline uint8_t nfc_b_slot_count_power(uint8_t count) {
-    return _nfc_b_slot_count_power(count);
+    return NFC_B_SLOT_COUNT_POWER(count);
 }
 
 #define NFC_B_POLLING_RESPONSE_PREFIX (0x50)

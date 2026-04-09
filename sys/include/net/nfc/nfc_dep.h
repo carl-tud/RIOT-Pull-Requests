@@ -197,15 +197,13 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
     uint8_t device_id;
-} nfc_dep_device_id_pdu_t;
+} _nfc_dep_device_id_pdu_t;
 
-typedef nfc_dep_device_id_pdu_t nfc_dep_wakeup_response_t;
-typedef nfc_dep_device_id_pdu_t nfc_dep_deselect_request_t;
-typedef nfc_dep_device_id_pdu_t nfc_dep_deselect_response_t;
-typedef nfc_dep_device_id_pdu_t nfc_dep_release_request_t;
-typedef nfc_dep_device_id_pdu_t nfc_dep_release_response_t;
-
-
+typedef _nfc_dep_device_id_pdu_t nfc_dep_wakeup_response_t;
+typedef _nfc_dep_device_id_pdu_t nfc_dep_deselect_request_t;
+typedef _nfc_dep_device_id_pdu_t nfc_dep_deselect_response_t;
+typedef _nfc_dep_device_id_pdu_t nfc_dep_release_request_t;
+typedef _nfc_dep_device_id_pdu_t nfc_dep_release_response_t;
 
 typedef struct __attribute__((packed)) {
     nfc_dep_header_t header;
