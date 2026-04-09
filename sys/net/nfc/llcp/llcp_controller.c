@@ -111,9 +111,9 @@ int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, n
     }
 
     if (controller->mode == NFCDEV_MODE_INITIATOR) {
-        controller->dev->ops->poll_dep(controller->dev, NFC_BAUDRATE_106K);
+        controller->dev->ops->poll_dep(controller->dev, NFC_BITRATE_106K);
     } else {
-        controller->dev->ops->listen_dep(controller->dev, NFC_BAUDRATE_106K);
+        controller->dev->ops->listen_dep(controller->dev, NFC_BITRATE_106K);
     }
 
     assert(controller->pid == 0);
