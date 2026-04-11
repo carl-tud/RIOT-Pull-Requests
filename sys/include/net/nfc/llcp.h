@@ -51,7 +51,7 @@ typedef struct {
     size_t socket_count;
 
     nfcdev_t *dev;
-    nfcdev_mode_t mode;
+    nfcdev_role_t mode;
 } nfc_llcp_controller_t;
 
 /**
@@ -70,7 +70,7 @@ uint8_t nfc_llcp_pdu_get_ssap(const uint8_t *pdu);
 uint8_t nfc_llcp_pdu_get_ptype(const uint8_t *pdu);
 
 /* LLCP Controller */
-int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, nfcdev_mode_t mode);
+int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, nfcdev_role_t mode);
 
 void nfc_llcp_controller_stop(nfc_llcp_controller_t *controller);
 

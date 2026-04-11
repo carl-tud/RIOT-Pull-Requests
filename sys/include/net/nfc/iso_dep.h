@@ -83,11 +83,18 @@ static inline uint8_t iso_dep_bitrate_divisor_power(nfc_bitrate_t bitrate) {
     return ISO_DEP_BITRATE_DIVISOR_POWER(bitrate);
 }
 
-typedef struct {
-    nfc_bitrate_set supported_bitrates;
-} iso_dep_listen_config;
+#define ISO_DEP_PARAMETERS_REQUEST_TAG                      (0xA0)
+#define ISO_DEP_PARAMETERS_INDICATION_TAG                   (0xA1)
+#define ISO_DEP_PARAMETERS_ACTIVATION_TAG                   (0xA2)
+#define ISO_DEP_PARAMETERS_ACKNOWLEDGEMENT_TAG              (0xA3)
 
-typedef struct {
-    nfc_bitrate_set supported_bitrates;
-    nfc_bitrate_selection_strategy_t bitrate_strategy;
-} iso_dep_poll_config;
+#define ISO_DEP_PARAMETERS_INDICATION_DOWNSTREAM_TAG        (0x80)
+#define ISO_DEP_PARAMETERS_INDICATION_UPSTREAM_TAG          (0x81)
+#define ISO_DEP_PARAMETERS_INDICATION_FRAMING_OPTIONS_TAG   (0x82)
+
+#define ISO_DEP_PARAMETERS_ACTIVATION_DOWNSTREAM_TAG        (0x83)
+#define ISO_DEP_PARAMETERS_ACTIVATION_UPSTREAM_TAG          (0x84)
+#define ISO_DEP_PARAMETERS_ACTIVATION_FRAMING_OPTIONS_TAG   (0x85)
+
+#define ISO_DEP_PARAMETERS_FRAMING_UPSTREAM_START_STOP_BIT_SUPPRESION (1)
+#define ISO_DEP_PARAMETERS_FRAMING_UPSTREAM_SOF_EOF_SUPPRESION   (1 << 1)

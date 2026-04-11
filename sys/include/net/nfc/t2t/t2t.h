@@ -122,8 +122,8 @@ void t2t_set_read_only(nfc_t2t_t *tag);
 
 int t2t_get_ndef(const nfc_t2t_t *tag, ndef_t *ndef);
 
-int t2t_init_with_ndef(nfc_t2t_t *tag, ndef_t *ndef, const nfc_a_uid_t *uid);
+int t2t_init_with_ndef(nfc_t2t_t *tag, ndef_t *ndef, const nfc_a_id_t *uid);
 
-void t2t_get_uid(const nfc_t2t_t *tag, nfc_a_uid_t *uid, nfc_a_uid_size_t len);
+void t2t_get_uid(const nfc_t2t_t *tag, nfc_a_id_t *uid, nfc_a_id_size_t len);
 
 void t2t_print(nfc_t2t_t *tag);

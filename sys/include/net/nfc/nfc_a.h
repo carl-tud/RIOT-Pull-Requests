@@ -3,39 +3,79 @@
 #include <stdint.h>
 #include "net/nfc/constants.h"
 #include "net/nfc/iso_dep.h"
+#include "net/nfc/nfc_dep.h"
 
-typedef enum __attribute__((packed)) {
-    /// Only awake
-    NFC_A_POLLING_COMMAND_GROUP_ONLY_AWAKE = 0x26,
-    /// Sleeping and awake
-    NFC_A_POLLING_COMMAND_GROUP_ALL = 0x52,
-    /// Participating in timeslot method
-    NFC_A_POLLING_COMMAND_GROUP_TIMESLOT = 0x35,
-} nfc_a_polling_command_t;
+/// @brief Appends CRC-A
+/// @param full_length Length of packet in bytes including 2-byte CRC-A
+/// @param[in,out] packet Packet to write CRC-A into
+void nfc_a_crc_append(uint8_t* packet, size_t full_length);
 
-#define NFC_REQA NFC_A_POLLING_COMMAND_GROUP_ONLY_AWAKE
-#define NFC_WUPA NFC_A_POLLING_COMMAND_GROUP_ALL
+// MARK: - UID
+/// @name UID
+/// @{
 
 typedef enum __attribute__((packed)) {
     /// 4
-    NFC_A_UID_SIZE_SINGLE_4 = 4,
+    NFC_A_UID_LENGTH_SINGLE_4 = 4,
     /// 7
-    NFC_A_UID_SIZE_DOUBLE_7 = 7,
+    NFC_A_UID_LENGTH_DOUBLE_7 = 7,
     /// 10
-    NFC_A_UID_SIZE_TRIPLE_10 = 10,
-} nfc_a_uid_size_t;
+    NFC_A_UID_LENGTH_TRIPLE_10 = 10,
+} nfc_a_id_length_t;
 
-#define NFC_A_UID_SIZE_INDICATOR(size) (((uint8_t)(size) - 4) / 3)
+#define NFC_A_ID_LENGTH_MAX  (NFC_A_UID_LENGTH_TRIPLE_10)
 
-static inline uint8_t nfc_a_uid_size_indictor(nfc_a_uid_size_t size) {
-    return NFC_A_UID_SIZE_INDICATOR(size);
+typedef struct {
+    nfc_a_id_length_t length;
+    uint8_t uid[10];
+} nfc_a_id_t;
+
+#define NFC_A_ID_LENGTH_INDICATOR(size) (((uint8_t)(size) - 4) / 3)
+
+static inline uint8_t nfc_a_id_length_indictor(nfc_a_id_length_t size) {
+    return NFC_A_ID_LENGTH_INDICATOR(size);
 }
 
-#define NFC_A_UID_SIZE(indicator) (3 * (indicator) + 4)
+#define NFC_A_ID_LENGTH(indicator) (3 * (indicator) + 4)
 
-static inline nfc_a_uid_size_t nfc_a_uid_size(uint8_t indicator) {
-    return NFC_A_UID_SIZE(indicator);
+static inline nfc_a_id_length_t nfc_a_id_length(uint8_t indicator) {
+    return NFC_A_ID_LENGTH(indicator);
 }
+
+#define NFC_A_UID_CASCADE_TAG (0x88)
+
+/// @}
+
+// MARK: - Polling command
+/// @name Polling command
+/// @{
+
+/// Only awake `REQ`/`SENS_REQ`
+#define NFC_A_FRAME_CODE_POLLING_ONLY_AWAKE (0x26)
+#define NFC_A_FRAME_CODE_REQA NFC_A_FRAME_CODE_POLLING_ONLY_AWAKE
+
+/// Sleeping and awake `WUPA`/`ALL_REQ`
+#define NFC_A_FRAME_CODE_POLLING_ALL (0x52)
+#define NFC_A_FRAME_CODE_WUPA NFC_A_FRAME_CODE_POLLING_ALL
+
+/// Participating in timeslot method
+#define NFC_A_FRAME_CODE_POLLING_TIMESLOT (0x35)
+
+typedef uint8_t nfc_a_polling_command_t;
+
+typedef struct {
+    uint8_t* frame;
+    nfc_frame_length_t length;
+} nfc_a_polling_frame_t;
+
+const nfc_a_polling_frame_t nfc_a_polling_frame_all;
+const nfc_a_polling_frame_t nfc_a_polling_frame_only_awake;
+
+/// @}
+
+// MARK: - Polling response
+/// @name Polling response
+/// @{
 
 typedef union __attribute__((packed)) {
     struct {
@@ -54,56 +94,112 @@ typedef union __attribute__((packed)) {
     uint8_t raw[2];
 } nfc_a_polling_response_t;
 
-#define NFC_A_SDD_CASCADE_TAG (0x88)
+/// @}
 
-#define NFC_A_SELECT_COMMAND_CASCADE_LEVEL1 (0x93)
-#define NFC_A_SELECT_COMMAND_CASCADE_LEVEL2 (0x95)
-#define NFC_A_SELECT_COMMAND_CASCADE_LEVEL3 (0x97)
+// MARK: - Select command
+/// @name Select command
+/// @{
 
-#define NFC_A_NFCID1_SIZE_MASK (0xC0)
+#define NFC_A_FRAME_CODE_SELECT_CL1 (0x93)
+#define NFC_A_FRAME_CODE_SELECT_CL2 (0x95)
+#define NFC_A_FRAME_CODE_SELECT_CL3 (0x97)
 
-typedef uint8_t nfc_a_acknowledgement_t;
+///
+/// for byte counts 6 and 7, only a bit count of 0 is allowed
+typedef struct __attribute__((packed)) {
+    uint8_t code;
 
-#define NFC_A_ACKNOWLEDGEMENT_MASK_UID_COMPLETE (0x04)
-#define NFC_A_ACKNOWLEDGEMENT_MASK_ISO_DEP (0x20)
-#define NFC_A_ACKNOWLEDGEMENT_MASK_NFC_DEP (0x40)
-#define NFC_A_ACKNOWLEDGEMENT_MASK_T2T (0x60)
+    union {
+        struct {
+            uint8_t trailing_bit_count : 4;
+            uint8_t full_byte_count : 4;
+        };
+        uint8_t nvb;
+    } __attribute__((packed));
 
-static inline bool nfc_a_uid_complete(nfc_a_acknowledgement_t sak) {
-    return (sak & NFC_A_ACKNOWLEDGEMENT_MASK_UID_COMPLETE) != 0;
+    uint8_t uid_fragment[];
+} nfc_a_select_command_t;
+
+#define NFC_A_ANTICOLLISION_LOOPS_MAX (32)
+
+/// @}
+
+// MARK: - Select response
+/// @name Select response
+/// @{
+
+#define NFC_A_SELECT_RESPONSE_MASK_UID_COMPLETE (0x04)
+#define NFC_A_SELECT_RESPONSE_MASK_ISO_DEP (0x20)
+#define NFC_A_SELECT_RESPONSE_MASK_NFC_DEP (0x40)
+#define NFC_A_SELECT_RESPONSE_MASK_T2T (0x60)
+
+typedef uint8_t nfc_a_select_response_t;
+
+static inline bool nfc_a_uid_complete(nfc_a_select_response_t sak) {
+    return (sak & NFC_A_SELECT_RESPONSE_MASK_UID_COMPLETE) != 0;
 }
 
-static inline bool nfc_a_supports_iso_dep(nfc_a_acknowledgement_t sak) {
-    return (sak & NFC_A_ACKNOWLEDGEMENT_MASK_ISO_DEP) != 0;
+static inline bool nfc_a_supports_iso_dep(nfc_a_select_response_t sak) {
+    return (sak & NFC_A_SELECT_RESPONSE_MASK_ISO_DEP) != 0;
 }
 
-static inline bool nfc_a_supports_nfc_dep(nfc_a_acknowledgement_t sak) {
-    return (sak & NFC_A_ACKNOWLEDGEMENT_MASK_NFC_DEP) != 0;
+static inline bool nfc_a_supports_nfc_dep(nfc_a_select_response_t sak) {
+    return (sak & NFC_A_SELECT_RESPONSE_MASK_NFC_DEP) != 0;
 }
 
-static inline bool nfc_a_supports_t2t(nfc_a_acknowledgement_t sak) {
-    return (sak & NFC_A_ACKNOWLEDGEMENT_MASK_T2T) != 0;
+static inline bool nfc_a_supports_t2t(nfc_a_select_response_t sak) {
+    return (sak & NFC_A_SELECT_RESPONSE_MASK_T2T) != 0;
 }
 
-#define NFC_A_SLEEP_COMMAND0 (0x50)
-#define NFC_A_SLEEP_COMMAND1 (0x00)
+/// @}
 
-typedef uint8_t nfc_a_sleep_command_t[2];
+// MARK: - Halt command
+/// @name Halt command
+/// @{
 
-#define NFC_A_RATS_PREFIX (0xE0)
+#define NFC_A_FRAME_CODE_HALT (0x50)
+#define NFC_A_FRAME_PAYLOAD_HALT (0x00)
 
 typedef union __attribute__((packed)) {
     struct {
-        uint8_t prefix;
+        uint8_t code;
+        uint8_t zero;
+    } __attribute__((packed));
+
+    uint8_t raw[2];
+} nfc_a_halt_command_t;
+
+/// @}
+
+// MARK: - RATS
+/// @name Halt command
+/// @{
+
+typedef union __attribute__((packed)) {
+    struct {
         uint8_t cid : 4;
         iso_dep_frame_size_t max_frame_size : 4;
     } __attribute__((packed));
 
-    uint8_t raw[2];
+    uint8_t raw;
+} nfc_a_rats_payload_t;
+
+#define NFC_A_FRAME_CODE_RATS (0xE0)
+
+typedef union __attribute__((packed)) {
+    struct {
+        uint8_t code;
+        nfc_a_rats_payload_t payload;
+    } __attribute__((packed));
+
+    uint8_t raw[sizeof(nfc_a_rats_payload_t) + 1];
 } nfc_a_rats_t;
 
-#define NFC_A_RATS_MASK_FSDI   (0xF0)
-#define NFC_A_RATS_MASK_CID    (0x0F)
+/// @}
+
+// MARK: - ATS
+/// @name ATS
+/// @{
 
 typedef struct __attribute__((packed)) {
     uint8_t length;
@@ -151,6 +247,7 @@ typedef struct __attribute__((packed)) {
     uint8_t historical[];
 } nfc_a_ats_t;
 
+
 #define NFC_A_ATS_MASK_T0_TA1_PRESENT   (0x10)
 #define NFC_A_ATS_MASK_T0_TB1_PRESENT   (0x20)
 #define NFC_A_ATS_MASK_T0_TC1_PRESENT   (0x40)
@@ -165,16 +262,13 @@ typedef struct __attribute__((packed)) {
 #define NFC_A_ATS_MASK_TC1_DRC          (0x0E)
 #define NFC_A_ATS_MASK_TC1_DSI          (0x01)
 
-#define NFC_A_PPS_PREFIX (0b1101)
+/// @}
 
-typedef union __attribute__((packed)) {
-    struct {
-        uint8_t prefix : 4;
-        uint8_t cid : 4;
-    } __attribute__((packed));
+// MARK: - PPS command
+/// @name PPS command
+/// @{
 
-    uint8_t raw;
-} nfc_a_pps_request_t;
+#define NFC_A_FRAME_CODE_UPPER_PPS (0b1101)
 
 typedef union __attribute__((packed)) {
     struct {
@@ -206,31 +300,24 @@ typedef union __attribute__((packed)) {
     } __attribute__((packed));
 
     uint8_t raw[3];
+} nfc_a_pps_request_t;
+
+/// @}
+
+// MARK: - PPS response
+/// @name PPS response
+/// @{
+
+typedef union __attribute__((packed)) {
+    struct {
+        uint8_t code : 4;
+        uint8_t cid : 4;
+    } __attribute__((packed));
+
+    uint8_t raw;
 } nfc_a_pps_response_t;
 
-typedef struct {
-    nfc_a_uid_size_t len;
-    uint8_t nfcid[10];
-    nfc_a_rats_t rats;
-} nfc_a_uid_t;
-
-typedef struct {
-    nfc_a_polling_command_t polling_command;
-    nfc_a_uid_t uid;
-} nfc_a_poll_config_t;
-
-typedef struct {
-    nfc_a_polling_response_t polling_response;
-    nfc_a_uid_t uid;
-    nfc_a_acknowledgement_t acknowledgement;
-    nfc_a_rats_t rats;
-} nfc_a_listen_parameters_t;
-
-typedef struct {
-    nfc_a_polling_response_t polling_response;
-    nfc_a_uid_t uid;
-    nfc_a_acknowledgement_t acknowledgement;
-} nfc_a_listen_config_t;
+/// @}
 
 nfc_application_type_t nfc_a_determine_application_type(nfc_a_polling_response_t* polling_response, uint8_t acknowledgement);
 
@@ -272,3 +359,54 @@ nfc_application_type_t nfc_a_determine_application_type(nfc_a_polling_response_t
 #define NFC_A_POLLING_RESPONSE1_MIFARE_SMARTMX          0x04
 #define NFC_A_ACKNOWLEDGEMENT_MIFARE_SMARTMX            0x08
 /// @}
+
+typedef struct {
+    nfc_a_id_t* id;
+    nfc_a_polling_response_t polling_response_mask;
+    nfc_a_select_response_t select_response_mask;
+} nfc_a_polling_filter_t;
+
+typedef struct {
+    nfc_a_polling_frame_t* frames;
+    size_t frame_count;
+
+    uint32_t guard_time;
+
+    nfc_a_polling_filter_t* filter;
+
+    struct {
+        struct {
+            nfc_a_rats_t* rats;
+            nfc_a_pps_request_t* pps_request;
+        } iso_dep;
+
+        struct {
+            size_t request_length;
+            nfc_dep_activation_request_t* request;
+        } nfc_dep;
+    } higher_layer;
+
+    nfc_communication_mode_t mode : 1;
+} nfc_a_polling_config_t;
+
+typedef struct {
+    nfc_a_id_t* id;
+    nfc_a_polling_response_t polling_response;
+    nfc_a_select_response_t select_response;
+
+    struct {
+        struct {
+            size_t ats_length;
+            nfc_a_ats_t* ats;
+        } iso_dep;
+
+        struct {
+            size_t response_length;
+            nfc_dep_activation_response_t* response;
+        } nfc_dep;
+    } higher_layer;
+} nfc_a_polling_result_t;
+
+typedef struct {
+    nfc_a_polling_result_t polling_result;
+} nfc_a_hce_config_t;
