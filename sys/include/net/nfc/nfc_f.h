@@ -2,7 +2,29 @@
 
 #include <stdint.h>
 
+#include "net/nfc/constants.h"
+#include "net/nfc/nfc_dep.h"
+
+#define NFC_F_SYNC0 0xb2
+#define NFC_F_SYNC1 0x4d
+
+
+// MARK: - IDm
+/// @name IDm
+/// @{
+
 #define NFC_F_ID_LENGTH  (8u)
+
+typedef union __attribute__((packed)) {
+    struct {
+        uint8_t mcode[2];
+        uint8_t cin[6];
+    } __attribute__((packed));
+
+    uint8_t raw[NFC_F_ID_LENGTH];
+} nfc_f_id_t;
+
+/// @}
 
 typedef enum __attribute__((packed)) {
     NFC_F_PACKET_CODE_POLLING_COMMAND       = 0,
@@ -21,19 +43,10 @@ typedef struct __attribute__((packed)) {
     nfc_f_packet_code_t code;
 } nfc_f_packet_header_t;
 
-typedef union __attribute__((packed)) {
-    struct {
-        uint8_t mcode[2];
-        uint8_t cin[6];
-    } __attribute__((packed));
-
-    uint8_t raw[NFC_F_ID_LENGTH];
-} nfc_f_idm_t;
-
 #define NFC_F_NFC_DEP_ID_MCODE0 (0x01)
 #define NFC_F_NFC_DEP_ID_MCODE1 (0xFE)
 
-static inline bool nfc_f_supports_nfc_dep(const nfc_f_idm_t* idm) {
+static inline bool nfc_f_supports_nfc_dep(const nfc_f_id_t* idm) {
     return idm->mcode[0] == NFC_F_NFC_DEP_ID_MCODE0 &&
         idm->mcode[1] == NFC_F_NFC_DEP_ID_MCODE1;
 }
@@ -64,7 +77,7 @@ typedef union __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
     nfc_f_packet_header_t super;
-    nfc_f_idm_t idm;
+    nfc_f_id_t id;
     nfc_f_pmm_t pmm;
 } nfc_f_packet_header_response_t;
 
@@ -75,19 +88,71 @@ typedef enum __attribute__((packed)) {
 } nfc_f_polling_additional_request_t;
 
 typedef struct __attribute__((packed)) {
-    nfc_f_packet_header_t super;
     nfc_f_system_code_t system_code;
     nfc_f_polling_additional_request_t additional_request;
     uint8_t timeslots;
-} nfc_f_polling_command_t;
+} nfc_f_polling_command_payload_t;
 
 typedef struct __attribute__((packed)) {
-    nfc_f_packet_header_response_t super;
     /// Optional response
     uint8_t additional_response[2];
-} nfc_f_polling_response_t;
+} nfc_f_polling_response_payload_t;
+
+typedef struct __attribute__((packed)) {
+    nfc_f_packet_header_t super;
+    union __attribute__((packed)) {
+        nfc_f_polling_command_payload_t polling;
+    } payload;
+} nfc_f_command_t;
+
+typedef struct __attribute__((packed)) {
+    nfc_f_packet_header_t super;
+    nfc_f_id_t id;
+    nfc_f_pmm_t pmm;
+    union __attribute__((packed)) {
+        nfc_f_polling_response_payload_t polling;
+    } payload;
+} nfc_f_response_t;
 
 typedef struct {
-    nfc_f_polling_response_t polling_response;
-} nfc_f_listener_config_t;
+    nfc_f_id_t* id;
+    // bitrate and system code filter cannot be used together, can only have one additional request
+    nfc_bitrate_t bitrates;
+    size_t system_code_count;
+    nfc_f_system_code_t system_codes[];
+} nfc_f_polling_filter_t;
 
+typedef struct {
+    nfc_f_polling_command_payload_t* frames;
+    size_t frame_count;
+
+    uint32_t guard_time;
+
+    nfc_f_polling_filter_t* filter;
+
+    struct {
+        struct {
+            size_t request_length;
+            nfc_dep_activation_request_t* request;
+        } nfc_dep;
+    } higher_layer;
+
+    nfc_communication_mode_t mode : 1;
+} nfc_f_polling_config_t;
+
+typedef struct {
+    nfc_f_id_t* id;
+    nfc_f_system_code_t system_code;
+    nfc_bitrate_t bitrates;
+
+    struct {
+        struct {
+            size_t response_length;
+            nfc_dep_activation_response_t* response;
+        } nfc_dep;
+    } higher_layer;
+} nfc_f_polling_result_t;
+
+typedef struct {
+    nfc_f_polling_result_t polling_result;
+} nfc_f_hce_config_t;

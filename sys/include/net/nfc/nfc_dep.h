@@ -1,7 +1,5 @@
 #pragma once
 
-#include "net/nfcdev.h"
-
 #define NFC_DEP_ID_LENGTH (10u)
 
 #define NFC_DEP_CMD0_REQUEST  (0xD4)
