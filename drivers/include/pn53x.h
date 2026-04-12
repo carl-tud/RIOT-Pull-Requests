@@ -13,6 +13,10 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <errno.h>
+#include <sys/types.h>
 
 #include "kernel_defines.h"
 #include "iolist.h"
@@ -24,7 +28,7 @@ extern "C" {
 #include "periph/gpio.h"
 #include "net/nfc/mifare/mifare_classic.h"
 
-#include "net/nfc/nfc.h"
+#include "net/nfc.h"
 #include "net/nfcdev.h"
 
 /**
@@ -114,16 +118,19 @@ typedef struct {
 } pn53_connection_t;
 
 typedef struct {
-
 } pn53_parameters_t;
 
 typedef struct {
     pn53_connection_t connection;
     const pn53_parameters_t* parameters;
+    pn53_model_t model;
+    uint8_t nfc_parameters;
+    uint32_t command_timeout;
 } pn53_dev_t;
 
 #ifndef DOXYGEN
-#  define PN53_ERRNO(code) (5300 | code)
+#  define PN53_ERRNO(code) (53000 + code)
+#  define PN53_ERRNO_STATUS_BASE 53500
 #endif
 
 typedef enum {
@@ -148,27 +155,203 @@ ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
 ssize_t pn53_hci_transceive_command(pn53_connection_t* connection, iolist_t* command,
                                     uint8_t** response, uint32_t timeout_ms);
 
+static inline ssize_t pn53_hci_transceive_command2(pn53_connection_t* connection, uint8_t* command, size_t length, uint8_t** response, uint32_t timeout_ms) {
+    iolist_t iolist = { .iol_base = (void*)command, .iol_len = length };
+    return pn53_hci_transceive_command(connection, &iolist, response, timeout_ms);
+}
+
 int pn53_hci_init(pn53_connection_t* connection);
 void pn53_hci_reset(const pn53_connection_t* connection);
 
-typedef enum __attribute((packed)) {
+typedef enum __attribute__((packed)) {
     PN53_COMMAND_DIAGNOSE = 0,
     PN53_COMMAND_GET_FIRMWARE_VERSION = 2,
+    PN53_COMMAND_READ_REGISTERS = 6,
+    PN53_COMMAND_WRITE_REGISTERS = 8,
     PN53_COMMAND_SAM_CONFIGURATION = 0x14,
+    PN53_COMMAND_SET_PARAMETERS = 0x12,
+    PN53_COMMAND_POWER_DOWN = 0x16,
+    PN53_COMMAND_IN_LIST_PASSIVE_TARGET = 0x4a,
 } pn53_command_code_t;
 
-typedef struct __attribute((packed)) {
+typedef struct __attribute__((packed)) {
     uint8_t ic;
     uint8_t version;
     uint8_t revision;
     uint8_t support;
 } pn53_firmware_version_t;
 
-#define PN53_FIRMWARE_SUPPORTS_NFC_A(support) ((support) & 1)
-#define PN53_FIRMWARE_SUPPORTS_NFC_B(support) ((support) & (1 << 1))
-#define PN53_FIRMWARE_SUPPORTS_NFC_DEP(support) ((support) & (1 << 2))
+#ifndef DOXYGEN
+#  define _PN53_GET_BIT(field, ix) (((field) & (1 << ix)) >> ix)
+#endif
 
-int pn53_get_firmware_version(pn53_dev_t* dev, pn53_firmware_version_t* version);
+#define PN53_FIRMWARE_SUPPORTS_NFC_A(support) _PN53_GET_BIT(support, 0)
+#define PN53_FIRMWARE_SUPPORTS_NFC_B(support) _PN53_GET_BIT(support, 1)
+#define PN53_FIRMWARE_SUPPORTS_NFC_DEP(support) _PN53_GET_BIT(support, 2)
+
+int pn53_get_firmware_version(pn53_dev_t* dev, pn53_firmware_version_t** version);
+
+typedef enum __attribute__((packed)) {
+    PN53_STATUS_SUCCESS = 0,
+
+    ///  Time Out, the target has not answered
+    PN53_STATUS_ERROR_TARGET_ANSWER_TIMED_OUT = 0x1,
+
+    /// A CRC error has been detected by the CIU
+    PN53_STATUS_ERROR_CRC = 0x2,
+
+    /// A Parity error has been detected by the CIU
+    PN53_STATUS_ERROR_PARITY = 0x3,
+
+    /// During an anti-collision/select operation (ISO/IEC14443-3 Type A
+    /// and ISO/IEC18092 106 kbps passive mode), an erroneous Bit Count
+    /// has been detected
+    PN53_STATUS_ERROR_BIT_COUNT_INVALID = 0x4,
+
+    /// Framing error during Mifare operation
+    PN53_STATUS_ERROR_MIFARE_FRAMING = 0x5,
+
+    /// An abnormal bit-collision has been detected during bit wise anti-collision
+    /// at 106 kbps
+    PN53_STATUS_ERROR_BIT_COLLISION = 0x6,
+
+    /// Communication buffer size insufficient
+    PN53_STATUS_ERROR_COMMS_BUFFER_OVERFLOW = 0x7,
+
+    ///  RF Buffer overflow has been detected by the CIU (bit BufferOvfl of
+    ///  the register CIU_Error)
+    PN53_STATUS_ERROR_RF_BUFFER_OVERFLOW = 0x9,
+
+    /// In active communication mode, the RF field has not been switched
+    /// on in time by the counterpart (as defined in NFCIP-1 standard)
+    PN53_STATUS_ERROR_RF_TIMEOUT = 0xa,
+
+    /// RF Protocol error (cf. Error! Reference source not found., description of the
+    /// CIU_Error register)
+    PN53_STATUS_ERROR_RF_PROTOCOL = 0xb,
+
+    ///  Temperature error: the internal temperature sensor has detected overheating,
+    ///  and therefore has automatically switched off the antenna drivers
+    PN53_STATUS_ERROR_OVERHEATING = 0xd,
+
+    /// Internal buffer overflow
+    PN53_STATUS_ERROR_INTERNAL_BUFFER_OVERFLOW = 0xe,
+
+    /// Invalid parameter (range, format, ...)
+    PN53_STATUS_ERROR_INVALID_PARAMETER = 0x10,
+
+    /// DEP Protocol: The PN532 configured in target mode does not support the command
+    /// received from the initiator (the command received is not one of the following:
+    /// `ATR_REQ, WUP_REQ, PSL_REQ, DEP_REQ, DSL_REQ, RLS_REQ`
+    PN53_STATUS_ERROR_NFC_DEP_UNKNOWN_COMMMAND = 0x12,
+
+    /// DEP Protocol, Mifare or ISO/IEC14443-4: The data format does not match to the specification.
+    /// Depending on the RF protocol used, it can be:
+    /// - BadlengthofRFreceivedframe,
+    /// - Incorrect value of PCB or PFB,
+    /// - Invalid or unexpected RF received frame,
+    /// - NAD or DID incoherence.
+    PN53_STATUS_ERROR_INVALID_RX_FRAME = 0x13,
+
+    /// Mifare: Authentication error
+    PN53_STATUS_ERROR_MIFARE_AUTH = 0x14,
+
+    PN53_STATUS_ERROR_NFC_SECURE_UNSUPPORTED = 0x18,
+
+    PN53_STATUS_ERROR_I2C_BUSY_TDA = 0x19,
+
+    /// ISO/IEC14443-3: UID Check byte is wrong
+    PN53_STATUS_ERROR_UID_CHECK_BYTE_INVALID = 0x23,
+
+    /// DEP Protocol: Invalid device state, the system is in a state which does not allow the operation
+    PN53_STATUS_ERROR_NFC_DEP_INVALID_STATE = 0x25,
+
+    /// HCI Operation not allowed in this configuration (host controller interface)
+    PN53_STATUS_ERROR_OPERATION_NOT_ALLOWED = 0x26,
+
+    /// This command is not acceptable due to the current context of the PN532
+    /// (Initiator vs. Target, unknown target number, Target not in the good state, ...)
+    PN53_STATUS_ERROR_COMMAND_NOT_ACCEPTABLE = 0x27,
+
+    /// The PN532 configured as target has been released by its initiator
+    PN53_STATUS_ERROR_TARGET_RELEASED = 0x29,
+
+    /// PN532 and ISO/IEC14443-3B only: the ID of the card does not match,
+    /// meaning that the expected card has been exchanged with another one.
+    PN53_STATUS_ERROR_TARGET_ID_MISMATCH = 0x2a,
+
+    /// PN532 and ISO/IEC14443-3B only: the card previously activated has disappeared.
+    PN53_STATUS_ERROR_TARGET_DISAPPEARED = 0x2b,
+
+    /// Mismatch between the NFCID3 initiator and the NFCID3 target in DEP 212/424 kbps passive.
+    PN53_STATUS_ERROR_NFC_DEF_NFC_F_ID_MISMATCH = 0x2c,
+
+    /// An over-current event has been detected
+    PN53_STATUS_ERROR_OVERCURRENT = 0x2d,
+
+    /// NAD missing in DEP frame
+    PN53_STATUS_ERROR_NFC_DEP_MISSING_NAD = 0x2e,
+} pn53_status_code_t;
+
+#define PN53_ERRNO_FROM_STATUS_CODE(code) (53700 + (code))
+#define PN53_ERRNO_IS_STATUS_CODE(_errno0) ((_errno0) > 53700 && (_errno0) < 53999)
+#define PN53_ERRNO_TO_STATUS_CODE(_errno0) (pn53_status_code_t)((_errno0) - 53700)
+
+static inline bool pn53_status_nad_present(uint8_t status) {
+    return (status & 0x80) != 0;
+}
+
+static inline bool pn53_status_more_information_available(uint8_t status) {
+    return (status & 0x40) != 0;
+}
+
+static inline pn53_status_code_t pn53_status_code(uint8_t status) {
+    return status & 0x3f;
+}
+
+typedef uint16_t pn53_register_address_t;
+
+typedef struct __attribute__((packed)) {
+    pn53_register_address_t address;
+    uint8_t value;
+} pn53_register_t;
+
+ssize_t pn53_read_registers(pn53_dev_t *dev, pn53_register_address_t* registers, uint8_t** values, size_t count);
+
+int pn53_write_registers(pn53_dev_t *dev, pn53_register_t* registers, size_t count);
+
+int pn53_set_parameters(pn53_dev_t* dev, uint8_t parameters);
+
+static inline int pn53_enable_parameters(pn53_dev_t* dev, uint8_t parameters) {
+    dev->nfc_parameters |= parameters;
+    return pn53_set_parameters(dev, dev->nfc_parameters);
+}
+
+static inline int pn53_disable_parameters(pn53_dev_t* dev, uint8_t parameters) {
+    dev->nfc_parameters &= ~parameters;
+    return pn53_set_parameters(dev, dev->nfc_parameters);
+}
+
+typedef enum __attribute__((packed)) {
+    PN53_TECHNOLOGY_A_106K = 0,
+    /// Topaz/Jewel
+    PN53_TECHNOLOGY_A_106K_GEMSTONE = 4,
+    PN53_TECHNOLOGY_B_106K = 3,
+    PN53_TECHNOLOGY_F_212K = 1,
+    PN53_TECHNOLOGY_F_424K = 2,
+} pn53_technology_baudrate_t;
+
+typedef enum {
+    PN53_UART_SPEED_9600_BAUD = 0x00, /* 9.6 kbaud */
+    PN53_UART_SPEED_19200_BAUD = 0x01, /* 19.2 kbaud */
+    PN53_UART_SPEED_38400_BAUD = 0x02, /* 38.4 kbaud */
+    PN53_UART_SPEED_57600_BAUD = 0x03, /* 57.6 kbaud */
+    PN53_UART_SPEED_115200_BAUD = 0x04, /* 115.2 kbaud */
+    PN53_UART_SPEED_230400_BAUD = 0x05, /* 230.4 kbaud */
+    PN53_UART_SPEED_460800_BAUD = 0x06, /* 460.8 kbaud */
+    PN53_UART_SPEED_921600_BAUD = 0X07, /* 921.6 kbaud */
+    PN53_UART_SPEED_1288_KBAUD = 0x08, /* 1.288 Mbaud */
+} pn53_uart_speed_t;
 
 #define PN53_TIMEOUT_FIELD_FROM_MS(ms) (uint8_t)((ms) / 50)
 #define PN53_TIMEOUT_FIELD_TO_MS(timeout) ((timeout) * 50)
@@ -179,77 +362,198 @@ int pn53_get_firmware_version(pn53_dev_t* dev, pn53_firmware_version_t* version)
 #define PN532_FW_FEATURES(fwver) ((fwver) & 0xff)
 /** @} */
 
-#define PN532_PARAM_NAD_USED              (0x01) 
-#define PN532_PARAM_DID_USED              (0x02) 
-#define PN532_PARAM_AUTOMATIC_ATR_RES     (0x04) 
+
+#define PN532_PARAM_NAD_USED              (0x01)
+#define PN532_PARAM_DID_USED              (0x02)
+#define PN532_PARAM_AUTOMATIC_ATR_RES     (0x04)
 #define PN532_PARAM_AUTOMATIC_RATS        (0x10)
-#define PN532_PARAM_ISO14443A_4_PICC      (0x20) 
+#define PN532_PARAM_ISO14443A_4_PICC      (0x20)
 #define PN532_PARAM_REMOVE_PRE_POST_AMBLE (0x40)
 
 // Register addresses
-#define PN532_REG_Control_switch_rng 0x6106
-#define PN532_REG_CIU_Mode 0x6301
-#define PN532_REG_CIU_TxMode 0x6302
-#define PN532_REG_CIU_RxMode 0x6303
-#define PN532_REG_CIU_TxControl 0x6304
-#define PN532_REG_CIU_TxAuto 0x6305
-#define PN532_REG_CIU_TxSel 0x6306
-#define PN532_REG_CIU_RxSel 0x6307
-#define PN532_REG_CIU_RxThreshold 0x6308
-#define PN532_REG_CIU_Demod 0x6309
-#define PN532_REG_CIU_FelNFC1 0x630A
-#define PN532_REG_CIU_FelNFC2 0x630B
-#define PN532_REG_CIU_MifNFC 0x630C
-#define PN532_REG_CIU_ManualRCV 0x630D
-#define PN532_REG_CIU_TypeB 0x630E
-// #define PN532_REG_- 0x630F
-// #define PN532_REG_- 0x6310
-#define PN532_REG_CIU_CRCResultMSB 0x6311
-#define PN532_REG_CIU_CRCResultLSB 0x6312
-#define PN532_REG_CIU_GsNOFF 0x6313
-#define PN532_REG_CIU_ModWidth 0x6314
-#define PN532_REG_CIU_TxBitPhase 0x6315
-#define PN532_REG_CIU_RFCfg 0x6316
-#define PN532_REG_CIU_GsNOn 0x6317
-#define PN532_REG_CIU_CWGsP 0x6318
-#define PN532_REG_CIU_ModGsP 0x6319
-#define PN532_REG_CIU_TMode 0x631A
-#define PN532_REG_CIU_TPrescaler 0x631B
-#define PN532_REG_CIU_TReloadVal_hi 0x631C
-#define PN532_REG_CIU_TReloadVal_lo 0x631D
-#define PN532_REG_CIU_TCounterVal_hi 0x631E
-#define PN532_REG_CIU_TCounterVal_lo 0x631F
-// #define PN532_REG_- 0x6320
-#define PN532_REG_CIU_TestSel1 0x6321
-#define PN532_REG_CIU_TestSel2 0x6322
-#define PN532_REG_CIU_TestPinEn 0x6323
-#define PN532_REG_CIU_TestPinValue 0x6324
-#define PN532_REG_CIU_TestBus 0x6325
-#define PN532_REG_CIU_AutoTest 0x6326
-#define PN532_REG_CIU_Version 0x6327
-#define PN532_REG_CIU_AnalogTest 0x6328
-#define PN532_REG_CIU_TestDAC1 0x6329
-#define PN532_REG_CIU_TestDAC2 0x632A
-#define PN532_REG_CIU_TestADC 0x632B
-// #define PN532_REG_- 0x632C
-// #define PN532_REG_- 0x632D
-// #define PN532_REG_- 0x632E
-#define PN532_REG_CIU_RFlevelDet 0x632F
-#define PN532_REG_CIU_SIC_CLK_en 0x6330
-#define PN532_REG_CIU_Command 0x6331
-#define PN532_REG_CIU_CommIEn 0x6332
-#define PN532_REG_CIU_DivIEn 0x6333
-#define PN532_REG_CIU_CommIrq 0x6334
-#define PN532_REG_CIU_DivIrq 0x6335
-#define PN532_REG_CIU_Error 0x6336
-#define PN532_REG_CIU_Status1 0x6337
-#define PN532_REG_CIU_Status2 0x6338
-#define PN532_REG_CIU_FIFOData 0x6339
-#define PN532_REG_CIU_FIFOLevel 0x633A
-#define PN532_REG_CIU_WaterLevel 0x633B
-#define PN532_REG_CIU_Control 0x633C
-#define PN532_REG_CIU_BitFraming 0x633D
-#define PN532_REG_CIU_Coll 0x633E
+
+#define PN532_REGISTER_CONTROL_SWITCH_RNG 0x6106
+
+/// Defines general modes for transmitting and receiving
+#define PN532_REGISTER_MODE 0x6301
+
+/// Defines the data rate and framing during transmission.
+#define PN532_REGISTER_TX_MODE 0x6302
+
+/// Defines the data rate and framing during reception.
+#define PN532_REGISTER_RX_MODE 0x6303
+
+/// Controls the logical behaviour of the antenna driver pins TX1 and TX2
+#define PN532_REGISTER_TX_CONTROL 0x6304
+
+/// Controls the settings of the antenna driver
+#define PN532_REGISTER_TX_AUTO 0x6305
+
+/// Selects the internal sources for the antenna driver
+#define PN532_REGISTER_TX_SELECTOR 0x6306
+
+/// Selects internal receiver settings
+#define PN532_REGISTER_RX_SELECTOR 0x6307
+
+/// Selects thresholds for the bit decoder
+#define PN532_REGISTER_RX_THRESHOLD 0x6308
+
+/// Defines demodulator settings
+#define PN532_REGISTER_DEMODULATOR 0x6309
+
+/// Defines the length of the valid range for the received frame
+#define PN532_REGISTER_NFC_F_1 0x630A
+
+/// Defines the length of the valid range for the received frame
+#define PN532_REGISTER_NFC_F_2 0x630A
+
+// Controls the communication in NFC-A (+ NFC-A MIFARE) and NFC target mode at 106 kbit/s
+#define PN532_REGISTER_NFC_A 0x630C
+
+/// Allows manual fine tuning of the internal receiver.
+#define PN532_REGISTER_MANUAL_RECEIVER 0x630D
+
+/// Configure NFC-B
+#define PN532_REGISTER_NFC_B 0x630E
+// #define PN532_REGISTER_- 0x630F
+// #define PN532_REGISTER_- 0x6310
+
+/// Shows the actual MSB values of the CRC calculation
+#define PN532_REGISTER_CRC_HIGH 0x6311
+
+/// Shows the actual LSB values of the CRC calculation
+#define PN532_REGISTER_CRC_LOW 0x6312
+
+/// Controls the setting of the width of the Miller pause
+#define PN532_REGISTER_MILLER_MODULATION_WIDTH 0x6314
+#define PN532_REGISTER_ModWidth PN532_REGISTER_MILLER_MODULATION_WIDTH
+
+/// Bit synchronization at 106 kbit/s
+#define PN532_REGISTER_TX_BIT_PHASE 0x6315
+
+/// Configures the receiver gain and RF level detector sensitivity.
+#define PN532_REGISTER_RF_CONFIG 0x6316
+
+/// Selects the conductance for the N-driver of the antenna driver pins TX1 and TX2 when the driver is switched off.
+#define PN532_REGISTER_CONDUCTANCE_N_DRIVER_OFF 0x6313
+#define PN532_REGISTER_GsNOFF PN532_REGISTER_CONDUCTANCE_N_DRIVER_OFF
+
+/// Selects the conductance for the N-driver of the antenna driver pins TX1 and TX2 when the driver is switched on.
+#define PN532_REGISTER_CONDUCTANCE_N_DRIVER_ON 0x6317
+#define PN532_REGISTER_GsNOn PN532_REGISTER_CONDUCTANCE_N_DRIVER_ON
+
+/// Defines the conductance of the P-driver during times of no modulation.
+#define PN532_REGISTER_CONDUCTANCE_P_DRIVER_NO_MODULATION 0x6318
+#define PN532_REGISTER_CWGsP PN532_REGISTER_CONDUCTANCE_P_DRIVER_NO_MODULATION
+
+/// Defines the driver P-output conductance during modulation.
+#define PN532_REGISTER_CONDUCTANCE_P_DRIVER_MODULATION 0x6319
+#define PN532_REGISTER_ModGsP PN532_REGISTER_CONDUCTANCE_P_DRIVER_MODULATION
+
+/// Defines settings for the internal timer
+#define PN532_REGISTER_TIMER_MODE 0x631A
+
+/// Defines settings for the internal timer
+#define PN532_REGISTER_TIMER_PRESCALER 0x631B
+
+/// Describes the MSB of the 16-bit long timer reload value.
+#define PN532_REGISTER_TIMER_RELOAD_VALUE_HIGH 0x631C
+
+/// Describes the LSB of the 16-bit long timer reload value.
+#define PN532_REGISTER_TIMER_RELOAD_VALUE_LOW 0x631D
+
+/// Describes the 16-bit long timer actual value (Higher 8 bits)
+#define PN532_REGISTER_TIMER_COUNTER_VALUE_HIGH 0x631E
+
+/// Describes the 16-bit long timer actual value (Lower 8 bits)
+#define PN532_REGISTER_TIMER_COUNTER_VALUE_LOW 0x631F
+
+// #define PN532_REGISTER_- 0x6320
+
+/// General test signals configuration
+#define PN532_REGISTER_TEST_SELECTION1 0x6321
+
+/// General test signals configuration and PRBS control
+#define PN532_REGISTER_TEST_SELECTION2 0x6322
+
+/// Enables test signals output on pins.
+#define PN532_REGISTER_TEST_PIN_ENABLE 0x6323
+
+/// Defines the values for the 8-bit parallel bus when it is used as I/O bus
+#define PN532_REGISTER_TEST_PIN_VALUE 0x6324
+
+/// Shows the status of the internal test bus
+#define PN532_REGISTER_TEST_BUS 0x6325
+
+/// Controls the digital self-test
+#define PN532_REGISTER_TEST_AUTO 0x6326
+
+/// Shows the CIU version
+#define PN532_REGISTER_VERSION 0x6327
+
+/// Controls the pins AUX1 and AUX2
+#define PN532_REGISTER_TEST_ANALOG 0x6328
+
+/// Defines the test value for the TestDAC1
+#define PN532_REGISTER_TEST_DAC1 0x6329
+
+/// Defines the test value for the TestDAC2
+#define PN532_REGISTER_TEST_DAC2 0x632A
+
+/// Show the actual value of ADC I and Q
+#define PN532_REGISTER_TEST_ADCV 0x632B
+
+// #define PN532_REGISTER_- 0x632C
+// #define PN532_REGISTER_- 0x632D
+// #define PN532_REGISTER_- 0x632E
+
+/// Power down of the RF level detector
+#define PN532_REGISTER_RF_LEVEL_DETECTOR 0x632F
+
+/// Enables the use of secure IC clock on P34 / SIC_CLK
+#define PN532_REGISTER_SECURE_IC_CLOCK 0x6330
+
+/// Starts and stops the command execution
+#define PN532_REGISTER_COMMAND 0x6331
+
+/// Control bits to enable and disable the passing of interrupt requests
+#define PN532_REGISTER_COMMON_INTERRUPT_ENABLE 0x6332
+
+/// Control bits to enable and disable the passing of interrupt requests
+#define PN532_REGISTER_DIVERSE_INTERRUPT_ENABLE 0x6333
+
+/// Contains common CIU interrupt request flags
+#define PN532_REGISTER_COMMON_IRQ 0x6334
+
+/// Contains miscellaneous interrupt request flags
+#define PN532_REGISTER_DIVERSE_IRQ 0x6335
+
+/// Error flags showing the error status of the last command executed
+#define PN532_REGISTER_ERROR 0x6336
+
+/// Contains status flags of the CRC, Interrupt Request System and FIFO buffer
+#define PN532_REGISTER_STATUS1 0x6337
+
+/// Contain status flags of the receiver, transmitter and Data Mode Detector
+#define PN532_REGISTER_STATUS2 0x6338
+
+/// In- and output of 64 byte FIFO buffer
+#define PN532_REGISTER_FIFO_DATA 0x6339
+
+/// Indicates the number of bytes stored in the FIFO
+#define PN532_REGISTER_FIFO_LEVEL 0x633A
+
+/// Defines the thresholds for FIFO under- and overflow warning
+#define PN532_REGISTER_FIFO_WATER_LEVEL 0x633B
+
+/// Contains miscellaneous control bits
+#define PN532_REGISTER_CONTROL 0x633C
+
+/// Adjustments for bit oriented frames
+#define PN532_REGISTER_BIT_FRAMING 0x633D
+
+/// Defines the first bit collision detected on the RF interface
+#define PN532_REGISTER_COLLISION 0x633E
 
 #define PN532_SFR_P3 0xFFB0
 
@@ -258,6 +562,92 @@ int pn53_get_firmware_version(pn53_dev_t* dev, pn53_firmware_version_t* version)
 #define PN532_SFR_P7CFGA 0xFFF4
 #define PN532_SFR_P7CFGB 0xFFF5
 #define PN532_SFR_P7 0xFFF7
+
+typedef uint32_t pn53_register_symbol_t;
+
+
+#ifndef DOXYGEN
+
+#  define PN53_REGISTER_SYMBOL_(register, mask) (((mask) << 16) | (register))
+
+#  define PN53_REGISTER_SYMBOL_MASK(symbol) ((symbol) >> 16)
+#  define PN53_REGISTER_SYMBOL_REGISTER(symbol) ((symbol) & 0xffff)
+
+#  define PN53_REGISTER_SYMBOL(register_name, mask) \
+    PN53_REGISTER_SYMBOL_(PN53_REGISTER_ ## register_name, mask)
+
+#  define PN53_REGISTER_SYMBOL_REGISTER_CAPACITY (PN532_REGISTER_COLLISION - PN532_REGISTER_MODE)
+#  define PN53_SYMBOLS_START_REGISTER PN532_REGISTER_MODE
+
+#endif
+
+typedef struct {
+    uint8_t register_values[PN53_REGISTER_SYMBOL_REGISTER_CAPACITY];
+    uint8_t change_masks[PN53_REGISTER_SYMBOL_REGISTER_CAPACITY];
+} pn53_register_symbols_t;
+
+int pn53_register_symbol_set(pn53_register_symbols_t* symbols, pn53_register_symbol_t symbol, uint8_t value);
+
+int16_t pn53_register_symbol_get(pn53_register_symbols_t* symbols, pn53_register_symbol_t symbol);
+
+int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbols);
+
+/// A register mask for `TxLastBits` in the `CIU_BitFraming` register containing
+/// the number of bits of the last byte that shall be transmitted. Set to 0 to indicate all bits
+/// shall be sent.
+#define pn53_register_symbol_tX_BIT_COUNT PN53_REGISTER_SYMBOL(BIT_FRAMING, 0x07)
+
+/// A register mask for `TxFraming` in the `CIU_TxMode` register indicating the
+/// framing type used during transmission.
+#define pn53_register_symbol_tX_FRAMING PN53_REGISTER_SYMBOL(TX_MODE, 0x03)
+
+/// A register mask for `TxSpeed` in the `CIU_TxMode` register indicating the
+/// bit rate used during transmission.
+#define PN53_SYMBOL_RX_FRAMING PN53_REGISTER_SYMBOL(RX_MODE, 0x03)
+
+/// A register mask for `RxFraming` in the `CIU_TxMode` register indicating the
+/// framing type used during reception.
+#define pn53_register_symbol_tX_BITRATE PN53_REGISTER_SYMBOL(TX_MODE, 0x70)
+
+/// A register mask for `RxSpeed` in the `CIU_TxMode` register indicating the
+/// bit rate used during reception.
+#define PN53_SYMBOL_RX_BITRATE PN53_REGISTER_SYMBOL(RX_MODE, 0x70)
+
+/// A register mask for `RxNoErr` in the `CIU_RxMode` register which determines whether
+/// the PN53x accepts invalid frames (less than 4 bits are ignored and the receiver stays active).
+#define PN53_SYMBOL_ACCEPT_INVALID_FRAMES PN53_REGISTER_SYMBOL(RX_MODE, 0x08)
+
+/// A register mask for `RxMultiple` in the `CIU_RxMode` register
+#define PN53_SYMBOL_ACCEPT_MULTIPLE_FRAMES PN53_REGISTER_SYMBOL(RX_MODE, 0x04)
+
+/// A register mask for `MFCrypto1On` in the `CIU_Status2` register
+#define PN53_SYMBOL_ENABLE_MIFARE_CRYPTO1 PN53_REGISTER_SYMBOL(STATUS2, 0x08)
+
+/// A register mask wrapping `ParityDisable` in the `CIU_ManualRCV` register which indicates
+/// whether parity bits are automatically added to frames, checked in received frames and
+/// removed from them.
+#define PN53_SYMBOL_AUTO_PARITY PN53_REGISTER_SYMBOL(MANUAL_RECEIVER, 0x10)
+
+/// A register mask for `TxCRCEn` in the `CIU_TxMode` register which determines whether a
+/// Cyclic Redundancy Code is automatically added to frames by the PN53x.
+#define pn53_register_symbol_tX_AUTO_CRC PN53_REGISTER_SYMBOL(TX_MODE, 0x80)
+
+/// A register mask for `RxCRCEn` in the `CIU_RxMode` register which determines whether the
+/// Cyclic Redundancy Code is automatically checked and removed from received frames
+/// by the PN53x.
+#define PN53_SYMBOL_RX_AUTO_CRC PN53_REGISTER_SYMBOL(RX_MODE, 0x80)
+
+/// A register mask for `Initiator` in the `CIU_Control` register determining the PN53x's transceiver behavior.
+#define PN53_SYMBOL_IS_INITIATOR PN53_REGISTER_SYMBOL(CONTROL, 0x10)
+
+/// A register mask for `InitialRFOn` in the `CIU_TxAuto` register.
+#define PN53_SYMBOL_INITIAL_FIELD_ON PN53_REGISTER_SYMBOL(TX_MODE, 0x04)
+
+/// A register mask for `Force100ASK` in the `CIU_TxAuto` register.
+#define pn53_register_symbol_tX_FORCE_100_PERCENT_ASK PN53_REGISTER_SYMBOL(TX_AUTO, 0x40)
+
+/// A register mask for `MFHalted` in the `CIU_MifNFC` register.
+#define PN53_SYMBOL_MIFARE_IS_HALTED PN53_REGISTER_SYMBOL(NFC_A, 0x04)
 
 /**
  * @brief   Possible SAM configurations
@@ -296,7 +686,7 @@ typedef struct {
     uint8_t target;                /**< Target */
     uint8_t auth;                  /**< Card has been authenticated. Do not modify manually */
     uint8_t id_len;                /**< Length of the ID field */
-    uint8_t sel_res;               /**< SEL_RES */
+    uint8_t acknowledgement;               /**< SEL_RES */
     unsigned sns_res;           /**< SNS_RES */
     nfc_iso14443a_type_t type;  /**< Type of ISO14443A card */
     uint8_t id[8];                 /**< Card ID (length given by id_len) */
@@ -564,11 +954,11 @@ void pn532_deselect_passive(pn53_dev_t* dev);
  */
 void pn532_release_passive(pn53_dev_t* dev);
 
-void pn532_set_parameters(pn53_dev_t* dev, uint8_t flags);
+int pn53_set_parameters(pn53_dev_t* dev, uint8_t parameters);
 
 int pn532_poll(nfcdev_t *nfcdev, nfc_listener_config_t *config);
 
-int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config);
+int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listen_config_t *config);
 
 int pn532_poll_b(nfcdev_t *nfcdev, nfc_b_listener_config_t *config);
 
@@ -584,10 +974,10 @@ int pn532_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_le
 
 int pn532_target_send_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len);
 
-int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config);
+int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listen_config_t *config);
 
 int pn532_mifare_classic_authenticate(nfcdev_t *nfcdev, uint8_t block_number, 
-    const nfc_a_nfcid1_t *nfcid1, bool is_key_a, const uint8_t *key);
+    const nfc_a_id_t *uid, bool is_key_a, const uint8_t *key);
 
 static const nfcdev_ops_t pn532_ops = {
     .init = pn532_init,
