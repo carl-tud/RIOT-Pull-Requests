@@ -25,7 +25,7 @@ typedef enum __attribute__((packed)) {
 
 #define NFC_A_ID_LENGTH_MAX  (NFC_A_UID_LENGTH_TRIPLE_10)
 
-typedef struct {
+typedef struct __attribute__((packed)) {
     nfc_a_id_length_t length;
     uint8_t uid[10];
 } nfc_a_id_t;
@@ -68,8 +68,8 @@ typedef struct {
     nfc_frame_length_t length;
 } nfc_a_polling_frame_t;
 
-const nfc_a_polling_frame_t nfc_a_polling_frame_all;
-const nfc_a_polling_frame_t nfc_a_polling_frame_only_awake;
+extern const nfc_a_polling_frame_t nfc_a_polling_frame_all;
+extern const nfc_a_polling_frame_t nfc_a_polling_frame_only_awake;
 
 /// @}
 
@@ -396,7 +396,6 @@ typedef struct {
 
     struct {
         struct {
-            size_t ats_length;
             nfc_a_ats_t* ats;
         } iso_dep;
 

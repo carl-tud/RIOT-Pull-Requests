@@ -3,15 +3,19 @@
 #include "pn53x.h"
 
 typedef pn53_dev_t pn532_dev_t;
+typedef pn53_connection_config_t pn532_connection_config_t;
 typedef pn53_sam_mode_t pn532_sam_mode_t;
+
+int pn532_init(pn532_dev_t* dev, const pn532_connection_config_t* config);
 
 typedef enum __attribute__((packed)) {
     PN532_COMMAND_DIAGNOSE = 0,
     PN532_COMMAND_GET_FIRMWARE_VERSION = 2,
     PN532_COMMAND_READ_REGISTERS = 6,
     PN532_COMMAND_WRITE_REGISTERS = 8,
-    PN532_COMMAND_SAM_CONFIGURATION = 0x14,
+    PN532_COMMAND_SET_SERIAL_BAUDRATE = 0x10,
     PN532_COMMAND_SET_PARAMETERS = 0x12,
+    PN532_COMMAND_SAM_CONFIGURATION = 0x14,
     PN532_COMMAND_POWER_DOWN = 0x16,
 } pn532_command_code_t;
 
@@ -74,6 +78,10 @@ static inline int pn532_disable_parameters(pn532_dev_t* dev, pn532_nfc_parameter
     return pn53_disable_parameters(dev, (uint8_t)parameters);
 }
 
+ssize_t pn532_sam_configuration(pn532_dev_t* dev, pn532_sam_mode_t mode, uint8_t timeout, bool use_irq);
+
+ssize_t pn532_set_uart_speed(pn532_dev_t* dev, pn53_uart_speed_t speed);
+
 typedef enum __attribute__((packed)) {
     PN532_WAKEUP_SOURCE_INT0 = 1,
     PN532_WAKEUP_SOURCE_INT1 = 1 << 1,
@@ -85,3 +93,5 @@ typedef enum __attribute__((packed)) {
 } pn532_wakeup_sources_t;
 
 int pn532_power_down(pn532_dev_t* dev, pn532_wakeup_sources_t wakeup_sources, bool generate_irq);
+
+#define PN532_TARGETS_MAX (2)

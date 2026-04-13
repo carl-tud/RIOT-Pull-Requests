@@ -163,15 +163,35 @@ static inline ssize_t pn53_hci_transceive_command2(pn53_connection_t* connection
 int pn53_hci_init(pn53_connection_t* connection);
 void pn53_hci_reset(const pn53_connection_t* connection);
 
+int pn53_init(pn53_dev_t* dev, const pn53_connection_config_t* config);
+
 typedef enum __attribute__((packed)) {
-    PN53_COMMAND_DIAGNOSE = 0,
-    PN53_COMMAND_GET_FIRMWARE_VERSION = 2,
-    PN53_COMMAND_READ_REGISTERS = 6,
-    PN53_COMMAND_WRITE_REGISTERS = 8,
-    PN53_COMMAND_SAM_CONFIGURATION = 0x14,
-    PN53_COMMAND_SET_PARAMETERS = 0x12,
-    PN53_COMMAND_POWER_DOWN = 0x16,
-    PN53_COMMAND_IN_LIST_PASSIVE_TARGET = 0x4a,
+    PN53_COMMAND_DIAGNOSE                       = 0x00,
+    PN53_COMMAND_GET_FIRMWARE_VERSION           = 0x02,
+    PN53_COMMAND_GET_GENERAL_STATUS             = 0x04,
+    PN53_COMMAND_READ_REGISTERS                 = 0x06,
+    PN53_COMMAND_WRITE_REGISTERS                = 0x08,
+    PN53_COMMAND_READ_GPIO                      = 0x0C,
+    PN53_COMMAND_WRITE_GPIO                     = 0x0E,
+    PN53_COMMAND_SET_PARAMETERS                 = 0x12,
+    PN53_COMMAND_RF_CONFIGURATION               = 0x32,
+    PN53_COMMAND_IN_DATA_EXCHANGE               = 0x40,
+    PN53_COMMAND_IN_COMMUNICATE_THRU            = 0x42,
+    PN53_COMMAND_IN_DESELECT                    = 0x44,
+    PN53_COMMAND_IN_JUMP_FOR_PSL                = 0x46,
+    PN53_COMMAND_IN_LIST_PASSIVE_TARGET         = 0x4A,
+    PN53_COMMAND_IN_PSL                         = 0x4E,
+    PN53_COMMAND_IN_ATR                         = 0x50,
+    PN53_COMMAND_IN_RELEASE                     = 0x52,
+    PN53_COMMAND_IN_SELECT                      = 0x54,
+    PN53_COMMAND_IN_JUMP_FOR_DEP                = 0x56,
+    PN53_COMMAND_RF_REGULATION_TEST             = 0x58,
+    PN53_COMMAND_IN_AUTO_POLL                   = 0x60,
+    PN53_COMMAND_TG_GET_DATA                    = 0x86,
+    PN53_COMMAND_TG_GET_INITIATOR_COMMAND       = 0x88,
+    PN53_COMMAND_TG_GET_TARGET_STATUS           = 0x8A,
+    PN53_COMMAND_TG_INIT_AS_TARGET              = 0x8C,
+    PN53_COMMAND_TG_SET_DATA                    = 0x8E,
 } pn53_command_code_t;
 
 typedef struct __attribute__((packed)) {
@@ -190,6 +210,36 @@ typedef struct __attribute__((packed)) {
 #define PN53_FIRMWARE_SUPPORTS_NFC_DEP(support) _PN53_GET_BIT(support, 2)
 
 int pn53_get_firmware_version(pn53_dev_t* dev, pn53_firmware_version_t** version);
+
+typedef enum {
+    PN53_SAM_NORMAL = 1,
+    PN53_SAM_VIRTUAL,
+    PN53_SAM_WIRED,
+    PN53_SAM_DUAL,
+} pn53_sam_mode_t;
+
+typedef union __attribute__((packed)) {
+    struct {
+        /// When bit 0 is set to 1, a full negative pulse has been detected on the CLAD line.
+        bool full_negative_pulse_detected : 1;
+
+        /// When bit 1 is set to 1, an external RF field has been detected and switched off during or
+        /// after a transaction.
+        bool rf_field_off_detected : 1;
+
+        /// When bit 2 is set to 1, a timeout has been detected after SigActIRQ has felt down.
+        bool timeout_detected : 1;
+
+        uint8_t _rfu : 4;
+
+        /// When bit 7 is set to 1, the CLAD line is high level whereas when this bit is set to 0, the CLAD line is low level.
+        /// _Warning_: When the SAM is not powered, bit 7 is not significant. In other words, for example when the
+        /// PN532 is configured in virtual card mode, and if no external RF field is detected, this bit will be read as high,
+        /// whatever the real level of the input.
+        bool clad_state : 1;
+    } __attribute__((packed)) ;
+    uint8_t raw;
+} pn53_sam_status_t;
 
 typedef enum __attribute__((packed)) {
     PN53_STATUS_SUCCESS = 0,
@@ -337,11 +387,14 @@ typedef enum __attribute__((packed)) {
     /// Topaz/Jewel
     PN53_TECHNOLOGY_A_106K_GEMSTONE = 4,
     PN53_TECHNOLOGY_B_106K = 3,
+    PN53_TECHNOLOGY_B_212K = 6,
+    PN53_TECHNOLOGY_B_424K = 7,
+    PN53_TECHNOLOGY_B_848K = 8,
     PN53_TECHNOLOGY_F_212K = 1,
     PN53_TECHNOLOGY_F_424K = 2,
 } pn53_technology_baudrate_t;
 
-typedef enum {
+typedef enum __attribute__((packed)) {
     PN53_UART_SPEED_9600_BAUD = 0x00, /* 9.6 kbaud */
     PN53_UART_SPEED_19200_BAUD = 0x01, /* 19.2 kbaud */
     PN53_UART_SPEED_38400_BAUD = 0x02, /* 38.4 kbaud */
@@ -649,348 +702,274 @@ int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbol
 /// A register mask for `MFHalted` in the `CIU_MifNFC` register.
 #define PN53_SYMBOL_MIFARE_IS_HALTED PN53_REGISTER_SYMBOL(NFC_A, 0x04)
 
-/**
- * @brief   Possible SAM configurations
- */
-typedef enum {
-    PN53_SAM_NORMAL = 1,
-    PN53_SAM_VIRTUAL,
-    PN53_SAM_WIRED,
-    PN53_SAM_DUAL,
-} pn53_sam_mode_t;
+typedef union __attribute__((packed)) {
+    struct {
+        bool p30 : 1;
+        bool p31 : 1;
+        bool p32 : 1;
+        bool p33 : 1;
+        bool p34 : 1;
+        bool p35 : 1;
+        uint8_t _rfu : 1;
+        bool write : 1;
+    } __attribute__((packed));
+
+    uint8_t raw;
+} pn53_gpio_p3_t;
+
+typedef union __attribute__((packed)) {
+    struct {
+        uint8_t _rfu_0 : 1;
+        bool p71 : 1;
+        bool p72 : 1;
+        uint8_t _rfu_1 : 4;
+        bool write : 1;
+    } __attribute__((packed));
+
+    uint8_t raw;
+} pn53_gpio_p7_t;
+
+typedef union __attribute__((packed)) {
+    struct {
+        bool i0 : 1;
+        bool i1 : 1;
+        uint8_t _rfu : 6;
+    } __attribute__((packed));
+
+    uint8_t raw;
+} pn53_gpio_i0i1_t;
+
+typedef struct __attribute__((packed)) {
+    pn53_gpio_p3_t p3;
+    pn53_gpio_p7_t p7;
+    pn53_gpio_i0i1_t i0i1;
+} pn53_read_gpio_payload_t;
+
+ssize_t pn53_read_gpio(pn53_dev_t* dev, pn53_read_gpio_payload_t** response);
+
+typedef struct __attribute__((packed)) {
+    pn53_gpio_p3_t p3;
+    pn53_gpio_p7_t p7;
+} pn53_write_gpio_payload_t;
+
+int pn53_write_gpio(pn53_dev_t* dev, pn53_write_gpio_payload_t payload);
+
+typedef struct {
+    pn53_status_code_t last_command_status;
+    bool field_detected;
+    uint8_t target_count;
+
+    struct {
+        struct {
+            nfc_technology_t technology;
+            nfc_bitrate_t bitrate;
+        } tx;
+
+        struct {
+            nfc_technology_t technology;
+            nfc_bitrate_t bitrate;
+        } rx;
+
+        nfc_communication_mode_t mode : 1;
+        bool nfc_a_gemstone : 1;
+    } targets[2];
+
+    pn53_sam_status_t sam_status;
+} pn53_general_status_t;
+
+int pn53_get_general_status(pn53_dev_t* dev, pn53_general_status_t* status);
+
+typedef enum __attribute__((packed)) {
+    PN53_RF_CONFIGURATION_ITEM_RF_FIELD                 = 0x01,
+    PN53_RF_CONFIGURATION_ITEM_VARIOUS_TIMINGS          = 0x02,
+    PN53_RF_CONFIGURATION_ITEM_MAXIMUM_RETRIES_FRAME    = 0x04,
+    PN53_RF_CONFIGURATION_ITEM_MAXIMUM_RETRIES          = 0x05,
+    PN53_RF_CONFIGURATION_ITEM_ANALOG_NFC_A             = 0x0A,
+    PN53_RF_CONFIGURATION_ITEM_ANALOG_NFC_B             = 0x0B,
+    PN53_RF_CONFIGURATION_ITEM_ANALOG_NFC_F             = 0x0C,
+
+    /// `ISO-DEP` at 212, 424, 848 kbit/s
+    PN53_RF_CONFIGURATION_ITEM_ANALOG_FAST_ISO_DEP      = 0x0D,
+} pn53_rf_configuration_item_t;
+
+typedef struct __attribute__((packed)) {
+    pn53_rf_configuration_item_t item;
+
+    union {
+        union __attribute__((packed)) {
+            struct {
+                bool automatic_rf_collision_avoidance : 1;
+                bool rf_on : 1;
+                uint8_t _rfu : 6;
+            } __attribute__((packed));
+
+            uint8_t raw;
+        } rf_field;
+
+        struct __attribute__((packed)) {
+            uint8_t _rfu;
+            uint8_t atr_response_timeout;
+            uint8_t non_dep_timeout;
+        } various_timings;
+
+        struct __attribute__((packed)) {
+            struct __attribute__((packed))  {
+                uint8_t activation;
+                uint8_t parameter_selection;
+            } nfc_dep;
+            uint8_t passive_activation;
+        } max_retries_higher_layer;
+
+        uint8_t max_retries_frame;
+
+        struct __attribute__((packed)) {
+            uint8_t rf_configuration;
+            uint8_t conductance_n_driver_on;
+            uint8_t conductance_p_driver_no_modulation;
+            uint8_t conductance_p_driver_modulation;
+            uint8_t demodulator_when_rf_on;
+            uint8_t rx_threshold;
+            uint8_t demodulator_when_rf_off;
+            uint8_t conductance_n_driver_off;
+            uint8_t miller_modulation_width;
+            uint8_t nfc_a;
+            uint8_t tx_bit_phase;
+        } registers_when_nfc_a;
+
+        struct __attribute__((packed)) {
+            uint8_t conductance_n_driver_on;
+            uint8_t conductance_p_driver_modulation;
+            uint8_t rx_threshold;
+        } registers_when_nfc_b;
+
+        struct __attribute__((packed)) {
+            uint8_t rf_configuration;
+            uint8_t conductance_n_driver_on;
+            uint8_t conductance_p_driver_no_modulation;
+            uint8_t conductance_p_driver_modulation;
+            uint8_t demodulator_when_rf_on;
+            uint8_t rx_threshold;
+            uint8_t demodulator_when_rf_off;
+            uint8_t conductance_n_driver_off;
+        } registers_when_nfc_f;
+
+        struct __attribute__((packed)) {
+            struct __attribute__((packed)) {
+                uint8_t rx_threshold;
+                uint8_t miller_modulation_width;
+                uint8_t nfc_a;
+            } at_212;
+
+            struct __attribute__((packed)) {
+                uint8_t rx_threshold;
+                uint8_t miller_modulation_width;
+                uint8_t nfc_a;
+            } at_424;
+
+            struct __attribute__((packed)) {
+                uint8_t rx_threshold;
+                uint8_t miller_modulation_width;
+                uint8_t nfc_a;
+            } at_848;
+        } registers_when_fast_iso_dep;
+    } __attribute__((packed)) ;
+} pn53_rf_configuration_payload_t;
+
+ssize_t pn53_list_passive_targets(pn53_dev_t* dev,
+    uint8_t max_targets, pn53_technology_baudrate_t brty, uint8_t* data, size_t length,
+    uint8_t** response, uint32_t timeout_ms);
+
+ssize_t pn53_list_passive_targets_a(pn53_dev_t* dev,
+    uint8_t max_targets, nfc_a_id_t* id, nfc_a_polling_result_t* results, uint32_t timeout_ms);
+
+ssize_t pn53_list_passive_targets_b(pn53_dev_t* dev,
+    uint8_t max_targets, nfc_bitrate_t bitrate, uint8_t application_family,
+    nfc_b_polling_method_t method, nfc_b_polling_result_t* results, uint32_t timeout_ms);
+
+ssize_t pn53_list_passive_targets_f(pn53_dev_t* dev, uint8_t max_targets, nfc_bitrate_t bitrate,
+    nfc_f_system_code_t system_code, nfc_f_polling_additional_request_t additional_request,
+    uint8_t timeslots, nfc_f_polling_result_t* results, uint32_t timeout_ms);
 
 /**
  * @brief   PN532 supported targets
  */
-typedef enum {
-    PN532_BR_106_ISO_14443_A = 0,
-    PN532_BR_212_FELICA,
-    PN532_BR_424_FELICA,
-    PN532_BR_106_ISO_14443_B,
-    PN532_BR_106_JEWEL
-} pn532_target_t;
+//typedef enum {
+//    PN532_BR_106_ISO_14443_A = 0,
+//    PN532_BR_212_FELICA,
+//    PN532_BR_424_FELICA,
+//    PN532_BR_106_ISO_14443_B,
+//    PN532_BR_106_JEWEL
+//} pn532_target_t;
+//
+///**
+// * @brief   ISO14443A Card types
+// */
+//typedef enum {
+//    ISO14443A_UNKNOWN,
+//    ISO14443A_MIFARE,
+//    ISO14443A_TYPE4
+//} nfc_iso14443a_type_t;
+//
+///**
+// * @brief   ISO14443A tag description
+// */
+//typedef struct {
+//    uint8_t target;                /**< Target */
+//    uint8_t auth;                  /**< Card has been authenticated. Do not modify manually */
+//    uint8_t id_len;                /**< Length of the ID field */
+//    uint8_t acknowledgement;               /**< SEL_RES */
+//    unsigned sns_res;           /**< SNS_RES */
+//    nfc_iso14443a_type_t type;  /**< Type of ISO14443A card */
+//    uint8_t id[8];                 /**< Card ID (length given by id_len) */
+//} nfc_iso14443a_t;
+//
+///**
+// * @brief   Mifare keys
+// */
+//typedef enum {
+//    PN532_MIFARE_KEY_A = 0x60,
+//    PN532_MIFARE_KEY_B = 0x61
+//} pn532_mifare_key_t;
+//
+//typedef union {
+//    uint8_t mifare_params[6];
+//    uint8_t felica_params[18];
+//    uint8_t nfcid3t[10];
+//} pn532_target_params_t;
+//
+///**
+// * @brief   Obtain Tag 4 data length from buffer
+// *
+// * This is useful in case the length has been read and one intents to read the
+// * data.
+// */
+//#define PN532_ISO14443A_4_LEN_FROM_BUFFER(b) ((b[0] << 8) | b[1])
+//
+///**
+// * @brief   Hard reset the chipset
+// *
+// * The chipset is reset by toggling the reset pins
+// *
+// * @param[in]  dev          target device
+// *
+// */
+//void pn532_reset(const pn53_dev_t* dev);
+//
+///**
+// * @brief   Initialize the module and peripherals
+// *
+// * This is the first method to be called in order to interact with the pn532.
+// * It configures the GPIOs and the i2c/spi interface (depending on @p mode).
+// *
+// *  @param[in]  dev         target device
+// *  @param[in]  params      configuration parameters
+// *  @param[in]  mode        initialization mode
+// *
+// * @return                  0 on success
+// * @return                  <0 i2c/spi/uart initialization error, the value is given
+// *                          by the i2c/spi/uart init method.
+// */
 
-/**
- * @brief   ISO14443A Card types
- */
-typedef enum {
-    ISO14443A_UNKNOWN,
-    ISO14443A_MIFARE,
-    ISO14443A_TYPE4
-} nfc_iso14443a_type_t;
-
-/**
- * @brief   ISO14443A tag description
- */
-typedef struct {
-    uint8_t target;                /**< Target */
-    uint8_t auth;                  /**< Card has been authenticated. Do not modify manually */
-    uint8_t id_len;                /**< Length of the ID field */
-    uint8_t acknowledgement;               /**< SEL_RES */
-    unsigned sns_res;           /**< SNS_RES */
-    nfc_iso14443a_type_t type;  /**< Type of ISO14443A card */
-    uint8_t id[8];                 /**< Card ID (length given by id_len) */
-} nfc_iso14443a_t;
-
-/**
- * @brief   Mifare keys
- */
-typedef enum {
-    PN532_MIFARE_KEY_A = 0x60,
-    PN532_MIFARE_KEY_B = 0x61
-} pn532_mifare_key_t;
-
-typedef union {
-    uint8_t mifare_params[6];
-    uint8_t felica_params[18];
-    uint8_t nfcid3t[10];
-} pn532_target_params_t;
-
-/**
- * @brief   Obtain Tag 4 data length from buffer
- *
- * This is useful in case the length has been read and one intents to read the
- * data.
- */
-#define PN532_ISO14443A_4_LEN_FROM_BUFFER(b) ((b[0] << 8) | b[1])
-
-/**
- * @brief   Hard reset the chipset
- *
- * The chipset is reset by toggling the reset pins
- *
- * @param[in]  dev          target device
- *
- */
-void pn532_reset(const pn53_dev_t* dev);
-
-/**
- * @brief   Initialize the module and peripherals
- *
- * This is the first method to be called in order to interact with the pn532.
- * It configures the GPIOs and the i2c/spi interface (depending on @p mode).
- *
- *  @param[in]  dev         target device
- *  @param[in]  params      configuration parameters
- *  @param[in]  mode        initialization mode
- *
- * @return                  0 on success
- * @return                  <0 i2c/spi/uart initialization error, the value is given
- *                          by the i2c/spi/uart init method.
- */
-int pn53_init(pn53_dev_t* dev, const pn53_connection_config_t* config);
-
-int pn532_init(nfcdev_t *nfcdev, const void *dev_config);
-
-
-#if IS_USED(MODULE_PN53X_I2C) || DOXYGEN
-/**
- * @brief   Initialization of PN532 using i2c
- *
- * @see pn532_init for parameter and return value details
- * @note Use `pn532_i2c` module to use this function.
- */
-static inline int pn532_init_i2c(pn53_dev_t* dev, const pn532_params_t *params)
-{
-    return pn532_init(dev, params, PN53_BUS_I2C);
-}
-#endif
-
-#if IS_USED(MODULE_PN53_SPI) || DOXYGEN
-/**
- * @brief   Initialization of PN532 using spi
- *
- * @see pn532_init for parameter and return value details
- * @note Use `pn532_spi` module to use this function.
- */
-static inline int pn532_init_spi(pn53_dev_t* dev, const pn532_params_t *params)
-{
-    return _pn532_init(dev, params, PN53_BUS_SPI);
-}
-#endif
-
-#if IS_USED(MODULE_PN53X_UART) || DOXYGEN
-static inline int pn532_init_uart(pn53_dev_t* dev, const pn532_params_t *params)
-{
-    return pn532_init(dev, params, PN53_BUS_UART);
-}
-#endif
-
-/**
- * @brief   Get the firmware version of the pn532
- *
- * The firmware version returned is a 4 byte long value:
- *  - ic version,
- *  - fw version,
- *  - fw revision
- *  - feature support
- *
- * @param[in]  dev          target device
- * @param[out] fw_ver       encoded firmware version
- *
- * @return                  0 on success
- */
-int pn532_fw_version(pn53_dev_t* dev, uint32_t *fw_ver);
-
-/**
- * @brief   Read register of the pn532
- *
- * Refer to the datasheet for a comprehensive list of registers and meanings.
- * For SFR registers the high byte must be set to 0xff.
- *
- * http://www.nxp.com/documents/user_manual/141520.pdf
- *
- * @param[in]  dev          target device
- * @param[out] out          value of the register
- * @param[in]  addr         address of the register to read
- *
- * @return                  0 on success
- */
-int pn532_read_reg(pn53_dev_t* dev, uint8_t *out, unsigned addr);
-
-/**
- * @brief   Write register of the pn532
- *
- * Refer to the datasheet for a comprehensive list of registers and meanings.
- *
- * http://www.nxp.com/documents/user_manual/141520.pdf
- *
- * @param[in]  dev          target device
- * @param[in]  addr         address of the register to read
- * @param[in]  val          value to write in the register
- *
- * @return                  0 on success
- */
-int pn532_write_reg(pn53_dev_t* dev, unsigned addr, uint8_t val);
-
-int pn532_update_reg(pn53_dev_t* dev, unsigned addr, uint8_t val, uint8_t mask);
-
-/**
- * @brief   Set new settings for the Security Access Module
- *
- * @param[in]  dev          target device
- * @param[in]  mode         new mode for the SAM
- * @param[in]  timeout      timeout for Virtual Card mode with LSB of 50ms.
- *                          (0 = infinite and 0xFF = 12.75s)
- *
- * @return                  0 on success
- */
-ssize_t pn53_sam_configuration(pn53_dev_t* dev, pn53_sam_mode_t mode, uint8_t timeout, bool use_irq);
-
-/**
- * @brief   Get one ISO14443-A passive target
- *
- * This method blocks until a target is detected.
- *
- * @param[in]  dev          target device
- * @param[out] out          target to be stored
- * @param[in]  max_retries  maximum number of attempts to activate a target
- *                          (0xff blocks indefinitely)
- *
- * @return                  0 on success
- * @return                  -1 when no card detected (if non blocking)
- */
-int pn532_get_passive_iso14443a(pn53_dev_t* dev, nfc_iso14443a_t *out, unsigned max_retries);
-
-/**
- * @brief   Authenticate a Mifare classic card
- *
- * This operation must be done before reading or writing the segment.
- *
- * @param[in]  dev          target device
- * @param[in]  card         card to use
- * @param[in]  keyid        which key to use
- * @param[in]  key          buffer containing the key
- * @param[in]  block        which block to authenticate
- *
- * @return                  0 on success
- */
-// int pn532_mifareclassic_authenticate(pn53_dev_t* dev, nfc_iso14443a_t *card,
-//                                     pn532_mifare_key_t keyid, uint8_t *key, unsigned block);
-
-/**
- * @brief   Read a block of a Mifare classic card
- *
- * The block size is 16 bytes and it must be authenticated before read.
- *
- * @param[in]  dev          target device
- * @param[out] odata        buffer where to store the data
- * @param[in]  card         card to use
- * @param[in]  block        which block to read
- *
- * @return                  0 on success
- */
-int pn532_mifareclassic_read(pn53_dev_t* dev, uint8_t *odata, nfc_iso14443a_t *card, unsigned block);
-
-/**
- * @brief   Write a block of a Mifare classic card
- *
- * The block size is 16 bytes and it must be authenticated before written.
- *
- * @param[in]  dev          target device
- * @param[in]  idata        buffer containing the data to write
- * @param[in]  card         card to use
- * @param[in]  block        which block to write to
- *
- * @return                  0 on success
- */
-int pn532_mifareclassic_write(pn53_dev_t* dev, uint8_t *idata, nfc_iso14443a_t *card, unsigned block);
-
-/**
- * @brief   Read a block of a Mifare Ultralight card
- *
- * The block size is 32 bytes and it must be authenticated before read.
- *
- * @param[in]  dev          target device
- * @param[out] odata        buffer where to store the data
- * @param[in]  card         card to use
- * @param[in]  page         which block to read
- *
- * @return                  0 on success
- */
-int pn532_mifareulight_read(pn53_dev_t* dev, uint8_t *odata, nfc_iso14443a_t *card, unsigned page);
-
-/**
- * @brief   Activate the NDEF file of a ISO14443-A Type 4 tag
- *
- * @param[in]  dev          target device
- * @param[in]  card         card to activate
- *
- * @return                  0 on success
- */
-int pn532_iso14443a_4_activate(pn53_dev_t* dev, nfc_iso14443a_t *card);
-
-/**
- * @brief   Read data from the NDEF file of a ISO14443-A Type 4 tag
- *
- * The first two bytes of an NDEF file are the length of the data. Afterwards,
- * at offset 0x02 starts the data itself. If one tries to read further than the
- * end of the data no data is returned.
- *
- * @param[in]  dev          target device
- * @param[out] odata        buffer where to store the data
- * @param[in]  card         card to activate
- * @param[in]  offset       offset where to start reading
- * @param[in]  len          length to read
- *
- * @return                  0 on success
- */
-int pn532_iso14443a_4_read(pn53_dev_t* dev, uint8_t *odata, nfc_iso14443a_t *card, unsigned offset,
-                           uint8_t len);
-
-/**
- * @brief   Deselect a previously selected passive card
- *
- * @param[in]  dev          target device
- * @param[in] target_id     id of the target to deselect (0x00 for all)
- */
-void pn532_deselect_passive(pn53_dev_t* dev);
-
-/**
- * @brief   Release an active passive card
- *
- * @param[in]  dev          target device
- * @param[in] target_id     id of the target to release (0x00 for all)
- */
-void pn532_release_passive(pn53_dev_t* dev);
-
-int pn53_set_parameters(pn53_dev_t* dev, uint8_t parameters);
-
-int pn532_poll(nfcdev_t *nfcdev, nfc_listener_config_t *config);
-
-int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listen_config_t *config);
-
-int pn532_poll_b(nfcdev_t *nfcdev, nfc_b_listener_config_t *config);
-
-int pn532_poll_f(nfcdev_t *nfcdev, nfc_f_listener_config_t *config);
-
-int pn532_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
-                                  uint8_t *rcv, size_t *receive_len);
-
-int pn532_target_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
-                               uint8_t *rcv, size_t *receive_len);
-
-int pn532_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_len);
-
-int pn532_target_send_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len);
-
-int pn532_listen_a(nfcdev_t *nfcdev, const nfc_a_listen_config_t *config);
-
-int pn532_mifare_classic_authenticate(nfcdev_t *nfcdev, uint8_t block_number, 
-    const nfc_a_id_t *uid, bool is_key_a, const uint8_t *key);
-
-static const nfcdev_ops_t pn532_ops = {
-    .init = pn532_init,
-    .poll_a = pn532_poll_a,
-    .poll_b = pn532_poll_b,
-    .poll_f = pn532_poll_f,
-    .poll = pn532_poll,
-    .listen_a = pn532_listen_a,
-    .target_send_data = pn532_target_send_data,
-    .target_receive_data = pn532_target_receive_data,
-    .initiator_exchange_data = pn532_initiator_exchange_data,
-    .mifare_classic_authenticate = pn532_mifare_classic_authenticate,
-};
 
 #ifdef __cplusplus
 }

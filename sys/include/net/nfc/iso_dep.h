@@ -60,7 +60,7 @@ static inline iso_dep_frame_size_t iso_dep_byte_bound_to_frame_size(size_t upper
 typedef union __attribute__((packed)) {
     struct {
         uint8_t down : 3;
-        bool _zero: 1;
+        bool _zero : 1;
         uint8_t up : 3;
         bool same_constraint : 1;
     } __attribute__((packed));

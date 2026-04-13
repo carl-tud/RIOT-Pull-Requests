@@ -93,20 +93,29 @@ typedef struct __attribute__((packed)) {
     uint8_t timeslots;
 } nfc_f_polling_command_payload_t;
 
-typedef struct __attribute__((packed)) {
-    /// Optional response
-    uint8_t additional_response[2];
-} nfc_f_polling_response_payload_t;
+typedef uint8_t nfc_f_polling_response_payload_t[2];
 
 typedef struct __attribute__((packed)) {
-    nfc_f_packet_header_t super;
+    nfc_f_packet_header_t header;
+    nfc_f_polling_command_payload_t payload;
+} nfc_f_polling_command_t;
+
+typedef struct __attribute__((packed)) {
+    nfc_f_packet_header_t header;
+    nfc_f_id_t id;
+    nfc_f_pmm_t pmm;
+    nfc_f_polling_response_payload_t payload;
+} nfc_f_polling_response_t;
+
+typedef struct __attribute__((packed)) {
+    nfc_f_packet_header_t header;
     union __attribute__((packed)) {
         nfc_f_polling_command_payload_t polling;
     } payload;
 } nfc_f_command_t;
 
 typedef struct __attribute__((packed)) {
-    nfc_f_packet_header_t super;
+    nfc_f_packet_header_t header;
     nfc_f_id_t id;
     nfc_f_pmm_t pmm;
     union __attribute__((packed)) {
@@ -142,6 +151,7 @@ typedef struct {
 
 typedef struct {
     nfc_f_id_t* id;
+    nfc_f_pmm_t* pmm;
     nfc_f_system_code_t system_code;
     nfc_bitrate_t bitrates;
 
