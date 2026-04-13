@@ -20,6 +20,7 @@
 #include "periph/uart.h"
 #include "msg.h"
 #include "byteorder.h"
+#include "architecture.h"
 
 #include "log.h"
 
@@ -161,12 +162,9 @@ int pn53_init(pn53_dev_t* dev, const pn53_connection_config_t* config) {
 
     /* Start with conservative minimum before knowing model */
     dev->connection.max_packet_length = 200;
-    if ((res = (int)pn53_sam_configuration(dev, PN53_SAM_NORMAL, 0xA0, true)) < 0) {
-        PN53_DEBUG("SAMConfiguration failed with %i\n", res);
-    }
     if (IS_ACTIVE(CONFIG_PN53_SELFCHECK)) {
         if ((res = pn53_check_communication(dev)) < 0) {
-            PN53_DEBUG("communication test failed\n");
+            PN53_DEBUG("Diagnose(0x06): failed wih %i\n", res);
             return res;
         }
     }
@@ -174,32 +172,6 @@ int pn53_init(pn53_dev_t* dev, const pn53_connection_config_t* config) {
     if ((res = pn53_get_firmware_version(dev, NULL)) < 0) {
         return res;
     }
-
-
-//    uint8_t cfg1[] = {0x00, 0x0B, 0x0A};
-//    int ret = _rf_configure(dev, 0x02, cfg1, sizeof(cfg1));
-//    if (ret != 0) {
-//        LOG_ERROR("pn532: rf configuration 1 failed with %d\n", ret);
-//        return ret;
-//    }
-//    uint8_t cfg2[] = {0x00};
-//    ret = _rf_configure(dev, 0x04, cfg2, sizeof(cfg2));
-//    if (ret != 0) {
-//        LOG_ERROR("pn532: rf configuration 2 failed with %d\n", ret);
-//        return ret;
-//    }
-//    uint8_t cfg3[] = {0x01, 0x00, 0x01};
-//    ret = _rf_configure(dev, 0x05, cfg3, sizeof(cfg3));
-//    if (ret != 0) {
-//        LOG_ERROR("pn532: rf configuration 3 failed with %d\n", ret);
-//        return ret;
-//    }
-//
-//    LOG_DEBUG("pn532: setting parameters to 0\n");
-//    pn532_set_parameters(dev, 0b00000000);
-//
-//    LOG_DEBUG("pn532: init complete\n");
-
     return 0;
 }
 
@@ -221,6 +193,22 @@ int pn53_init(pn53_dev_t* dev, const pn53_connection_config_t* config) {
     .iol_next = next, \
 })
 
+int pn53_set_parameters(pn53_dev_t* dev, uint8_t parameters) {
+    assert(dev);
+
+    uint8_t command[] = {
+        (uint8_t)PN53_COMMAND_SET_PARAMETERS,
+        parameters
+    };
+
+    ssize_t res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), NULL, CONFIG_PN53_COMMAND_TIMEOUT_DEFAULT_MS);
+    if (res < 0) {
+        return (int)res;
+    }
+    dev->nfc_parameters = parameters;
+    return 0;
+}
+
 ssize_t pn53_read_registers(pn53_dev_t *dev, pn53_register_address_t* registers, uint8_t** values, size_t count) {
     int res = -1;
     uint8_t code = (uint8_t)PN53_COMMAND_READ_REGISTERS;
@@ -230,16 +218,25 @@ ssize_t pn53_read_registers(pn53_dev_t *dev, pn53_register_address_t* registers,
         return res;
     }
 
-    if (dev->model == PN53_MODEL_PN533 && res > 0) {
+    if (dev->model == PN53_MODEL_PN533) {
+        if (res == 0) {
+            PN53_DEBUG("ReadRegisters: missing status code\n");
+            return -EIO;
+        }
         pn53_status_code_t code = pn53_status_code((*values)[0]);
         if (code != 0) {
             return -PN53_ERRNO_FROM_STATUS_CODE(code);
         }
         // Skip over status code
         *values += 1;
+        res -= 1;
     }
 
-    return res - 1;
+    if ((size_t)res != count) {
+        PN53_DEBUG("ReadRegisters: expected %" PRIuSIZE " values, got %" PRIuSIZE "\n", count, (size_t)res);
+        return -EIO;
+    }
+    return res;
 }
 
 int pn53_write_registers(pn53_dev_t *dev, pn53_register_t* registers, size_t count) {
@@ -251,7 +248,11 @@ int pn53_write_registers(pn53_dev_t *dev, pn53_register_t* registers, size_t cou
     if ((res = pn53_hci_transceive_command(&dev->connection, &command, &response, dev->command_timeout)) < 0) {
         return res;
     }
-    if (dev->model == PN53_MODEL_PN533 && res > 0) {
+    if (dev->model == PN53_MODEL_PN533) {
+        if (res == 0) {
+            PN53_DEBUG("WriteRegisters: missing status code\n");
+            return -EIO;
+        }
         pn53_status_code_t code = pn53_status_code(response[0]);
         if (code != 0) {
             return -PN53_ERRNO_FROM_STATUS_CODE(code);
@@ -280,6 +281,8 @@ int pn53_register_symbol_set(pn53_register_symbols_t* symbols, pn53_register_sym
 
     // Remember what bits we want to set...
     symbols->change_masks[ix] |= mask;
+
+    return 0;
 }
 
 int16_t pn53_register_symbol_get(pn53_register_symbols_t* symbols, pn53_register_symbol_t symbol) {
@@ -308,13 +311,14 @@ int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbol
     static_assert(ARRAY_SIZE(symbols->change_masks) == ARRAY_SIZE(symbols->register_values),
                   "pn53_register_symbols_t has mismatching internal buffer sizes, please file "
                   "a bug report.");
-    uint8_t buffer[sizeof(symbols->register_values) * sizeof(pn53_register_t)];
+
+    pn53_register_address_t addrs[sizeof(symbols->register_values)];
     size_t register_ix = 0;
 
     for (pn53_register_address_t i = 0; i < sizeof(symbols->change_masks); i += 1) {
         if (symbols->change_masks[i] != 0) {
             uint16_t addr = PN53_SYMBOLS_START_REGISTER + i;
-            ((pn53_register_address_t*)buffer)[register_ix] = htole16(addr);
+            addrs[register_ix] = htole16(addr);
             register_ix += 1;
         }
     }
@@ -323,17 +327,18 @@ int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbol
 
     uint8_t* values;
     ssize_t res = 0;
-    if ((res = pn53_read_registers(dev, (pn53_register_address_t*)buffer, &values, changed_registers)) < 0) {
+    if ((res = pn53_read_registers(dev, addrs, &values, changed_registers)) < 0) {
         return (int)res;
     }
 
     register_ix = 0;
+    pn53_register_t regs[sizeof(symbols->register_values)];
 
     for (pn53_register_address_t i = 0; i < sizeof(symbols->change_masks); i += 1) {
         if (symbols->change_masks[i] != 0) {
             uint16_t addr = PN53_SYMBOLS_START_REGISTER + i;
 
-            ((pn53_register_t*)buffer)[register_ix] = (pn53_register_t) {
+            regs[register_ix] = (pn53_register_t) {
                 .address = htole16(addr),
                 .value = (values[register_ix] & ~symbols->change_masks[i]) | (symbols->register_values[i] & symbols->change_masks[i])
             };
@@ -341,11 +346,346 @@ int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbol
         }
     }
 
-    if ((res = pn53_write_registers(dev, (pn53_register_t*)buffer, changed_registers)) < 0) {
+    if ((res = pn53_write_registers(dev, regs, changed_registers)) < 0) {
         return (int)res;
     }
     return 0;
 }
+
+ssize_t pn53_read_gpio(pn53_dev_t* dev, pn53_read_gpio_payload_t** response) {
+    uint8_t command = (uint8_t)PN53_COMMAND_READ_GPIO;
+    return pn53_hci_transceive_command2(&dev->connection, &command, sizeof(command), (uint8_t**)response, dev->command_timeout);
+}
+
+int pn53_write_gpio(pn53_dev_t* dev, pn53_write_gpio_payload_t payload) {
+    uint8_t command[] = { (uint8_t)PN53_COMMAND_WRITE_GPIO, payload.p3.raw, payload.p7.raw };
+    return (int)pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), NULL, dev->command_timeout);
+}
+
+int pn53_get_general_status(pn53_dev_t* dev, pn53_general_status_t* status) {
+    uint8_t command = (uint8_t)PN53_COMMAND_GET_GENERAL_STATUS;
+    uint8_t* response;
+    ssize_t res = 0;
+    if ((res = pn53_hci_transceive_command2(&dev->connection, &command, sizeof(command), &response, dev->command_timeout)) < 0) {
+        return (int)res;
+    }
+
+    if (res < 4) {
+        PN53_DEBUG("GetGeneralStatus: expected at least 4, got %" PRIuSIZE " bytes\n", (size_t)res);
+        return -EBADMSG;
+    }
+    size_t expected = 4 /* Err, Field, NbTg, SAM */ + response[2] /* NbTg */ * 4 /* Tg, BrRx, BrTx, Type */;
+    if ((size_t)res < expected) {
+        PN53_DEBUG("GetGeneralStatus: expected at least %" PRIuSIZE ", got %" PRIuSIZE " bytes\n", expected, (size_t)res);
+        return -EBADMSG;
+    }
+
+    if (status) {
+        assert(response);
+        status->last_command_status = *response++;
+        status->field_detected = *response++;
+        status->target_count = *response++;
+
+        for (uint8_t i = 0; i < status->target_count; i += 1) {
+            /* logical = */ response++;
+            status->targets[i].rx.bitrate = (nfc_bitrate_t)(1 << (*response++));
+            status->targets[i].tx.bitrate = (nfc_bitrate_t)(1 << (*response++));
+
+            status->targets[i].mode = NFC_COMMUNICATION_MODE_PASSIVE;
+            status->targets[i].nfc_a_gemstone = false;
+
+            uint8_t type = *response++;
+            switch (type) {
+                case 0x00:
+                    status->targets[i].rx.technology = NFC_TECHNOLOGY_A | NFC_TECHNOLOGY_B;
+                    status->targets[i].tx.technology = NFC_TECHNOLOGY_A | NFC_TECHNOLOGY_B;
+                    break;
+                case 0x10:
+                    status->targets[i].tx.technology = NFC_TECHNOLOGY_F;
+                    status->targets[i].rx.technology = NFC_TECHNOLOGY_F;
+                    break;
+                case 0x01:
+                    status->targets[i].mode = NFC_COMMUNICATION_MODE_ACTIVE;
+                    status->targets[i].rx.technology =
+                        (status->targets[i].rx.bitrate == NFC_BITRATE_106K) ? NFC_TECHNOLOGY_A : NFC_TECHNOLOGY_F;
+                    status->targets[i].tx.technology =
+                        (status->targets[i].tx.bitrate == NFC_BITRATE_106K) ? NFC_TECHNOLOGY_A : NFC_TECHNOLOGY_F;
+                    break;
+                case 0x02:
+                    status->targets[i].rx.technology = NFC_TECHNOLOGY_A;
+                    status->targets[i].tx.technology = NFC_TECHNOLOGY_A;
+                    status->targets[i].nfc_a_gemstone = true;
+                    break;
+                default:
+                    PN53_DEBUG("GetGeneralStatus: illegal target type 0x%02x\n", type);
+                    return -EBADMSG;
+            }
+        }
+    }
+    status->sam_status = (pn53_sam_status_t)*response;
+    return 0;
+}
+
+static inline size_t _rf_configuration_payload_length(const pn53_rf_configuration_payload_t* rf_config) {
+    switch (rf_config->item) {
+        case PN53_RF_CONFIGURATION_ITEM_RF_FIELD: return sizeof(rf_config->rf_field);
+        case PN53_RF_CONFIGURATION_ITEM_MAXIMUM_RETRIES_FRAME: return sizeof(rf_config->max_retries_frame);
+        case PN53_RF_CONFIGURATION_ITEM_MAXIMUM_RETRIES: return sizeof(rf_config->max_retries_higher_layer);
+        case PN53_RF_CONFIGURATION_ITEM_VARIOUS_TIMINGS: return sizeof(rf_config->various_timings);
+        case PN53_RF_CONFIGURATION_ITEM_ANALOG_NFC_A: return sizeof(rf_config->registers_when_nfc_a);
+        case PN53_RF_CONFIGURATION_ITEM_ANALOG_NFC_B: return sizeof(rf_config->registers_when_nfc_b);
+        case PN53_RF_CONFIGURATION_ITEM_ANALOG_NFC_F: return sizeof(rf_config->registers_when_nfc_f);
+        case PN53_RF_CONFIGURATION_ITEM_ANALOG_FAST_ISO_DEP: return sizeof(rf_config->registers_when_fast_iso_dep);
+        default:
+            assert(false);
+            return 0;
+    }
+}
+
+ssize_t pn53_rf_configuration(pn53_dev_t* dev, const pn53_rf_configuration_payload_t* rf_config) {
+    uint8_t code = PN53_COMMAND_RF_CONFIGURATION;
+    iolist_t config = __IOLIST((const uint8_t*)rf_config, 1 + _rf_configuration_payload_length(rf_config), NULL);
+    iolist_t command = __IOLIST(&code, 1, &config);
+    return pn53_hci_transceive_command(&dev->connection, &command, NULL, dev->command_timeout);
+}
+
+//ssize_t pn53_in_jump_for_dep(pn53_dev_t* dev, uint8_t act_pass, uint8_t baud_rate, uint8_t next, const uint8_t* payload, size_t payload_length, uint8_t** response) {
+//    uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_JUMP_FOR_DEP, act_pass, baud_rate, next };
+//    iolist_t payload_node = { .iol_base = (void*)payload, .iol_len = payload_length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = header, .iol_len = sizeof(header), .iol_next = (payload_length > 0) ? &payload_node : NULL };
+//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code((*response)[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return res;
+//}
+//
+//ssize_t pn53_in_jump_for_psl(pn53_dev_t* dev, uint8_t act_pass, uint8_t baud_rate, uint8_t next, const uint8_t* payload, size_t payload_length, uint8_t** response) {
+//    uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_JUMP_FOR_PSL, act_pass, baud_rate, next };
+//    iolist_t payload_node = { .iol_base = (void*)payload, .iol_len = payload_length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = header, .iol_len = sizeof(header), .iol_next = (payload_length > 0) ? &payload_node : NULL };
+//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code((*response)[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return res;
+//}
+//
+//ssize_t pn53_in_atr(pn53_dev_t* dev, uint8_t target_number, uint8_t next, const uint8_t* payload, size_t payload_length, uint8_t** response) {
+//    uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_ATR, target_number, next };
+//    iolist_t payload_node = { .iol_base = (void*)payload, .iol_len = payload_length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = header, .iol_len = sizeof(header), .iol_next = (payload_length > 0) ? &payload_node : NULL };
+//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code((*response)[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return res;
+//}
+//
+//int pn53_in_psl(pn53_dev_t* dev, uint8_t target_number, uint8_t baud_rate_initiator_to_target, uint8_t baud_rate_target_to_initiator) {
+//    uint8_t command[] = { (uint8_t)PN53_COMMAND_IN_PSL, target_number, baud_rate_initiator_to_target, baud_rate_target_to_initiator };
+//    uint8_t* response;
+//    ssize_t res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), &response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code(response[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return (int)res;
+//}
+//
+//ssize_t pn53_in_data_exchange(pn53_dev_t* dev, uint8_t target_number, const uint8_t* data_out, size_t data_out_length, uint8_t** data_in) {
+//    uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_DATA_EXCHANGE, target_number };
+//    iolist_t data_node = { .iol_base = (void*)data_out, .iol_len = data_out_length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = header, .iol_len = sizeof(header), .iol_next = (data_out_length > 0) ? &data_node : NULL };
+//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, data_in, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code((*data_in)[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return res;
+//}
+//
+//ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const uint8_t* data_out, size_t data_out_length, uint8_t** data_in) {
+//    uint8_t header = (uint8_t)PN53_COMMAND_IN_COMMUNICATE_THRU;
+//    iolist_t data_node = { .iol_base = (void*)data_out, .iol_len = data_out_length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = &header, .iol_len = sizeof(header), .iol_next = (data_out_length > 0) ? &data_node : NULL };
+//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, data_in, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code((*data_in)[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return res;
+//}
+//
+//int pn53_in_deselect(pn53_dev_t* dev, uint8_t target_number) {
+//    uint8_t command[] = { (uint8_t)PN53_COMMAND_IN_DESELECT, target_number };
+//    uint8_t* response;
+//    ssize_t res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), &response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code(response[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return (int)res;
+//}
+//
+//int pn53_in_release(pn53_dev_t* dev, uint8_t target_number) {
+//    uint8_t command[] = { (uint8_t)PN53_COMMAND_IN_RELEASE, target_number };
+//    uint8_t* response;
+//    ssize_t res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), &response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code(response[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return (int)res;
+//}
+//
+//ssize_t pn53_in_select(pn53_dev_t* dev, uint8_t target_number, uint8_t** response) {
+//    uint8_t command[] = { (uint8_t)PN53_COMMAND_IN_SELECT, target_number };
+//    ssize_t res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code((*response)[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return res;
+//}
+//
+//ssize_t pn53_in_auto_poll(pn53_dev_t* dev, uint8_t poll_number, uint8_t period, const uint8_t* types, size_t types_length, uint8_t** response) {
+//    uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_AUTO_POLL, poll_number, period };
+//    iolist_t types_node = { .iol_base = (void*)types, .iol_len = types_length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = header, .iol_len = sizeof(header), .iol_next = (types_length > 0) ? &types_node : NULL };
+//    return pn53_hci_transceive_command(&dev->connection, &command_node, response, dev->command_timeout);
+//}
+//
+//ssize_t pn53_tg_init_as_target(pn53_dev_t* dev, uint8_t mode, const uint8_t* mifare_params, const uint8_t* felica_params, const uint8_t* nfcid3t, uint8_t len_gt, const uint8_t* gt, uint8_t len_tk, const uint8_t* tk, uint8_t** response) {
+//    uint8_t header_part1[] = { (uint8_t)PN53_COMMAND_TG_INIT_AS_TARGET, mode };
+//    iolist_t tk_node = { .iol_base = (void*)tk, .iol_len = len_tk, .iol_next = NULL };
+//    iolist_t len_tk_node = { .iol_base = &len_tk, .iol_len = 1, .iol_next = (len_tk > 0) ? &tk_node : NULL };
+//    iolist_t gt_node = { .iol_base = (void*)gt, .iol_len = len_gt, .iol_next = &len_tk_node };
+//    iolist_t len_gt_node = { .iol_base = &len_gt, .iol_len = 1, .iol_next = (len_gt > 0) ? &gt_node : &len_tk_node };
+//    iolist_t nfcid3t_node = { .iol_base = (void*)nfcid3t, .iol_len = 10, .iol_next = &len_gt_node };
+//    iolist_t felica_node = { .iol_base = (void*)felica_params, .iol_len = 18, .iol_next = &nfcid3t_node };
+//    iolist_t mifare_node = { .iol_base = (void*)mifare_params, .iol_len = 6, .iol_next = &felica_node };
+//    iolist_t command_node = { .iol_base = header_part1, .iol_len = sizeof(header_part1), .iol_next = &mifare_node };
+//
+//    return pn53_hci_transceive_command(&dev->connection, &command_node, response, dev->command_timeout);
+//}
+//
+//int pn53_tg_set_general_bytes(pn53_dev_t* dev, const uint8_t* general_bytes, size_t length) {
+//    uint8_t header = (uint8_t)PN53_COMMAND_TG_SET_GENERAL_BYTES;
+//    iolist_t data_node = { .iol_base = (void*)general_bytes, .iol_len = length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = &header, .iol_len = sizeof(header), .iol_next = (length > 0) ? &data_node : NULL };
+//    uint8_t* response;
+//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, &response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code(response[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return (int)res;
+//}
+//
+//ssize_t pn53_tg_get_data(pn53_dev_t* dev, uint8_t** data_in) {
+//    uint8_t command = (uint8_t)PN53_COMMAND_TG_GET_DATA;
+//    ssize_t res = pn53_hci_transceive_command2(&dev->connection, &command, sizeof(command), data_in, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code((*data_in)[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return res;
+//}
+//
+//int pn53_tg_set_data(pn53_dev_t* dev, const uint8_t* data_out, size_t data_out_length) {
+//    uint8_t header = (uint8_t)PN53_COMMAND_TG_SET_DATA;
+//    iolist_t data_node = { .iol_base = (void*)data_out, .iol_len = data_out_length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = &header, .iol_len = sizeof(header), .iol_next = (data_out_length > 0) ? &data_node : NULL };
+//    uint8_t* response;
+//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, &response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code(response[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return (int)res;
+//}
+//
+//int pn53_tg_set_meta_data(pn53_dev_t* dev, const uint8_t* data_out, size_t data_out_length) {
+//    uint8_t header = (uint8_t)PN53_COMMAND_TG_SET_META_DATA;
+//    iolist_t data_node = { .iol_base = (void*)data_out, .iol_len = data_out_length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = &header, .iol_len = sizeof(header), .iol_next = (data_out_length > 0) ? &data_node : NULL };
+//    uint8_t* response;
+//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, &response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code(response[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return (int)res;
+//}
+//
+//ssize_t pn53_tg_get_initiator_command(pn53_dev_t* dev, uint8_t** command_in) {
+//    uint8_t command = (uint8_t)PN53_COMMAND_TG_GET_INITIATOR_COMMAND;
+//    ssize_t res = pn53_hci_transceive_command2(&dev->connection, &command, sizeof(command), command_in, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code((*command_in)[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return res;
+//}
+//
+//int pn53_tg_response_to_initiator(pn53_dev_t* dev, const uint8_t* response_out, size_t response_out_length) {
+//    uint8_t header = (uint8_t)PN53_COMMAND_TG_RESPONSE_TO_INITIATOR;
+//    iolist_t data_node = { .iol_base = (void*)response_out, .iol_len = response_out_length, .iol_next = NULL };
+//    iolist_t command_node = { .iol_base = &header, .iol_len = sizeof(header), .iol_next = (response_out_length > 0) ? &data_node : NULL };
+//    uint8_t* response;
+//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, &response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code(response[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return (int)res;
+//}
+//
+//ssize_t pn53_tg_get_target_status(pn53_dev_t* dev, uint8_t** response) {
+//    uint8_t command = (uint8_t)PN53_COMMAND_TG_GET_TARGET_STATUS;
+//    ssize_t res = pn53_hci_transceive_command2(&dev->connection, &command, sizeof(command), response, dev->command_timeout);
+//    if (res > 0) {
+//        pn53_status_code_t status = pn53_status_code((*response)[0]);
+//        if (status != PN53_STATUS_SUCCESS) {
+//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
+//        }
+//    }
+//    return res;
+//}
 
 //static int _rf_configure(pn532_t *dev, unsigned cfg_item, const uint8_t *config,
 //                         unsigned cfg_len)
@@ -368,17 +708,9 @@ int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbol
 //    return _rf_configure(dev, RF_CONFIG_MAX_RETRIES, rtrcfg, sizeof(rtrcfg));
 //}
 
-ssize_t pn53_sam_configuration(pn53_dev_t* dev, pn53_sam_mode_t mode, uint8_t timeout, bool use_irq) {
-    uint8_t command[] = {
-        (uint8_t)PN53_COMMAND_SAM_CONFIGURATION,
-        (uint8_t)mode,
-        timeout,
-        (uint8_t)use_irq
-    };
-    return pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), NULL, dev->command_timeout);
-}
 
-ssize_t pn53_list_passive_targets(pn53_dev_t* dev, uint8_t max_targets, pn53_technology_baudrate_t brty, uint8_t* data, size_t length, uint8_t** response) {
+
+ssize_t pn53_list_passive_targets(pn53_dev_t* dev, uint8_t max_targets, pn53_technology_baudrate_t brty, uint8_t* data, size_t length, uint8_t** response, uint32_t timeout) {
     uint8_t command[] = {
         (uint8_t)PN53_COMMAND_IN_LIST_PASSIVE_TARGET,
         max_targets,
@@ -386,75 +718,386 @@ ssize_t pn53_list_passive_targets(pn53_dev_t* dev, uint8_t max_targets, pn53_tec
     };
     iolist_t _data = __IOLIST(data, length, NULL);
     iolist_t _command = __IOLIST(command, sizeof(command), &_data);
-    return pn53_hci_transceive_command(&dev->connection, &_command, response, dev->command_timeout);
+    return pn53_hci_transceive_command(&dev->connection, &_command, response, timeout);
+}
+
+int pn53_list_passive_targets_a(pn53_dev_t* dev, uint8_t max_targets, nfc_a_id_t* id, nfc_a_polling_result_t* results, uint32_t timeout) {
+    ssize_t res = 0;
+
+    uint8_t command[3 + 10 + 2] = {
+        (uint8_t)PN53_COMMAND_IN_LIST_PASSIVE_TARGET,
+        max_targets,
+        (uint8_t)PN53_TECHNOLOGY_A_106K,
+        NFC_A_UID_CASCADE_TAG, 0, 0, 0, NFC_A_UID_CASCADE_TAG
+    };
+
+    size_t length = 3;
+
+    if (id && (id->length > 0)) {
+        PN53_DEBUG("List(a): anticol with given id of length %u\n", id->length);
+        length += id->length;
+        switch (id->length) {
+            case NFC_A_UID_LENGTH_SINGLE_4:
+                memcpy(&command[3], id->uid, NFC_A_UID_LENGTH_SINGLE_4);
+                break;
+            case NFC_A_UID_LENGTH_DOUBLE_7:
+                length += 1;
+                memcpy(&command[4], id->uid, NFC_A_UID_LENGTH_DOUBLE_7);
+                break;
+            case NFC_A_UID_LENGTH_TRIPLE_10:
+                length += 2;
+                memcpy(&command[4], id->uid, 3);
+                memcpy(&command[8], &id->uid[3], 7);
+                break;
+            default:
+                break;
+        }
+    }
+
+    uint8_t* response;
+    if ((res = pn53_hci_transceive_command2(&dev->connection, command, length, &response, timeout)) < 0) {
+        return (int)res;
+    }
+    if (res < 1) {
+        PN53_DEBUG("List(a): missing NbTg\n");
+        goto malformed;
+    }
+    memset(results, 0, sizeof(nfc_a_polling_result_t) * max_targets);
+    uint8_t target_count = *response++;
+    PN53_DEBUG("List(a): %u targets\n", (unsigned int)target_count);
+    res -= 1;
+
+    for (uint8_t i = 0; i < target_count; i += 1) {
+        if ((size_t)res < 5) {
+            PN53_DEBUG("List(a): target header too short\n");
+            goto malformed;;
+        }
+
+        /* logical = */ response++;
+        results[i].polling_response.raw[0] = *response++;
+        results[i].polling_response.raw[1] = *response++;
+        results[i].select_response = *response++;
+        PN53_DEBUG("List(a): atqa=%02x%02x sak=%02x\n",
+                   results[i].polling_response.raw[0],
+                   results[i].polling_response.raw[1],
+                   results[i].select_response);
+
+        results[i].id = (nfc_a_id_t*)response++;
+        res -= 5;
+
+        if ((size_t)res < (size_t)results[i].id->length) {
+            PN53_DEBUG("List(a): id cut off, "
+                       "expected %" PRIuSIZE ", have %" PRIuSIZE "\n",
+                       (size_t)results[i].id->length, (size_t)res);
+            goto malformed;
+        }
+        response += results[i].id->length;
+        res -= results[i].id->length;
+
+        if ((dev->nfc_parameters & (1 << 4)) &&
+            nfc_a_supports_iso_dep(results[i].select_response) &&
+            res > 0
+        ) {
+            nfc_a_ats_t* ats = (nfc_a_ats_t*)response;
+            if ((size_t)res < (size_t)ats->length) {
+                PN53_DEBUG("List(a): ATS cut off, "
+                           "expected %" PRIuSIZE ", have %" PRIuSIZE "\n",
+                           (size_t)ats->length, (size_t)res);
+                goto malformed;
+            }
+            PN53_DEBUG("List(a): ATS length=%" PRIuSIZE "\n",
+                       (size_t)ats->length);
+
+            results[i].higher_layer.iso_dep.ats = ats;
+            response += ats->length;
+            res -= ats->length;
+        }
+    }
+    if (res > 0) {
+        PN53_DEBUG("List(a): excess data %" PRIdSIZE " bytes\n", res);
+    }
+    return (ssize_t)target_count;
+
+malformed:
+    memset(results, 0, sizeof(nfc_a_polling_result_t) * max_targets);
+    return -EBADMSG;
+}
+
+int pn53_list_passive_targets_b(pn53_dev_t* dev, uint8_t max_targets, nfc_bitrate_t bitrate,
+                                uint8_t application_family, nfc_b_polling_method_t method,
+                                nfc_b_polling_result_t* results, uint32_t timeout
+) {
+    ssize_t res = 0;
+
+    pn53_technology_baudrate_t brty;
+    switch (bitrate) {
+        case NFC_BITRATE_106K: brty = PN53_TECHNOLOGY_B_106K; break;
+        case NFC_BITRATE_212K: brty = PN53_TECHNOLOGY_B_212K; break;
+        case NFC_BITRATE_424K:
+            if (dev->model == PN53_MODEL_PN533) {
+                brty = PN53_TECHNOLOGY_B_424K; break;
+            }
+            // fallthrough
+        case NFC_BITRATE_848K:
+            if (dev->model == PN53_MODEL_PN533) {
+                brty = PN53_TECHNOLOGY_B_848K; break;
+            }
+            // fallthrough
+        default:
+            PN53_DEBUG("List(b): unsupported bitrate %u kbit/s\n", nfc_bitrate_kbps(bitrate));
+            return -ENOTSUP;
+    }
+
+    uint8_t* response;
+    uint8_t command[] = {
+        (uint8_t)PN53_COMMAND_IN_LIST_PASSIVE_TARGET,
+        max_targets,
+        (uint8_t)brty,
+        application_family,
+        (uint8_t)method
+    };
+    // Only append method if method argument != 0
+    size_t length = sizeof(command) - ((method != 0) ? 0 : 1);
+    if ((res = pn53_hci_transceive_command2(&dev->connection, command, length, &response, timeout)) < 0) {
+        return (int)res;
+    }
+    if (res < 1) {
+        PN53_DEBUG("List(b): missing NbTg\n");
+        goto malformed;
+    }
+    memset(results, 0, sizeof(nfc_b_polling_result_t) * max_targets);
+
+    uint8_t target_count = *response++;
+    PN53_DEBUG("List(b): %u targets\n", (unsigned int)target_count);
+    res -= 1;
+
+    for (uint8_t i = 0; i < target_count; i += 1) {
+        if ((size_t)res < (sizeof(nfc_b_polling_response_payload_t) + 2 /* #Tg, 0x50, ATTRIB length */)) {
+            PN53_DEBUG("List(b): target header too short\n");
+            goto malformed;;
+        }
+
+        /* logical = */ response++;
+        res -= 1;
+
+        /* 0x50, the ATQB frame code / prefix is missing from the PN532/PN533 manuals.
+         * Carl's PN532 on the Adafruit PN532 shield sends an addition 0x01 byte before 0x50. */
+
+        uint8_t next = *response++;
+        res -= 1;
+        if (next != NFC_B_FRAME_CODE_POLLING_RESPONSE) {
+            PN53_DEBUG("List(b): 0x%02x in place of 0x50 ATQB prefix?\n", next);
+            next = *response++;
+            res -= 1;
+            PN53_DEBUG("List(b): ... skipping, next is 0x%02x\n", next);
+            if (next != NFC_B_FRAME_CODE_POLLING_RESPONSE) {
+                PN53_DEBUG("List(b): ... != missing ATQB prefix\n");
+                PN53_DEBUG("List(b): malformed, missing 0x50 ATQB prefix\n");
+                goto malformed;
+            }
+            PN53_DEBUG("List(b): ... == missing ATQB prefix\n");
+        }
+
+        results[i].polling_response = (nfc_b_polling_response_payload_t*)response;
+
+        response += sizeof(nfc_b_polling_response_payload_t);
+        res -= sizeof(nfc_b_polling_response_payload_t);
+
+        if (res > 0) {
+            uint8_t attrib_length = *response++;
+            res -= 1;
+
+            if ((size_t)res < (size_t)attrib_length) {
+                PN53_DEBUG("List(b): ATTRIB cut off, "
+                           "expected %" PRIuSIZE ", have %" PRIuSIZE "\n",
+                           (size_t)attrib_length, (size_t)res);
+                goto malformed;
+            }
+
+            if (attrib_length > 0) {
+                results[i].higher_layer.attrib_response_length = (size_t)attrib_length;
+                results[i].higher_layer.attrib = (nfc_b_attrib_response_t*)response;
+
+                response += (size_t)attrib_length;
+                res -= attrib_length;
+            }
+        }
+    }
+    if (res > 0) {
+        PN53_DEBUG("List(b): excess data %" PRIdSIZE " bytes\n", res);
+    }
+    return (ssize_t)target_count;
+
+malformed:
+    memset(results, 0, sizeof(nfc_b_polling_result_t) * max_targets);
+    return -EBADMSG;
 }
 
 
-int pn53_poll_a(pn53_dev_t* dev, const nfc_a_poll_config_t* config, nfc_a_target_t* targets, size_t capacity) {
-    
+ssize_t pn53_list_passive_targets_f(pn53_dev_t* dev, uint8_t max_targets, nfc_bitrate_t bitrate,
+    nfc_f_system_code_t system_code, nfc_f_polling_additional_request_t additional_request,
+    uint8_t timeslots, nfc_f_polling_result_t* results, uint32_t timeout
+) {
+    ssize_t res = 0;
+    pn53_technology_baudrate_t brty;
+    switch (bitrate) {
+        case NFC_BITRATE_212K: brty = PN53_TECHNOLOGY_F_212K; break;
+        case NFC_BITRATE_424K: brty = PN53_TECHNOLOGY_F_424K; break;
+        default:
+            PN53_DEBUG("List(f): unsupported bitrate %u kbit/s\n", nfc_bitrate_kbps(bitrate));
+            return -ENOTSUP;
+    }
+
+    uint8_t* response;
+    uint8_t command[3 + sizeof(nfc_f_polling_command_t) - 1 /* without length */] = {
+        (uint8_t)PN53_COMMAND_IN_LIST_PASSIVE_TARGET,
+        max_targets,
+        (uint8_t)brty
+    };
+    nfc_f_polling_command_t* pol = (nfc_f_polling_command_t*)(&command[2]);
+    pol->header.code = NFC_F_PACKET_CODE_POLLING_COMMAND;
+    pol->payload = (nfc_f_polling_command_payload_t) {
+        .system_code = htole16(system_code),
+        .additional_request = additional_request,
+        .timeslots = timeslots,
+    };
+    // Only append method if method argument != 0
+    if ((res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), &response, timeout)) < 0) {
+        return (int)res;
+    }
+    if (res < 1) {
+        PN53_DEBUG("List(f): missing NbTg\n");
+        goto malformed;
+    }
+    memset(results, 0, sizeof(nfc_f_polling_result_t) * max_targets);
+
+    uint8_t target_count = *response++;
+    PN53_DEBUG("List(f): %u targets\n", (unsigned int)target_count);
+    res -= 1;
+
+    for (uint8_t i = 0; i < target_count; i += 1) {
+        if ((size_t)res < (1 + sizeof(nfc_f_polling_response_t) - sizeof(nfc_f_polling_response_payload_t))) {
+            PN53_DEBUG("List(f): target header too short\n");
+            goto malformed;;
+        }
+
+        /* logical = */ response++;
+        res -= 1;
+
+        nfc_f_polling_response_t* pol = (nfc_f_polling_response_t*)response;
+        if ((size_t)res < (size_t)pol->header.length) {
+            PN53_DEBUG("List(f): POL_RES cut off, "
+                       "expected %" PRIuSIZE ", have %" PRIuSIZE "\n",
+                       (size_t)pol->header.length, (size_t)res);
+            goto malformed;
+        }
+        if (pol->header.code != NFC_F_PACKET_CODE_POLLING_RESPONSE) {
+            PN53_DEBUG("List(f): invalid response code %02x\n", (uint8_t)pol->header.code);
+            goto malformed;
+        }
+
+        size_t expected = sizeof(nfc_f_polling_response_t);
+        if (additional_request == NFC_F_POLLING_REQUEST_NOTHING) {
+            expected -= sizeof(nfc_f_polling_response_payload_t);
+        }
+
+        if (pol->header.length != expected) {
+            PN53_DEBUG("List(f): POL_RES had invalid length, "
+                       "expected %" PRIuSIZE ", have %" PRIuSIZE "\n",
+                       expected, (size_t)pol->header.length);
+            goto malformed;
+        }
+
+        switch (additional_request) {
+            case NFC_F_POLLING_REQUEST_SYSTEM_CODE:
+                results[i].system_code = byteorder_lebuftohs(pol->payload);
+                break;
+            case NFC_F_POLLING_REQUEST_BITRATES:
+                results[i].bitrates = (nfc_bitrate_t)pol->payload[1] << 1;
+                break;
+            default: break;
+        }
+
+        results[i].id = &pol->id;
+        results[i].pmm = &pol->pmm;
+    }
+    if (res > 0) {
+        PN53_DEBUG("List(f): excess data %" PRIdSIZE " bytes\n", res);
+    }
+    return (ssize_t)target_count;
+
+malformed:
+    memset(results, 0, sizeof(nfc_f_polling_result_t) * max_targets);
+    return -EBADMSG;
 }
 
- int pn532_get_passive_iso14443a(pn532_t *dev, nfc_iso14443a_t *out,
-                                 unsigned max_retries)
- {
-     int ret = -1;
-     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
 
-     if (_set_act_retries(dev, max_retries) == 0) {
-         ret = _list_passive_targets(dev, buff, PN532_BR_106_ISO_14443_A, 1,
-                                     LIST_PASSIVE_LEN_14443(1));
-     }
 
-     if (ret > 0 && buff[0] > 0) {
-         out->target = buff[1];
-         out->sns_res = (buff[2] << 8) | buff[3];
-         out->acknowledgement = buff[4];
-         out->id_len  = buff[5];
-         out->type = ISO14443A_UNKNOWN;
-
-         for (int i = 0; i < out->id_len; i++) {
-             out->id[i] = buff[6 + i];
-         }
-
-         /* try to find out the type */
-         if (out->id_len == 4) {
-             out->type = ISO14443A_MIFARE;
-         }
-         else if (out->id_len == 7) {
-             /* In the case of type 4, the first byte of RATS is the length
-              * of RATS including the length itself (6+7) */
-             if (buff[13] == ret - 13) {
-                 out->type = ISO14443A_TYPE4;
-             }
-         }
-         ret = 0;
-     }
-     else {
-         ret = -1;
-     }
-
-     return ret;
- }
-
-void pn532_deselect_passive(pn532_t *dev)
-{
-    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-
-    buff[BUFF_CMD_START ] = CMD_DESELECT;
-    buff[BUFF_DATA_START] = 0x00; /* all targets */
-
-    send_rcv(dev, buff, 1, 1, STANDARD_TIMEOUT_SEC);
-}
-
-void pn532_release_passive(pn532_t *dev)
-{
-    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-
-    buff[BUFF_CMD_START ] = CMD_RELEASE;
-    buff[BUFF_DATA_START] = 0x00;
-
-    send_rcv(dev, buff, 1, 1, STANDARD_TIMEOUT_SEC);
-}
+//int pn53_poll_a(pn53_dev_t* dev, const nfc_a_poll_config_t* config, nfc_a_target_t* targets, size_t capacity) {
+//    
+//}
+//
+// int pn532_get_passive_iso14443a(pn532_t *dev, nfc_iso14443a_t *out,
+//                                 unsigned max_retries)
+// {
+//     int ret = -1;
+//     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+//
+//     if (_set_act_retries(dev, max_retries) == 0) {
+//         ret = _list_passive_targets(dev, buff, PN532_BR_106_ISO_14443_A, 1,
+//                                     LIST_PASSIVE_LEN_14443(1));
+//     }
+//
+//     if (ret > 0 && buff[0] > 0) {
+//         out->target = buff[1];
+//         out->sns_res = (buff[2] << 8) | buff[3];
+//         out->acknowledgement = buff[4];
+//         out->id_len  = buff[5];
+//         out->type = ISO14443A_UNKNOWN;
+//
+//         for (int i = 0; i < out->id_len; i++) {
+//             out->id[i] = buff[6 + i];
+//         }
+//
+//         /* try to find out the type */
+//         if (out->id_len == 4) {
+//             out->type = ISO14443A_MIFARE;
+//         }
+//         else if (out->id_len == 7) {
+//             /* In the case of type 4, the first byte of RATS is the length
+//              * of RATS including the length itself (6+7) */
+//             if (buff[13] == ret - 13) {
+//                 out->type = ISO14443A_TYPE4;
+//             }
+//         }
+//         ret = 0;
+//     }
+//     else {
+//         ret = -1;
+//     }
+//
+//     return ret;
+// }
+//
+//void pn532_deselect_passive(pn532_t *dev)
+//{
+//    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+//
+//    buff[BUFF_CMD_START ] = CMD_DESELECT;
+//    buff[BUFF_DATA_START] = 0x00; /* all targets */
+//
+//    send_rcv(dev, buff, 1, 1, STANDARD_TIMEOUT_SEC);
+//}
+//
+//void pn532_release_passive(pn532_t *dev)
+//{
+//    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
+//
+//    buff[BUFF_CMD_START ] = CMD_RELEASE;
+//    buff[BUFF_DATA_START] = 0x00;
+//
+//    send_rcv(dev, buff, 1, 1, STANDARD_TIMEOUT_SEC);
+//}
 //
 //// int pn532_mifareclassic_authenticate(pn532_t *dev, nfc_iso14443a_t *card,
 ////                                      pn532_mifare_key_t keyid, uint8_t *key, unsigned block)
@@ -566,49 +1209,7 @@ void pn532_release_passive(pn532_t *dev)
 ////     return ret;
 //// }
 //
-//// int pn532_iso14443a_4_activate(pn532_t *dev, nfc_iso14443a_t *card)
-//// {
-////     int ret;
-////     uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-//
-////     /* select app ndef tag */
-////     buff[BUFF_CMD_START      ] = CMD_DATA_EXCHANGE;
-////     buff[BUFF_DATA_START     ] = card->target;
-////     buff[BUFF_DATA_START +  1] = 0x00;
-////     buff[BUFF_DATA_START +  2] = 0xa4;
-////     buff[BUFF_DATA_START +  3] = 0x04;
-////     buff[BUFF_DATA_START +  4] = 0x00;
-////     buff[BUFF_DATA_START +  5] = 0x07;
-////     buff[BUFF_DATA_START +  6] = 0xD2;
-////     buff[BUFF_DATA_START +  7] = 0x76;
-////     buff[BUFF_DATA_START +  8] = 0x00;
-////     buff[BUFF_DATA_START +  9] = 0x00;
-////     buff[BUFF_DATA_START + 10] = 0x85;
-////     buff[BUFF_DATA_START + 11] = 0x01;
-////     buff[BUFF_DATA_START + 12] = 0x01;
-////     buff[BUFF_DATA_START + 13] = 0x00;
-//
-////     LOG_DEBUG("pn532: select app\n");
-////     ret = send_rcv_apdu(dev, buff, 14, 0);
-//
-////     /* select ndef file */
-////     buff[BUFF_CMD_START     ] = CMD_DATA_EXCHANGE;
-////     buff[BUFF_DATA_START    ] = card->target;
-////     buff[BUFF_DATA_START + 1] = 0x00;
-////     buff[BUFF_DATA_START + 2] = 0xa4;
-////     buff[BUFF_DATA_START + 3] = 0x00;
-////     buff[BUFF_DATA_START + 4] = 0x0c;
-////     buff[BUFF_DATA_START + 5] = 0x02;
-////     buff[BUFF_DATA_START + 6] = 0x00;
-////     buff[BUFF_DATA_START + 7] = 0x01;
-//
-////     if (ret == 0) {
-////         LOG_DEBUG("pn532: select file\n");
-////         ret = send_rcv_apdu(dev, buff, 8, 0);
-////     }
-//
-////     return ret;
-//// }
+
 //
 //// int pn532_iso14443a_4_read(pn532_t *dev, uint8_t *odata, nfc_iso14443a_t *card,
 ////                            unsigned offset, uint8_t len)
@@ -756,34 +1357,6 @@ void pn532_release_passive(pn532_t *dev)
 //    return send_rcv(dev, buff, 1 + 6 + 18 + 10 + 2, 20, timeout_sec);
 //}
 
-int pn53_set_parameters(pn53_dev_t* dev, uint8_t parameters) {
-    assert(dev);
-
-    uint8_t command[] = {
-        (uint8_t)PN53_COMMAND_SET_PARAMETERS,
-        parameters
-    };
-
-    ssize_t res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), NULL, CONFIG_PN53_COMMAND_TIMEOUT_DEFAULT_MS);
-    if (res < 0) {
-        return (int)res;
-    }
-    dev->nfc_parameters = parameters;
-    return 0;
-}
-
-void pn53_set_power_down(pn53_dev_t* dev, uint8_t wake_up_enable, uint8_t generate_irq) {
-    assert(dev != NULL);
-    LOG_DEBUG("pn532: setting power down\n");
-
-    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-
-    buff[BUFF_CMD_START     ] = CMD_POWER_DOWN;
-    buff[BUFF_DATA_START    ] = wake_up_enable;
-    buff[BUFF_DATA_START + 1] = generate_irq;
-
-    send_rcv(dev, buff, 2, 0, STANDARD_TIMEOUT_SEC);
-}
 
 //uint8_t pn532_get_target_status(pn532_t *dev) {
 //    assert(dev != NULL);
@@ -882,110 +1455,7 @@ void pn53_set_power_down(pn53_dev_t* dev, uint8_t wake_up_enable, uint8_t genera
 //
 //    return 0;
 //}
-//
-///* Polls for an NFC-A tag */
-//int pn532_poll_a(nfcdev_t *nfcdev, nfc_a_listen_config_t *config) {
-//    assert(nfcdev != NULL);
-//    assert(config != NULL);
-//
-//    /* enable automatic RATS */
-//    pn532_set_parameters(nfcdev->dev, 0b00010000);
-//
-//    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-//    int ret = _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_A, 1,
-//                         LIST_PASSIVE_LEN_14443(1));
-//    if (ret <= 0) {
-//        LOG_ERROR("pn532: error during polling\n");
-//        return NFC_ERR_POLL_NO_TARGET;
-//    }
-//
-//    if (buff[0] != 1) {
-//        LOG_ERROR("pn532: error during polling\n");
-//        return NFC_ERR_POLL_NO_TARGET;
-//    }
-//
-//    config->polling_response.anticollision_information = buff[3];
-//    config->polling_response.platform_information      = buff[2];
-//    config->acknowledgement = buff[4];
-//    config->uid.len = buff[5];
-//    memcpy(config->uid.nfcid, &buff[6], config->uid.len);
-//
-//    // uint8_t *target_data = buff[1];
-//    return 0;
-//}
-//
-///* Polls for targets in the area independent of technology */
-//int pn532_poll(nfcdev_t *nfcdev, nfc_listener_config_t *config) {
-//    assert(nfcdev != NULL);
-//    assert(config != NULL);
-//
-//    nfc_a_listen_config_t a_config;
-//    nfc_b_listener_config_t b_config;
-//    nfc_f_listener_config_t f_config;
-//
-//    if (0 == pn532_poll_a(nfcdev, &a_config)) {
-//        config->technology = NFC_TECHNOLOGY_A;
-//        memcpy(&config->config.a, &a_config, sizeof(nfc_a_listen_config_t));
-//    } else if (0 == pn532_poll_b(nfcdev, &b_config)) {
-//        config->technology = NFC_TECHNOLOGY_B;
-//        memcpy(&config->config.b, &b_config, sizeof(nfc_b_listener_config_t));
-//    } else if (0 == pn532_poll_f(nfcdev, &f_config)) {
-//        config->technology = NFC_TECHNOLOGY_F;
-//        memcpy(&config->config.f, &f_config, sizeof(nfc_f_listener_config_t));
-//    } else {
-//        return NFC_ERR_POLL_NO_TARGET;
-//    }
-//
-//    return 0;
-//}
-//
-///* Polls for an NFC-B tag */
-//int pn532_poll_b(nfcdev_t *nfcdev, nfc_b_listener_config_t *config) {
-//    assert(nfcdev != NULL);
-//    assert(config != NULL);
-//
-//    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-//    int ret = _list_passive_targets(nfcdev->dev, buff, PN532_BR_106_ISO_14443_B, 1,
-//                         21);
-//    if (ret != 0) {
-//        return ret;
-//    }
-//
-//    if (buff[0] != 1) {
-//        LOG_ERROR("pn532: error during polling\n");
-//        return NFC_ERR_POLL_NO_TARGET;
-//    }
-//
-//    memcpy(&(config->polling_response.nfcid0), &buff[2], NFC_B_ID_LENGTH);
-//    memcpy(&(config->polling_response.application_data), &buff[2 + NFC_B_ID_LENGTH], NFC_B_POLLING_RESPONSE_APPLICATION_DATA_LENGTH);
-//    memcpy(&(config->polling_response.protocol_info), &buff[2 + NFC_B_ID_LENGTH + NFC_B_POLLING_RESPONSE_APPLICATION_DATA_LENGTH],
-//           NFC_B_POLLING_RESPONSE_PROTOCOL_INFO_LENGTH);
-//
-//    // uint8_t *target_data = buff[1];
-//    return 0;
-//}
-//
-//int pn532_poll_f(nfcdev_t *nfcdev, nfc_f_listener_config_t *config) {
-//    assert(nfcdev != NULL);
-//    assert(config != NULL);
-//
-//    uint8_t buff[CONFIG_PN532_BUFFER_LEN];
-//    int ret = _list_passive_targets(nfcdev->dev, buff, PN532_BR_212_FELICA, 1, 21);
-//    if (ret != 0) {
-//        return ret;
-//    }
-//
-//    if (buff[0] != 1) {
-//        LOG_ERROR("pn532: error during polling\n");
-//        return -1;
-//    }
-//
-//    memcpy(config->polling_response.nfcid2, &buff[5], NFC_F_ID_LENGTH);
-//
-//    // uint8_t *target_data = buff[1];
-//    return 0;
-//}
-//
+
 //int pn532_mifare_classic_authenticate(nfcdev_t *nfcdev, uint8_t block, 
 //    const nfc_a_id_t *uid, bool is_key_a, const uint8_t *key) {
 //    assert(nfcdev != NULL);

@@ -6,15 +6,15 @@
 
 
 typedef enum __attribute__((packed)) {
-    NFC_MODE_PASSIVE = 0,
-    NFC_MODE_ACTIVE,
+    NFC_COMMUNICATION_MODE_PASSIVE = 0,
+    NFC_COMMUNICATION_MODE_ACTIVE,
 } nfc_communication_mode_t;
 
 typedef enum __attribute__((packed)) {
-    NFC_TECHNOLOGY_A = 0,
-    NFC_TECHNOLOGY_B,
-    NFC_TECHNOLOGY_F,
-    NFC_TECHNOLOGY_V,
+    NFC_TECHNOLOGY_A = 1,
+    NFC_TECHNOLOGY_B = 1 << 1,
+    NFC_TECHNOLOGY_F = 1 << 2,
+    NFC_TECHNOLOGY_V = 1 << 3,
 } nfc_technology_t;
 
 #define NFC_BITRATE_DIVISOR_FC_128 (1)
@@ -93,6 +93,11 @@ typedef enum __attribute__((packed)) {
 typedef uint8_t nfc_time_index_t;
 
 #define NFC_CARRIER_FREQUENCY_HZ (13560000)
+
+static inline unsigned int nfc_bitrate_kbps(nfc_bitrate_t bitrate) {
+    return (NFC_CARRIER_FREQUENCY_HZ / 1000 + 64/bitrate)/128*bitrate;
+}
+
 
 static inline uint16_t nfc_time_index_ms(nfc_time_index_t index) {
     assert(index <= 0xf);

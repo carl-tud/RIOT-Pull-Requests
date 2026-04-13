@@ -283,7 +283,7 @@ static ssize_t _parse_packet_end(uint8_t** cursor, size_t packet_length) {
         PN53_HCI_DEBUG("illegal TFI %02X from controller, expected 0xd5\n", tfi);
         return -PN53_ERROR_CONNECTION_UNEXPECTED_FRAME_DIRECTION;
     }
-    PN53_HCI_DEBUG("packet type: response (TFI=0xd5)\n");
+    PN53_HCI_DEBUG("packet type: response (TFI=0xd5, length=%" PRIuSIZE " bytes)\n", packet_length);
 
     *cursor = packet + 1;
     return packet_length - 1;

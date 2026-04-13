@@ -44,6 +44,11 @@ static inline uint8_t nfc_b_slot_count(uint8_t power) {
     return NFC_B_SLOT_COUNT(power);
 }
 
+typedef enum __attribute__((packed)) {
+    NFC_POLLING_METHOD_PROBABILISTIC = 1,
+    NFC_POLLING_METHOD_TIMESLOT = 2,
+} nfc_b_polling_method_t;
+
 #define NFC_B_SLOT_COUNT_POWER(count) ((uint8_t)__builtin_ctz((uint8_t)count))
 
 static inline uint8_t nfc_b_slot_count_power(uint8_t count) {
@@ -63,7 +68,7 @@ typedef struct {
 
 typedef union __attribute__((packed)) {
     struct {
-        nfc_b_id_t identifier;
+        nfc_b_id_t id;
 
         union {
             struct {
@@ -282,7 +287,6 @@ typedef struct {
 } nfc_b_polling_result_t;
 
 typedef struct {
-    nfc_b_polling_command_payload_t polling_command_mask;
     nfc_b_polling_result_t polling_result;
 } nfc_b_hce_config_t;
 
