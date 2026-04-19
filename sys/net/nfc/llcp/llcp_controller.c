@@ -58,7 +58,7 @@ static void llcp_run(void *arg) {
                 send_data_len = 2;
             }
 
-            if (controller->mode == NFCDEV_MODE_INITIATOR) {
+            if (controller->mode == NFCDEV_ROLE_INITIATOR) {
                 controller->dev->ops->initiator_exchange_data(controller->dev, send_buff, 
                     send_data_len + 2, receive_buff, &receive_data_len);
             } else {
@@ -95,7 +95,7 @@ static void llcp_run(void *arg) {
     }
 }
 
-int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, nfcdev_mode_t mode) {
+int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, nfc_role_t mode) {
     assert(controller != NULL);
     assert(dev != NULL);
     mutex_init(&controller->sockets_mutex);
@@ -110,7 +110,7 @@ int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, n
         return -1;
     }
 
-    if (controller->mode == NFCDEV_MODE_INITIATOR) {
+    if (controller->mode == NFCDEV_ROLE_INITIATOR) {
         controller->dev->ops->poll_dep(controller->dev, NFC_BITRATE_106K);
     } else {
         controller->dev->ops->listen_dep(controller->dev, NFC_BITRATE_106K);

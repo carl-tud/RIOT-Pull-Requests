@@ -119,32 +119,8 @@ endif
 ifneq (,$(filter netif,$(USEMODULE)))
     DIRS += net/netif
 endif
-ifneq (,$(filter nfc_apdu,$(USEMODULE)))
-  DIRS += net/nfc/apdu
-endif
-ifneq (,$(filter nfc_mifare,$(USEMODULE)))
-  DIRS += net/nfc/mifare
-endif
-ifneq (,$(filter nfc_t2t,$(USEMODULE)))
-  DIRS += net/nfc/t2t
-endif
-ifneq (,$(filter nfc_t4t,$(USEMODULE)))
-  DIRS += net/nfc/t4t
-endif
-ifneq (,$(filter nfc_tlv,$(USEMODULE)))
-  DIRS += net/nfc/tlv
-endif
-ifneq (,$(filter nfc_ndef,$(USEMODULE)))
-  DIRS += net/nfc/ndef
-endif
-ifneq (,$(filter nfc_nfct,$(USEMODULE)))
-  DIRS += net/nfc/nfct
-endif
-ifneq (,$(filter nfc_generic,$(USEMODULE)))
-  DIRS += net/nfc/generic
-endif
-ifneq (,$(filter nfc_llcp,$(USEMODULE)))
-  DIRS += net/nfc/llcp
+ifneq (,$(filter nfc nfc_%,$(USEMODULE)))
+  DIRS += net/nfc
 endif
 ifneq (,$(filter netopt,$(USEMODULE)))
   DIRS += net/crosslayer/netopt

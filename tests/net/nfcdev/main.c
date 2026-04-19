@@ -26,12 +26,12 @@ static const nfcdev_ops_t pn532_ops = {
 
     dev.ops->init(&dev, NULL);
 
-    nfc_a_listener_config_t config = {
-        .nfcid1 = {
+    nfc_a_listen_config_t config = {
+        .uid = {
             .len = NFC_A_NFCID1_LEN4,
             .nfcid = {0xDE, 0xAD, 0xBE, 0xEF}
         },
-        .sel_res = NFC_A_SEL_RES_T2T_VALUE
+        .acknowledgement = NFC_A_SEL_RES_T2T_VALUE
     };
     dev.ops->listen_a(&dev, &config);
     

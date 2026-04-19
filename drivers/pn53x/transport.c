@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define ENABLE_DEBUG CONFIG_PN53_DEBUG
+#define ENABLE_DEBUG CONFIG_PN53_HCI_DEBUG
 #include "debug.h"
 
 #include "assert.h"
@@ -622,6 +622,12 @@ static ssize_t _block_with_timeout(pn53_connection_t* connection, uint32_t timeo
         mutex_lock(&connection->trap);
         bool triggered = !ztimer_remove(ZTIMER_MSEC, &timer);
         if (triggered) {
+            PN53_HCI_DEBUG("timeout after %" PRIu32 " ms, aborting with ACK\n", timeout_ms);
+            // Best effort, i.e., discard result
+            ssize_t res = _send_ack(connection);
+            if (res < 0) {
+                PN53_HCI_DEBUG("ACK to abort failed with %i\n", (int)res);
+            }
             return -PN53_ERROR_CONNECTION_TIMEOUT;
         } else {
             return 0;
@@ -666,7 +672,7 @@ ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
 
     /* Wait until the response is available. */
     if ((res = _block_with_timeout(connection, timeout_ms)) < 0) {
-        PN53_TRANSPORT_DEBUG("response timeout expired\n");
+        PN53_HCI_DEBUG("response timeout expired\n");
         return res;
     }
 

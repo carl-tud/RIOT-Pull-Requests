@@ -52,7 +52,7 @@ static void _test_emulator(nfc_t4t_emulator_t *emulator, nfcdev_t *dev) {
     ndef_init(&ndef, ndef_buf, sizeof(ndef_buf));
     ndef_record_add_text(&ndef, "Hello from PN7160 T4T Emulator", 20, "en", 2, UTF8);
     t4t_init(&t4t, 64, ndef_buf, sizeof(ndef_buf));
-    nfc_a_nfcid1_t nfcid = {
+    nfc_a_id_t nfcid = {
         .nfcid = {0x08, 0x12, 0x34, 0x56},
         .len = 4
     };

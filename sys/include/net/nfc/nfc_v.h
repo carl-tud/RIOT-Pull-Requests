@@ -1,5 +1,9 @@
 #pragma once
 
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
 #define NFC_V_ID_LENGTH  (8)
 
 typedef uint8_t nfc_v_id_t[NFC_V_ID_LENGTH];
@@ -119,18 +123,11 @@ typedef struct {
     nfc_v_inventory_request_info_t* frames;
     size_t frame_count;
 
-    uint32_t guard_time;
-
     nfc_v_polling_filter_t* filter;
-} nfc_v_polling_config_t;
+} nfc_v_tag_polling_config_t;
 
 typedef struct {
     nfc_v_id_t* id;
     uint8_t storage_format_identifier;
     uint8_t block_security_status_length_exponent : 2;
-} nfc_v_polling_result_t;
-
-typedef struct {
-    nfc_v_polling_result_t polling_result;
-} nfc_v_hce_config_t;
-
+} nfc_v_tag_t;

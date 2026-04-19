@@ -6,7 +6,7 @@
 #include "log.h"
 
 static int mifare_classic_rw_send_authenticate(nfc_mifare_classic_rw_t *rw,
-    const nfc_a_uid_t *uid, uint8_t block, bool use_key_a, const uint8_t *key) {
+    const nfc_a_id_t *uid, uint8_t block, bool use_key_a, const uint8_t *key) {
     assert(rw != NULL);
     assert(key != NULL);
 

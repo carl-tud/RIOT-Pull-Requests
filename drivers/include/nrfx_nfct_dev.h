@@ -34,7 +34,7 @@
 
 int nrfx_nfct_dev_init(nfcdev_t *nfcdev, const void *dev_config);
 
-int nrfx_nfct_dev_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config);
+int nrfx_nfct_dev_listen_a(nfcdev_t *nfcdev, const nfc_a_listen_config_t *config);
 
 int nrfx_nfct_dev_target_send_data(nfcdev_t *nfcdev, const uint8_t *tx, size_t tx_len);
 

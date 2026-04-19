@@ -43,13 +43,13 @@ int main(void) {
     };
 
     nfc_t2t_t *t2t = (nfc_t2t_t *) memory;
-    nfc_a_nfcid1_t nfcid1 = {
+    nfc_a_id_t uid = {
         .len = NFC_A_NFCID1_LEN4,
         .nfcid = {0x08, 0xAD, 0xBE, 0xEF}
     };
 
     nfc_t2t_emulator_t emulator;
-    t2t_emulator_start(&emulator, &dev, t2t, &nfcid1);
+    t2t_emulator_start(&emulator, &dev, t2t, &uid);
 
     return 0;
 }

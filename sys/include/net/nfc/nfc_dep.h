@@ -1,5 +1,9 @@
 #pragma once
 
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
 #define NFC_DEP_ID_LENGTH (10u)
 
 #define NFC_DEP_CMD0_REQUEST  (0xD4)

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 #include "assert.h"
 #include "net/nfc/iso_dep.h"
 
@@ -264,30 +266,19 @@ typedef struct {
     bool require_application_data_standardized : 1;
 } nfc_b_polling_filter_t;
 
-
 typedef struct {
     nfc_b_polling_frame_t* frames;
     size_t frame_count;
 
-    uint32_t guard_time;
+    nfc_b_polling_method_t method;
 
     nfc_b_polling_filter_t* filter;
 
-    struct {
-        nfc_b_attrib_command_t* attrib;
-    } higher_layer;
-} nfc_b_polling_config_t;
+    nfc_b_attrib_command_t* attrib;
+} nfc_b_tag_polling_config_t;
 
 typedef struct {
     nfc_b_polling_response_payload_t* polling_response;
-    struct {
-        size_t attrib_response_length;
-        nfc_b_attrib_response_t* attrib;
-    } higher_layer;
-} nfc_b_polling_result_t;
-
-typedef struct {
-    nfc_b_polling_result_t polling_result;
-} nfc_b_hce_config_t;
-
-
+    size_t attrib_response_length;
+    nfc_b_attrib_response_t* attrib;
+} nfc_b_tag_t;

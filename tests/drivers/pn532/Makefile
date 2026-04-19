@@ -6,6 +6,7 @@ USEMODULE += ztimer_msec
 # select if you want to build the SPI or the I2C version of the driver:
 #USEMODULE += pn532_i2c
 USEMODULE += pn532_spi
+USEMODULE += nfc
 USEMODULE += ztimer_usec
 USEMODULE += test_utils_interactive_sync
 

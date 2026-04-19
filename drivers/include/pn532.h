@@ -6,8 +6,16 @@ typedef pn53_dev_t pn532_dev_t;
 typedef pn53_connection_config_t pn532_connection_config_t;
 typedef pn53_sam_mode_t pn532_sam_mode_t;
 
+#define PN532_PACKET_LENGTH_MAX  (265)
+
 int pn532_init(pn532_dev_t* dev, const pn532_connection_config_t* config);
 
+static inline int nfcdev_init_pn532(nfcdev_t* nfcdev, pn532_dev_t* dev, const pn532_connection_config_t* config) {
+    extern nfcdev_ops_t nfcdev_ops_pn53;
+    nfcdev->ops = &nfcdev_ops_pn53;
+    nfcdev->dev = dev;
+    return pn532_init(dev, config);
+}
 typedef enum __attribute__((packed)) {
     PN532_COMMAND_DIAGNOSE = 0,
     PN532_COMMAND_GET_FIRMWARE_VERSION = 2,
@@ -95,3 +103,15 @@ typedef enum __attribute__((packed)) {
 int pn532_power_down(pn532_dev_t* dev, pn532_wakeup_sources_t wakeup_sources, bool generate_irq);
 
 #define PN532_TARGETS_MAX (2)
+
+typedef enum __attribute__((packed)) {
+    PN532_IN_AUTO_POLL_CONSTRAINT_ONLY_A_OR_F = 1,
+    PN532_IN_AUTO_POLL_CONSTRAINT_ONLY_ISO_DEP = 1 << 1,
+    PN532_IN_AUTO_POLL_CONSTRAINT_ONLY_NFC_DEP = 1 << 2,
+    PN532_IN_AUTO_POLL_CONSTRAINT_ONLY_NFC_DEP_IN_PEER_FIELD_MODEL = 1 << 3,
+} pn532_in_auto_poll_constraint_t;
+
+typedef struct __attribute__((packed)) {
+    pn53_technology_baudrate_t brty : 4;
+    pn532_in_auto_poll_constraint_t constraint : 4;
+} pn532_in_auto_poll_type_t;

@@ -46,8 +46,31 @@ extern "C" {
 
 
 #define PN53_PACKET_LENGTH_MAX  (265)
+
 #define PN53_FRAME_OVERHEAD_MIN (8)
+#define PN53_FRAME_OVERHEAD_MIN_COMMAND (PN53_FRAME_OVERHEAD_MIN + 1)
+
 #define PN53_FRAME_OVERHEAD_MAX (11)
+#define PN53_FRAME_OVERHEAD_MAX_COMMAND (PN53_FRAME_OVERHEAD_MAX + 1)
+
+/**
+ * @brief Frame header length (normal information frame)
+ *
+ * `00 00 FF LEN LCS TFI`
+ */
+#define PN35_FRAME_HEADER_NORMAL (6)
+#define PN35_FRAME_HEADER_NORMAL_COMMAND (PN35_FRAME_HEADER_NORMAL + 1)
+static_assert(PN35_FRAME_HEADER_NORMAL + 2 == PN53_FRAME_OVERHEAD_MIN);
+
+/**
+ * @brief Frame header length (extended information frame)
+ *
+ * `00 00 FF FF FF LEN LEN LCS TFI`
+ */
+#define PN35_FRAME_HEADER_EXTENDED (9)
+#define PN35_FRAME_HEADER_EXTENDED_COMMAND (PN35_FRAME_HEADER_EXTENDED + 1)
+static_assert(PN35_FRAME_HEADER_EXTENDED + 2 == PN53_FRAME_OVERHEAD_MAX);
+
 
 #if !defined(CONFIG_PN53_FRAME_LENGTH_MAX) || defined(DOXYGEN)
 #  define CONFIG_PN53_FRAME_LENGTH_MAX (PN53_FRAME_OVERHEAD_MAX + PN53_PACKET_LENGTH_MAX)
@@ -74,6 +97,20 @@ extern "C" {
 #if !defined(CONFIG_PN53_DEBUG) || defined(DOXYGEN)
 #  define CONFIG_PN53_DEBUG 1
 #endif
+
+#if !defined(CONFIG_PN53_HCI_DEBUG) || defined(DOXYGEN)
+#  define CONFIG_PN53_HCI_DEBUG 1
+#endif
+
+
+#if !defined(CONFIG_PN53_FIFO_TRANSMIT_REFILL_THRESHOLD) || defined(DOXYGEN)
+#  define CONFIG_PN53_FIFO_TRANSMIT_REFILL_THRESHOLD 5
+#endif
+
+#if !defined(CONFIG_PN53_FIFO_SIZE) || defined(DOXYGEN)
+#  define CONFIG_PN53_FIFO_SIZE 64
+#endif
+
 
 typedef enum {
     PN53_MODEL_PN531,
@@ -120,13 +157,39 @@ typedef struct {
 typedef struct {
 } pn53_parameters_t;
 
+typedef enum {
+    PN53_MANAGED_TRANSPORT_NONE = 0,
+    PN53_MANAGED_TRANSPORT_ISO_DEP = NFCDEV_INTERFACE_ISO_DEP,
+    PN53_MANAGED_TRANSPORT_NFC_DEP = NFCDEV_INTERFACE_NFC_DEP,
+} pn53_managed_target_transport_t;
+
+typedef struct {
+    nfc_target_t super;
+    pn53_managed_target_transport_t managed_transport;
+} pn53_logical_target_t;
+
 typedef struct {
     pn53_connection_t connection;
     const pn53_parameters_t* parameters;
     pn53_model_t model;
-    uint8_t nfc_parameters;
+    pn53_logical_target_t nfc_targets[2];
     uint32_t command_timeout;
+    nfc_role_t nfc_role;
+    nfcdev_connection_id_t nfc_current_connection;
+    uint8_t nfc_parameters;
+    uint8_t bit_framing;
+    uint8_t tx_mode;
+    uint8_t rx_mode;
+    uint8_t manual_receiver;
 } pn53_dev_t;
+
+#ifndef DOXYGEN
+static inline pn53_logical_target_t* pn53_current_target(pn53_dev_t* dev) {
+    assert(dev->nfc_current_connection < ARRAY_SIZE(dev->nfc_targets));
+    return dev->nfc_targets[dev->nfc_current_connection].super.parameters.polling.bitrate == NFC_BITRATE_UNSET
+        ? NULL : &dev->nfc_targets[dev->nfc_current_connection];
+}
+#endif
 
 #ifndef DOXYGEN
 #  define PN53_ERRNO(code) (53000 + code)
@@ -366,9 +429,15 @@ typedef struct __attribute__((packed)) {
     uint8_t value;
 } pn53_register_t;
 
-ssize_t pn53_read_registers(pn53_dev_t *dev, pn53_register_address_t* registers, uint8_t** values, size_t count);
+ssize_t pn53_read_registers_(pn53_dev_t *dev, void* registers, uint8_t** values, size_t count);
+static inline ssize_t pn53_read_registers(pn53_dev_t *dev, pn53_register_address_t* registers, uint8_t** values, size_t count) {
+    return pn53_read_registers_(dev, registers, values, count);
+}
 
-int pn53_write_registers(pn53_dev_t *dev, pn53_register_t* registers, size_t count);
+int pn53_write_registers_(pn53_dev_t *dev, void* registers, size_t count);
+static inline int pn53_write_registers(pn53_dev_t *dev, pn53_register_t* registers, size_t count) {
+    return pn53_write_registers_(dev, registers, count);
+}
 
 int pn53_set_parameters(pn53_dev_t* dev, uint8_t parameters);
 
@@ -409,212 +478,258 @@ typedef enum __attribute__((packed)) {
 #define PN53_TIMEOUT_FIELD_FROM_MS(ms) (uint8_t)((ms) / 50)
 #define PN53_TIMEOUT_FIELD_TO_MS(timeout) ((timeout) * 50)
 
-#define PN532_IC_VERSION(fwver)  ((fwver >> 24) & 0xff)
-#define PN532_FW_VERSION(fwver)  ((fwver >> 16) & 0xff)
-#define PN532_FW_REVISION(fwver) ((fwver >>  8) & 0xff)
-#define PN532_FW_FEATURES(fwver) ((fwver) & 0xff)
-/** @} */
-
-
-#define PN532_PARAM_NAD_USED              (0x01)
-#define PN532_PARAM_DID_USED              (0x02)
-#define PN532_PARAM_AUTOMATIC_ATR_RES     (0x04)
-#define PN532_PARAM_AUTOMATIC_RATS        (0x10)
-#define PN532_PARAM_ISO14443A_4_PICC      (0x20)
-#define PN532_PARAM_REMOVE_PRE_POST_AMBLE (0x40)
-
 // Register addresses
 
-#define PN532_REGISTER_CONTROL_SWITCH_RNG 0x6106
+#define PN53_REGISTER(addr) htobe16(addr)
+
+#define PN53_REGISTER_CONTROL_SWITCH_RNG PN53_REGISTER(0x6106)
 
 /// Defines general modes for transmitting and receiving
-#define PN532_REGISTER_MODE 0x6301
+#define PN53_REGISTER_MODE PN53_REGISTER(0x6301)
 
 /// Defines the data rate and framing during transmission.
-#define PN532_REGISTER_TX_MODE 0x6302
+#define PN53_REGISTER_TX_MODE PN53_REGISTER(0x6302)
+
+#define PN53_REGISTER_TX_MODE_AUTO_CRC (0x80)
+#define PN53_REGISTER_TX_MODE_BITRATE_INDEX (0x70)
+#define PN53_REGISTER_TX_MODE_INVERTED (0x08)
+#define PN53_REGISTER_TX_MODE_MIX (0x04)
+#define PN53_REGISTER_TX_MODE_FRAMING (0x03)
 
 /// Defines the data rate and framing during reception.
-#define PN532_REGISTER_RX_MODE 0x6303
+#define PN53_REGISTER_RX_MODE PN53_REGISTER(0x6303)
+
+#define PN53_REGISTER_RX_MODE_AUTO_CRC (0x80)
+#define PN53_REGISTER_RX_MODE_BITRATE_INDEX (0x70)
+#define PN53_REGISTER_RX_MODE_IGNORE_INVALID (0x08)
+#define PN53_REGISTER_RX_MODE_MULTIPLE_FRAMES (0x04)
+#define PN53_REGISTER_RX_MODE_FRAMING (0x03)
+
+#define PN53_REGISTER_TXRX_MODE_AUTO_CRC (0x80)
+#define PN53_REGISTER_TXRX_MODE_BITRATE_INDEX (0x70)
+#define PN53_REGISTER_TXRX_MODE_FRAMING (0x03)
 
 /// Controls the logical behaviour of the antenna driver pins TX1 and TX2
-#define PN532_REGISTER_TX_CONTROL 0x6304
+#define PN53_REGISTER_TX_CONTROL PN53_REGISTER(0x6304)
 
 /// Controls the settings of the antenna driver
-#define PN532_REGISTER_TX_AUTO 0x6305
+#define PN53_REGISTER_TX_AUTO PN53_REGISTER(0x6305)
+
+#define PN53_REGISTER_TX_AUTO_FLAG_TURN_OFF_FIELD_AFTER_TX (0x80)
+#define PN53_REGISTER_TX_AUTO_FLAG_FORCE_100_PERCENT_ASK (0x40)
+#define PN53_REGISTER_TX_AUTO_FLAG_WAKE_UP_BY_FIELD (0x20)
+#define PN53_REGISTER_TX_AUTO_FLAG_COLLISION_AVOIDANCE (0x08)
+#define PN53_REGISTER_TX_AUTO_FLAG_INITIAL_FIELD_ON (0x04)
+#define PN53_REGISTER_TX_AUTO_FLAG_TX1_FIELD_ON (0x02)
+#define PN53_REGISTER_TX_AUTO_FLAG_TX2_FIELD_ON (0x01)
 
 /// Selects the internal sources for the antenna driver
-#define PN532_REGISTER_TX_SELECTOR 0x6306
+#define PN53_REGISTER_TX_SELECTOR PN53_REGISTER(0x6306)
 
 /// Selects internal receiver settings
-#define PN532_REGISTER_RX_SELECTOR 0x6307
+#define PN53_REGISTER_RX_SELECTOR PN53_REGISTER(0x6307)
 
 /// Selects thresholds for the bit decoder
-#define PN532_REGISTER_RX_THRESHOLD 0x6308
+#define PN53_REGISTER_RX_THRESHOLD PN53_REGISTER(0x6308)
 
 /// Defines demodulator settings
-#define PN532_REGISTER_DEMODULATOR 0x6309
+#define PN53_REGISTER_DEMODULATOR PN53_REGISTER(0x6309)
 
 /// Defines the length of the valid range for the received frame
-#define PN532_REGISTER_NFC_F_1 0x630A
+#define PN53_REGISTER_NFC_F_1 PN53_REGISTER(0x630A)
 
 /// Defines the length of the valid range for the received frame
-#define PN532_REGISTER_NFC_F_2 0x630A
+#define PN53_REGISTER_NFC_F_2 PN53_REGISTER(0x630A)
 
 // Controls the communication in NFC-A (+ NFC-A MIFARE) and NFC target mode at 106 kbit/s
-#define PN532_REGISTER_NFC_A 0x630C
+#define PN53_REGISTER_NFC_A PN53_REGISTER(0x630C)
 
 /// Allows manual fine tuning of the internal receiver.
-#define PN532_REGISTER_MANUAL_RECEIVER 0x630D
+#define PN53_REGISTER_MANUAL_RECEIVER PN53_REGISTER(0x630D)
+
+#define PN53_REGISTER_MANUAL_RECEIVER_FLAG_TX_RX_MANUAL_PARITY (0x10)
 
 /// Configure NFC-B
-#define PN532_REGISTER_NFC_B 0x630E
-// #define PN532_REGISTER_- 0x630F
-// #define PN532_REGISTER_- 0x6310
+#define PN53_REGISTER_NFC_B PN53_REGISTER(0x630E)
+
+#define PN53_REGISTER_NFC_B_FLAG_RX_REQUIRE_SOF (0x80)
+#define PN53_REGISTER_NFC_B_FLAG_RX_REQUIRE_EOF (0x40)
+#define PN53_REGISTER_NFC_B_FLAG_EOF_SOF_WIDTH_MAX (0x08)
+#define PN53_REGISTER_NFC_B_FLAG_TX_NO_SOF (0x02)
+#define PN53_REGISTER_NFC_B_FLAG_TX_NO_EOF (0x01)
+
+// #define PN53_REGISTER_- 0x630F
+// #define PN53_REGISTER_- 0x6310
 
 /// Shows the actual MSB values of the CRC calculation
-#define PN532_REGISTER_CRC_HIGH 0x6311
+#define PN53_REGISTER_CRC_HIGH PN53_REGISTER(0x6311)
 
 /// Shows the actual LSB values of the CRC calculation
-#define PN532_REGISTER_CRC_LOW 0x6312
+#define PN53_REGISTER_CRC_LOW PN53_REGISTER(0x6312)
 
 /// Controls the setting of the width of the Miller pause
-#define PN532_REGISTER_MILLER_MODULATION_WIDTH 0x6314
-#define PN532_REGISTER_ModWidth PN532_REGISTER_MILLER_MODULATION_WIDTH
+#define PN53_REGISTER_MILLER_MODULATION_WIDTH PN53_REGISTER(0x6314)
+#define PN53_REGISTER_ModWidth PN53_REGISTER_MILLER_MODULATION_WIDTH
 
 /// Bit synchronization at 106 kbit/s
-#define PN532_REGISTER_TX_BIT_PHASE 0x6315
+#define PN53_REGISTER_TX_BIT_PHASE PN53_REGISTER(0x6315)
 
 /// Configures the receiver gain and RF level detector sensitivity.
-#define PN532_REGISTER_RF_CONFIG 0x6316
+#define PN53_REGISTER_RF_CONFIG PN53_REGISTER(0x6316)
 
 /// Selects the conductance for the N-driver of the antenna driver pins TX1 and TX2 when the driver is switched off.
-#define PN532_REGISTER_CONDUCTANCE_N_DRIVER_OFF 0x6313
-#define PN532_REGISTER_GsNOFF PN532_REGISTER_CONDUCTANCE_N_DRIVER_OFF
+#define PN53_REGISTER_CONDUCTANCE_N_DRIVER_OFF PN53_REGISTER(0x6313)
+#define PN53_REGISTER_GsNOFF PN53_REGISTER_CONDUCTANCE_N_DRIVER_OFF
 
 /// Selects the conductance for the N-driver of the antenna driver pins TX1 and TX2 when the driver is switched on.
-#define PN532_REGISTER_CONDUCTANCE_N_DRIVER_ON 0x6317
-#define PN532_REGISTER_GsNOn PN532_REGISTER_CONDUCTANCE_N_DRIVER_ON
+#define PN53_REGISTER_CONDUCTANCE_N_DRIVER_ON PN53_REGISTER(0x6317)
+#define PN53_REGISTER_GsNOn PN53_REGISTER_CONDUCTANCE_N_DRIVER_ON
 
 /// Defines the conductance of the P-driver during times of no modulation.
-#define PN532_REGISTER_CONDUCTANCE_P_DRIVER_NO_MODULATION 0x6318
-#define PN532_REGISTER_CWGsP PN532_REGISTER_CONDUCTANCE_P_DRIVER_NO_MODULATION
+#define PN53_REGISTER_CONDUCTANCE_P_DRIVER_NO_MODULATION PN53_REGISTER(0x6318)
+#define PN53_REGISTER_CWGsP PN53_REGISTER_CONDUCTANCE_P_DRIVER_NO_MODULATION
 
 /// Defines the driver P-output conductance during modulation.
-#define PN532_REGISTER_CONDUCTANCE_P_DRIVER_MODULATION 0x6319
-#define PN532_REGISTER_ModGsP PN532_REGISTER_CONDUCTANCE_P_DRIVER_MODULATION
+#define PN53_REGISTER_CONDUCTANCE_P_DRIVER_MODULATION PN53_REGISTER(0x6319)
+#define PN53_REGISTER_ModGsP PN53_REGISTER_CONDUCTANCE_P_DRIVER_MODULATION
 
 /// Defines settings for the internal timer
-#define PN532_REGISTER_TIMER_MODE 0x631A
+#define PN53_REGISTER_TIMER_MODE PN53_REGISTER(0x631A)
 
 /// Defines settings for the internal timer
-#define PN532_REGISTER_TIMER_PRESCALER 0x631B
+#define PN53_REGISTER_TIMER_PRESCALER PN53_REGISTER(0x631B)
 
 /// Describes the MSB of the 16-bit long timer reload value.
-#define PN532_REGISTER_TIMER_RELOAD_VALUE_HIGH 0x631C
+#define PN53_REGISTER_TIMER_RELOAD_VALUE_HIGH PN53_REGISTER(0x631C)
 
 /// Describes the LSB of the 16-bit long timer reload value.
-#define PN532_REGISTER_TIMER_RELOAD_VALUE_LOW 0x631D
+#define PN53_REGISTER_TIMER_RELOAD_VALUE_LOW PN53_REGISTER(0x631D)
 
 /// Describes the 16-bit long timer actual value (Higher 8 bits)
-#define PN532_REGISTER_TIMER_COUNTER_VALUE_HIGH 0x631E
+#define PN53_REGISTER_TIMER_COUNTER_VALUE_HIGH PN53_REGISTER(0x631E)
 
 /// Describes the 16-bit long timer actual value (Lower 8 bits)
-#define PN532_REGISTER_TIMER_COUNTER_VALUE_LOW 0x631F
+#define PN53_REGISTER_TIMER_COUNTER_VALUE_LOW PN53_REGISTER(0x631F)
 
-// #define PN532_REGISTER_- 0x6320
+// #define PN53_REGISTER_- 0x6320
 
 /// General test signals configuration
-#define PN532_REGISTER_TEST_SELECTION1 0x6321
+#define PN53_REGISTER_TEST_SELECTION1 PN53_REGISTER(0x6321)
 
 /// General test signals configuration and PRBS control
-#define PN532_REGISTER_TEST_SELECTION2 0x6322
+#define PN53_REGISTER_TEST_SELECTION2 PN53_REGISTER(0x6322)
 
 /// Enables test signals output on pins.
-#define PN532_REGISTER_TEST_PIN_ENABLE 0x6323
+#define PN53_REGISTER_TEST_PIN_ENABLE PN53_REGISTER(0x6323)
 
 /// Defines the values for the 8-bit parallel bus when it is used as I/O bus
-#define PN532_REGISTER_TEST_PIN_VALUE 0x6324
+#define PN53_REGISTER_TEST_PIN_VALUE PN53_REGISTER(0x6324)
 
 /// Shows the status of the internal test bus
-#define PN532_REGISTER_TEST_BUS 0x6325
+#define PN53_REGISTER_TEST_BUS PN53_REGISTER(0x6325)
 
 /// Controls the digital self-test
-#define PN532_REGISTER_TEST_AUTO 0x6326
+#define PN53_REGISTER_TEST_AUTO PN53_REGISTER(0x6326)
 
 /// Shows the CIU version
-#define PN532_REGISTER_VERSION 0x6327
+#define PN53_REGISTER_VERSION PN53_REGISTER(0x6327)
 
 /// Controls the pins AUX1 and AUX2
-#define PN532_REGISTER_TEST_ANALOG 0x6328
+#define PN53_REGISTER_TEST_ANALOG PN53_REGISTER(0x6328)
 
 /// Defines the test value for the TestDAC1
-#define PN532_REGISTER_TEST_DAC1 0x6329
+#define PN53_REGISTER_TEST_DAC1 PN53_REGISTER(0x6329)
 
 /// Defines the test value for the TestDAC2
-#define PN532_REGISTER_TEST_DAC2 0x632A
+#define PN53_REGISTER_TEST_DAC2 PN53_REGISTER(0x632A)
 
 /// Show the actual value of ADC I and Q
-#define PN532_REGISTER_TEST_ADCV 0x632B
+#define PN53_REGISTER_TEST_ADCV PN53_REGISTER(0x632B)
 
-// #define PN532_REGISTER_- 0x632C
-// #define PN532_REGISTER_- 0x632D
-// #define PN532_REGISTER_- 0x632E
+// #define PN53_REGISTER_- 0x632C
+// #define PN53_REGISTER_- 0x632D
+// #define PN53_REGISTER_- 0x632E
 
 /// Power down of the RF level detector
-#define PN532_REGISTER_RF_LEVEL_DETECTOR 0x632F
+#define PN53_REGISTER_RF_LEVEL_DETECTOR PN53_REGISTER(0x632F)
 
 /// Enables the use of secure IC clock on P34 / SIC_CLK
-#define PN532_REGISTER_SECURE_IC_CLOCK 0x6330
+#define PN53_REGISTER_SECURE_IC_CLOCK PN53_REGISTER(0x6330)
 
 /// Starts and stops the command execution
-#define PN532_REGISTER_COMMAND 0x6331
+#define PN53_REGISTER_COMMAND PN53_REGISTER(0x6331)
+
+#define PN53_REGISTER_COMMAND_MASK_COMMAND (0x0f)
+#define PN53_REGISTER_COMMAND_FLAG_POWER_DOWN (0x10)
+#define PN53_REGISTER_COMMAND_FLAG_RECV_OFF (0x20)
 
 /// Control bits to enable and disable the passing of interrupt requests
-#define PN532_REGISTER_COMMON_INTERRUPT_ENABLE 0x6332
+#define PN53_REGISTER_COMMON_INTERRUPT_ENABLE PN53_REGISTER(0x6332)
 
 /// Control bits to enable and disable the passing of interrupt requests
-#define PN532_REGISTER_DIVERSE_INTERRUPT_ENABLE 0x6333
+#define PN53_REGISTER_DIVERSE_INTERRUPT_ENABLE PN53_REGISTER(0x6333)
 
 /// Contains common CIU interrupt request flags
-#define PN532_REGISTER_COMMON_IRQ 0x6334
+#define PN53_REGISTER_COMMON_IRQ PN53_REGISTER(0x6334)
+
+#define PN53_REGISTER_COMMON_IRQ_FLAG_TX_FINISHED (0x40)
+#define PN53_REGISTER_COMMON_IRQ_FLAG_RX_FINISHED (0x20)
+#define PN53_REGISTER_COMMON_IRQ_FLAG_IDLE        (0x20)
+#define PN53_REGISTER_COMMON_IRQ_FLAG_HI_ALERT    (0x08)
+#define PN53_REGISTER_COMMON_IRQ_FLAG_LO_ALERT    (0x04)
+#define PN53_REGISTER_COMMON_IRQ_FLAG_ERROR       (0x02)
+#define PN53_REGISTER_COMMON_IRQ_FLAG_TIMER       (0x01)
 
 /// Contains miscellaneous interrupt request flags
-#define PN532_REGISTER_DIVERSE_IRQ 0x6335
+#define PN53_REGISTER_DIVERSE_IRQ PN53_REGISTER(0x6335)
 
 /// Error flags showing the error status of the last command executed
-#define PN532_REGISTER_ERROR 0x6336
+#define PN53_REGISTER_ERROR PN53_REGISTER(0x6336)
 
 /// Contains status flags of the CRC, Interrupt Request System and FIFO buffer
-#define PN532_REGISTER_STATUS1 0x6337
+#define PN53_REGISTER_STATUS1 PN53_REGISTER(0x6337)
 
 /// Contain status flags of the receiver, transmitter and Data Mode Detector
-#define PN532_REGISTER_STATUS2 0x6338
+#define PN53_REGISTER_STATUS2 PN53_REGISTER(0x6338)
 
 /// In- and output of 64 byte FIFO buffer
-#define PN532_REGISTER_FIFO_DATA 0x6339
+#define PN53_REGISTER_FIFO_DATA PN53_REGISTER(0x6339)
 
 /// Indicates the number of bytes stored in the FIFO
-#define PN532_REGISTER_FIFO_LEVEL 0x633A
+#define PN53_REGISTER_FIFO_LEVEL PN53_REGISTER(0x633A)
+
+#define PN53_REGISTER_FIFO_LEVEL_MASK_BYTE_COUNT (0x7f)
+#define PN53_REGISTER_FIFO_LEVEL_FLAG_FLUSH (0x80)
 
 /// Defines the thresholds for FIFO under- and overflow warning
-#define PN532_REGISTER_FIFO_WATER_LEVEL 0x633B
+#define PN53_REGISTER_FIFO_WATER_LEVEL PN53_REGISTER(0x633B)
 
 /// Contains miscellaneous control bits
-#define PN532_REGISTER_CONTROL 0x633C
+#define PN53_REGISTER_CONTROL PN53_REGISTER(0x633C)
+
+#define PN53_REGISTER_CONTROL_FLAG_TIMER_STOP (0x80)
+#define PN53_REGISTER_CONTROL_FLAG_TIMER_START (0x40)
+#define PN53_REGISTER_CONTROL_FLAG_COPY_NFC_DEP_ID_TO_FIFO (0x20)
+#define PN53_REGISTER_CONTROL_FLAG_INITIATOR (0x10)
+#define PN53_REGISTER_CONTROL_MASK_RX_TRAILING_BIT_COUNT (0x07)
 
 /// Adjustments for bit oriented frames
-#define PN532_REGISTER_BIT_FRAMING 0x633D
+#define PN53_REGISTER_BIT_FRAMING PN53_REGISTER(0x633D)
+
+#define PN53_REGISTER_BIT_FRAMING_FLAG_START_SEND (0x80)
+#define PN53_REGISTER_BIT_FRAMING_MASK_RX_BIT_OFFSET (0x70)
+#define PN53_REGISTER_BIT_FRAMING_MASK_TX_TRAILING_BIT_COUNT (0x07)
 
 /// Defines the first bit collision detected on the RF interface
-#define PN532_REGISTER_COLLISION 0x633E
+#define PN53_REGISTER_COLLISION PN53_REGISTER(0x633E)
 
-#define PN532_SFR_P3 0xFFB0
+#define PN532_SFR_P3 PN53_REGISTER(0xFFB0)
 
-#define PN532_SFR_P3CFGA 0xFFFC
-#define PN532_SFR_P3CFGB 0xFFFD
-#define PN532_SFR_P7CFGA 0xFFF4
-#define PN532_SFR_P7CFGB 0xFFF5
-#define PN532_SFR_P7 0xFFF7
+#define PN532_SFR_P3CFGA PN53_REGISTER(0xFFFC)
+#define PN532_SFR_P3CFGB PN53_REGISTER(0xFFFD)
+#define PN532_SFR_P7CFGA PN53_REGISTER(0xFFF4)
+#define PN532_SFR_P7CFGB PN53_REGISTER(0xFFF5)
+#define PN532_SFR_P7 PN53_REGISTER(0xFFF7)
 
 typedef uint32_t pn53_register_symbol_t;
 
@@ -629,8 +744,8 @@ typedef uint32_t pn53_register_symbol_t;
 #  define PN53_REGISTER_SYMBOL(register_name, mask) \
     PN53_REGISTER_SYMBOL_(PN53_REGISTER_ ## register_name, mask)
 
-#  define PN53_REGISTER_SYMBOL_REGISTER_CAPACITY (PN532_REGISTER_COLLISION - PN532_REGISTER_MODE)
-#  define PN53_SYMBOLS_START_REGISTER PN532_REGISTER_MODE
+#  define PN53_REGISTER_SYMBOL_REGISTER_CAPACITY (PN53_REGISTER_COLLISION - PN53_REGISTER_MODE)
+#  define PN53_SYMBOLS_START_REGISTER PN53_REGISTER_MODE
 
 #endif
 
@@ -645,14 +760,30 @@ int16_t pn53_register_symbol_get(pn53_register_symbols_t* symbols, pn53_register
 
 int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbols);
 
+static inline void pn53_bitfield_set(uint8_t* bitfield, uint8_t mask, uint8_t value) {
+    *bitfield &= ~mask;
+    uint8_t bit_offset = __builtin_ctz(mask);
+    *bitfield |= (value << bit_offset) & mask;
+}
+
+static inline uint8_t pn53_bitfield_create(uint8_t mask, uint8_t value) {
+    uint8_t bit_offset = __builtin_ctz(mask);
+    return (value << bit_offset) & mask;
+}
+
+static inline uint8_t pn53_bitfield_get(uint8_t bitfield, uint8_t mask) {
+    uint8_t bit_offset = __builtin_ctz(mask);
+    return (bitfield & mask) >> bit_offset;
+}
+
 /// A register mask for `TxLastBits` in the `CIU_BitFraming` register containing
 /// the number of bits of the last byte that shall be transmitted. Set to 0 to indicate all bits
 /// shall be sent.
-#define pn53_register_symbol_tX_BIT_COUNT PN53_REGISTER_SYMBOL(BIT_FRAMING, 0x07)
+#define PN53_SYMBOL_TX_BIT_COUNT PN53_REGISTER_SYMBOL(BIT_FRAMING, 0x07)
 
 /// A register mask for `TxFraming` in the `CIU_TxMode` register indicating the
 /// framing type used during transmission.
-#define pn53_register_symbol_tX_FRAMING PN53_REGISTER_SYMBOL(TX_MODE, 0x03)
+#define PN53_SYMBOL_TX_FRAMING PN53_REGISTER_SYMBOL(TX_MODE, 0x03)
 
 /// A register mask for `TxSpeed` in the `CIU_TxMode` register indicating the
 /// bit rate used during transmission.
@@ -660,7 +791,7 @@ int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbol
 
 /// A register mask for `RxFraming` in the `CIU_TxMode` register indicating the
 /// framing type used during reception.
-#define pn53_register_symbol_tX_BITRATE PN53_REGISTER_SYMBOL(TX_MODE, 0x70)
+#define PN53_SYMBOL_TX_BITRATE PN53_REGISTER_SYMBOL(TX_MODE, 0x70)
 
 /// A register mask for `RxSpeed` in the `CIU_TxMode` register indicating the
 /// bit rate used during reception.
@@ -683,7 +814,7 @@ int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbol
 
 /// A register mask for `TxCRCEn` in the `CIU_TxMode` register which determines whether a
 /// Cyclic Redundancy Code is automatically added to frames by the PN53x.
-#define pn53_register_symbol_tX_AUTO_CRC PN53_REGISTER_SYMBOL(TX_MODE, 0x80)
+#define PN53_SYMBOL_TX_AUTO_CRC PN53_REGISTER_SYMBOL(TX_MODE, 0x80)
 
 /// A register mask for `RxCRCEn` in the `CIU_RxMode` register which determines whether the
 /// Cyclic Redundancy Code is automatically checked and removed from received frames
@@ -697,10 +828,25 @@ int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbol
 #define PN53_SYMBOL_INITIAL_FIELD_ON PN53_REGISTER_SYMBOL(TX_MODE, 0x04)
 
 /// A register mask for `Force100ASK` in the `CIU_TxAuto` register.
-#define pn53_register_symbol_tX_FORCE_100_PERCENT_ASK PN53_REGISTER_SYMBOL(TX_AUTO, 0x40)
+#define PN53_SYMBOL_TX_FORCE_100_PERCENT_ASK PN53_REGISTER_SYMBOL(TX_AUTO, 0x40)
 
 /// A register mask for `MFHalted` in the `CIU_MifNFC` register.
 #define PN53_SYMBOL_MIFARE_IS_HALTED PN53_REGISTER_SYMBOL(NFC_A, 0x04)
+
+typedef enum __attribute__((packed)) {
+    PN53_CIU_COMMAND_IDLE                                = 0,
+    PN53_CIU_COMMAND_CONFIG                          = 1,
+    PN53_CIU_COMMAND_GENERATE_RANDOM_ID              = 2,
+    PN53_CIU_COMMAND_CALCULATE_CRC                   = 3,
+    PN53_CIU_COMMAND_TRANSMIT                        = 4,
+    PN53_CIU_COMMAND_CIU_REGISTER_MODIFY             = 7,
+    PN53_CIU_COMMAND_RECEIVE                         = 8,
+    PN53_CIU_COMMAND_SELF_TEST                       = 9,
+    PN53_CIU_COMMAND_TRANSCEIVE                      = 12,
+    PN53_CIU_COMMAND_TARGET_EMULATION_AUTO_COLLISION = 13,
+    PN53_CIU_COMMAND_AUTHENTICATE_MIFARE_CLASSIC     = 14,
+    PN53_CIU_COMMAND_SOFT_RESET                      = 15,
+} pn53_ciu_command_t;
 
 typedef union __attribute__((packed)) {
     struct {
@@ -770,7 +916,7 @@ typedef struct {
             nfc_bitrate_t bitrate;
         } rx;
 
-        nfc_communication_mode_t mode : 1;
+        nfc_field_model_t mode : 1;
         bool nfc_a_gemstone : 1;
     } targets[2];
 
@@ -875,20 +1021,116 @@ typedef struct __attribute__((packed)) {
     } __attribute__((packed)) ;
 } pn53_rf_configuration_payload_t;
 
-ssize_t pn53_list_passive_targets(pn53_dev_t* dev,
-    uint8_t max_targets, pn53_technology_baudrate_t brty, uint8_t* data, size_t length,
-    uint8_t** response, uint32_t timeout_ms);
+int pn53_rf_configuration(pn53_dev_t* dev, const pn53_rf_configuration_payload_t* rf_config);
 
-ssize_t pn53_list_passive_targets_a(pn53_dev_t* dev,
-    uint8_t max_targets, nfc_a_id_t* id, nfc_a_polling_result_t* results, uint32_t timeout_ms);
+int pn53_set_field_enablement(pn53_dev_t* dev, bool intent_to_enable, bool avoid_external_field);
 
-ssize_t pn53_list_passive_targets_b(pn53_dev_t* dev,
+ssize_t pn53_in_list_passive_targets_a(pn53_dev_t* dev,
+    uint8_t max_targets, nfc_a_id_t* id, nfc_a_tag_t* tags, uint32_t timeout_ms);
+
+ssize_t pn53_in_list_passive_targets_b(pn53_dev_t* dev,
     uint8_t max_targets, nfc_bitrate_t bitrate, uint8_t application_family,
-    nfc_b_polling_method_t method, nfc_b_polling_result_t* results, uint32_t timeout_ms);
+    nfc_b_polling_method_t method, nfc_b_tag_t* tags, uint32_t timeout_ms);
 
-ssize_t pn53_list_passive_targets_f(pn53_dev_t* dev, uint8_t max_targets, nfc_bitrate_t bitrate,
+ssize_t pn53_in_list_passive_targets_f(pn53_dev_t* dev, uint8_t max_targets, nfc_bitrate_t bitrate,
     nfc_f_system_code_t system_code, nfc_f_polling_additional_request_t additional_request,
-    uint8_t timeslots, nfc_f_polling_result_t* results, uint32_t timeout_ms);
+    uint8_t timeslots, nfc_f_tag_t* tags, uint32_t timeout_ms);
+
+#ifndef DOXYGEN
+int pn53_deselect_reselect_release(pn53_dev_t *dev, uint8_t tg, pn53_command_code_t code);
+#endif
+
+static inline int pn53_deselect(pn53_dev_t *dev, nfcdev_connection_id_t connection_id) {
+    return pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_DESELECT);
+}
+
+static inline int pn53_deselect_all(pn53_dev_t *dev) {
+    return pn53_deselect_reselect_release(dev, 0, PN53_COMMAND_IN_DESELECT);
+}
+
+static inline int pn53_reselect(pn53_dev_t *dev, nfcdev_connection_id_t connection_id) {
+    return pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_SELECT);
+}
+
+static inline int pn53_release(pn53_dev_t *dev, nfcdev_connection_id_t connection_id) {
+    return pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_RELEASE);
+}
+
+static inline int pn53_release_all(pn53_dev_t *dev) {
+    return pn53_deselect_reselect_release(dev, 0, PN53_COMMAND_IN_RELEASE);
+}
+
+#ifndef DOXYGEN
+ssize_t pn53_in_communicate_thru_data_exchange(pn53_dev_t* dev, const uint8_t* command, size_t length, uint8_t** response, uint32_t timeout_ms, pn53_command_code_t code);
+#endif
+
+static inline ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const uint8_t* command, size_t length, uint8_t** response, uint32_t timeout_ms) {
+    return pn53_in_communicate_thru_data_exchange(dev, command, length, response, timeout_ms, PN53_COMMAND_IN_COMMUNICATE_THRU);
+}
+
+static inline ssize_t pn53_in_data_exchange(pn53_dev_t* dev, const uint8_t* command, size_t length, uint8_t** response, uint32_t timeout_ms) {
+    return pn53_in_communicate_thru_data_exchange(dev, command, length, response, timeout_ms, PN53_COMMAND_IN_DATA_EXCHANGE);
+}
+
+#define PN53_FIFO_TIMEOUT_NEVER (0)
+
+int nfcdev_configure_radio_pn53(nfcdev_t* dev, const nfcdev_radio_config_t* tx, const nfcdev_radio_config_t* rx, nfc_role_t role);
+
+int pn53_fifo_receive_start_(pn53_dev_t* dev, bool transceive);
+
+ssize_t pn53_fifo_receive_read_(pn53_dev_t* dev,
+                                uint8_t* rx, size_t capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms);
+
+int pn53_fifo_transmit_write_(pn53_dev_t* dev,
+    const uint8_t* tx, size_t length, uint8_t tx_trailing_bit_count,
+    bool transceive, bool transceive_after_receiving
+);
+
+static inline int pn53_fifo_transmit(pn53_dev_t* dev,
+    const uint8_t* tx, size_t length, uint8_t tx_trailing_bit_count
+) {
+    return pn53_fifo_transmit_write_(dev, tx, length, tx_trailing_bit_count, false, false);
+}
+
+static inline int pn53_fifo_receive(pn53_dev_t* dev,
+    uint8_t* rx, size_t capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
+) {
+    int res = pn53_fifo_receive_start_(dev, false);
+    if (res < 0) {
+        return res;
+    }
+    return pn53_fifo_receive_read_(dev, rx, capacity, rx_trailing_bit_count, timeout_ms);
+}
+
+static inline int pn53_fifo_transceive_target_receive(pn53_dev_t* dev,
+    uint8_t* rx, size_t rx_capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
+) {
+    int res = pn53_fifo_receive_start_(dev, true);
+    if (res < 0) {
+        return res;
+    }
+    return pn53_fifo_receive_read_(dev, rx, rx_capacity, rx_trailing_bit_count, timeout_ms);
+}
+
+static inline int pn53_fifo_transceive_target_transmit(pn53_dev_t* dev,
+    const uint8_t* tx, size_t tx_length, uint8_t tx_trailing_bit_count
+) {
+    return pn53_fifo_transmit_write_(dev, tx, tx_length, tx_trailing_bit_count, true, true);
+}
+
+static inline int pn53_fifo_transceive_initiator(pn53_dev_t* dev,
+    uint8_t* tx, size_t tx_length, uint8_t tx_trailing_bit_count,
+    uint8_t* rx, size_t rx_capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
+) {
+    int res = 0;
+    if ((res = pn53_fifo_transmit_write_(dev, tx, tx_length, tx_trailing_bit_count, true, false)) < 0) {
+        return res;
+    }
+    if ((res = pn53_fifo_receive_start_(dev, false)) < 0) {
+        return res;
+    }
+    return pn53_fifo_receive_read_(dev, rx, rx_capacity, rx_trailing_bit_count, timeout_ms);
+}
 
 /**
  * @brief   PN532 supported targets

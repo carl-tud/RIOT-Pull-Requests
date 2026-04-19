@@ -11,7 +11,7 @@
 #define T2T_READ_BLOCK_COUNT 4
 #define T2T_WRITE_BLOCK_COUNT 1
 
-static const nfc_a_uid_t T2T_DEFAULT_UID = {
+static const nfc_a_id_t T2T_DEFAULT_UID = {
     .nfcid = { 0x04, 0x25, 0x85, 0x93 },
     .len   = NFC_A_NFCID1_LEN4,
 };
@@ -102,7 +102,7 @@ int t2t_create_cc(nfc_t2t_t *tag, bool writeable, uint16_t memory_size) {
     return 0;
 }
 
-int t2t_create_internal(nfc_t2t_t *tag, const nfc_a_uid_t *uid) {
+int t2t_create_internal(nfc_t2t_t *tag, const nfc_a_id_t *uid) {
     if (uid->len == NFC_A_NFCID1_LEN4) {
         tag->internal[0] = uid->nfcid[0];
         tag->internal[1] = uid->nfcid[1];
@@ -140,7 +140,7 @@ int t2t_create_internal(nfc_t2t_t *tag, const nfc_a_uid_t *uid) {
 }
 
 /* fills the T2T with an NDEF message */
-int t2t_init_with_ndef(nfc_t2t_t *t2t, ndef_t *ndef, const nfc_a_uid_t *uid) {
+int t2t_init_with_ndef(nfc_t2t_t *t2t, ndef_t *ndef, const nfc_a_id_t *uid) {
     assert(t2t != NULL);
     assert(ndef != NULL);
 
@@ -201,7 +201,7 @@ void t2t_set_read_only(nfc_t2t_t *tag) {
     tag->cc.read_write_access = (uint8_t) NFC_T2T_CC_READ_ONLY;
 }
 
-void t2t_get_uid(const nfc_t2t_t *tag, nfc_a_uid_t *uid, nfc_a_uid_size_t len) {
+void t2t_get_uid(const nfc_t2t_t *tag, nfc_a_id_t *uid, nfc_a_id_size_t len) {
     switch (len) {
         case NFC_A_NFCID1_LEN4:
             uid->len = NFC_A_NFCID1_LEN4;

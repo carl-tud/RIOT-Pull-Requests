@@ -53,7 +53,7 @@ int main(void) {
         .tag = &tag,
     };
 
-    nfc_a_nfcid1_t nfcid1 = {
+    nfc_a_id_t uid = {
         .len = NFC_A_NFCID1_LEN4,
         .nfcid = {0x08, 0xAD, 0xBE, 0xEF}
     };
@@ -63,7 +63,7 @@ int main(void) {
     /* Initialized PN532 device */
     LOG_DEBUG("Initialized PN532 device\n");
 
-    t4t_emulator_start(&emulator, &dev, &tag, &nfcid1);
+    t4t_emulator_start(&emulator, &dev, &tag, &uid);
 
     return 0;
 }

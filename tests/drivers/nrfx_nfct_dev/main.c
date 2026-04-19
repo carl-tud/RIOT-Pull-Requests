@@ -35,10 +35,10 @@ int main(void) {
     nfc_device.ops->init(&nfc_device, NULL);
     LOG_DEBUG("Device initialized\n");
 
-    nfc_a_nfcid1_t nfcid1 = {
+    nfc_a_id_t uid = {
         .len = 4,
         .nfcid = {0x04, 0x12, 0x34, 0x56}
     };
-    t2t_emulator_start(&t2t_emulator, &nfc_device, tag, &nfcid1);
+    t2t_emulator_start(&t2t_emulator, &nfc_device, tag, &uid);
     return 0;
 }

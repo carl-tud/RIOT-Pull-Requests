@@ -115,4 +115,4 @@ typedef struct {
     } data;
 } nfc_mifare_classic_tag_t;
 
-nfc_mifare_classic_size_t nfc_mifare_classic_get_size(const nfc_a_hce_config_t config);
+nfc_mifare_classic_size_t nfc_mifare_classic_get_size(const nfc_a_tag_t tag);

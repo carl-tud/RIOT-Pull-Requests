@@ -1,21 +1,48 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 #include "assert.h"
 
+typedef enum __attribute__((packed)) {
+    /// Initiator (reader/writer) generates field modulated by passive target (tag)
+    ///
+    /// The initiator generates a field both during TX and RX phases that it modulates to send data
+    /// while the target passively modules said initiator-generated field.
+    /// This mode is also known as _passive mode_, where _passive_ refers to the 'passive'
+    /// non-field-generating nature of the target.
+    NFC_FIELD_MODEL_READER_WRITER_TAG = 0,
 
+    /// Peers generate field to send data
+    ///
+    /// Both the initiator and target generate a field to send data to the other and turn it off
+    /// while receiving from its peer.
+    /// This mode is also known as _active mode_, where _active_ refers to the 'active'
+    /// field-generating nature of the target.
+    ///
+    /// Currently, this mode is only used by a specific transport protocol, NFC-DEP (specified in
+    /// ISO/IEC 18092).
+    NFC_FIELD_MODEL_PEERS,
+} nfc_field_model_t;
+
+typedef enum {
+    NFC_ROLE_TARGET = 0,
+    NFC_ROLE_INITIATOR,
+} nfc_role_t;
 
 typedef enum __attribute__((packed)) {
-    NFC_COMMUNICATION_MODE_PASSIVE = 0,
-    NFC_COMMUNICATION_MODE_ACTIVE,
-} nfc_communication_mode_t;
-
-typedef enum __attribute__((packed)) {
-    NFC_TECHNOLOGY_A = 1,
-    NFC_TECHNOLOGY_B = 1 << 1,
-    NFC_TECHNOLOGY_F = 1 << 2,
-    NFC_TECHNOLOGY_V = 1 << 3,
+    NFC_TECHNOLOGY_A = 1 << 1,
+    NFC_TECHNOLOGY_B = 1 << 2,
+    NFC_TECHNOLOGY_F = 1 << 3,
+    NFC_TECHNOLOGY_V = 1 << 4,
 } nfc_technology_t;
+
+#define NFC_TECHNOLOGY_UNSET (0)
+
+static inline char nfc_string_from_technology(nfc_technology_t technology) {
+    assert(__builtin_ctz(technology) < __builtin_ctz(NFC_TECHNOLOGY_V));
+    return ((char[]){ '?', 'A', 'B', 'F', 'V' })[__builtin_ctz(technology)];
+}
 
 #define NFC_BITRATE_DIVISOR_FC_128 (1)
 #define NFC_BITRATE_DIVISOR_FC_64  (2)
@@ -33,37 +60,37 @@ typedef enum __attribute__((packed)) {
 /// @{
 
 /// @brief `fc/128`
-#define NFC_BITRATE_INDEX_FC_128 (1)
+#define NFC_BITRATE_FLAG_FC_128 (1)
 
 /// @brief `fc/64`
-#define NFC_BITRATE_INDEX_FC_64  (1 << 1)
+#define NFC_BITRATE_FLAG_FC_64  (1 << 1)
 
 /// @brief `fc/32`
-#define NFC_BITRATE_INDEX_FC_32  (1 << 2)
+#define NFC_BITRATE_FLAG_FC_32  (1 << 2)
 
 /// @brief `fc/16`
-#define NFC_BITRATE_INDEX_FC_16  (1 << 3)
+#define NFC_BITRATE_FLAG_FC_16  (1 << 3)
 
 /// @brief `fc/8`
-#define NFC_BITRATE_INDEX_FC_8   (1 << 4)
+#define NFC_BITRATE_FLAG_FC_8   (1 << 4)
 
 /// @brief `fc/4`
-#define NFC_BITRATE_INDEX_FC_4   (1 << 5)
+#define NFC_BITRATE_FLAG_FC_4   (1 << 5)
 
 /// @brief `fc/2`
-#define NFC_BITRATE_INDEX_FC_2   (1 << 6)
+#define NFC_BITRATE_FLAG_FC_2   (1 << 6)
 
 /// @brief `3fc/4`
-#define NFC_BITRATE_INDEX_FC3_4  (1 << 8)
+#define NFC_BITRATE_FLAG_FC3_4  (1 << 8)
 
 /// @brief `fc`
-#define NFC_BITRATE_INDEX_FC     (1 << 9)
+#define NFC_BITRATE_FLAG_FC     (1 << 9)
 
 /// @brief `3fc/2`
-#define NFC_BITRATE_INDEX_FC3_2  (1 << 10)
+#define NFC_BITRATE_FLAG_FC3_2  (1 << 10)
 
 /// @brief `2fc`
-#define NFC_BITRATE_INDEX_FC2    (1 << 11)
+#define NFC_BITRATE_FLAG_FC2    (1 << 11)
 /// @}
 
 /// Bit Rate for Near Field Communication
@@ -75,20 +102,28 @@ typedef enum __attribute__((packed)) {
 ///
 /// - Note: You should use the ``BitRate(_:)`` macro instead of directly accessing this enum's cases.
 typedef enum __attribute__((packed)) {
-    NFC_BITRATE_106K   = NFC_BITRATE_INDEX_FC_128,
-    NFC_BITRATE_212K   = NFC_BITRATE_INDEX_FC_64,
-    NFC_BITRATE_424K   = NFC_BITRATE_INDEX_FC_32,
-    NFC_BITRATE_848K   = NFC_BITRATE_INDEX_FC_16,
-    NFC_BITRATE_1695K  = NFC_BITRATE_INDEX_FC_8,
-    NFC_BITRATE_3390K  = NFC_BITRATE_INDEX_FC_4,
-    NFC_BITRATE_6780K  = NFC_BITRATE_INDEX_FC_2,
-    NFC_BITRATE_10170K = NFC_BITRATE_INDEX_FC3_4,
-    NFC_BITRATE_13560K = NFC_BITRATE_INDEX_FC,
-    NFC_BITRATE_20340K = NFC_BITRATE_INDEX_FC3_2,
-    NFC_BITRATE_27120K = NFC_BITRATE_INDEX_FC2,
+    NFC_BITRATE_106K   = NFC_BITRATE_FLAG_FC_128,
+    NFC_BITRATE_212K   = NFC_BITRATE_FLAG_FC_64,
+    NFC_BITRATE_424K   = NFC_BITRATE_FLAG_FC_32,
+    NFC_BITRATE_848K   = NFC_BITRATE_FLAG_FC_16,
+    NFC_BITRATE_1695K  = NFC_BITRATE_FLAG_FC_8,
+    NFC_BITRATE_3390K  = NFC_BITRATE_FLAG_FC_4,
+    NFC_BITRATE_6780K  = NFC_BITRATE_FLAG_FC_2,
+    NFC_BITRATE_10170K = NFC_BITRATE_FLAG_FC3_4,
+    NFC_BITRATE_13560K = NFC_BITRATE_FLAG_FC,
+    NFC_BITRATE_20340K = NFC_BITRATE_FLAG_FC3_2,
+    NFC_BITRATE_27120K = NFC_BITRATE_FLAG_FC2,
 } nfc_bitrate_t;
 
 #define NFC_BITRATE_UNSET (0)
+
+static inline size_t nfc_bitrate_to_index(nfc_bitrate_t bitrate) {
+    return __builtin_ctz(bitrate);
+}
+
+static inline nfc_bitrate_t nfc_bitrate_from_index(size_t index) {
+    return 1 << index;
+}
 
 typedef uint8_t nfc_time_index_t;
 
@@ -153,10 +188,34 @@ static inline nfc_bitrate_t nfc_bitrate_select(
     }
 }
 
-typedef struct {
-    size_t bytes;
-    uint8_t trailing_bits;
+#define NFC_TRAILING_BITS_ALL (0)
+
+typedef union {
+    struct {
+        size_t bytes : (sizeof(size_t) * 8 - 8);
+        uint8_t trailing_bits : 7;
+
+        // Let's make casting this to ssize_t possible, i.e., not use the sign bit.
+        uint8_t zero : 1;
+    };
+    size_t encoded;
 } nfc_frame_length_t;
+
+static inline uint8_t nfc_frame_length_trailing_bits(size_t length) {
+    nfc_frame_length_t* frame_length = (nfc_frame_length_t*)&length;
+    return frame_length->trailing_bits;
+}
+
+static inline uint8_t nfc_frame_length_bytes(size_t length) {
+    nfc_frame_length_t* frame_length = (nfc_frame_length_t*)&length;
+    return frame_length->bytes;
+}
+
+static inline size_t nfc_frame_length(nfc_frame_length_t frame_length) {
+    return frame_length.encoded;
+}
+
+static_assert(sizeof(nfc_frame_length_t) == sizeof(size_t));
 
 typedef enum {
     NFC_APPLICATION_TYPE_UNKNOWN = 0,
@@ -172,18 +231,3 @@ typedef enum {
     NFC_APPLICATION_MIFARE_PLUS,        /* based on T4T */
 } nfc_application_type_t;
 
-typedef enum __attribute__((packed)) {
-    /// Without length, CRC, prefixes, suffixes etc, any protocol unmanaged
-    NFC_INTERFACE_FRAME = 1,
-
-    /// With length, CRC, etc..., any protocol unmanaged
-    NFC_INTERFACE_PACKET = 1 << 1,
-
-    /// ISO-DEP payloads, protocol managedd
-    NFC_INTERFACE_ISO_DEP = 1 << 2,
-
-    /// NFC-DEP payloads, protocol managed
-    NFC_INTERFACE_NFC_DEP = 1 << 3,
-} nfc_framing_interface_t;
-
-#define NFC_INTERFACE_ANY (0)
