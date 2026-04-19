@@ -806,6 +806,8 @@ static ssize_t pn53_parse_passive_target_b(uint8_t* response, size_t length, pn5
     /* 0x50, the ATQB frame code / prefix is missing from the PN532/PN533 manuals.
      * Carl's PN532 on the Adafruit PN532 shield sends an addition 0x01 byte before 0x50. */
 
+    // TODO: use while loop
+
     uint8_t next = *response++;
     length -= 1;
     if (next == 1 || next == 2) {
@@ -1084,6 +1086,10 @@ static inline void _copy_register_into(uint8_t** cursor, pn53_register_address_t
     *cursor += 1;
 }
 
+static void _fifo_timeout(void* keep_polling) {
+    *((bool*)keep_polling) = false;
+}
+
 int pn53_fifo_transmit_write_(pn53_dev_t* dev, const uint8_t* tx, size_t length, uint8_t trailing_bit_count,
                                bool transceive, bool transceive_after_receiving
 ) {
@@ -1103,6 +1109,12 @@ int pn53_fifo_transmit_write_(pn53_dev_t* dev, const uint8_t* tx, size_t length,
 
     size_t fifo_length = 0;
     bool transmitting = false;
+
+    bool keep_polling = true;
+    ztimer_t timeout = { .callback=_fifo_timeout, .arg=&keep_polling };
+    if (dev->command_timeout != PN53_FIFO_TIMEOUT_NEVER) {
+        ztimer_set(ZTIMER_MSEC, &timeout, dev->command_timeout);
+    }
 
     while (length > 0) {
         size_t can_write = MIN(max_fifo_bytes_at_once, MIN(length, CONFIG_PN53_FIFO_SIZE - fifo_length));
@@ -1139,7 +1151,7 @@ int pn53_fifo_transmit_write_(pn53_dev_t* dev, const uint8_t* tx, size_t length,
         }
 
         if ((res = pn53_write_registers_(dev, regs, reg_count)) < 0) {
-            return res;
+            goto _return;
         }
         length -= can_write;
         tx += can_write;
@@ -1148,16 +1160,17 @@ int pn53_fifo_transmit_write_(pn53_dev_t* dev, const uint8_t* tx, size_t length,
             uint8_t refill_threshold = fifo_length + can_write - (can_write <= CONFIG_PN53_FIFO_TRANSMIT_REFILL_THRESHOLD ?
                 1 : CONFIG_PN53_FIFO_TRANSMIT_REFILL_THRESHOLD);
 
-            while (true) {
+            while (keep_polling) {
                 if ((res = pn53_read_registers(dev, addrs, &values, ARRAY_SIZE(addrs))) < 0) {
-                    return (int)res;
+                    goto _return;
                 }
 
                 if ((values[1] & PN53_REGISTER_COMMON_IRQ_FLAG_TX_FINISHED)) {
                     PN53_DEBUG("fifo.tx", "TX finished, but still need to send %" PRIuSIZE " bytes"
                                " -- controller is transmitting faster than host can refill FIFO\n",
                                length);
-                    return -EFBIG;
+                    res = -EFBIG;
+                    goto _return;
                 }
 
                 // If the controller has sent at least 5 bytes in the meantime, we refill it
@@ -1170,9 +1183,9 @@ int pn53_fifo_transmit_write_(pn53_dev_t* dev, const uint8_t* tx, size_t length,
     }
 
     PN53_DEBUG("fifo.tx", "waiting for TX op to finish\n");
-    while (true) {
+    while (keep_polling) {
         if ((res = pn53_read_registers(dev, addrs, &values, ARRAY_SIZE(addrs))) < 0) {
-            return (int)res;
+            goto _return;
         }
 
         if ((values[1] & PN53_REGISTER_COMMON_IRQ_FLAG_TX_FINISHED) && pn53_bitfield_get(values[0], PN53_REGISTER_FIFO_LEVEL_MASK_BYTE_COUNT) == 0) {
@@ -1180,11 +1193,15 @@ int pn53_fifo_transmit_write_(pn53_dev_t* dev, const uint8_t* tx, size_t length,
             break;
         }
     }
-    return 0;
-}
 
-static void _fifo_receive_read_timeout(void* keep_polling) {
-    *((bool*)keep_polling) = false;
+_return:
+    if (dev->command_timeout != PN53_FIFO_TIMEOUT_NEVER) {
+        bool triggered = !ztimer_remove(ZTIMER_MSEC, &timeout);
+        if (IS_ACTIVE(ENABLE_DEBUG) && triggered) {
+            PN53_DEBUG("fifo.tx", "timed out after %" PRIu32 " ms\n", dev->command_timeout);
+        }
+    }
+    return (int)res;
 }
 
 ssize_t pn53_fifo_receive_read_(pn53_dev_t* dev, uint8_t* frame, size_t capacity, uint8_t* trailing_bit_count, uint32_t timeout_ms) {
@@ -1206,7 +1223,7 @@ ssize_t pn53_fifo_receive_read_(pn53_dev_t* dev, uint8_t* frame, size_t capacity
     PN53_DEBUG("fifo.rx", "can max read %" PRIuSIZE " bytes from FIFO per HCI frame\n", max_fifo_bytes_at_once);
 
     bool keep_polling = true;
-    ztimer_t timeout = { .callback=_fifo_receive_read_timeout, .arg=&keep_polling };
+    ztimer_t timeout = { .callback=_fifo_timeout, .arg=&keep_polling };
     if (timeout_ms != PN53_FIFO_TIMEOUT_NEVER) {
         ztimer_set(ZTIMER_MSEC, &timeout, timeout_ms);
     }
@@ -1220,7 +1237,7 @@ ssize_t pn53_fifo_receive_read_(pn53_dev_t* dev, uint8_t* frame, size_t capacity
         memcpy(addrs + can_read * sizeof(pn53_register_address_t), additional_regs, sizeof(additional_regs));
 
         if ((res = pn53_read_registers_(dev, addrs, &values, can_read + ARRAY_SIZE(additional_regs))) < 0) {
-            return res;
+            goto _return;
         }
 
         received += can_read;
