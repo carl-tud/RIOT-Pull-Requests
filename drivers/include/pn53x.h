@@ -98,10 +98,17 @@ static_assert(PN35_FRAME_HEADER_EXTENDED + 2 == PN53_FRAME_OVERHEAD_MAX);
 #  define CONFIG_PN53_DEBUG 1
 #endif
 
-#if !defined(CONFIG_PN53_HCI_DEBUG) || defined(DOXYGEN)
-#  define CONFIG_PN53_HCI_DEBUG 1
+#if !defined(CONFIG_PN53_DEBUG_REGISTERS) || defined(DOXYGEN)
+#  define CONFIG_PN53_DEBUG_REGISTERS 1
 #endif
 
+#if !defined(CONFIG_PN53_DEBUG_HCI) || defined(DOXYGEN)
+#  define CONFIG_PN53_DEBUG_HCI 1
+#endif
+
+#if !defined(CONFIG_PN53_DEBUG_TRANSPORT) || defined(DOXYGEN)
+#  define CONFIG_PN53_DEBUG_TRANSPORT 0
+#endif
 
 #if !defined(CONFIG_PN53_FIFO_TRANSMIT_REFILL_THRESHOLD) || defined(DOXYGEN)
 #  define CONFIG_PN53_FIFO_TRANSMIT_REFILL_THRESHOLD 5
@@ -471,7 +478,7 @@ typedef enum __attribute__((packed)) {
     PN53_UART_SPEED_115200_BAUD = 0x04, /* 115.2 kbaud */
     PN53_UART_SPEED_230400_BAUD = 0x05, /* 230.4 kbaud */
     PN53_UART_SPEED_460800_BAUD = 0x06, /* 460.8 kbaud */
-    PN53_UART_SPEED_921600_BAUD = 0X07, /* 921.6 kbaud */
+    PN53_UART_SPEED_921600_BAUD = 0x07, /* 921.6 kbaud */
     PN53_UART_SPEED_1288_KBAUD = 0x08, /* 1.288 Mbaud */
 } pn53_uart_speed_t;
 
@@ -539,7 +546,7 @@ typedef enum __attribute__((packed)) {
 #define PN53_REGISTER_NFC_F_1 PN53_REGISTER(0x630A)
 
 /// Defines the length of the valid range for the received frame
-#define PN53_REGISTER_NFC_F_2 PN53_REGISTER(0x630A)
+#define PN53_REGISTER_NFC_F_2 PN53_REGISTER(0x630B)
 
 // Controls the communication in NFC-A (+ NFC-A MIFARE) and NFC target mode at 106 kbit/s
 #define PN53_REGISTER_NFC_A PN53_REGISTER(0x630C)
@@ -723,13 +730,12 @@ typedef enum __attribute__((packed)) {
 /// Defines the first bit collision detected on the RF interface
 #define PN53_REGISTER_COLLISION PN53_REGISTER(0x633E)
 
-#define PN532_SFR_P3 PN53_REGISTER(0xFFB0)
-
-#define PN532_SFR_P3CFGA PN53_REGISTER(0xFFFC)
-#define PN532_SFR_P3CFGB PN53_REGISTER(0xFFFD)
-#define PN532_SFR_P7CFGA PN53_REGISTER(0xFFF4)
-#define PN532_SFR_P7CFGB PN53_REGISTER(0xFFF5)
-#define PN532_SFR_P7 PN53_REGISTER(0xFFF7)
+#define PN53_REGISTER_SFR_P3 PN53_REGISTER(0xFFB0)
+#define PN53_REGISTER_SFR_P3CFGA PN53_REGISTER(0xFFFC)
+#define PN53_REGISTER_SFR_P3CFGB PN53_REGISTER(0xFFFD)
+#define PN53_REGISTER_SFR_P7CFGA PN53_REGISTER(0xFFF4)
+#define PN53_REGISTER_SFR_P7CFGB PN53_REGISTER(0xFFF5)
+#define PN53_REGISTER_SFR_P7 PN53_REGISTER(0xFFF7)
 
 typedef uint32_t pn53_register_symbol_t;
 
@@ -1023,7 +1029,7 @@ typedef struct __attribute__((packed)) {
 
 int pn53_rf_configuration(pn53_dev_t* dev, const pn53_rf_configuration_payload_t* rf_config);
 
-int pn53_set_field_enablement(pn53_dev_t* dev, bool intent_to_enable, bool avoid_external_field);
+int pn53_set_field_enablement(pn53_dev_t* dev, bool intent_to_enable, bool collision_avoidance);
 
 ssize_t pn53_in_list_passive_targets_a(pn53_dev_t* dev,
     uint8_t max_targets, nfc_a_id_t* id, nfc_a_tag_t* tags, uint32_t timeout_ms);

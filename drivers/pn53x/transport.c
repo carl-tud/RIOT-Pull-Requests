@@ -9,7 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define ENABLE_DEBUG CONFIG_PN53_HCI_DEBUG
+#define __ANY_DEBUG IS_ACTIVE(CONFIG_PN53_DEBUG_HCI) || IS_ACTIVE(CONFIG_PN53_DEBUG_TRANSPORT)
+#define ENABLE_DEBUG __ANY_DEBUG
 #include "debug.h"
 
 #include "assert.h"
@@ -25,8 +26,13 @@
 
 #include "pn53x.h"
 
-#define PN53_TRANSPORT_DEBUG(...) DEBUG("pn53x.hci.transport: " __VA_ARGS__)
-#define PN53_HCI_DEBUG(...) DEBUG("pn53x.hci: " __VA_ARGS__)
+#define PN53_DEBUG_TRANSPORT(...) \
+    do { if(IS_ACTIVE(CONFIG_PN53_DEBUG_TRANSPORT)) { DEBUG("pn53x.hci.transport: " __VA_ARGS__); }} \
+    while(0)
+
+#define PN53_DEBUG_HCI(...) \
+    do { if(IS_ACTIVE(CONFIG_PN53_DEBUG_HCI)) { DEBUG("pn53x.hci: " __VA_ARGS__); }} \
+    while(0)
 
 static inline void __debug_hex(const uint8_t* buffer, size_t size) {
     for (size_t i = 0; i < size; i += 1) {
@@ -159,7 +165,7 @@ static ssize_t _frame_packet(iolist_t* prefix, iolist_t* packet, iolist_t* suffi
 
     size_t packet_length = iolist_size(packet) + 1;
     if (packet_length > max_packet_length) {
-        PN53_TRANSPORT_DEBUG("packet is %" PRIuSIZE " bytes, longer than max of %" PRIuSIZE "\n",
+        PN53_DEBUG_TRANSPORT("packet is %" PRIuSIZE " bytes, longer than max of %" PRIuSIZE "\n",
                              packet_length, max_packet_length);
         return -PN53_ERROR_CONNECTION_PACKET_LENGTH_OUT_OF_RANGE;
     }
@@ -210,7 +216,7 @@ static ssize_t _parse_packet_begin(uint8_t** cursor, size_t length) {
     /* Read header (entire frame must at least be 8 bytes: 00 00 FF LEN LCS TFI DCS 00 */
     if (length < PN53_FRAME_OVERHEAD_MIN ||
          (frame[0] != 0x00) || (frame[1] != 0x00) || (frame[2] != 0xff)) {
-        PN53_TRANSPORT_DEBUG("invalid frame header\n");
+        PN53_DEBUG_TRANSPORT("invalid frame header\n");
         return -PN53_ERROR_CONNECTION_CORRUPTED;
     }
     frame += 3;
@@ -226,7 +232,7 @@ static ssize_t _parse_packet_begin(uint8_t** cursor, size_t length) {
         frame += 4;
     } else {
         if (frame[0] == 0xff) {
-            PN53_TRANSPORT_DEBUG("rolling with unexpected frame length 0xff\n");
+            PN53_DEBUG_TRANSPORT("rolling with unexpected frame length 0xff\n");
         }
         /* Normal frame
          * LEN ... */
@@ -238,18 +244,18 @@ static ssize_t _parse_packet_begin(uint8_t** cursor, size_t length) {
     uint8_t lcs = *frame; /* Length checksum (LCS) */
     frame += 1;
     if (length_checksum != lcs) {
-        PN53_TRANSPORT_DEBUG("LCS mismatch\n");
+        PN53_DEBUG_TRANSPORT("LCS mismatch\n");
         return -PN53_ERROR_CONNECTION_CHECKSUM_MISMATCH;
     }
 
     if (packet_length > PN53_PACKET_LENGTH_MAX) {
-        PN53_TRANSPORT_DEBUG("packet is %" PRIuSIZE " bytes, longer than max of %" PRIuSIZE "\n",
+        PN53_DEBUG_TRANSPORT("packet is %" PRIuSIZE " bytes, longer than max of %" PRIuSIZE "\n",
                              packet_length, PN53_PACKET_LENGTH_MAX);
         return -PN53_ERROR_CONNECTION_PACKET_LENGTH_OUT_OF_RANGE;
     }
 
     if (packet_length == 0) {
-        PN53_TRANSPORT_DEBUG("packet is empty");
+        PN53_DEBUG_TRANSPORT("packet is empty");
         return -PN53_ERROR_CONNECTION_PACKET_EMPTY;
     }
 
@@ -265,25 +271,25 @@ static ssize_t _parse_packet_end(uint8_t** cursor, size_t packet_length) {
     /* TFI+packet checksum in DCS, check DCS */
     uint8_t dcs = packet[packet_length];
     if (_calculate_packet_checksum(packet, packet_length) != dcs) {
-        PN53_TRANSPORT_DEBUG("DCS mismatch\n");
+        PN53_DEBUG_TRANSPORT("DCS mismatch\n");
         return -PN53_ERROR_CONNECTION_CHECKSUM_MISMATCH;
     }
 
     uint8_t postamble = packet[packet_length + 1];
     if (postamble != 0) {
-        PN53_TRANSPORT_DEBUG("preposterous postamble %02x, expected 00\n", postamble);
+        PN53_DEBUG_TRANSPORT("preposterous postamble %02x, expected 00\n", postamble);
         return -PN53_ERROR_CONNECTION_CORRUPTED;
     }
 
     if (tfi == PN53_FRAME_IDENTIFIER_ERROR) {
-        PN53_HCI_DEBUG("packet type: error (TFI=0x7d)\n");
+        PN53_DEBUG_HCI("packet type: error (TFI=0x7d)\n");
         return -PN53_ERROR_CONNECTION_FRAME_SYNTAX;
     }
     if (tfi != PN53_FRAME_IDENTIFIER_CONTROLLER_TO_HOST) {
-        PN53_HCI_DEBUG("illegal TFI %02X from controller, expected 0xd5\n", tfi);
+        PN53_DEBUG_HCI("illegal TFI %02X from controller, expected 0xd5\n", tfi);
         return -PN53_ERROR_CONNECTION_UNEXPECTED_FRAME_DIRECTION;
     }
-    PN53_HCI_DEBUG("packet type: response (TFI=0xd5, length=%" PRIuSIZE " bytes)\n", packet_length);
+    PN53_DEBUG_TRANSPORT("packet type: response (TFI=0xd5, length=%" PRIuSIZE " bytes)\n", packet_length);
 
     *cursor = packet + 1;
     return packet_length - 1;
@@ -291,14 +297,14 @@ static ssize_t _parse_packet_end(uint8_t** cursor, size_t packet_length) {
 
 static int _parse_ack(uint8_t* frame, size_t length) {
     if (length != sizeof(_ack_frame) || memcmp(frame, _ack_frame, sizeof(_ack_frame)) != 0) {
-        PN53_TRANSPORT_DEBUG("corrupted ACK frame\n");
+        PN53_DEBUG_TRANSPORT("corrupted ACK frame\n");
         return -PN53_ERROR_CONNECTION_CORRUPTED;
     }
     return 0;
 }
 
 static void _hci_event(void* connection) {
-    PN53_HCI_DEBUG("HCI event\n");
+    PN53_DEBUG_TRANSPORT("HCI event\n");
     mutex_unlock(&((pn53_connection_t*)connection)->trap);
 }
 
@@ -315,7 +321,7 @@ void pn53_hci_reset(const pn53_connection_t* connection) {
 
 int pn53_hci_init(pn53_connection_t* connection) {
 #if PN53_HCI_IRQ_SUPPORTED
-    PN53_TRANSPORT_DEBUG("using HCI IRQ\n");
+    PN53_DEBUG_TRANSPORT("using HCI IRQ\n");
     mutex_init(&connection->trap);
     mutex_lock(&connection->trap);
     gpio_init_int(connection->config->irq, GPIO_IN_PU, GPIO_FALLING, _hci_event, (void*)connection);
@@ -325,7 +331,7 @@ int pn53_hci_init(pn53_connection_t* connection) {
     gpio_set(connection->config->reset);
 
     if (connection->config->bus.kind == PN53_BUS_SPI) {
-        PN53_TRANSPORT_DEBUG("initializing SPI\n");
+        PN53_DEBUG_TRANSPORT("initializing SPI\n");
 #if IS_USED(MODULE_PN53X_SPI)
         /* we handle the CS line manually... */
         gpio_init(connection->config->chip_select, GPIO_OUT);
@@ -335,12 +341,12 @@ int pn53_hci_init(pn53_connection_t* connection) {
 #endif
     } else if (connection->config->bus.kind) {
 #if IS_USED(MODULE_PN53X_UART)
-        PN53_TRANSPORT_DEBUG("initializing UART\n");
+        PN53_DEBUG_TRANSPORT("initializing UART\n");
         mutex_init(&connection->callback);
         mutex_lock(&connection->callback);
         int ret = uart_init(dev->conf->uart, UART_BAUDRATE, uart_rx_cb, (void *) dev);
         if (ret < 0) {
-            PN53_TRANSPORT_DEBUG("uart_init failed with %d\n", ret);
+            PN53_DEBUG_TRANSPORT("uart_init failed with %d\n", ret);
             return ret;
         }
         ztimer_sleep(ZTIMER_MSEC, 1000);
@@ -377,8 +383,8 @@ int _read_status(const pn53_connection_t* connection, uint8_t* status) {
 
 static ssize_t _write(pn53_connection_t* connection, iolist_t* chunks) {
     (void)chunks;
-    if (IS_ACTIVE(ENABLE_DEBUG)) {
-        PN53_TRANSPORT_DEBUG("[->] ");
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_TRANSPORT)) {
+        PN53_DEBUG_TRANSPORT("[->] ");
         PN53_DEBUG_CHUNKS(chunks);
         DEBUG("\n");
     }
@@ -398,7 +404,7 @@ static ssize_t _write(pn53_connection_t* connection, iolist_t* chunks) {
 #if IS_USED(MODULE_PN53X_SPI)
     case PN53_BUS_SPI:
         if ((res = iolist_to_buffer(chunks, connection->backing, sizeof(connection->backing))) < 0) {
-            PN53_TRANSPORT_DEBUG("failed to copy chunks to backing buffer\n");
+            PN53_DEBUG_TRANSPORT("failed to copy chunks to backing buffer\n");
             return res;
         }
         _reverse(connection->backing, (size_t)res);
@@ -436,7 +442,7 @@ static ssize_t _write(pn53_connection_t* connection, iolist_t* chunks) {
         break;
 #endif
     default:
-        PN53_TRANSPORT_DEBUG("unsupported bus kind\n");
+        PN53_DEBUG_TRANSPORT("unsupported bus kind\n");
         assert(false);
         return -1;
     }
@@ -487,7 +493,7 @@ static ssize_t _read(const pn53_connection_t* connection, uint8_t* buffer, size_
 #endif
     /* TODO: Where's UART? */
     default:
-        PN53_TRANSPORT_DEBUG("unsupported bus kind\n");
+        PN53_DEBUG_TRANSPORT("unsupported bus kind\n");
         assert(false);
         return -1;
     }
@@ -495,8 +501,8 @@ static ssize_t _read(const pn53_connection_t* connection, uint8_t* buffer, size_
     /* wait for a while */
     ztimer_sleep(ZTIMER_USEC, SPI_WRITE_DELAY_US);
 
-    if (IS_ACTIVE(ENABLE_DEBUG) && res >= 0) {
-        PN53_TRANSPORT_DEBUG("[<-] ");
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_TRANSPORT) && res >= 0) {
+        PN53_DEBUG_TRANSPORT("[<-] ");
         PN53_DEBUG_HEX(buffer, (size_t)res);
         DEBUG("\n");
     }
@@ -518,8 +524,10 @@ static ssize_t _recv_ack(const pn53_connection_t* connection) {
     }
     assert((size_t)res <= sizeof(frame));
     if (res != sizeof(_ack_frame)) {
-        PN53_TRANSPORT_DEBUG("expected ACK, received corrupted frame: ");
-        PN53_DEBUG_HEX(frame, res);
+        if (IS_ACTIVE(CONFIG_PN53_DEBUG_TRANSPORT)) {
+            PN53_DEBUG_TRANSPORT("expected ACK, received corrupted frame: ");
+            PN53_DEBUG_HEX(frame, res);
+        }
         return -PN53_ERROR_CONNECTION_CORRUPTED;
     }
     return _parse_ack(frame, res);
@@ -535,8 +543,8 @@ static ssize_t _send_nack(pn53_connection_t* connection) {
 
 static ssize_t _send_packet(pn53_connection_t* connection, iolist_t* packet) {
     assert(connection);
-    if (IS_ACTIVE(ENABLE_DEBUG)) {
-        PN53_HCI_DEBUG("[->] ");
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI)) {
+        PN53_DEBUG_HCI("[->] ");
         PN53_DEBUG_CHUNKS(packet);
         DEBUG("\n");
     }
@@ -599,8 +607,8 @@ static ssize_t _recv_packet(pn53_connection_t* connection, uint8_t** packet) {
     if ((res = _parse_packet_end(&cursor, packet_length)) < 0) {
         return res;
     }
-    if (IS_ACTIVE(ENABLE_DEBUG)) {
-        PN53_HCI_DEBUG("[<-] ");
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI)) {
+        PN53_DEBUG_HCI("[<-] ");
         PN53_DEBUG_HEX(cursor, (size_t)res);
         DEBUG("\n");
     }
@@ -622,11 +630,11 @@ static ssize_t _block_with_timeout(pn53_connection_t* connection, uint32_t timeo
         mutex_lock(&connection->trap);
         bool triggered = !ztimer_remove(ZTIMER_MSEC, &timer);
         if (triggered) {
-            PN53_HCI_DEBUG("timeout after %" PRIu32 " ms, aborting with ACK\n", timeout_ms);
+            PN53_DEBUG_HCI("timeout after %" PRIu32 " ms, aborting with ACK\n", timeout_ms);
             // Best effort, i.e., discard result
             ssize_t res = _send_ack(connection);
             if (res < 0) {
-                PN53_HCI_DEBUG("ACK to abort failed with %i\n", (int)res);
+                PN53_DEBUG_HCI("ACK to abort failed with %i\n", (int)res);
             }
             return -PN53_ERROR_CONNECTION_TIMEOUT;
         } else {
@@ -641,7 +649,7 @@ static uint8_t _uart_index = 0;
 
 static void _uart_rx_cb(void* connection, uint8_t byte) {
     (void) connection;
-    PN53_TRANSPORT_DEBUG("UART IRQ triggered with byte %02X\n", byte);
+    PN53_DEBUG_TRANSPORT("UART IRQ triggered with byte %02X\n", byte);
     _uart_buffer[_uart_index++] = byte;
     mutex_unlock(&((pn53_connection_t*)connection)->callback);
 }
@@ -652,36 +660,36 @@ ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
     ssize_t res = 0;
     /* First, send packet. */
     if ((res = _send_packet(connection, packet)) < 0) {
-        PN53_TRANSPORT_DEBUG("sending packet failed\n");
+        PN53_DEBUG_TRANSPORT("sending packet failed\n");
         return res;
     }
 
     /* Wait until data is available. */
     if ((res = _block_with_timeout(connection, CONFIG_PN53_ACK_TIMEOUT_MS)) < 0) {
-        PN53_TRANSPORT_DEBUG("ACK timeout expired\n");
+        PN53_DEBUG_TRANSPORT("ACK timeout expired\n");
         return res;
     }
 
     /* We expect an ACK from the controller. */
     if ((res = _recv_ack(connection)) < 0) {
-        PN53_TRANSPORT_DEBUG("receiving ACK for packet failed\n");
+        PN53_DEBUG_TRANSPORT("receiving ACK for packet failed\n");
         return res;
     }
 
-    PN53_HCI_DEBUG("[<-] ACK, waiting for response\n");
+    PN53_DEBUG_TRANSPORT("[<-] ACK, waiting for response\n");
 
     /* Wait until the response is available. */
     if ((res = _block_with_timeout(connection, timeout_ms)) < 0) {
-        PN53_HCI_DEBUG("response timeout expired\n");
+        PN53_DEBUG_HCI("response timeout expired\n");
         return res;
     }
 
     /* We expect an ACK from the controller. */
     if ((res = _recv_packet(connection, response)) < 0) {
-        PN53_TRANSPORT_DEBUG("receiving response failed\n");
+        PN53_DEBUG_TRANSPORT("receiving response failed\n");
         return res;
     }
 
-    PN53_HCI_DEBUG("round trip complete\n");
+    PN53_DEBUG_TRANSPORT("round trip complete\n");
     return res;
 }
