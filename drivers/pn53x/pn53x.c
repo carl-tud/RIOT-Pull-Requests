@@ -22,6 +22,7 @@
 #include "byteorder.h"
 #include "architecture.h"
 #include "macros/utils.h"
+#include "unaligned.h"
 
 #include "log.h"
 
@@ -46,8 +47,9 @@ static inline void __debug_hex(const uint8_t* buffer, size_t size) {
       }                               \
     } while (0)
 
-#define PN53_HCI_DEBUG(...) DEBUG("pn53x.hci: " __VA_ARGS__)
+#define PN53_DEBUG_HCI(...) DEBUG("pn53x.hci: " __VA_ARGS__)
 #define PN53_DEBUG(command, ...) DEBUG("pn53x." command ": " __VA_ARGS__)
+#define PN53_DEBUG_REGISTER(...) PN53_DEBUG("register", __VA_ARGS__)
 
 
 
@@ -198,10 +200,10 @@ int pn53_init(pn53_dev_t* dev, const pn53_connection_config_t* config) {
     if ((res = pn53_hci_init(&dev->connection)) < 0) {
         return res;
     }
-    PN53_HCI_DEBUG("HCI initialized\n");
+    PN53_DEBUG_HCI("HCI initialized\n");
 
     pn53_hci_reset(&dev->connection);
-    PN53_HCI_DEBUG("reset done\n");
+    PN53_DEBUG_HCI("reset done\n");
 
     /* Start with conservative minimum before knowing model */
     dev->connection.max_packet_length = 200;
@@ -263,14 +265,306 @@ int pn53_set_parameters(pn53_dev_t* dev, uint8_t parameters) {
     return 0;
 }
 
+static void _format_bits_with_mask(uint8_t mask, uint8_t value, char* out_str) {
+    for (int i = 7; i >= 0; i--) {
+        int idx = 7 - i;
+        if (i < 4) idx += 1; // Add space between nibbles
+
+        if (mask & (1 << i)) {
+            out_str[idx] = (value & (1 << i)) ? '1' : '0';
+        } else {
+            out_str[idx] = '.';
+        }
+    }
+}
+
+#define PN53_DEBUG_REGISTER_VALUE(addr, name, value) \
+    PN53_DEBUG_REGISTER("0x%04X (%s): 0x%02X = %08b\n", (addr), (name), (value), (unsigned int)(value))
+
+static void _debug_mask(char* pattern, const char* label, uint8_t mask, uint8_t value) {
+    _format_bits_with_mask(mask, value, pattern);
+    PN53_DEBUG_REGISTER("[=] %s - %u (%s)\n",
+                        pattern, pn53_bitfield_get(value, mask), label);
+}
+
+#define PN53_DEBUG_REGISTER_SYMBOL(mask, label, value) \
+    _debug_mask(mask_str, (label), (mask), (value))
+
+static void _debug_register(pn53_register_address_t addr, uint8_t value) {
+    char mask_str[] = ".... ....";
+    switch (addr) {
+        case PN53_REGISTER_CONTROL_SWITCH_RNG:
+            PN53_DEBUG_REGISTER_VALUE(addr, "ControlSwitchRng", value);
+            break;
+        case PN53_REGISTER_MODE:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Mode", value);
+            break;
+        case PN53_REGISTER_TX_MODE:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TxMode", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_MODE_AUTO_CRC, "AUTO_CRC", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_MODE_BITRATE_INDEX, "BITRATE_INDEX", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_MODE_INVERTED, "INVERTED", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_MODE_MIX, "MIX", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_MODE_FRAMING, "FRAMING", value);
+            break;
+        case PN53_REGISTER_RX_MODE:
+            PN53_DEBUG_REGISTER_VALUE(addr, "RxMode", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_RX_MODE_AUTO_CRC, "AUTO_CRC", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_RX_MODE_BITRATE_INDEX, "BITRATE_INDEX", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_RX_MODE_IGNORE_INVALID, "IGNORE_INVALID", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_RX_MODE_MULTIPLE_FRAMES, "MULTIPLE_FRAMES", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_RX_MODE_FRAMING, "FRAMING", value);
+            break;
+        case PN53_REGISTER_TX_CONTROL:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TxControl", value);
+            break;
+        case PN53_REGISTER_TX_AUTO:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TxAuto", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_AUTO_FLAG_TURN_OFF_FIELD_AFTER_TX, "TURN_OFF_FIELD_AFTER_TX", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_AUTO_FLAG_FORCE_100_PERCENT_ASK, "FORCE_100_PERCENT_ASK", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_AUTO_FLAG_WAKE_UP_BY_FIELD, "WAKE_UP_BY_FIELD", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_AUTO_FLAG_COLLISION_AVOIDANCE, "COLLISION_AVOIDANCE", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_AUTO_FLAG_INITIAL_FIELD_ON, "INITIAL_FIELD_ON", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_AUTO_FLAG_TX1_FIELD_ON, "TX1_FIELD_ON", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_TX_AUTO_FLAG_TX2_FIELD_ON, "TX2_FIELD_ON", value);
+            break;
+        case PN53_REGISTER_TX_SELECTOR:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TxSel", value);
+            break;
+        case PN53_REGISTER_RX_SELECTOR:
+            PN53_DEBUG_REGISTER_VALUE(addr, "RxSel", value);
+            break;
+        case PN53_REGISTER_RX_THRESHOLD:
+            PN53_DEBUG_REGISTER_VALUE(addr, "RxThreshold", value);
+            break;
+        case PN53_REGISTER_DEMODULATOR:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Demod(ulator)", value);
+            break;
+        case PN53_REGISTER_NFC_F_1:
+            PN53_DEBUG_REGISTER_VALUE(addr, "FelNFC1 (NFC-F #1)", value);
+            break;
+        case PN53_REGISTER_NFC_F_2:
+            PN53_DEBUG_REGISTER_VALUE(addr, "FelNFC2 (NFC-F #2)", value);
+            break;
+        case PN53_REGISTER_NFC_A:
+            PN53_DEBUG_REGISTER_VALUE(addr, "MifNFC (NFC-A)", value);
+            break;
+        case PN53_REGISTER_MANUAL_RECEIVER:
+            PN53_DEBUG_REGISTER_VALUE(addr, "ManualRCV", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_MANUAL_RECEIVER_FLAG_TX_RX_MANUAL_PARITY, "TX_RX_MANUAL_PARITY", value);
+            break;
+        case PN53_REGISTER_NFC_B:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TypeB (NFC-B)", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_NFC_B_FLAG_RX_REQUIRE_SOF, "RX_REQUIRE_SOF", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_NFC_B_FLAG_RX_REQUIRE_EOF, "RX_REQUIRE_EOF", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_NFC_B_FLAG_EOF_SOF_WIDTH_MAX, "EOF_SOF_WIDTH_MAX", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_NFC_B_FLAG_TX_NO_SOF, "TX_NO_SOF", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_NFC_B_FLAG_TX_NO_EOF, "TX_NO_EOF", value);
+            break;
+        case PN53_REGISTER_CRC_HIGH:
+            PN53_DEBUG_REGISTER_VALUE(addr, "CRC (high)", value);
+            break;
+        case PN53_REGISTER_CRC_LOW:
+            PN53_DEBUG_REGISTER_VALUE(addr, "CRC (low)", value);
+            break;
+        case PN53_REGISTER_MILLER_MODULATION_WIDTH:
+            PN53_DEBUG_REGISTER_VALUE(addr, "ModWidth", value);
+            break;
+        case PN53_REGISTER_TX_BIT_PHASE:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TxBitPhase", value);
+            break;
+        case PN53_REGISTER_RF_CONFIG:
+            PN53_DEBUG_REGISTER_VALUE(addr, "RF Config", value);
+            break;
+        case PN53_REGISTER_CONDUCTANCE_N_DRIVER_OFF:
+            PN53_DEBUG_REGISTER_VALUE(addr, "GsNOff (Conductance N off)", value);
+            break;
+        case PN53_REGISTER_CONDUCTANCE_N_DRIVER_ON:
+            PN53_DEBUG_REGISTER_VALUE(addr, "GsNOn (Conductance N on)", value);
+            break;
+        case PN53_REGISTER_CONDUCTANCE_P_DRIVER_NO_MODULATION:
+            PN53_DEBUG_REGISTER_VALUE(addr, "CWGsP (Conductance P mod=0)", value);
+            break;
+        case PN53_REGISTER_CONDUCTANCE_P_DRIVER_MODULATION:
+            PN53_DEBUG_REGISTER_VALUE(addr, "ModGsP (Conductance P mod=1)", value);
+            break;
+        case PN53_REGISTER_TIMER_MODE:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TMode", value);
+            break;
+        case PN53_REGISTER_TIMER_PRESCALER:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TPrescaler", value);
+            break;
+        case PN53_REGISTER_TIMER_RELOAD_VALUE_HIGH:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TReloadVal (high)", value);
+            break;
+        case PN53_REGISTER_TIMER_RELOAD_VALUE_LOW:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TReloadVal (low)", value);
+            break;
+        case PN53_REGISTER_TIMER_COUNTER_VALUE_HIGH:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TCounterVal (high)", value);
+            break;
+        case PN53_REGISTER_TIMER_COUNTER_VALUE_LOW:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TCounterVal (low)", value);
+            break;
+        case PN53_REGISTER_TEST_SELECTION1:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TestSel1", value);
+            break;
+        case PN53_REGISTER_TEST_SELECTION2:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TestSel2", value);
+            break;
+        case PN53_REGISTER_TEST_PIN_ENABLE:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TestPinEn", value);
+            break;
+        case PN53_REGISTER_TEST_PIN_VALUE:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TestPinValue", value);
+            break;
+        case PN53_REGISTER_TEST_BUS:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TestBus", value);
+            break;
+        case PN53_REGISTER_TEST_AUTO:
+            PN53_DEBUG_REGISTER_VALUE(addr, "AutoTest", value);
+            break;
+        case PN53_REGISTER_VERSION:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Version", value);
+            break;
+        case PN53_REGISTER_TEST_ANALOG:
+            PN53_DEBUG_REGISTER_VALUE(addr, "AnalogTest", value);
+            break;
+        case PN53_REGISTER_TEST_DAC1:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TestDAC1", value);
+            break;
+        case PN53_REGISTER_TEST_DAC2:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TestDAC2", value);
+            break;
+        case PN53_REGISTER_TEST_ADCV:
+            PN53_DEBUG_REGISTER_VALUE(addr, "TestADC", value);
+            break;
+        case PN53_REGISTER_RF_LEVEL_DETECTOR:
+            PN53_DEBUG_REGISTER_VALUE(addr, "RF Level Detector", value);
+            break;
+        case PN53_REGISTER_SECURE_IC_CLOCK:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Secure IC Clokc", value);
+            break;
+        case PN53_REGISTER_COMMAND:
+            PN53_DEBUG_REGISTER_VALUE(addr, "CIU Command", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_COMMAND_MASK_COMMAND, "COMMAND", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_COMMAND_FLAG_POWER_DOWN, "POWER_DOWN", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_COMMAND_FLAG_RECV_OFF, "RECV_OFF", value);
+            break;
+        case PN53_REGISTER_COMMON_INTERRUPT_ENABLE:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Comm(on)I(nterrupt)En(able)", value);
+            break;
+        case PN53_REGISTER_DIVERSE_INTERRUPT_ENABLE:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Div(erse)I(nterrupt)En(able)", value);
+            break;
+        case PN53_REGISTER_COMMON_IRQ:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Comm(on)Irq", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_COMMON_IRQ_FLAG_TX_FINISHED, "TX_FINISHED", value);
+            // Note: RX_FINISHED and IDLE share the 0x20 bit
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_COMMON_IRQ_FLAG_RX_FINISHED, "RX_FINISHED_OR_IDLE", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_COMMON_IRQ_FLAG_HI_ALERT, "HI_ALERT", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_COMMON_IRQ_FLAG_LO_ALERT, "LO_ALERT", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_COMMON_IRQ_FLAG_ERROR, "ERROR", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_COMMON_IRQ_FLAG_TIMER, "TIMER", value);
+            break;
+        case PN53_REGISTER_DIVERSE_IRQ:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Div(erse)Irq", value);
+            break;
+        case PN53_REGISTER_ERROR:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Error", value);
+            break;
+        case PN53_REGISTER_STATUS1:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Status1", value);
+            break;
+        case PN53_REGISTER_STATUS2:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Status2", value);
+            break;
+        case PN53_REGISTER_FIFO_DATA:
+            PN53_DEBUG_REGISTER_VALUE(addr, "FIFOData", value);
+            break;
+        case PN53_REGISTER_FIFO_LEVEL:
+            PN53_DEBUG_REGISTER_VALUE(addr, "FIFOLevel", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_FIFO_LEVEL_MASK_BYTE_COUNT, "BYTE_COUNT", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_FIFO_LEVEL_FLAG_FLUSH, "FLUSH", value);
+            break;
+        case PN53_REGISTER_FIFO_WATER_LEVEL:
+            PN53_DEBUG_REGISTER_VALUE(addr, "WaterLevel", value);
+            break;
+        case PN53_REGISTER_CONTROL:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Control", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_CONTROL_FLAG_TIMER_STOP, "TIMER_STOP", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_CONTROL_FLAG_TIMER_START, "TIMER_START", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_CONTROL_FLAG_COPY_NFC_DEP_ID_TO_FIFO, "COPY_NFC_DEP_ID_TO_FIFO", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_CONTROL_FLAG_INITIATOR, "INITIATOR", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_CONTROL_MASK_RX_TRAILING_BIT_COUNT, "RX_TRAILING_BIT_COUNT", value);
+            break;
+        case PN53_REGISTER_BIT_FRAMING:
+            PN53_DEBUG_REGISTER_VALUE(addr, "BitFraming", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_BIT_FRAMING_FLAG_START_SEND, "START_SEND", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_BIT_FRAMING_MASK_RX_BIT_OFFSET, "RX_BIT_OFFSET", value);
+            PN53_DEBUG_REGISTER_SYMBOL(PN53_REGISTER_BIT_FRAMING_MASK_TX_TRAILING_BIT_COUNT, "TX_TRAILING_BIT_COUNT", value);
+            break;
+        case PN53_REGISTER_COLLISION:
+            PN53_DEBUG_REGISTER_VALUE(addr, "Coll(ision)", value);
+            break;
+        case PN53_REGISTER_SFR_P3:
+            PN53_DEBUG_REGISTER_VALUE(addr, "SFR_P3", value);
+            break;
+        case PN53_REGISTER_SFR_P3CFGA:
+            PN53_DEBUG_REGISTER_VALUE(addr, "SFR_P3CFGA", value);
+            break;
+        case PN53_REGISTER_SFR_P3CFGB:
+            PN53_DEBUG_REGISTER_VALUE(addr, "SFR_P3CFGB", value);
+            break;
+        case PN53_REGISTER_SFR_P7CFGA:
+            PN53_DEBUG_REGISTER_VALUE(addr, "SFR_P7CFGA", value);
+            break;
+        case PN53_REGISTER_SFR_P7CFGB:
+            PN53_DEBUG_REGISTER_VALUE(addr, "SFR_P7CFGB", value);
+            break;
+        case PN53_REGISTER_SFR_P7:
+            PN53_DEBUG_REGISTER_VALUE(addr, "SFR_P7", value);
+            break;
+        default:
+            PN53_DEBUG_REGISTER("[=] 0x%04X: 0x%02X = %08b\n", addr, value, value);
+            break;
+    }
+}
+
 ssize_t pn53_read_registers_(pn53_dev_t *dev, void* registers, uint8_t** values, size_t count) {
+    PN53_DEBUG("ReadRegister", "%" PRIuSIZE "\n", count);
     uint8_t code = (uint8_t)PN53_COMMAND_READ_REGISTERS;
     iolist_t addrs = __IOLIST(registers, count * sizeof(pn53_register_address_t), NULL);
     iolist_t command = __IOLIST(&code, 1, &addrs);
-    return (int)pn53_hci_transceive_command_status_response(dev, &command, values, count, dev->command_timeout);
+    uint8_t* _values = NULL;
+    ssize_t res = pn53_hci_transceive_command_status_response(dev, &command, &_values, count, dev->command_timeout);
+    if (values) {
+        *values = _values;
+    }
+    if (res < 0) {
+        return res;
+    }
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_REGISTERS)) {
+        void* cursor = registers;
+        for (size_t i = 0; i < count; i += 1) {
+            _debug_register(unaligned_get_u16(cursor), _values[i]);
+            cursor += sizeof(pn53_register_address_t);
+        }
+    }
+    return res;
 }
 
 int pn53_write_registers_(pn53_dev_t *dev, void* registers, size_t count) {
+    PN53_DEBUG("WriteRegister", "%" PRIuSIZE "\n", count);
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_REGISTERS)) {
+        uint8_t* cursor = registers;
+        for (size_t i = 0; i < count; i += 1) {
+            pn53_register_address_t addr = unaligned_get_u16(cursor);
+            cursor += sizeof(pn53_register_address_t);
+            _debug_register(addr, *cursor++);
+        }
+    }
+
     int res = -1;
     uint8_t code = (uint8_t)PN53_COMMAND_WRITE_REGISTERS;
     iolist_t regs = __IOLIST(registers, count * sizeof(pn53_register_t), NULL);
@@ -475,11 +769,12 @@ int pn53_rf_configuration(pn53_dev_t* dev, const pn53_rf_configuration_payload_t
     return res < 0 ? res : 0;
 }
 
-int pn53_set_field_enablement(pn53_dev_t* dev, bool intent_to_enable, bool avoid_external_field) {
+int pn53_set_field_enablement(pn53_dev_t* dev, bool intent_to_enable, bool collision_avoidance) {
+    PN53_DEBUG("RFConfiguration", "field=%u rfca=%u\n", intent_to_enable, collision_avoidance);
     uint8_t command[] = {
         (uint8_t)PN53_COMMAND_RF_CONFIGURATION,
         (uint8_t)PN53_RF_CONFIGURATION_ITEM_RF_FIELD,
-        (intent_to_enable & 1) | ((avoid_external_field & 1) << 1)
+        (intent_to_enable & 1) | ((collision_avoidance & 1) << 1)
     };
     int res = (int)pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), NULL, dev->command_timeout);
     return res < 0 ? res : 0;
@@ -1279,16 +1574,15 @@ _return:
 
 static int _check_radio_config(pn53_dev_t* dev, const nfcdev_radio_config_t* tx, const nfcdev_radio_config_t* rx, nfc_role_t role) {
     assert(role == NFC_ROLE_INITIATOR || role == NFC_ROLE_TARGET);
-    PN53_DEBUG("radio", "requested applying TX/RX radio config\n");
-    PN53_DEBUG("radio", "tx=%c@%u rx=%c@%u\n",
+    PN53_DEBUG("radio", "intended config {tx=%c@%u rx=%c@%u role=%s field_mode=%s}\n",
                nfc_string_from_technology(tx->technology), nfc_bitrate_kbps(tx->bitrate),
-               nfc_string_from_technology(rx->technology), nfc_bitrate_kbps(rx->bitrate));
-    PN53_DEBUG("radio", "role=%s\n", role == NFC_ROLE_INITIATOR ? "initiator" : "target");
+               nfc_string_from_technology(rx->technology), nfc_bitrate_kbps(rx->bitrate),
+               role == NFC_ROLE_INITIATOR ? "initiator" : "target",
+               tx->generate_field && !rx->generate_field ? "peers" : "r/w+tag"
+   );
+
     nfc_bitrate_t max_bitrate = MAX(tx->bitrate, rx->bitrate);
-
     if (tx->generate_field && !rx->generate_field) {
-        PN53_DEBUG("radio", "field_model=peers\n");
-
         switch (max_bitrate) {
             case NFC_BITRATE_106K:
             case NFC_BITRATE_212K:
@@ -1299,8 +1593,6 @@ static int _check_radio_config(pn53_dev_t* dev, const nfcdev_radio_config_t* tx,
                 return -ENOTSUP;
         }
     } else {
-        PN53_DEBUG("radio", "field_model=r/w+tag\n");
-
         switch (max_bitrate) {
             case NFC_BITRATE_106K:
             case NFC_BITRATE_212K:
@@ -1343,9 +1635,13 @@ static int _check_radio_config(pn53_dev_t* dev, const nfcdev_radio_config_t* tx,
 
 int pn53_configure_radio_unchecked(pn53_dev_t* dev, const nfcdev_radio_config_t* tx, const nfcdev_radio_config_t* rx, nfc_role_t role) {
     uint8_t tx_mode = 0;
-    uint8_t rx_mode = PN53_REGISTER_RX_MODE_IGNORE_INVALID;
+    uint8_t rx_mode = 0;
     if (rx->options & NFCDEV_RX_MULTIPLE) {
         rx_mode |= PN53_REGISTER_RX_MODE_MULTIPLE_FRAMES;
+    }
+
+    if (rx->options & NFCDEV_RX_MALFORMED) {
+        rx_mode |= PN53_REGISTER_RX_MODE_IGNORE_INVALID;
     }
 
     uint8_t tx_framing = 0;
@@ -1514,6 +1810,7 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
 }
 
 static int pn53_send(pn53_dev_t* dev, const uint8_t* tx, nfc_frame_length_t length, nfcdev_interface_t interface) {
+    assert(tx);
     int res = 0;
     if (!(interface == NFCDEV_INTERFACE_BITS || interface == NFCDEV_INTERFACE_FRAME)) {
         if (length.trailing_bits != NFC_TRAILING_BITS_ALL) {

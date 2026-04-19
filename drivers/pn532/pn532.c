@@ -11,21 +11,23 @@
 
 #include "pn532.h"
 
-#define PN532_DEBUG(...) DEBUG("pn532: " __VA_ARGS__)
+#define PN532_DEBUG(command, ...) DEBUG("pn532." command ": " __VA_ARGS__)
 
 int pn532_init(pn532_dev_t* dev, const pn532_connection_config_t* config) {
     int res = 0;
     if ((res = pn53_init(dev, config)) < 0) {
         return res;
     }
+    PN532_DEBUG("init", "max packet length %u\n", PN532_PACKET_LENGTH_MAX);
     dev->connection.max_packet_length = PN532_PACKET_LENGTH_MAX;
     if ((res = (int)pn532_sam_configuration(dev, PN53_SAM_NORMAL, 0xA0, true)) < 0) {
-        PN532_DEBUG("SAMConfiguration failed with %i\n", res);
+        PN532_DEBUG("init", "SAM failed with %i\n", res);
     }
     return 0;
 }
 
 ssize_t pn532_sam_configuration(pn532_dev_t* dev, pn532_sam_mode_t mode, uint8_t timeout, bool use_irq) {
+    PN532_DEBUG("SAMConfiguration", "mode=%u\n", mode);
     uint8_t command[] = {
         (uint8_t)PN532_COMMAND_SAM_CONFIGURATION,
         (uint8_t)mode,
@@ -36,6 +38,7 @@ ssize_t pn532_sam_configuration(pn532_dev_t* dev, pn532_sam_mode_t mode, uint8_t
 }
 
 ssize_t pn532_set_uart_speed(pn532_dev_t* dev, pn53_uart_speed_t speed) {
+    PN532_DEBUG("UARTSpeed", "speed=0x%02x\n", speed);
     uint8_t command[] = {
         (uint8_t)PN532_COMMAND_SET_SERIAL_BAUDRATE,
         (uint8_t)speed

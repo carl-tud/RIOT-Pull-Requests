@@ -21,8 +21,9 @@ typedef enum {
 
 typedef enum {
     NFCDEV_RX_MULTIPLE = 1,
-    NFCDEV_NFC_B_WITHOUT_SOF = 1 << 1,
-    NFCDEV_NFC_B_WITHOUT_EOF = 1 << 2,
+    NFCDEV_RX_MALFORMED = 1 << 1,
+    NFCDEV_NFC_B_WITHOUT_SOF = 1 << 2,
+    NFCDEV_NFC_B_WITHOUT_EOF = 1 << 3,
 } nfcdev_radio_options_t;
 
 typedef struct {
@@ -199,6 +200,10 @@ typedef struct nfcdev_ops {
     int (*listen) (nfcdev_t* dev, const nfcdev_listening_config_t* config);
 } nfcdev_ops_t;
 
+// If you have a driver that only supports a subset of these functions, please create an issue.
+// We can make some of the shims below return -ENOTSUP if the relevant operation is not implement,
+// i.e., if dev->ops->op_in_question is NULL.
+
 static inline int nfcdev_configure_radio(nfcdev_t* dev, const nfcdev_radio_config_t* tx, const nfcdev_radio_config_t* rx, nfc_role_t role) {
     assert(dev);
     assert(dev->ops);
@@ -234,7 +239,7 @@ static inline ssize_t nfcdev_receive(nfcdev_t* dev, uint8_t** rx, uint32_t timeo
 }
 
 
-static inline ssize_t nfcdev_transceive(nfcdev_t* dev, const uint8_t* tx, size_t length, uint8_t** rx, nfcdev_interface_t interface, uint32_t timeout_ms) {
+static inline ssize_t nfcdev_transceive(nfcdev_t* dev, const uint8_t* tx, size_t length, uint8_t** rx, uint32_t timeout_ms, nfcdev_interface_t interface) {
     assert(dev);
     assert(dev->ops);
     assert(dev->ops->transceive);

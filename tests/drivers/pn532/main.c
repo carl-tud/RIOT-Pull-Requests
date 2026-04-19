@@ -59,6 +59,8 @@ int main(void) {
         return (int)res;
     }
 
+    puts("");
+
     if ((res = pn53_set_field_enablement(&pn532, true, false)) < 0) {
         printf("field on: error %" PRIdSIZE " \n", res);
     }
@@ -76,6 +78,10 @@ int main(void) {
         printf("radio config: error %" PRIdSIZE " \n", res);
     }
 
+    if ((res = pn53_set_field_enablement(&pn532, false, false)) < 0) {
+        printf("field off: error %" PRIdSIZE " \n", res);
+    }
+
     if ((res = pn53_set_field_enablement(&pn532, true, false)) < 0) {
         printf("field on: error %" PRIdSIZE " \n", res);
     }
@@ -86,9 +92,11 @@ int main(void) {
     uint8_t frame[] = {0x6a, 0x01, 0x00, 0x00, 0x00};
     uint8_t* frame_rx = NULL;
 
-    if ((res = nfcdev_send(&dev, nfc_a_polling_frame_all.frame, nfc_a_polling_frame_all.length.encoded, NFCDEV_INTERFACE_FRAME)) < 0) {
-        printf("fifo tx: error %" PRIdSIZE " \n", res);
-        return (int)res;
+    for (size_t i = 0; i < 50; i += 1) {
+        if ((res = nfcdev_transceive(&dev, nfc_a_polling_frame_all.frame, nfc_a_polling_frame_all.length.encoded, &frame_rx, 5, NFCDEV_INTERFACE_FRAME)) < 0) {
+            printf("fifo tx: error %" PRIdSIZE " \n", res);
+            return (int)res;
+        }
     }
 
     if ((res = nfcdev_send(&dev, frame, sizeof(frame), NFCDEV_INTERFACE_PACKET)) < 0) {
@@ -96,10 +104,8 @@ int main(void) {
         return (int)res;
     }
 
-    printf("fifo rx: ");
-    printbuff(frame_rx, (size_t)res);
-
-    return 0;
+//    printf("fifo rx: ");
+//    printbuff(frame_rx, (size_t)res);
 
 //    pn532_set_parameters(&dev, PN532_NFC_PARAMETER_INITIATOR_ISO_DEP_AUTO_HANDSHAKE);
 
@@ -140,6 +146,24 @@ int main(void) {
         return (int)res;
     }
     printf("tx_mode=%02x rx_mode=%02x\n", regvals[0], regvals[1]);
+
+    if ((res = nfcdev_configure_radio(&dev, &radio_config, &radio_config, NFC_ROLE_INITIATOR)) < 0) {
+        printf("radio config: error %" PRIdSIZE " \n", res);
+    }
+
+    if ((res = pn53_set_field_enablement(&pn532, true, false)) < 0) {
+        printf("field on: error %" PRIdSIZE " \n", res);
+    }
+
+    if ((res = nfcdev_send(&dev, nfc_a_polling_frame_all.frame, nfc_a_polling_frame_all.length.encoded, NFCDEV_INTERFACE_FRAME)) < 0) {
+        printf("fifo tx: error %" PRIdSIZE " \n", res);
+        return (int)res;
+    }
+
+    if ((res = nfcdev_send(&dev, frame, sizeof(frame), NFCDEV_INTERFACE_PACKET)) < 0) {
+        printf("fifo tx: error %" PRIdSIZE " \n", res);
+        return (int)res;
+    }
 
     puts("");
     puts("Polling NFC-B ...");
