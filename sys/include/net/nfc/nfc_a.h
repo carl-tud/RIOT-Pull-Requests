@@ -67,7 +67,7 @@ typedef uint8_t nfc_a_polling_command_t;
 
 typedef struct {
     const uint8_t* frame;
-    nfc_frame_length_t length;
+    nfcdev_frame_length_t length;
 } nfc_a_polling_frame_t;
 
 extern const nfc_a_polling_frame_t nfc_a_polling_frame_all;

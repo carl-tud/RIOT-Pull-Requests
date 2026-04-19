@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "assert.h"
+#include "sys/types.h"
 
 typedef enum __attribute__((packed)) {
     /// Initiator (reader/writer) generates field modulated by passive target (tag)
@@ -188,35 +189,6 @@ static inline nfc_bitrate_t nfc_bitrate_select(
     }
 }
 
-#define NFC_TRAILING_BITS_ALL (0)
-
-typedef union {
-    struct {
-        size_t bytes : (sizeof(size_t) * 8 - 8);
-        uint8_t trailing_bits : 7;
-
-        // Let's make casting this to ssize_t possible, i.e., not use the sign bit.
-        uint8_t zero : 1;
-    };
-    size_t encoded;
-} nfc_frame_length_t;
-
-static inline uint8_t nfc_frame_length_trailing_bits(size_t length) {
-    nfc_frame_length_t* frame_length = (nfc_frame_length_t*)&length;
-    return frame_length->trailing_bits;
-}
-
-static inline uint8_t nfc_frame_length_bytes(size_t length) {
-    nfc_frame_length_t* frame_length = (nfc_frame_length_t*)&length;
-    return frame_length->bytes;
-}
-
-static inline size_t nfc_frame_length(nfc_frame_length_t frame_length) {
-    return frame_length.encoded;
-}
-
-static_assert(sizeof(nfc_frame_length_t) == sizeof(size_t));
-
 typedef enum {
     NFC_APPLICATION_TYPE_UNKNOWN = 0,
     NFC_APPLICATION_TYPE_T1T,
@@ -231,3 +203,22 @@ typedef enum {
     NFC_APPLICATION_MIFARE_PLUS,        /* based on T4T */
 } nfc_application_type_t;
 
+
+#define NFCDEV_TRAILING_BITS_ALL (0)
+
+typedef union {
+    struct {
+        size_t bytes : (sizeof(size_t) * 8 - 8);
+        uint8_t trailing_bits : 7;
+
+        // Let's make casting this to ssize_t possible, i.e., not use the sign bit.
+        uint8_t zero : 1;
+    };
+    size_t _encoded;
+    ssize_t _signed;
+} nfcdev_frame_length_t;
+
+static_assert(sizeof(nfcdev_frame_length_t) == sizeof(size_t));
+static_assert(sizeof(nfcdev_frame_length_t) == sizeof(ssize_t));
+
+#define NFCDEV_FRAME_LENGTH_BYTES_MAX (((nfcdev_frame_length_t) { ._encoded = SIZE_MAX }).bytes)

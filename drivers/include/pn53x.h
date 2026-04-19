@@ -118,6 +118,21 @@ static_assert(PN35_FRAME_HEADER_EXTENDED + 2 == PN53_FRAME_OVERHEAD_MAX);
 #  define CONFIG_PN53_FIFO_SIZE 64
 #endif
 
+/// @brief Use controller's CIU FIFO instead of `InCommunicateThru` command to send data in
+///
+/// Depending on the HCI transport (SPI, I²C, or UART) the driver may not be able
+/// to refill the FIFO fast enough if the application wants to send more than 64 bytes,
+/// which is the size of the CIU's FIFO.
+///
+/// This applies to @ref nfcdev_transceive and @ref nfcdev_transceive_bytes
+///
+/// If you enable this, you must pass a reference to an allocated `rx` buffer to
+/// @ref nfcdev_transceive and @ref nfcdev_transceive_bytes so that the driver can copy
+/// data into this buffer while it reads received bytes from the CIU's FIFO.
+#if !defined(CONFIG_PN53_INITIATOR_TRANSCEIVE_USING_FIFO) || defined(DOXYGEN)
+#  define CONFIG_PN53_INITIATOR_TRANSCEIVE_USING_FIFO 0
+#endif
+
 
 typedef enum {
     PN53_MODEL_PN531,
@@ -1100,7 +1115,7 @@ static inline int pn53_fifo_transmit(pn53_dev_t* dev,
     return pn53_fifo_transmit_write_(dev, tx, length, tx_trailing_bit_count, false, false);
 }
 
-static inline int pn53_fifo_receive(pn53_dev_t* dev,
+static inline ssize_t pn53_fifo_receive(pn53_dev_t* dev,
     uint8_t* rx, size_t capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
 ) {
     int res = pn53_fifo_receive_start_(dev, false);
@@ -1110,7 +1125,7 @@ static inline int pn53_fifo_receive(pn53_dev_t* dev,
     return pn53_fifo_receive_read_(dev, rx, capacity, rx_trailing_bit_count, timeout_ms);
 }
 
-static inline int pn53_fifo_transceive_target_receive(pn53_dev_t* dev,
+static inline ssize_t pn53_fifo_transceive_target_receive(pn53_dev_t* dev,
     uint8_t* rx, size_t rx_capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
 ) {
     int res = pn53_fifo_receive_start_(dev, true);
@@ -1126,8 +1141,8 @@ static inline int pn53_fifo_transceive_target_transmit(pn53_dev_t* dev,
     return pn53_fifo_transmit_write_(dev, tx, tx_length, tx_trailing_bit_count, true, true);
 }
 
-static inline int pn53_fifo_transceive_initiator(pn53_dev_t* dev,
-    uint8_t* tx, size_t tx_length, uint8_t tx_trailing_bit_count,
+static inline ssize_t pn53_fifo_transceive_initiator(pn53_dev_t* dev,
+    const uint8_t* tx, size_t tx_length, uint8_t tx_trailing_bit_count,
     uint8_t* rx, size_t rx_capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
 ) {
     int res = 0;

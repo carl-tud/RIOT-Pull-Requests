@@ -59,7 +59,7 @@ static inline uint8_t nfc_b_slot_count_power(uint8_t count) {
 
 typedef struct {
     uint8_t* frame;
-    nfc_frame_length_t length;
+    nfcdev_frame_length_t length;
 } nfc_b_polling_frame_t;
 
 /// @}
