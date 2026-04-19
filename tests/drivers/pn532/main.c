@@ -92,16 +92,16 @@ int main(void) {
     uint8_t frame[] = {0x6a, 0x01, 0x00, 0x00, 0x00};
     uint8_t* frame_rx = NULL;
 
-    for (size_t i = 0; i < 50; i += 1) {
-        if ((res = nfcdev_transceive(&dev, nfc_a_polling_frame_all.frame, nfc_a_polling_frame_all.length.encoded, &frame_rx, 5, NFCDEV_INTERFACE_FRAME)) < 0) {
-            printf("fifo tx: error %" PRIdSIZE " \n", res);
-            return (int)res;
-        }
+    if ((res = nfcdev_transceive(&dev, nfc_a_polling_frame_all.frame, nfc_a_polling_frame_all.length.encoded, &frame_rx, 5, NFCDEV_INTERFACE_FRAME)) < 0) {
+        printf("fifo tx: error %" PRIdSIZE " \n", res);
+    }
+
+    if ((res = pn53_set_field_enablement(&pn532, true, false)) < 0) {
+        printf("field on: error %" PRIdSIZE " \n", res);
     }
 
     if ((res = nfcdev_send(&dev, frame, sizeof(frame), NFCDEV_INTERFACE_PACKET)) < 0) {
         printf("fifo tx: error %" PRIdSIZE " \n", res);
-        return (int)res;
     }
 
 //    printf("fifo rx: ");
@@ -137,6 +137,7 @@ int main(void) {
     }
 
     pn53_register_address_t regs[] = {
+        PN53_REGISTER_TX_AUTO,
         PN53_REGISTER_TX_MODE,
         PN53_REGISTER_RX_MODE,
     };
@@ -145,7 +146,6 @@ int main(void) {
     if ((res = pn53_read_registers(&pn532, regs, &regvals, ARRAY_SIZE(regs))) < 0) {
         return (int)res;
     }
-    printf("tx_mode=%02x rx_mode=%02x\n", regvals[0], regvals[1]);
 
     if ((res = nfcdev_configure_radio(&dev, &radio_config, &radio_config, NFC_ROLE_INITIATOR)) < 0) {
         printf("radio config: error %" PRIdSIZE " \n", res);
@@ -183,7 +183,6 @@ int main(void) {
     if ((res = pn53_read_registers(&pn532, regs, &regvals, ARRAY_SIZE(regs))) < 0) {
         return (int)res;
     }
-    printf("tx_mode=%02x rx_mode=%02x\n", regvals[0], regvals[1]);
 
     puts("");
     puts("Polling NFC-F ...");
@@ -207,8 +206,6 @@ int main(void) {
     if ((res = pn53_read_registers(&pn532, regs, &regvals, ARRAY_SIZE(regs))) < 0) {
         return (int)res;
     }
-    printf("tx_mode=%02x rx_mode=%02x\n", regvals[0], regvals[1]);
-
 
 
 //    static char data[16];
