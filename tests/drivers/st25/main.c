@@ -26,7 +26,7 @@ int main(void) {
         return ret;
     }
 
-    nfc_a_listener_config_t config;
+    nfc_a_listen_config_t config;
     st25_poll_a(&device_desc, &config);
 
     while(true) {}

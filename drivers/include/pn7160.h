@@ -35,9 +35,9 @@ typedef struct {
 
 int pn7160_init(nfcdev_t *dev, const void *params);
 
-int pn7160_poll_a(nfcdev_t *nfcdev, nfc_a_listener_config_t *config);
+int pn7160_poll_a(nfcdev_t *nfcdev, nfc_a_listen_config_t *config);
 
-int pn7160_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config);
+int pn7160_listen_a(nfcdev_t *nfcdev, const nfc_a_listen_config_t *config);
 
 int pn7160_initiator_exchange_data(nfcdev_t *nfcdev, const uint8_t *send, size_t send_len,
                                   uint8_t *rcv, size_t *receive_len);
@@ -49,7 +49,7 @@ int pn7160_target_receive_data(nfcdev_t *nfcdev, uint8_t *rcv, size_t *receive_l
 int pn7160_reset(pn7160_t *dev);
 
 int pn7160_mifare_classic_authenticate(nfcdev_t *nfcdev, uint8_t block, 
-    const nfc_a_nfcid1_t *nfcid1, bool is_key_a, const uint8_t *key);
+    const nfc_a_id_t *uid, bool is_key_a, const uint8_t *key);
 
 int pn7160_poll(nfcdev_t *nfcdev, nfc_listener_config_t *config);
 

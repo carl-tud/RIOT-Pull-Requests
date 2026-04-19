@@ -497,7 +497,7 @@ int pn7160_poll_f(nfcdev_t *dev, nfc_f_listener_config_t *config) {
 
 
 
-int pn7160_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config) {
+int pn7160_poll_a(nfcdev_t *dev, nfc_a_listen_config_t *config) {
     assert (dev != NULL);
     assert (config != NULL);
 
@@ -532,19 +532,19 @@ int pn7160_poll_a(nfcdev_t *dev, nfc_a_listener_config_t *config) {
     }
 
     /* RF technology specific parameters (NFC-A) */
-    config->sens_res.anticollision_information = buff[PN7160_PAYLOAD_START + 7];
-    config->sens_res.platform_information      = buff[PN7160_PAYLOAD_START + 8];
-    config->nfcid1.len                         = buff[PN7160_PAYLOAD_START + 9];
-    memcpy(config->nfcid1.nfcid, &buff[PN7160_PAYLOAD_START + 10], config->nfcid1.len);
+    config->polling_response.anticollision_information = buff[PN7160_PAYLOAD_START + 7];
+    config->polling_response.platform_information      = buff[PN7160_PAYLOAD_START + 8];
+    config->uid.len                         = buff[PN7160_PAYLOAD_START + 9];
+    memcpy(config->uid.nfcid, &buff[PN7160_PAYLOAD_START + 10], config->uid.len);
 
-    uint8_t sel_res_len = buff[PN7160_PAYLOAD_START + 10 + config->nfcid1.len];
-    if (sel_res_len != 1) {
+    uint8_t acknowledgement_len = buff[PN7160_PAYLOAD_START + 10 + config->uid.len];
+    if (acknowledgement_len != 1) {
         return NFC_ERR_POLL_NO_TARGET;
     }
-    config->sel_res = buff[PN7160_PAYLOAD_START + 11 + config->nfcid1.len];
+    config->acknowledgement = buff[PN7160_PAYLOAD_START + 11 + config->uid.len];
 
     /* check for T4T/ISO-DEP*/
-    if ((config->sel_res & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
+    if ((config->acknowledgement & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
         LOG_DEBUG("pn7160: ISO-DEP protocol (%u)!\n", 
             (unsigned)buff[PN7160_PAYLOAD_START + 1]);
 
@@ -600,19 +600,19 @@ int pn7160_poll(nfcdev_t *dev, nfc_listener_config_t *config) {
     config->technology = NFC_TECHNOLOGY_A;
 
     /* RF technology specific parameters (NFC-A) */
-    config->config.a.sens_res.anticollision_information = buff[PN7160_PAYLOAD_START + 7];
-    config->config.a.sens_res.platform_information      = buff[PN7160_PAYLOAD_START + 8];
-    config->config.a.nfcid1.len                         = buff[PN7160_PAYLOAD_START + 9];
-    memcpy(config->config.a.nfcid1.nfcid, &buff[PN7160_PAYLOAD_START + 10], config->config.a.nfcid1.len);
+    config->config.a.polling_response.anticollision_information = buff[PN7160_PAYLOAD_START + 7];
+    config->config.a.polling_response.platform_information      = buff[PN7160_PAYLOAD_START + 8];
+    config->config.a.uid.len                         = buff[PN7160_PAYLOAD_START + 9];
+    memcpy(config->config.a.uid.nfcid, &buff[PN7160_PAYLOAD_START + 10], config->config.a.uid.len);
 
-    uint8_t sel_res_len = buff[PN7160_PAYLOAD_START + 10 + config->config.a.nfcid1.len];
-    if (sel_res_len != 1) {
+    uint8_t acknowledgement_len = buff[PN7160_PAYLOAD_START + 10 + config->config.a.uid.len];
+    if (acknowledgement_len != 1) {
         return NFC_ERR_POLL_NO_TARGET;
     }
-    config->config.a.sel_res = buff[PN7160_PAYLOAD_START + 11 + config->config.a.nfcid1.len];
+    config->config.a.acknowledgement = buff[PN7160_PAYLOAD_START + 11 + config->config.a.uid.len];
 
     /* check for T4T/ISO-DEP*/
-    if ((config->config.a.sel_res & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
+    if ((config->config.a.acknowledgement & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
         LOG_DEBUG("pn7160: ISO-DEP protocol (%u)!\n", 
             (unsigned)buff[PN7160_PAYLOAD_START + 1]);
 
@@ -642,17 +642,17 @@ int pn7160_poll(nfcdev_t *dev, nfc_listener_config_t *config) {
 //     return _core_set_config_cmd(dev, buff, sizeof(PN7160_TOTAL_DURATION));
 // }
 
-int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
+int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listen_config_t *config) {
     assert (dev != NULL);
     assert (config != NULL);
 
-    if ((config->sel_res & NFC_A_SEL_RES_T2T_MASK) == NFC_A_SEL_RES_T2T_VALUE) {
+    if ((config->acknowledgement & NFC_A_SEL_RES_T2T_MASK) == NFC_A_SEL_RES_T2T_VALUE) {
         LOG_ERROR("pn7160: T2T emulation not supported\n");
         return -1;
-    } else if ((config->sel_res & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
+    } else if ((config->acknowledgement & NFC_A_SEL_RES_T4T_MASK) == NFC_A_SEL_RES_T4T_VALUE) {
         // _core_set_config_cmd(dev, buff, sizeof(buff));
     } else {
-        LOG_ERROR("pn7160: unsupported SEL_RES (%02X)!\n", config->sel_res);
+        LOG_ERROR("pn7160: unsupported SEL_RES (%02X)!\n", config->acknowledgement);
         return -1;
     }
     uint8_t buff[PN7160_BUFFER_LEN];
@@ -673,7 +673,7 @@ int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
     
     _nfc_a_set_listen_mode_routing(dev->dev, buff);
 
-    assert(config->nfcid1.len == 4 || config->nfcid1.len == 7 || config->nfcid1.len == 10);
+    assert(config->uid.len == 4 || config->uid.len == 7 || config->uid.len == 10);
 
 
     buff[PN7160_PAYLOAD_START] = 0x06;       /* num of parameters */
@@ -682,17 +682,17 @@ int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
     /* SEL_RES */
     buff[PN7160_PAYLOAD_START + 1] = NCI_LA_SEL_INFO;
     buff[PN7160_PAYLOAD_START + 2] = 0x01;
-    buff[PN7160_PAYLOAD_START + 3] = config->sel_res;
+    buff[PN7160_PAYLOAD_START + 3] = config->acknowledgement;
 
     /* SENS_RES anticollision */
     buff[PN7160_PAYLOAD_START + 4] = NCI_LA_BIT_FRAME_SDD;
     buff[PN7160_PAYLOAD_START + 5] = 0x01;
-    buff[PN7160_PAYLOAD_START + 6] = config->sens_res.anticollision_information;
+    buff[PN7160_PAYLOAD_START + 6] = config->polling_response.anticollision_information;
 
     /* SENS_RES platform information */
     buff[PN7160_PAYLOAD_START + 7] = NCI_LA_PLATFORM_CONFIG;
     buff[PN7160_PAYLOAD_START + 8] = 0x01;
-    buff[PN7160_PAYLOAD_START + 9] = config->sens_res.platform_information;
+    buff[PN7160_PAYLOAD_START + 9] = config->polling_response.platform_information;
 
     buff[PN7160_PAYLOAD_START + 10] = NCI_LI_A_RATS_TB1;
     buff[PN7160_PAYLOAD_START + 11] = 0x01;
@@ -704,10 +704,10 @@ int pn7160_listen_a(nfcdev_t *dev, const nfc_a_listener_config_t *config) {
 
     /* NFCID1 */
     buff[PN7160_PAYLOAD_START + 16] = NCI_LA_NFCID1;
-    buff[PN7160_PAYLOAD_START + 17] = config->nfcid1.len;
-    memcpy(&buff[PN7160_PAYLOAD_START + 18], config->nfcid1.nfcid, config->nfcid1.len);
+    buff[PN7160_PAYLOAD_START + 17] = config->uid.len;
+    memcpy(&buff[PN7160_PAYLOAD_START + 18], config->uid.nfcid, config->uid.len);
 
-    int ret = _core_set_config_cmd((pn7160_t *)dev->dev, buff, 18 + config->nfcid1.len);
+    int ret = _core_set_config_cmd((pn7160_t *)dev->dev, buff, 18 + config->uid.len);
     if (ret < 0) {
         LOG_ERROR("pn7160: set config failed\n");
         return ret;
@@ -969,12 +969,12 @@ static uint8_t block_to_sector(uint8_t block) {
 }
 
 int pn7160_mifare_classic_authenticate(nfcdev_t *nfcdev, uint8_t block, 
-    const nfc_a_nfcid1_t *nfcid1, bool is_key_a, const uint8_t *key) {
+    const nfc_a_id_t *uid, bool is_key_a, const uint8_t *key) {
         /**
          * MIFARE Classic tags require a special TAG-CMD interface for interaction
          * that has its own header.
          */
-        (void) nfcid1;
+        (void) uid;
 
         pn7160_t *dev = (pn7160_t *) nfcdev->dev;
 

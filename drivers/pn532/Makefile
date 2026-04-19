@@ -1,3 +1,3 @@
-MODULE = pn53x
+MODULE = pn532
 
 include $(RIOTBASE)/Makefile.base

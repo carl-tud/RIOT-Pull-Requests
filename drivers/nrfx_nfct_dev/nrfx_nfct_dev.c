@@ -87,25 +87,25 @@ int block_with_timeout(uint32_t timeout_sec) {
  * @param[in] nfctid1       Pointer to the NFCID1 to use
  * @param[in] nfctid1_size  Size of the NFCID1
  */
-static void configure_autocolres(const uint8_t *nfctid1, uint8_t nfctid1_size, uint8_t sel_res)
+static void configure_autocolres(const uint8_t *nfctid1, uint8_t nfctid1_size, uint8_t acknowledgement)
 {
-    nrfx_nfct_nfcid1_t nfcid1 = {
+    nrfx_nfct_uid_t uid = {
         .p_id = nfctid1,
         .id_size = nfctid1_size,
     };
 
     nrfx_nfct_param_t param_nfcid = {
         .id = NRFX_NFCT_PARAM_ID_NFCID1,
-        .data.nfcid1 = nfcid1
+        .data.uid = uid
     };
     nrfx_nfct_parameter_set(&param_nfcid);
 
-    LOG_DEBUG("Sel res is %02X\n", sel_res);
-    nrfx_nfct_param_t param_sel_res = {
+    LOG_DEBUG("Sel res is %02X\n", acknowledgement);
+    nrfx_nfct_param_t param_acknowledgement = {
         .id = NRFX_NFCT_PARAM_ID_SEL_RES,
-        .data = {sel_res}
+        .data = {acknowledgement}
     };
-    nrfx_nfct_parameter_set(&param_sel_res);
+    nrfx_nfct_parameter_set(&param_acknowledgement);
     nrfx_nfct_autocolres_enable();
 }
 
@@ -234,8 +234,8 @@ int nrfx_nfct_dev_init(nfcdev_t *nfcdev, const void *dev_config) {
     return 0;
 }
 
-int nrfx_nfct_dev_listen_a(nfcdev_t *nfcdev, const nfc_a_listener_config_t *config) {
-    configure_autocolres(config->nfcid1.nfcid, config->nfcid1.len, config->sel_res);
+int nrfx_nfct_dev_listen_a(nfcdev_t *nfcdev, const nfc_a_listen_config_t *config) {
+    configure_autocolres(config->uid.nfcid, config->uid.len, config->acknowledgement);
     configure_fdt(0x01000, 0x0480);
     // configure_fdt(0x05000, 0x1300);
 

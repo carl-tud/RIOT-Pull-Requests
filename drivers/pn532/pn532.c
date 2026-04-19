@@ -18,6 +18,7 @@ int pn532_init(pn532_dev_t* dev, const pn532_connection_config_t* config) {
     if ((res = pn53_init(dev, config)) < 0) {
         return res;
     }
+    dev->connection.max_packet_length = PN532_PACKET_LENGTH_MAX;
     if ((res = (int)pn532_sam_configuration(dev, PN53_SAM_NORMAL, 0xA0, true)) < 0) {
         PN532_DEBUG("SAMConfiguration failed with %i\n", res);
     }
@@ -67,4 +68,16 @@ int pn532_power_down(pn532_dev_t* dev, pn532_wakeup_sources_t wakeup_sources, bo
         return -(PN53_ERRNO_STATUS_BASE + error);
     }
     return 0;
+}
+
+#define PN532_IN_AUTO_POLL_POLLING_INTERVAL_UNIT_MS (150)
+
+ssize_t pn532_in_auto_poll(pn53_dev_t* dev, uint8_t attempts, uint8_t interval_units, const uint8_t* types, size_t type_count, uint8_t** response) {
+    assert(attempts > 0);
+    assert(interval_units > 0);
+    assert(type_count > 0);
+    uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_AUTO_POLL, attempts, interval_units };
+    iolist_t _types = { .iol_base = (void*)types, .iol_len = type_count };
+    iolist_t _command = { .iol_base = header, .iol_len = sizeof(header), .iol_next = &_types };
+    return pn53_hci_transceive_command(&dev->connection, &_command, response, dev->command_timeout);
 }

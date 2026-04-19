@@ -91,7 +91,7 @@ static int process_t2t_command(nfc_t2t_emulator_t *emulator, const uint8_t *cmd,
 }
 
 int t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *tag,
-    nfc_a_uid_t *uid) {
+    nfc_a_id_t *uid) {
     assert (emulator != NULL);
     assert (dev != NULL);
     assert (tag != NULL);
@@ -106,7 +106,7 @@ int t2t_emulator_start(nfc_t2t_emulator_t *emulator, nfcdev_t *dev, nfc_t2t_t *t
         return -1;
     }
 
-    nfc_a_uid_t default_uid;
+    nfc_a_id_t default_uid;
     if (uid == NULL) {
         t2t_get_uid(tag, &default_uid, NFC_A_NFCID1_LEN4);
         uid = &default_uid;

@@ -9,73 +9,53 @@
 #include "net/nfc/nfc_dep.h"
 #include "net/nfc/nfc_error.h"
 
-
+/// Passive tag characteristics obtained during polling (initialization and activation)
 typedef struct {
     nfc_technology_t technology;
 
-    /// Ignored if @ref nfc_polling_loop_t::technology is @ref NFC_TECHNOLOGY_V
-    nfc_bitrate_t bitrate;
-
     union {
-        nfc_a_polling_config_t* a;
-        nfc_b_polling_config_t* b;
-        nfc_f_polling_config_t* f;
-        nfc_v_polling_config_t* v;
+        nfc_a_tag_t a;
+        nfc_b_tag_t b;
+        nfc_f_tag_t f;
+        nfc_v_tag_t v;
     };
-} nfc_polling_loop_t;
+} nfc_tag_t;
 
 typedef struct {
-    size_t loop_count;
-    nfc_polling_loop_t* loops;
-} nfc_polling_config_t;
+    /// Passive tag initialization result
+    ///
+    /// If @ref nfc_target_t::field_model is NFC_FIELD_MODEL_READER_WRITER_TAG
+    nfc_tag_t tag;
 
-// might need different strategies: should controller directly further connect if technology is is found,
-// or callback-based
+    struct {
+        /// Initiator-defined parameters used during initialization and activation
+        struct {
+            /// Bitrate the initiator used to modulate and demodulate polling commands and responses
+            ///
+            /// Ignored if @ref nfc_target_t::technology is @ref NFC_TECHNOLOGY_V.
+            /// This bitrate remained valid at least until other parameters were negotiated.
+            nfc_bitrate_t bitrate;
+        } polling;
 
-static inline bool nfc_polling_loop_is_valid(nfc_polling_loop_t* loop) {
-    assert(loop);
-    switch (loop->technology) {
-        case NFC_TECHNOLOGY_A:
-        case NFC_TECHNOLOGY_B:
-            return loop->bitrate == NFC_BITRATE_106K;
-            break;
-        case NFC_TECHNOLOGY_F:
-            return (loop->bitrate == NFC_BITRATE_212K) || (loop->bitrate == NFC_BITRATE_424K) == 0;
-            break;
-        case NFC_TECHNOLOGY_V:
-            return loop->bitrate == NFC_BITRATE_UNSET;
-        default:
-            return false;
-    }
-}
+        /// Negociated parameters for initiator-to-target communication
+        struct {
+            size_t max_packet_length;
+            nfc_bitrate_t bitrate;
+        } downstream;
 
-// Should the driver need to group hce configs or do we just provide one?
-
-typedef struct {
-    nfc_technology_t technology;
-
-    /// Ignored if @ref nfc_polling_result_t::technology is @ref NFC_TECHNOLOGY_V
-    nfc_bitrate_t bitrate;
+        /// Negociated parameters for target-to-initiator communication
+        struct {
+            size_t max_packet_length;
+            nfc_bitrate_t bitrate;
+        } upstream;
+    } parameters;
 
     union {
-        nfc_a_polling_result_t a;
-        nfc_b_polling_result_t b;
-        nfc_f_polling_result_t f;
-        nfc_v_polling_result_t v;
-    };
-} nfc_polling_result_t;
+        struct {
+            size_t atr_length;
+            nfc_dep_activation_response_t* atr;
+        } nfc_dep;
+    } higher_layer;
 
-
-typedef struct {
-    nfc_technology_t technology;
-
-    /// Ignored if @ref nfc_hce_config_t::technology is @ref NFC_TECHNOLOGY_V
-    nfc_bitrate_t bitrate;
-
-    union {
-        nfc_a_hce_config_t* a;
-        nfc_b_hce_config_t* b;
-        nfc_f_hce_config_t* f;
-        nfc_v_hce_config_t* v;
-    };
-} nfc_hce_config_t;
+    nfc_field_model_t field_model : 1;
+} nfc_target_t;

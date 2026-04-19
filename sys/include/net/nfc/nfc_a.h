@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 #include "net/nfc/constants.h"
 #include "net/nfc/iso_dep.h"
 #include "net/nfc/nfc_dep.h"
@@ -64,7 +66,7 @@ static inline nfc_a_id_length_t nfc_a_id_length(uint8_t indicator) {
 typedef uint8_t nfc_a_polling_command_t;
 
 typedef struct {
-    uint8_t* frame;
+    const uint8_t* frame;
     nfc_frame_length_t length;
 } nfc_a_polling_frame_t;
 
@@ -370,42 +372,14 @@ typedef struct {
     nfc_a_polling_frame_t* frames;
     size_t frame_count;
 
-    uint32_t guard_time;
-
     nfc_a_polling_filter_t* filter;
 
-    struct {
-        struct {
-            nfc_a_rats_t* rats;
-            nfc_a_pps_request_t* pps_request;
-        } iso_dep;
-
-        struct {
-            size_t request_length;
-            nfc_dep_activation_request_t* request;
-        } nfc_dep;
-    } higher_layer;
-
-    nfc_communication_mode_t mode : 1;
-} nfc_a_polling_config_t;
+    nfc_a_rats_t* rats;
+} nfc_a_tag_polling_config_t;
 
 typedef struct {
     nfc_a_id_t* id;
     nfc_a_polling_response_t polling_response;
     nfc_a_select_response_t select_response;
-
-    struct {
-        struct {
-            nfc_a_ats_t* ats;
-        } iso_dep;
-
-        struct {
-            size_t response_length;
-            nfc_dep_activation_response_t* response;
-        } nfc_dep;
-    } higher_layer;
-} nfc_a_polling_result_t;
-
-typedef struct {
-    nfc_a_polling_result_t polling_result;
-} nfc_a_hce_config_t;
+    nfc_a_ats_t* ats;
+} nfc_a_tag_t;

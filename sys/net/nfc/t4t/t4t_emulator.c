@@ -207,7 +207,7 @@ static int process_t4t_command(nfc_t4t_emulator_t *emulator, const uint8_t *cmd,
 }
 
 void t4t_emulator_start(nfc_t4t_emulator_t *emulator, nfcdev_t *dev, 
-    nfc_t4t_t *tag, nfc_a_uid_t *uid) {
+    nfc_t4t_t *tag, nfc_a_id_t *uid) {
     assert (emulator != NULL);
     assert (dev != NULL);
     assert (tag != NULL);
@@ -224,7 +224,7 @@ void t4t_emulator_start(nfc_t4t_emulator_t *emulator, nfcdev_t *dev,
             .platform_information = 0x04
         }
     };
-    memcpy(&(config.uid), uid, sizeof(nfc_a_uid_t));
+    memcpy(&(config.uid), uid, sizeof(nfc_a_id_t));
 
 
     LOG_DEBUG("[T4T Emulator] Starting emulation\n");
