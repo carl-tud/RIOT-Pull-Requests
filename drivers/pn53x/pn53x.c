@@ -807,7 +807,7 @@ malformed:
     return -EBADMSG;
 }
 
-static ssize_t pn53_parse_passive_target_a(uint8_t* response, size_t length, pn53_logical_target_t* target, bool* auto_rats_enabled) {
+ssize_t pn53_parse_passive_target_a(uint8_t* response, size_t length, pn53_logical_target_t* target, void* auto_rats_enabled) {
     assert(target);
     target->super.tag.technology = NFC_TECHNOLOGY_A;
     nfc_a_tag_t* tag = &target->super.tag.a;
@@ -835,7 +835,7 @@ static ssize_t pn53_parse_passive_target_a(uint8_t* response, size_t length, pn5
     response += tag->id->length;
     length -= tag->id->length;
 
-    if (*auto_rats_enabled && nfc_a_supports_iso_dep(tag->select_response) && length > 0) {
+    if (auto_rats_enabled && nfc_a_supports_iso_dep(tag->select_response) && length > 0) {
         nfc_a_ats_t* ats = (nfc_a_ats_t*)response;
         if (length < (size_t)ats->length) {
             PN53_DEBUG("InList.a", "ATS cut off, expected %" PRIuSIZE ", have %" PRIuSIZE "\n",
@@ -853,7 +853,8 @@ static ssize_t pn53_parse_passive_target_a(uint8_t* response, size_t length, pn5
     return length;
 }
 
-static ssize_t pn53_parse_passive_target_b(uint8_t* response, size_t length, pn53_logical_target_t* target) {
+ssize_t pn53_parse_passive_target_b(uint8_t* response, size_t length, pn53_logical_target_t* target, void* arg) {
+    (void)arg;
     assert(target);
     target->super.tag.technology = NFC_TECHNOLOGY_B;
     nfc_b_tag_t* tag = &target->super.tag.b;
@@ -907,7 +908,7 @@ static ssize_t pn53_parse_passive_target_b(uint8_t* response, size_t length, pn5
     return length;
 }
 
-static ssize_t pn53_parse_passive_target_f(uint8_t* response, size_t length, pn53_logical_target_t* target, nfc_f_polling_additional_request_t* additional_request) {
+ssize_t pn53_parse_passive_target_f(uint8_t* response, size_t length, pn53_logical_target_t* target, void* additional_request) {
     assert(target);
     target->super.tag.technology = NFC_TECHNOLOGY_F;
     nfc_f_tag_t* tag = &target->super.tag.f;
@@ -941,7 +942,7 @@ static ssize_t pn53_parse_passive_target_f(uint8_t* response, size_t length, pn5
     }
     length -= expected;
 
-    switch (*additional_request) {
+    switch (*(nfc_f_polling_additional_request_t*)additional_request) {
         case NFC_F_POLLING_REQUEST_SYSTEM_CODE:
             tag->system_code = byteorder_lebuftohs(pol->payload);
             break;
@@ -997,8 +998,9 @@ ssize_t pn53_in_list_passive_targets_a(pn53_dev_t* dev, uint8_t max_targets, nfc
     if ((res = pn53_hci_transceive_command2(&dev->connection, command, length, &response, timeout)) < 0) {
         return res;
     }
-    bool auto_rats_enabled = dev->nfc_parameters & (1 << 4);
-    if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets, pn53_parse_passive_target_a, (void*)&auto_rats_enabled)) < 0) {
+    if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets,
+        dev->nfc_parameters & (1 << 4) ? response : NULL, pn53_parse_passive_target_a
+    )) < 0) {
         return res;
     }
     for (uint8_t i = 0; i < max_targets; i += 1) {
@@ -1050,7 +1052,9 @@ ssize_t pn53_in_list_passive_targets_b(pn53_dev_t* dev, uint8_t max_targets, nfc
     if ((res = pn53_hci_transceive_command2(&dev->connection, command, length, &response, timeout)) < 0) {
         return res;
     }
-    if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets, pn53_parse_passive_target_b, NULL)) < 0) {
+    if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets,
+        NULL, pn53_parse_passive_target_b
+    )) < 0) {
         return res;
     }
     for (uint8_t i = 0; i < max_targets; i += 1) {
@@ -1096,7 +1100,9 @@ ssize_t pn53_in_list_passive_targets_f(pn53_dev_t* dev, uint8_t max_targets, nfc
     if ((res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), &response, timeout)) < 0) {
         return res;
     }
-    if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets, pn53_parse_passive_target_f, NULL)) < 0) {
+    if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets,
+        &additional_request, pn53_parse_passive_target_f
+    )) < 0) {
         return res;
     }
     for (uint8_t i = 0; i < max_targets; i += 1) {
@@ -1519,7 +1525,7 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
     manual_recv_flags &= PN53_REGISTER_MANUAL_RECEIVER_FLAG_TX_RX_MANUAL_PARITY;
 
     if (IS_ACTIVE(ENABLE_DEBUG)) {
-        PN53_DEBUG("radio", "[>] requested crc={tx=%u rx=%u} trailing_bits=%u\n", tx_flags != 0, rx_flags != 0, trailing_tx_bits <= 7 ? trailing_tx_bits : 8);
+        PN53_DEBUG("nfio.config", "[^] requested crc={tx=%u rx=%u} trailing_bits=%u\n", tx_flags != 0, rx_flags != 0, trailing_tx_bits <= 7 ? trailing_tx_bits : 8);
     }
 
     pn53_register_t regs[4] = {};
@@ -1530,7 +1536,7 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
         && (pn53_bitfield_get(dev->tx_mode, PN53_REGISTER_TX_MODE_FRAMING) == _tx_rx_framing(NFC_TECHNOLOGY_A) ||
             pn53_bitfield_get(dev->rx_mode, PN53_REGISTER_RX_MODE_FRAMING) == _tx_rx_framing(NFC_TECHNOLOGY_A)
     )) {
-        PN53_DEBUG("radio", "need to set ManualRCV (NFC-A parity)\n");
+        PN53_DEBUG("nfio.config", "[-] ManualRCV dirty (NFC-A parity)\n");
         persisted[reg_count] = &dev->manual_receiver;
         regs[reg_count++] = (pn53_register_t) {
             .address = PN53_REGISTER_MANUAL_RECEIVER,
@@ -1546,9 +1552,9 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
             ((trailing_tx_bits <= 7)
                 && pn53_bitfield_get(dev->bit_framing, PN53_REGISTER_BIT_FRAMING_MASK_TX_TRAILING_BIT_COUNT) != trailing_tx_bits))
     ) {
-        PN53_DEBUG("radio", "need to set TxMode/BitFraming\n");
 
         if (trailing_tx_bits <= 7) {
+            PN53_DEBUG("nfio.config", "[-] BitFraming dirty\n");
             uint8_t bit_framing = dev->bit_framing;
             pn53_bitfield_set(&bit_framing, PN53_REGISTER_CONTROL_MASK_RX_TRAILING_BIT_COUNT, trailing_tx_bits);
 
@@ -1559,6 +1565,7 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
             };
         }
 
+        PN53_DEBUG("nfio.config", "[-] TxMode dirty\n");
         persisted[reg_count] = &dev->tx_mode;
         regs[reg_count++] = (pn53_register_t) {
             .address = PN53_REGISTER_TX_MODE,
@@ -1567,7 +1574,7 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
     }
 
     if ((ops & PN53_INTERFACE_OP_RX) && (dev->rx_mode & PN53_REGISTER_RX_MODE_AUTO_CRC) != rx_flags) {
-        PN53_DEBUG("radio", "need to set RxMode\n");
+        PN53_DEBUG("nfio.config", "[-] RxMode dirty\n");
 
         persisted[reg_count] = &dev->rx_mode;
         regs[reg_count++] = (pn53_register_t) {
@@ -1578,7 +1585,7 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
 
     assert(reg_count <= ARRAY_SIZE(regs));
     if (reg_count > 0) {
-        PN53_DEBUG("radio", "[<] configuring for interface\n");
+        PN53_DEBUG("nfio.config", "[-] applying...\n");
         int res = 0;
         if ((res = (int)pn53_write_registers(dev, regs, reg_count)) < 0) {
             return res;
@@ -1588,56 +1595,55 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
             assert(persisted[i]);
             *persisted[i] = regs[i].value;
         }
+        PN53_DEBUG("nfio.config", "[$] configured for TX/RX\n");
     } else {
-        PN53_DEBUG("radio", "[<] nothing to reconfigure\n");
+        PN53_DEBUG("nfio.config", "[$] nothing to configure for TX/RX\n");
     }
     return 0;
 }
 
-int nfcdev_send_pn53(nfcdev_t* nfcdev, const uint8_t* tx, nfcdev_frame_length_t length, nfcdev_interface_t interface) {
+int nfcdev_send_pn53(nfcdev_t* nfcdev, const uint8_t* tx, nfcdev_frame_length_t tx_length, nfcdev_interface_t interface) {
     pn53_dev_t* dev = nfcdev->dev;
     assert(tx);
+    PN53_DEBUG("nfio", "sending %" PRIuSIZE " bytes (%u trailing bits)\n",
+               tx_length.bytes, tx_length.trailing_bits ? tx_length.trailing_bits : 8);
+    assert(tx_length.bytes > 0);
+
     int res = 0;
-    if (!(interface == NFCDEV_INTERFACE_BITS || interface == NFCDEV_INTERFACE_FRAME)) {
-        if (length.trailing_bits != NFCDEV_TRAILING_BITS_ALL) {
-            assert(false);
-            PN53_DEBUG("txrx", "only full-byte boundaries support on interface\n");
-        }
-    }
-    PN53_DEBUG("tx", "sending %" PRIuSIZE " bytes (%u trailing bits)\n",
-               length.bytes, length.trailing_bits ? length.trailing_bits : 8);
-    assert(length.bytes > 0);
+    uint8_t trailing_bits;
+    uint8_t tx_flags = 0;
+    uint8_t manual_recv_flags = 0;
+
     switch (interface) {
         case NFCDEV_INTERFACE_BITS:
-            if ((res = _configure_rx_tx(dev, PN53_INTERFACE_OP_TX,
-                length.trailing_bits, 0, 0, PN53_REGISTER_MANUAL_RECEIVER_FLAG_TX_RX_MANUAL_PARITY)) < 0) {
-                PN53_DEBUG("txrx", "failed to configure radio\n");
-                return res;
-            }
-            return pn53_fifo_transmit(dev, tx, length.bytes, length.trailing_bits);
+            manual_recv_flags = PN53_REGISTER_MANUAL_RECEIVER_FLAG_TX_RX_MANUAL_PARITY;
+            __attribute__ ((fallthrough));
+            // Rest is same as FRAME interface
         case NFCDEV_INTERFACE_FRAME:
-            if ((res = _configure_rx_tx(dev, PN53_INTERFACE_OP_TX, -1, 0, 0, 0)) < 0) {
-                PN53_DEBUG("txrx", "failed to configure radio\n");
-                return res;
-            }
-            return pn53_fifo_transmit(dev, tx, length.bytes, length.trailing_bits);
+            // Will be set by FIFO transceive function, circumvent another RegisterWrite
+            trailing_bits = IS_ACTIVE(CONFIG_PN53_INITIATOR_TRANSCEIVE_USING_FIFO)
+                ? -1 : tx_length.trailing_bits;
+            break;
+
         case NFCDEV_INTERFACE_PACKET:
-            if ((res = _configure_rx_tx(dev, PN53_INTERFACE_OP_TX, -1,
-                PN53_REGISTER_TX_MODE_AUTO_CRC, 0, 0)) < 0) {
-                PN53_DEBUG("txrx", "failed to configure radio\n");
-                return res;
+            if (tx_length.trailing_bits != 0) {
+                assert(false);
+                PN53_DEBUG("nfio", "only full-byte boundaries supported on interface\n");
             }
-            return pn53_fifo_transmit(dev, tx, length.bytes, NFCDEV_TRAILING_BITS_ALL);
+            trailing_bits = NFCDEV_TRAILING_BITS_ALL;
+            tx_flags = PN53_REGISTER_TX_MODE_AUTO_CRC;
+            break;
+
         case NFCDEV_INTERFACE_ISO_DEP:
         case NFCDEV_INTERFACE_NFC_DEP:
             switch (dev->nfc_role) {
                 case NFC_ROLE_INITIATOR:
-                    PN53_DEBUG("txrx.packet", "use `transceive` instead as initiator for ISO-DEP/NFC-DEP\n");
+                    PN53_DEBUG("nfio.dep", "use `transceive` instead as initiator for ISO-DEP/NFC-DEP\n");
                     return -ENOTSUP;
                 case NFC_ROLE_TARGET:
                     pn53_logical_target_t* target = pn53_current_target(dev);
                     if (!target && target->managed_transport != (pn53_managed_target_transport_t)interface) {
-                        PN53_DEBUG("txrx.dep", "controller did not activate interface, consider nfcdev_hostnfc\n");
+                        PN53_DEBUG("nfio.dep", "controller did not activate interface, consider nfcdev_hostnfc\n");
                         return -ENOTCONN;
                     }
                     return -1;
@@ -1647,15 +1653,107 @@ int nfcdev_send_pn53(nfcdev_t* nfcdev, const uint8_t* tx, nfcdev_frame_length_t 
                     return -1;
             }
         default:
-            PN53_DEBUG("tx", "interface not supported\n");
+            PN53_DEBUG("nfio", "interface not supported\n");
             return -ENOTSUP;
     }
+
+    // TODO: target.
+    // BITS, FRAME, PACKET interfaces
+    if ((res = _configure_rx_tx(dev, PN53_INTERFACE_OP_TX,
+        trailing_bits, tx_flags, 0, manual_recv_flags)) < 0) {
+        PN53_DEBUG("nfio", "failed to configure radio\n");
+        return res;
+    }
+
+    PN53_DEBUG("nfio", "using FIFO\n");
+    return pn53_fifo_transmit(dev, tx, tx_length.bytes, tx_length.trailing_bits);
+}
+
+ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
+    uint8_t** rx, nfcdev_frame_length_t* rx_length,
+    uint32_t rx_timeout_ms, nfcdev_interface_t interface
+) {
+    pn53_dev_t* dev = nfcdev->dev;
+    PN53_DEBUG("nfio", "receiving\n");
+
+    ssize_t res = 0;
+    uint8_t* internal;
+    uint8_t rx_flags = 0;
+    uint8_t manual_recv_flags = 0;
+
+    switch (interface) {
+        case NFCDEV_INTERFACE_BITS:
+            manual_recv_flags = PN53_REGISTER_MANUAL_RECEIVER_FLAG_TX_RX_MANUAL_PARITY;
+            __attribute__ ((fallthrough));
+            // Rest is same as FRAME interface
+        case NFCDEV_INTERFACE_FRAME:
+            break;
+
+        case NFCDEV_INTERFACE_PACKET:
+            rx_flags = PN53_REGISTER_RX_MODE_AUTO_CRC;
+            break;
+
+        case NFCDEV_INTERFACE_ISO_DEP:
+        case NFCDEV_INTERFACE_NFC_DEP:
+            switch (dev->nfc_role) {
+                case NFC_ROLE_INITIATOR:
+                    PN53_DEBUG("nfio.dep", "use `transceive` instead as initiator for ISO-DEP/NFC-DEP\n");
+                    return -ENOTSUP;
+                case NFC_ROLE_TARGET:
+                    pn53_logical_target_t* target = pn53_current_target(dev);
+                    if (!target && target->managed_transport != (pn53_managed_target_transport_t)interface) {
+                        PN53_DEBUG("nfio.dep", "controller did not activate interface, consider nfcdev_hostnfc\n");
+                        return -ENOTCONN;
+                    }
+                    return -1;
+                default:
+                    assert(false);
+                    UNREACHABLE();
+                    return -1;
+            }
+        default:
+            PN53_DEBUG("nfio", "interface not supported\n");
+            return -ENOTSUP;
+    }
+
+    // TODO: target.
+    // BITS, FRAME, PACKET interfaces
+    if ((res = _configure_rx_tx(dev, PN53_INTERFACE_OP_RX,
+        -1, 0, rx_flags, manual_recv_flags)) < 0) {
+        PN53_DEBUG("nfio", "failed to configure radio\n");
+        return res;
+    }
+
+    PN53_DEBUG("nfio", "using FIFO\n");
+    if (!rx && !*rx) {
+        PN53_DEBUG("nfio", "need buffer to receive from FIFO\n");
+        return -ENOBUFS;
+    }
+    if (!rx_length) {
+        PN53_DEBUG("nfio", "missing buffer capacity in rx_length\n");
+    }
+    assert(rx_length);
+
+    uint8_t trailing_bits = NFCDEV_TRAILING_BITS_ALL;
+    if ((res = pn53_fifo_receive(dev, *rx, rx_length->bytes, &trailing_bits, rx_timeout_ms)) < 0) {
+        return res;
+    }
+    PN53_DEBUG("nfio", "trailing bits: %u\n",
+               trailing_bits == NFCDEV_TRAILING_BITS_ALL ? 8 : trailing_bits);
+    // We get bit count basically for free from FIFO function, we do that
+    // to avoid another HCI round trip here just to get the bit count.
+    // 2 additional bytes to retrieve the bit count in the FIFO function are bearable...
+    *rx_length = (nfcdev_frame_length_t) {
+        .bytes = (size_t)res,
+        .trailing_bits = trailing_bits
+    };
+    return res;
 }
 
 ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
     const uint8_t* tx, nfcdev_frame_length_t tx_length,
     uint8_t** rx, nfcdev_frame_length_t* rx_length,
-    uint32_t timeout_ms, nfcdev_interface_t interface
+    uint32_t rx_timeout_ms, nfcdev_interface_t interface
 ) {
     pn53_dev_t* dev = nfcdev->dev;
     assert(tx);
@@ -1677,14 +1775,14 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
             // Rest is same as FRAME interface
         case NFCDEV_INTERFACE_FRAME:
             // Will be set by FIFO transceive function, circumvent another RegisterWrite
-            trailing_bits = IS_ACTIVE(CONFIG_PN53_INITIATOR_TRANSCEIVE_USE_FIFO_INTERFACE_FRAME)
+            trailing_bits = IS_ACTIVE(CONFIG_PN53_INITIATOR_TRANSCEIVE_USING_FIFO)
                 ? -1 : tx_length.trailing_bits;
             break;
 
         case NFCDEV_INTERFACE_PACKET:
             if (tx_length.trailing_bits != 0) {
                 assert(false);
-                PN53_DEBUG("nfio", "only full-byte boundaries support on interface\n");
+                PN53_DEBUG("nfio", "only full-byte boundaries supported on interface\n");
             }
             trailing_bits = NFCDEV_TRAILING_BITS_ALL;
             tx_flags = PN53_REGISTER_TX_MODE_AUTO_CRC;
@@ -1695,16 +1793,16 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
         case NFCDEV_INTERFACE_NFC_DEP:
             if (tx_length.trailing_bits != 0) {
                 assert(false);
-                PN53_DEBUG("nfio", "only full-byte boundaries support on interface\n");
+                PN53_DEBUG("nfio", "only full-byte boundaries supported on interface\n");
             }
             switch (dev->nfc_role) {
                 case NFC_ROLE_INITIATOR: {
                     pn53_logical_target_t* target = pn53_current_target(dev);
                     if (!target && target->managed_transport != (pn53_managed_target_transport_t)interface) {
-                        PN53_DEBUG("txrx.dep", "controller did not activate interface, consider nfcdev_hostnfc\n");
+                        PN53_DEBUG("nfio.dep", "controller did not activate interface, consider nfcdev_hostnfc\n");
                         return -ENOTCONN;
                     }
-                    return pn53_in_data_exchange(dev, tx, tx_length.bytes, rx, timeout_ms);
+                    return pn53_in_data_exchange(dev, tx, tx_length.bytes, rx, rx_timeout_ms);
                 }
                 case NFC_ROLE_TARGET:
                     PN53_DEBUG("nfio.dep", "todo\n");
@@ -1728,6 +1826,7 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
     switch (dev->nfc_role) {
         case NFC_ROLE_INITIATOR:
             if (IS_ACTIVE(CONFIG_PN53_INITIATOR_TRANSCEIVE_USING_FIFO)) {
+                PN53_DEBUG("nfio", "using FIFO\n");
                 if (!rx && !*rx) {
                     PN53_DEBUG("nfio", "need buffer to receive from FIFO\n");
                     return -ENOBUFS;
@@ -1740,22 +1839,32 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                 uint8_t trailing_bits = NFCDEV_TRAILING_BITS_ALL;
                 if ((res = pn53_fifo_transceive_initiator(dev,
                     tx, tx_length.bytes, tx_length.trailing_bits,
-                    *rx, rx_length->bytes, &trailing_bits, timeout_ms
+                    *rx, rx_length->bytes, &trailing_bits, rx_timeout_ms
                 )) < 0) {
                     return res;
                 }
+                PN53_DEBUG("nfio", "trailing bits: %u\n",
+                           trailing_bits == NFCDEV_TRAILING_BITS_ALL ? 8 : trailing_bits);
+                // We get bit count basically for free from FIFO function, we do that
+                // to avoid another HCI round trip here just to get the bit count.
+                // 2 additional bytes to retrieve the bit count in the FIFO function are bearable...
                 *rx_length = (nfcdev_frame_length_t) {
                     .bytes = (size_t)res,
                     .trailing_bits = trailing_bits
                 };
                 return res;
             } else {
-                res = pn53_in_communicate_thru(dev, tx, tx_length.bytes, &internal, timeout_ms);
+                PN53_DEBUG("nfio", "using InCommunicateThru\n");
+                res = pn53_in_communicate_thru(dev, tx, tx_length.bytes, &internal, rx_timeout_ms);
                 if (res < 0) {
                     return res;
                 }
+
                 if (rx) {
+                    // Interested in response
                     if (*rx && rx_length && rx_length->bytes > 0) {
+                        // Wants copy
+                        PN53_DEBUG("nfio", "response copy requested\n");
                         if (rx_length->bytes < (size_t)res) {
                             PN53_DEBUG("nfio", "cannot copy response, need %"
                                        PRIuSIZE ", buffer has only %" PRIuSIZE " bytes\n",
@@ -1764,17 +1873,21 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                         }
                         memcpy(*rx, internal, (size_t)res);
                     } else {
+                        // Wants ref to internal temporary buf
                         *rx = internal;
                     }
                 }
 
                 if (rx_length) {
+                    // Need to update response length
                     *rx_length = (nfcdev_frame_length_t) {
                         .bytes = (size_t)res,
                         .trailing_bits = NFCDEV_TRAILING_BITS_ALL
                     };
 
                     if (interface == NFCDEV_INTERFACE_BITS || interface == NFCDEV_INTERFACE_FRAME) {
+                        // Need to retrieve trailing bit count
+                        PN53_DEBUG("nfio", "need to retrieve RX bit count\n");
                         pn53_register_address_t addr = PN53_REGISTER_CONTROL;
                         ssize_t res2 = pn53_read_registers(dev, &addr, &internal, 1);
                         if (res2 < 0) {
@@ -1782,6 +1895,9 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                         }
                         rx_length->trailing_bits =
                             pn53_bitfield_get(*internal, PN53_REGISTER_CONTROL_MASK_RX_TRAILING_BIT_COUNT);
+
+                        PN53_DEBUG("nfio", "trailing bits: %u\n",
+                                   rx_length->trailing_bits == NFCDEV_TRAILING_BITS_ALL ? 8 : rx_length->trailing_bits);
                     }
                 }
                 return res;
@@ -1797,9 +1913,10 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
 }
 
 nfcdev_ops_t nfcdev_ops_pn53 = {
-    .transceive = nfcdev_transceive_pn53,
-    .send = nfcdev_send_pn53,
-    .configure_radio = nfcdev_configure_radio_pn53,
+    .transceive       = nfcdev_transceive_pn53,
+    .send             = nfcdev_send_pn53,
+    .receive          = nfcdev_receive_pn53,
+    .configure_radio  = nfcdev_configure_radio_pn53,
 };
 
 //
