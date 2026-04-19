@@ -699,6 +699,8 @@ typedef enum __attribute__((packed)) {
 /// Contain status flags of the receiver, transmitter and Data Mode Detector
 #define PN53_REGISTER_STATUS2 PN53_REGISTER(0x6338)
 
+#define PN53_REGISTER_STATUS2_FLAG_CRYPTO1_ENABLED (0x08)
+
 /// In- and output of 64 byte FIFO buffer
 #define PN53_REGISTER_FIFO_DATA PN53_REGISTER(0x6339)
 
