@@ -217,6 +217,33 @@ typedef struct nfcdev_ops {
     int (*listen) (nfcdev_t* dev, const nfcdev_listening_config_t* config);
 } nfcdev_ops_t;
 
+static inline nfcdev_frame_length_t __frame_length_size(size_t length) {
+    assert(length <= NFCDEV_FRAME_LENGTH_BYTES_MAX);
+    return (nfcdev_frame_length_t) { .bytes = length };
+}
+
+static inline nfcdev_frame_length_t __frame_length_typed(nfcdev_frame_length_t length) {
+    return length;
+}
+
+#define __as_frame_length(length) _Generic((length), \
+    nfcdev_frame_length_t: __frame_length_typed, \
+    size_t:                __frame_length_size, \
+    int:                   __frame_length_size \
+)(length)
+
+#define __as_frame_length_ref(length) _Generic((length), \
+    nfcdev_frame_length_t*: (length), \
+    void*:                  (nfcdev_frame_length_t*)(length), \
+    default:                &(nfcdev_frame_length_t){ .bytes = (size_t)(length) } \
+)
+
+#define __as_buffer_ref(ptr) _Generic((ptr), \
+    uint8_t**: (ptr), \
+    uint8_t*:  &(uint8_t*){ (uint8_t*)(uintptr_t)(ptr) }, \
+    default:   (uint8_t**)(uintptr_t)(ptr) \
+)
+
 // If you have a driver that only supports a subset of these functions, please create an issue.
 // We can make some of the shims below return -ENOTSUP if the relevant operation is not implement,
 // i.e., if dev->ops->op_in_question is NULL.
@@ -240,7 +267,7 @@ static inline nfcdev_interface_t nfcdev_available_interface(nfcdev_t* dev) {
     return dev->ops->available_interfaces(dev);
 }
 
-static inline ssize_t nfcdev_send(nfcdev_t* dev,
+static inline ssize_t __nfcdev_send__impl__(nfcdev_t* dev,
     const uint8_t* tx, nfcdev_frame_length_t tx_length,
     nfcdev_interface_t interface
 ) {
@@ -256,30 +283,16 @@ static inline ssize_t nfcdev_send(nfcdev_t* dev,
     );
 }
 
-static inline ssize_t nfcdev_send_bytes(nfcdev_t* dev,
-    const uint8_t* tx, size_t tx_length,
-    nfcdev_interface_t interface
-) {
-    assert(dev);
-    assert(dev->ops);
-    assert(dev->ops->send);
-    assert(tx);
-    assert(tx_length > 0);
-    assert(tx_length <= NFCDEV_FRAME_LENGTH_BYTES_MAX);
+#define nfcdev_send(dev, tx, tx_length, interface) \
+    __nfcdev_send__impl__(dev, tx, __as_frame_length(tx_length), interface)
 
-    return nfcdev_send(dev,
-        tx, (nfcdev_frame_length_t) { .bytes = tx_length },
-        interface
-    );
-}
-
-static inline ssize_t nfcdev_receive(nfcdev_t* dev,
+static inline ssize_t __nfcdev_receive__impl(nfcdev_t* dev,
     uint8_t** rx, nfcdev_frame_length_t* rx_length, uint32_t rx_timeout_ms,
     nfcdev_interface_t interface
 ) {
     assert(dev);
     assert(dev->ops);
-    assert(dev->ops->transceive);
+    assert(dev->ops->receive);
     // Either you give me a buffer and a capacity OR no buffer and capacity of zero.
     assert((rx_length && rx_length->bytes > 0 && rx && *rx) || ((!rx_length || rx_length->bytes == 0) && (!rx || !*rx)));
 
@@ -289,24 +302,12 @@ static inline ssize_t nfcdev_receive(nfcdev_t* dev,
     );
 }
 
-static inline ssize_t nfcdev_receive_bytes(nfcdev_t* dev,
-    uint8_t** rx, size_t rx_capacity, uint32_t rx_timeout_ms,
-    nfcdev_interface_t interface
-) {
-    assert(dev);
-    assert(dev->ops);
-    assert(dev->ops->transceive);
-    assert(rx_capacity <= NFCDEV_FRAME_LENGTH_BYTES_MAX);
-    assert((rx_capacity > 0 && rx && *rx) || (rx_capacity == 0 && (!rx || !*rx)));
+#define nfcdev_receive(dev, rx, rx_length, rx_timeout_ms, interface) \
+    __nfcdev_transceive__impl__(dev, \
+        __as_buffer_ref(rx), __as_frame_length_ref(rx_length), rx_timeout_ms, \
+        interface)
 
-    nfcdev_frame_length_t rx_length = { .bytes = rx_capacity };
-    return nfcdev_receive(dev,
-        rx, &rx_length, rx_timeout_ms,
-        interface
-    );
-}
-
-static inline ssize_t nfcdev_transceive(nfcdev_t* dev,
+static inline ssize_t __nfcdev_transceive__impl__(nfcdev_t* dev,
     const uint8_t* tx, nfcdev_frame_length_t tx_length,
     uint8_t** rx, nfcdev_frame_length_t* rx_length, uint32_t rx_timeout_ms,
     nfcdev_interface_t interface
@@ -326,26 +327,8 @@ static inline ssize_t nfcdev_transceive(nfcdev_t* dev,
     );
 }
 
-static inline ssize_t nfcdev_transceive_bytes(nfcdev_t* dev,
-    const uint8_t* tx, size_t tx_length,
-    uint8_t** rx, size_t rx_capacity, uint32_t rx_timeout_ms,
-    nfcdev_interface_t interface
-) {
-    assert(dev);
-    assert(dev->ops);
-    assert(dev->ops->transceive);
-    assert(tx);
-    assert(tx_length > 0);
-    assert(tx_length <= NFCDEV_FRAME_LENGTH_BYTES_MAX);
-    assert(rx_capacity <= NFCDEV_FRAME_LENGTH_BYTES_MAX);
-    assert((rx_capacity > 0 && rx && *rx) || (rx_capacity == 0 && (!rx || !*rx)));
-
-    nfcdev_frame_length_t rx_length = { .bytes = rx_capacity };
-    return nfcdev_transceive(dev,
-        tx, (nfcdev_frame_length_t) { .bytes = tx_length },
-        rx, &rx_length, rx_timeout_ms,
-        interface
-    );
-}
-
-
+#define nfcdev_transceive(dev, tx, tx_length, rx, rx_length, rx_timeout_ms, interface) \
+    __nfcdev_transceive__impl__(dev, \
+        tx, __as_frame_length(tx_length), \
+        __as_buffer_ref(rx), __as_frame_length_ref(rx_length), rx_timeout_ms, \
+        interface)

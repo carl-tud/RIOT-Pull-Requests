@@ -824,7 +824,7 @@ ssize_t pn53_parse_passive_target_a(uint8_t* response, size_t length, pn53_logic
                tag->polling_response.raw[0], tag->polling_response.raw[1], tag->select_response);
 
     tag->id = (nfc_a_id_t*)response++;
-    length -= 5;
+    length -= 4;
 
     if (length < (size_t)tag->id->length) {
         PN53_DEBUG("InList.a", "id cut off, "
@@ -1605,7 +1605,7 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
 int nfcdev_send_pn53(nfcdev_t* nfcdev, const uint8_t* tx, nfcdev_frame_length_t tx_length, nfcdev_interface_t interface) {
     pn53_dev_t* dev = nfcdev->dev;
     assert(tx);
-    PN53_DEBUG("nfio", "sending %" PRIuSIZE " bytes (%u trailing bits)\n",
+    PN53_DEBUG("nfio", "[***] sending %" PRIuSIZE " bytes (%u trailing bits)\n",
                tx_length.bytes, tx_length.trailing_bits ? tx_length.trailing_bits : 8);
     assert(tx_length.bytes > 0);
 
@@ -1674,7 +1674,7 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
     uint32_t rx_timeout_ms, nfcdev_interface_t interface
 ) {
     pn53_dev_t* dev = nfcdev->dev;
-    PN53_DEBUG("nfio", "receiving\n");
+    PN53_DEBUG("nfio", "[***] receiving\n");
 
     ssize_t res = 0;
     uint8_t* internal;
@@ -1757,7 +1757,7 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
 ) {
     pn53_dev_t* dev = nfcdev->dev;
     assert(tx);
-    PN53_DEBUG("nfio", "transceiving %" PRIuSIZE " bytes (%u trailing bits)\n",
+    PN53_DEBUG("nfio", "[***] transceiving %" PRIuSIZE " bytes (%u trailing bits)\n",
                tx_length.bytes, tx_length.trailing_bits ? tx_length.trailing_bits : 8);
     assert(tx_length.bytes > 0);
     ssize_t res = 0;
