@@ -75,9 +75,13 @@ int main(void) {
         printf("radio config: error %" PRIdSIZE " \n", res);
     }
 
+    puts("");
+
     if ((res = pn53_set_field_enablement(&pn532, false, false)) < 0) {
         printf("field off: error %" PRIdSIZE " \n", res);
     }
+
+    puts("");
 
     if ((res = pn53_set_field_enablement(&pn532, true, false)) < 0) {
         printf("field on: error %" PRIdSIZE " \n", res);
@@ -97,9 +101,13 @@ int main(void) {
         printf("fifo tx: error %" PRIdSIZE " \n", res);
     }
 
+    puts("");
+
     if ((res = pn53_set_field_enablement(&pn532, true, false)) < 0) {
         printf("field on: error %" PRIdSIZE " \n", res);
     }
+
+    puts("");
 
     if ((res = nfcdev_send(&dev, frame, sizeof(frame), NFCDEV_INTERFACE_PACKET)) < 0) {
         printf("fifo tx: error %" PRIdSIZE " \n", res);
@@ -148,13 +156,19 @@ int main(void) {
         return (int)res;
     }
 
+    puts("");
+
     if ((res = nfcdev_configure_radio(&dev, &radio_config, &radio_config, NFC_ROLE_INITIATOR)) < 0) {
         printf("radio config: error %" PRIdSIZE " \n", res);
     }
 
+    puts("");
+
     if ((res = pn53_set_field_enablement(&pn532, true, false)) < 0) {
         printf("field on: error %" PRIdSIZE " \n", res);
     }
+
+    puts("");
 
     if ((res = nfcdev_send(&dev,
         nfc_a_polling_frame_all.frame, nfc_a_polling_frame_all.length,
@@ -163,6 +177,22 @@ int main(void) {
         printf("fifo tx: error %" PRIdSIZE " \n", res);
         return (int)res;
     }
+
+    puts("");
+
+    uint8_t buf[10];
+    if ((res = nfcdev_receive(&dev,
+        buf, sizeof(buf), 1 * MS_PER_SEC,
+        NFCDEV_INTERFACE_FRAME
+    )) < 0) {
+        printf("fifo rx: error %" PRIdSIZE " \n", res);
+    }
+
+    if (res > 0) {
+        printbuff(buf, (size_t)res);
+    }
+
+    puts("");
 
     if ((res = nfcdev_send(&dev, frame, sizeof(frame), NFCDEV_INTERFACE_PACKET)) < 0) {
         printf("fifo tx: error %" PRIdSIZE " \n", res);
