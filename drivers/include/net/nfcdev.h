@@ -130,6 +130,10 @@ typedef struct {
     size_t max_targets;
 } nfcdev_polling_config_t;
 
+#if !defined(CONFIG_NFCDEV_SKIP_UNSUPPORTED_POLLING_LOOPS) || defined(DOXYGEN)
+#  define CONFIG_NFCDEV_SKIP_UNSUPPORTED_POLLING_LOOPS 1
+#endif
+
 typedef struct {
     uint32_t duration;
 
@@ -184,8 +188,6 @@ typedef struct nfcdev {
 typedef struct nfcdev_ops {
     int (*init)(nfcdev_t* dev, const void* dev_config);
     int (*deinit)(nfcdev_t* dev);
-
-
 
     int (*configure_radio)(nfcdev_t* dev, const nfcdev_radio_config_t* tx, const nfcdev_radio_config_t* rx, nfc_role_t role);
 
@@ -303,7 +305,7 @@ static inline ssize_t __nfcdev_receive__impl(nfcdev_t* dev,
 }
 
 #define nfcdev_receive(dev, rx, rx_length, rx_timeout_ms, interface) \
-    __nfcdev_transceive__impl__(dev, \
+    __nfcdev_receive__impl(dev, \
         __as_buffer_ref(rx), __as_frame_length_ref(rx_length), rx_timeout_ms, \
         interface)
 

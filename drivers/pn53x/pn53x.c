@@ -283,7 +283,7 @@ static void _format_bits_with_mask(uint8_t mask, uint8_t value, char* out_str) {
 }
 
 #define PN53_DEBUG_REGISTER_VALUE(addr, name, value) \
-    PN53_DEBUG_REGISTER("0x%04X (%s): 0x%02X\n", (addr), (name), (value))
+    PN53_DEBUG_REGISTER("0x%04X (%s): 0x%02X\n", be16toh(addr), (name), (value))
 
 static void _debug_mask(char* pattern, const char* label, uint8_t mask, uint8_t value) {
     _format_bits_with_mask(mask, value, pattern);
@@ -297,6 +297,10 @@ static void _debug_mask(char* pattern, const char* label, uint8_t mask, uint8_t 
 static void _debug_register(pn53_register_address_t addr, uint8_t value);
 
 ssize_t pn53_read_registers_(pn53_dev_t *dev, void* registers, uint8_t** values, size_t count) {
+#if IS_ACTIVE(CONFIG_PN53_DEBUG_REGISTERS)
+    static pn53_register_address_t _debug_addrs[32];
+    memcpy(_debug_addrs, registers, MIN(count, ARRAY_SIZE(_debug_addrs)) * sizeof(pn53_register_address_t));
+#endif
     PN53_DEBUG("ReadRegister", "%" PRIuSIZE "\n", count);
     uint8_t code = (uint8_t)PN53_COMMAND_READ_REGISTERS;
     iolist_t addrs = __IOLIST(registers, count * sizeof(pn53_register_address_t), NULL);
@@ -309,13 +313,11 @@ ssize_t pn53_read_registers_(pn53_dev_t *dev, void* registers, uint8_t** values,
     if (res < 0) {
         return res;
     }
-    if (IS_ACTIVE(CONFIG_PN53_DEBUG_REGISTERS)) {
-        void* cursor = registers;
-        for (size_t i = 0; i < count; i += 1) {
-            _debug_register(unaligned_get_u16(cursor), _values[i]);
-            cursor += sizeof(pn53_register_address_t);
-        }
+#if IS_ACTIVE(CONFIG_PN53_DEBUG_REGISTERS)
+    for (size_t i = 0; i < MIN(count, ARRAY_SIZE(_debug_addrs)); i += 1) {
+        _debug_register(_debug_addrs[i], _values[i]);
     }
+#endif
     return res;
 }
 
