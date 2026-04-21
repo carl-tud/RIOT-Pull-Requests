@@ -1116,6 +1116,69 @@ ssize_t pn53_in_list_passive_targets_f(pn53_dev_t* dev, uint8_t max_targets, nfc
     return res;
 }
 
+static int _fix_attrib(nfcdev_t* nfcdev, const nfcdev_polling_loop_t* loop, void* payload, nfc_target_t* targets, ssize_t res, uint32_t timeout_ms) {
+    if (loop->tag->b.attrib && loop->tag->b.attrib_length >= sizeof(nfc_b_attrib_command_payload_t)) {
+        nfc_b_attrib_command_payload_t builtin_attrib = {
+            .raw = { 0x00, 0x05, 0x00, 0x01 }
+        };
+        nfc_b_tag_t* tag = &targets[(size_t)res].tag.b;
+        bool iso_dep_activated = tag->polling_response.iso_dep_supported;
+        builtin_attrib.iso_dep_supported = iso_dep_activated;
+
+        // Found a target, check if ATTRIB sent by PN53x was unfortunate
+        if (memcmp(builtin_attrib.raw, loop->tag->b.attrib->raw, sizeof(nfc_b_attrib_command_payload_t)) != 0) {
+            PN53_DEBUG("poll", "ATTRIB varies from PN53-builtin\n");
+            if (iso_dep_activated) {
+                uint8_t s_deselect[] = {
+                    ISO_DEP_PCB_MASK_BLOCK_TYPE_VALUE_S
+                        | ISO_DEP_PCB_S_BLOCK_MASK_KIND_VALUE_DESELECT,
+                    tag->attrib.cid
+                };
+
+                if ((res = nfcdev_transceive(nfcdev,
+                     &s_deselect, targets[(size_t)res].tag.b.attrib.cid == 0 ? 1 : 2,
+                     NULL, 0, timeout_ms, NFCDEV_INTERFACE_PACKET
+                )) < 0) {
+                    return res;
+                }
+
+                nfc_b_polling_command_t wupb = {
+                    .code = NFC_B_FRAME_CODE_POLLING,
+                    .payload = *(nfc_b_polling_command_payload_t*)payload
+                };
+                wupb.payload.wake_up = true;
+
+                if ((res = nfcdev_transceive(nfcdev,
+                     &wupb, sizeof(wupb), NULL, 0, timeout_ms, NFCDEV_INTERFACE_PACKET
+                )) < 0) {
+                    return res;
+                }
+
+                nfc_b_attrib_command_t command = (nfc_b_attrib_command_t) {
+                    .code = NFC_B_FRAME_CODE_ATTRIB,
+                };
+                memcpy(&command.identifier, tag->polling_response.id, sizeof(nfc_b_id_t));
+                memcpy(&command.payload, loop->tag->b.attrib, sizeof(nfc_b_attrib_command_payload_t));
+                iolist_t _higher_layer = {
+                    .iol_base = loop->tag->b.attrib->higher_layer,
+                    .iol_len = loop->tag->b.attrib_length - sizeof(nfc_b_attrib_command_payload_t)
+                };
+                iolist_t _command = {
+                    .iol_base = command.raw,
+                    .iol_len = sizeof(command),
+                    .iol_next = &_higher_layer
+                };
+                if ((res = nfcdev_transceive_chunks(nfcdev,
+                    &_command, NULL, 0, timeout_ms, NFCDEV_INTERFACE_PACKET
+                )) < 0) {
+                    return res;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 static ssize_t pn53_in_list_passive_targets_loop(nfcdev_t* nfcdev, const nfcdev_polling_loop_t* loop, void* payload, nfc_target_t* targets, uint8_t max_targets, uint32_t timeout_ms) {
     pn53_dev_t* dev = nfcdev->dev;
     assert(loop->tag);
@@ -1130,36 +1193,11 @@ static ssize_t pn53_in_list_passive_targets_loop(nfcdev_t* nfcdev, const nfcdev_
 
             ssize_t res = pn53_in_list_passive_targets_b(dev, max_targets,
                  higher_layer_bitrate, afi, loop->tag->b.method, targets, timeout_ms);
-
-            if (res > 0 && loop->tag->b.attrib && loop->tag->b.attrib_length >= sizeof(nfc_b_attrib_command_payload_t)) {
-                nfc_b_attrib_command_payload_t builtin_attrib = {
-                    .raw = { 0x00, 0x05, 0x00, 0x01 }
-                };
+            if (res > 0) {
                 assert(res <= max_targets);
-                bool iso_dep_activated = targets[(size_t)res].tag.b.polling_response.iso_dep_supported;
-                builtin_attrib.iso_dep_supported = iso_dep_activated;
-                // Found a target, check if ATQB sent by PN53x was unfortunate
-                if (memcmp(builtin_attrib.raw, loop->tag->b.attrib->raw, sizeof(nfc_b_attrib_command_payload_t)) != 0) {
-                    PN53_DEBUG("poll", "ATTRIB varies from PN53-builtin\n");
-                    if (iso_dep_activated) {
-                        nfc_b_attrib_command_t command = (nfc_b_attrib_command_t) {
-                            .code = NFC_B_FRAME_CODE_ATTRIB,
-                        };
-                        memcpy(&command.identifier, targets[(size_t)res].tag.b.polling_response.id, sizeof(nfc_b_id_t));
-                        memcpy(&command.payload, loop->tag->b.attrib, sizeof(nfc_b_attrib_command_payload_t));
-                        iolist_t _higher_layer = {
-                            .iol_base = loop->tag->b.attrib->higher_layer,
-                            .iol_len = loop->tag->b.attrib_length - sizeof(nfc_b_attrib_command_payload_t)
-                        };
-                        iolist_t _command = {
-                            .iol_base = command.raw,
-                            .iol_len = sizeof(command),
-                            .iol_next = &_higher_layer
-                        };
-                        if ((res = nfcdev_transceive_chunks(nfcdev, &_command, NULL, 0, 10, NFCDEV_INTERFACE_PACKET)) < 0) {
-                            return res;
-                        }
-                    }
+                ssize_t _res = _fix_attrib(nfcdev, loop, payload, targets, res, timeout_ms);
+                if (_res < 0) {
+                    return _res;
                 }
             }
             return res;
