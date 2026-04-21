@@ -124,26 +124,27 @@ int main(void) {
     puts("");
     puts("Polling NFC-A ...");
 
-    nfc_a_tag_t tag[2];
-    if ((res = pn53_in_list_passive_targets_a(&pn532, ARRAY_SIZE(tag),
-                                           NULL, tag, 2 * MS_PER_SEC)
+    nfc_target_t targets[2];
+    if ((res = pn53_in_list_passive_targets_a(&pn532, ARRAY_SIZE(targets),
+                                           NULL, targets, 2 * MS_PER_SEC)
     ) < 0) {
         printf("NFC-A: error %" PRIdSIZE " \n", res);
     } else {
         for (size_t i = 0; i < (size_t)res; i += 1) {
+            nfc_a_tag_t* tag = &targets[i].tag.a;
             printf("NFC-A: uid has length=%" PRIuSIZE " iso_dep=%i nfc_dep=%i\n",
-                   nfc_a_id_length(tag[i].polling_response.uid_size_indicator),
-                   nfc_a_supports_iso_dep(tag[i].select_response),
-                   nfc_a_supports_nfc_dep(tag[i].select_response)
+                   nfc_a_id_length(tag->polling_response.uid_size_indicator),
+                   nfc_a_supports_iso_dep(tag->select_response),
+                   nfc_a_supports_nfc_dep(tag->select_response)
                    );
 
             printf("NFC-A: uid=");
-            printbuff(tag[i].id->uid, (size_t)tag[i].id->length);
+            printbuff(tag->id.uid, (size_t)tag->id.length);
 
-            if (tag[i].ats) {
+            if (tag->ats.length > 0) {
                 printf("NFC-A: ats=");
-                printbuff((uint8_t*)tag[i].ats,
-                          (size_t)tag[i].ats->length);
+                printbuff((uint8_t*)&tag->ats,
+                          (size_t)tag->ats.length);
             }
         }
     }
@@ -205,15 +206,16 @@ int main(void) {
     puts("");
     puts("Polling NFC-B ...");
 
-    nfc_b_tag_t tagb[2];
-    if ((res = pn53_in_list_passive_targets_b(&pn532, ARRAY_SIZE(tagb),
-                                           NFC_BITRATE_106K, 0x00, 0, tagb, 2 * MS_PER_SEC)
+    if ((res = pn53_in_list_passive_targets_b(&pn532, ARRAY_SIZE(targets),
+                                           NFC_BITRATE_106K, 0x00, NFC_POLLING_METHOD_PROBABILISTIC,
+                                              targets, 2 * MS_PER_SEC)
     ) < 0) {
         printf("NFC-B: error %" PRIdSIZE " \n", res);
     } else {
         for (size_t i = 0; i < (size_t)res; i += 1) {
+            nfc_b_tag_t* tag = &targets[i].tag.b;
             printf("NFC-B: id=");
-            printbuff((uint8_t*)tagb[i].polling_response->id, sizeof(tagb[i].polling_response->id));
+            printbuff((uint8_t*)tag->polling_response.id, sizeof(tag->polling_response.id));
         }
     }
 
@@ -224,19 +226,23 @@ int main(void) {
     puts("");
     puts("Polling NFC-F ...");
 
-    nfc_f_tag_t tagf[2];
-    if ((res = pn53_in_list_passive_targets_f(&pn532, ARRAY_SIZE(tagf),
-                                           NFC_BITRATE_212K, 0xffff,
-                                           NFC_F_POLLING_REQUEST_SYSTEM_CODE, 0x0f, tagf, 2 * MS_PER_SEC)
+    nfc_f_polling_command_payload_t polf = {
+        .system_code = 0xffff,
+        .additional_request = NFC_F_POLLING_REQUEST_SYSTEM_CODE,
+        .timeslots = 0x0f
+    };
+    if ((res = pn53_in_list_passive_targets_f(&pn532, ARRAY_SIZE(targets),
+                                           NFC_BITRATE_212K, &polf, targets, 2 * MS_PER_SEC)
     ) < 0) {
         printf("NFC-F: error %" PRIdSIZE " \n", res);
     } else {
         for (size_t i = 0; i < (size_t)res; i += 1) {
+            nfc_f_tag_t* tag = &targets[i].tag.f;
             printf("NFC-F: idm=");
-            printbuff((uint8_t*)tagf[i].id, sizeof(*tagf[i].id));
+            printbuff(tag->id.raw, sizeof(tag->id));
             printf("NFC-F: pmm=");
-            printbuff((uint8_t*)&tagf[i].pmm, sizeof(*tagf[i].pmm));
-            printf("NFC-F: system=%04x\n", tagf[i].system_code);
+            printbuff(tag->pmm.raw, sizeof(tag->pmm));
+            printf("NFC-F: system=%04x\n", tag->system_code);
         }
     }
 

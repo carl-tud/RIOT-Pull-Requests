@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <string.h>
 #include "net/nfc/constants.h"
 #include "net/nfc/iso_dep.h"
 #include "net/nfc/nfc_dep.h"
@@ -68,7 +69,15 @@ typedef uint8_t nfc_a_polling_command_t;
 typedef struct {
     const uint8_t* frame;
     nfcdev_frame_length_t length;
+    nfcdev_interface_t interface;
 } nfc_a_polling_frame_t;
+
+static inline bool nfc_a_polling_frame_is_equal(const nfc_a_polling_frame_t* lhs, const nfc_a_polling_frame_t* rhs) {
+    return
+        lhs->interface == rhs->interface &&
+        lhs->length._encoded == rhs->length._encoded &&
+        (lhs->length._encoded > 0 ? (memcmp(lhs->frame, rhs->frame, lhs->length.bytes) == 0) : true);
+}
 
 extern const nfc_a_polling_frame_t nfc_a_polling_frame_all;
 extern const nfc_a_polling_frame_t nfc_a_polling_frame_only_awake;
@@ -363,23 +372,25 @@ nfc_application_type_t nfc_a_determine_application_type(nfc_a_polling_response_t
 /// @}
 
 typedef struct {
-    nfc_a_id_t* id;
     nfc_a_polling_response_t polling_response_mask;
     nfc_a_select_response_t select_response_mask;
 } nfc_a_polling_filter_t;
 
 typedef struct {
-    nfc_a_polling_frame_t* frames;
-    size_t frame_count;
+    struct {
+        nfc_a_polling_frame_t* frames;
+        size_t frame_count;
+    };
 
-    nfc_a_polling_filter_t* filter;
-
+    nfc_a_id_t* id;
     nfc_a_rats_t* rats;
+
+    nfc_a_polling_filter_t filter;
 } nfc_a_tag_polling_config_t;
 
 typedef struct {
-    nfc_a_id_t* id;
+    nfc_a_id_t id;
     nfc_a_polling_response_t polling_response;
     nfc_a_select_response_t select_response;
-    nfc_a_ats_t* ats;
+    nfc_a_ats_t ats;
 } nfc_a_tag_t;
