@@ -120,14 +120,16 @@ typedef struct {
 } nfc_v_polling_filter_t;
 
 typedef struct {
-    nfc_v_inventory_request_info_t* frames;
-    size_t frame_count;
+    struct {
+        nfc_v_inventory_request_info_t* frames;
+        size_t frame_count;
+    };
 
     nfc_v_polling_filter_t* filter;
 } nfc_v_tag_polling_config_t;
 
 typedef struct {
-    nfc_v_id_t* id;
+    nfc_v_id_t id;
     uint8_t storage_format_identifier;
     uint8_t block_security_status_length_exponent : 2;
 } nfc_v_tag_t;

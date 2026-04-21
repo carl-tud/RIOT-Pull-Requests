@@ -48,7 +48,7 @@ static inline uint8_t nfc_b_slot_count(uint8_t power) {
 
 typedef enum __attribute__((packed)) {
     NFC_POLLING_METHOD_PROBABILISTIC = 1,
-    NFC_POLLING_METHOD_TIMESLOT = 2,
+    NFC_POLLING_METHOD_TIMESLOT = 0,
 } nfc_b_polling_method_t;
 
 #define NFC_B_SLOT_COUNT_POWER(count) ((uint8_t)__builtin_ctz((uint8_t)count))
@@ -59,7 +59,8 @@ static inline uint8_t nfc_b_slot_count_power(uint8_t count) {
 
 typedef struct {
     uint8_t* frame;
-    nfcdev_frame_length_t length;
+    size_t length;
+    nfcdev_interface_t interface;
 } nfc_b_polling_frame_t;
 
 /// @}
@@ -131,8 +132,6 @@ typedef union __attribute__((packed)) {
 
 typedef union __attribute__((packed)) {
     struct {
-        nfc_b_id_t identifier;
-
         union {
             struct {
                 uint8_t _rfu0 : 2;
@@ -177,7 +176,7 @@ typedef union __attribute__((packed)) {
         uint8_t higher_layer[];
     } __attribute__((packed));
 
-    uint8_t raw[8];
+    uint8_t raw[4];
 } nfc_b_attrib_command_payload_t;
 
 #define NFC_B_FRAME_CODE_ATTRIB (0x1D)
@@ -185,10 +184,11 @@ typedef union __attribute__((packed)) {
 typedef union __attribute__((packed)) {
     struct {
         uint8_t code;
+        nfc_b_id_t identifier;
         nfc_b_attrib_command_payload_t payload;
     } __attribute__((packed));
 
-    uint8_t raw[sizeof(nfc_b_attrib_command_payload_t) + 1];
+    uint8_t raw[1 + sizeof(nfc_b_id_t) + sizeof(nfc_b_attrib_command_payload_t)];
 } nfc_b_attrib_command_t;
 
 /// @}
@@ -267,18 +267,21 @@ typedef struct {
 } nfc_b_polling_filter_t;
 
 typedef struct {
-    nfc_b_polling_frame_t* frames;
-    size_t frame_count;
+    struct {
+        nfc_b_polling_frame_t* frames;
+        size_t frame_count;
+    };
 
     nfc_b_polling_method_t method;
 
     nfc_b_polling_filter_t* filter;
 
-    nfc_b_attrib_command_t* attrib;
+    size_t attrib_length;
+    nfc_b_attrib_command_payload_t* attrib;
 } nfc_b_tag_polling_config_t;
 
 typedef struct {
-    nfc_b_polling_response_payload_t* polling_response;
+    nfc_b_polling_response_payload_t polling_response;
     size_t attrib_response_length;
-    nfc_b_attrib_response_t* attrib;
+    nfc_b_attrib_response_t attrib;
 } nfc_b_tag_t;

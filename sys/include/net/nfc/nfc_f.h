@@ -95,6 +95,10 @@ typedef struct __attribute__((packed)) {
     uint8_t timeslots;
 } nfc_f_polling_command_payload_t;
 
+static inline uint32_t nfc_f_polling_response_time_ms(uint8_t tsn) {
+    return (242 /* 2.42 ms */ + (tsn+1) * 121 /* 1.21 ms */) / 100;
+}
+
 typedef uint8_t nfc_f_polling_response_payload_t[2];
 
 typedef struct __attribute__((packed)) {
@@ -134,15 +138,17 @@ typedef struct {
 } nfc_f_polling_filter_t;
 
 typedef struct {
-    nfc_f_polling_command_payload_t* frames;
-    size_t frame_count;
+    struct {
+        nfc_f_polling_command_payload_t* frames;
+        size_t frame_count;
+    };
 
     nfc_f_polling_filter_t* filter;
 } nfc_f_tag_polling_config_t;
 
 typedef struct {
-    nfc_f_id_t* id;
-    nfc_f_pmm_t* pmm;
+    nfc_f_id_t id;
+    nfc_f_pmm_t pmm;
     nfc_f_system_code_t system_code;
     nfc_bitrate_t bitrates;
 } nfc_f_tag_t;

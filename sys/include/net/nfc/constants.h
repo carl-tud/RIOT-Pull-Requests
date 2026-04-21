@@ -12,7 +12,7 @@ typedef enum __attribute__((packed)) {
     /// while the target passively modules said initiator-generated field.
     /// This mode is also known as _passive mode_, where _passive_ refers to the 'passive'
     /// non-field-generating nature of the target.
-    NFC_FIELD_MODEL_READER_WRITER_TAG = 0,
+    NFC_FIELD_MODE_READER_WRITER_TAG = 0,
 
     /// Peers generate field to send data
     ///
@@ -23,8 +23,8 @@ typedef enum __attribute__((packed)) {
     ///
     /// Currently, this mode is only used by a specific transport protocol, NFC-DEP (specified in
     /// ISO/IEC 18092).
-    NFC_FIELD_MODEL_PEERS,
-} nfc_field_model_t;
+    NFC_FIELD_MODE_PEERS,
+} nfc_field_mode_t;
 
 typedef enum {
     NFC_ROLE_TARGET = 0,
@@ -203,7 +203,6 @@ typedef enum {
     NFC_APPLICATION_MIFARE_PLUS,        /* based on T4T */
 } nfc_application_type_t;
 
-
 #define NFCDEV_TRAILING_BITS_ALL (0)
 
 typedef union {
@@ -222,3 +221,30 @@ static_assert(sizeof(nfcdev_frame_length_t) == sizeof(size_t));
 static_assert(sizeof(nfcdev_frame_length_t) == sizeof(ssize_t));
 
 #define NFCDEV_FRAME_LENGTH_BYTES_MAX (((nfcdev_frame_length_t) { ._encoded = SIZE_MAX }).bytes)
+
+typedef enum __attribute__((packed)) {
+    /// Without NFC-A parity bits, otherwise same as @ref NFCDEV_INTERFACE_FRAME
+    NFCDEV_INTERFACE_BITS = 1,
+
+    /// Without length, CRC, headers, trailers etc, any protocol unmanaged
+    NFCDEV_INTERFACE_FRAME = 1 << 1,
+
+    /// With length, CRC, etc..., any protocol unmanaged
+    NFCDEV_INTERFACE_PACKET = 1 << 2,
+
+    /// ISO-DEP payloads, protocol managedd
+    NFCDEV_INTERFACE_ISO_DEP = 1 << 3,
+
+    /// NFC-DEP payloads, protocol managed
+    NFCDEV_INTERFACE_NFC_DEP = 1 << 4,
+} nfcdev_interface_t;
+
+typedef union __attribute__((packed))  {
+    struct {
+        nfcdev_interface_t interface : 5;
+        uint8_t trailing_bits : 3;
+    };
+    uint8_t _encoded;
+} nfcdev_nfio_flags_t;
+
+static_assert(sizeof(nfcdev_nfio_flags_t) == sizeof(uint8_t));

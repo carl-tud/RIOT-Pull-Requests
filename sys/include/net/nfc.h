@@ -24,7 +24,7 @@ typedef struct {
 typedef struct {
     /// Passive tag initialization result
     ///
-    /// If @ref nfc_target_t::field_model is NFC_FIELD_MODEL_READER_WRITER_TAG
+    /// If @ref nfc_target_t::field_mode is NFC_FIELD_MODE_READER_WRITER_TAG
     nfc_tag_t tag;
 
     struct {
@@ -57,5 +57,5 @@ typedef struct {
         } nfc_dep;
     } higher_layer;
 
-    nfc_field_model_t field_model : 1;
+    nfc_field_mode_t field_mode : 1;
 } nfc_target_t;
