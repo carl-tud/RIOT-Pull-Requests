@@ -60,6 +60,68 @@ int main(void) {
     }
 
     puts("");
+    puts("Polling");
+
+    static nfcdev_tag_polling_config_t polling_config_a = {
+        .technology = NFC_TECHNOLOGY_A,
+        .a = {
+            .frames = NULL,
+            .frame_count = 0,
+            .id = NULL,
+            .filter = NULL,
+            .rats = NULL,
+        }
+    };
+
+    static nfcdev_tag_polling_config_t polling_config_b = {
+        .technology = NFC_TECHNOLOGY_B,
+        .a = {
+            .frames = NULL,
+            .frame_count = 0,
+            .id = NULL,
+            .filter = NULL,
+            .rats = NULL,
+        }
+    };
+
+    static nfcdev_polling_loop_t polling_loops[] = {
+        {
+            .bitrate = NFC_BITRATE_106K,
+            .timing = {
+                .interval = NFCDEV_POLLING_INTERVAL_BUILTIN /* ms */,
+                .retries = 256,
+                .guard_time = 0,
+            },
+            .tag = &polling_config_a,
+            .field_mode = NFC_FIELD_MODE_READER_WRITER_TAG
+        },
+        {
+            .bitrate = NFC_BITRATE_106K,
+            .timing = {
+                .interval = NFCDEV_POLLING_INTERVAL_BUILTIN /* ms */,
+                .retries = 4,
+                .guard_time = 0,
+            },
+            .tag = &polling_config_b,
+            .field_mode = NFC_FIELD_MODE_READER_WRITER_TAG
+        }
+    };
+
+    static nfcdev_polling_config_t polling_config = {
+        .loops = polling_loops,
+        .loop_count = ARRAY_SIZE(polling_loops),
+        .repetitions = 3
+    };
+
+    nfc_target_t targets[2];
+    if ((res = nfcdev_poll(&dev, &polling_config, targets, ARRAY_SIZE(targets))) < 0) {
+        printf("poll: error %" PRIdSIZE " \n", res);
+    }
+    printf("poll: targets: %" PRIdSIZE " \n", res);
+
+
+    return 0;
+    puts("");
 
     if ((res = pn53_set_field_enablement(&pn532, true, false)) < 0) {
         printf("field on: error %" PRIdSIZE " \n", res);
@@ -124,7 +186,6 @@ int main(void) {
     puts("");
     puts("Polling NFC-A ...");
 
-    nfc_target_t targets[2];
     if ((res = pn53_in_list_passive_targets_a(&pn532, ARRAY_SIZE(targets),
                                            NULL, targets, 2 * MS_PER_SEC)
     ) < 0) {

@@ -658,10 +658,18 @@ static void _uart_rx_cb(void* connection, uint8_t byte) {
 ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
                             uint8_t** response, uint32_t timeout_ms) {
     ssize_t res = 0;
+    uint32_t timestamp = 0;
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI_TIMING)) {
+        timestamp = ztimer_now(ZTIMER_MSEC);
+    }
     /* First, send packet. */
     if ((res = _send_packet(connection, packet)) < 0) {
         PN53_DEBUG_TRANSPORT("sending packet failed\n");
         return res;
+    }
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI_TIMING)) {
+        PN53_DEBUG_HCI("[->] %" PRIu32 " ms\n", ztimer_now(ZTIMER_MSEC) - timestamp);
+        timestamp = ztimer_now(ZTIMER_MSEC);
     }
 
     /* Wait until data is available. */
@@ -670,10 +678,20 @@ ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
         return res;
     }
 
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI_TIMING)) {
+        PN53_DEBUG_HCI("[<- IRQ] %" PRIu32 " ms\n", ztimer_now(ZTIMER_MSEC) - timestamp);
+        timestamp = ztimer_now(ZTIMER_MSEC);
+    }
+
     /* We expect an ACK from the controller. */
     if ((res = _recv_ack(connection)) < 0) {
         PN53_DEBUG_TRANSPORT("receiving ACK for packet failed\n");
         return res;
+    }
+
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI_TIMING)) {
+        PN53_DEBUG_HCI("[<- ACK] %" PRIu32 " ms\n", ztimer_now(ZTIMER_MSEC) - timestamp);
+        timestamp = ztimer_now(ZTIMER_MSEC);
     }
 
     PN53_DEBUG_TRANSPORT("[<-] ACK, waiting for response\n");
@@ -684,10 +702,19 @@ ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
         return res;
     }
 
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI_TIMING)) {
+        PN53_DEBUG_HCI("[<- IRQ] %" PRIu32 " ms\n", ztimer_now(ZTIMER_MSEC) - timestamp);
+        timestamp = ztimer_now(ZTIMER_MSEC);
+    }
+
     /* We expect an ACK from the controller. */
     if ((res = _recv_packet(connection, response)) < 0) {
         PN53_DEBUG_TRANSPORT("receiving response failed\n");
         return res;
+    }
+
+    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI_TIMING)) {
+        PN53_DEBUG_HCI("[<-] %" PRIu32 " ms\n", ztimer_now(ZTIMER_MSEC) - timestamp);
     }
 
     PN53_DEBUG_TRANSPORT("round trip complete\n");

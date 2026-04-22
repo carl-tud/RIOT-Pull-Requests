@@ -133,3 +133,5 @@ typedef struct {
     uint8_t storage_format_identifier;
     uint8_t block_security_status_length_exponent : 2;
 } nfc_v_tag_t;
+
+bool nfc_v_polling_filter_matches(const nfc_v_polling_filter_t* filter, const nfc_v_tag_t* tag);

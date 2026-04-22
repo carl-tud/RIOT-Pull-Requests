@@ -63,8 +63,8 @@ static inline nfc_field_mode_t nfcdev_field_mode_from_radio_config(
 
 typedef uint8_t nfcdev_connection_id_t;
 
-#define NFCDEV_POLLING_RETRIES_INFINITE (0)
-#define NFCDEV_POLLING_RETRIES_MAX SIZE_MAX
+#define NFCDEV_POLLING_RETRIES_INFINITE (SIZE_MAX)
+#define NFCDEV_POLLING_RETRIES_MAX (SIZE_MAX -1)
 
 #define NFCDEV_POLLING_INTERVAL_BUILTIN (0)
 
@@ -97,6 +97,17 @@ static inline size_t nfcdev_tag_polling_config_frame_count(const nfcdev_tag_poll
     } *)config)->frame_count;
 }
 
+static inline bool nfcdev_polling_filter_matches(const nfcdev_tag_polling_config_t* config, const nfc_tag_t* tag) {
+    assert(config);
+    switch (tag->technology) {
+        case NFC_TECHNOLOGY_A: return nfc_a_polling_filter_matches(config->a.filter, &tag->a);
+        case NFC_TECHNOLOGY_B: return nfc_b_polling_filter_matches(config->b.filter, &tag->b);
+        case NFC_TECHNOLOGY_F: return nfc_f_polling_filter_matches(config->f.filter, &tag->f);
+        case NFC_TECHNOLOGY_V: return nfc_v_polling_filter_matches(config->v.filter, &tag->v);
+        default: UNREACHABLE();
+    }
+}
+
 typedef struct {
     /// Ignored if @ref nfcdev_polling_loop_t::technology is @ref NFC_TECHNOLOGY_V
     nfc_bitrate_t bitrate;
@@ -120,10 +131,13 @@ typedef struct {
     nfc_field_mode_t field_mode : 1;
 } nfcdev_polling_loop_t;
 
+#define NFCDEV_POLLING_REPETIONS_INFINITE (SIZE_MAX)
+#define NFCDEV_POLLING_REPETIONS_MAX (SIZE_MAX - 1)
 
 typedef struct {
     size_t loop_count;
     nfcdev_polling_loop_t* loops;
+    size_t repetitions;
 } nfcdev_polling_config_t;
 
 #if !defined(CONFIG_NFCDEV_SKIP_UNSUPPORTED_POLLING_LOOPS) || defined(DOXYGEN)
@@ -212,9 +226,17 @@ typedef struct nfcdev_ops {
 
     // --
 
-    int (*poll) (nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, size_t max_targets);
+    ssize_t (*poll) (nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, size_t max_targets);
     int (*listen) (nfcdev_t* dev, const nfcdev_listening_config_t* config);
 } nfcdev_ops_t;
+
+static inline ssize_t nfcdev_poll(nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, size_t max_targets) {
+    assert(dev);
+    assert(config);
+    assert(max_targets > 0);
+    assert(targets);
+    return dev->ops->poll(dev, config, targets, max_targets);
+}
 
 static inline nfcdev_frame_length_t __frame_length_size(size_t length) {
     assert(length <= NFCDEV_FRAME_LENGTH_BYTES_MAX);

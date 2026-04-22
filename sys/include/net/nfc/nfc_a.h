@@ -103,6 +103,7 @@ typedef union __attribute__((packed)) {
     } __attribute__((packed));
     
     uint8_t raw[2];
+    uint16_t uint;
 } nfc_a_polling_response_t;
 
 /// @}
@@ -372,8 +373,14 @@ nfc_application_type_t nfc_a_determine_application_type(nfc_a_polling_response_t
 /// @}
 
 typedef struct {
-    nfc_a_polling_response_t polling_response_mask;
-    nfc_a_select_response_t select_response_mask;
+    struct {
+        nfc_a_polling_response_t mask;
+        nfc_a_polling_response_t value;
+    } polling_response;
+    struct {
+        nfc_a_select_response_t mask;
+        nfc_a_select_response_t value;
+    } select_response;
 } nfc_a_polling_filter_t;
 
 typedef struct {
@@ -385,7 +392,7 @@ typedef struct {
     nfc_a_id_t* id;
     nfc_a_rats_t* rats;
 
-    nfc_a_polling_filter_t filter;
+    nfc_a_polling_filter_t* filter;
 } nfc_a_tag_polling_config_t;
 
 typedef struct {
@@ -394,3 +401,5 @@ typedef struct {
     nfc_a_select_response_t select_response;
     nfc_a_ats_t ats;
 } nfc_a_tag_t;
+
+bool nfc_a_polling_filter_matches(const nfc_a_polling_filter_t* filter, const nfc_a_tag_t* tag);

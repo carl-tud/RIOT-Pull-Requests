@@ -207,7 +207,7 @@ typedef struct __attribute__((packed)) {
         uint8_t start_byte;
     } __attribute__((packed));
 
-    uint8_t higher_layer[];
+    uint8_t* higher_layer;
 } nfc_b_attrib_response_t;
 
 #define NFC_B_ATTRIB_MAX_BUFFER_LENGTH_INDEX_UNKNOWN (0)
@@ -257,7 +257,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct {
     nfc_b_id_t* id;
-    uint8_t application_family_mask;
+    uint8_t application_family;
     uint8_t aid_crc[2];
     iso_dep_bitrate_capabilities_t bitrates;
     bool require_iso_dep_supported : 1;
@@ -285,3 +285,5 @@ typedef struct {
     size_t attrib_response_length;
     nfc_b_attrib_response_t attrib;
 } nfc_b_tag_t;
+
+bool nfc_b_polling_filter_matches(const nfc_b_polling_filter_t* filter, const nfc_b_tag_t* tag);
