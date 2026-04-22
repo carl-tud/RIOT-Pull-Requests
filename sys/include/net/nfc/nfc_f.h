@@ -132,7 +132,7 @@ typedef struct __attribute__((packed)) {
 typedef struct {
     nfc_f_id_t* id;
     // bitrate and system code filter cannot be used together, can only have one additional request
-    nfc_bitrate_t bitrates;
+    nfc_bitrate_set_t bitrates;
     size_t system_code_count;
     nfc_f_system_code_t system_codes[];
 } nfc_f_polling_filter_t;
@@ -150,5 +150,7 @@ typedef struct {
     nfc_f_id_t id;
     nfc_f_pmm_t pmm;
     nfc_f_system_code_t system_code;
-    nfc_bitrate_t bitrates;
+    nfc_bitrate_set_t bitrates;
 } nfc_f_tag_t;
+
+bool nfc_f_polling_filter_matches(const nfc_f_polling_filter_t* filter, const nfc_f_tag_t* tag);

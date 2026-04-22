@@ -78,7 +78,7 @@ typedef union __attribute__((packed)) {
         bool same_constraint : 1;
     } __attribute__((packed));
 
-    uint8_t byte;
+    uint8_t raw;
 } iso_dep_bitrate_capabilities_t;
 
 #define ISO_DEP_BITRATE_FROM_DIVISOR_POWER(power) ((nfc_bitrate_t)(1 << (power)))

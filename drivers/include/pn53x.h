@@ -118,6 +118,10 @@ static_assert(PN35_FRAME_HEADER_EXTENDED + 2 == PN53_FRAME_OVERHEAD_MAX);
 #  define CONFIG_PN53_FIFO_SIZE 64
 #endif
 
+#if !defined(CONFIG_PN53_NFCDEV_OVERWRITE_ATTRIB) || defined(DOXYGEN)
+#  define CONFIG_PN53_NFCDEV_OVERWRITE_ATTRIB 0
+#endif
+
 /// @brief Use controller's CIU FIFO instead of `InCommunicateThru` command to send data in
 ///
 /// Depending on the HCI transport (SPI, I²C, or UART) the driver may not be able

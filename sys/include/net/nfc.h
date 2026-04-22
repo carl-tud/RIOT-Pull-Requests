@@ -9,6 +9,8 @@
 #include "net/nfc/nfc_dep.h"
 #include "net/nfc/nfc_error.h"
 
+#include "compiler_hints.h"
+
 /// Passive tag characteristics obtained during polling (initialization and activation)
 typedef struct {
     nfc_technology_t technology;
@@ -20,6 +22,7 @@ typedef struct {
         nfc_v_tag_t v;
     };
 } nfc_tag_t;
+
 
 typedef struct {
     /// Passive tag initialization result
