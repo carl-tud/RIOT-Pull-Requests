@@ -81,6 +81,11 @@ static inline int pn532_enable_parameters(pn532_dev_t* dev, pn532_nfc_parameters
     return pn53_enable_parameters((pn53_dev_t*)dev, (uint8_t)parameters);
 }
 
+static inline int pn532_set_parameters_enablement(pn532_dev_t* dev, pn532_nfc_parameters_t parameters, bool enablement) {
+    assert((parameters & ~PN532_NFC_PARAMETER_MASK) == 0);
+    return pn53_set_parameters_enablement((pn53_dev_t*)dev, (uint8_t)parameters, enablement);
+}
+
 static inline int pn532_disable_parameters(pn532_dev_t* dev, pn532_nfc_parameters_t parameters) {
     assert((parameters & ~PN532_NFC_PARAMETER_MASK) == 0);
     return pn53_disable_parameters(dev, (uint8_t)parameters);

@@ -111,7 +111,7 @@ int main(void) {
     };
 
     nfc_target_t targets[2];
-    if ((res = nfcdev_poll(&dev, &polling_config, targets, ARRAY_SIZE(targets))) < 0) {
+    if ((res = nfcdev_poll(&dev, &polling_config, targets, NULL, ARRAY_SIZE(targets))) < 0) {
         printf("poll: error %" PRIdSIZE " \n", res);
     }
     printf("poll: targets: %" PRIdSIZE " \n", res);

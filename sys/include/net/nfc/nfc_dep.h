@@ -4,7 +4,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#define NFC_DEP_ID_LENGTH (10u)
+#define NFC_DEP_ID_LENGTH (10)
+
+typedef uint8_t nfc_dep_id_t[NFC_DEP_ID_LENGTH];
 
 #define NFC_DEP_CMD0_REQUEST  (0xD4)
 #define NFC_DEP_CMD0_RESPONSE (0xD5)
@@ -46,7 +48,7 @@ typedef enum __attribute__((packed)) {
 } nfc_dep_payload_reduction_index_t;
 
 typedef struct __attribute__((packed)) {
-    uint8_t id[10];
+    nfc_dep_id_t id;
     uint8_t device_id;
     uint8_t supported_bitrates_tx;
     uint8_t supported_bitrates_rx;
@@ -68,7 +70,7 @@ typedef struct __attribute__((packed)) {
 } nfc_dep_activation_request_t;
 
 typedef struct __attribute__((packed)) {
-    uint8_t id[NFC_DEP_ID_LENGTH];
+    nfc_dep_id_t id;
     uint8_t device_id;
     uint8_t supported_bitrates_tx;
     uint8_t supported_bitrates_rx;

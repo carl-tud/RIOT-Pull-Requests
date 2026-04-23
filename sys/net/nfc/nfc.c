@@ -1,4 +1,60 @@
+#include "macros/utils.h"
 #include "net/nfc.h"
+
+nfc_bitrate_t nfc_bitrate_select(
+    nfc_bitrate_set_t set1,
+    nfc_bitrate_set_t set2,
+    nfc_bitrate_t current,
+    nfc_bitrate_selection_strategy_t strategy
+) {
+    if (strategy == NFC_BITRATE_CHOOSE_FORCED) {
+        // Make sure this set just consists of the enforced bitrate;
+        assert(set1 == (nfc_bitrate_t)(1 << __builtin_ctz(set1)));
+        return (nfc_bitrate_t)set1;
+    }
+    if (strategy == NFC_BITRATE_CHOOSE_CURRENT) {
+        return current;
+    }
+    nfc_bitrate_set_t gcd = set1 & set2;
+    if (gcd == 0) {
+        return 0;
+    }
+    if (strategy == NFC_BITRATE_CHOOSE_FASTEST) {
+        // Count leading zeroes, get fastest bit rate
+        return (nfc_bitrate_t)(1 << ((sizeof(nfc_bitrate_set_t) * 8) - 1 - __builtin_clz(gcd)));
+    } else {
+        // Count trailing zeroes, get slowest bit rate
+        return (nfc_bitrate_t)(1 << __builtin_ctz(gcd));
+    }
+}
+
+void nfc_bitrate_select_bidirectional(
+    const nfc_bidirectional_bitrate_selector_t* selector,
+    nfc_bitrate_t* downstream, nfc_bitrate_t* upstream,
+    nfc_bitrate_set_t downstream_supported, nfc_bitrate_set_t upstream_supported,
+    bool require_symmetric
+) {
+    nfc_bitrate_selection_strategy_t downstream_strategy = selector->downstream.strategy;
+    nfc_bitrate_selection_strategy_t upstream_strategy = selector->upstream.strategy;
+
+    if (require_symmetric) {
+        downstream_strategy = upstream_strategy = MAX(downstream_strategy, upstream_strategy);
+        // This is what the other party supports, input should already satisfy this technically
+        nfc_bitrate_set_t same = downstream_supported & upstream_supported;
+        // Now we cross-intersect, such that the gcd calculation in nfc_bitrate_select
+        // yields...
+        //    selector->downstream.set & (same & selector->upstream.set)
+        downstream_supported = same & selector->upstream.set;
+        //    selector->upstream.set & (same & selector->downstream.set)
+        upstream_supported = same & selector->downstream.set;
+        // ... which is the same,
+    }
+
+    *downstream = nfc_bitrate_select(selector->downstream.set, downstream_supported,
+        *downstream, downstream_strategy);
+    *upstream = nfc_bitrate_select(selector->upstream.set, upstream_supported,
+        *upstream, upstream_strategy);
+}
 
 uint16_t iso_dep_frame_sizes[] = { 16,24,32,40,48,64,96,128,356,512,1024,2048,4096 };
 
