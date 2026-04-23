@@ -125,7 +125,7 @@ typedef struct {
             nfc_dep_activation_request_t* atr;
         } nfc_dep;
 
-        nfc_bitrate_selector_t bitrate_selector;
+        nfc_bidirectional_bitrate_selector_t bitrate_selector;
     } higher_layer;
 
     nfc_field_mode_t field_mode : 1;
@@ -226,16 +226,16 @@ typedef struct nfcdev_ops {
 
     // --
 
-    ssize_t (*poll) (nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, size_t max_targets);
+    ssize_t (*poll) (nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, nfcdev_connection_id_t* connection_ids, size_t max_targets);
     int (*listen) (nfcdev_t* dev, const nfcdev_listening_config_t* config);
 } nfcdev_ops_t;
 
-static inline ssize_t nfcdev_poll(nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, size_t max_targets) {
+static inline ssize_t nfcdev_poll(nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, nfcdev_connection_id_t* connection_ids, size_t max_targets) {
     assert(dev);
     assert(config);
     assert(max_targets > 0);
     assert(targets);
-    return dev->ops->poll(dev, config, targets, max_targets);
+    return dev->ops->poll(dev, config, targets, connection_ids, max_targets);
 }
 
 static inline nfcdev_frame_length_t __frame_length_size(size_t length) {

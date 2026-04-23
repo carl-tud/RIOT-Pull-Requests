@@ -535,19 +535,6 @@ int pn53_set_field_enablement(pn53_dev_t* dev, bool intent_to_enable, bool colli
     return res < 0 ? res : 0;
 }
 
-//ssize_t pn53_in_jump_for_dep(pn53_dev_t* dev, uint8_t act_pass, uint8_t baud_rate, uint8_t next, const uint8_t* payload, size_t payload_length, uint8_t** response) {
-//    uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_JUMP_FOR_DEP, act_pass, baud_rate, next };
-//    iolist_t payload_node = { .iol_base = (void*)payload, .iol_len = payload_length, .iol_next = NULL };
-//    iolist_t command_node = { .iol_base = header, .iol_len = sizeof(header), .iol_next = (payload_length > 0) ? &payload_node : NULL };
-//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, response, dev->command_timeout);
-//    if (res > 0) {
-//        pn53_status_code_t status = pn53_status_code((*response)[0]);
-//        if (status != PN53_STATUS_SUCCESS) {
-//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
-//        }
-//    }
-//    return res;
-//}
 //
 //ssize_t pn53_in_jump_for_psl(pn53_dev_t* dev, uint8_t act_pass, uint8_t baud_rate, uint8_t next, const uint8_t* payload, size_t payload_length, uint8_t** response) {
 //    uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_JUMP_FOR_PSL, act_pass, baud_rate, next };
@@ -563,32 +550,7 @@ int pn53_set_field_enablement(pn53_dev_t* dev, bool intent_to_enable, bool colli
 //    return res;
 //}
 //
-//ssize_t pn53_in_atr(pn53_dev_t* dev, uint8_t target_number, uint8_t next, const uint8_t* payload, size_t payload_length, uint8_t** response) {
-//    uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_ATR, target_number, next };
-//    iolist_t payload_node = { .iol_base = (void*)payload, .iol_len = payload_length, .iol_next = NULL };
-//    iolist_t command_node = { .iol_base = header, .iol_len = sizeof(header), .iol_next = (payload_length > 0) ? &payload_node : NULL };
-//    ssize_t res = pn53_hci_transceive_command(&dev->connection, &command_node, response, dev->command_timeout);
-//    if (res > 0) {
-//        pn53_status_code_t status = pn53_status_code((*response)[0]);
-//        if (status != PN53_STATUS_SUCCESS) {
-//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
-//        }
-//    }
-//    return res;
-//}
-//
-//int pn53_in_psl(pn53_dev_t* dev, uint8_t target_number, uint8_t baud_rate_initiator_to_target, uint8_t baud_rate_target_to_initiator) {
-//    uint8_t command[] = { (uint8_t)PN53_COMMAND_IN_PSL, target_number, baud_rate_initiator_to_target, baud_rate_target_to_initiator };
-//    uint8_t* response;
-//    ssize_t res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), &response, dev->command_timeout);
-//    if (res > 0) {
-//        pn53_status_code_t status = pn53_status_code(response[0]);
-//        if (status != PN53_STATUS_SUCCESS) {
-//            return -PN53_ERRNO_FROM_STATUS_CODE(status);
-//        }
-//    }
-//    return (int)res;
-//}
+
 
 ssize_t pn53_in_communicate_thru_data_exchange(pn53_dev_t* dev, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms, pn53_command_code_t code) {
     iolist_t _command = __IOLIST((uint8_t*)&code, 1, (iolist_t*)tx);
@@ -748,7 +710,7 @@ int nfcdev_connect_pn53(nfcdev_t* nfcdev, nfcdev_connection_id_t connection_id) 
     return 0;
 }
 
-extern ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config, nfc_target_t* targets, size_t max_targets);
+extern ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config, nfc_target_t* targets, nfcdev_connection_id_t* connection_ids, size_t max_targets);
 
 extern int nfcdev_send_pn53(nfcdev_t* nfcdev, const iolist_t* tx, nfcdev_nfio_flags_t flags);
 

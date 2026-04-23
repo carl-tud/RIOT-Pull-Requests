@@ -207,7 +207,7 @@ typedef struct __attribute__((packed)) {
         uint8_t start_byte;
     } __attribute__((packed));
 
-    uint8_t* higher_layer;
+    uint8_t higher_layer[];
 } nfc_b_attrib_response_t;
 
 #define NFC_B_ATTRIB_MAX_BUFFER_LENGTH_INDEX_UNKNOWN (0)

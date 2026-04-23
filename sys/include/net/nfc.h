@@ -55,8 +55,7 @@ typedef struct {
 
     union {
         struct {
-            size_t atr_length;
-            nfc_dep_activation_response_t* atr;
+            nfc_dep_activation_response_t atr;
         } nfc_dep;
     } higher_layer;
 

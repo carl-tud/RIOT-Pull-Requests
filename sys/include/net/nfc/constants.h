@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include "assert.h"
 #include "sys/types.h"
 
@@ -146,7 +147,7 @@ static inline uint16_t nfc_time_index_ms(nfc_time_index_t index) {
 /// ```c
 /// nfc_bitrate_set my_bitrates = NFC_BITRATE_106K | NFC_BITRATE_212K | NFC_BITRATE_424K;
 /// ```
-typedef uint16_t nfc_bitrate_set_t;
+typedef nfc_bitrate_t nfc_bitrate_set_t;
 
 typedef enum {
     /// Stick with current base bitrate (default)
@@ -160,6 +161,8 @@ typedef enum {
     /// In most cases (NFC-A or NFC-B with ISO-DEP), this will the the same as
     /// @ref NFC_BITRATE_CHOOSE_CURRENT.
     NFC_BITRATE_CHOOSE_SLOWEST = 2,
+
+    NFC_BITRATE_CHOOSE_FORCED = 3,
 } nfc_bitrate_selection_strategy_t;
 
 typedef struct {
@@ -167,27 +170,24 @@ typedef struct {
     nfc_bitrate_selection_strategy_t strategy;
 } nfc_bitrate_selector_t;
 
-static inline nfc_bitrate_t nfc_bitrate_select(
+typedef struct {
+    nfc_bitrate_selector_t downstream;
+    nfc_bitrate_selector_t upstream;
+} nfc_bidirectional_bitrate_selector_t;
+
+nfc_bitrate_t nfc_bitrate_select(
     nfc_bitrate_set_t set1,
     nfc_bitrate_set_t set2,
     nfc_bitrate_t current,
     nfc_bitrate_selection_strategy_t strategy
-) {
-    if (strategy == NFC_BITRATE_CHOOSE_CURRENT) {
-        return current;
-    }
-    nfc_bitrate_set_t gcd = set1 & set2;
-    if (gcd == 0) {
-        return 0;
-    }
-    if (strategy == NFC_BITRATE_CHOOSE_FASTEST) {
-        // Count leading zeroes, get fastest bit rate
-        return (nfc_bitrate_t)(1 << ((sizeof(nfc_bitrate_set_t) * 8) - 1 - __builtin_clz(gcd)));
-    } else {
-        // Count trailing zeroes, get slowest bit rate
-        return (nfc_bitrate_t)(1 << __builtin_ctz(gcd));
-    }
-}
+);
+
+void nfc_bitrate_select_bidirectional(
+    const nfc_bidirectional_bitrate_selector_t* selector,
+    nfc_bitrate_t* downstream, nfc_bitrate_t* upstream,
+    nfc_bitrate_set_t downstream_supported, nfc_bitrate_set_t upstream_supported,
+    bool require_symmetric
+);
 
 typedef enum {
     NFC_APPLICATION_TYPE_UNKNOWN = 0,

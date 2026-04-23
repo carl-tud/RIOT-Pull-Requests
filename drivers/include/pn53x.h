@@ -215,6 +215,12 @@ static inline pn53_logical_target_t* pn53_current_target(pn53_dev_t* dev) {
     return dev->nfc_targets[dev->nfc_current_connection].super.parameters.polling.bitrate == NFC_BITRATE_UNSET
         ? NULL : &dev->nfc_targets[dev->nfc_current_connection];
 }
+
+static inline pn53_logical_target_t* pn53_target(pn53_dev_t* dev, nfcdev_connection_id_t connection_id) {
+    assert(connection_id < ARRAY_SIZE(dev->nfc_targets));
+    return dev->nfc_targets[connection_id].super.parameters.polling.bitrate == NFC_BITRATE_UNSET
+        ? NULL : &dev->nfc_targets[connection_id];
+}
 #endif
 
 #ifndef DOXYGEN
@@ -465,16 +471,43 @@ static inline int pn53_write_registers(pn53_dev_t *dev, pn53_register_t* registe
     return pn53_write_registers_(dev, registers, count);
 }
 
+/// Use of the NAD information in case of initiator configuration (DEP and ISO/IEC14443-4 PCD)
+#define PN53_NFC_PARAMETER_INITIATOR_USE_NAD (1)
+
+/// Use of the DID information in case of initiator configuration (or CID in case of ISO/IEC14443-4 PCD configuration)
+#define PN53_NFC_PARAMETER_INITIATOR_USE_CID (1 << 1)
+
+/// Automatic generation of `RATS`
+///
+/// The `SAK`/Select Acknowledge byte is automatically checked for ISO/IEC14443-4 aka. T=CL support.
+/// If the target supports the T=CL protocol, a `RATS` command is sent to the target, activating the T=CL protocol
+///
+/// - Note: If ATS is sent by the target upon receiving an `RATS`, the target agrees to use the T=CL protocol aka. ISO/IEC14443 A - 4 protocol further on.
+/// - Note: To use automatic protocol management features (chaining, waiting time extension, error handling),
+/// use `InDataExchange` to send commands to the target.
+#define PN53_NFC_PARAMETER_INITIATOR_ISO_DEP_AUTO_HANDSHAKE (1 << 4)
+
+/// Automatic generation of the `ATR_RES` in target configuration
+#define PN53_NFC_PARAMETER_TARGET_NFC_DEP_AUTO_HANDSHAKE (1 << 2)
+
 int pn53_set_parameters(pn53_dev_t* dev, uint8_t parameters);
 
 static inline int pn53_enable_parameters(pn53_dev_t* dev, uint8_t parameters) {
-    dev->nfc_parameters |= parameters;
-    return pn53_set_parameters(dev, dev->nfc_parameters);
+    return pn53_set_parameters(dev, dev->nfc_parameters | parameters);
+}
+
+static inline int pn53_set_parameters_enablement(pn53_dev_t* dev, uint8_t parameters, bool enablement) {
+    uint8_t _new = dev->nfc_parameters;
+    if (enablement) {
+        _new |= parameters;
+    } else {
+        _new &= ~parameters;
+    }
+    return pn53_set_parameters(dev, _new);
 }
 
 static inline int pn53_disable_parameters(pn53_dev_t* dev, uint8_t parameters) {
-    dev->nfc_parameters &= ~parameters;
-    return pn53_set_parameters(dev, dev->nfc_parameters);
+    return pn53_set_parameters(dev, dev->nfc_parameters & ~parameters);
 }
 
 typedef enum __attribute__((packed)) {
@@ -1063,11 +1096,29 @@ ssize_t pn53_in_list_passive_targets_b(pn53_dev_t* dev,
 ssize_t pn53_in_list_passive_targets_f(pn53_dev_t* dev, uint8_t max_targets, nfc_bitrate_t bitrate,
     nfc_f_polling_command_payload_t* payload, nfc_target_t* targets, uint32_t timeout_ms);
 
+typedef union {
+    nfc_a_id_t* nfc_a_id;
+    nfc_f_polling_command_payload_t* nfc_f_command;
+    void* _any;
+} pn53_nfc_dep_arg_t;
+
+ssize_t pn53_in_jump_for_dep(pn53_dev_t* dev, nfc_field_mode_t mode, nfc_bitrate_t bitrate,
+    pn53_nfc_dep_arg_t arg, nfc_dep_id_t* nfc_dep_id_t, uint8_t* general_bytes, size_t general_length,
+    nfc_dep_activation_response_t** response
+);
+
+ssize_t pn53_in_atr(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_dep_id_t* nfc_dep_id, uint8_t* general_bytes, size_t general_length,
+    nfc_dep_activation_response_t** response
+);
+
+int pn53_in_psl(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_bitrate_t downstream, nfc_bitrate_t upstream);
+
 #ifndef DOXYGEN
 int pn53_deselect_reselect_release(pn53_dev_t *dev, uint8_t tg, pn53_command_code_t code);
 #endif
 
 static inline int pn53_deselect(pn53_dev_t *dev, nfcdev_connection_id_t connection_id) {
+    assert(connection_id < ARRAY_SIZE(dev->nfc_targets));
     return pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_DESELECT);
 }
 
@@ -1076,15 +1127,22 @@ static inline int pn53_deselect_all(pn53_dev_t *dev) {
 }
 
 static inline int pn53_reselect(pn53_dev_t *dev, nfcdev_connection_id_t connection_id) {
+    assert(connection_id < ARRAY_SIZE(dev->nfc_targets));
     return pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_SELECT);
 }
 
 static inline int pn53_release(pn53_dev_t *dev, nfcdev_connection_id_t connection_id) {
-    return pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_RELEASE);
+    assert(connection_id < ARRAY_SIZE(dev->nfc_targets));
+    int res = pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_RELEASE);
+    memset(&dev->nfc_targets[connection_id], 0, sizeof(pn53_logical_target_t));
+    return res;
 }
 
 static inline int pn53_release_all(pn53_dev_t *dev) {
-    return pn53_deselect_reselect_release(dev, 0, PN53_COMMAND_IN_RELEASE);
+    dev->nfc_current_connection = -1;
+    int res = pn53_deselect_reselect_release(dev, 0, PN53_COMMAND_IN_RELEASE);
+    memset(dev->nfc_targets, 0, sizeof(dev->nfc_targets));
+    return res;
 }
 
 #ifndef DOXYGEN
