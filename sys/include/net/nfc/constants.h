@@ -255,21 +255,23 @@ typedef enum __attribute__((packed)) {
     NFCDEV_INTERFACE_BITS = 1,
 
     /// Without length, CRC, headers, trailers etc, any protocol unmanaged
-    NFCDEV_INTERFACE_FRAME = 1 << 1,
+    NFCDEV_INTERFACE_FRAME = 2,
 
     /// With length, CRC, etc..., any protocol unmanaged
-    NFCDEV_INTERFACE_PACKET = 1 << 2,
+    NFCDEV_INTERFACE_PACKET = 3,
 
     /// ISO-DEP payloads, protocol managedd
-    NFCDEV_INTERFACE_ISO_DEP = 1 << 3,
+    NFCDEV_INTERFACE_ISO_DEP = 4,
 
     /// NFC-DEP payloads, protocol managed
-    NFCDEV_INTERFACE_NFC_DEP = 1 << 4,
+    NFCDEV_INTERFACE_NFC_DEP = 5,
 } nfcdev_interface_t;
 
 typedef union __attribute__((packed))  {
     struct {
-        nfcdev_interface_t interface : 5;
+        nfcdev_interface_t interface : 3;
+        bool reassemble : 1;
+        bool slice : 1;
         uint8_t trailing_bits : 3;
     };
     uint8_t _encoded;

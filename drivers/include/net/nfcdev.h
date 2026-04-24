@@ -196,6 +196,11 @@ typedef struct nfcdev {
 #define NFCDEV_POLLING_STOP (-60000)
 #define NFCDEV_POLLING_CONTINUE (0)
 
+#define NFCDEV_FLAG_REASSEMBLE (1 << 3)
+#define NFCDEV_FLAG_SLICE (1 << 4)
+
+#define _NFCDEV_MASK_INTERFACE (0b111)
+
 typedef struct nfcdev_ops {
     int (*init)(nfcdev_t* dev, const void* dev_config);
     int (*deinit)(nfcdev_t* dev);
@@ -333,23 +338,24 @@ static inline ssize_t __nfcdev_send__impl__(nfcdev_t* dev, const iolist_t* tx, n
     return dev->ops->send(dev, tx, flags);
 }
 
-#define nfcdev_send_chunks(dev, tx, _interface) \
+#define nfcdev_send_chunks(dev, tx, flags) \
     __nfcdev_send__impl__(dev, \
         tx, \
         ((nfcdev_nfio_flags_t) { \
-            .interface = __typecheck_interface(_interface), \
-            .trailing_bits = __to_frame_length_bits(tx_length) \
+            .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
+            .slice = (((flags) & NFCDEV_FLAG_SLICE) != 0) \
         }) \
     )
 
-#define nfcdev_send(dev, tx, tx_length, _interface) \
+#define nfcdev_send(dev, tx, tx_length, flags) \
     __nfcdev_send__impl__(dev, \
         (&(iolist_t){ \
             .iol_base = (void*)(tx), \
             .iol_len = (size_t)(__to_frame_length_bytes(tx_length)) \
         }), \
         ((nfcdev_nfio_flags_t) { \
-            .interface = __typecheck_interface(_interface), \
+            .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
+            .slice = (((flags) & NFCDEV_FLAG_SLICE) != 0), \
             .trailing_bits = __to_frame_length_bits(tx_length) \
         }) \
     )
@@ -367,10 +373,13 @@ static inline ssize_t __nfcdev_receive__impl(nfcdev_t* dev,
     return dev->ops->receive(dev, rx, capacity, rx_timeout_ms, flags);
 }
 
-#define nfcdev_receive(dev, rx, capacity, rx_timeout_ms, _interface) \
+#define nfcdev_receive(dev, rx, capacity, rx_timeout_ms, flags, ...) \
     __nfcdev_receive__impl(dev, \
         __as_buffer_ref(rx), capacity, rx_timeout_ms, \
-        ((nfcdev_nfio_flags_t) { .interface = __typecheck_interface(_interface) }) \
+        ((nfcdev_nfio_flags_t) { \
+            .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
+            .reassemble = (((flags) & NFCDEV_FLAG_REASSEMBLE) != 0) \
+        }) \
     )
 
 static inline ssize_t __nfcdev_transceive__impl__(nfcdev_t* dev,
@@ -389,14 +398,18 @@ static inline ssize_t __nfcdev_transceive__impl__(nfcdev_t* dev,
     return dev->ops->transceive(dev, tx, rx, capacity, rx_timeout_ms, flags);
 }
 
-#define nfcdev_transceive_chunks(dev, tx, rx, capacity, rx_timeout_ms, _interface) \
+#define nfcdev_transceive_chunks(dev, tx, rx, capacity, rx_timeout_ms, flags) \
     __nfcdev_transceive__impl__(dev, \
         tx, \
         __as_buffer_ref(rx), capacity, rx_timeout_ms, \
-        ((nfcdev_nfio_flags_t) { .interface = __typecheck_interface(_interface) }) \
+        ((nfcdev_nfio_flags_t) { \
+            .interface = (_flags) & _NFCDEV_MASK_INTERFACE, \
+            .reassemble = ((_flags) & NFCDEV_FLAG_REASSEMBLE != 0), \
+            .slice = ((_flags) & NFCDEV_FLAG_SLICE != 0) \
+        }) \
     )
 
-#define nfcdev_transceive(dev, tx, tx_length, rx, rx_capacity, rx_timeout_ms, _interface) \
+#define nfcdev_transceive(dev, tx, tx_length, rx, rx_capacity, rx_timeout_ms, flags) \
     __nfcdev_transceive__impl__(dev, \
         (&(iolist_t){ \
             .iol_base = (void*)(tx), \
@@ -404,7 +417,9 @@ static inline ssize_t __nfcdev_transceive__impl__(nfcdev_t* dev,
         }), \
         __as_buffer_ref(rx), rx_capacity, rx_timeout_ms, \
         ((nfcdev_nfio_flags_t) { \
-            .interface = __typecheck_interface(_interface), \
+            .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
+            .reassemble = (((flags) & NFCDEV_FLAG_REASSEMBLE) != 0), \
+            .slice = (((flags) & NFCDEV_FLAG_SLICE) != 0), \
             .trailing_bits = __to_frame_length_bits(tx_length) \
         }) \
     )
