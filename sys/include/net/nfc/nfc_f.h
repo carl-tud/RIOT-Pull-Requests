@@ -153,4 +153,6 @@ typedef struct {
     nfc_bitrate_set_t bitrates;
 } nfc_f_tag_t;
 
+void nfc_f_print_tag(const nfc_f_tag_t* tag);
+
 bool nfc_f_polling_filter_matches(const nfc_f_polling_filter_t* filter, const nfc_f_tag_t* tag);

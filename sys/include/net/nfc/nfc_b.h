@@ -146,9 +146,9 @@ typedef union __attribute__((packed)) {
 
         union {
             struct {
-                iso_dep_frame_size_t : 4;
-                uint8_t down_bitrate_divisor_power : 2;
-                uint8_t up_bitrate_divisor_power : 2;
+                iso_dep_frame_size_t frame_size : 4;
+                uint8_t down_bitrate_index : 2;
+                uint8_t up_bitrate_index : 2;
             } __attribute__((packed));
 
             uint8_t param2;
@@ -284,6 +284,9 @@ typedef struct {
     nfc_b_polling_response_payload_t polling_response;
     size_t attrib_response_length;
     nfc_b_attrib_response_t attrib;
+    uint8_t higher_layer[CONFIG_NFC_HIGHER_LAYER_ACTIVATION_MESSAGE_CAPACITY];
 } nfc_b_tag_t;
+
+void nfc_b_print_tag(const nfc_b_tag_t* tag);
 
 bool nfc_b_polling_filter_matches(const nfc_b_polling_filter_t* filter, const nfc_b_tag_t* tag);

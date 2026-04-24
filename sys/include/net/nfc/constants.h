@@ -6,6 +6,14 @@
 #include "assert.h"
 #include "sys/types.h"
 
+#if !defined(CONFIG_NFC_GENERAL_BYTES_CAPACITY) || defined(DOXYGEN)
+#  define CONFIG_NFC_GENERAL_BYTES_CAPACITY (8)
+#endif
+
+#if !defined(CONFIG_NFC_HIGHER_LAYER_ACTIVATION_MESSAGE_CAPACITY) || defined(DOXYGEN)
+#  define CONFIG_NFC_HIGHER_LAYER_ACTIVATION_MESSAGE_CAPACITY (8)
+#endif
+
 typedef enum __attribute__((packed)) {
     /// Initiator (reader/writer) generates field modulated by passive target (tag)
     ///
@@ -27,10 +35,14 @@ typedef enum __attribute__((packed)) {
     NFC_FIELD_MODE_PEERS,
 } nfc_field_mode_t;
 
+const char* nfc_string_from_field_mode(nfc_field_mode_t field_mode);
+
 typedef enum {
     NFC_ROLE_TARGET = 0,
     NFC_ROLE_INITIATOR,
 } nfc_role_t;
+
+const char* nfc_string_from_role(nfc_role_t role);
 
 typedef enum __attribute__((packed)) {
     NFC_TECHNOLOGY_A = 1 << 1,
@@ -149,6 +161,17 @@ static inline uint16_t nfc_time_index_ms(nfc_time_index_t index) {
 /// ```
 typedef nfc_bitrate_t nfc_bitrate_set_t;
 
+static inline nfc_bitrate_t nfc_bitrate_set_fastest(nfc_bitrate_set_t set) {
+    return (nfc_bitrate_t)(1U << ((sizeof(unsigned int) * 8) - 1 - __builtin_clz((unsigned int)set)));
+}
+
+static inline nfc_bitrate_t nfc_bitrate_set_slowest(nfc_bitrate_set_t set) {
+    return (nfc_bitrate_t)(1 << __builtin_ctz(set));
+}
+
+#define NFC_BITRATE_SET_UP_TO(bitrate) \
+    ((nfc_bitrate_set_t)(bitrate) | (nfc_bitrate_set_t)(bitrate - 1))
+
 typedef enum {
     /// Stick with current base bitrate (default)
     NFC_BITRATE_CHOOSE_CURRENT = 0,
@@ -174,6 +197,11 @@ typedef struct {
     nfc_bitrate_selector_t downstream;
     nfc_bitrate_selector_t upstream;
 } nfc_bidirectional_bitrate_selector_t;
+
+#define NFC_SELECT_FASTEST_UP_TO(bitrate) (nfc_bidirectional_bitrate_selector_t) { \
+    .downstream = { .set = NFC_BITRATE_SET_UP_TO(bitrate), .strategy = NFC_BITRATE_CHOOSE_FASTEST }, \
+    .upstream = { .set = NFC_BITRATE_SET_UP_TO(bitrate), .strategy = NFC_BITRATE_CHOOSE_FASTEST }, \
+}
 
 nfc_bitrate_t nfc_bitrate_select(
     nfc_bitrate_set_t set1,

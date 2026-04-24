@@ -59,6 +59,10 @@ int main(void) {
     puts("");
     puts("Polling");
 
+    static nfc_a_rats_payload_t rats = {
+
+    };
+
     static nfcdev_tag_polling_config_t polling_config_a = {
         .technology = NFC_TECHNOLOGY_A,
         .a = {
@@ -66,18 +70,20 @@ int main(void) {
             .frame_count = 0,
             .id = NULL,
             .filter = NULL,
-            .rats = NULL,
+            .rats = &rats,
         }
     };
 
+
+
     static nfcdev_tag_polling_config_t polling_config_b = {
         .technology = NFC_TECHNOLOGY_B,
-        .a = {
+        .b = {
             .frames = NULL,
             .frame_count = 0,
-            .id = NULL,
             .filter = NULL,
-            .rats = NULL,
+            .attrib_length = 0,
+            .attrib = NULL
         }
     };
 
@@ -100,7 +106,8 @@ int main(void) {
                 .guard_time = 0,
             },
             .tag = &polling_config_b,
-            .field_mode = NFC_FIELD_MODE_READER_WRITER_TAG
+            .field_mode = NFC_FIELD_MODE_READER_WRITER_TAG,
+            .higher_layer.bitrate_selector = NFC_SELECT_FASTEST_UP_TO(NFC_BITRATE_848K)
         }
     };
 
@@ -115,6 +122,13 @@ int main(void) {
         printf("poll: error %" PRIdSIZE " \n", res);
     }
     printf("poll: targets: %" PRIdSIZE " \n", res);
+    if (res > 0) {
+        for (size_t i = 0; i < (size_t)res; i += 1) {
+            printf("found ");
+            nfc_print_target(&targets[i]);
+            printf("\n");
+        }
+    }
 
 
     return 0;
