@@ -259,7 +259,6 @@ typedef struct __attribute__((packed)) {
     uint8_t historical[];
 } nfc_a_ats_t;
 
-
 #define NFC_A_ATS_MASK_T0_TA1_PRESENT   (0x10)
 #define NFC_A_ATS_MASK_T0_TB1_PRESENT   (0x20)
 #define NFC_A_ATS_MASK_T0_TC1_PRESENT   (0x40)
@@ -303,8 +302,8 @@ typedef union __attribute__((packed)) {
 
         union {
             struct {
-                uint8_t down_bitrate_divisor_power : 2;
-                uint8_t up_bitrate_divisor_power : 2;
+                uint8_t down_bitrate_index : 2;
+                uint8_t up_bitrate_index : 2;
                 uint8_t _rfu : 4;
             } __attribute__((packed)) pps1_info;
             uint8_t pps1;
@@ -390,7 +389,7 @@ typedef struct {
     };
 
     nfc_a_id_t* id;
-    nfc_a_rats_t* rats;
+    nfc_a_rats_payload_t* rats;
 
     nfc_a_polling_filter_t* filter;
 } nfc_a_tag_polling_config_t;
@@ -400,6 +399,9 @@ typedef struct {
     nfc_a_polling_response_t polling_response;
     nfc_a_select_response_t select_response;
     nfc_a_ats_t ats;
+    uint8_t historical[CONFIG_NFC_HIGHER_LAYER_ACTIVATION_MESSAGE_CAPACITY];
 } nfc_a_tag_t;
+
+void nfc_a_print_tag(const nfc_a_tag_t* tag);
 
 bool nfc_a_polling_filter_matches(const nfc_a_polling_filter_t* filter, const nfc_a_tag_t* tag);

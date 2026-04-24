@@ -80,7 +80,9 @@ ssize_t pn53_hci_transceive_command(pn53_connection_t* connection, iolist_t* com
     if (response && *response && **response != (code + 1)) {
         return -PN53_ERROR_CONNECTION_RESPONSE_MISMATCH;
     }
-    *response += 1;
+    if (response) {
+        *response += 1;
+    }
     return res - 1;
 }
 

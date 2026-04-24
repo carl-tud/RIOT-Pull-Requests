@@ -31,4 +31,6 @@ CFLAGS += -I$(CURDIR)
 CFLAGS += -Wno-unused-function
 CFLAGS += -Wno-unused-variable
 
+CFLAGS += -DTHREAD_STACKSIZE_MAIN=4000
+
 include $(RIOTBASE)/Makefile.include

@@ -93,6 +93,8 @@ typedef struct __attribute__((packed)) {
     uint8_t general_bytes[];
 } nfc_dep_activation_response_t;
 
+void nfc_dep_print_atr_response(const nfc_dep_activation_response_t* atr, size_t general_bytes_length);
+
 typedef struct __attribute__((packed)) {
     uint8_t device_id;
 

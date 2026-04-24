@@ -287,7 +287,13 @@ ssize_t pn53_parse_passive_target_a(uint8_t* response, size_t length, pn53_logic
         }
         PN53_DEBUG("InList.a", "ATS length=%" PRIuSIZE "\n", (size_t)ats->length);
 
-        memcpy(&tag->ats, ats, (size_t)ats->length);
+        if ((size_t)ats->length > (sizeof(tag->ats) + sizeof(tag->historical))) {
+            memcpy(&tag->ats, ats, (size_t)ats->length);
+        } else {
+            PN53_DEBUG("InList.a", "ATS long, need %" PRIuSIZE
+                       ", have %" PRIuSIZE "\n", (size_t)ats->length, sizeof(tag->ats) + sizeof(tag->historical));
+            return -ENOBUFS;
+        }
         target->managed_transport = PN53_MANAGED_TRANSPORT_ISO_DEP;
 
         response += ats->length;
@@ -343,8 +349,15 @@ ssize_t pn53_parse_passive_target_b(uint8_t* response, size_t length, pn53_logic
         }
 
         if (attrib_length > 0) {
-            tag->attrib_response_length = (size_t)attrib_length;
-            tag->attrib = *(nfc_b_attrib_response_t*)response;
+            if ((size_t)attrib_length > (sizeof(tag->attrib) + sizeof(tag->higher_layer))) {
+                tag->attrib_response_length = (size_t)attrib_length;
+                memcpy(&tag->attrib, response, (size_t)attrib_length);
+            } else {
+                PN53_DEBUG("InList.b", "ATTRIB long, need %" PRIuSIZE
+                           ", have %" PRIuSIZE "\n", (size_t)attrib_length,
+                           sizeof(tag->attrib) + sizeof(tag->higher_layer));
+                return -ENOBUFS;
+            }
 
             response += (size_t)attrib_length;
             length -= attrib_length;
@@ -592,10 +605,15 @@ static ssize_t nfcdev_poll_pn53_in_list(nfcdev_t* nfcdev, const nfcdev_polling_l
                  ((nfc_b_polling_command_t*)config->frames[frame_ix].frame)->payload.raw[1] == 0)
             );
 
-            uint8_t afi = frame_ix < 0 ? 0xff : ((nfc_b_polling_command_t*)config->frames[frame_ix].frame)->payload.application_family;
-            nfc_bitrate_t higher_layer_bitrate = loop->tag->b.attrib ?
-                iso_dep_bitrate_from_divisor_power(loop->tag->b.attrib->down_bitrate_divisor_power) :
-                NFC_BITRATE_106K;
+            uint8_t afi = frame_ix < 0 ? 0x00 : ((nfc_b_polling_command_t*)config->frames[frame_ix].frame)->payload.application_family;
+            printf("sel=%u\n", loop->higher_layer.bitrate_selector.downstream.set);
+            printf("sup=%u\n", NFC_BITRATE_106K | NFC_BITRATE_212K | NFC_BITRATE_424K | NFC_BITRATE_848K);
+            nfc_bitrate_t higher_layer_bitrate =
+                loop->higher_layer.bitrate_selector.downstream.set == 0 ? NFC_BITRATE_106K :
+                nfc_bitrate_select(
+                    loop->higher_layer.bitrate_selector.downstream.set,
+                    NFC_BITRATE_106K | NFC_BITRATE_212K | NFC_BITRATE_424K | NFC_BITRATE_848K,
+                    NFC_BITRATE_106K, loop->higher_layer.bitrate_selector.downstream.strategy);
 
             res = pn53_in_list_passive_targets_b(dev, max_targets,
                  higher_layer_bitrate, afi, loop->tag->b.method, NULL, timeout_ms);
@@ -680,6 +698,12 @@ static int _check_polling_loop(const nfcdev_polling_loop_t* loop) {
                             }
                         }
                     }
+                    if (config->rats) {
+                        if (config->rats->raw != 0x50) {
+                            PN53_DEBUG("poll", "can only sent builtin RATS with CID=0 and FSDI=5 (FSD=64)\n");
+                            return -ENOTSUP;
+                        }
+                    }
                     break;
                 }
                 case NFC_TECHNOLOGY_B: {
@@ -721,6 +745,21 @@ static int _check_polling_loop(const nfcdev_polling_loop_t* loop) {
                         }
                     }
 
+                    if (config->attrib && config->attrib_length > 0) {
+                        assert(config->attrib_length >= sizeof(nfc_b_attrib_command_payload_t));
+                        uint8_t bitrate_index = nfc_bitrate_to_index(NFC_BITRATE_106K);
+                        if (config->attrib->param1 != 0 ||
+                            config->attrib->down_bitrate_index != bitrate_index ||
+                            config->attrib->up_bitrate_index != bitrate_index) {
+                            PN53_DEBUG("poll", "builtin ATTRIB has param1=0 and up/down bitrate 106K\n");
+                            return -ENOTSUP;
+                        }
+                        if (config->attrib_length > sizeof(nfc_b_attrib_command_payload_t)) {
+                            PN53_DEBUG("poll", "ATTRIB higher layer data not supported\n");
+                            return -ENOTSUP;
+                        }
+                    }
+                    // TODO: check ATTRIB
                     break;
                 }
                 case NFC_TECHNOLOGY_F:
@@ -977,20 +1016,29 @@ ssize_t nfcdev_poll_pn53_in_loop_in_list_rw_tag(nfcdev_t* nfcdev, const nfcdev_p
 }
 
 ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config, nfc_target_t* targets, nfcdev_connection_id_t* connection_ids, size_t max_targets) {
+    assert(config);
+    assert(config->loop_count < 64);
     pn53_dev_t* dev = nfcdev->dev;
     ssize_t res = 0;
     size_t current_count = 0;
+    uint64_t skipped = 0;
     // First, check if we can even do what were supposed to do, so we don't look like
     // a goldfish in front of a blowdryer when we see an unsupported polling loop.
     // If we are supposed to error out, we need to check those before we actually do anything.
     for (size_t i = 0; i < config->loop_count; i += 1) {
         PN53_DEBUG("poll", "[loop %" PRIuSIZE "/%" PRIuSIZE "] checking\n", i+1, config->loop_count);
         if ((res = _check_polling_loop(&config->loops[i])) < 0) {
-            return res;
+            if (res == -ENOTSUP && IS_ACTIVE(CONFIG_NFCDEV_SKIP_UNSUPPORTED_POLLING_LOOPS)) {
+                PN53_DEBUG("poll", "[loop %" PRIuSIZE "/%" PRIuSIZE "] unsupported, will skip\n", i+1, config->loop_count);
+                skipped |= (1 << i);
+                continue;
+            } else {
+                return res;
+            }
         }
     }
 
-    // trylapswraps around as intended when config->repetitions is NFCDEV_POLLING_REPETIONS_INFINITE
+    // lap wraps around as intended when config->repetitions is NFCDEV_POLLING_REPETIONS_INFINITE
     // aka. SIZE_MAX.
     for (size_t lap = 0; lap <= config->repetitions; lap += 1) {
         PN53_DEBUG("poll", "[lap %" PRIuSIZE "/%" PRIuSIZE"] %" PRIuSIZE " tech loops\n",
@@ -1001,15 +1049,8 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
             assert(loop->higher_layer.nfc_dep.atr_length == 0 ||
                    loop->higher_layer.nfc_dep.atr_length >= sizeof(loop->higher_layer.nfc_dep.atr));
 
-            PN53_DEBUG("poll", "[lap %" PRIuSIZE "/%" PRIuSIZE "] ["
-                       "loop %" PRIuSIZE "/%" PRIuSIZE "] checking\n",
-                       lap+1, config->repetitions+1, i+1, config->loop_count);
-            if ((res = _check_polling_loop(loop)) < 0) {
-                if (res == -ENOTSUP && IS_ACTIVE(CONFIG_NFCDEV_SKIP_UNSUPPORTED_POLLING_LOOPS)) {
-                    PN53_DEBUG("poll", "[loop %" PRIuSIZE "/%" PRIuSIZE "] skipping\n", i+1, config->loop_count);
-                    continue;
-                }
-                return res;
+            if (skipped & (1 << i)) {
+                continue;
             }
 
             PN53_DEBUG("poll", "[lap %" PRIuSIZE "/%" PRIuSIZE "] ["
@@ -1144,11 +1185,12 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                     if (!target) {
                         continue;
                     }
-                    PN53_DEBUG("poll", "target %u has connection id %u (HCI Tg=%u)\n", found, i, i+1);
+                    PN53_DEBUG("poll", "target Tg=%u has connection id %u\n", i+1, i);
                     targets[found] = target->super;
                     if (connection_ids) {
                         connection_ids[found] = i;
                     }
+                    found += 1;
                 }
                 assert(found == (uint8_t)res);
                 return (ssize_t)found;
