@@ -56,7 +56,7 @@ typedef enum __attribute__((packed)) {
     ///
     /// - Note: Only historical bytes in the `ATS` can be customized.
     /// - Note: If ATS is sent by the target upon receiving an `RATS`, the target agrees to use the T=CL protocol aka. ISO/IEC14443 A - 4 protocol further on.
-    PN532_NFC_PARAMETER_TARGET_ISO_DEP_AUTO_FRAMING = 1 << 5,
+    PN532_NFC_PARAMETER_TARGET_ISO_DEP_AUTO_HANDSHAKE = 1 << 5,
 
     /// The PN532 does not send Preamble and Postamble
     PN532_NFC_PARAMETER_SUPPRESS_PREAMBLE_POSTAMBLE = 1 << 6,
@@ -67,7 +67,7 @@ typedef enum __attribute__((packed)) {
     PN532_NFC_PARAMETER_INITIATOR_USE_CID | \
     PN532_NFC_PARAMETER_INITIATOR_ISO_DEP_AUTO_HANDSHAKE | \
     PN532_NFC_PARAMETER_TARGET_NFC_DEP_AUTO_HANDSHAKE | \
-    PN532_NFC_PARAMETER_TARGET_ISO_DEP_AUTO_FRAMING | \
+    PN532_NFC_PARAMETER_TARGET_ISO_DEP_AUTO_HANDSHAKE | \
     PN532_NFC_PARAMETER_SUPPRESS_PREAMBLE_POSTAMBLE \
 )
 
@@ -120,3 +120,5 @@ typedef struct __attribute__((packed)) {
     pn53_technology_baudrate_t brty : 4;
     pn532_in_auto_poll_constraint_t constraint : 4;
 } pn532_in_auto_poll_type_t;
+
+extern const nfc_a_ats_t pn532_builtin_ats;

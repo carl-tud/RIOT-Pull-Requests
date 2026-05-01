@@ -55,11 +55,7 @@ typedef struct {
     } parameters;
 
     union {
-        struct {
-            size_t atr_length;
-            nfc_dep_activation_response_t atr;
-            uint8_t general[CONFIG_NFC_HIGHER_LAYER_ACTIVATION_MESSAGE_CAPACITY];
-        } nfc_dep;
+        nfc_dep_target_t nfc_dep;
     } higher_layer;
 
     nfc_field_mode_t field_mode : 1;

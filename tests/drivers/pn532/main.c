@@ -34,6 +34,19 @@ static void printbuff(uint8_t* buff, size_t length) {
     puts("");
 }
 
+#define NFC_F_PACKET_CODE_SEARCH_SERVICE_CODE_COMMAND (0x0C)
+#define NFC_F_PACKET_CODE_SEARCH_SERVICE_CODE_RESPONSE (0x0D)
+#define NFC_F_PACKET_CODE_GET_PLATFORM_INFO_COMMAND (0x3A)
+#define NFC_F_PACKET_CODE_GET_PLATFORM_INFO_RESPONSE (0x3B)
+
+static nfc_f_pdu_with_id_t felica_pdu = {
+    .header = {
+        .length = sizeof(nfc_f_pdu_with_id_t),
+        .code = 0x3B
+    },
+    .payload = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }
+};
+
 int main(void) {
     const pn532_connection_config_t config = {
         .bus = {
@@ -41,10 +54,10 @@ int main(void) {
             .spi = SPI_DEV(0),
         },
 #if IS_USED(MODULE_PN532_SPI)
-        .chip_select = GPIO_PIN(1, 8),
+            .chip_select = GPIO_PIN(1, 8),
 #endif
-        .reset = GPIO_PIN(0, 7),
-        .irq = GPIO_PIN(0, 26),
+            .reset = GPIO_PIN(0, 7),
+            .irq = GPIO_PIN(0, 26),
     };
     pn532_dev_t pn532 = {};
     nfcdev_t dev = {};
@@ -55,6 +68,163 @@ int main(void) {
         printf("init: error %" PRIdSIZE " \n", res);
         return (int)res;
     }
+
+    extern ssize_t pn53_temp_listen(pn53_dev_t* dev, const nfc_a_tag_t* a, const nfc_f_tag_t* f, const nfc_dep_target_t* peer, uint8_t** rx, nfc_target_t* target, uint32_t timeout_ms);
+
+    static nfc_a_tag_t tag_a = {
+        .id = {
+            .length = 4,
+            .uid = { 0x80, 0x42, 0x00, 0x66 }
+        },
+        .polling_response = {
+            .uid_size_indicator = 0,
+            .bit_frame_anticollision = 4,
+        },
+        .select_response = NFC_A_SELECT_RESPONSE_FLAG_NFC_DEP,
+    };
+    tag_a.ats = pn532_builtin_ats;
+
+    static nfc_f_tag_t tag_f = {
+        .id.raw = { 1,0xFE,3,4,5,6,7,8 },
+        .pmm.raw = {},
+        .system_code = NFC_F_SYSTEM_CODE_NDEF
+    };
+
+    static nfc_dep_target_t peer =  {
+        .length = sizeof(nfc_dep_id_t),
+        .atr = {
+            .id = { 1,2,3,4,5,6,7,8,9,10 }
+        }
+    };
+
+    static nfcdev_listening_config_t listening_config = {
+        .tag = {
+            .technologies = NFC_TECHNOLOGY_A | NFC_TECHNOLOGY_F,
+            .a = &tag_a,
+            .f = &tag_f
+        },
+        .higher_layer.nfc_dep = &peer
+    };
+
+    puts("");
+    puts("Listening");
+
+    nfc_target_t emulating = {};
+
+    uint8_t* command = NULL;
+    if ((res = nfcdev_listen(&dev, &listening_config, &emulating, PN53_TIMEOUT_NEVER)) < 0) {
+        printf("listen: error %" PRIdSIZE " \n", res);
+    } else {
+        puts("initialized as:");
+        nfc_print_target(&emulating);
+        puts("");
+
+        puts("receiving command");
+        if ((res = nfcdev_receive(&dev, &command, 0, 500, NFCDEV_INTERFACE_PACKET)) < 0) {
+            printf("listen: recv: error %" PRIdSIZE " \n", res);
+            return 1;
+        }
+
+        puts("got command:");
+        printbuff(command, (size_t)res);
+
+        nfc_dep_header_t* dep_header = (nfc_dep_header_t*)command;
+        if ((size_t)res >= sizeof(nfc_dep_header_t) &&
+            (size_t)res == (size_t)dep_header->length &&
+            dep_header->direction == NFC_DEP_CMD0_REQUEST &&
+            dep_header->code == NFC_DEP_PDU_CODE_ACTIVATION_REQUEST
+        ) {
+            puts("got NFC-DEP ATR_REQ");
+            static const nfc_dep_activation_response_t atr_res = {
+                .general_bytes = { 'R', 'I', 'O', 'T' }
+            };
+
+//            if ((res = pn53_tg_set_general_bytes(&pn532, &_general_bytes)) < 0) {
+//                printf("atr res: error %" PRIdSIZE " \n", res);
+//                return 1;
+//            }
+            if ((res = nfcdev_send(&dev, (uint8_t**)(void*)&atr_res, sizeof(atr_res) + 4, NFCDEV_INTERFACE_NFC_DEP)) < 0) {
+                printf("atr res: error %" PRIdSIZE " \n", res);
+                return 1;
+            }
+            puts("initialized as:");
+            nfc_print_target(&pn53_emulated_target(&pn532)->super);
+            puts("");
+        }
+
+        if (emulating.field_mode == NFC_FIELD_MODE_READER_WRITER_TAG) {
+            if (emulating.tag.technology == NFC_TECHNOLOGY_F) {
+                puts("Activated as NFC-F tag");
+
+                nfc_f_pdu_with_id_t* pdu = (nfc_f_pdu_with_id_t*)command;
+                if ((size_t)pdu->header.length != (size_t)res ||
+                    (size_t)pdu->header.length < sizeof(nfc_f_pdu_with_id_t)) {
+                    puts("invalid NFC-F PDU length");
+                    return 1;
+                }
+
+                printf("NFC-F command 0x%02x\n", pdu->header.code);
+                felica_pdu.id = pdu->id;
+                felica_pdu.header.code = pdu->header.code + 1;
+                felica_pdu.header.length = sizeof(nfc_f_pdu_with_id_t);
+
+                switch ((uint8_t)pdu->header.code) {
+                    case NFC_F_PACKET_CODE_SEARCH_SERVICE_CODE_COMMAND: {
+                        static const uint8_t payload[] = {
+                            2, 0x12, 0xFC, 0xAA, 0xBB
+                        };
+                        memcpy(felica_pdu.payload, payload, sizeof(payload));
+                        felica_pdu.header.length += sizeof(payload);
+                        break;
+                    }
+                    case NFC_F_PACKET_CODE_GET_PLATFORM_INFO_COMMAND: {
+                        static const uint8_t payload[] = {
+                            0x00, 0x00, 'R', 'I', 'O', 'T'
+                        };
+                        memcpy(felica_pdu.payload, payload, sizeof(payload));
+                        felica_pdu.header.length += sizeof(payload);
+                        break;
+                    }
+                    default:
+                        puts("unknown command");
+                        res = -1;
+                        break;
+                }
+
+                if (res >= 0) {
+                    iolist_t _response = {
+                        .iol_base = &felica_pdu,
+                        .iol_len = (size_t)felica_pdu.header.length,
+                    };
+                    if ((res = pn53_tg_response_to_initiator(&pn532, &_response)) < 0) {
+                        printf("response: error %" PRIdSIZE " \n", res);
+                    }
+                }
+
+                pn53_register_address_t regs[] = {
+                    PN53_REGISTER_TX_AUTO,
+                    PN53_REGISTER_TX_MODE,
+                    PN53_REGISTER_RX_MODE,
+                    PN53_REGISTER_FIFO_LEVEL,
+                    PN53_REGISTER_CONTROL,
+                    PN53_REGISTER_COMMON_IRQ,
+                };
+
+                uint8_t* regvals;
+                if ((res = pn53_read_registers(&pn532, regs, &regvals, ARRAY_SIZE(regs))) < 0) {
+                    return (int)res;
+                }
+            }
+        }
+    }
+
+//    while (true) {
+//        if (pn53_tg_get_initiator_command(&pn532, &command, 10) > 0) {
+//            puts("got command!");
+//        }
+//    }
+
+    return 0;
 
     puts("");
     puts("Polling");

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "errno.h"
 #include "macros/utils.h"
 #include "architecture.h"
 #include "net/nfc.h"
@@ -63,7 +64,7 @@ void nfc_bitrate_select_bidirectional(
         *upstream, upstream_strategy);
 }
 
-uint16_t iso_dep_frame_sizes[] = { 16,24,32,40,48,64,96,128,356,512,1024,2048,4096 };
+uint16_t iso_dep_frame_sizes[] = { 16,24,32,40,48,64,96,128,256,512,1024,2048,4096 };
 
 const nfc_a_polling_command_t wupa = NFC_A_FRAME_CODE_POLLING_ALL;
 const nfc_a_polling_frame_t nfc_a_polling_frame_all = {
@@ -76,6 +77,48 @@ const nfc_a_polling_frame_t nfc_a_polling_frame_only_awake = {
     .frame = &reqa,
     .length = { .bytes = 1, .trailing_bits = 7 }
 };
+
+ssize_t nfc_a_ats_parse(nfc_a_ats_t* dest, uint8_t** cursor, size_t length, size_t historical_capacity) {
+    if (length < 1) {
+        return -EBADMSG;
+    }
+    uint8_t ats_length = *(*cursor)++;
+    if (ats_length < 1 || ats_length > length) {
+        return -EBADMSG;
+    }
+    dest->length = ats_length;
+    if (ats_length == 1) {
+        return 1;
+    }
+    dest->t0 = *(*cursor)++;
+
+    uint8_t info_length = dest->ta_present + dest->tb_present + dest->tc_present;
+    if (ats_length < 2 + info_length) {
+        return -EBADMSG;
+    }
+    size_t historical_length = ats_length - 2 - info_length;
+    if (historical_length > historical_capacity) {
+        return -ENOBUFS;
+    }
+
+    if (dest->ta_present) {
+        dest->ta = *(*cursor)++;
+    }
+
+    if (dest->tb_present) {
+        dest->tb = *(*cursor)++;
+    }
+
+    if (dest->tc_present) {
+        dest->tc = *(*cursor)++;
+    }
+
+    if (historical_length > 0) {
+        memcpy(dest->historical, *cursor, historical_length);
+        *cursor += historical_length;
+    }
+    return (ssize_t)(size_t)(*cursor - (uint8_t*)dest);
+}
 
 bool nfc_a_polling_filter_matches(const nfc_a_polling_filter_t* filter, const nfc_a_tag_t* tag) {
     assert(tag);
@@ -240,12 +283,9 @@ void nfc_print_target(const nfc_target_t* target) {
         nfc_print_tag(&target->tag);
     }
 
-    if (target->higher_layer.nfc_dep.atr_length > 0) {
-        assert(target->higher_layer.nfc_dep.atr_length >= sizeof(nfc_dep_activation_response_t));
-        size_t general_bytes_length = target->higher_layer.nfc_dep.atr_length - sizeof(nfc_dep_activation_response_t);
-        assert(general_bytes_length <= sizeof(target->higher_layer.nfc_dep.general));
-        printf(" atr=");
-        nfc_dep_print_atr_response(&target->higher_layer.nfc_dep.atr, general_bytes_length);
+    if (target->higher_layer.nfc_dep.length > 0) {
+        printf(" atr_res=");
+        nfc_dep_print_target(&target->higher_layer.nfc_dep);
     }
     printf(">");
 }
@@ -275,32 +315,49 @@ void nfc_a_print_tag(const nfc_a_tag_t* tag) {
     printf("] atqa=%02x%02x sak=%02x",
            tag->polling_response.raw[0], tag->polling_response.raw[1], tag->select_response);
 
+
     if (tag->ats.length > 0) {
-        if (tag->ats.length >= sizeof(nfc_a_ats_t) &&
-            tag->ats.ta_present && tag->ats.tb_present && tag->ats.tc_present
-        ) {
-            printf(" bitrates={symmetric=%u ", tag->ats.ta_info.bitrates.same_constraint);
-            printf("down=[ ");
-            for (uint8_t i = 0; i < 3; i += 1) {
-                if (tag->ats.ta_info.bitrates.down & (1 << i)) {
-                    printf("%u ", nfc_bitrate_kbps(2 << i));
+        printf(" ats={");
+        if (tag->ats.length >= 1) {
+            printf(" fsc=(%u = %uB)",
+                   tag->ats.max_frame_size, iso_dep_frame_size(tag->ats.max_frame_size));
+
+            if (tag->ats.ta_present) {
+                printf(" bitrates={ symmetric=%u ", tag->ats.ta_info.bitrates.same_constraint);
+                printf("down+=[ ");
+                for (uint8_t i = 0; i < 3; i += 1) {
+                    if (tag->ats.ta_info.bitrates.down & (1 << i)) {
+                        printf("%u ", nfc_bitrate_kbps(2 << i));
+                    }
                 }
-            }
-            printf("] up=[ ");
-            for (uint8_t i = 0; i < 3; i += 1) {
-                if (tag->ats.ta_info.bitrates.up & (1 << i)) {
-                    printf("%u ", nfc_bitrate_kbps(2 << i));
+                printf("] up+=[ ");
+                for (uint8_t i = 0; i < 3; i += 1) {
+                    if (tag->ats.ta_info.bitrates.up & (1 << i)) {
+                        printf("%u ", nfc_bitrate_kbps(2 << i));
+                    }
                 }
+                printf("] }");
             }
-            printf("] nad?=%u cid?=%u",
-                   tag->ats.tc_info.nad_supported, tag->ats.tc_info.cid_supported);
+
+            if (tag->ats.tb_present) {
+                printf(" sfgt=(%u = %ums) fwt=(%u = %ums)",
+                       tag->ats.tb_info.startup_frame_guard_time,
+                       nfc_time_index_ms(tag->ats.tb_info.startup_frame_guard_time),
+                       tag->ats.tb_info.frame_waiting_time,
+                       nfc_time_index_ms(tag->ats.tb_info.frame_waiting_time));
+            }
+
+            if (tag->ats.tc_present) {
+                printf(" nad?=%u cid?=%u",
+                tag->ats.tc_info.nad_supported, tag->ats.tc_info.cid_supported);
+            }
         }
-        size_t historical_length = tag->ats.length - sizeof(nfc_a_ats_t);
+        size_t historical_length = nfc_a_ats_historical_length(&tag->ats);
         printf(" historical=[ ");
         for (size_t i = 0; i < historical_length; i += 1) {
             printf("%02x ", tag->historical[i]);
         }
-        printf("]");
+        printf("] }");
     }
     printf(">");
 }
@@ -387,27 +444,64 @@ void nfc_v_print_tag(const nfc_v_tag_t* tag) {
 }
 
 
-void nfc_dep_print_atr_response(const nfc_dep_activation_response_t* atr, size_t general_bytes_length) {
+void nfc_dep_print_atr_response(const nfc_dep_activation_response_t* atr, size_t length) {
     assert(atr);
-    printf("<id=[ ");
-    for (size_t i = 0; i < sizeof(atr->id); i += 1) {
-        printf("%02x ", atr->id[i]);
+    printf("<");
+    if (length >= sizeof(nfc_dep_id_t)) {
+        printf("id=[ ");
+        for (size_t i = 0; i < sizeof(atr->id); i += 1) {
+            printf("%02x ", atr->id[i]);
+        }
+        printf("]");
     }
-    printf("] did=%02x additional_br={ down=%02x up=%02x } response_wait_max=(%" PRIu16 " ms)"
-           " nad=%u general_bytes?=%u nfc_secure=%u payload_reduction=(%" PRIuSIZE " bytes)",
-           atr->device_id,
-           atr->supported_bitrates_rx,
-           atr->supported_bitrates_tx,
-           nfc_time_index_ms(atr->response_waiting_time),
-           atr->nad_used,
-           atr->general_bytes_available,
-           atr->nfc_secure_supported,
-           NFC_DEP_LENGTH_REDUCTION_IN_BYTES(atr->payload_reduction)
-    );
-    printf(" general_bytes=[ ");
-    for (size_t i = 0; i < general_bytes_length; i += 1) {
-        printf("%02x ", atr->general_bytes[i]);
+    if (length >= sizeof(nfc_dep_activation_response_t)) {
+        printf(" did=%02x additional_br={ down=%02x up=%02x } response_wait_max=(%" PRIu16 " ms)"
+               " nad=%u general_bytes?=%u nfc_secure=%u payload_reduction=(%" PRIuSIZE " bytes)",
+               atr->device_id,
+               atr->supported_bitrates_rx,
+               atr->supported_bitrates_tx,
+               nfc_time_index_ms(atr->response_waiting_time),
+               atr->nad_used,
+               atr->general_bytes_available,
+               atr->nfc_secure_supported,
+               NFC_DEP_LENGTH_REDUCTION_IN_BYTES(atr->payload_reduction)
+               );
+        printf(" general_bytes=[ ");
+        for (size_t i = 0; i < _nfc_dep_atr_response_general_length(length); i += 1) {
+            printf("%02x ", atr->general_bytes[i]);
+        }
+        printf("]");
     }
-    printf("]");
+    printf(">");
+}
+
+void nfc_dep_print_atr_request(const nfc_dep_activation_request_t* atr, size_t length) {
+    assert(atr);
+    printf("<");
+    if (length >= sizeof(nfc_dep_id_t)) {
+        printf("id=[ ");
+        for (size_t i = 0; i < sizeof(atr->id); i += 1) {
+            printf("%02x ", atr->id[i]);
+        }
+        printf("]");
+    }
+    if (length >= sizeof(nfc_dep_activation_request_t)) {
+        printf(" did=%02x additional_br={ down=%02x up=%02x } response_wait_max=(%" PRIu16 " ms)"
+               " nad=%u general_bytes?=%u nfc_secure=%u payload_reduction=(%" PRIuSIZE " bytes)",
+               atr->device_id,
+               atr->supported_bitrates_rx,
+               atr->supported_bitrates_tx,
+               0,
+               atr->nad_used,
+               atr->general_bytes_available,
+               atr->nfc_secure_supported,
+               NFC_DEP_LENGTH_REDUCTION_IN_BYTES(atr->payload_reduction)
+               );
+        printf(" general_bytes=[ ");
+        for (size_t i = 0; i < _nfc_dep_atr_response_general_length(length); i += 1) {
+            printf("%02x ", atr->general_bytes[i]);
+        }
+        printf("]");
+    }
     printf(">");
 }

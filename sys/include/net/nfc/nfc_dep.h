@@ -26,12 +26,12 @@ typedef enum __attribute__((packed)) {
     NFC_DEP_PDU_CODE_DESELECT_RESPONSE              = 0x09,
     NFC_DEP_PDU_CODE_RELEASE_REQUEST                = 0x0A,
     NFC_DEP_PDU_CODE_RELEASE_RESPONSE               = 0x0B
-} nfc_dep_instruction_t;
+} nfc_dep_code_t;
 
 typedef struct __attribute__((__packed__)) {
     uint8_t length;
     uint8_t direction;
-    nfc_dep_instruction_t instruction;
+    nfc_dep_code_t code;
 } nfc_dep_header_t;
 
 #define NFC_DEP_ADDITIONAL_BITRATE_SUPPORTED(capabilities, bitrate) \
@@ -68,6 +68,8 @@ typedef struct __attribute__((packed)) {
 
     uint8_t general_bytes[];
 } nfc_dep_activation_request_t;
+
+void nfc_dep_print_atr_request(const nfc_dep_activation_request_t* atr, size_t length);
 
 typedef struct __attribute__((packed)) {
     nfc_dep_id_t id;
@@ -241,3 +243,28 @@ typedef struct {
     nfc_bitrate_t baudrate;
     uint8_t id[10]; /* NFCID3t, 10 bytes */
 } nfc_dep_listener_config_t;
+
+typedef struct {
+    size_t length;
+    nfc_dep_activation_response_t atr;
+    uint8_t general[CONFIG_NFC_HIGHER_LAYER_ACTIVATION_MESSAGE_CAPACITY];
+} nfc_dep_target_t;
+
+static inline size_t _nfc_dep_atr_request_general_length(size_t length) {
+    return length <= sizeof(nfc_dep_activation_request_t) ? 0 :
+        length - sizeof(nfc_dep_activation_request_t);
+}
+
+static inline size_t _nfc_dep_atr_response_general_length(size_t length) {
+    return length <= sizeof(nfc_dep_activation_response_t) ? 0 :
+        length - sizeof(nfc_dep_activation_response_t);
+}
+
+static inline size_t nfc_dep_atr_response_general_length(const nfc_dep_target_t* target) {
+    return !target ? 0 : _nfc_dep_atr_response_general_length(target->length);
+}
+
+static inline void nfc_dep_print_target(const nfc_dep_target_t* target) {
+    assert(target);
+    nfc_dep_print_atr_response(&target->atr, target->length);
+}

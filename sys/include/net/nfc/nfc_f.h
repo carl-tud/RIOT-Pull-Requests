@@ -38,6 +38,7 @@ typedef enum __attribute__((packed)) {
 typedef uint16_t nfc_f_system_code_t;
 
 #define NFC_F_SYSTEM_CODE_ALL (0xffff)
+#define NFC_F_SYSTEM_CODE_NDEF htobe16(0x12FC)
 
 typedef struct __attribute__((packed)) {
     /// Packet length including this length byte, code, and data
@@ -77,12 +78,6 @@ typedef union __attribute__((packed)) {
 #define NFC_F_MAX_RESPONSE_TIME_MS(byte, n) \
     _NFC_F_MAX_RESPONSE_TIME_MS(byte & 0b111, (byte >> 3) & 0b111, byte >> 6, n)
 
-typedef struct __attribute__((packed)) {
-    nfc_f_packet_header_t super;
-    nfc_f_id_t id;
-    nfc_f_pmm_t pmm;
-} nfc_f_packet_header_response_t;
-
 typedef enum __attribute__((packed)) {
     NFC_F_POLLING_REQUEST_NOTHING           = 0,
     NFC_F_POLLING_REQUEST_SYSTEM_CODE       = 1,
@@ -99,7 +94,7 @@ static inline uint32_t nfc_f_polling_response_time_ms(uint8_t tsn) {
     return (242 /* 2.42 ms */ + (tsn+1) * 121 /* 1.21 ms */) / 100;
 }
 
-typedef uint8_t nfc_f_polling_response_payload_t[2];
+typedef uint8_t nfc_f_polling_response_addon_t[2];
 
 typedef struct __attribute__((packed)) {
     nfc_f_packet_header_t header;
@@ -110,24 +105,20 @@ typedef struct __attribute__((packed)) {
     nfc_f_packet_header_t header;
     nfc_f_id_t id;
     nfc_f_pmm_t pmm;
-    nfc_f_polling_response_payload_t payload;
+    nfc_f_polling_response_addon_t addon;
 } nfc_f_polling_response_t;
+
 
 typedef struct __attribute__((packed)) {
     nfc_f_packet_header_t header;
-    union __attribute__((packed)) {
-        nfc_f_polling_command_payload_t polling;
-    } payload;
-} nfc_f_command_t;
+    uint8_t payload[];
+} nfc_f_pdu_t;
 
 typedef struct __attribute__((packed)) {
     nfc_f_packet_header_t header;
     nfc_f_id_t id;
-    nfc_f_pmm_t pmm;
-    union __attribute__((packed)) {
-        nfc_f_polling_response_payload_t polling;
-    } payload;
-} nfc_f_response_t;
+    uint8_t payload[];
+} nfc_f_pdu_with_id_t;
 
 typedef struct {
     nfc_f_id_t* id;
@@ -146,7 +137,7 @@ typedef struct {
     nfc_f_polling_filter_t* filter;
 } nfc_f_tag_polling_config_t;
 
-typedef struct {
+typedef struct __attribute__((packed)) {
     nfc_f_id_t id;
     nfc_f_pmm_t pmm;
     nfc_f_system_code_t system_code;

@@ -620,7 +620,7 @@ static ssize_t _recv_packet(pn53_connection_t* connection, uint8_t** packet) {
 }
 
 static ssize_t _block_with_timeout(pn53_connection_t* connection, uint32_t timeout_ms) {
-    if (timeout_ms == 0) {
+    if (timeout_ms == PN53_TIMEOUT_NEVER) {
         mutex_lock(&connection->trap);
         return 0;
     } else {
@@ -694,7 +694,7 @@ ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
         timestamp = ztimer_now(ZTIMER_MSEC);
     }
 
-    PN53_DEBUG_TRANSPORT("[<-] ACK, waiting for response\n");
+    PN53_DEBUG_TRANSPORT("[<-] ACK\n");
 
     /* Wait until the response is available. */
     if ((res = _block_with_timeout(connection, timeout_ms)) < 0) {

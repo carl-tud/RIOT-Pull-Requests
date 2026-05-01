@@ -121,7 +121,7 @@ typedef struct {
 
     struct {
         struct {
-            size_t atr_length;
+            size_t length;
             nfc_dep_activation_request_t* atr;
         } nfc_dep;
 
@@ -140,25 +140,50 @@ typedef struct {
     size_t repetitions;
 } nfcdev_polling_config_t;
 
-#if !defined(CONFIG_NFCDEV_SKIP_UNSUPPORTED_POLLING_LOOPS) || defined(DOXYGEN)
-#  define CONFIG_NFCDEV_SKIP_UNSUPPORTED_POLLING_LOOPS 1
+#if !defined(CONFIG_NFCDEV_POLL_SKIP_UNSUPPORTED_LOOPS) || defined(DOXYGEN)
+#  define CONFIG_NFCDEV_POLL_SKIP_UNSUPPORTED_LOOPS 0
+#endif
+
+#if !defined(CONFIG_NFCDEV_LISTEN_IGNORE_UNSUPPORTED_CONFIG_ARGUMENTS) || defined(DOXYGEN)
+#  define CONFIG_NFCDEV_LISTEN_IGNORE_UNSUPPORTED_CONFIG_ARGUMENTS 1
+#endif
+
+#if !defined(CONFIG_NFCDEV_LISTEN_TAG_REQUIRE_ISO_DEP) || defined(DOXYGEN)
+#  define CONFIG_NFCDEV_LISTEN_TAG_REQUIRE_ISO_DEP 0
+#endif
+
+#if !defined(CONFIG_NFCDEV_LISTEN_TAG_REQUIRE_NFC_DEP) || defined(DOXYGEN)
+#  define CONFIG_NFCDEV_LISTEN_TAG_REQUIRE_NFC_DEP 0
+#endif
+
+#if IS_ACTIVE(CONFIG_NFCDEV_LISTEN_TAG_REQUIRE_NFC_DEP) && IS_ACTIVE(CONFIG_NFCDEV_LISTEN_TAG_REQUIRE_ISO_DEP)
+#  error Must not require both ISO-DEP and NFC-DEP in r/w-tag listen mode
 #endif
 
 typedef struct {
-    uint32_t duration;
-
-    uint32_t guard_time;
-} nfcdev_listening_timing_t;
-
-typedef struct {
-    nfcdev_listening_timing_t timing;
-
-    nfc_target_t* target;
-} nfcdev_listening_phase_t;
+    nfc_technology_t technologies;
+    nfc_a_tag_t* a;
+    nfc_b_tag_t* b;
+    nfc_f_tag_t* f;
+    nfc_v_tag_t* v;
+} nfcdev_tag_listening_config_t;
 
 typedef struct {
-    size_t loop_count;
-    nfcdev_listening_phase_t* phase;
+    nfcdev_tag_listening_config_t tag;
+
+    struct {
+        nfc_dep_target_t* nfc_dep;
+        nfc_bidirectional_bitrate_selector_t bitrate_selector;
+    } higher_layer;
+
+    struct {
+        struct {
+            nfc_bitrate_set_t a;
+            nfc_bitrate_set_t b;
+            nfc_bitrate_set_t f;
+        } tag;
+        nfc_bitrate_set_t peer;
+    } bitrates;
 } nfcdev_listening_config_t;
 
 // might need different strategies: should controller directly further connect if technology is is found,
@@ -198,13 +223,13 @@ typedef struct nfcdev {
 
 #define NFCDEV_FLAG_REASSEMBLE (1 << 3)
 #define NFCDEV_FLAG_SLICE (1 << 4)
+#define NFCDEV_FLAG_USE_NODE_ADDRESS (1 << 5)
+#define NFCDEV_FLAG_USE_DEVICE_ID (1 << 6)
 
 #define _NFCDEV_MASK_INTERFACE (0b111)
+#define _NFCDEV_MASK_TRANSPORT (~0b111)
 
 typedef struct nfcdev_ops {
-    int (*init)(nfcdev_t* dev, const void* dev_config);
-    int (*deinit)(nfcdev_t* dev);
-
     int (*configure_radio)(nfcdev_t* dev, const nfcdev_radio_config_t* tx, const nfcdev_radio_config_t* rx, nfc_role_t role);
 
     nfcdev_interface_t (*available_interfaces)(nfcdev_t* dev);
@@ -232,7 +257,7 @@ typedef struct nfcdev_ops {
     // --
 
     ssize_t (*poll) (nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, nfcdev_connection_id_t* connection_ids, size_t max_targets);
-    int (*listen) (nfcdev_t* dev, const nfcdev_listening_config_t* config);
+    int (*listen) (nfcdev_t* dev, const nfcdev_listening_config_t* config, nfc_target_t* target, uint32_t timeout_ms);
 } nfcdev_ops_t;
 
 static inline ssize_t nfcdev_poll(nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, nfcdev_connection_id_t* connection_ids, size_t max_targets) {
@@ -240,7 +265,15 @@ static inline ssize_t nfcdev_poll(nfcdev_t* dev, const nfcdev_polling_config_t* 
     assert(config);
     assert(max_targets > 0);
     assert(targets);
+    assert(dev->ops->poll);
     return dev->ops->poll(dev, config, targets, connection_ids, max_targets);
+}
+
+static inline int nfcdev_listen(nfcdev_t* dev, const nfcdev_listening_config_t* config, nfc_target_t* target, uint32_t timeout_ms) {
+    assert(dev);
+    assert(config);
+    assert(dev->ops->listen);
+    return dev->ops->listen(dev, config, target, timeout_ms);
 }
 
 static inline nfcdev_frame_length_t __frame_length_size(size_t length) {
@@ -343,6 +376,8 @@ static inline ssize_t __nfcdev_send__impl__(nfcdev_t* dev, const iolist_t* tx, n
         tx, \
         ((nfcdev_nfio_flags_t) { \
             .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
+            .use_nad = (((flags) & NFCDEV_FLAG_USE_NODE_ADDRESS) != 0), \
+            .use_did = (((flags) & NFCDEV_FLAG_USE_DEVICE_ID) != 0), \
             .slice = (((flags) & NFCDEV_FLAG_SLICE) != 0) \
         }) \
     )
@@ -356,6 +391,8 @@ static inline ssize_t __nfcdev_send__impl__(nfcdev_t* dev, const iolist_t* tx, n
         ((nfcdev_nfio_flags_t) { \
             .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
             .slice = (((flags) & NFCDEV_FLAG_SLICE) != 0), \
+            .use_nad = (((flags) & NFCDEV_FLAG_USE_NODE_ADDRESS) != 0), \
+            .use_did = (((flags) & NFCDEV_FLAG_USE_DEVICE_ID) != 0), \
             .trailing_bits = __to_frame_length_bits(tx_length) \
         }) \
     )
@@ -373,11 +410,13 @@ static inline ssize_t __nfcdev_receive__impl(nfcdev_t* dev,
     return dev->ops->receive(dev, rx, capacity, rx_timeout_ms, flags);
 }
 
-#define nfcdev_receive(dev, rx, capacity, rx_timeout_ms, flags, ...) \
+#define nfcdev_receive(dev, rx, capacity, rx_timeout_ms, flags) \
     __nfcdev_receive__impl(dev, \
         __as_buffer_ref(rx), capacity, rx_timeout_ms, \
         ((nfcdev_nfio_flags_t) { \
             .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
+            .use_nad = (((flags) & NFCDEV_FLAG_USE_NODE_ADDRESS) != 0), \
+            .use_did = (((flags) & NFCDEV_FLAG_USE_DEVICE_ID) != 0), \
             .reassemble = (((flags) & NFCDEV_FLAG_REASSEMBLE) != 0) \
         }) \
     )

@@ -21,6 +21,7 @@
 #include "net/nfc/nfc_error.h"
 
 #include "pn53x.h"
+#include "pn532.h"
 
 #define ENABLE_DEBUG CONFIG_PN53_DEBUG
 #include "debug.h"
@@ -522,6 +523,18 @@ static int _configure_rx_tx(pn53_dev_t* dev, uint8_t ops, uint8_t trailing_tx_bi
     return 0;
 }
 
+static void _shift_iolist(const iolist_t* chunks, iolist_t* offset_chunks, size_t offset) {
+    while (chunks->iol_len <= offset) {
+        offset -= chunks->iol_len;
+        chunks = chunks->iol_next;
+    }
+    if (chunks) {
+        *offset_chunks = *chunks;
+        offset_chunks->iol_len -= offset;
+        offset_chunks->iol_base += offset;
+    }
+}
+
 int nfcdev_send_pn53(nfcdev_t* nfcdev, const iolist_t* tx, nfcdev_nfio_flags_t flags) {
     pn53_dev_t* dev = nfcdev->dev;
     size_t _length = iolist_size(tx);
@@ -534,6 +547,64 @@ int nfcdev_send_pn53(nfcdev_t* nfcdev, const iolist_t* tx, nfcdev_nfio_flags_t f
     uint8_t trailing_bits;
     uint8_t tx_flags = 0;
     uint8_t manual_recv_flags = 0;
+
+    if (dev->nfc_role == NFC_ROLE_TARGET && dev->nfc_target_need_to_send_atr_res) {
+        PN53_DEBUG("nfio", "need to TgSetGeneralBytes, expecting ATR_RES\n");
+        iolist_t general_bytes = {};
+        size_t length = iolist_size(tx);
+
+        // This requirement is a bit lazy because we could manually remove prefix and CRC
+        // and then send.
+        switch (flags.interface) {
+            case NFCDEV_INTERFACE_PACKET:
+                assert(tx->iol_len >= sizeof(nfc_dep_header_t));
+                bool is_atr = length >= (sizeof(nfc_dep_header_t) + sizeof(nfc_dep_activation_response_t))
+                    && ((nfc_dep_header_t*)tx->iol_base)->direction == NFC_DEP_CMD0_RESPONSE
+                    && ((nfc_dep_header_t*)tx->iol_base)->code == NFC_DEP_PDU_CODE_ACTIVATION_REQUEST
+                    && (size_t)((nfc_dep_header_t*)tx->iol_base)->length == length;
+
+                if (!is_atr) {
+                    PN53_DEBUG("nfio", "need ATR_RES\n");
+                    return -EINVAL;
+                }
+                // Keep track of offset in iolist: in PACKET interface case, there's a header
+                // to remove
+                res = sizeof(nfc_dep_header_t);
+                __attribute__((fallthrough));
+
+            case NFCDEV_INTERFACE_NFC_DEP:
+                if (length < sizeof(nfc_dep_activation_response_t)) {
+                    PN53_DEBUG("nfio", "need ATR_RES\n");
+                    return -EINVAL;
+                }
+                // Keep track of offset in iolist: in PACKET/NFC_DEP interface cases,
+                // there's always the ATR_RES body to skip over to reach the general bytes.
+                // General bytes may end up being empty, but that's fine.
+                res += sizeof(nfc_dep_activation_response_t);
+                _shift_iolist(tx, &general_bytes, (size_t)res);
+                if ((res = pn53_tg_set_general_bytes(dev, &general_bytes)) < 0) {
+                    return res;
+                }
+                if ((res = iolist_to_buffer(&general_bytes,
+                    pn53_emulated_target(dev)->super.higher_layer.nfc_dep.general,
+                    sizeof(pn53_emulated_target(dev)->super.higher_layer.nfc_dep.general))) < 0) {
+                    PN53_DEBUG("listen", "general bytes buf too small\n");
+                }
+                pn53_emulated_target(dev)->super.higher_layer.nfc_dep.length =
+                    sizeof(nfc_dep_activation_response_t) + general_bytes.iol_len;
+
+                pn53_emulated_target(dev)->super.higher_layer.nfc_dep.atr.general_bytes_available =
+                    general_bytes.iol_len > 0;
+
+                return 0;
+            default:
+                // We actually need to run TgSetGeneralBytes, and if we don't, the controller
+                // loses track of NFC-DEP state (?)
+                PN53_DEBUG("nfio", "sending ATR_RES over other interface disables NFC-DEP interface\n");
+                pn53_emulated_target(dev)->managed_transport = PN53_MANAGED_TRANSPORT_NONE;
+                // Skip TgSetGeneralBytes.
+        }
+    }
 
     switch (flags.interface) {
         case NFCDEV_INTERFACE_BITS:
@@ -562,12 +633,11 @@ int nfcdev_send_pn53(nfcdev_t* nfcdev, const iolist_t* tx, nfcdev_nfio_flags_t f
                     PN53_DEBUG("nfio.dep", "use `transceive` instead as initiator for ISO-DEP/NFC-DEP\n");
                     return -ENOTSUP;
                 case NFC_ROLE_TARGET:
-                    pn53_logical_target_t* target = pn53_current_target(dev);
-                    if (!target && target->managed_transport != (pn53_managed_target_transport_t)flags.interface) {
-                        PN53_DEBUG("nfio.dep", "controller did not activate interface, consider nfcdev_hostnfc\n");
+                    if (pn53_emulated_target(dev)->managed_transport != (pn53_managed_target_transport_t)flags.interface) {
+                        PN53_DEBUG("nfio.dep", "controller did not activate interface\n");
                         return -ENOTCONN;
                     }
-                    return -1;
+                    return pn53_tg_set_data(dev, tx);
                 default:
                     assert(false);
                     UNREACHABLE();
@@ -578,12 +648,27 @@ int nfcdev_send_pn53(nfcdev_t* nfcdev, const iolist_t* tx, nfcdev_nfio_flags_t f
             return -ENOTSUP;
     }
 
+    if (flags.use_nad || flags.use_did) {
+        PN53_DEBUG("nfio", "DID/CID, NAD not supported on interface\n");
+        return -ENOTSUP;
+    }
+
     // TODO: target.
     // BITS, FRAME, PACKET interfaces
     if ((res = _configure_rx_tx(dev, PN53_INTERFACE_OP_TX,
         trailing_bits, tx_flags, 0, manual_recv_flags)) < 0) {
         PN53_DEBUG("nfio", "failed to configure radio\n");
         return res;
+    }
+
+    switch (dev->nfc_role) {
+        case NFC_ROLE_TARGET:
+            if (!IS_ACTIVE(CONFIG_PN53_TARGET_SEND_USING_FIFO)) {
+                PN53_DEBUG("nfio", "using TgResponseToInitiator\n");
+                return pn53_tg_response_to_initiator(dev, tx);
+            }
+            break;
+        default: break;
     }
 
     PN53_DEBUG("nfio", "using FIFO\n");
@@ -602,6 +687,61 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
     uint8_t rx_flags = 0;
     uint8_t manual_recv_flags = 0;
 
+    if (dev->nfc_role == NFC_ROLE_TARGET && dev->nfc_target_first_rx_length > 0) {
+        bool response_has_been_sent = (dev->model == PN53_MODEL_PN532
+            && dev->nfc_parameters & PN532_NFC_PARAMETER_TARGET_ISO_DEP_AUTO_HANDSHAKE
+            && pn53_emulated_target(dev)->managed_transport == PN53_MANAGED_TRANSPORT_ISO_DEP)
+            || (dev->nfc_parameters & PN53_NFC_PARAMETER_TARGET_NFC_DEP_AUTO_HANDSHAKE
+                && pn53_emulated_target(dev)->managed_transport == PN53_MANAGED_TRANSPORT_NFC_DEP);
+        // If the ATS or ATR_RES has been automatically sent, we do not want to
+        // to let the application use `receive` a command because that'd imply
+        // it could also `send` a respone -- a response that has, in fact, already been
+        // sent by the controller -- namely the automatic ATS or ATR_RES.
+        // In that case, the application can use this special ability of PN53s (or PN532)
+        // to retain and retrieve the request that elicited the automatic response
+        // by calling pn53_listen_get_rats() or pn53_listen_get_atr_request().
+        if (!response_has_been_sent) {
+            PN53_DEBUG("nfio", "returning retained 1st cmd\n");
+            res = dev->nfc_target_first_rx_length;
+            uint8_t* command = dev->nfc_target_first_rx;
+            // This is either a proprietary command (or ATR_REQ if auto ATR_RES is disabled)
+            // So ISO-DEP cannot be managed, otherwise this would RATS that came out of
+            // TgInitAsTarget
+            assert(dev->nfc_emulated_transport != PN53_MANAGED_TRANSPORT_ISO_DEP);
+            // And NFC-DEP can only be managed if the command was an ATR_REQ
+            nfc_dep_activation_request_t* _atr;
+            assert(dev->nfc_emulated_transport == PN53_MANAGED_TRANSPORT_NFC_DEP
+                   || pn53_listen_get_atr_request(dev, &_atr) <= 0);
+
+            switch (flags.interface) {
+                case NFCDEV_INTERFACE_PACKET: break;
+                case NFCDEV_INTERFACE_NFC_DEP:
+                    if ((res = pn53_listen_get_atr_request(dev, (nfc_dep_activation_request_t**)&command)) <= 0) {
+                        PN53_DEBUG("nfio", "cannot use NFC_DEP interface on 1st cmd, not ATR_REQ\n");
+                        return -ENOMSG;
+                    }
+                    break;
+                default:
+                    PN53_DEBUG("nfio", "cannot use interface on 1st cmd\n");
+                    return -EINVAL;
+            }
+            dev->nfc_target_first_rx = NULL;
+            dev->nfc_target_first_rx_length = 0;
+
+            if (rx) {
+                if (*rx && capacity > 0) {
+                    if (capacity < (size_t)res) {
+                        return -ENOBUFS;
+                    }
+                    memcpy(*rx, command, (size_t)res);
+                } else {
+                    *rx = command;
+                }
+            }
+            return res;
+        }
+    }
+
     switch (flags.interface) {
         case NFCDEV_INTERFACE_BITS:
             manual_recv_flags = PN53_REGISTER_MANUAL_RECEIVER_FLAG_TX_RX_MANUAL_PARITY;
@@ -618,15 +758,26 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
         case NFCDEV_INTERFACE_NFC_DEP:
             switch (dev->nfc_role) {
                 case NFC_ROLE_INITIATOR:
-                    PN53_DEBUG("nfio.dep", "use `transceive` instead as initiator for ISO-DEP/NFC-DEP\n");
+                    PN53_DEBUG("nfio.dep", "use `transceive` as initiator for ISO-DEP/NFC-DEP\n");
                     return -ENOTSUP;
                 case NFC_ROLE_TARGET:
-                    pn53_logical_target_t* target = pn53_current_target(dev);
-                    if (!target && target->managed_transport != (pn53_managed_target_transport_t)flags.interface) {
-                        PN53_DEBUG("nfio.dep", "controller did not activate interface, consider nfcdev_hostnfc\n");
+                    if (pn53_emulated_target(dev)->managed_transport != (pn53_managed_target_transport_t)flags.interface) {
+                        PN53_DEBUG("nfio.dep", "controller did not activate interface\n");
                         return -ENOTCONN;
                     }
-                    return -1;
+                    uint8_t* command = NULL;
+                    res = pn53_tg_get_data(dev, &command, rx_timeout_ms);
+                    if (res > 0 && rx) {
+                        if (*rx && capacity > 0) {
+                            if (capacity < (size_t)res) {
+                                return -ENOBUFS;
+                            }
+                            memcpy(*rx, command, (size_t)res);
+                        } else {
+                            *rx = command;
+                        }
+                    }
+                    return res;
                 default:
                     assert(false);
                     UNREACHABLE();
@@ -637,12 +788,42 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
             return -ENOTSUP;
     }
 
-    // TODO: target.
+    if (flags.use_nad || flags.use_did) {
+        PN53_DEBUG("nfio", "DID/CID, NAD not supported on interface\n");
+        return -ENOTSUP;
+    }
+
     // BITS, FRAME, PACKET interfaces
     if ((res = _configure_rx_tx(dev, PN53_INTERFACE_OP_RX,
-        -1, 0, rx_flags, manual_recv_flags)) < 0) {
+                                -1, 0, rx_flags, manual_recv_flags)) < 0) {
         PN53_DEBUG("nfio", "failed to configure radio\n");
         return res;
+    }
+
+    switch (dev->nfc_role) {
+        case NFC_ROLE_TARGET:
+            if (pn53_emulated_target(dev)->managed_transport == PN53_MANAGED_TRANSPORT_ISO_DEP) {
+                PN53_DEBUG("nfio", "can only use ISO_DEP interface, managed by controller\n");
+                return -ENOTSUP;
+            }
+            if (!IS_ACTIVE(CONFIG_PN53_TARGET_RECEIVE_USING_FIFO)) {
+                PN53_DEBUG("nfio", "using TgGetInitiatorCommand\n");
+                uint8_t* command = NULL;
+                res = pn53_tg_get_initiator_command(dev, &command, rx_timeout_ms);
+                if (res > 0 && rx) {
+                    if (*rx && capacity > 0) {
+                        if (capacity < (size_t)res) {
+                            return -ENOBUFS;
+                        }
+                        memcpy(*rx, command, (size_t)res);
+                    } else {
+                        *rx = command;
+                    }
+                }
+                return res;
+            }
+            break;
+        default: break;
     }
 
     PN53_DEBUG("nfio", "using FIFO\n");
@@ -671,6 +852,7 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
 ) {
     pn53_dev_t* dev = nfcdev->dev;
     assert(tx);
+    assert(!flags.reassemble || (rx && capacity > 0));
     size_t _length = iolist_size(tx);
     PN53_DEBUG("nfio", "[***] transceiving %" PRIuSIZE " bytes (%u trailing bits)\n",
                _length, flags.trailing_bits ? flags.trailing_bits : 8);
@@ -717,11 +899,49 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                         PN53_DEBUG("nfio.dep", "controller did not activate interface, consider nfcdev_hostnfc\n");
                         return -ENOTCONN;
                     }
-                    return pn53_in_data_exchange(dev, tx, rx, rx_timeout_ms);
+
+                    uint8_t params = dev->nfc_parameters;
+                    pn53_bitfield_set(&params, PN53_NFC_PARAMETER_INITIATOR_USE_CID, flags.use_did);
+                    pn53_bitfield_set(&params, PN53_NFC_PARAMETER_INITIATOR_USE_NAD, flags.use_nad);
+                    if (params != dev->nfc_parameters) {
+                        PN53_DEBUG("nfio", "need to set params for CID/DID/NAD\n");
+                        if ((res = pn53_set_parameters(dev, params)) < 0) {
+                            return res;
+                        }
+                    }
+
+                    if (flags.slice) {
+                        return 0;
+//                        size_t max_payload = pn53_max_exchange_payload_length(dev);
+//                        uint8_t* slice = (uint8_t*)&dev->connection.backing + PN35_FRAME_HEADER_NORMAL_COMMAND;
+//                        const iolist_t* chunk = tx;
+//                        size_t to_be_sent = iolist_size(tx);
+//                        while (to_be_sent > 0) {
+//                            size_t avail = max_payload;
+//                            while (chunk && to_be_sent > 0 && avail > 0) {
+//                                size_t portion = MIN(chunk->iol_len, avail);
+//                                memcpy(slice, chunk->iol_base, <#size_t n#>)
+//
+//                                slice += portion;
+//                                avail -= portion;
+//                                to_be_sent -= portion;
+//                            }
+//
+//                            ssize_t res = pn53_in_data_exchange(dev, pn53_current_connection_id(dev), &status, &slice, rx, rx_timeout_ms);
+//                            if (res < 0) {
+//                                return res;
+//                            }
+//                        }
+
+                    } else {
+                        return pn53_in_data_exchange(dev, pn53_current_connection_id(dev), NULL, tx, rx, rx_timeout_ms);
+                    }
                 }
                 case NFC_ROLE_TARGET:
-                    PN53_DEBUG("nfio.dep", "todo\n");
-                    return -1;
+                    if ((res = nfcdev_send_pn53(nfcdev, tx, flags)) < 0) {
+                        return res;
+                    }
+                    return nfcdev_receive_pn53(nfcdev, rx, capacity, rx_timeout_ms, flags);
                 default:
                     assert(false);
                     UNREACHABLE();
@@ -730,6 +950,11 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
         default:
             PN53_DEBUG("nfio", "interface not supported\n");
             return -ENOTSUP;
+    }
+
+    if (flags.use_nad || flags.use_did) {
+        PN53_DEBUG("nfio", "DID/CID, NAD not supported on interface\n");
+        return -ENOTSUP;
     }
 
     // BITS, FRAME, PACKET interfaces
@@ -807,8 +1032,10 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                 return res;
             }
         case NFC_ROLE_TARGET:
-            PN53_DEBUG("nfio.frame", "target todo\n");
-            return -1;
+            if ((res = nfcdev_send_pn53(nfcdev, tx, flags)) < 0) {
+                return res;
+            }
+            return nfcdev_receive_pn53(nfcdev, rx, capacity, rx_timeout_ms, flags);
         default:
             assert(false);
             UNREACHABLE();
