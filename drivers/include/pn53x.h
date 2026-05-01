@@ -137,6 +137,13 @@ static_assert(PN35_FRAME_HEADER_EXTENDED + 2 == PN53_FRAME_OVERHEAD_MAX);
 #  define CONFIG_PN53_INITIATOR_TRANSCEIVE_USING_FIFO 0
 #endif
 
+#if !defined(CONFIG_PN53_TARGET_SEND_USING_FIFO) || defined(DOXYGEN)
+#  define CONFIG_PN53_TARGET_SEND_USING_FIFO 0
+#endif
+
+#if !defined(CONFIG_PN53_TARGET_RECEIVE_USING_FIFO) || defined(DOXYGEN)
+#  define CONFIG_PN53_TARGET_RECEIVE_USING_FIFO 0
+#endif
 
 typedef enum {
     PN53_MODEL_PN531,
@@ -207,20 +214,71 @@ typedef struct {
     uint8_t tx_mode;
     uint8_t rx_mode;
     uint8_t manual_receiver;
+    uint8_t* nfc_target_first_rx;
+    size_t nfc_target_first_rx_length;
+    bool nfc_target_need_to_send_atr_res;
 } pn53_dev_t;
 
+static inline ssize_t pn53_listen_get_rats(pn53_dev_t* dev, nfc_a_rats_payload_t** rats) {
+    if (dev->nfc_role == NFC_ROLE_TARGET
+        && dev->nfc_target_first_rx
+        && dev->nfc_target_first_rx_length == sizeof(nfc_a_rats_t)
+        && ((nfc_a_rats_t*)dev->nfc_target_first_rx)->code == NFC_A_FRAME_CODE_RATS
+    ) {
+        *rats = &(((nfc_a_rats_t*)dev->nfc_target_first_rx)->payload);
+        return sizeof(nfc_a_rats_payload_t);
+    } else {
+        return -ENOENT;
+    }
+}
+
+static inline ssize_t pn53_listen_get_atr_request(pn53_dev_t* dev, nfc_dep_activation_request_t** atr) {
+    if (dev->nfc_role == NFC_ROLE_TARGET
+        && dev->nfc_target_first_rx
+        && dev->nfc_target_first_rx_length >= (sizeof(nfc_dep_header_t) + sizeof(nfc_dep_activation_request_t))
+        && ((nfc_dep_request_t*)dev->nfc_target_first_rx)->header.direction == NFC_DEP_CMD0_REQUEST
+        && ((nfc_dep_request_t*)dev->nfc_target_first_rx)->header.code == NFC_DEP_PDU_CODE_ACTIVATION_REQUEST
+        && (size_t)((nfc_dep_request_t*)dev->nfc_target_first_rx)->header.length == dev->nfc_target_first_rx_length
+    ) {
+        *atr = &(((nfc_dep_request_t*)dev->nfc_target_first_rx)->payload.activation);
+        return dev->nfc_target_first_rx_length - sizeof(nfc_dep_header_t);
+    } else {
+        return -ENOENT;
+    }
+}
+
+static inline size_t pn53_max_command_payload_length(pn53_dev_t* dev) {
+    return dev->connection.max_packet_length - 2 /* TFI, command/response code */;
+}
+
+static inline size_t pn53_max_exchange_payload_length(pn53_dev_t* dev) {
+    return pn53_max_command_payload_length(dev) - 1 /* Tg/status */;
+}
+
 #ifndef DOXYGEN
+static inline pn53_logical_target_t* pn53_emulated_target(pn53_dev_t* dev) {
+    assert(dev->nfc_role == NFC_ROLE_TARGET);
+    return &dev->nfc_targets[0];
+}
+
 static inline pn53_logical_target_t* pn53_current_target(pn53_dev_t* dev) {
+    assert(dev->nfc_role == NFC_ROLE_INITATOR);
     assert(dev->nfc_current_connection < ARRAY_SIZE(dev->nfc_targets));
     return dev->nfc_targets[dev->nfc_current_connection].super.parameters.polling.bitrate == NFC_BITRATE_UNSET
         ? NULL : &dev->nfc_targets[dev->nfc_current_connection];
 }
 
+static inline nfcdev_connection_id_t pn53_current_connection_id(pn53_dev_t* dev) {
+    return dev->nfc_current_connection;
+}
+
 static inline pn53_logical_target_t* pn53_target(pn53_dev_t* dev, nfcdev_connection_id_t connection_id) {
+    assert(dev->nfc_role == NFC_ROLE_INITATOR);
     assert(connection_id < ARRAY_SIZE(dev->nfc_targets));
     return dev->nfc_targets[connection_id].super.parameters.polling.bitrate == NFC_BITRATE_UNSET
         ? NULL : &dev->nfc_targets[connection_id];
 }
+
 #endif
 
 #ifndef DOXYGEN
@@ -247,12 +305,12 @@ typedef enum {
 ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
                             uint8_t** response, uint32_t timeout_ms);
 
-ssize_t pn53_hci_transceive_command(pn53_connection_t* connection, iolist_t* command,
+ssize_t pn53_hci_transceive_command(pn53_dev_t* connection, iolist_t* command,
                                     uint8_t** response, uint32_t timeout_ms);
 
-static inline ssize_t pn53_hci_transceive_command2(pn53_connection_t* connection, uint8_t* command, size_t length, uint8_t** response, uint32_t timeout_ms) {
+static inline ssize_t pn53_hci_transceive_command2(pn53_dev_t* dev, uint8_t* command, size_t length, uint8_t** response, uint32_t timeout_ms) {
     iolist_t iolist = { .iol_base = (void*)command, .iol_len = length };
-    return pn53_hci_transceive_command(connection, &iolist, response, timeout_ms);
+    return pn53_hci_transceive_command(dev, &iolist, response, timeout_ms);
 }
 
 int pn53_hci_init(pn53_connection_t* connection);
@@ -282,11 +340,14 @@ typedef enum __attribute__((packed)) {
     PN53_COMMAND_IN_JUMP_FOR_DEP                = 0x56,
     PN53_COMMAND_RF_REGULATION_TEST             = 0x58,
     PN53_COMMAND_IN_AUTO_POLL                   = 0x60,
-    PN53_COMMAND_TG_GET_DATA                    = 0x86,
-    PN53_COMMAND_TG_GET_INITIATOR_COMMAND       = 0x88,
-    PN53_COMMAND_TG_GET_TARGET_STATUS           = 0x8A,
     PN53_COMMAND_TG_INIT_AS_TARGET              = 0x8C,
+    PN53_COMMAND_TG_SET_GENERAL_BYTES           = 0x92,
+    PN53_COMMAND_TG_GET_DATA                    = 0x86,
     PN53_COMMAND_TG_SET_DATA                    = 0x8E,
+    PN53_COMMAND_TG_SET_META_DATA               = 0x94,
+    PN53_COMMAND_TG_GET_INITIATOR_COMMAND       = 0x88,
+    PN53_COMMAND_TG_RESPONSE_TO_INITIATOR       = 0x90,
+    PN53_COMMAND_TG_GET_TARGET_STATUS           = 0x8A,
 } pn53_command_code_t;
 
 typedef struct __attribute__((packed)) {
@@ -442,12 +503,15 @@ typedef enum __attribute__((packed)) {
 #define PN53_ERRNO_IS_STATUS_CODE(_errno0) ((_errno0) > 53700 && (_errno0) < 53999)
 #define PN53_ERRNO_TO_STATUS_CODE(_errno0) (pn53_status_code_t)((_errno0) - 53700)
 
+#define PN53_STATUS_BYTE_FLAG_NAD (0x80)
+#define PN53_STATUS_BYTE_FLAG_MORE (0x40)
+
 static inline bool pn53_status_nad_present(uint8_t status) {
-    return (status & 0x80) != 0;
+    return (status & PN53_STATUS_BYTE_FLAG_NAD) != 0;
 }
 
 static inline bool pn53_status_more_information_available(uint8_t status) {
-    return (status & 0x40) != 0;
+    return (status & PN53_STATUS_BYTE_FLAG_MORE) != 0;
 }
 
 static inline pn53_status_code_t pn53_status_code(uint8_t status) {
@@ -1145,17 +1209,42 @@ static inline int pn53_release_all(pn53_dev_t *dev) {
     return res;
 }
 
-#ifndef DOXYGEN
-ssize_t pn53_in_communicate_thru_data_exchange(pn53_dev_t* dev, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms, pn53_command_code_t code);
-#endif
+ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms);
 
-static inline ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms) {
-    return pn53_in_communicate_thru_data_exchange(dev, tx, rx, timeout_ms, PN53_COMMAND_IN_COMMUNICATE_THRU);
-}
+ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, uint8_t* status, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms);
 
-static inline ssize_t pn53_in_data_exchange(pn53_dev_t* dev, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms) {
-    return pn53_in_communicate_thru_data_exchange(dev, tx, rx, timeout_ms, PN53_COMMAND_IN_DATA_EXCHANGE);
-}
+int pn53_tg_set_general_bytes(pn53_dev_t* dev, const iolist_t* general_bytes);
+
+ssize_t pn53_tg_get_data(pn53_dev_t* dev, uint8_t** rx, uint32_t timeout_ms);
+
+int pn53_tg_set_data(pn53_dev_t* dev, const iolist_t* tx);
+
+int pn53_tg_set_meta_data(pn53_dev_t* dev, const iolist_t* tx);
+
+ssize_t pn53_tg_get_initiator_command(pn53_dev_t* dev, uint8_t** rx, uint32_t timeout_ms);
+
+int pn53_tg_response_to_initiator(pn53_dev_t* dev, const iolist_t* tx);
+
+typedef enum __attribute__((packed)) {
+    PN53_TARGET_STATE_RELEASED = 0,
+    PN53_TARGET_STATE_ACTIVATED = 1,
+    PN53_TARGET_STATE_HALTED = 2,
+} pn53_target_state_t;
+
+typedef enum {
+    PN53_TARGET_TRANSPORT_NFC_DEP = 0,
+    PN53_TARGET_TRANSPORT_ISO_DEP = 1,
+} pn53_emulation_transport_t;
+
+typedef union __attribute__((packed)) {
+    struct {
+        pn53_target_state_t state : 7;
+        pn53_emulation_transport_t transport : 1;
+    };
+    uint8_t raw;
+} pn53_target_status_t;
+
+int pn53_tg_get_target_status(pn53_dev_t* dev, pn53_target_status_t* status, nfc_bitrate_t* down, nfc_bitrate_t* up);
 
 #define PN53_TIMEOUT_NEVER (0)
 

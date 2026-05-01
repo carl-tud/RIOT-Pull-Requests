@@ -96,11 +96,6 @@ typedef union __attribute__((packed)) {
         uint8_t proprietary : 4;
         uint8_t _rfu1 : 4;
     } __attribute__((packed));
-
-    struct {
-        uint8_t anticollision_info;
-        uint8_t platform_info;
-    } __attribute__((packed));
     
     uint8_t raw[2];
     uint16_t uint;
@@ -140,27 +135,27 @@ typedef struct __attribute__((packed)) {
 /// @name Select response
 /// @{
 
-#define NFC_A_SELECT_RESPONSE_MASK_UID_COMPLETE (0x04)
-#define NFC_A_SELECT_RESPONSE_MASK_ISO_DEP (0x20)
-#define NFC_A_SELECT_RESPONSE_MASK_NFC_DEP (0x40)
-#define NFC_A_SELECT_RESPONSE_MASK_T2T (0x60)
+#define NFC_A_SELECT_RESPONSE_FLAG_UID_INCOMPLETE (0x04)
+#define NFC_A_SELECT_RESPONSE_FLAG_ISO_DEP (0x20)
+#define NFC_A_SELECT_RESPONSE_FLAG_NFC_DEP (0x40)
+#define NFC_A_SELECT_RESPONSE_FLAG_T2T (0x60)
 
 typedef uint8_t nfc_a_select_response_t;
 
 static inline bool nfc_a_uid_complete(nfc_a_select_response_t sak) {
-    return (sak & NFC_A_SELECT_RESPONSE_MASK_UID_COMPLETE) != 0;
+    return (sak & NFC_A_SELECT_RESPONSE_FLAG_UID_INCOMPLETE) == 0;
 }
 
 static inline bool nfc_a_supports_iso_dep(nfc_a_select_response_t sak) {
-    return (sak & NFC_A_SELECT_RESPONSE_MASK_ISO_DEP) != 0;
+    return (sak & NFC_A_SELECT_RESPONSE_FLAG_ISO_DEP) != 0;
 }
 
 static inline bool nfc_a_supports_nfc_dep(nfc_a_select_response_t sak) {
-    return (sak & NFC_A_SELECT_RESPONSE_MASK_NFC_DEP) != 0;
+    return (sak & NFC_A_SELECT_RESPONSE_FLAG_NFC_DEP) != 0;
 }
 
 static inline bool nfc_a_supports_t2t(nfc_a_select_response_t sak) {
-    return (sak & NFC_A_SELECT_RESPONSE_MASK_T2T) != 0;
+    return (sak & NFC_A_SELECT_RESPONSE_FLAG_T2T) != 0;
 }
 
 /// @}
@@ -258,6 +253,13 @@ typedef struct __attribute__((packed)) {
 
     uint8_t historical[];
 } nfc_a_ats_t;
+
+static inline size_t nfc_a_ats_historical_length(const nfc_a_ats_t* ats) {
+    if (ats->length <= 1) { return 0; }
+    return ats->length - 2 - (ats->ta_present + ats->tb_present + ats->tc_present);
+}
+
+ssize_t nfc_a_ats_parse(nfc_a_ats_t* dest, uint8_t** cursor, size_t length, size_t historical_capacity);
 
 #define NFC_A_ATS_MASK_T0_TA1_PRESENT   (0x10)
 #define NFC_A_ATS_MASK_T0_TB1_PRESENT   (0x20)

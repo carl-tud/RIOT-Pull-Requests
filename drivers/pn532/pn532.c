@@ -34,7 +34,7 @@ ssize_t pn532_sam_configuration(pn532_dev_t* dev, pn532_sam_mode_t mode, uint8_t
         timeout,
         (uint8_t)use_irq
     };
-    return pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), NULL, dev->command_timeout);
+    return pn53_hci_transceive_command2(dev, command, sizeof(command), NULL, dev->command_timeout);
 }
 
 ssize_t pn532_set_uart_speed(pn532_dev_t* dev, pn53_uart_speed_t speed) {
@@ -43,7 +43,7 @@ ssize_t pn532_set_uart_speed(pn532_dev_t* dev, pn53_uart_speed_t speed) {
         (uint8_t)PN532_COMMAND_SET_SERIAL_BAUDRATE,
         (uint8_t)speed
     };
-    return pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), NULL, dev->command_timeout);
+    return pn53_hci_transceive_command2(dev, command, sizeof(command), NULL, dev->command_timeout);
 }
 
 int pn532_power_down(pn532_dev_t* dev, pn532_wakeup_sources_t wakeup_sources, bool generate_irq) {
@@ -58,7 +58,7 @@ int pn532_power_down(pn532_dev_t* dev, pn532_wakeup_sources_t wakeup_sources, bo
     };
     uint8_t* status;
     ssize_t res = pn53_hci_transceive_command2(
-        &dev->connection,
+        dev,
         command,
         (wakeup_sources & PN532_WAKEUP_SOURCE_RF) ? sizeof(command) : (sizeof(command) - 1),
         &status, dev->command_timeout
@@ -82,5 +82,5 @@ ssize_t pn532_in_auto_poll(pn53_dev_t* dev, uint8_t attempts, uint8_t interval_u
     uint8_t header[] = { (uint8_t)PN53_COMMAND_IN_AUTO_POLL, attempts, interval_units };
     iolist_t _types = { .iol_base = (void*)types, .iol_len = type_count };
     iolist_t _command = { .iol_base = header, .iol_len = sizeof(header), .iol_next = &_types };
-    return pn53_hci_transceive_command(&dev->connection, &_command, response, dev->command_timeout);
+    return pn53_hci_transceive_command(dev, &_command, response, dev->command_timeout);
 }

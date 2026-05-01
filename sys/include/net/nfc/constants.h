@@ -270,11 +270,13 @@ typedef enum __attribute__((packed)) {
 typedef union __attribute__((packed))  {
     struct {
         nfcdev_interface_t interface : 3;
-        bool reassemble : 1;
+        bool use_nad : 1;
+        bool use_did : 1;
         bool slice : 1;
+        bool reassemble : 1;
+        bool _rfu0 : 1;
         uint8_t trailing_bits : 3;
+        uint8_t _rfu : 5;
     };
-    uint8_t _encoded;
+    uint16_t _encoded;
 } nfcdev_nfio_flags_t;
-
-static_assert(sizeof(nfcdev_nfio_flags_t) == sizeof(uint8_t));

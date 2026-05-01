@@ -91,7 +91,7 @@ ssize_t pn53_in_jump_for_dep(pn53_dev_t* dev, nfc_field_mode_t mode, nfc_bitrate
     }
 
     uint8_t* _response = NULL;
-    ssize_t res = pn53_hci_transceive_command(&dev->connection, &_command, &_response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command(dev, &_command, &_response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*_response++);
         if (status != PN53_STATUS_SUCCESS) {
@@ -156,7 +156,7 @@ ssize_t pn53_in_atr(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_d
     }
 
     uint8_t* _response = NULL;
-    ssize_t res = pn53_hci_transceive_command(&dev->connection, &_command, &_response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command(dev, &_command, &_response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*_response++);
         if (status != PN53_STATUS_SUCCESS) {
@@ -188,7 +188,7 @@ int pn53_in_psl(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_bitra
         (uint8_t)nfc_bitrate_to_index(upstream)
     };
     uint8_t* _response;
-    ssize_t res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), &_response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command2(dev, command, sizeof(command), &_response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*_response);
         if (status != PN53_STATUS_SUCCESS) {
@@ -280,24 +280,12 @@ ssize_t pn53_parse_passive_target_a(uint8_t* response, size_t length, pn53_logic
 
     if (auto_rats_enabled && nfc_a_supports_iso_dep(tag->select_response) && length > 0) {
         nfc_a_ats_t* ats = (nfc_a_ats_t*)response;
-        if (length < (size_t)ats->length) {
-            PN53_DEBUG("InList.a", "ATS cut off, expected %" PRIuSIZE ", have %" PRIuSIZE "\n",
-                       (size_t)ats->length, length);
-            return -EBADMSG;
+        ssize_t parsed = nfc_a_ats_parse(&tag->ats, &response, length, sizeof(tag->historical));
+        if (parsed < 0) {
+            return parsed;
         }
-        PN53_DEBUG("InList.a", "ATS length=%" PRIuSIZE "\n", (size_t)ats->length);
-
-        if ((size_t)ats->length > (sizeof(tag->ats) + sizeof(tag->historical))) {
-            memcpy(&tag->ats, ats, (size_t)ats->length);
-        } else {
-            PN53_DEBUG("InList.a", "ATS long, need %" PRIuSIZE
-                       ", have %" PRIuSIZE "\n", (size_t)ats->length, sizeof(tag->ats) + sizeof(tag->historical));
-            return -ENOBUFS;
-        }
+        length -= parsed;
         target->managed_transport = PN53_MANAGED_TRANSPORT_ISO_DEP;
-
-        response += ats->length;
-        length -= ats->length;
     }
     return length;
 }
@@ -371,7 +359,7 @@ ssize_t pn53_parse_passive_target_f(uint8_t* response, size_t length, pn53_logic
     target->super.tag.technology = NFC_TECHNOLOGY_F;
     nfc_f_tag_t* tag = &target->super.tag.f;
 
-    if (length < (sizeof(nfc_f_polling_response_t) - sizeof(nfc_f_polling_response_payload_t))) {
+    if (length < (sizeof(nfc_f_polling_response_t) - sizeof(nfc_f_polling_response_addon_t))) {
         PN53_DEBUG("InList.f", "target header too short\n");
         return -EBADMSG;
     }
@@ -389,7 +377,7 @@ ssize_t pn53_parse_passive_target_f(uint8_t* response, size_t length, pn53_logic
 
     size_t expected = sizeof(nfc_f_polling_response_t);
     if (additional_request == NFC_F_POLLING_REQUEST_NOTHING) {
-        expected -= sizeof(nfc_f_polling_response_payload_t);
+        expected -= sizeof(nfc_f_polling_response_addon_t);
     }
 
     if (pol->header.length != expected) {
@@ -402,10 +390,10 @@ ssize_t pn53_parse_passive_target_f(uint8_t* response, size_t length, pn53_logic
 
     switch (*(nfc_f_polling_additional_request_t*)additional_request) {
         case NFC_F_POLLING_REQUEST_SYSTEM_CODE:
-            tag->system_code = byteorder_lebuftohs(pol->payload);
+            tag->system_code = byteorder_lebuftohs(pol->addon);
             break;
         case NFC_F_POLLING_REQUEST_BITRATES:
-            tag->bitrates = (nfc_bitrate_t)pol->payload[1] << 1;
+            tag->bitrates = (nfc_bitrate_t)pol->addon[1] << 1;
             break;
         default: break;
     }
@@ -453,7 +441,7 @@ ssize_t pn53_in_list_passive_targets_a(pn53_dev_t* dev, uint8_t max_targets, nfc
 
     dev->nfc_role = NFC_ROLE_INITIATOR;
     uint8_t* response;
-    if ((res = pn53_hci_transceive_command2(&dev->connection, command, length, &response, timeout_ms)) < 0) {
+    if ((res = pn53_hci_transceive_command2(dev, command, length, &response, timeout_ms)) < 0) {
         return res;
     }
     if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets,
@@ -509,7 +497,7 @@ ssize_t pn53_in_list_passive_targets_b(pn53_dev_t* dev, uint8_t max_targets, nfc
     dev->nfc_role = NFC_ROLE_INITIATOR;
     // Only append method if method argument != 0
     size_t length = sizeof(command) - ((method != 0) ? 0 : 1);
-    if ((res = pn53_hci_transceive_command2(&dev->connection, command, length, &response, timeout_ms)) < 0) {
+    if ((res = pn53_hci_transceive_command2(dev, command, length, &response, timeout_ms)) < 0) {
         return res;
     }
     if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets,
@@ -555,7 +543,7 @@ ssize_t pn53_in_list_passive_targets_f(pn53_dev_t* dev, uint8_t max_targets, nfc
 
     dev->nfc_role = NFC_ROLE_INITIATOR;
     // Only append method if method argument != 0
-    if ((res = pn53_hci_transceive_command2(&dev->connection, command, sizeof(command), &response, timeout_ms)) < 0) {
+    if ((res = pn53_hci_transceive_command2(dev, command, sizeof(command), &response, timeout_ms)) < 0) {
         return res;
     }
     if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets,
@@ -670,6 +658,10 @@ static bool _poll_config_a_contains(const nfc_a_tag_polling_config_t* config, co
 #define PN53_SKIP_POLLING_LOOP (1)
 
 static int _check_polling_loop(const nfcdev_polling_loop_t* loop) {
+    if (loop->higher_layer.nfc_dep.length > 0) {
+        assert(loop->higher_layer.nfc_dep.length >= sizeof(nfc_dep_activation_request_t));
+        assert(loop->higher_layer.nfc_dep.atr);
+    }
     switch (loop->field_mode) {
         case NFC_FIELD_MODE_READER_WRITER_TAG:
             switch (loop->tag->technology) {
@@ -1028,7 +1020,7 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
     for (size_t i = 0; i < config->loop_count; i += 1) {
         PN53_DEBUG("poll", "[loop %" PRIuSIZE "/%" PRIuSIZE "] checking\n", i+1, config->loop_count);
         if ((res = _check_polling_loop(&config->loops[i])) < 0) {
-            if (res == -ENOTSUP && IS_ACTIVE(CONFIG_NFCDEV_SKIP_UNSUPPORTED_POLLING_LOOPS)) {
+            if (res == -ENOTSUP && IS_ACTIVE(CONFIG_NFCDEV_POLL_SKIP_UNSUPPORTED_LOOPS)) {
                 PN53_DEBUG("poll", "[loop %" PRIuSIZE "/%" PRIuSIZE "] unsupported, will skip\n", i+1, config->loop_count);
                 skipped |= (1 << i);
                 continue;
@@ -1046,8 +1038,8 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
 
         for (size_t i = 0; i < config->loop_count; i += 1) {
             nfcdev_polling_loop_t* loop = &config->loops[i];
-            assert(loop->higher_layer.nfc_dep.atr_length == 0 ||
-                   loop->higher_layer.nfc_dep.atr_length >= sizeof(loop->higher_layer.nfc_dep.atr));
+            assert(loop->higher_layer.nfc_dep.length == 0 ||
+                   loop->higher_layer.nfc_dep.length >= sizeof(loop->higher_layer.nfc_dep.atr));
 
             if (skipped & (1 << i)) {
                 continue;
@@ -1074,6 +1066,10 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                 ztimer_sleep(ZTIMER_MSEC, loop->timing.guard_time);
             }
 
+
+
+            
+
             nfc_dep_activation_request_t* atr = loop->higher_layer.nfc_dep.atr;
             nfc_dep_activation_response_t* atr_res = NULL;
 
@@ -1083,7 +1079,7 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                         return res;
                     }
 
-                    if (res > 0 && loop->higher_layer.nfc_dep.atr_length > 0) {
+                    if (res > 0 && loop->higher_layer.nfc_dep.length > 0) {
                         ssize_t _res = 0;
                         for (nfcdev_connection_id_t i = 0; i < ARRAY_SIZE(dev->nfc_targets); i += 1) {
                             pn53_logical_target_t* target = pn53_target(dev, i);
@@ -1095,8 +1091,8 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
 
                             if ((res = pn53_in_atr(dev, i+1, atr ? &atr->id : NULL,
                                 atr ? atr->general_bytes : NULL,
-                                loop->higher_layer.nfc_dep.atr_length == 0 ? 0 :
-                                    loop->higher_layer.nfc_dep.atr_length - sizeof(nfc_dep_activation_request_t),
+                                loop->higher_layer.nfc_dep.length == 0 ? 0 :
+                                    loop->higher_layer.nfc_dep.length - sizeof(nfc_dep_activation_request_t),
                                 &atr_res
                             )) != 0) {
                                 return res;
@@ -1109,8 +1105,8 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                     if ((res = pn53_in_jump_for_dep(dev, NFC_FIELD_MODE_PEERS, loop->bitrate,
                         (pn53_nfc_dep_arg_t) {},
                         atr ? &atr->id : NULL, atr ? atr->general_bytes : NULL,
-                        loop->higher_layer.nfc_dep.atr_length == 0 ? 0 :
-                            loop->higher_layer.nfc_dep.atr_length - sizeof(nfc_dep_activation_request_t),
+                        loop->higher_layer.nfc_dep.length == 0 ? 0 :
+                            loop->higher_layer.nfc_dep.length - sizeof(nfc_dep_activation_request_t),
                         &atr_res
                     )) < 0) {
                         return res;
