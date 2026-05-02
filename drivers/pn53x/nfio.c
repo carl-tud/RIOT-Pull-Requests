@@ -683,7 +683,6 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
     PN53_DEBUG("nfio", "[***] receiving\n");
 
     ssize_t res = 0;
-    uint8_t* internal;
     uint8_t rx_flags = 0;
     uint8_t manual_recv_flags = 0;
 
@@ -707,10 +706,10 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
             // This is either a proprietary command (or ATR_REQ if auto ATR_RES is disabled)
             // So ISO-DEP cannot be managed, otherwise this would RATS that came out of
             // TgInitAsTarget
-            assert(dev->nfc_emulated_transport != PN53_MANAGED_TRANSPORT_ISO_DEP);
+            assert(pn53_emulated_target(dev)->managed_transport != PN53_MANAGED_TRANSPORT_ISO_DEP);
             // And NFC-DEP can only be managed if the command was an ATR_REQ
             nfc_dep_activation_request_t* _atr;
-            assert(dev->nfc_emulated_transport == PN53_MANAGED_TRANSPORT_NFC_DEP
+            assert(pn53_emulated_target(dev)->managed_transport == PN53_MANAGED_TRANSPORT_NFC_DEP
                    || pn53_listen_get_atr_request(dev, &_atr) <= 0);
 
             switch (flags.interface) {
@@ -851,9 +850,8 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
     uint32_t rx_timeout_ms, nfcdev_nfio_flags_t flags
 ) {
     pn53_dev_t* dev = nfcdev->dev;
-    assert(tx);
     assert(!flags.reassemble || (rx && capacity > 0));
-    size_t _length = iolist_size(tx);
+    size_t _length = tx ? iolist_size(tx) : 0;
     PN53_DEBUG("nfio", "[***] transceiving %" PRIuSIZE " bytes (%u trailing bits)\n",
                _length, flags.trailing_bits ? flags.trailing_bits : 8);
     assert(_length > 0);
@@ -927,19 +925,22 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
 //                                to_be_sent -= portion;
 //                            }
 //
-//                            ssize_t res = pn53_in_data_exchange(dev, pn53_current_connection_id(dev), &status, &slice, rx, rx_timeout_ms);
+//                            ssize_t res = pn53_in_data_exchange(dev, pn53_current_target_id(dev), &status, &slice, rx, rx_timeout_ms);
 //                            if (res < 0) {
 //                                return res;
 //                            }
 //                        }
 
                     } else {
-                        return pn53_in_data_exchange(dev, pn53_current_connection_id(dev), NULL, tx, rx, rx_timeout_ms);
+                        assert(tx);
+                        return pn53_in_data_exchange(dev, pn53_current_target_id(dev), NULL, tx, rx, rx_timeout_ms);
                     }
                 }
                 case NFC_ROLE_TARGET:
-                    if ((res = nfcdev_send_pn53(nfcdev, tx, flags)) < 0) {
-                        return res;
+                    if (tx) {
+                        if ((res = nfcdev_send_pn53(nfcdev, tx, flags)) < 0) {
+                            return res;
+                        }
                     }
                     return nfcdev_receive_pn53(nfcdev, rx, capacity, rx_timeout_ms, flags);
                 default:
@@ -965,6 +966,7 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
     }
     switch (dev->nfc_role) {
         case NFC_ROLE_INITIATOR:
+            assert(tx);
             if (IS_ACTIVE(CONFIG_PN53_INITIATOR_TRANSCEIVE_USING_FIFO)) {
                 PN53_DEBUG("nfio", "using FIFO\n");
                 if (capacity == 0 || !rx || !*rx) {
@@ -1032,8 +1034,10 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                 return res;
             }
         case NFC_ROLE_TARGET:
-            if ((res = nfcdev_send_pn53(nfcdev, tx, flags)) < 0) {
-                return res;
+            if (tx) {
+                if ((res = nfcdev_send_pn53(nfcdev, tx, flags)) < 0) {
+                    return res;
+                }
             }
             return nfcdev_receive_pn53(nfcdev, rx, capacity, rx_timeout_ms, flags);
         default:

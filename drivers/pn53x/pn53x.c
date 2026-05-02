@@ -561,13 +561,15 @@ ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const iolist_t* tx, uint8_t** 
     return res;
 }
 
-ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, uint8_t* status_byte, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms) {
+ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t id, uint8_t* status_byte, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms) {
     assert(dev->nfc_role == NFC_ROLE_TARGET);
-    assert(pn53_target(dev, connection_id));
     assert(!tx || iolist_size(tx) <= pn53_max_exchange_payload_length(dev)); /* 262 */
+    if (!pn53_target(dev, id)) {
+        return -ENOTCONN;
+    }
     uint8_t command[] = {
         (uint8_t)PN53_COMMAND_IN_COMMUNICATE_THRU,
-        (uint8_t)(connection_id + 1)
+        (uint8_t)id
     };
     if (status_byte) {
         command[1] |= ((*status_byte & PN53_STATUS_BYTE_FLAG_MORE) != 0) & 1;
@@ -600,30 +602,55 @@ int pn53_deselect_reselect_release(pn53_dev_t *dev, uint8_t tg, pn53_command_cod
     return (res < 0) ? (int)res : 0;
 }
 
-int nfcdev_connect_pn53(nfcdev_t* nfcdev, nfcdev_connection_id_t connection_id) {
+int nfcdev_connect_pn53(nfcdev_t* nfcdev, nfcdev_connection_id_t tg) {
     pn53_dev_t* dev = nfcdev->dev;
-    int res = 0;
-    if (connection_id > 1) {
-        return -ENOENT;
+    if (dev->nfc_role != NFC_ROLE_INITIATOR) {
+        return 0;
     }
-
-    if (!pn53_current_target(dev)) {
-        return -ENOENT;
-    }
-
-    if (dev->nfc_targets[(connection_id + 1) % 2].super.parameters.polling.bitrate != NFC_BITRATE_UNSET) {
-        // There is another target, need to select
-        if ((res = pn53_reselect(dev, connection_id)) < 0) {
-            return res;
+    if (tg == NFCDEV_CONNECTION_ID_CURRENT) {
+        if (!pn53_current_target_id(dev)) {
+            return -ENOTCONN;
         }
+        return 0;
     }
-    dev->nfc_current_connection = connection_id;
-    return 0;
+    if (!tg || !pn53_target(dev, tg)) {
+        PN53_DEBUG("connect", "Tg=%u unknown\n", tg);
+        return -ENOENT;
+    }
+    if (pn53_current_target_id(dev) == tg) {
+        PN53_DEBUG("connect", "Tg=%u is current\n", tg);
+        return 0;
+    }
+    PN53_DEBUG("connect", "Tg=%u\n", tg);
+    return pn53_reselect(dev, tg);
+}
+
+int nfcdev_disconnect_pn53(nfcdev_t* nfcdev, nfcdev_connection_id_t tg) {
+    pn53_dev_t* dev = nfcdev->dev;
+    if (dev->nfc_role != NFC_ROLE_INITIATOR) {
+        return 0;
+    }
+    if (tg == NFCDEV_CONNECTION_ID_CURRENT) {
+        if (!pn53_current_target_id(dev)) {
+            return -ENOTCONN;
+        }
+        tg = pn53_current_target_id(dev);
+    }
+    else if (tg == _NFCDEV_DISCONNECT_ALL) {
+        PN53_DEBUG("disconnect", "all Tg\n");
+        return pn53_deselect_all(dev);
+    }
+    if (!tg || !pn53_target(dev, tg)) {
+        PN53_DEBUG("disconnect", "Tg=%u unknown\n", tg);
+        return -ENOENT;
+    }
+    PN53_DEBUG("disconnect", "Tg=%u\n", tg);
+    return pn53_deselect(dev, tg);
 }
 
 int pn53_tg_set_general_bytes(pn53_dev_t* dev, const iolist_t* general_bytes) {
     assert(dev->nfc_role == NFC_ROLE_TARGET);
-    assert(dev->nfc_emulated_transport == PN53_MANAGED_TRANSPORT_NFC_DEP);
+    assert(pn53_emulated_target(dev)->managed_transport == PN53_MANAGED_TRANSPORT_NFC_DEP);
     assert(!general_bytes || iolist_size(general_bytes) <= 47);
 
     uint8_t code = (uint8_t)PN53_COMMAND_TG_SET_GENERAL_BYTES;
@@ -641,7 +668,7 @@ int pn53_tg_set_general_bytes(pn53_dev_t* dev, const iolist_t* general_bytes) {
 
 ssize_t pn53_tg_get_data(pn53_dev_t* dev, uint8_t** rx, uint32_t timeout_ms) {
     assert(dev->nfc_role == NFC_ROLE_TARGET);
-    assert(dev->nfc_emulated_transport != PN53_MANAGED_TRANSPORT_NONE);
+    assert(pn53_emulated_target(dev)->managed_transport != PN53_MANAGED_TRANSPORT_NONE);
 
     uint8_t code = (uint8_t)PN53_COMMAND_TG_GET_DATA;
     uint8_t* response = NULL;
@@ -661,7 +688,7 @@ ssize_t pn53_tg_get_data(pn53_dev_t* dev, uint8_t** rx, uint32_t timeout_ms) {
 
 int pn53_tg_set_data(pn53_dev_t* dev, const iolist_t* tx) {
     assert(dev->nfc_role == NFC_ROLE_TARGET);
-    assert(dev->nfc_emulated_transport != PN53_MANAGED_TRANSPORT_NONE);
+    assert(pn53_emulated_target(dev)->managed_transport != PN53_MANAGED_TRANSPORT_NONE);
     assert(!tx || iolist_size(tx) <= pn53_max_exchange_payload_length(dev)); /* 262 */
 
     uint8_t code = (uint8_t)PN53_COMMAND_TG_SET_DATA;
@@ -679,7 +706,7 @@ int pn53_tg_set_data(pn53_dev_t* dev, const iolist_t* tx) {
 
 int pn53_tg_set_meta_data(pn53_dev_t* dev, const iolist_t* tx) {
     assert(dev->nfc_role == NFC_ROLE_TARGET);
-    assert(dev->nfc_emulated_transport == PN53_MANAGED_TRANSPORT_NFC_DEP);
+    assert(pn53_emulated_target(dev)->managed_transport == PN53_MANAGED_TRANSPORT_NFC_DEP);
     assert(!tx || iolist_size(tx) <= pn53_max_exchange_payload_length(dev)); /* 262 */
 
     uint8_t code = (uint8_t)PN53_COMMAND_TG_SET_META_DATA;

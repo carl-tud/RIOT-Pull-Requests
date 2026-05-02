@@ -72,8 +72,6 @@ int main(void) {
         return (int)res;
     }
 
-    extern ssize_t pn53_temp_listen(pn53_dev_t* dev, const nfc_a_tag_t* a, const nfc_f_tag_t* f, const nfc_dep_target_t* peer, uint8_t** rx, nfc_target_t* target, uint32_t timeout_ms);
-
     static nfc_a_tag_t tag_a = {
         .id = {
             .length = 4,

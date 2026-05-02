@@ -148,14 +148,6 @@ static void _reverse(uint8_t* buffer, size_t length) {
     }
 }
 
-static uint8_t _reverse_byte(uint8_t byte) {
-    byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
-    byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
-    byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
-    return byte;
-}
-
-
 static ssize_t _frame_packet(iolist_t* prefix, iolist_t* packet, iolist_t* suffix, size_t max_packet_length) {
     assert(prefix);
     assert(prefix->iol_base);
@@ -542,6 +534,7 @@ static ssize_t _send_nack(pn53_connection_t* connection) {
 /* We never receive NACKs, so don't need _recv_nack. */
 
 static ssize_t _send_packet(pn53_connection_t* connection, iolist_t* packet) {
+    (void)_send_nack;
     assert(connection);
     if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI)) {
         PN53_DEBUG_HCI("[->] ");

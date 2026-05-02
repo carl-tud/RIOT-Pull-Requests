@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "modules.h"
+#include "errno.h"
 #include "iolist.h"
 #include "net/nfc.h"
 
@@ -117,12 +119,12 @@ typedef struct {
     /// Passive tag initialization config
     ///
     /// If @ref nfcdev_polling_loop_t::field_mode is NFC_FIELD_MODE_READER_WRITER_TAG
-    nfcdev_tag_polling_config_t* tag;
+    const nfcdev_tag_polling_config_t* tag;
 
     struct {
         struct {
             size_t length;
-            nfc_dep_activation_request_t* atr;
+            const nfc_dep_activation_request_t* atr;
         } nfc_dep;
 
         nfc_bidirectional_bitrate_selector_t bitrate_selector;
@@ -235,7 +237,7 @@ typedef struct nfcdev_ops {
     nfcdev_interface_t (*available_interfaces)(nfcdev_t* dev);
     int (*connect)(nfcdev_t* dev, nfcdev_connection_id_t connection_id);
     int (*disconnect)(nfcdev_t* dev, nfcdev_connection_id_t connection_id);
-    
+
     // nfcdev NFIO (Near Field Input/Output)
 
     int (*send)(
@@ -267,6 +269,25 @@ static inline ssize_t nfcdev_poll(nfcdev_t* dev, const nfcdev_polling_config_t* 
     assert(targets);
     assert(dev->ops->poll);
     return dev->ops->poll(dev, config, targets, connection_ids, max_targets);
+}
+
+#define NFCDEV_CONNECTION_ID_CURRENT (0)
+
+static inline int nfcdev_connect(nfcdev_t* dev, nfcdev_connection_id_t connection_id) {
+    assert(dev);
+    return dev->ops->connect ? dev->ops->connect(dev, connection_id) : -ENOTSUP;
+}
+
+static inline int nfcdev_disconnect(nfcdev_t* dev, nfcdev_connection_id_t connection_id) {
+    assert(dev);
+    return dev->ops->disconnect ? dev->ops->disconnect(dev, connection_id) : -ENOTSUP;
+}
+
+#define _NFCDEV_DISCONNECT_ALL (0xff)
+
+static inline int nfcdev_disconnect_all(nfcdev_t* dev) {
+    assert(dev);
+    return dev->ops->disconnect ? dev->ops->disconnect(dev, _NFCDEV_DISCONNECT_ALL) : -ENOTSUP;
 }
 
 static inline int nfcdev_listen(nfcdev_t* dev, const nfcdev_listening_config_t* config, nfc_target_t* target, uint32_t timeout_ms) {
