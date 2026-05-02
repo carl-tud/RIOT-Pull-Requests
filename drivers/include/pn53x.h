@@ -208,7 +208,7 @@ typedef struct {
     pn53_logical_target_t nfc_targets[2];
     uint32_t command_timeout;
     nfc_role_t nfc_role;
-    nfcdev_connection_id_t nfc_current_connection;
+    nfcdev_connection_id_t nfc_current_tg;
     uint8_t nfc_parameters;
     uint8_t bit_framing;
     uint8_t tx_mode;
@@ -258,27 +258,38 @@ static inline size_t pn53_max_exchange_payload_length(pn53_dev_t* dev) {
 #ifndef DOXYGEN
 static inline pn53_logical_target_t* pn53_emulated_target(pn53_dev_t* dev) {
     assert(dev->nfc_role == NFC_ROLE_TARGET);
+    assert(dev->nfc_current_tg == 0);
     return &dev->nfc_targets[0];
 }
 
 static inline pn53_logical_target_t* pn53_current_target(pn53_dev_t* dev) {
-    assert(dev->nfc_role == NFC_ROLE_INITATOR);
-    assert(dev->nfc_current_connection < ARRAY_SIZE(dev->nfc_targets));
-    return dev->nfc_targets[dev->nfc_current_connection].super.parameters.polling.bitrate == NFC_BITRATE_UNSET
-        ? NULL : &dev->nfc_targets[dev->nfc_current_connection];
+    assert(dev->nfc_role == NFC_ROLE_INITIATOR);
+    assert(dev->nfc_current_tg <= ARRAY_SIZE(dev->nfc_targets));
+    assert(!dev->nfc_current_tg || dev->nfc_targets[dev->nfc_current_tg - 1].super.parameters.polling.bitrate != NFC_BITRATE_UNSET);
+    return dev->nfc_current_tg ? &dev->nfc_targets[dev->nfc_current_tg - 1] : NULL;
 }
 
-static inline nfcdev_connection_id_t pn53_current_connection_id(pn53_dev_t* dev) {
-    return dev->nfc_current_connection;
+static inline nfcdev_connection_id_t pn53_current_target_id(pn53_dev_t* dev) {
+    return dev->nfc_current_tg;
 }
 
-static inline pn53_logical_target_t* pn53_target(pn53_dev_t* dev, nfcdev_connection_id_t connection_id) {
-    assert(dev->nfc_role == NFC_ROLE_INITATOR);
-    assert(connection_id < ARRAY_SIZE(dev->nfc_targets));
-    return dev->nfc_targets[connection_id].super.parameters.polling.bitrate == NFC_BITRATE_UNSET
-        ? NULL : &dev->nfc_targets[connection_id];
+static inline uint8_t pn53_target_count(pn53_dev_t* dev) {
+    assert(dev->nfc_current_tg <= ARRAY_SIZE(dev->nfc_targets));
+    uint8_t connections = 0;
+    for (uint8_t i = 0; i < ARRAY_SIZE(dev->nfc_targets); i += 1) {
+        connections += dev->nfc_targets[i].super.parameters.polling.bitrate != NFC_BITRATE_UNSET;
+    }
+    return connections;
 }
 
+static inline pn53_logical_target_t* pn53_target(pn53_dev_t* dev, nfcdev_connection_id_t tg) {
+    assert(dev->nfc_role == NFC_ROLE_INITIATOR);
+    assert(dev->nfc_current_tg <= ARRAY_SIZE(dev->nfc_targets));
+    assert(tg > 0);
+    return tg > ARRAY_SIZE(dev->nfc_targets) ||
+        dev->nfc_targets[tg - 1].super.parameters.polling.bitrate == NFC_BITRATE_UNSET
+            ? NULL : &dev->nfc_targets[(tg - 1)];
+}
 #endif
 
 #ifndef DOXYGEN
@@ -1167,11 +1178,11 @@ typedef union {
 } pn53_nfc_dep_arg_t;
 
 ssize_t pn53_in_jump_for_dep(pn53_dev_t* dev, nfc_field_mode_t mode, nfc_bitrate_t bitrate,
-    pn53_nfc_dep_arg_t arg, nfc_dep_id_t* nfc_dep_id_t, uint8_t* general_bytes, size_t general_length,
+    pn53_nfc_dep_arg_t arg, const nfc_dep_id_t* nfc_dep_id_t, const uint8_t* general_bytes, size_t general_length,
     nfc_dep_activation_response_t** response
 );
 
-ssize_t pn53_in_atr(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_dep_id_t* nfc_dep_id, uint8_t* general_bytes, size_t general_length,
+ssize_t pn53_in_atr(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, const nfc_dep_id_t* nfc_dep_id, const uint8_t* general_bytes, size_t general_length,
     nfc_dep_activation_response_t** response
 );
 
@@ -1181,30 +1192,40 @@ int pn53_in_psl(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_bitra
 int pn53_deselect_reselect_release(pn53_dev_t *dev, uint8_t tg, pn53_command_code_t code);
 #endif
 
-static inline int pn53_deselect(pn53_dev_t *dev, nfcdev_connection_id_t connection_id) {
-    assert(connection_id < ARRAY_SIZE(dev->nfc_targets));
-    return pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_DESELECT);
+static inline int pn53_reselect(pn53_dev_t *dev, nfcdev_connection_id_t id) {
+    assert(id > 0);
+    assert(id <= ARRAY_SIZE(dev->nfc_targets));
+    int res = pn53_deselect_reselect_release(dev, id, PN53_COMMAND_IN_SELECT);
+    dev->nfc_current_tg = id;
+    return res;
+}
+
+static inline int pn53_deselect(pn53_dev_t *dev, nfcdev_connection_id_t id) {
+    assert(id > 0);
+    assert(id <= ARRAY_SIZE(dev->nfc_targets));
+    int res = pn53_deselect_reselect_release(dev, id, PN53_COMMAND_IN_DESELECT);
+    dev->nfc_current_tg = 0;
+    return res;
 }
 
 static inline int pn53_deselect_all(pn53_dev_t *dev) {
-    return pn53_deselect_reselect_release(dev, 0, PN53_COMMAND_IN_DESELECT);
+    int res = pn53_deselect_reselect_release(dev, 0, PN53_COMMAND_IN_DESELECT);
+    dev->nfc_current_tg = 0;
+    return res;
 }
 
-static inline int pn53_reselect(pn53_dev_t *dev, nfcdev_connection_id_t connection_id) {
-    assert(connection_id < ARRAY_SIZE(dev->nfc_targets));
-    return pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_SELECT);
-}
-
-static inline int pn53_release(pn53_dev_t *dev, nfcdev_connection_id_t connection_id) {
-    assert(connection_id < ARRAY_SIZE(dev->nfc_targets));
-    int res = pn53_deselect_reselect_release(dev, connection_id + 1, PN53_COMMAND_IN_RELEASE);
-    memset(&dev->nfc_targets[connection_id], 0, sizeof(pn53_logical_target_t));
+static inline int pn53_release(pn53_dev_t *dev, nfcdev_connection_id_t id) {
+    assert(id > 0);
+    assert(id <= ARRAY_SIZE(dev->nfc_targets));
+    int res = pn53_deselect_reselect_release(dev, id, PN53_COMMAND_IN_RELEASE);
+    dev->nfc_current_tg = 0;
+    memset(&dev->nfc_targets[id - 1], 0, sizeof(*dev->nfc_targets));
     return res;
 }
 
 static inline int pn53_release_all(pn53_dev_t *dev) {
-    dev->nfc_current_connection = -1;
     int res = pn53_deselect_reselect_release(dev, 0, PN53_COMMAND_IN_RELEASE);
+    dev->nfc_current_tg = 0;
     memset(dev->nfc_targets, 0, sizeof(dev->nfc_targets));
     return res;
 }

@@ -49,7 +49,7 @@ static inline void __debug_hex(const uint8_t* buffer, size_t size) {
 })
 
 ssize_t pn53_in_jump_for_dep(pn53_dev_t* dev, nfc_field_mode_t mode, nfc_bitrate_t bitrate,
-    pn53_nfc_dep_arg_t arg, nfc_dep_id_t* nfc_dep_id, uint8_t* general_bytes, size_t general_length,
+    pn53_nfc_dep_arg_t arg, const nfc_dep_id_t* nfc_dep_id, const uint8_t* general_bytes, size_t general_length,
     nfc_dep_activation_response_t** response
 ) {
     assert(bitrate == NFC_BITRATE_106K || bitrate == NFC_BITRATE_212K || bitrate == NFC_BITRATE_424K);
@@ -121,18 +121,18 @@ ssize_t pn53_in_jump_for_dep(pn53_dev_t* dev, nfc_field_mode_t mode, nfc_bitrate
     return res;
 }
 
-ssize_t pn53_in_atr(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_dep_id_t* nfc_dep_id, uint8_t* general_bytes, size_t general_length,
+ssize_t pn53_in_atr(pn53_dev_t* dev, nfcdev_connection_id_t tg, const nfc_dep_id_t* nfc_dep_id, const uint8_t* general_bytes, size_t general_length,
     nfc_dep_activation_response_t** response
 ) {
     assert(general_length == 0 || general_bytes);
-    pn53_logical_target_t* target = pn53_target(dev, connection_id);
+    pn53_logical_target_t* target = pn53_target(dev, tg);
     if (!target) {
         return -ENOTCONN;
     }
 
     uint8_t command[] = {
         (uint8_t)PN53_COMMAND_IN_JUMP_FOR_DEP,
-        (uint8_t)(connection_id + 1),
+        (uint8_t)tg,
         0
     };
 
@@ -166,7 +166,7 @@ ssize_t pn53_in_atr(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_d
             PN53_DEBUG("InAtr", "missing Tg and ATR_RES\n");
             return -EBADMSG;
         }
-        PN53_DEBUG("InAtr", "activated NFC-DEP for Tg=%u in r/w+tag field mode\n", connection_id + 1);
+        PN53_DEBUG("InAtr", "activated NFC-DEP for Tg=%u in r/w+tag field mode\n", tg + 1);
         target->managed_transport = PN53_MANAGED_TRANSPORT_NFC_DEP;
         target->super.higher_layer.nfc_dep.atr = *(nfc_dep_activation_response_t*)_response;
         if (response) {
@@ -176,14 +176,14 @@ ssize_t pn53_in_atr(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_d
     return res;
 }
 
-int pn53_in_psl(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_bitrate_t downstream, nfc_bitrate_t upstream) {
-    pn53_logical_target_t* target = pn53_target(dev, connection_id);
+int pn53_in_psl(pn53_dev_t* dev, nfcdev_connection_id_t tg, nfc_bitrate_t downstream, nfc_bitrate_t upstream) {
+    pn53_logical_target_t* target = pn53_target(dev, tg);
     if (!target) {
         return -ENOTCONN;
     }
     uint8_t command[] = {
         (uint8_t)PN53_COMMAND_IN_PSL,
-        (uint8_t)(connection_id),
+        (uint8_t)(tg),
         (uint8_t)nfc_bitrate_to_index(downstream),
         (uint8_t)nfc_bitrate_to_index(upstream)
     };
@@ -194,6 +194,8 @@ int pn53_in_psl(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, nfc_bitra
         if (status != PN53_STATUS_SUCCESS) {
             return -PN53_ERRNO_FROM_STATUS_CODE(status);
         }
+        target->super.parameters.downstream.bitrate = downstream;
+        target->super.parameters.upstream.bitrate = upstream;
     }
     return 0;
 }
@@ -279,7 +281,6 @@ ssize_t pn53_parse_passive_target_a(uint8_t* response, size_t length, pn53_logic
     length -= tag->id.length;
 
     if (auto_rats_enabled && nfc_a_supports_iso_dep(tag->select_response) && length > 0) {
-        nfc_a_ats_t* ats = (nfc_a_ats_t*)response;
         ssize_t parsed = nfc_a_ats_parse(&tag->ats, &response, length, sizeof(tag->historical));
         if (parsed < 0) {
             return parsed;
@@ -584,7 +585,7 @@ static ssize_t nfcdev_poll_pn53_in_list(nfcdev_t* nfcdev, const nfcdev_polling_l
             }
             break;
         case NFC_TECHNOLOGY_B: {
-            nfc_b_tag_polling_config_t* config = &loop->tag->b;
+            const nfc_b_tag_polling_config_t* config = &loop->tag->b;
             assert(
                 (frame_ix < 0) ||
                 (frame_ix < (ssize_t)config->frame_count &&
@@ -631,13 +632,14 @@ static ssize_t nfcdev_poll_pn53_in_list(nfcdev_t* nfcdev, const nfcdev_polling_l
     }
 
     size_t found = 0;
-    for (nfcdev_connection_id_t i = 0; i < (uint8_t)res; i += 1) {
-        if (nfcdev_polling_filter_matches(loop->tag, &dev->nfc_targets[i].super.tag)) {
+    for (nfcdev_connection_id_t tg = 1; tg <= (uint8_t)res; tg += 1) {
+        assert(pn53_target(dev, tg));
+        if (nfcdev_polling_filter_matches(loop->tag, &pn53_target(dev, tg)->super.tag)) {
             found += 1;
         } else {
-            PN53_DEBUG("poll", "releasing non-matching target Tg=%u\n", i+1);
-            if ((res = pn53_release(dev, i)) < 0) {
-                PN53_DEBUG("poll", "failed to release target Tg=%u to matching tag filter\n", +1);
+            PN53_DEBUG("poll", "releasing non-matching target Tg=%u\n", tg);
+            if ((res = pn53_release(dev, tg)) < 0) {
+                PN53_DEBUG("poll", "failed to release target Tg=%u to matching tag filter\n", tg);
             }
         }
     }
@@ -680,7 +682,7 @@ static int _check_polling_loop(const nfcdev_polling_loop_t* loop) {
                         PN53_DEBUG("poll", "polling loop must contain REQA/WUPA\n");
                         return -ENOTSUP;
                     }
-                    nfc_a_tag_polling_config_t* config = &loop->tag->a;
+                    const nfc_a_tag_polling_config_t* config = &loop->tag->a;
                     if (config->frame_count > 0) {
                         for (size_t frame_ix = 0; frame_ix <= config->frame_count; frame_ix += 1) {
                             nfc_a_polling_frame_t* frame = &config->frames[frame_ix];
@@ -708,7 +710,7 @@ static int _check_polling_loop(const nfcdev_polling_loop_t* loop) {
                     if (loop->bitrate != NFC_BITRATE_106K) {
                         return -ENOTSUP;
                     }
-                    nfc_b_tag_polling_config_t* config = &loop->tag->b;
+                    const nfc_b_tag_polling_config_t* config = &loop->tag->b;
                     if (config->frame_count > 0) {
                         for (size_t frame_ix = 0; frame_ix <= config->frame_count; frame_ix += 1) {
                             nfc_b_polling_frame_t* frame = &config->frames[frame_ix];
@@ -759,7 +761,7 @@ static int _check_polling_loop(const nfcdev_polling_loop_t* loop) {
                         PN53_DEBUG("poll", "only F@212 and F@424 are standardized!\n");
                         return -EINVAL;
                     }
-                    nfc_f_tag_polling_config_t* config = &loop->tag->f;
+                    const nfc_f_tag_polling_config_t* config = &loop->tag->f;
                     if (loop->timing.interval != NFCDEV_POLLING_INTERVAL_BUILTIN && config->frame_count > 0) {
                         for (size_t frame_ix = 0; frame_ix <= config->frame_count; frame_ix += 1) {
                             uint32_t response_window = nfc_f_polling_response_time_ms(config->frames[frame_ix].timeslots);
@@ -1012,7 +1014,6 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
     assert(config->loop_count < 64);
     pn53_dev_t* dev = nfcdev->dev;
     ssize_t res = 0;
-    size_t current_count = 0;
     uint64_t skipped = 0;
     // First, check if we can even do what were supposed to do, so we don't look like
     // a goldfish in front of a blowdryer when we see an unsupported polling loop.
@@ -1066,11 +1067,7 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                 ztimer_sleep(ZTIMER_MSEC, loop->timing.guard_time);
             }
 
-
-
-            
-
-            nfc_dep_activation_request_t* atr = loop->higher_layer.nfc_dep.atr;
+            const nfc_dep_activation_request_t* atr = loop->higher_layer.nfc_dep.atr;
             nfc_dep_activation_response_t* atr_res = NULL;
 
             switch (loop->field_mode) {
@@ -1080,16 +1077,15 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                     }
 
                     if (res > 0 && loop->higher_layer.nfc_dep.length > 0) {
-                        ssize_t _res = 0;
-                        for (nfcdev_connection_id_t i = 0; i < ARRAY_SIZE(dev->nfc_targets); i += 1) {
-                            pn53_logical_target_t* target = pn53_target(dev, i);
+                        for (nfcdev_connection_id_t tg = 1; tg <= ARRAY_SIZE(dev->nfc_targets); tg += 1) {
+                            pn53_logical_target_t* target = pn53_target(dev, tg);
                             if (!target) {
                                 continue;
                             }
                             PN53_DEBUG("poll", "NFC-DEP to be actived with in r/w+tag field mode"
-                                       " on Tg=%u\n", i+1);
+                                       " on Tg=%u\n", tg);
 
-                            if ((res = pn53_in_atr(dev, i+1, atr ? &atr->id : NULL,
+                            if ((res = pn53_in_atr(dev, tg, atr ? &atr->id : NULL,
                                 atr ? atr->general_bytes : NULL,
                                 loop->higher_layer.nfc_dep.length == 0 ? 0 :
                                     loop->higher_layer.nfc_dep.length - sizeof(nfc_dep_activation_request_t),
@@ -1128,9 +1124,8 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
 
                 if (selector->upstream.strategy != NFC_BITRATE_CHOOSE_CURRENT ||
                     selector->downstream.strategy != NFC_BITRATE_CHOOSE_CURRENT) {
-                    ssize_t _res = 0;
-                    for (nfcdev_connection_id_t i = 0; i < ARRAY_SIZE(dev->nfc_targets); i += 1) {
-                        pn53_logical_target_t* target = pn53_target(dev, i);
+                    for (nfcdev_connection_id_t tg = 1; tg <= ARRAY_SIZE(dev->nfc_targets); tg += 1) {
+                        pn53_logical_target_t* target = pn53_target(dev, tg);
                         if (!target) {
                             continue;
                         }
@@ -1142,7 +1137,7 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                         if (target->managed_transport == PN53_MANAGED_TRANSPORT_ISO_DEP &&
                             target->super.tag.technology == NFC_TECHNOLOGY_A &&
                             target->super.tag.a.ats.length >= 2 && target->super.tag.a.ats.ta_present) {
-                            PN53_DEBUG("poll", "PPS on NFC-A ISO-DEP Tg=%u\n", i+1);
+                            PN53_DEBUG("poll", "PPS on NFC-A ISO-DEP Tg=%u\n", tg);
                             // S(Parameters) not supported
                             nfc_bitrate_select_bidirectional(selector,
                                 &target->super.parameters.downstream.bitrate,
@@ -1152,7 +1147,7 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                                 target->super.tag.a.ats.ta_info.bitrates.same_constraint);
                         }
                         else if (target->managed_transport == PN53_MANAGED_TRANSPORT_NFC_DEP) {
-                            PN53_DEBUG("poll", "PSL_REQ NFC-DEP ISO-DEP Tg=%u\n", i+1);
+                            PN53_DEBUG("poll", "PSL_REQ NFC-DEP ISO-DEP Tg=%u\n", tg);
                             // PN53 supports only 106--424K in NFC-DEP mode, so
                             // no need to read BRt and BSt from ATR_RES
                             nfc_bitrate_select_bidirectional(selector,
@@ -1166,7 +1161,7 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                             continue;
                         }
 
-                        if ((res = pn53_in_psl(dev, i,
+                        if ((res = pn53_in_psl(dev, tg,
                             target->super.parameters.downstream.bitrate,
                             target->super.parameters.upstream.bitrate
                         )) != 0) {
@@ -1176,15 +1171,17 @@ ssize_t nfcdev_poll_pn53(nfcdev_t* nfcdev, const nfcdev_polling_config_t* config
                 }
 
                 uint8_t found = 0;
-                for (nfcdev_connection_id_t i = 0; i < ARRAY_SIZE(dev->nfc_targets); i += 1) {
-                    pn53_logical_target_t* target = pn53_target(dev, i);
+                for (nfcdev_connection_id_t tg = 1; tg <= ARRAY_SIZE(dev->nfc_targets); tg += 1) {
+                    pn53_logical_target_t* target = pn53_target(dev, tg);
                     if (!target) {
                         continue;
                     }
-                    PN53_DEBUG("poll", "target Tg=%u has connection id %u\n", i+1, i);
-                    targets[found] = target->super;
+                    PN53_DEBUG("poll", "target Tg=%u found\n", tg);
+                    if (targets) {
+                        targets[found] = target->super;
+                    }
                     if (connection_ids) {
-                        connection_ids[found] = i;
+                        connection_ids[found] = tg;
                     }
                     found += 1;
                 }

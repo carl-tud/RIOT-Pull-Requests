@@ -47,6 +47,10 @@ typedef enum __attribute__((packed)) {
     NFC_DEP_PAYLOAD_LIMIT_252   = 3,
 } nfc_dep_payload_reduction_index_t;
 
+#define NFC_DEP_GENERAL_BYTE0_LLCP (0x46)
+#define NFC_DEP_GENERAL_BYTE1_LLCP (0x66)
+#define NFC_DEP_GENERAL_BYTE2_LLCP (0x6d)
+
 typedef struct __attribute__((packed)) {
     nfc_dep_id_t id;
     uint8_t device_id;
@@ -102,9 +106,9 @@ typedef struct __attribute__((packed)) {
 
     union {
         struct {
-            /// Can cast to @ref nfc_bitrate_t
+            /// Bit rate index
             uint8_t bitrate_tx : 3;
-            /// Can cast to @ref nfc_bitrate_t
+            /// Bit rate index
             uint8_t bitrate_rx : 3;
             uint8_t _rfu : 2;
         } __attribute__((packed));

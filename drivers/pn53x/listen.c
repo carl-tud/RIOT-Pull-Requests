@@ -102,6 +102,7 @@ ssize_t pn53_tg_init_as_target(pn53_dev_t* dev, const nfc_a_tag_t* a, const nfc_
     ssize_t res = pn53_hci_transceive_command(dev, &_command, &response, timeout_ms);
     if (res > 0) {
         dev->nfc_role = NFC_ROLE_TARGET;
+        dev->nfc_current_tg = 0;
         uint8_t mode = *response++;
         res -= 1;
         nfc_bitrate_t polling_bitrate = nfc_bitrate_from_index(mode >> 4);

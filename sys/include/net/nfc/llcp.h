@@ -1,21 +1,29 @@
 #pragma once
-#include "net/nfcdev.h"
 #include "tsrb.h"
 #include "board.h"
 #include "mutex.h"
+#include "byteorder.h"
+#include "iolist.h"
+#include "net/nfcdev.h"
 
-#define LLCP_PDU_PTYPE_SYMM 0x00
-#define LLCP_PDU_PTYPE_PAX  0x01
-#define LLCP_PDU_PTYPE_AGF  0x02
-#define LLCP_PDU_PTYPE_UI   0x03
-#define LLCP_PDU_PTYPE_CONNECT 0x04
-#define LLCP_PDU_PTYPE_DISC    0x05
-#define LLCP_PDU_PTYPE_CC     0x06
-#define LLCP_PDU_PTYPE_DM     0x07
-#define LLCP_PDU_PTYPE_FRMR   0x08
-#define LLCP_PDU_PTYPE_I      0x0C
-#define LLCP_PDU_PTYPE_RR     0x0D
-#define LLCP_PDU_PTYPE_RNR    0x0E
+#if !defined(CONFIG_LLCP_DEBUG) || defined(DOXYGEN)
+#  define CONFIG_LLCP_DEBUG 1
+#endif
+
+typedef enum __attribute__((packed)) {
+    LLCP_PDU_PTYPE_SYMMETRY    = 0x00,
+    LLCP_PDU_PTYPE_PAX     = 0x01,
+    LLCP_PDU_PTYPE_AGF     = 0x02,
+    LLCP_PDU_PTYPE_UI      = 0x03,
+    LLCP_PDU_PTYPE_CONNECT = 0x04,
+    LLCP_PDU_PTYPE_DISCONNECT    = 0x05,
+    LLCP_PDU_PTYPE_CC      = 0x06,
+    LLCP_PDU_PTYPE_DM      = 0x07,
+    LLCP_PDU_PTYPE_FRMR    = 0x08,
+    LLCP_PDU_PTYPE_I       = 0x0C, // with sequence number
+    LLCP_PDU_PTYPE_RR      = 0x0D, // with sequence number
+    LLCP_PDU_PTYPE_RNR     = 0x0E, // with sequence number
+} nfc_llcp_pdu_type_t;
 
 #define LLCP_PDU_SYMM         0x0000
 
@@ -54,6 +62,10 @@ typedef struct {
     nfc_role_t mode;
 } nfc_llcp_controller_t;
 
+typedef struct __attribute__((packed)) {
+    size_t length;
+} nfc_llcp_controller_buffer_header_t;
+
 /**
  * Connectionless PDU format
  * -----------------------------------------
@@ -62,26 +74,54 @@ typedef struct {
  * -----------------------------------------
  */
 
- /* LLCP PDU Accessors */
-uint8_t nfc_llcp_pdu_get_dsap(const uint8_t *pdu);
+typedef union __attribute__((packed)) {
+    struct {
+#if BYTE_ORDER == LITTLE_ENDIAN
+        uint8_t ssap  : 6;
+        nfc_llcp_pdu_type_t ptype : 4;
+        uint8_t dsap  : 6;
+#else
+        uint8_t dsap  : 6;
+        nfc_llcp_pdu_type_t ptype : 4;
+        uint8_t ssap  : 6;
+#endif
+    } __attribute__((packed));
+    uint8_t raw[2];
+} nfc_llcp_header_t;
 
-uint8_t nfc_llcp_pdu_get_ssap(const uint8_t *pdu);
+static inline uint8_t nfc_llcp_pdu_get_dsap(const uint8_t *pdu) {
+    return (pdu[0] >> 2) & 0x3F;
+}
 
-uint8_t nfc_llcp_pdu_get_ptype(const uint8_t *pdu);
+static inline uint8_t nfc_llcp_pdu_get_ssap(const uint8_t *pdu) {
+    return pdu[1] & 0x3F;
+}
+
+static inline uint8_t nfc_llcp_pdu_get_ptype(const uint8_t *pdu) {
+    return ((pdu[0] & 0x03) << 2) | ((pdu[1] >> 6) & 0x03);
+}
 
 /* LLCP Controller */
-int nfc_llcp_controller_init(nfc_llcp_controller_t *controller, nfcdev_t *dev, nfc_role_t mode);
+int nfc_llcp_controller_init(nfc_llcp_controller_t* controller, nfcdev_t* dev);
 
-void nfc_llcp_controller_stop(nfc_llcp_controller_t *controller);
+void nfc_llcp_controller_stop(nfc_llcp_controller_t* controller);
 
-void nfc_llcp_controller_add_socket(nfc_llcp_controller_t *controller, nfc_llcp_socket_t *socket);
+int nfc_llcp_controller_add_socket(nfc_llcp_controller_t* controller, nfc_llcp_socket_t* socket);
 
-void nfc_llcp_controller_remove_socket(nfc_llcp_controller_t *controller, nfc_llcp_socket_t *socket);
+void nfc_llcp_controller_remove_socket(nfc_llcp_controller_t* controller, nfc_llcp_socket_t* socket);
 
 /* LLCP Socket */
-int nfc_llcp_socket_init(nfc_llcp_socket_t *socket, uint8_t ssap, uint8_t dsap,
+int nfc_llcp_socket_init(nfc_llcp_socket_t* socket, uint8_t ssap, uint8_t dsap,
     nfc_llcp_socket_mode_t mode);
 
-int nfc_llcp_socket_receive(nfc_llcp_socket_t *socket, uint8_t *buffer, size_t *buffer_len);
+ssize_t nfc_llcp_socket_receive(nfc_llcp_socket_t* socket, uint8_t* payload, size_t capacity);
 
-int nfc_llcp_socket_send(nfc_llcp_socket_t *socket, const uint8_t *data, uint8_t data_len);
+int nfc_llcp_socket_send_chunks(nfc_llcp_socket_t* socket, const iolist_t* payload);
+
+static inline int nfc_llcp_socket_send(nfc_llcp_socket_t* socket, const uint8_t* payload, size_t length) {
+    iolist_t _payload = {
+        .iol_base = (void*)payload,
+        .iol_len = length
+    };
+    return nfc_llcp_socket_send_chunks(socket, &_payload);
+}
