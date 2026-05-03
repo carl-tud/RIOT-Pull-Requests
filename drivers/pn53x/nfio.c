@@ -550,6 +550,7 @@ int nfcdev_send_pn53(nfcdev_t* nfcdev, const iolist_t* tx, nfcdev_nfio_flags_t f
 
     if (dev->nfc_role == NFC_ROLE_TARGET && dev->nfc_target_need_to_send_atr_res) {
         PN53_DEBUG("nfio", "need to TgSetGeneralBytes, expecting ATR_RES\n");
+        dev->nfc_target_need_to_send_atr_res = false;
         iolist_t general_bytes = {};
         size_t length = iolist_size(tx);
 
@@ -589,6 +590,7 @@ int nfcdev_send_pn53(nfcdev_t* nfcdev, const iolist_t* tx, nfcdev_nfio_flags_t f
                     pn53_emulated_target(dev)->super.higher_layer.nfc_dep.general,
                     sizeof(pn53_emulated_target(dev)->super.higher_layer.nfc_dep.general))) < 0) {
                     PN53_DEBUG("listen", "general bytes buf too small\n");
+                    return -ENOBUFS;
                 }
                 pn53_emulated_target(dev)->super.higher_layer.nfc_dep.length =
                     sizeof(nfc_dep_activation_response_t) + general_bytes.iol_len;
@@ -766,9 +768,12 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
                     }
                     uint8_t* command = NULL;
                     res = pn53_tg_get_data(dev, &command, rx_timeout_ms);
+                    PN53_DEBUG("nfio.dep", "got %" PRIiSIZE " byte back\n", res);
                     if (res > 0 && rx) {
                         if (*rx && capacity > 0) {
                             if (capacity < (size_t)res) {
+                                PN53_DEBUG("nfio.dep", "need buffer of size %" PRIuSIZE ", have %" PRIuSIZE "\n",
+                                           (size_t)res, capacity);
                                 return -ENOBUFS;
                             }
                             memcpy(*rx, command, (size_t)res);
@@ -850,7 +855,7 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
     uint32_t rx_timeout_ms, nfcdev_nfio_flags_t flags
 ) {
     pn53_dev_t* dev = nfcdev->dev;
-    assert(!flags.reassemble || (rx && capacity > 0));
+    assert(!flags.reassemble || (rx && *rx && capacity > 0));
     size_t _length = tx ? iolist_size(tx) : 0;
     PN53_DEBUG("nfio", "[***] transceiving %" PRIuSIZE " bytes (%u trailing bits)\n",
                _length, flags.trailing_bits ? flags.trailing_bits : 8);
@@ -894,7 +899,7 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                 case NFC_ROLE_INITIATOR: {
                     pn53_logical_target_t* target = pn53_current_target(dev);
                     if (!target && target->managed_transport != (pn53_managed_target_transport_t)flags.interface) {
-                        PN53_DEBUG("nfio.dep", "controller did not activate interface, consider nfcdev_hostnfc\n");
+                        PN53_DEBUG("nfio.dep", "controller did not activate interface\n");
                         return -ENOTCONN;
                     }
 

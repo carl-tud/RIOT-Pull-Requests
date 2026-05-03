@@ -301,6 +301,7 @@ int nfcdev_listen_pn53(nfcdev_t* nfcdev, const nfcdev_listening_config_t* config
     if (target) {
         *target = pn53_emulated_target(dev)->super;
     }
+    dev->nfc_target_need_to_send_atr_res = false;
 
     if (pn53_emulated_target(dev)->managed_transport == PN53_MANAGED_TRANSPORT_NFC_DEP
         && !(dev->nfc_parameters & PN53_NFC_PARAMETER_TARGET_NFC_DEP_AUTO_HANDSHAKE)) {

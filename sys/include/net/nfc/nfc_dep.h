@@ -47,9 +47,9 @@ typedef enum __attribute__((packed)) {
     NFC_DEP_PAYLOAD_LIMIT_252   = 3,
 } nfc_dep_payload_reduction_index_t;
 
-#define NFC_DEP_GENERAL_BYTE0_LLCP (0x46)
-#define NFC_DEP_GENERAL_BYTE1_LLCP (0x66)
-#define NFC_DEP_GENERAL_BYTE2_LLCP (0x6d)
+#define NFC_DEP_GENERAL_BYTE0_LLCP ('F')
+#define NFC_DEP_GENERAL_BYTE1_LLCP ('f')
+#define NFC_DEP_GENERAL_BYTE2_LLCP ('m')
 
 typedef struct __attribute__((packed)) {
     nfc_dep_id_t id;
