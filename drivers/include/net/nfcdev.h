@@ -234,7 +234,7 @@ typedef struct nfcdev {
 typedef struct nfcdev_ops {
     int (*configure_radio)(nfcdev_t* dev, const nfcdev_radio_config_t* tx, const nfcdev_radio_config_t* rx, nfc_role_t role);
 
-    nfcdev_interface_t (*available_interfaces)(nfcdev_t* dev);
+    void (*inquire)(nfcdev_t* dev, nfcdev_interface_t* available_interfaces, nfc_role_t* role);
     int (*connect)(nfcdev_t* dev, nfcdev_connection_id_t connection_id);
     int (*disconnect)(nfcdev_t* dev, nfcdev_connection_id_t connection_id);
 
@@ -261,6 +261,22 @@ typedef struct nfcdev_ops {
     ssize_t (*poll) (nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, nfcdev_connection_id_t* connection_ids, size_t max_targets);
     int (*listen) (nfcdev_t* dev, const nfcdev_listening_config_t* config, nfc_target_t* target, uint32_t timeout_ms);
 } nfcdev_ops_t;
+
+static inline nfcdev_interface_t nfcdev_available_interfaces(nfcdev_t* dev) {
+    assert(dev);
+    assert(dev->ops->inquire);
+    nfcdev_interface_t interfaces = 0;
+    dev->ops->inquire(dev, &interfaces, NULL);
+    return interfaces;
+}
+
+static inline nfc_role_t nfcdev_role(nfcdev_t* dev) {
+    assert(dev);
+    assert(dev->ops->inquire);
+    nfc_role_t role;
+    dev->ops->inquire(dev, NULL, &role);
+    return role;
+}
 
 static inline ssize_t nfcdev_poll(nfcdev_t* dev, const nfcdev_polling_config_t* config, nfc_target_t* targets, nfcdev_connection_id_t* connection_ids, size_t max_targets) {
     assert(dev);
@@ -375,13 +391,6 @@ static inline int nfcdev_configure_radio_passive(nfcdev_t* dev, const nfcdev_rad
     return nfcdev_configure_radio(dev, config, config, role);
 }
 
-static inline nfcdev_interface_t nfcdev_available_interface(nfcdev_t* dev) {
-    assert(dev);
-    assert(dev->ops);
-    assert(dev->ops->available_interfaces);
-    return dev->ops->available_interfaces(dev);
-}
-
 static inline ssize_t __nfcdev_send__impl__(nfcdev_t* dev, const iolist_t* tx, nfcdev_nfio_flags_t flags) {
     assert(dev);
     assert(dev->ops);
@@ -426,7 +435,7 @@ static inline ssize_t __nfcdev_receive__impl(nfcdev_t* dev,
     assert(dev->ops);
     assert(dev->ops->receive);
     // Either you give me a buffer and a capacity OR no buffer and capacity of zero.
-    assert(((capacity > 0) && rx && *rx) || ((capacity == 0) && (!rx || !*rx)));
+    assert(((capacity > 0) && rx && *rx) || capacity == 0);
 
     return dev->ops->receive(dev, rx, capacity, rx_timeout_ms, flags);
 }
@@ -442,6 +451,10 @@ static inline ssize_t __nfcdev_receive__impl(nfcdev_t* dev,
         }) \
     )
 
+#include <stdio.h>
+#include "pn53x.h"
+#include "architecture.h"
+
 static inline ssize_t __nfcdev_transceive__impl__(nfcdev_t* dev,
     const iolist_t* tx,
     uint8_t** rx, size_t capacity, uint32_t rx_timeout_ms,
@@ -450,11 +463,8 @@ static inline ssize_t __nfcdev_transceive__impl__(nfcdev_t* dev,
     assert(dev);
     assert(dev->ops);
     assert(dev->ops->transceive);
-    assert(tx);
-    assert(tx->iol_len > 0);
     // Either you give me a buffer and a capacity OR no buffer and capacity of zero.
-    assert(((capacity > 0) && rx && *rx) || ((capacity == 0) && (!rx || !*rx)));
-
+    assert(((capacity > 0) && rx && *rx) || capacity == 0);
     return dev->ops->transceive(dev, tx, rx, capacity, rx_timeout_ms, flags);
 }
 

@@ -648,6 +648,52 @@ int nfcdev_disconnect_pn53(nfcdev_t* nfcdev, nfcdev_connection_id_t tg) {
     return pn53_deselect(dev, tg);
 }
 
+void nfcdev_inquire_pn53(nfcdev_t* nfcdev, nfcdev_interface_t* interfaces, nfc_role_t* role) {
+    pn53_dev_t* dev = nfcdev->dev;
+    if (interfaces) {
+        *interfaces = 0;
+        switch (dev->nfc_role) {
+            case NFC_ROLE_INITIATOR: {
+                pn53_logical_target_t* target = pn53_current_target(dev);
+                if (target) {
+                    if (target->managed_transport != PN53_MANAGED_TRANSPORT_NONE) {
+                        *interfaces |= (nfcdev_interface_t)target->managed_transport;
+                        // TODO: Figure out what happens in NFC-DEP
+                    } else {
+                        *interfaces |= NFCDEV_INTERFACE_PACKET | NFCDEV_INTERFACE_FRAME;
+
+                        if (target->super.tag.technology == NFC_TECHNOLOGY_A) {
+                            *interfaces |= NFCDEV_INTERFACE_BITS;
+                        }
+                    }
+                }
+                break;
+            }
+            case NFC_ROLE_TARGET: {
+                pn53_logical_target_t* target = pn53_emulated_target(dev);
+                if (target->managed_transport != PN53_MANAGED_TRANSPORT_NONE) {
+                    *interfaces |= (nfcdev_interface_t)target->managed_transport;
+                    // TODO: Figure out what happens in NFC-DEP
+                } else {
+                    *interfaces |= NFCDEV_INTERFACE_PACKET | NFCDEV_INTERFACE_FRAME;
+
+                    if (target->super.tag.technology == NFC_TECHNOLOGY_A) {
+                        *interfaces |= NFCDEV_INTERFACE_BITS;
+                    }
+                }
+                break;
+            }
+            default:
+                assert(false);
+                UNREACHABLE();
+                break;
+        }
+    }
+    if (role) {
+        *role = dev->nfc_role;
+    }
+}
+
 int pn53_tg_set_general_bytes(pn53_dev_t* dev, const iolist_t* general_bytes) {
     assert(dev->nfc_role == NFC_ROLE_TARGET);
     assert(pn53_emulated_target(dev)->managed_transport == PN53_MANAGED_TRANSPORT_NFC_DEP);
@@ -793,6 +839,7 @@ extern int nfcdev_configure_radio_pn53(nfcdev_t* dev, const nfcdev_radio_config_
 nfcdev_ops_t nfcdev_ops_pn53 = {
     .poll             = nfcdev_poll_pn53,
     .connect          = nfcdev_connect_pn53,
+    .disconnect       = nfcdev_disconnect_pn53,
 
     .listen           = nfcdev_listen_pn53,
 
@@ -801,6 +848,7 @@ nfcdev_ops_t nfcdev_ops_pn53 = {
     .receive          = nfcdev_receive_pn53,
 
     .configure_radio  = nfcdev_configure_radio_pn53,
+    .inquire          = nfcdev_inquire_pn53
 };
 
 //
