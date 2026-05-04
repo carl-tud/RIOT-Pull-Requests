@@ -18,6 +18,7 @@ ifneq (,$(filter nfc_llcp,$(USEMODULE)))
   USEMODULE += tsrb
   USEMODULE += ztimer_msec
   USEMODULE += nfc_tlv
+  USEMODULE += sema
 endif
 
 
