@@ -4,6 +4,7 @@
 #include "mutex.h"
 #include "byteorder.h"
 #include "iolist.h"
+#include "sema.h"
 #include "net/nfcdev.h"
 
 #if !defined(CONFIG_LLCP_DEBUG) || defined(DOXYGEN)
@@ -40,10 +41,10 @@ typedef enum __attribute__((packed)) {
 #  define CONFIG_LLCP_THREAD_SIZE (4000)
 #endif
 
-
 typedef enum {
-    LLCP_SOCKET_MODE_CONNECTIONLESS = 0,
-    LLCP_SOCKET_MODE_CONNECTION_ORIENTED,
+    LLCP_SOCKET_MODE_UNCONNECTED = 0,
+    LLCP_SOCKET_MODE_ACCEPTING = 1,
+    LLCP_SOCKET_MODE_CONNECTING = (1 | 4),
 } nfc_llcp_socket_mode_t;
 
 typedef struct {
@@ -51,9 +52,14 @@ typedef struct {
     tsrb_t tx_buffer;
     uint8_t rx_buffer_data[LLCP_SOCKET_RX_BUFFER_SIZE];
     uint8_t tx_buffer_data[LLCP_SOCKET_TX_BUFFER_SIZE];
+    sema_t rx_sema;
     uint8_t ssap;
     uint8_t dsap;
-    nfc_llcp_socket_mode_t mode;
+    const char* service_name;
+    uint8_t state;
+    uint8_t vs;
+    uint8_t vr;
+    bool disconnect;
 } nfc_llcp_socket_t;
 
 typedef struct {
@@ -83,9 +89,9 @@ typedef struct __attribute__((packed)) {
 
 typedef union __attribute__((packed)) {
     struct {
-        uint8_t dsap  : 6;
-        nfc_llcp_pdu_type_t ptype : 4;
         uint8_t ssap  : 6;
+        nfc_llcp_pdu_type_t ptype : 4;
+        uint8_t dsap  : 6;
     } __attribute__((packed));
     uint16_t raw;
 } nfc_llcp_header_t;
@@ -107,16 +113,21 @@ int nfc_llcp_controller_init(nfc_llcp_controller_t* controller, nfcdev_t* dev, u
 
 void nfc_llcp_controller_stop(nfc_llcp_controller_t* controller);
 
-int nfc_llcp_controller_add_socket(nfc_llcp_controller_t* controller, nfc_llcp_socket_t* socket, uint8_t ssap, uint8_t dsap,
+int nfc_llcp_controller_add_socket(nfc_llcp_controller_t* controller, nfc_llcp_socket_t* socket,
                                    nfc_llcp_socket_mode_t mode);
 
 void nfc_llcp_controller_remove_socket(nfc_llcp_controller_t* controller, nfc_llcp_socket_t* socket);
+
+void nfc_llcp_controller_disconnect_socket(nfc_llcp_controller_t *controller,
+                                           nfc_llcp_socket_t *socket);
 
 /* LLCP Socket */
 //int nfc_llcp_socket_init(nfc_llcp_socket_t* socket, uint8_t ssap, uint8_t dsap,
 //    nfc_llcp_socket_mode_t mode);
 
-ssize_t nfc_llcp_socket_receive(nfc_llcp_socket_t* socket, uint8_t* payload, size_t capacity);
+#define LLCP_TIMEOUT_INFINITE (uint32_t)(-1)
+
+ssize_t nfc_llcp_socket_receive(nfc_llcp_socket_t* socket, uint8_t* payload, size_t capacity, uint32_t timeout_ms);
 
 int nfc_llcp_socket_send_chunks(nfc_llcp_socket_t* socket, const iolist_t* payload);
 

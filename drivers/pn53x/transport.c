@@ -629,7 +629,7 @@ static ssize_t _block_with_timeout(pn53_connection_t* connection, uint32_t timeo
             if (res < 0) {
                 PN53_DEBUG_HCI("ACK to abort failed with %i\n", (int)res);
             }
-            return -PN53_ERROR_CONNECTION_TIMEOUT;
+            return -ETIMEDOUT;
         } else {
             return 0;
         }
