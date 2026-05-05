@@ -116,6 +116,7 @@ bool gnrc_netif_dev_is_6lo(const gnrc_netif_t *netif)
         case NETDEV_TYPE_NRFMIN:
         case NETDEV_TYPE_NRF24L01P_NG:
         case NETDEV_TYPE_ESP_NOW:
+        case NETDEV_TYPE_NFC_LLCP:
             return true;
         default:
             return false;
