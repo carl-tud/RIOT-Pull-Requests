@@ -146,6 +146,11 @@ enum {
  */
 #define GNRC_NETIF_FLAGS_TX_FROM_PKTQUEUE          (0x00020000U)
 
+/**
+ * @brief   Network interface requires RFC7217 random but stable identifier to be generated
+ */
+#define GNRC_NETIF_FLAGS_IPV6_STABLE_PRIVACY       (0x00040000U)
+
 /** @} */
 
 #ifdef __cplusplus

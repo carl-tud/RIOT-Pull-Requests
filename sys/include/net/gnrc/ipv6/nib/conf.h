@@ -200,10 +200,21 @@ extern "C" {
 #endif
 
 /**
- * @brief Use stable privacy addresses (rfc7217)
+ * @brief Use stable privacy addresses (rfc7217) for all interfaces
+ */
+#ifndef CONFIG_GNRC_IPV6_STABLE_PRIVACY_FORCE
+#  define CONFIG_GNRC_IPV6_STABLE_PRIVACY_FORCE 0
+#endif
+
+/**
+ * @brief Allow stable privacy addresses (rfc7217)
  */
 #ifndef CONFIG_GNRC_IPV6_STABLE_PRIVACY
-#define CONFIG_GNRC_IPV6_STABLE_PRIVACY 0
+#  if CONFIG_GNRC_IPV6_STABLE_PRIVACY_FORCE
+#    define CONFIG_GNRC_IPV6_STABLE_PRIVACY 1
+#  else
+#    define CONFIG_GNRC_IPV6_STABLE_PRIVACY 0
+#  endif
 #endif
 
 /**

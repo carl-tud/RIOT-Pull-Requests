@@ -1377,6 +1377,10 @@ int gnrc_netif_ipv6_add_prefix(gnrc_netif_t *netif,
     assert(netif != NULL);
     DEBUG("gnrc_netif: (re-)configure prefix %s/%d\n",
           ipv6_addr_to_str(addr_str, pfx, sizeof(addr_str)), pfx_len);
+
+    uint16_t netopt_context;
+    void *netopt_data;
+    size_t netopt_max_length;
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_STABLE_PRIVACY)
     uint8_t dad_ctr = 0;
     netopt_ipv6_rfc7217_iid_data data;
@@ -1385,14 +1389,25 @@ int gnrc_netif_ipv6_add_prefix(gnrc_netif_t *netif,
     data.dad_ctr = &dad_ctr;
     /* no need to store dad_ctr with address (via flags)
      * as it can't fail DAD, since already valid */
+
+    if (IS_ACTIVE(CONFIG_GNRC_IPV6_STABLE_PRIVACY_FORCE)
+        || netif->flags & CONFIG_GNRC_IPV6_STABLE_PRIVACY) {
+        
+        netopt_context = NETOPT_IPV6_IID_RFC7217;
+        netopt_data = &data;
+        netopt_max_len = sizeof(data);
+    } else {
+        netopt_context = NETOPT_IPV6_IID_HWADDR;
+        netopt_data = &iid;
+        netopt_max_len = sizeof(eui64_t);
+    }
+#else
+    netopt_context = NETOPT_IPV6_IID_HWADDR;
+    netopt_data = &iid;
+    netopt_max_len = sizeof(eui64_t);
 #endif
     if (gnrc_netapi_get(netif->pid, NETOPT_IPV6_IID,
-#if IS_ACTIVE(CONFIG_GNRC_IPV6_STABLE_PRIVACY)
-                        NETOPT_IPV6_IID_RFC7217, &data, sizeof(data)
-#else
-                        NETOPT_IPV6_IID_HWADDR, &iid, sizeof(eui64_t)
-#endif
-                        ) >= 0) {
+                        netopt_context, netopt_data, netopt_max_length) >= 0) {
         ipv6_addr_set_aiid(&addr, iid.uint8);
     }
     else {
