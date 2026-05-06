@@ -18,6 +18,7 @@
 #include "architecture.h"
 #include "ztimer.h"
 #include "mutex.h"
+#include "sema.h"
 #include "iolist.h"
 #include "periph/gpio.h"
 #include "periph/i2c.h"
@@ -296,8 +297,8 @@ static int _parse_ack(uint8_t* frame, size_t length) {
 }
 
 static void _hci_event(void* connection) {
-    PN53_DEBUG_TRANSPORT("HCI event\n");
-    mutex_unlock(&((pn53_connection_t*)connection)->trap);
+    // PN53_DEBUG_TRANSPORT("HCI event\n");
+    sema_post(&((pn53_connection_t*)connection)->trap);
 }
 
 #define PN53_RESET_TOGGLE_SLEEP_MS       (400)
@@ -314,8 +315,7 @@ void pn53_hci_reset(const pn53_connection_t* connection) {
 int pn53_hci_init(pn53_connection_t* connection) {
 #if PN53_HCI_IRQ_SUPPORTED
     PN53_DEBUG_TRANSPORT("using HCI IRQ\n");
-    mutex_init(&connection->trap);
-    mutex_lock(&connection->trap);
+    sema_create(&connection->trap, 0);
     gpio_init_int(connection->config->irq, GPIO_IN_PU, GPIO_FALLING, _hci_event, (void*)connection);
 #endif
 
@@ -508,6 +508,7 @@ static ssize_t _send_ack(pn53_connection_t* connection) {
 }
 
 static ssize_t _recv_ack(const pn53_connection_t* connection) {
+    PN53_DEBUG_TRANSPORT("recv ack..\n");
     assert(connection);
     ssize_t res = 0;
     uint8_t frame[sizeof(_ack_frame)];
@@ -558,6 +559,7 @@ static ssize_t _send_packet(pn53_connection_t* connection, iolist_t* packet) {
     while (packet->iol_next) {
         if (packet->iol_next == &suffix) {
             packet->iol_next = NULL;
+            break;
         }
         packet = packet->iol_next;
     }
@@ -614,14 +616,11 @@ static ssize_t _recv_packet(pn53_connection_t* connection, uint8_t** packet) {
 
 static ssize_t _block_with_timeout(pn53_connection_t* connection, uint32_t timeout_ms) {
     if (timeout_ms == PN53_TIMEOUT_NEVER) {
-        mutex_lock(&connection->trap);
+        sema_wait(&connection->trap);
         return 0;
     } else {
         assert(timeout_ms != 0);
-        ztimer_t timer = {0};
-        ztimer_mutex_unlock(ZTIMER_MSEC, &timer, timeout_ms, &connection->trap);
-        mutex_lock(&connection->trap);
-        bool triggered = !ztimer_remove(ZTIMER_MSEC, &timer);
+        bool triggered = sema_wait_timed_ztimer(&connection->trap, ZTIMER_MSEC, timeout_ms) == -ETIMEDOUT;
         if (triggered) {
             PN53_DEBUG_HCI("timeout after %" PRIu32 " ms, aborting with ACK\n", timeout_ms);
             // Best effort, i.e., discard result
@@ -631,6 +630,7 @@ static ssize_t _block_with_timeout(pn53_connection_t* connection, uint32_t timeo
             }
             return -ETIMEDOUT;
         } else {
+            PN53_DEBUG_HCI("timeout not fired\n");
             return 0;
         }
     }

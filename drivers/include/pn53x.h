@@ -22,6 +22,7 @@ extern "C" {
 #include "iolist.h"
 #include "time_units.h"
 #include "mutex.h"
+#include "sema.h"
 #include "periph/i2c.h"
 #include "periph/spi.h"
 #include "periph/uart.h"
@@ -179,7 +180,7 @@ typedef struct {
 
 typedef struct {
     const pn53_connection_config_t* config;
-    mutex_t trap;
+    sema_t trap;
 #if IS_USED(MODULE_PN53X_UART) || defined(DOXYGEN)
     mutex_t callback;
 #endif

@@ -541,7 +541,7 @@ int pn53_set_field_enablement(pn53_dev_t* dev, bool intent_to_enable, bool colli
 }
 
 ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms) {
-    assert(dev->nfc_role == NFC_ROLE_TARGET);
+    assert(dev->nfc_role == NFC_ROLE_INITIATOR);
     assert(!tx || iolist_size(tx) <= pn53_max_command_payload_length(dev)); /* 262 */
     uint8_t code = (uint8_t)PN53_COMMAND_IN_COMMUNICATE_THRU;
     iolist_t _command = __IOLIST(&code, 1, (iolist_t*)tx);
@@ -562,13 +562,13 @@ ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const iolist_t* tx, uint8_t** 
 }
 
 ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t id, uint8_t* status_byte, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms) {
-    assert(dev->nfc_role == NFC_ROLE_TARGET);
+    assert(dev->nfc_role == NFC_ROLE_INITIATOR);
     assert(!tx || iolist_size(tx) <= pn53_max_exchange_payload_length(dev)); /* 262 */
     if (!pn53_target(dev, id)) {
         return -ENOTCONN;
     }
     uint8_t command[] = {
-        (uint8_t)PN53_COMMAND_IN_COMMUNICATE_THRU,
+        (uint8_t)PN53_COMMAND_IN_DATA_EXCHANGE,
         (uint8_t)id
     };
     if (status_byte) {
@@ -598,7 +598,17 @@ ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t id, uint8_
 int pn53_deselect_reselect_release(pn53_dev_t *dev, uint8_t tg, pn53_command_code_t code) {
     assert(tg <= 2);
     uint8_t command[] = { (uint8_t)code, tg };
-    ssize_t res = pn53_hci_transceive_command2_status_response(dev, command, sizeof(command), NULL, 0, dev->command_timeout);
+    uint8_t* _response = NULL;
+    ssize_t res = pn53_hci_transceive_command2(dev, command, sizeof(command), &_response, dev->command_timeout);
+    if (res == 0) {
+        PN53_DEBUG("internal", "missing status code\n");
+        return -EBADMSG;
+    } else if (res > 0) {
+        pn53_status_code_t code = pn53_status_code(*_response);
+        if (code != 0) {
+            return -PN53_ERRNO_FROM_STATUS_CODE(code);
+        }
+    }
     return (res < 0) ? (int)res : 0;
 }
 
