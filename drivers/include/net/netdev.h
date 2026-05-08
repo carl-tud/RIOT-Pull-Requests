@@ -221,9 +221,11 @@ enum {
     NETDEV_TYPE_NRF24L01P_NG,
     NETDEV_TYPE_SLIP,
     NETDEV_TYPE_ESP_NOW,
-    NETDEV_TYPE_NFC_LLCP,
+    NETDEV_TYPE_NFC6,
 };
 /** @} */
+
+#define RFC9428_L2_ADDR_LEN (6)
 
 /**
  * @brief   Possible event types that are send from the device driver to the
@@ -334,6 +336,7 @@ typedef enum {
     NETDEV_TINYUSB,
     NETDEV_W5500,
     NETDEV_ESP_IEEE802154,
+    NETDEV_EXPERIMENTAL_NFC_LLCP,
     /* add more if needed */
 } netdev_type_t;
 /** @} */

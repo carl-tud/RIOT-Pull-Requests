@@ -117,7 +117,7 @@ bool gnrc_netif_dev_is_6lo(const gnrc_netif_t *netif)
         case NETDEV_TYPE_NRFMIN:
         case NETDEV_TYPE_NRF24L01P_NG:
         case NETDEV_TYPE_ESP_NOW:
-        case NETDEV_TYPE_NFC_LLCP:
+        case NETDEV_TYPE_NFC6:
             return true;
         default:
             return false;
@@ -271,6 +271,7 @@ int gnrc_netif_get_from_netdev(gnrc_netif_t *netif, gnrc_netapi_opt_t *opt)
             }
             break;
         case NETOPT_IPV6_IID:
+            DEBUG("gnrc_netif: get NETOPT_IPV6_IID\n");
             switch ((int16_t)opt->context) {
                 case NETOPT_IPV6_IID_HWADDR:
                     assert(opt->data_len >= sizeof(eui64_t));
@@ -1395,16 +1396,16 @@ int gnrc_netif_ipv6_add_prefix(gnrc_netif_t *netif,
         
         netopt_context = NETOPT_IPV6_IID_RFC7217;
         netopt_data = &data;
-        netopt_max_len = sizeof(data);
+        netopt_max_length = sizeof(data);
     } else {
         netopt_context = NETOPT_IPV6_IID_HWADDR;
         netopt_data = &iid;
-        netopt_max_len = sizeof(eui64_t);
+        netopt_max_length = sizeof(eui64_t);
     }
 #else
     netopt_context = NETOPT_IPV6_IID_HWADDR;
     netopt_data = &iid;
-    netopt_max_len = sizeof(eui64_t);
+    netopt_max_length = sizeof(eui64_t);
 #endif
     if (gnrc_netapi_get(netif->pid, NETOPT_IPV6_IID,
                         netopt_context, netopt_data, netopt_max_length) >= 0) {
@@ -2316,5 +2317,9 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
                 DEBUG("gnrc_netif: warning: unhandled event %u.\n", event);
         }
     }
+}
+
+void gnrc_netif_default_event_callback(netdev_t *dev, netdev_event_t event) {
+    _event_cb(dev, event);
 }
 /** @} */

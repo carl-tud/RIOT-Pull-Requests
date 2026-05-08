@@ -240,10 +240,14 @@ int l2util_ipv6_iid_to_addr(int dev_type, const eui64_t *iid, uint8_t *addr)
             memcpy(addr, iid, sizeof(eui64_t));
             return sizeof(eui64_t);
 #endif /* defined(MODULE_SLIP) */
+        case NETDEV_TYPE_NFC6:
+            return 1;
         default:
             (void)iid;
             (void)addr;
 #ifdef DEVELHELP
+            LOG_ERROR("l2util: IID %02x %02x %02x %02x %02x %02x %02x %02x to L2 addr?\n",
+                      iid->uint8[0], iid->uint8[1], iid->uint8[2], iid->uint8[3], iid->uint8[4], iid->uint8[5], iid->uint8[6], iid->uint8[7]);
             LOG_ERROR("l2util: can't convert IID to hardware address for "
                       "device type %d\n", dev_type);
 #endif  /* DEVELHELP */

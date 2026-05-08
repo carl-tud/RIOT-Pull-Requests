@@ -225,6 +225,19 @@ int gnrc_netif_ipv6_iid_from_addr(const gnrc_netif_t *netif,
 {
 #if GNRC_NETIF_L2ADDR_MAXLEN > 0
     if (netif->flags & GNRC_NETIF_FLAGS_HAS_L2ADDR) {
+#  if CONFIG_GNRC_IPV6_STABLE_PRIVACY
+        if (IS_ACTIVE(CONFIG_GNRC_IPV6_STABLE_PRIVACY_FORCE) || netif->flags & GNRC_NETIF_FLAGS_IPV6_STABLE_PRIVACY) {
+            uint8_t dad_ctr = 0;
+            // FIXME: Using the link-local prefix here is not correct.
+            // FIXME: All functions generating an IID must take the prefix into account, which they currently do not.
+            extern  int ipv6_get_rfc7217_iid_idempotent(eui64_t *iid, gnrc_netif_t *netif,
+                                                        const ipv6_addr_t *pfx,
+                                                        uint8_t *dad_ctr);
+            return ipv6_get_rfc7217_iid_idempotent(iid, (gnrc_netif_t*)netif,
+                                                   (ipv6_addr_t*)&ipv6_addr_link_local_prefix,
+                                                   &dad_ctr);
+        }
+#  endif
         return l2util_ipv6_iid_from_addr(netif->device_type,
                                          addr, addr_len, iid);
     }

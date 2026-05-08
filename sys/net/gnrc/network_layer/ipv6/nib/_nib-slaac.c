@@ -30,7 +30,7 @@
 #include "_nib-6ln.h"
 #include "_nib-arsm.h"
 
-#define ENABLE_DEBUG 0
+#define ENABLE_DEBUG 1
 #include "debug.h"
 
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_6LN) || IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_SLAAC)
@@ -88,6 +88,7 @@ void _auto_configure_addr(gnrc_netif_t *netif,
             DEBUG("nib: interface %i has no link-layer addresses\n", netif->pid);
             return;
         }
+        DEBUG("nib: _auto_configure_addr -> gnrc_netif_ipv6_get_iid\n");
         if (gnrc_netif_ipv6_get_iid(netif, (eui64_t *)&addr.u64[1]) < 0) {
             DEBUG("nib: Can't get IID on interface %u\n", netif->pid);
             return;
@@ -275,6 +276,7 @@ static bool _try_addr_reconfiguration(gnrc_netif_t *netif)
     eui64_t orig_iid;
     bool remove_old = false, hwaddr_reconf;
 
+    DEBUG("nib: _auto_configure_addr -> gnrc_netif_ipv6_get_iid\n");
     if (gnrc_netif_ipv6_get_iid(netif, &orig_iid) > 0) {
         remove_old = true;
     }

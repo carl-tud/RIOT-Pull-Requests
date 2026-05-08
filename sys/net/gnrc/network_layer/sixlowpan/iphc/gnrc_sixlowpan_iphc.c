@@ -42,7 +42,7 @@
 
 #include "net/gnrc/sixlowpan/iphc.h"
 
-#define ENABLE_DEBUG 0
+#define ENABLE_DEBUG 1
 #include "debug.h"
 
 /* dispatch byte definitions */
@@ -1215,6 +1215,7 @@ static size_t _iphc_ipv6_encode(gnrc_pktsnip_t *pkt,
             iid.uint64.u64 = 0;
 
             gnrc_netif_acquire(iface);
+            DEBUG("6lo iphc: _iphc_ipv6_encode -> gnrc_netif_ipv6_get_iid\n");
             if (gnrc_netif_ipv6_get_iid(iface, &iid) < 0) {
                 DEBUG("6lo iphc: could not get interface's IID\n");
                 gnrc_netif_release(iface);
