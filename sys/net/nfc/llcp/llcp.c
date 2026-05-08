@@ -487,6 +487,7 @@ void llcp_run(void *arg) {
     }
 
 disconnect:
+    LLCP_DEBUG("shutting down controller\n");
     nfcdev_disconnect(controller->dev, NFCDEV_CONNECTION_ID_CURRENT);
 
     mutex_lock(&controller->sockets_mutex);
@@ -573,6 +574,7 @@ int nfc_llcp_controller_add_socket(nfc_llcp_controller_t* controller, nfc_llcp_s
 
     tsrb_init(&socket->tx_buffer, socket->tx_buffer_data, sizeof(socket->tx_buffer_data));
     socket->state = mode;
+    LLCP_DEBUG("socket state 0x%02x\n", socket->state);
     socket->vs = 0;
     socket->vr = 0;
     socket->vsa = 0;

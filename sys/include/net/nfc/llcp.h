@@ -8,7 +8,7 @@
 #include "net/nfcdev.h"
 
 #if !defined(CONFIG_LLCP_DEBUG) || defined(DOXYGEN)
-#  define CONFIG_LLCP_DEBUG 1
+#  define CONFIG_LLCP_DEBUG 0
 #endif
 
 typedef enum __attribute__((packed)) {

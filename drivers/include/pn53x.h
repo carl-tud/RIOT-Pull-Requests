@@ -96,15 +96,15 @@ static_assert(PN35_FRAME_HEADER_EXTENDED + 2 == PN53_FRAME_OVERHEAD_MAX);
 #endif
 
 #if !defined(CONFIG_PN53_DEBUG) || defined(DOXYGEN)
-#  define CONFIG_PN53_DEBUG 1
+#  define CONFIG_PN53_DEBUG 0
 #endif
 
 #if !defined(CONFIG_PN53_DEBUG_REGISTERS) || defined(DOXYGEN)
-#  define CONFIG_PN53_DEBUG_REGISTERS 1
+#  define CONFIG_PN53_DEBUG_REGISTERS 0
 #endif
 
 #if !defined(CONFIG_PN53_DEBUG_HCI) || defined(DOXYGEN)
-#  define CONFIG_PN53_DEBUG_HCI 1
+#  define CONFIG_PN53_DEBUG_HCI 0
 #endif
 
 #if !defined(CONFIG_PN53_DEBUG_TRANSPORT) || defined(DOXYGEN)
