@@ -1,4 +1,4 @@
-../../../../drivers/include/pn53x.h ../../../../drivers/include/pn53x.h/*
+/*
  * Copyright (C) 2016 TriaGnoSys GmbH
  *
  * This file is subject to the terms and conditions of the GNU Lesser
