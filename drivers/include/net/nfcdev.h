@@ -7,6 +7,7 @@
 #include "modules.h"
 #include "errno.h"
 #include "iolist.h"
+#include "sema.h"
 #include "net/nfc.h"
 
 // might need different strategies: should controller directly respond if technology is polled,
@@ -142,6 +143,10 @@ typedef struct {
     size_t repetitions;
 } nfcdev_polling_config_t;
 
+#if !defined(CONFIG_NFCDEV_DEBUG) || defined(DOXYGEN)
+#  define CONFIG_NFCDEV_DEBUG 0
+#endif
+
 #if !defined(CONFIG_NFCDEV_POLL_SKIP_UNSUPPORTED_LOOPS) || defined(DOXYGEN)
 #  define CONFIG_NFCDEV_POLL_SKIP_UNSUPPORTED_LOOPS 0
 #endif
@@ -231,6 +236,21 @@ typedef struct nfcdev {
 #define _NFCDEV_MASK_INTERFACE (0b111)
 #define _NFCDEV_MASK_TRANSPORT (~0b111)
 
+typedef enum {
+    /**
+     * @brief All data has been received successfully, no further callbacks will occur
+     */
+    NFCDEV_RX_EVENT_COMPLETE = 1,
+    /**
+     * @brief The RX buffer pointer can be retained until the next call to the NFC device
+     */
+    NFCDEV_RX_EVENT_TEMPORARILY_RETAINABLE = 2,
+} nfcdev_rx_event_t;
+
+typedef ssize_t (*nfcdev_rx_callback_t)(const uint8_t* rx, ssize_t res, nfcdev_rx_event_t event, void* arg);
+
+typedef int (*nfcdev_target_callback_t)(nfc_target_t* target, int error, void* arg);
+
 typedef struct nfcdev_ops {
     int (*configure_radio)(nfcdev_t* dev, const nfcdev_radio_config_t* tx, const nfcdev_radio_config_t* rx, nfc_role_t role);
 
@@ -247,13 +267,13 @@ typedef struct nfcdev_ops {
 
     ssize_t (*receive)(
         nfcdev_t* dev,
-        uint8_t** rx, size_t capacity, uint32_t rx_timeout_ms,
+        nfcdev_rx_callback_t callback, void* arg, uint32_t rx_timeout_ms,
         nfcdev_nfio_flags_t flags);
 
     ssize_t (*transceive)(
         nfcdev_t* dev,
         const iolist_t* tx,
-        uint8_t** rx, size_t capacity, uint32_t rx_timeout_ms,
+        nfcdev_rx_callback_t callback, void* arg, uint32_t rx_timeout_ms,
         nfcdev_nfio_flags_t flags);
 
     // --
@@ -391,7 +411,7 @@ static inline int nfcdev_configure_radio_passive(nfcdev_t* dev, const nfcdev_rad
     return nfcdev_configure_radio(dev, config, config, role);
 }
 
-static inline ssize_t __nfcdev_send__impl__(nfcdev_t* dev, const iolist_t* tx, nfcdev_nfio_flags_t flags) {
+static inline ssize_t __nfcdev_send(nfcdev_t* dev, const iolist_t* tx, nfcdev_nfio_flags_t flags) {
     assert(dev);
     assert(dev->ops);
     assert(dev->ops->send);
@@ -402,7 +422,7 @@ static inline ssize_t __nfcdev_send__impl__(nfcdev_t* dev, const iolist_t* tx, n
 }
 
 #define nfcdev_send_chunks(dev, tx, flags) \
-    __nfcdev_send__impl__(dev, \
+    __nfcdev_send(dev, \
         tx, \
         ((nfcdev_nfio_flags_t) { \
             .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
@@ -413,7 +433,7 @@ static inline ssize_t __nfcdev_send__impl__(nfcdev_t* dev, const iolist_t* tx, n
     )
 
 #define nfcdev_send(dev, tx, tx_length, flags) \
-    __nfcdev_send__impl__(dev, \
+    __nfcdev_send(dev, \
         (&(iolist_t){ \
             .iol_base = (void*)(tx), \
             .iol_len = (size_t)(__to_frame_length_bytes(tx_length)) \
@@ -427,21 +447,34 @@ static inline ssize_t __nfcdev_send__impl__(nfcdev_t* dev, const iolist_t* tx, n
         }) \
     )
 
-static inline ssize_t __nfcdev_receive__impl(nfcdev_t* dev,
-    uint8_t** rx, size_t capacity, uint32_t rx_timeout_ms,
+static inline ssize_t __nfcdev_receive_async(nfcdev_t* dev,
+    nfcdev_rx_callback_t callback, void* arg, uint32_t rx_timeout_ms,
     nfcdev_nfio_flags_t flags
 ) {
     assert(dev);
     assert(dev->ops);
     assert(dev->ops->receive);
-    // Either you give me a buffer and a capacity OR no buffer and capacity of zero.
-    assert(((capacity > 0) && rx && *rx) || capacity == 0);
-
-    return dev->ops->receive(dev, rx, capacity, rx_timeout_ms, flags);
+    return dev->ops->receive(dev, callback, arg, rx_timeout_ms, flags);
 }
 
+#define nfcdev_receive_async(dev, callback, arg, rx_timeout_ms, flags) \
+    __nfcdev_receive_async(dev, \
+        callback, arg, rx_timeout_ms, \
+        ((nfcdev_nfio_flags_t) { \
+            .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
+            .use_nad = (((flags) & NFCDEV_FLAG_USE_NODE_ADDRESS) != 0), \
+            .use_did = (((flags) & NFCDEV_FLAG_USE_DEVICE_ID) != 0), \
+            .reassemble = (((flags) & NFCDEV_FLAG_REASSEMBLE) != 0) \
+        }) \
+    )
+
+ssize_t __nfcdev_receive_sync(nfcdev_t* dev,
+    uint8_t** rx, size_t capacity, uint32_t rx_timeout_ms,
+    nfcdev_nfio_flags_t flags
+);
+
 #define nfcdev_receive(dev, rx, capacity, rx_timeout_ms, flags) \
-    __nfcdev_receive__impl(dev, \
+    __nfcdev_receive_sync(dev, \
         __as_buffer_ref(rx), capacity, rx_timeout_ms, \
         ((nfcdev_nfio_flags_t) { \
             .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
@@ -451,25 +484,53 @@ static inline ssize_t __nfcdev_receive__impl(nfcdev_t* dev,
         }) \
     )
 
-#include <stdio.h>
-#include "pn53x.h"
-#include "architecture.h"
-
-static inline ssize_t __nfcdev_transceive__impl__(nfcdev_t* dev,
+static inline ssize_t __nfcdev_transceive_async(nfcdev_t* dev,
     const iolist_t* tx,
-    uint8_t** rx, size_t capacity, uint32_t rx_timeout_ms,
+    nfcdev_rx_callback_t callback, void* arg, uint32_t rx_timeout_ms,
     nfcdev_nfio_flags_t flags
 ) {
     assert(dev);
     assert(dev->ops);
     assert(dev->ops->transceive);
     // Either you give me a buffer and a capacity OR no buffer and capacity of zero.
-    assert(((capacity > 0) && rx && *rx) || capacity == 0);
-    return dev->ops->transceive(dev, tx, rx, capacity, rx_timeout_ms, flags);
+    return dev->ops->transceive(dev, tx, callback, arg, rx_timeout_ms, flags);
 }
 
+#define nfcdev_transceive_chunks_async(dev, tx, callback, arg, rx_timeout_ms, flags) \
+    __nfcdev_transceive_async(dev, \
+        tx, \
+        callback, arg, rx_timeout_ms, \
+        ((nfcdev_nfio_flags_t) { \
+            .interface = (_flags) & _NFCDEV_MASK_INTERFACE, \
+            .reassemble = ((_flags) & NFCDEV_FLAG_REASSEMBLE != 0), \
+            .slice = ((_flags) & NFCDEV_FLAG_SLICE != 0) \
+        }) \
+    )
+
+#define nfcdev_transceive_async(dev, tx, tx_length, callback, arg, rx_timeout_ms, flags) \
+    __nfcdev_transceive_async(dev, \
+        (&(iolist_t){ \
+            .iol_base = (void*)(tx), \
+            .iol_len = (size_t)(__to_frame_length_bytes(tx_length)) \
+        }), \
+        callback, arg, rx_timeout_ms, \
+        ((nfcdev_nfio_flags_t) { \
+            .interface = (flags) & _NFCDEV_MASK_INTERFACE, \
+            .reassemble = (((flags) & NFCDEV_FLAG_REASSEMBLE) != 0), \
+            .slice = (((flags) & NFCDEV_FLAG_SLICE) != 0), \
+            .trailing_bits = __to_frame_length_bits(tx_length) \
+        }) \
+    )
+
+
+ssize_t __nfcdev_transceive_sync(nfcdev_t* dev,
+    const iolist_t* tx,
+    uint8_t** rx, size_t capacity, uint32_t rx_timeout_ms,
+    nfcdev_nfio_flags_t flags
+);
+
 #define nfcdev_transceive_chunks(dev, tx, rx, capacity, rx_timeout_ms, flags) \
-    __nfcdev_transceive__impl__(dev, \
+    __nfcdev_transceive_sync(dev, \
         tx, \
         __as_buffer_ref(rx), capacity, rx_timeout_ms, \
         ((nfcdev_nfio_flags_t) { \
@@ -480,7 +541,7 @@ static inline ssize_t __nfcdev_transceive__impl__(nfcdev_t* dev,
     )
 
 #define nfcdev_transceive(dev, tx, tx_length, rx, rx_capacity, rx_timeout_ms, flags) \
-    __nfcdev_transceive__impl__(dev, \
+    __nfcdev_transceive_sync(dev, \
         (&(iolist_t){ \
             .iol_base = (void*)(tx), \
             .iol_len = (size_t)(__to_frame_length_bytes(tx_length)) \

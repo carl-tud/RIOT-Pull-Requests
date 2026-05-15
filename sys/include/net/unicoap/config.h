@@ -44,6 +44,22 @@
 #endif
 
 /**
+ * @brief Allow a driver to take over the `unicoap` message processing loop
+ * if the driver is the only driver running.
+ *
+ * **Default**: Enabled
+ *
+ * When enabled, and no other driver is imported, and the driver supports this,
+ * no separate thread for processing (that would otherwise be spawned)
+ * will be spawned and all processing will happen on the `unicoap` processing loop.
+ * If you additionally disable @ref CONFIG_UNICOAP_CREATE_THREAD and run
+ * @ref unicoap_loop_run on the main thread, no processing threads will be spawned.
+ */
+#if !defined(CONFIG_UNICOAP_DRIVER_ALLOW_LOOP_TAKEOVER) || defined(DOXYGEN)
+#  define CONFIG_UNICOAP_DRIVER_ALLOW_LOOP_TAKEOVER 1
+#endif
+
+/**
  * @brief Enables debug logging in all `unicoap` source files, except where locally overwritten
  *
  * **Default**: disabled
@@ -398,6 +414,27 @@ static_assert(CONFIG_UNICOAP_OBSERVATION_CLIENTS_MAX <= CONFIG_UNICOAP_OBSERVATI
  */
 #if !defined(CONFIG_UNICOAP_WELL_KNOWN_CORE) || defined(DOXYGEN)
 #  define CONFIG_UNICOAP_WELL_KNOWN_CORE (1)
+#endif
+/** @} */
+
+/* MARK: - NFC driver */
+/**
+ * @name NFC driver
+ * @{
+ */
+/**
+ * @brief Allow the NFC driver to take over the `unicoap` message processing loop
+ * if the NFC driver is the only driver running.
+ *
+ * **Default**: Same as @ref CONFIG_UNICOAP_DRIVER_ALLOW_LOOP_TAKEOVER
+ *
+ * When enabled, and no other driver is imported, no separate thread for NFC processing
+ * will be spawned and all processing will happen on the `unicoap` processing loop.
+ * If you additionally disable @ref CONFIG_UNICOAP_CREATE_THREAD and run
+ * @ref unicoap_loop_run on the main thread, no processing threads will be spawned.
+ */
+#if !defined(CONFIG_UNICOAP_NFC_ALLOW_LOOP_TAKEOVER) || defined(DOXYGEN)
+#  define CONFIG_UNICOAP_NFC_ALLOW_LOOP_TAKEOVER CONFIG_UNICOAP_DRIVER_ALLOW_LOOP_TAKEOVER
 #endif
 /** @} */
 

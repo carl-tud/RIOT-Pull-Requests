@@ -48,6 +48,29 @@
 extern "C" {
 #endif
 
+/* MARK: - Drivers */
+/**
+ * @name Drivers
+ * @{
+ */
+#define UNICOAP_DRIVER_COUNT \
+    IS_USED(MODULE_UNICOAP_DRIVER_UDP) + \
+    IS_USED(MODULE_UNICOAP_DRIVER_DTLS) + \
+    IS_USED(MODULE_UNICOAP_DRIVER_NFC) + \
+    0
+
+#define UNICOAP_IS_SOLE_DRIVER(DRIVER_TRANSPORT) \
+    ((UNICOAP_DRIVER_COUNT == 1) && IS_USED(MODULE_UNICOAP_DRIVER_ ## DRIVER_TRANSPORT))
+
+#if !defined(CONFIG_UNICOAP_NFC_COMPAT_ISO_DEP_7816) || defined(DOXYGEN)
+#  define CONFIG_UNICOAP_NFC_COMPAT_ISO_DEP_7816 0
+#endif
+
+#if !defined(CONFIG_UNICOAP_NFC_COMPAT_NFC_DEP) || defined(DOXYGEN)
+#  define CONFIG_UNICOAP_NFC_COMPAT_NFC_DEP 0
+#endif
+/** @} */
+
 /* MARK: - CoAP URI schemes */
 /**
  * @name CoAP URI schemes
@@ -134,6 +157,9 @@ typedef enum {
     /** @brief CoAP over DTLS over UDP endpoint */
     UNICOAP_PROTO_DTLS = 2 << 1,
 
+    /** @brief CoAP over NFC endpoint */
+    UNICOAP_PROTO_NFC = 3 << 1,
+
     /* MARK: unicoap_driver_extension_point */
 } __attribute__((__packed__)) unicoap_proto_t;
 
@@ -173,7 +199,7 @@ static inline bool unicoap_transport_uses_sock_tl_ep(unicoap_proto_t proto)
     /* If a new transport driver does not use RIOT's socket API,
      * such as CoAP over GATT, return false here. */
     /* MARK: unicoap_driver_extension_point */
-    return true;
+    return !(proto & (UNICOAP_PROTO_UDP | UNICOAP_PROTO_DTLS));
 }
 
 /**
@@ -286,10 +312,12 @@ typedef struct {
 
         /** @brief Hostname, if identified by @ref UNICOAP_DESTINATION_HOST */
         const char* host;
-    } body;
+    } remote;
 
     /** @brief The type of this identifier */
     unicoap_destination_type_t type : 3;
+
+    unicoap_endpoint_t* local;
 } unicoap_destination_t;
 
 /**
@@ -302,7 +330,7 @@ typedef struct {
 static inline unicoap_destination_t unicoap_destination_endpoint(unicoap_endpoint_t* endpoint)
 {
     return (unicoap_destination_t){ .type = UNICOAP_DESTINATION_ENDPOINT,
-                                    .body.endoint = endpoint };
+                                    .remote.endoint = endpoint };
 }
 
 /**
@@ -315,7 +343,7 @@ static inline unicoap_destination_t unicoap_destination_endpoint(unicoap_endpoin
 static inline unicoap_destination_t unicoap_destination_host_string(const char* host)
 {
     return (unicoap_destination_t){ .type = UNICOAP_DESTINATION_ENDPOINT,
-                                    .body.host = host };
+                                    .remote.host = host };
 }
 
 /**
@@ -328,7 +356,7 @@ static inline unicoap_destination_t unicoap_destination_host_string(const char* 
 static inline unicoap_destination_t unicoap_destination_uri_string(const char* uri)
 {
     return (unicoap_destination_t){ .type = UNICOAP_DESTINATION_URI,
-                                    .body.uri = (char*)uri };
+                                    .remote.uri = (char*)uri };
 }
 /** @} */
 

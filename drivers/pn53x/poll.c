@@ -112,7 +112,7 @@ ssize_t pn53_in_jump_for_dep(pn53_dev_t* dev, nfc_field_mode_t mode, nfc_bitrate
     }
 
     uint8_t* _response = NULL;
-    ssize_t res = pn53_hci_transceive_command(dev, &_command, &_response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command_sync(dev, &_command, &_response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*_response++);
         if (status != PN53_STATUS_SUCCESS) {
@@ -185,7 +185,7 @@ ssize_t pn53_in_atr(pn53_dev_t* dev, nfcdev_connection_id_t tg, const nfc_dep_id
     }
 
     uint8_t* _response = NULL;
-    ssize_t res = pn53_hci_transceive_command(dev, &_command, &_response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command_sync(dev, &_command, &_response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*_response++);
         if (status != PN53_STATUS_SUCCESS) {
@@ -219,7 +219,7 @@ int pn53_in_psl(pn53_dev_t* dev, nfcdev_connection_id_t tg, nfc_bitrate_t downst
         (uint8_t)nfc_bitrate_to_index(upstream)
     };
     uint8_t* _response;
-    ssize_t res = pn53_hci_transceive_command2(dev, command, sizeof(command), &_response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command2_sync(dev, command, sizeof(command), &_response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*_response);
         if (status != PN53_STATUS_SUCCESS) {
@@ -473,7 +473,7 @@ ssize_t pn53_in_list_passive_targets_a(pn53_dev_t* dev, uint8_t max_targets, nfc
 
     dev->nfc_role = NFC_ROLE_INITIATOR;
     uint8_t* response;
-    if ((res = pn53_hci_transceive_command2(dev, command, length, &response, timeout_ms)) < 0) {
+    if ((res = pn53_hci_transceive_command2_sync(dev, command, length, &response, timeout_ms)) < 0) {
         return res;
     }
     if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets,
@@ -531,7 +531,7 @@ ssize_t pn53_in_list_passive_targets_b(pn53_dev_t* dev, uint8_t max_targets, nfc
     dev->nfc_role = NFC_ROLE_INITIATOR;
     // Only append method if method argument != 0
     size_t length = sizeof(command) - ((method != 0) ? 0 : 1);
-    if ((res = pn53_hci_transceive_command2(dev, command, length, &response, timeout_ms)) < 0) {
+    if ((res = pn53_hci_transceive_command2_sync(dev, command, length, &response, timeout_ms)) < 0) {
         return res;
     }
     if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets,
@@ -579,7 +579,7 @@ ssize_t pn53_in_list_passive_targets_f(pn53_dev_t* dev, uint8_t max_targets, nfc
 
     dev->nfc_role = NFC_ROLE_INITIATOR;
     // Only append method if method argument != 0
-    if ((res = pn53_hci_transceive_command2(dev, command, sizeof(command), &response, timeout_ms)) < 0) {
+    if ((res = pn53_hci_transceive_command2_sync(dev, command, sizeof(command), &response, timeout_ms)) < 0) {
         return res;
     }
     if ((res = pn53_parse_passive_targets(response, (size_t)res, dev->nfc_targets, max_targets,

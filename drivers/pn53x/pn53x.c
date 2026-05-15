@@ -61,26 +61,33 @@ static inline void __debug_hex(const uint8_t* buffer, size_t size) {
 
 #define UART_BAUDRATE               (115200U)
 
+#define PN53_COMMAND_NONE (0xff)
 
-ssize_t pn53_hci_transceive_command(pn53_dev_t* dev, iolist_t* command,
-                            uint8_t** response, uint32_t timeout_ms) {
+int pn53_hci_send_command(pn53_dev_t* dev, iolist_t* command) {
     assert(command);
     assert(command->iol_base);
     uint8_t code = *((uint8_t*)command->iol_base);
 
-    ssize_t res = 0;
     // This may reference the internal buffer, so destroy that wisely before
     dev->nfc_target_first_rx = NULL;
     dev->nfc_target_first_rx_length = 0;
-    if ((res = pn53_hci_transceive(&dev->connection, command, response, timeout_ms)) < 0) {
+    dev->command = code;
+    return pn53_hci_send(&dev->connection, command);
+}
+
+ssize_t pn53_hci_receive_response(pn53_dev_t* dev, uint8_t** response) {
+    assert(dev->command != PN53_COMMAND_NONE);
+    ssize_t res = 0;
+    if ((res = pn53_hci_receive(&dev->connection, response)) < 0) {
         return res;
     }
-
+    uint8_t command = dev->command;
+    dev->command = PN53_COMMAND_NONE;
     if (res == 0) {
         return -PN53_ERROR_CONNECTION_RESPONSE_MISSING;
     }
 
-    if (response && *response && **response != (code + 1)) {
+    if (response && *response && **response != (command + 1)) {
         return -PN53_ERROR_CONNECTION_RESPONSE_MISMATCH;
     }
     if (response) {
@@ -89,10 +96,96 @@ ssize_t pn53_hci_transceive_command(pn53_dev_t* dev, iolist_t* command,
     return res - 1;
 }
 
+ssize_t pn53_hci_transceive_command_sync(pn53_dev_t* dev, iolist_t* command,
+                            uint8_t** response, uint32_t timeout_ms) {
+    ssize_t res = 0;
+    if ((res = pn53_hci_send_command(dev, command)) < 0) {
+        return res;
+    }
+    PN53_DEBUG_HCI("exec: sync\n");
+    /* Wait until the response is available. */
+    if ((res = pn53_hci_sync_wait(&dev->connection, timeout_ms)) < 0) {
+        PN53_DEBUG_HCI("response timeout expired\n");
+        return res;
+    }
+    return pn53_hci_receive_response(dev, response);
+}
+
+ssize_t pn53_hci_transceive_command_async(pn53_dev_t* dev, iolist_t* command,
+                            event_handler_t handler, uint32_t timeout_ms) {
+    ssize_t res = 0;
+
+    if ((res = pn53_hci_send_command(dev, command)) < 0) {
+        return res;
+    }
+    if (dev->connection.queue) {
+        PN53_DEBUG_HCI("exec: async\n");
+        /* Either call timeout below or handler provided. */
+        return pn53_hci_async_wait(&dev->connection, timeout_ms, handler);
+    } else {
+        PN53_DEBUG_HCI("exec: sync (wanted async but no queue)\n");
+        if ((res = pn53_hci_sync_wait(&dev->connection, timeout_ms)) < 0) {
+            PN53_DEBUG_HCI("response timeout expired\n");
+            return res;
+        }
+        handler(&dev->connection.event);
+        return 0;
+    }
+}
+
+void pn53_event_handler_timeout(event_t* event) {
+    pn53_connection_t* connection = container_of(event, pn53_connection_t, event);
+    pn53_hci_cancel(connection);
+
+    pn53_dev_t* dev = container_of(connection, pn53_dev_t, connection);
+    uint8_t command = dev->command;
+    dev->command = PN53_COMMAND_NONE;
+    if (dev->callback._any) {
+        if (command == PN53_COMMAND_TG_INIT_AS_TARGET) {
+            dev->callback.target(NULL, -ETIMEDOUT, dev->callback_arg);
+        } else {
+            dev->callback.rx(NULL, -ETIMEDOUT, 0, dev->callback_arg);
+        }
+    }
+}
+
+static void pn53_event_handler_rx(event_t* _event) {
+    pn53_dev_t* dev = container_of(_event, pn53_dev_t, connection.event);
+    uint8_t* response = NULL;
+    ssize_t res = 0;
+    if ((res = pn53_hci_receive_response(dev, &response)) < 0) {
+        goto error;
+    }
+    nfcdev_rx_event_t event = NFCDEV_RX_EVENT_TEMPORARILY_RETAINABLE;
+    if (res > 0) {
+        assert(response);
+        uint8_t status_byte = *response++;
+        if (!pn53_status_more_information_available(status_byte)) {
+            event |= NFCDEV_RX_EVENT_COMPLETE;
+        }
+        pn53_status_code_t status = pn53_status_code(status_byte);
+        if (status != PN53_STATUS_SUCCESS) {
+            res = -PN53_ERRNO_FROM_STATUS_CODE(status);
+            goto error;
+        }
+        res -= 1;
+    }
+    goto out;
+
+error:
+    response = NULL;
+    event = 0;
+out:
+    if (dev->callback.rx) {
+        PN53_DEBUG("rx", "calling RX callback with res=%" PRIiSIZE "\n", res);
+        dev->callback.rx(response, res, event, dev->callback_arg);
+    }
+}
+
 static ssize_t pn53_hci_transceive_command_status_response(pn53_dev_t* dev, iolist_t* command,
                                                 uint8_t** response, size_t expected_response_length, uint32_t timeout_ms) {
     uint8_t* _response;
-    ssize_t res = pn53_hci_transceive_command(dev, command, &_response, timeout_ms);
+    ssize_t res = pn53_hci_transceive_command_sync(dev, command, &_response, timeout_ms);
     if (response) {
         *response = _response;
     }
@@ -136,7 +229,7 @@ int pn53_check_communication(pn53_dev_t* dev) {
         0x42, 'R', 'I', 'O', 'T', 0x42,
     };
     uint8_t* response;
-    ssize_t res = pn53_hci_transceive_command2(dev, command, sizeof(command),
+    ssize_t res = pn53_hci_transceive_command2_sync(dev, command, sizeof(command),
                                 &response, CONFIG_PN53_COMMAND_TIMEOUT_DEFAULT_MS);
     if (res < 0) {
         return (int)res;
@@ -173,7 +266,7 @@ int pn53_get_firmware_version(pn53_dev_t* dev, pn53_firmware_version_t** version
     int res = 0;
 
     pn53_firmware_version_t* fw;
-    if ((res = pn53_hci_transceive_command2(dev, &command, sizeof(command), (uint8_t**)&fw, CONFIG_PN53_COMMAND_TIMEOUT_DEFAULT_MS)) < 0) {
+    if ((res = pn53_hci_transceive_command2_sync(dev, &command, sizeof(command), (uint8_t**)&fw, CONFIG_PN53_COMMAND_TIMEOUT_DEFAULT_MS)) < 0) {
         PN53_DEBUG("GetFwVersion", "unable to get firmware version\n");
         return res;
     }
@@ -254,7 +347,7 @@ int pn53_set_parameters(pn53_dev_t* dev, uint8_t parameters) {
         parameters
     };
 
-    ssize_t res = pn53_hci_transceive_command2(dev, command, sizeof(command), NULL, CONFIG_PN53_COMMAND_TIMEOUT_DEFAULT_MS);
+    ssize_t res = pn53_hci_transceive_command2_sync(dev, command, sizeof(command), NULL, CONFIG_PN53_COMMAND_TIMEOUT_DEFAULT_MS);
     if (res < 0) {
         return (int)res;
     }
@@ -330,7 +423,7 @@ int pn53_write_registers_(pn53_dev_t *dev, void* registers, size_t count) {
     iolist_t regs = __IOLIST(registers, count * sizeof(pn53_register_t), NULL);
     iolist_t command = __IOLIST(&code, 1, &regs);
     uint8_t* response;
-    if ((res = pn53_hci_transceive_command(dev, &command, &response, dev->command_timeout)) < 0) {
+    if ((res = pn53_hci_transceive_command_sync(dev, &command, &response, dev->command_timeout)) < 0) {
         return res;
     }
     if (dev->model == PN53_MODEL_PN533) {
@@ -433,19 +526,19 @@ int pn53_register_symbols_write(pn53_dev_t* dev, pn53_register_symbols_t* symbol
 
 ssize_t pn53_read_gpio(pn53_dev_t* dev, pn53_read_gpio_payload_t** response) {
     uint8_t command = (uint8_t)PN53_COMMAND_READ_GPIO;
-    return pn53_hci_transceive_command2(dev, &command, sizeof(command), (uint8_t**)response, dev->command_timeout);
+    return pn53_hci_transceive_command2_sync(dev, &command, sizeof(command), (uint8_t**)response, dev->command_timeout);
 }
 
 int pn53_write_gpio(pn53_dev_t* dev, pn53_write_gpio_payload_t payload) {
     uint8_t command[] = { (uint8_t)PN53_COMMAND_WRITE_GPIO, payload.p3.raw, payload.p7.raw };
-    return (int)pn53_hci_transceive_command2(dev, command, sizeof(command), NULL, dev->command_timeout);
+    return (int)pn53_hci_transceive_command2_sync(dev, command, sizeof(command), NULL, dev->command_timeout);
 }
 
 int pn53_get_general_status(pn53_dev_t* dev, pn53_general_status_t* status) {
     uint8_t command = (uint8_t)PN53_COMMAND_GET_GENERAL_STATUS;
     uint8_t* response;
     ssize_t res = 0;
-    if ((res = pn53_hci_transceive_command2(dev, &command, sizeof(command), &response, dev->command_timeout)) < 0) {
+    if ((res = pn53_hci_transceive_command2_sync(dev, &command, sizeof(command), &response, dev->command_timeout)) < 0) {
         return (int)res;
     }
 
@@ -525,7 +618,7 @@ int pn53_rf_configuration(pn53_dev_t* dev, const pn53_rf_configuration_payload_t
     uint8_t code = PN53_COMMAND_RF_CONFIGURATION;
     iolist_t config = __IOLIST((const uint8_t*)rf_config, 1 + _rf_configuration_payload_length(rf_config), NULL);
     iolist_t command = __IOLIST(&code, 1, &config);
-    int res = (int)pn53_hci_transceive_command(dev, &command, NULL, dev->command_timeout);
+    int res = (int)pn53_hci_transceive_command_sync(dev, &command, NULL, dev->command_timeout);
     return res < 0 ? res : 0;
 }
 
@@ -536,32 +629,21 @@ int pn53_set_field_enablement(pn53_dev_t* dev, bool intent_to_enable, bool colli
         (uint8_t)PN53_RF_CONFIGURATION_ITEM_RF_FIELD,
         (intent_to_enable & 1) | ((collision_avoidance & 1) << 1)
     };
-    int res = (int)pn53_hci_transceive_command2(dev, command, sizeof(command), NULL, dev->command_timeout);
+    int res = (int)pn53_hci_transceive_command2_sync(dev, command, sizeof(command), NULL, dev->command_timeout);
     return res < 0 ? res : 0;
 }
 
-ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms) {
+ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const iolist_t* tx, uint32_t timeout_ms
+) {
     assert(dev->nfc_role == NFC_ROLE_INITIATOR);
     assert(!tx || iolist_size(tx) <= pn53_max_command_payload_length(dev)); /* 262 */
     uint8_t code = (uint8_t)PN53_COMMAND_IN_COMMUNICATE_THRU;
     iolist_t _command = __IOLIST(&code, 1, (iolist_t*)tx);
-    uint8_t* _response = NULL;
-    ssize_t res = pn53_hci_transceive_command(dev, &_command, &_response, timeout_ms);
-    if (res > 0) {
-        assert(_response);
-        pn53_status_code_t status = pn53_status_code(*_response++);
-        if (status != PN53_STATUS_SUCCESS) {
-            return -PN53_ERRNO_FROM_STATUS_CODE(status);
-        }
-        res -= 1;
-    }
-    if (rx) {
-        *rx = _response;
-    }
-    return res;
+    return pn53_hci_transceive_command_async(dev, &_command, pn53_event_handler_rx, timeout_ms);
 }
 
-ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t id, uint8_t* status_byte, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms) {
+ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t id, uint8_t status,
+                              const iolist_t* tx, uint32_t timeout_ms) {
     assert(dev->nfc_role == NFC_ROLE_INITIATOR);
     assert(!tx || iolist_size(tx) <= pn53_max_exchange_payload_length(dev)); /* 262 */
     if (!pn53_target(dev, id)) {
@@ -571,35 +653,16 @@ ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t id, uint8_
         (uint8_t)PN53_COMMAND_IN_DATA_EXCHANGE,
         (uint8_t)id
     };
-    if (status_byte) {
-        command[1] |= ((*status_byte & PN53_STATUS_BYTE_FLAG_MORE) != 0) & 1;
-    }
+    command[1] |= ((status & PN53_STATUS_BYTE_FLAG_MORE) != 0) & 1;
     iolist_t _command = __IOLIST(command, sizeof(command), (iolist_t*)tx);
-    uint8_t* _response = NULL;
-    ssize_t res = pn53_hci_transceive_command(dev, &_command, &_response, timeout_ms);
-    if (res > 0) {
-        assert(_response);
-        pn53_status_code_t status = pn53_status_code(*_response);
-        if (status != PN53_STATUS_SUCCESS) {
-            return -PN53_ERRNO_FROM_STATUS_CODE(status);
-        }
-        if (status_byte) {
-            *status_byte = *_response;
-        }
-        res -= 1;
-        _response += 1;
-    }
-    if (rx) {
-        *rx = _response;
-    }
-    return res;
+    return pn53_hci_transceive_command_async(dev, &_command, pn53_event_handler_rx, timeout_ms);
 }
 
 int pn53_deselect_reselect_release(pn53_dev_t *dev, uint8_t tg, pn53_command_code_t code) {
     assert(tg <= 2);
     uint8_t command[] = { (uint8_t)code, tg };
     uint8_t* _response = NULL;
-    ssize_t res = pn53_hci_transceive_command2(dev, command, sizeof(command), &_response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command2_sync(dev, command, sizeof(command), &_response, dev->command_timeout);
     if (res == 0) {
         PN53_DEBUG("internal", "missing status code\n");
         return -EBADMSG;
@@ -712,7 +775,7 @@ int pn53_tg_set_general_bytes(pn53_dev_t* dev, const iolist_t* general_bytes) {
     uint8_t code = (uint8_t)PN53_COMMAND_TG_SET_GENERAL_BYTES;
     iolist_t _command = { .iol_base = (void*)&code, .iol_len = 1, .iol_next = (iolist_t*)general_bytes };
     uint8_t* response;
-    ssize_t res = pn53_hci_transceive_command(dev, &_command, &response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command_sync(dev, &_command, &response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*response);
         if (status != PN53_STATUS_SUCCESS) {
@@ -722,24 +785,11 @@ int pn53_tg_set_general_bytes(pn53_dev_t* dev, const iolist_t* general_bytes) {
     return res < 0 ? (int)res : 0;
 }
 
-ssize_t pn53_tg_get_data(pn53_dev_t* dev, uint8_t** rx, uint32_t timeout_ms) {
+ssize_t pn53_tg_get_data(pn53_dev_t* dev, uint32_t timeout_ms) {
     assert(dev->nfc_role == NFC_ROLE_TARGET);
     assert(pn53_emulated_target(dev)->managed_transport != PN53_MANAGED_TRANSPORT_NONE);
-
     uint8_t code = (uint8_t)PN53_COMMAND_TG_GET_DATA;
-    uint8_t* response = NULL;
-    ssize_t res = pn53_hci_transceive_command2(dev, &code, 1, &response, timeout_ms);
-    if (res > 0) {
-        pn53_status_code_t status = pn53_status_code(*response++);
-        if (status != PN53_STATUS_SUCCESS) {
-            return -PN53_ERRNO_FROM_STATUS_CODE(status);
-        }
-        res -= 1;
-    }
-    if (rx) {
-        *rx = response;
-    }
-    return res;
+    return pn53_hci_transceive_command2_async(dev, &code, 1, pn53_event_handler_rx, timeout_ms);
 }
 
 int pn53_tg_set_data(pn53_dev_t* dev, const iolist_t* tx) {
@@ -750,7 +800,7 @@ int pn53_tg_set_data(pn53_dev_t* dev, const iolist_t* tx) {
     uint8_t code = (uint8_t)PN53_COMMAND_TG_SET_DATA;
     iolist_t _command = { .iol_base = &code, .iol_len = 1, .iol_next = (iolist_t*)tx };
     uint8_t* response = NULL;
-    ssize_t res = pn53_hci_transceive_command(dev, &_command, &response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command_sync(dev, &_command, &response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*response);
         if (status != PN53_STATUS_SUCCESS) {
@@ -768,7 +818,7 @@ int pn53_tg_set_meta_data(pn53_dev_t* dev, const iolist_t* tx) {
     uint8_t code = (uint8_t)PN53_COMMAND_TG_SET_META_DATA;
     iolist_t _command = { .iol_base = &code, .iol_len =1, .iol_next = (iolist_t*)tx };
     uint8_t* response = NULL;
-    ssize_t res = pn53_hci_transceive_command(dev, &_command, &response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command_sync(dev, &_command, &response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*response);
         if (status != PN53_STATUS_SUCCESS) {
@@ -778,23 +828,11 @@ int pn53_tg_set_meta_data(pn53_dev_t* dev, const iolist_t* tx) {
     return res < 0 ? (int)res : 0;
 }
 
-ssize_t pn53_tg_get_initiator_command(pn53_dev_t* dev, uint8_t** rx, uint32_t timeout_ms) {
+ssize_t pn53_tg_get_initiator_command(pn53_dev_t* dev, uint32_t timeout_ms) {
     assert(dev->nfc_role == NFC_ROLE_TARGET);
 
     uint8_t code = (uint8_t)PN53_COMMAND_TG_GET_INITIATOR_COMMAND;
-    uint8_t* response = NULL;
-    ssize_t res = pn53_hci_transceive_command2(dev, &code, 1, &response, timeout_ms);
-    if (res > 0) {
-        pn53_status_code_t status = pn53_status_code(*response++);
-        if (status != PN53_STATUS_SUCCESS) {
-            return -PN53_ERRNO_FROM_STATUS_CODE(status);
-        }
-        res -= 1;
-    }
-    if (rx) {
-        *rx = response;
-    }
-    return res;
+    return pn53_hci_transceive_command2_async(dev, &code, 1, pn53_event_handler_rx, timeout_ms);
 }
 
 int pn53_tg_response_to_initiator(pn53_dev_t* dev, const iolist_t* tx) {
@@ -804,7 +842,7 @@ int pn53_tg_response_to_initiator(pn53_dev_t* dev, const iolist_t* tx) {
     uint8_t code = (uint8_t)PN53_COMMAND_TG_RESPONSE_TO_INITIATOR;
     iolist_t _command = { .iol_base = &code, .iol_len = 1, .iol_next = (iolist_t*)tx };
     uint8_t* response = NULL;
-    ssize_t res = pn53_hci_transceive_command(dev, &_command, &response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command_sync(dev, &_command, &response, dev->command_timeout);
     if (res > 0) {
         pn53_status_code_t status = pn53_status_code(*response);
         if (status != PN53_STATUS_SUCCESS) {
@@ -817,7 +855,7 @@ int pn53_tg_response_to_initiator(pn53_dev_t* dev, const iolist_t* tx) {
 int pn53_tg_get_target_status(pn53_dev_t* dev, pn53_target_status_t* status, nfc_bitrate_t* down, nfc_bitrate_t* up) {
     uint8_t command = (uint8_t)PN53_COMMAND_TG_GET_TARGET_STATUS;
     uint8_t* response = NULL;
-    ssize_t res = pn53_hci_transceive_command2(dev, &command, 1, &response, dev->command_timeout);
+    ssize_t res = pn53_hci_transceive_command2_sync(dev, &command, 1, &response, dev->command_timeout);
     if (res != 2) {
         return -EBADMSG;
     }
@@ -834,13 +872,13 @@ extern int nfcdev_listen_pn53(nfcdev_t* dev, const nfcdev_listening_config_t* co
 extern int nfcdev_send_pn53(nfcdev_t* nfcdev, const iolist_t* tx, nfcdev_nfio_flags_t flags);
 
 extern ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
-                                   uint8_t** rx, size_t capacity,
+                                   nfcdev_rx_callback_t callback, void* arg,
                                    uint32_t rx_timeout_ms, nfcdev_nfio_flags_t flags
 );
 
 extern ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                                       const iolist_t* tx,
-                                      uint8_t** rx, size_t capacity,
+                                      nfcdev_rx_callback_t callback, void* arg,
                                       uint32_t rx_timeout_ms, nfcdev_nfio_flags_t flags
 );
 

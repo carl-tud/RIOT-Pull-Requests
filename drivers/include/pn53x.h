@@ -1,4 +1,4 @@
-/*
+../../../../drivers/include/pn53x.h ../../../../drivers/include/pn53x.h/*
  * Copyright (C) 2016 TriaGnoSys GmbH
  *
  * This file is subject to the terms and conditions of the GNU Lesser
@@ -23,6 +23,7 @@ extern "C" {
 #include "time_units.h"
 #include "mutex.h"
 #include "sema.h"
+#include "event.h"
 #include "periph/i2c.h"
 #include "periph/spi.h"
 #include "periph/uart.h"
@@ -181,6 +182,9 @@ typedef struct {
 typedef struct {
     const pn53_connection_config_t* config;
     sema_t trap;
+    ztimer_t timer;
+    event_t event;
+    event_queue_t* queue;
 #if IS_USED(MODULE_PN53X_UART) || defined(DOXYGEN)
     mutex_t callback;
 #endif
@@ -208,6 +212,13 @@ typedef struct {
     pn53_model_t model;
     pn53_logical_target_t nfc_targets[2];
     uint32_t command_timeout;
+    uint8_t command;
+    union {
+        nfcdev_rx_callback_t rx;
+        nfcdev_target_callback_t target;
+        void* _any;
+    } callback;
+    void* callback_arg;
     nfc_role_t nfc_role;
     nfcdev_connection_id_t nfc_current_tg;
     uint8_t nfc_parameters;
@@ -314,15 +325,39 @@ typedef enum {
     PN53_ERROR_CONNECTION_FRAME_SYNTAX                  = PN53_ERRNO(13),
 } pn53_hci_error_t;
 
-ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
-                            uint8_t** response, uint32_t timeout_ms);
+ssize_t pn53_hci_send(pn53_connection_t* connection, iolist_t* packet);
 
-ssize_t pn53_hci_transceive_command(pn53_dev_t* connection, iolist_t* command,
-                                    uint8_t** response, uint32_t timeout_ms);
+ssize_t pn53_hci_receive(pn53_connection_t* connection, uint8_t** response);
 
-static inline ssize_t pn53_hci_transceive_command2(pn53_dev_t* dev, uint8_t* command, size_t length, uint8_t** response, uint32_t timeout_ms) {
+int pn53_hci_sync_wait(pn53_connection_t* connection, uint32_t timeout_ms);
+int pn53_hci_async_wait(pn53_connection_t* connection, uint32_t timeout_ms, event_handler_t handler);
+
+int pn53_hci_cancel(pn53_connection_t* connection);
+
+int pn53_hci_send_command(pn53_dev_t* dev, iolist_t* command);
+
+ssize_t pn53_hci_receive_response(pn53_dev_t* dev, uint8_t** response);
+
+ssize_t pn53_hci_transceive_command_sync(pn53_dev_t* connection, iolist_t* command,
+                                         uint8_t** response, uint32_t timeout_ms);
+
+ssize_t pn53_hci_transceive_command_async(pn53_dev_t* dev, iolist_t* command,
+                                          event_handler_t handler, uint32_t timeout_ms);
+
+static inline ssize_t pn53_hci_transceive_command2_sync(pn53_dev_t* dev, uint8_t* command,
+                                                        size_t length, uint8_t** response,
+                                                        uint32_t timeout_ms
+) {
     iolist_t iolist = { .iol_base = (void*)command, .iol_len = length };
-    return pn53_hci_transceive_command(dev, &iolist, response, timeout_ms);
+    return pn53_hci_transceive_command_sync(dev, &iolist, response, timeout_ms);
+}
+
+static inline ssize_t pn53_hci_transceive_command2_async(pn53_dev_t* dev, uint8_t* command,
+                                                         size_t length, event_handler_t handler,
+                                                         uint32_t timeout_ms
+) {
+    iolist_t iolist = { .iol_base = (void*)command, .iol_len = length };
+    return pn53_hci_transceive_command_async(dev, &iolist, handler, timeout_ms);
 }
 
 int pn53_hci_init(pn53_connection_t* connection);
@@ -1231,19 +1266,20 @@ static inline int pn53_release_all(pn53_dev_t *dev) {
     return res;
 }
 
-ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms);
+ssize_t pn53_in_communicate_thru(pn53_dev_t* dev, const iolist_t* tx, uint32_t timeout_ms);
 
-ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t connection_id, uint8_t* status, const iolist_t* tx, uint8_t** rx, uint32_t timeout_ms);
+ssize_t pn53_in_data_exchange(pn53_dev_t* dev, nfcdev_connection_id_t connection_id,
+                              uint8_t status, const iolist_t* tx, uint32_t timeout_ms);
 
 int pn53_tg_set_general_bytes(pn53_dev_t* dev, const iolist_t* general_bytes);
 
-ssize_t pn53_tg_get_data(pn53_dev_t* dev, uint8_t** rx, uint32_t timeout_ms);
+ssize_t pn53_tg_get_data(pn53_dev_t* dev, uint32_t timeout_ms);
 
 int pn53_tg_set_data(pn53_dev_t* dev, const iolist_t* tx);
 
 int pn53_tg_set_meta_data(pn53_dev_t* dev, const iolist_t* tx);
 
-ssize_t pn53_tg_get_initiator_command(pn53_dev_t* dev, uint8_t** rx, uint32_t timeout_ms);
+ssize_t pn53_tg_get_initiator_command(pn53_dev_t* dev, uint32_t timeout_ms);
 
 int pn53_tg_response_to_initiator(pn53_dev_t* dev, const iolist_t* tx);
 
@@ -1275,7 +1311,8 @@ int nfcdev_configure_radio_pn53(nfcdev_t* dev, const nfcdev_radio_config_t* tx, 
 int pn53_fifo_receive_start_(pn53_dev_t* dev, bool transceive);
 
 ssize_t pn53_fifo_receive_read_(pn53_dev_t* dev,
-                                uint8_t* rx, size_t capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms);
+                                nfcdev_rx_callback_t callback, void* arg,
+                                uint8_t* rx_trailing_bit_count, uint32_t timeout_ms);
 
 int pn53_fifo_transmit_write_(pn53_dev_t* dev,
     const iolist_t* tx, uint8_t tx_trailing_bit_count,
@@ -1289,23 +1326,25 @@ static inline int pn53_fifo_transmit(pn53_dev_t* dev,
 }
 
 static inline ssize_t pn53_fifo_receive(pn53_dev_t* dev,
-    uint8_t* rx, size_t capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
+    nfcdev_rx_callback_t callback, void* arg,
+    uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
 ) {
     int res = pn53_fifo_receive_start_(dev, false);
     if (res < 0) {
         return res;
     }
-    return pn53_fifo_receive_read_(dev, rx, capacity, rx_trailing_bit_count, timeout_ms);
+    return pn53_fifo_receive_read_(dev, callback, arg, rx_trailing_bit_count, timeout_ms);
 }
 
 static inline ssize_t pn53_fifo_transceive_target_receive(pn53_dev_t* dev,
-    uint8_t* rx, size_t rx_capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
+    nfcdev_rx_callback_t callback, void* arg,
+    uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
 ) {
     int res = pn53_fifo_receive_start_(dev, true);
     if (res < 0) {
         return res;
     }
-    return pn53_fifo_receive_read_(dev, rx, rx_capacity, rx_trailing_bit_count, timeout_ms);
+    return pn53_fifo_receive_read_(dev, callback, arg, rx_trailing_bit_count, timeout_ms);
 }
 
 static inline int pn53_fifo_transceive_target_transmit(pn53_dev_t* dev,
@@ -1316,7 +1355,8 @@ static inline int pn53_fifo_transceive_target_transmit(pn53_dev_t* dev,
 
 static inline ssize_t pn53_fifo_transceive_initiator(pn53_dev_t* dev,
     const iolist_t* tx, uint8_t tx_trailing_bit_count,
-    uint8_t* rx, size_t rx_capacity, uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
+    nfcdev_rx_callback_t callback, void* arg,
+    uint8_t* rx_trailing_bit_count, uint32_t timeout_ms
 ) {
     int res = 0;
     if ((res = pn53_fifo_transmit_write_(dev, tx, tx_trailing_bit_count, true, false)) < 0) {
@@ -1325,7 +1365,7 @@ static inline ssize_t pn53_fifo_transceive_initiator(pn53_dev_t* dev,
     if ((res = pn53_fifo_receive_start_(dev, false)) < 0) {
         return res;
     }
-    return pn53_fifo_receive_read_(dev, rx, rx_capacity, rx_trailing_bit_count, timeout_ms);
+    return pn53_fifo_receive_read_(dev, callback, arg, rx_trailing_bit_count, timeout_ms);
 }
 
 /**

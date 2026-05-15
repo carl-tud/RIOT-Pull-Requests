@@ -178,19 +178,9 @@ ifneq (,$(filter periph_usbdev_hs,$(USEMODULE)))
   FEATURES_REQUIRED += periph_usbdev_hs
 endif
 
-ifneq (,$(filter pn53x_i2c,$(USEMODULE)))
-  FEATURES_REQUIRED += periph_i2c
-  USEMODULE += pn53x
-endif
-
-ifneq (,$(filter pn53x_spi,$(USEMODULE)))
+ifneq (,$(filter pn7160_spi,$(USEMODULE)))
   FEATURES_REQUIRED += periph_spi
-  USEMODULE += pn53x
-endif
-
-ifneq (,$(filter pn53x_uart,$(USEMODULE)))
-  FEATURES_REQUIRED += periph_uart
-  USEMODULE += pn53x
+  USEMODULE += pn7160
 endif
 
 ifneq (,$(filter pn532_i2c,$(USEMODULE)))
@@ -211,9 +201,23 @@ ifneq (,$(filter pn532_uart,$(USEMODULE)))
   USEMODULE += pn53x_uart
 endif
 
-ifneq (,$(filter pn7160_spi,$(USEMODULE)))
+ifneq (,$(filter pn53x_i2c,$(USEMODULE)))
+  FEATURES_REQUIRED += periph_i2c
+  USEMODULE += pn53x
+endif
+
+ifneq (,$(filter pn53x_spi,$(USEMODULE)))
   FEATURES_REQUIRED += periph_spi
-  USEMODULE += pn7160
+  USEMODULE += pn53x
+endif
+
+ifneq (,$(filter pn53x_uart,$(USEMODULE)))
+  FEATURES_REQUIRED += periph_uart
+  USEMODULE += pn53x
+endif
+
+ifneq (,$(filter pn53x,$(USEMODULE)))
+  USEMODULE += nfcdev
 endif
 
 ifneq (,$(filter qmc5883l_%,$(USEMODULE)))

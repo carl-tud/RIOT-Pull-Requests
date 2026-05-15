@@ -99,7 +99,7 @@ ssize_t pn53_tg_init_as_target(pn53_dev_t* dev, const nfc_a_tag_t* a, const nfc_
         sizeof(nfc_f_id_t) + sizeof(nfc_f_pmm_t) + sizeof(nfc_f_system_code_t), &params_nfc_dep_id);
     iolist_t _command = __IOLIST(command, sizeof(command), &params_f);
     uint8_t* response = NULL;
-    ssize_t res = pn53_hci_transceive_command(dev, &_command, &response, timeout_ms);
+    ssize_t res = pn53_hci_transceive_command_sync(dev, &_command, &response, timeout_ms);
     if (res > 0) {
         dev->nfc_role = NFC_ROLE_TARGET;
         dev->nfc_current_tg = 0;

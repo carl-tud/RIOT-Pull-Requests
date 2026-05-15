@@ -295,10 +295,20 @@ static int _parse_ack(uint8_t* frame, size_t length) {
     }
     return 0;
 }
-
-static void _hci_event(void* connection) {
-    // PN53_DEBUG_TRANSPORT("HCI event\n");
-    sema_post(&((pn53_connection_t*)connection)->trap);
+static void _on_hci_event(void* arg) {
+    pn53_connection_t* connection = (pn53_connection_t*)arg;
+    PN53_DEBUG_TRANSPORT("IRQ\n");
+    if (connection->queue) {
+        /* We're supposed to post to async queue, there's no blocked thread waiting for us.
+         * Remove timer immediately, may take a bit to for HCI read from queue. */
+        bool triggered = !ztimer_remove(ZTIMER_MSEC, &connection->timer);
+        if (!triggered) {
+            event_post(connection->queue, &connection->event);
+        }
+    } else {
+        /* We're supposed to make the blocked thread continue. */
+        sema_post(&connection->trap);
+    }
 }
 
 #define PN53_RESET_TOGGLE_SLEEP_MS       (400)
@@ -316,7 +326,7 @@ int pn53_hci_init(pn53_connection_t* connection) {
 #if PN53_HCI_IRQ_SUPPORTED
     PN53_DEBUG_TRANSPORT("using HCI IRQ\n");
     sema_create(&connection->trap, 0);
-    gpio_init_int(connection->config->irq, GPIO_IN_PU, GPIO_FALLING, _hci_event, (void*)connection);
+    gpio_init_int(connection->config->irq, GPIO_IN_PU, GPIO_FALLING, _on_hci_event, (void*)connection);
 #endif
 
     gpio_init(connection->config->reset, GPIO_OUT);
@@ -329,6 +339,7 @@ int pn53_hci_init(pn53_connection_t* connection) {
         gpio_init(connection->config->chip_select, GPIO_OUT);
         gpio_set(connection->config->chip_select);
 #else
+        PN53_DEBUG_TRANSPORT("SPI not imported\n");
         return -ENOTSUP;
 #endif
     } else if (connection->config->bus.kind) {
@@ -345,6 +356,7 @@ int pn53_hci_init(pn53_connection_t* connection) {
         // uart_mode(dev->conf->uart, UART_DATA_BITS_8, UART_PARITY_NONE, UART_STOP_BITS_1);
         // uart_poweron(dev->conf->uart);
 #else
+        PN53_DEBUG_TRANSPORT("UART not imported\n");
         return -ENOTSUP;
 #endif
     }
@@ -566,7 +578,7 @@ static ssize_t _send_packet(pn53_connection_t* connection, iolist_t* packet) {
     return res;
 }
 
-static ssize_t _recv_packet(pn53_connection_t* connection, uint8_t** packet) {
+ssize_t pn53_hci_receive(pn53_connection_t* connection, uint8_t** packet) {
     assert(connection);
     ssize_t res = 0;
     if ((res = _read(connection, connection->backing, PN53_FRAME_OVERHEAD_MIN, PN53_READ_INITIAL)) < 0) {
@@ -614,7 +626,15 @@ static ssize_t _recv_packet(pn53_connection_t* connection, uint8_t** packet) {
     return res;
 }
 
-static ssize_t _block_with_timeout(pn53_connection_t* connection, uint32_t timeout_ms) {
+int pn53_hci_cancel(pn53_connection_t* connection) {
+    ssize_t res = _send_ack(connection);
+    if (res < 0) {
+        PN53_DEBUG_HCI("ACK to abort failed with %i\n", (int)res);
+    }
+    return (int)res;
+}
+
+int pn53_hci_sync_wait(pn53_connection_t* connection, uint32_t timeout_ms) {
     if (timeout_ms == PN53_TIMEOUT_NEVER) {
         sema_wait(&connection->trap);
         return 0;
@@ -624,16 +644,30 @@ static ssize_t _block_with_timeout(pn53_connection_t* connection, uint32_t timeo
         if (triggered) {
             PN53_DEBUG_HCI("timeout after %" PRIu32 " ms, aborting with ACK\n", timeout_ms);
             // Best effort, i.e., discard result
-            ssize_t res = _send_ack(connection);
-            if (res < 0) {
-                PN53_DEBUG_HCI("ACK to abort failed with %i\n", (int)res);
-            }
+            pn53_hci_cancel(connection);
             return -ETIMEDOUT;
         } else {
-            PN53_DEBUG_HCI("timeout not fired\n");
             return 0;
         }
     }
+}
+
+static void _on_hci_timeout_isr(void* arg) {
+    pn53_connection_t* connection = (pn53_connection_t*)arg;
+    assert(connection->queue);
+    extern void pn53_event_handler_timeout(event_t* event);
+    connection->event.handler = pn53_event_handler_timeout;
+    event_post(connection->queue, &connection->event);
+}
+
+int pn53_hci_async_wait(pn53_connection_t* connection, uint32_t timeout_ms, event_handler_t handler) {
+    if (timeout_ms != PN53_TIMEOUT_NEVER) {
+        connection->timer.callback = _on_hci_timeout_isr;
+        connection->timer.arg = connection;
+        ztimer_set(ZTIMER_MSEC, &connection->timer, timeout_ms);
+    }
+    connection->event.handler = handler;
+    return 0;
 }
 
 #if IS_USED(MODULE_PN53_UART)
@@ -648,9 +682,8 @@ static void _uart_rx_cb(void* connection, uint8_t byte) {
 }
 #endif
 
-ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
-                            uint8_t** response, uint32_t timeout_ms) {
-    ssize_t res = 0;
+int  pn53_hci_send(pn53_connection_t* connection, iolist_t* packet) {
+    int res = 0;
     uint32_t timestamp = 0;
     if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI_TIMING)) {
         timestamp = ztimer_now(ZTIMER_MSEC);
@@ -666,7 +699,7 @@ ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
     }
 
     /* Wait until data is available. */
-    if ((res = _block_with_timeout(connection, CONFIG_PN53_ACK_TIMEOUT_MS)) < 0) {
+    if ((res = pn53_hci_sync_wait(connection, CONFIG_PN53_ACK_TIMEOUT_MS)) < 0) {
         PN53_DEBUG_TRANSPORT("ACK timeout expired\n");
         return res;
     }
@@ -688,28 +721,5 @@ ssize_t pn53_hci_transceive(pn53_connection_t* connection, iolist_t* packet,
     }
 
     PN53_DEBUG_TRANSPORT("[<-] ACK\n");
-
-    /* Wait until the response is available. */
-    if ((res = _block_with_timeout(connection, timeout_ms)) < 0) {
-        PN53_DEBUG_HCI("response timeout expired\n");
-        return res;
-    }
-
-    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI_TIMING)) {
-        PN53_DEBUG_HCI("[<- IRQ] %" PRIu32 " ms\n", ztimer_now(ZTIMER_MSEC) - timestamp);
-        timestamp = ztimer_now(ZTIMER_MSEC);
-    }
-
-    /* We expect an ACK from the controller. */
-    if ((res = _recv_packet(connection, response)) < 0) {
-        PN53_DEBUG_TRANSPORT("receiving response failed\n");
-        return res;
-    }
-
-    if (IS_ACTIVE(CONFIG_PN53_DEBUG_HCI_TIMING)) {
-        PN53_DEBUG_HCI("[<-] %" PRIu32 " ms\n", ztimer_now(ZTIMER_MSEC) - timestamp);
-    }
-
-    PN53_DEBUG_TRANSPORT("round trip complete\n");
-    return res;
+    return 0;
 }

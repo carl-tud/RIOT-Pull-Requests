@@ -469,11 +469,9 @@ int main(void) {
             .spi = SPI_DEV(0),
         },
 #if IS_USED(MODULE_PN532_SPI)
-            //.chip_select = GPIO_PIN(1, 8),
-            .chip_select = GPIO_PIN(0, 5),
+            .chip_select = GPIO_PIN(1, 8),
 #endif
-            //.reset = GPIO_PIN(0, 7),
-            .reset = GPIO_PIN(0, 4),
+            .reset = GPIO_PIN(0, 7),
             .irq = GPIO_PIN(0, 26),
     };
     static pn532_dev_t pn532 = {};
@@ -488,7 +486,7 @@ int main(void) {
                                'a', LLCP_SOCKET_MODE_ACCEPTING, 'a');
 
     if ((res = nfcdev_init_pn532(&dev, &pn532, &config)) < 0) {
-        printf("init: error %" PRIdSIZE " \n", res);
+        printf("init: error %" PRIdSIZE " (%s)\n", res, strerror(-res));
         return (int)res;
     }
 

@@ -98,12 +98,13 @@ endif
 # This variable ensures the "No drivers" warning gets printed only once
 _UNICOAP_MISSING_DRIVER ?= 0
 
-ifeq (,$(filter %_udp %_dtls %_tcp %_tls %_websocket %_websocket_tls %_rfc7252_common_pdu %_rfc7252_pdu,$(filter unicoap_driver_%,$(USEMODULE))))
+ifeq (,$(filter %_udp %_dtls %_tcp %_tls %_websocket %_websocket_tls %_rfc7252_common_pdu %_rfc7252_pdu %_nfc,$(filter unicoap_driver_%,$(USEMODULE))))
   ifeq (0, $(_UNICOAP_MISSING_DRIVER))
     $(warning No drivers imported, did you forget to import a driver?)
     $(info +++ FIXIT: Makefile: Add USEMODULE += unicoap_driver_dtls for CoAP over DTLS driver)
     $(info +++ FIXIT: Makefile: Add USEMODULE += unicoap_driver_udp for CoAP over UDP driver)
     $(info +++ FIXIT: Makefile: Add USEMODULE += unicoap_driver_rfc7252_pdu for CoAP over UDP/DTLS PDU parser only)
+    $(info +++ FIXIT: Makefile: Add USEMODULE += unicoap_driver_nfc for CoAP over NFC driver)
     # MARK: unicoap_driver_extension_point
   endif
   _UNICOAP_MISSING_DRIVER = 1

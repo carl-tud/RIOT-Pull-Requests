@@ -317,7 +317,20 @@ typedef struct {
         uint16_t id;
     } rfc7252;
 
-    /** @brief CoAP message token */
+    /** @brief NFC only properties */
+    struct {
+        unicoap_nfc_indication_t indication : UNICOAP_NFC_INDICATION_FIXED_WIDTH;
+        
+        uint8_t id : 1;
+
+        bool reset : 1;
+
+        /* Below is supplied as external knowledge by the driver, read by the parser. */
+
+        bool compatibility_mode : 1;
+        
+        unicoap_nfc_direction_t direction : UNICOAP_NFC_DIRECTION_FIXED_WIDTH;
+    } nfc;
 } unicoap_message_properties_t;
 
 /**
@@ -1337,6 +1350,156 @@ static inline ssize_t unicoap_pdu_buildv_rfc7252(uint8_t* header, size_t header_
 
     if ((res =
          unicoap_pdu_build_header_rfc7252(header, header_capacity, message, properties)) < 0) {
+        return res;
+    }
+    return unicoap_pdu_buildv_options_and_payload(header, res, message, iolists);
+}
+
+/** @} */
+/** @} */
+
+/**
+ * @addtogroup net_unicoap_drivers_nfc
+ * @{
+ */
+/**
+ * @name Parsing
+ * @{
+ */
+/**
+ * @brief Parses NFC PDU
+ *
+ * @param pdu Buffer containing PDU to parse
+ * @param size Size of PDU in bytes
+ * @param[out] message Pre-allocated message to populate, should have options set
+ * @param[out] properties Pre-allocated properties structure to populate
+ *
+ * @pre @p message is allocated
+ * @pre @p properties is allocated
+ *
+ * @returns Zero on success or negative errno on failure
+ * @retval `-EBADOPT` Bad option
+ * @retval `-ENOBUFS` Options buffer in @ref unicoap_message_t::options (@ref unicoap_options_t)
+ *                    too small
+ *
+ * @remark To allocate everything needed in one go, use @ref unicoap_pdu_parse_nfc_result
+ * instead.
+ *
+ * @note This function does not mutate or copy the buffer pointed at by @p pdu. However,
+ * it **does escape** pointers into the buffer pointed at by @p pdu in @p message . This is
+ * necessary to create a lookup array for options, i.e., to avoid re-parsing the options buffer.
+ * You will need to decide whether you treat the message's options as constant or not.
+ * This depends on whether the buffer @p pdu passed to this function is considered constant
+ * _by you_.
+ *
+ * As `unicoap` cannot guarantee you won't add/insert/remove options later, @p pdu is not qualified
+ * by `const`. That hypothetical `const` depends on your usage of the message and its options.
+ */
+ssize_t unicoap_pdu_parse_nfc(uint8_t* pdu, size_t size, unicoap_message_t* message,
+                                  unicoap_message_properties_t* properties);
+
+/**
+ * @brief Helper method for manually parsing a PDU
+ *
+ * @param[in] pdu PDU buffer
+ * @param size PDU size in bytes
+ * @param[out] parsed Pre-allocated parsed message structure
+ *
+ * @pre @p parsed is allocated
+ *
+ * @returns Zero on success or negative errno on failure
+ * @retval `-EBADOPT` Bad option
+ * @retval `-ENOBUFS` Options buffer in @ref unicoap_message_t::options (@ref unicoap_options_t)
+ *                    too small
+ *
+ * @note This function does not mutate or copy the buffer pointed at by @p pdu. However,
+ * it **does escape** pointers into the buffer pointed at by @p pdu in @p message . This is
+ * necessary to create a lookup array for options, i.e., to avoid re-parsing the options buffer.
+ * You will need to decide whether you treat the message's options as constant or not.
+ * This depends on whether the buffer @p pdu passed to this function is considered constant
+ * _by you_.
+ *
+ * As `unicoap` cannot guarantee you won't add/insert/remove options later, @p pdu is not qualified
+ * by `const`. That hypothetical `const` depends on your usage of the message and its options.
+ */
+static inline ssize_t unicoap_pdu_parse_nfc_result(uint8_t* pdu, size_t size,
+                                                       unicoap_parser_result_t* parsed)
+{
+    parsed->message.options = &parsed->options;
+    return unicoap_pdu_parse_nfc(pdu, size, &parsed->message, &parsed->properties);
+}
+/** @} */
+
+/**
+ * @name Serializing
+ * @{
+ */
+/**
+ * @brief Writes NFC PDU header in the given buffer
+ *
+ * @param[in,out] header Buffer the header will be written into
+ * @param capacity Number of usable bytes in the @p header buffer
+ * @param[in] message Message to construct header from (use code or payload_size)
+ * @param[in] properties Message properties to serialize into the header
+ *
+ * @returns Header size
+ * @retval `-ENOBUFS` Buffer too small
+ */
+ssize_t unicoap_pdu_build_header_nfc(uint8_t* header, size_t capacity,
+                                         const unicoap_message_t* message,
+                                         const unicoap_message_properties_t* properties);
+
+/**
+ * @brief Writes NFC PDU into buffer
+ *
+ * @param[in,out] pdu Buffer
+ * @param capacity PDU buffer capacity
+ * @param[in] message Message
+ * @param[in] properties Message properties containing ID and type
+ *
+ * @returns Size of PDU
+ * @returns Negative integer one error
+ * @retval `-ENOBUFS` Buffer too small
+ */
+static inline ssize_t unicoap_pdu_build_nfc(uint8_t* pdu, size_t capacity,
+                                                const unicoap_message_t* message,
+                                                const unicoap_message_properties_t* properties)
+{
+    ssize_t res = 0;
+
+    if ((res = unicoap_pdu_build_header_nfc(pdu, capacity, message, properties)) < 0) {
+        return res;
+    }
+    return unicoap_pdu_build_options_and_payload(pdu + res, capacity - res, message) + res;
+}
+
+/* MARK: unicoap_driver_extension_point */
+
+/**
+ * @brief Populates the given iolist with header according to CoAP over NFC, options, and payload
+ *
+ * @param[in] header Header buffer
+ * @param header_capacity Capacity of header buffer
+ * @param[in] message Message containing options and payload
+ * @param[in] properties Message properties containing ID and type
+ * @param[in,out] iolists Buffer of iolists, pre-allocated, size must be be
+ *                        @ref UNICOAP_PDU_IOLIST_COUNT
+ *
+ * @pre @p iolists is allocated
+ *
+ * @returns `0` on success
+ * @returns Negative integer one error
+ * @retval `-ENOBUFS` Buffer too small
+ */
+static inline ssize_t unicoap_pdu_buildv_nfc(uint8_t* header, size_t header_capacity,
+                                                 const unicoap_message_t* message,
+                                                 const unicoap_message_properties_t* properties,
+                                                 iolist_t iolists[UNICOAP_PDU_IOLIST_COUNT])
+{
+    ssize_t res = 0;
+
+    if ((res =
+         unicoap_pdu_build_header_nfc(header, header_capacity, message, properties)) < 0) {
         return res;
     }
     return unicoap_pdu_buildv_options_and_payload(header, res, message, iolists);

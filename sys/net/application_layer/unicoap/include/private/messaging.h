@@ -285,6 +285,9 @@ int unicoap_messaging_send(unicoap_packet_t* packet, unicoap_messaging_flags_t f
 /** @brief Sends CoAP over UDP or DTLS packet, see @ref unicoap_messaging_send */
 int unicoap_messaging_send_rfc7252(unicoap_packet_t* packet, unicoap_messaging_flags_t flags, void* exchange);
 
+/** @brief Sends CoAP over NFC packet, see @ref unicoap_messaging_send */
+int unicoap_messaging_send_nfc(unicoap_packet_t* packet, unicoap_messaging_flags_t flags, void* exchange);
+
 /**
  * @brief Generates new token
  *

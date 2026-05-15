@@ -215,7 +215,11 @@ _return:
     return (int)res;
 }
 
-ssize_t pn53_fifo_receive_read_(pn53_dev_t* dev, uint8_t* frame, size_t capacity, uint8_t* trailing_bit_count, uint32_t timeout_ms) {
+ssize_t pn53_fifo_receive_read_(pn53_dev_t* dev,
+    nfcdev_rx_callback_t callback, void* arg,
+    uint8_t* trailing_bit_count, uint32_t timeout_ms
+) {
+    assert(callback);
     ssize_t res = 0;
     uint8_t* addrs = (uint8_t*)&dev->connection.backing + PN35_FRAME_HEADER_NORMAL_COMMAND;
     pn53_register_address_t fifo_data = PN53_REGISTER_FIFO_DATA;
@@ -254,24 +258,22 @@ ssize_t pn53_fifo_receive_read_(pn53_dev_t* dev, uint8_t* frame, size_t capacity
         received += can_read;
         PN53_DEBUG("fifo.rx", "read %" PRIuSIZE ", totalling %" PRIuSIZE " bytes\n", can_read, received);
 
-        if (capacity < can_read) {
-            PN53_DEBUG("fifo.rx",
-                       "fragment buffer has capacity of %" PRIuSIZE ", but need %" PRIuSIZE " bytes\n",
-                       capacity, fifo_byte_count);
-            res = -ENOBUFS;
-            goto _return;
-        } else {
-            memcpy(frame, values, can_read);
-            frame += can_read;
-            capacity -= can_read;
-        }
-
         uint8_t* additional_values = &values[can_read];
         fifo_byte_count = (size_t)pn53_bitfield_get(additional_values[0], PN53_REGISTER_FIFO_LEVEL_MASK_BYTE_COUNT);
         PN53_DEBUG("fifo.rx", "%" PRIuSIZE " bytes still in FIFO\n", fifo_byte_count);
         *trailing_bit_count = pn53_bitfield_get(additional_values[1], PN53_REGISTER_CONTROL_MASK_RX_TRAILING_BIT_COUNT);
 
-        if ((additional_values[2] & PN53_REGISTER_COMMON_IRQ_FLAG_RX_FINISHED) && fifo_byte_count == 0) {
+        bool finished = (additional_values[2] & PN53_REGISTER_COMMON_IRQ_FLAG_RX_FINISHED) && fifo_byte_count == 0;
+
+        if (can_read > 0) {
+            ssize_t res2 = 0;
+            if ((res2 = callback(values, can_read, finished ? NFCDEV_RX_EVENT_COMPLETE : 0, arg)) < 0) {
+                res = res2;
+                goto _return;
+            }
+        }
+
+        if (finished) {
             PN53_DEBUG("fifo.rx", "RX finished\n");
             break;
         }
@@ -678,9 +680,10 @@ int nfcdev_send_pn53(nfcdev_t* nfcdev, const iolist_t* tx, nfcdev_nfio_flags_t f
 }
 
 ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
-    uint8_t** rx, size_t capacity,
+    nfcdev_rx_callback_t callback, void* arg,
     uint32_t rx_timeout_ms, nfcdev_nfio_flags_t flags
 ) {
+    assert(callback);
     pn53_dev_t* dev = nfcdev->dev;
     PN53_DEBUG("nfio", "[***] receiving\n");
 
@@ -728,17 +731,7 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
             }
             dev->nfc_target_first_rx = NULL;
             dev->nfc_target_first_rx_length = 0;
-
-            if (rx) {
-                if (*rx && capacity > 0) {
-                    if (capacity < (size_t)res) {
-                        return -ENOBUFS;
-                    }
-                    memcpy(*rx, command, (size_t)res);
-                } else {
-                    *rx = command;
-                }
-            }
+            callback(command, res, NFCDEV_RX_EVENT_COMPLETE | NFCDEV_RX_EVENT_TEMPORARILY_RETAINABLE, arg);
             return res;
         }
     }
@@ -766,22 +759,9 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
                         PN53_DEBUG("nfio.dep", "controller did not activate interface\n");
                         return -ENOTCONN;
                     }
-                    uint8_t* command = NULL;
-                    res = pn53_tg_get_data(dev, &command, rx_timeout_ms);
-                    PN53_DEBUG("nfio.dep", "got %" PRIiSIZE " byte back\n", res);
-                    if (res > 0 && rx) {
-                        if (*rx && capacity > 0) {
-                            if (capacity < (size_t)res) {
-                                PN53_DEBUG("nfio.dep", "need buffer of size %" PRIuSIZE ", have %" PRIuSIZE "\n",
-                                           (size_t)res, capacity);
-                                return -ENOBUFS;
-                            }
-                            memcpy(*rx, command, (size_t)res);
-                        } else {
-                            *rx = command;
-                        }
-                    }
-                    return res;
+                    dev->callback.rx = callback;
+                    dev->callback_arg = arg;
+                    return pn53_tg_get_data(dev, rx_timeout_ms);
                 default:
                     assert(false);
                     UNREACHABLE();
@@ -812,50 +792,32 @@ ssize_t nfcdev_receive_pn53(nfcdev_t* nfcdev,
             }
             if (!IS_ACTIVE(CONFIG_PN53_TARGET_RECEIVE_USING_FIFO)) {
                 PN53_DEBUG("nfio", "using TgGetInitiatorCommand\n");
-                uint8_t* command = NULL;
-                res = pn53_tg_get_initiator_command(dev, &command, rx_timeout_ms);
-                if (res > 0 && rx) {
-                    if (*rx && capacity > 0) {
-                        if (capacity < (size_t)res) {
-                            return -ENOBUFS;
-                        }
-                        memcpy(*rx, command, (size_t)res);
-                    } else {
-                        *rx = command;
-                    }
-                }
-                return res;
+                dev->callback.rx = callback;
+                dev->callback_arg = arg;
+                return pn53_tg_get_initiator_command(dev, rx_timeout_ms);
             }
             break;
         default: break;
     }
 
     PN53_DEBUG("nfio", "using FIFO\n");
-    if (capacity == 0 || !rx || !*rx) {
-        PN53_DEBUG("nfio", "need buffer to receive from FIFO\n");
-        return -ENOBUFS;
-    }
-
     uint8_t trailing_bits = NFCDEV_TRAILING_BITS_ALL;
-    if ((res = pn53_fifo_receive(dev, *rx, capacity, &trailing_bits, rx_timeout_ms)) < 0) {
+    if ((res = pn53_fifo_receive(dev, callback, arg, &trailing_bits, rx_timeout_ms)) < 0) {
         return res;
     }
     PN53_DEBUG("nfio", "trailing bits: %u\n",
                trailing_bits == NFCDEV_TRAILING_BITS_ALL ? 8 : trailing_bits);
-    // We get bit count basically for free from FIFO function, we do that
-    // to avoid another HCI round trip here just to get the bit count.
-    // 2 additional bytes to retrieve the bit count in the FIFO function are bearable...
     nfcdev->trailing_bit_count = trailing_bits;
     return res;
 }
 
 ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
     const iolist_t* tx,
-    uint8_t** rx, size_t capacity,
+    nfcdev_rx_callback_t callback, void* arg,
     uint32_t rx_timeout_ms, nfcdev_nfio_flags_t flags
 ) {
-    pn53_dev_t* dev = nfcdev->dev;
-    assert(!flags.reassemble || (rx && *rx && capacity > 0));
+    pn53_dev_t* dev = nfcdev->dev;;
+    assert(callback);
     size_t _length = tx ? iolist_size(tx) : 0;
     PN53_DEBUG("nfio", "[***] transceiving %" PRIuSIZE " bytes (%u trailing bits)\n",
                _length, flags.trailing_bits ? flags.trailing_bits : 8);
@@ -938,7 +900,9 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
 
                     } else {
                         assert(tx);
-                        return pn53_in_data_exchange(dev, pn53_current_target_id(dev), NULL, tx, rx, rx_timeout_ms);
+                        dev->callback.rx = callback;
+                        dev->callback_arg = arg;
+                        return pn53_in_data_exchange(dev, pn53_current_target_id(dev), 0, tx, rx_timeout_ms);
                     }
                 }
                 case NFC_ROLE_TARGET:
@@ -947,7 +911,7 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                             return res;
                         }
                     }
-                    return nfcdev_receive_pn53(nfcdev, rx, capacity, rx_timeout_ms, flags);
+                    return nfcdev_receive_pn53(nfcdev, callback, arg, rx_timeout_ms, flags);
                 default:
                     assert(false);
                     UNREACHABLE();
@@ -974,48 +938,24 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
             assert(tx);
             if (IS_ACTIVE(CONFIG_PN53_INITIATOR_TRANSCEIVE_USING_FIFO)) {
                 PN53_DEBUG("nfio", "using FIFO\n");
-                if (capacity == 0 || !rx || !*rx) {
-                    PN53_DEBUG("nfio", "need buffer to receive from FIFO\n");
-                    return -ENOBUFS;
-                }
-
                 uint8_t trailing_bits = NFCDEV_TRAILING_BITS_ALL;
                 if ((res = pn53_fifo_transceive_initiator(dev,
                     tx, flags.trailing_bits,
-                    *rx, capacity, &trailing_bits, rx_timeout_ms
+                    callback, arg, &trailing_bits, rx_timeout_ms
                 )) < 0) {
                     return res;
                 }
                 PN53_DEBUG("nfio", "trailing bits: %u\n",
                            trailing_bits == NFCDEV_TRAILING_BITS_ALL ? 8 : trailing_bits);
-                // We get bit count basically for free from FIFO function, we do that
-                // to avoid another HCI round trip here just to get the bit count.
-                // 2 additional bytes to retrieve the bit count in the FIFO function are bearable...
                 nfcdev->trailing_bit_count = trailing_bits;
                 return res;
             } else {
                 PN53_DEBUG("nfio", "using InCommunicateThru\n");
-                res = pn53_in_communicate_thru(dev, tx, &internal, rx_timeout_ms);
+                dev->callback.rx = callback;
+                dev->callback_arg = arg;
+                res = pn53_in_communicate_thru(dev, tx, rx_timeout_ms);
                 if (res < 0) {
                     return res;
-                }
-
-                if (rx) {
-                    // Interested in response
-                    if (*rx && capacity > 0) {
-                        // Wants copy
-                        PN53_DEBUG("nfio", "response copy requested\n");
-                        if (capacity < (size_t)res) {
-                            PN53_DEBUG("nfio", "cannot copy response, need %"
-                                       PRIuSIZE ", buffer has only %" PRIuSIZE " bytes\n",
-                                       (size_t)res, capacity);
-                            return -ENOBUFS;
-                        }
-                        memcpy(*rx, internal, (size_t)res);
-                    } else {
-                        // Wants ref to internal temporary buf
-                        *rx = internal;
-                    }
                 }
 
                 if (pn53_bitfield_get(dev->rx_mode, PN53_REGISTER_RX_MODE_FRAMING) == _tx_rx_framing(NFC_TECHNOLOGY_A)) {
@@ -1044,7 +984,7 @@ ssize_t nfcdev_transceive_pn53(nfcdev_t* nfcdev,
                     return res;
                 }
             }
-            return nfcdev_receive_pn53(nfcdev, rx, capacity, rx_timeout_ms, flags);
+            return nfcdev_receive_pn53(nfcdev, callback, arg, rx_timeout_ms, flags);
         default:
             assert(false);
             UNREACHABLE();

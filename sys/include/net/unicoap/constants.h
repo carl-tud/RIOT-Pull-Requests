@@ -95,6 +95,41 @@ typedef enum {
 } __attribute__((__packed__)) unicoap_rfc7252_message_type_t;
 /** @} */
 
+/* MARK: - NFC message types */
+/**
+ * @name NFC message types
+ * @{
+ */
+
+/**
+ * @brief Number of bits needed to represent @ref unicoap_nfc_direction_t
+ */
+#define UNICOAP_NFC_DIRECTION_FIXED_WIDTH 2
+
+typedef enum __attribute__((packed)) {
+    UNICOAP_NFC_DIRECTION_UPSTREAM = 0,
+    UNICOAP_NFC_DIRECTION_DOWNSTREAM = 1,
+} unicoap_nfc_direction_t;
+
+/**
+ * @brief Number of bits needed to represent @ref unicoap_rfc7252_message_type_t
+ */
+#define UNICOAP_NFC_INDICATION_FIXED_WIDTH 2
+
+/**
+ * @brief RFC 7252 message type
+ */
+typedef enum {
+    UNICOAP_NFC_INDICATION_QUICK = 1,
+
+    UNICOAP_NFC_INDICATION_LATER = 2,
+
+    UNICOAP_NFC_INDICATION_FIN = 3,
+} __attribute__((__packed__)) unicoap_nfc_indication_t;
+
+#define UNICOAP_NFC_INDICATION_RFU (0)
+/** @} */
+
 /* MARK: - Message codes */
 /**
  * @name Message codes

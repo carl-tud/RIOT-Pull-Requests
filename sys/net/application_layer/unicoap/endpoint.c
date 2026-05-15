@@ -84,6 +84,8 @@ const char* unicoap_string_from_proto(unicoap_proto_t proto) {
         return "UDP";
     case UNICOAP_PROTO_DTLS:
         return "DTLS";
+    case UNICOAP_PROTO_NFC:
+        return "NFC";
         /* MARK: unicoap_driver_extension_point */
     default:
         return "?";
@@ -120,6 +122,8 @@ bool unicoap_endpoint_is_multicast(const unicoap_endpoint_t* endpoint) {
         UNICOAP_DEBUG("sock support is missing, cannot check if multicast addr, driver missing?\n");
         return false;
 #endif
+    case UNICOAP_PROTO_NFC:
+        return false;
     /* MARK: unicoap_driver_extension_point */
     default:
         assert(false);

@@ -58,6 +58,9 @@ USEMODULE += unicoap_driver_udp
 # This module is needed for CoAP over DTLS
 USEMODULE += unicoap_driver_dtls
 
+# This module is needed for CoAP over NFC
+USEMODULE += unicoap_driver_nfc
+
 # It is okay to import only either of the CoAP over UDP and CoAP over DTLS drivers.
 
 # Comment this out to disable code in RIOT that does safety checking

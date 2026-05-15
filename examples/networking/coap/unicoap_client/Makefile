@@ -58,6 +58,9 @@ USEMODULE += unicoap_driver_udp
 # This module is needed for CoAP over DTLS
 USEMODULE += unicoap_driver_dtls
 
+# This module is needed for CoAP over NFC
+USEMODULE += unicoap_driver_nfc
+
 # Use object dump to print response payload in hex
 USEMODULE += od
 
