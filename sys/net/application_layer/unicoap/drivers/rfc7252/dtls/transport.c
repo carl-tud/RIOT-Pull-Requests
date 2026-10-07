@@ -115,9 +115,7 @@ static void _dtls_pander_and_spoonfeed_session_mgmt(void)
     }
     else {
         /* If enough session slots left: cancel timeout to free session. */
-        if (dsm_get_num_available_slots() >= CONFIG_UNICOAP_DTLS_MINIMUM_AVAILABLE_SESSION_SLOTS) {
-            unicoap_event_cancel(&_dtls_session_triage_event);
-        }
+        unicoap_event_cancel(&_dtls_session_triage_event);
     }
 }
 
