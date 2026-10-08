@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2021   Simon Brummer <simon.brummer@posteo.de>
-#
-# This file is subject to the terms and conditions of the GNU Lesser
-# General Public License v2.1. See the file LICENSE in the top level
-# directory for more details.
+# SPDX-FileCopyrightText: 2021 Simon Brummer <simon.brummer@posteo.de>
+# SPDX-License-Identifier: LGPL-2.1-only
 
 import os
 import sys
@@ -43,6 +40,41 @@ def test_connection_lifecycle_as_server(child):
         with HostTcpClient(riot_srv):
             # Accept and close connection
             riot_srv.accept(timeout_ms=1000)
+            riot_srv.close()
+
+
+@Runner(timeout=10)
+def test_gnrc_tcp_listen_tcb_discards_unread_data_on_reuse(child):
+    """ Test for ensuring that a listening TCB is cleared between connections.
+        This happens when a client (host) connects, sends data that is not
+        (yet) read by the RIOT application, and then disconnects. The TCB may
+        then be reused for a new connection, which should not see unread data
+        from the previous connection.
+    """
+    with RiotTcpServer(child, generate_port_number()) as riot_srv:
+        # First client connects, sends data to the application, never reads and
+        # disconnects.
+        with HostTcpClient(riot_srv) as host_cli_a:
+            riot_srv.accept(timeout_ms=1000)
+
+            leftover = 'AAAAA'
+            host_cli_a.send(leftover)
+            host_cli_a.close()
+
+        # This ensures that the TCB is closed (moved out of CLOSE_WAIT state).
+        riot_srv.close()
+
+        # Second client connects, which will reuse the TCB. It sends data, then
+        # the application reads it.
+        with HostTcpClient(riot_srv) as host_cli_b:
+            riot_srv.accept(timeout_ms=1000)
+
+            payload = 'BBBBB'
+            host_cli_b.send(payload)
+
+            # The application should only see the data from the second client.
+            riot_srv.receive(timeout_ms=1000, sent_payload=payload)
+
             riot_srv.close()
 
 

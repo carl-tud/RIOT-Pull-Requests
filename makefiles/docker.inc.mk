@@ -5,7 +5,8 @@
 # When the docker image is updated, checks at
 # dist/tools/buildsystem_sanity_check/check.sh start complaining in CI, and
 # provide the latest values to verify and fill in.
-DOCKER_TESTED_IMAGE_REPO_DIGEST := 61c1aa5371bd0e3a8764121671555c8b54907ad8e1eddc520f4e601bbcbcd702
+
+DOCKER_TESTED_IMAGE_REPO_DIGEST := ec78c6ab83ffa77989589fa33ad24c12128a7617338b3b7ffdec78410c5d92d3
 
 DOCKER_PULL_IDENTIFIER := docker.io/riot/riotbuild@sha256:$(DOCKER_TESTED_IMAGE_REPO_DIGEST)
 export DOCKER_IMAGE ?= $(DOCKER_PULL_IDENTIFIER)
@@ -54,7 +55,6 @@ export DOCKER_ENV_VARS += \
   AR \
   AS \
   ASFLAGS \
-  BINDIR \
   BINDIRBASE \
   BOARD \
   BOARDS \
@@ -300,6 +300,13 @@ DOCKER_VOLUMES_AND_ENV += $(call docker_volume,$(HOME)/.cargo/git,$(DOCKER_BUILD
 DOCKER_VOLUMES_AND_ENV += -e 'TZ=$(HOST_TIMEZONE)'
 DOCKER_VOLUMES_AND_ENV += -e 'RIOTBASE=$(DOCKER_RIOTBASE)'
 DOCKER_VOLUMES_AND_ENV += -e 'CCACHE_BASEDIR=$(DOCKER_RIOTBASE)'
+
+# Only export the BINDIR path if it is not the standard path.
+# We have to check it this way since BINDIR is often overridden and we can not
+# reliably check it's origin.
+ifneq ($(BINDIR),$(BINDIRBASE)/$(BOARD))
+  DOCKER_VOLUMES_AND_ENV += $(call docker_volume_and_env,BINDIR,,bindir)
+endif
 
 DOCKER_VOLUMES_AND_ENV += $(call docker_volume_and_env,BUILD_DIR,,build)
 

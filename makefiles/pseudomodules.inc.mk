@@ -49,6 +49,7 @@ PSEUDOMODULES += auto_init_%
 NO_PSEUDOMODULES += auto_init_can
 NO_PSEUDOMODULES += auto_init_loramac
 NO_PSEUDOMODULES += auto_init_multimedia
+NO_PSEUDOMODULES += auto_init_radiolib
 NO_PSEUDOMODULES += auto_init_screen
 NO_PSEUDOMODULES += auto_init_security
 NO_PSEUDOMODULES += auto_init_usbus
@@ -118,6 +119,8 @@ PSEUDOMODULES += dns_cache
 PSEUDOMODULES += dns_msg
 
 PSEUDOMODULES += ecc_%
+PSEUDOMODULES += efm32_eth_auto
+PSEUDOMODULES += efm32_eth_link_up
 PSEUDOMODULES += ethos_stdio
 PSEUDOMODULES += event_%
 PSEUDOMODULES += event_timeout
@@ -299,6 +302,7 @@ PSEUDOMODULES += gnrc_sock_async
 PSEUDOMODULES += gnrc_sock_check_reuse
 PSEUDOMODULES += gnrc_txtsnd
 
+PSEUDOMODULES += ieee802154_rx_timestamp
 PSEUDOMODULES += ieee802154_security
 PSEUDOMODULES += ieee802154_submac
 PSEUDOMODULES += ipv4
@@ -432,7 +436,7 @@ PSEUDOMODULES += psa_riot_hashes_sha_384
 PSEUDOMODULES += psa_riot_hashes_sha_512
 PSEUDOMODULES += psa_riot_hashes_sha_512_224
 PSEUDOMODULES += psa_riot_hashes_sha_512_256
-
+PSEUDOMODULES += radiolib
 PSEUDOMODULES += riotboot_%
 PSEUDOMODULES += rtt_cmd
 
@@ -476,7 +480,9 @@ PSEUDOMODULES += shell_builtin_cmd_help_json
 PSEUDOMODULES += shell_cmd_app_metadata
 PSEUDOMODULES += shell_cmd_at30tse75x
 PSEUDOMODULES += shell_cmd_benchmark_udp
+PSEUDOMODULES += shell_cmd_bplib
 PSEUDOMODULES += shell_cmd_ccn-lite-utils
+PSEUDOMODULES += shell_cmd_coap
 PSEUDOMODULES += shell_cmd_conn_can
 PSEUDOMODULES += shell_cmd_cord_ep
 PSEUDOMODULES += shell_cmd_coreclk
@@ -608,17 +614,23 @@ PSEUDOMODULES += test_utils_main_exit_cb
 PSEUDOMODULES += tiny_strerror_as_strerror
 PSEUDOMODULES += tiny_strerror_minimal
 
+# Request cancellation support
+PSEUDOMODULES += unicoap_client_cancellation
+
+# URI support in unicoap client API
+PSEUDOMODULES += unicoap_client_uri
+
 # An umbrella module for the unicoap_driver_rfc7252_common_pdu
 # and unicoap_driver_rfc7252_common_messaging modules
 PSEUDOMODULES += unicoap_driver_rfc7252_common
 # Alias for unicoap_driver_rfc7252_common_pdu, and is hence a pseudomodule
 PSEUDOMODULES += unicoap_driver_rfc7252_pdu
 
-# Common sock dependencies of sock-based CoAP drivers in unicoap
-PSEUDOMODULES += unicoap_sock_support
-
 # XFA support for CoAP resource definitions in unicoap server
 PSEUDOMODULES += unicoap_server_resource_declarations
+
+# Common sock dependencies of sock-based CoAP drivers in unicoap
+PSEUDOMODULES += unicoap_sock_support
 
 PSEUDOMODULES += usbus_urb
 

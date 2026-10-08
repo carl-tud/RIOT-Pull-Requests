@@ -1,9 +1,6 @@
 /*
- * Copyright (C) 2020 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2020 HAW Hamburg
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
 
 /**
@@ -75,7 +72,8 @@ static inline bool _does_handle_csma(ieee802154_dev_t *dev)
 
 static bool _has_retrans_left(ieee802154_submac_t *submac)
 {
-    return submac->retrans < CONFIG_IEEE802154_DEFAULT_MAX_FRAME_RETRANS;
+    return !ieee802154_radio_has_frame_retrans(&submac->dev) &&
+        submac->retrans < CONFIG_IEEE802154_DEFAULT_MAX_FRAME_RETRANS;
 }
 
 static ieee802154_fsm_state_t _tx_end(ieee802154_submac_t *submac, int status,
@@ -730,13 +728,9 @@ int ieee802154_submac_init(ieee802154_submac_t *submac, const network_uint16_t *
 
     if (ieee802154_radio_has_24_ghz(dev)) {
         submac->channel_num = CONFIG_IEEE802154_DEFAULT_CHANNEL;
-
-        /* 2.4 GHz only use page 0 */
-        submac->channel_page = 0;
     }
     else {
         submac->channel_num = CONFIG_IEEE802154_DEFAULT_SUBGHZ_CHANNEL;
-        submac->channel_page = CONFIG_IEEE802154_DEFAULT_SUBGHZ_PAGE;
     }
 
     /* Get supported PHY modes */
@@ -808,12 +802,21 @@ int ieee802154_submac_init(ieee802154_submac_t *submac, const network_uint16_t *
 
     conf.super.phy_mode = submac->phy_mode;
     conf.super.channel = submac->channel_num;
-    conf.super.page = submac->channel_page;
     conf.super.pow = submac->tx_pow;
 
     ieee802154_submac_config_phy(submac, &conf.super);
     ieee802154_radio_set_cca_threshold(dev,
                                        CONFIG_IEEE802154_CCA_THRESH_DEFAULT);
+
+    if (ieee802154_radio_has_frame_retrans(&submac->dev)) {
+        ieee802154_radio_set_frame_retrans(&submac->dev,
+                CONFIG_IEEE802154_DEFAULT_MAX_FRAME_RETRANS);
+    }
+
+    if (ieee802154_radio_has_auto_csma(&submac->dev)) {
+        ieee802154_radio_set_csma_params(&submac->dev, &submac->be, submac->csma_retries);
+    }
+
     assert(res >= 0);
 
     while (ieee802154_radio_set_rx(dev) < 0) {}
@@ -843,7 +846,6 @@ int ieee802154_set_phy_conf(ieee802154_submac_t *submac, const ieee802154_phy_co
 
     if (res >= 0) {
         submac->channel_num = conf->channel;
-        submac->channel_page = conf->page;
         submac->tx_pow = conf->pow;
         if (conf->phy_mode != IEEE802154_PHY_NO_OP) {
             submac->phy_mode = conf->phy_mode;

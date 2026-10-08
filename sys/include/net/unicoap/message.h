@@ -1,4 +1,4 @@
-/*
+ /*
  * SPDX-FileCopyrightText: 2024-2026 Carl Seifert
  * SPDX-FileCopyrightText: 2024-2026 TU Dresden
  * SPDX-License-Identifier: LGPL-2.1-only
@@ -73,7 +73,7 @@ typedef struct {
     /**
      * @brief Message options
      *
-     * Key-value entries akin to HTTP headers
+     * Key-value entries akin to HTTP headers. May be NULL for no options present.
      *
      * @see @ref net_unicoap_options
      */
@@ -414,13 +414,10 @@ static inline uint8_t unicoap_code_detail(uint8_t code)
 }
 
 /**
- * @brief Prints a `c.dd` class-detail string into the given buffer.
- * @pre @p string must have a capacity of at least 4 characters
+ * @brief Prints a `c.dd` class-detail string
  * @param code Message code
- * @param[out] string Buffer to write string into
- *
  */
-int unicoap_print_code(uint8_t code, char* string);
+int unicoap_print_code(uint8_t code);
 
 /**
  * @brief Returns label for given CoAP message code
@@ -461,6 +458,7 @@ static inline void unicoap_message_init_empty(unicoap_message_t* message, uint8_
     message->options = NULL;
     message->payload = NULL;
     message->payload_size = 0;
+    message->payload_representation = UNICOAP_PAYLOAD_CONTIGUOUS;
 }
 
 /**
@@ -489,6 +487,7 @@ static inline void unicoap_message_init(unicoap_message_t* message, uint8_t code
     message->options = NULL;
     message->payload = payload;
     message->payload_size = payload_size;
+    message->payload_representation = UNICOAP_PAYLOAD_CONTIGUOUS;
 }
 
 /**
@@ -501,7 +500,11 @@ static inline void unicoap_message_init(unicoap_message_t* message, uint8_t code
 static inline unicoap_message_t unicoap_message_alloc(uint8_t code, uint8_t* payload,
                                                       size_t payload_size)
 {
-    return (unicoap_message_t){ .code = code, .payload = payload, .payload_size = payload_size };
+    return (unicoap_message_t){ .code = code,
+                                .options = NULL,
+                                .payload = payload,
+                                .payload_size = payload_size,
+                                .payload_representation = UNICOAP_PAYLOAD_CONTIGUOUS };
 }
 
 /**
@@ -516,10 +519,7 @@ static inline unicoap_message_t unicoap_message_alloc(uint8_t code, uint8_t* pay
 static inline void unicoap_message_init_string(unicoap_message_t* message, uint8_t code,
                                                const char* payload)
 {
-    message->code = code;
-    message->options = NULL;
-    message->payload = (uint8_t*)payload;
-    message->payload_size = payload ? strlen(payload) : 0;
+    unicoap_message_init(message, code, (uint8_t*)payload, payload ? strlen(payload) : 0);
 }
 
 /**
@@ -531,8 +531,10 @@ static inline void unicoap_message_init_string(unicoap_message_t* message, uint8
 static inline unicoap_message_t unicoap_message_alloc_string(uint8_t code, const char* payload)
 {
     return (unicoap_message_t){ .code = code,
+                                .options = NULL,
                                 .payload = (uint8_t*)payload,
-                                .payload_size = payload ? strlen(payload) : 0 };
+                                .payload_size = payload ? strlen(payload) : 0,
+                                .payload_representation = UNICOAP_PAYLOAD_CONTIGUOUS };
 }
 
 /**
@@ -555,6 +557,7 @@ static inline void unicoap_message_init_with_options(unicoap_message_t* message,
     message->options = options;
     message->payload = payload;
     message->payload_size = payload_size;
+    message->payload_representation = UNICOAP_PAYLOAD_CONTIGUOUS;
 }
 
 /**
@@ -570,9 +573,11 @@ static inline unicoap_message_t unicoap_message_alloc_with_options(uint8_t code,
                                                                    size_t payload_size,
                                                                    unicoap_options_t* options)
 {
-    return (unicoap_message_t){
-        .code = code, .options = options, .payload = payload, .payload_size = payload_size
-    };
+    return (unicoap_message_t){ .code = code,
+                                .options = options,
+                                .payload = payload,
+                                .payload_size = payload_size,
+                                .payload_representation = UNICOAP_PAYLOAD_CONTIGUOUS };
 }
 
 /**
@@ -611,7 +616,8 @@ unicoap_message_t unicoap_message_alloc_string_with_options(uint8_t code,
     return (unicoap_message_t){ .code = code,
                                 .options = options,
                                 .payload = (uint8_t*)payload,
-                                .payload_size = payload ? strlen(payload) : 0 };
+                                .payload_size = payload ? strlen(payload) : 0,
+                                .payload_representation = UNICOAP_PAYLOAD_CONTIGUOUS };
 }
 /** @} */
 

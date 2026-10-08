@@ -1,9 +1,6 @@
 /*
- * Copyright (c) 2018 Ken Bannister. All rights reserved.
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2018 Ken Bannister
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
 
 /**
@@ -240,7 +237,8 @@ static int _cmd_url(int argc, char **argv)
         break;
     case COAP_METHOD_POST - 1:
     case COAP_METHOD_PUT - 1:
-        ;
+    {
+        /* brackets are required since declarations are not allowed to follow a label */
         char response[32];
         nanocoap_sock_t sock;
         res = nanocoap_sock_url_connect(argv[2], &sock);
@@ -262,6 +260,7 @@ static int _cmd_url(int argc, char **argv)
             printf("response: %s\n", response);
         }
         break;
+    }
     case COAP_METHOD_DELETE - 1:
         res = nanocoap_sock_delete_url(argv[2]);
         break;
@@ -467,7 +466,6 @@ static int _cmd_get_slice(int argc, char **argv)
             return 1;
         }
     }
-
 
     nanocoap_sock_t sock;
     int res = nanocoap_sock_url_connect(argv[1], &sock);

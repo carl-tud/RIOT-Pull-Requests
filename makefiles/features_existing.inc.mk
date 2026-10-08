@@ -9,7 +9,6 @@ FEATURES_EXISTING := \
     arch_arm \
     arch_arm7 \
     arch_avr8 \
-    arch_efm32 \
     arch_esp \
     arch_esp32 \
     arch_esp32_xtensa \
@@ -81,6 +80,7 @@ FEATURES_EXISTING := \
     cpu_msp430_f2xx_g2xx \
     cpu_msp430_x1xx \
     cpu_native \
+    cpu_noelv \
     cpu_nrf51 \
     cpu_nrf52 \
     cpu_nrf53 \
@@ -117,6 +117,7 @@ FEATURES_EXISTING := \
     cpu_stm32wl \
     dbgpin \
     efm32_coretemp \
+    efm32_eth \
     emulator_renode \
     esp_ble \
     esp_hw_counter \
@@ -154,6 +155,7 @@ FEATURES_EXISTING := \
     periph_cpuid \
     periph_cryptocell_310 \
     periph_dac \
+    periph_dac_play \
     periph_dma \
     periph_ecc_ed25519 \
     periph_ecc_p192r1 \
@@ -273,6 +275,7 @@ FEATURES_EXISTING := \
     sdcard_spi \
     ssp \
     tinyusb_device \
+    trustzone_m \
     vdd_lc_filter_reg0 \
     vdd_lc_filter_reg1 \
     xiao_shield \

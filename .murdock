@@ -107,23 +107,6 @@ if [ -z "${QUICK_BUILD}" ]; then
     fi
 fi
 
-# This is a work around for a bug in CCACHE which interacts very badly with
-# some features of RIOT and of murdock. The result is that ccache is
-# ineffective (i.e. objects are never reused, resulting in extreme cache miss
-# rate) and murdock becomes slow.
-#
-# - CCACHE thinks that -gz by itself enables debugging, which is not true.
-#   see https://github.com/ccache/ccache/issues/464
-#   - When debug info is included, CCACHE hashes the file paths, as these
-#     influence the debug information (the name of compile units and/or their
-#     "comp_dir" attribute)
-# - Riot does not set -fdebug-prefix-map. This is not that easy as it may not
-#   be supported in every toolchain (some are quite old).
-# - Murdock builds PRs in different directories each time.
-#
-# It is only the combination of these three factors which causes this bug.
-export OPTIONAL_CFLAGS_BLACKLIST="-gz"
-
 DWQ_ENV="-E BOARDS -E APPS -E NIGHTLY -E RUN_TESTS -E ENABLE_TEST_CACHE
          -E TEST_HASH -E CI_PULL_LABELS -ECI_BASE_BRANCH -ECI_BASE_COMMIT
          -EPKG_USE_MIRROR -EAPPS_CHANGED -EBOARDS_CHANGED -ESTATIC_TESTS
@@ -224,7 +207,6 @@ get_supported_boards() {
         fi
     else
         if [ -n "$BOARDS_CHANGED" ]; then
-            echo d
             # no changed apps, some changed boards -> build for changed boards
             only_changed=1
         else
@@ -235,10 +217,16 @@ get_supported_boards() {
 
     BOARDS_=${BOARDS}
     if [ $only_changed -eq 1 ]; then
-        # if can_fast_ci_run figured out changes to specific boards,
-        # only consider those
-        export BOARDS="$BOARDS_CHANGED"
-    elif [ -z "${BOARDS}" -a ${QUICK_BUILD} -eq 1 ]; then
+        if [ -z "${BOARDS}" ] && [ ${QUICK_BUILD} -eq 1 ]; then
+            # Quickbuild: add changed boards additionally to the quickbuild-list
+            # rather than replacing them
+            export BOARDS="${QUICKBUILD_BOARDS} ${BOARDS_CHANGED}"
+        else
+            # if can_fast_ci_run figured out changes to specific boards,
+            # only consider those
+            export BOARDS="${BOARDS_CHANGED}"
+        fi
+    elif [ -z "${BOARDS}" ] && [ ${QUICK_BUILD} -eq 1 ]; then
         # quickbuild board filter is applied here
         export BOARDS="${QUICKBUILD_BOARDS}"
     fi
@@ -353,9 +341,10 @@ compile() {
 
     # set build directory. CI ensures only one build at a time in $(pwd).
     export BINDIR="$(pwd)/build"
-    export PKGDIRBASE="${BINDIR}/pkg"
 
-    # Pre-build cleanup
+    # pre-build cleanup: this is effectively a superset of "make clean" that
+    # will not cost a full parse of the build system as well as one sub-make
+    # per package.
     rm -rf ${BINDIR}
 
     print_worker
@@ -369,7 +358,6 @@ compile() {
     # reduces disk IO.
     export CCACHE_TEMPDIR="$(pwd)/.ccache/tmp"
 
-    BOARD=${board} make -C${appdir} clean
     CCACHE_BASEDIR="$(pwd)" BOARD=$board TOOLCHAIN=$toolchain RIOT_CI_BUILD=1 \
         make -C${appdir} all test-input-hash -j${JOBS:-4}
     RES=$?
@@ -536,6 +524,12 @@ update_changed_modules() {
 
     # if this errors, it means we cannot skip any builds.
     if [ -n "$CFCR_ERROR" ]; then
+        # Although we can't skip builds, we might have gotten some insight about
+        # which boards have to be built. Therefore we pass BOARDS_CHANGED
+        # so it can be added to the boards list on quickbuilds.
+        if [ -n "$BOARDS_CHANGED" ]; then
+            export BOARDS_CHANGED="$(basename_list $BOARDS_CHANGED)"
+        fi
         return 0
     fi
 
@@ -545,8 +539,8 @@ update_changed_modules() {
         return 1
     fi
 
-    # can_fast_ci_run.py outputs "board/fooboard", but the rest of this script
-    # expects a board name without leading "board/".
+    # can_fast_ci_run.py outputs "boards/fooboard", but the rest of this script
+    # expects a board name without leading "boards/".
     if [ -n "$BOARDS_CHANGED" ]; then
         export BOARDS_CHANGED="$(basename_list $BOARDS_CHANGED)"
     fi

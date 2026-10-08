@@ -1,9 +1,6 @@
 /*
- * Copyright (C) 2015-2017 Simon Brummer
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2015-2017 Simon Brummer
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
 
 /**
@@ -176,6 +173,12 @@ static int _transition_to(gnrc_tcp_tcb_t *tcb, _gnrc_tcp_fsm_state_t state)
         case FSM_STATE_LISTEN:
             /* Clear Accepted Status */
             tcb->status &= ~(STATUS_ACCEPTED);
+
+            /* Clear receive buffer, if already allocated */
+            _gnrc_tcp_rcvbuf_clear_buffer(tcb);
+
+            /* Restore receive window size */
+            tcb->rcv_wnd = CONFIG_GNRC_TCP_DEFAULT_WINDOW;
 
             /* Clear address info */
 #ifdef MODULE_GNRC_IPV6
