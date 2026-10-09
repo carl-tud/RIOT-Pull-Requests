@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gerson Fernando Budke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gerson Fernando Budke
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_atxmega-a1u-xpro
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Gerson Fernando Budke <nandojve@gmail.com>
- */
+/// @ingroup     boards_atxmega-a1u-xpro
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Gerson Fernando Budke <nandojve@gmail.com>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   GPIO configuration
- */
+/// @brief   GPIO configuration
 static const saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -45,4 +39,4 @@ static const saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

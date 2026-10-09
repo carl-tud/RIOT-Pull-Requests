@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_adafruit-pybadge
- * @{
- *
- * @file
- * @brief       Board initialization for the Adafruit PyBadge
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     boards_adafruit-pybadge
+/// @{
+///
+/// @file
+/// @brief       Board initialization for the Adafruit PyBadge
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "cpu.h"
 #include "board.h"
@@ -23,7 +19,7 @@
 #include "periph/gpio.h"
 
 #if IS_USED(MODULE_MTD)
-/* GD25Q16C */
+// GD25Q16C
 static const mtd_spi_nor_params_t _samd51_nor_params = {
     .opcode = &mtd_spi_nor_opcode_default,
     .wait_chip_erase = 15 * US_PER_SEC,
@@ -52,10 +48,9 @@ static mtd_spi_nor_t samd51_nor_dev = {
 };
 
 MTD_XFA_ADD(samd51_nor_dev, 0);
-#endif /* MODULE_MTD */
+#endif // MODULE_MTD
 
-void board_init(void)
-{
+void board_init(void) {
     if (IS_USED(MODULE_DAC_DDS)) {
         gpio_init(SPEAKER_ENABLE_PIN, GPIO_OUT);
         gpio_set(SPEAKER_ENABLE_PIN);

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_b-u585i-iot02a
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the ST B-U585I-IOT02A board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_b-u585i-iot02a
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the ST B-U585I-IOT02A board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -29,10 +25,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -44,9 +38,9 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
-    { /* Connected to Arduino D0/D1 and STMOD+2 */
+    { // Connected to Arduino D0/D1 and STMOD+2
         .dev        = USART3,
         .rcc_mask   = RCC_APB1ENR1_USART3EN,
         .rx_pin     = GPIO_PIN(PORT_D, 9),
@@ -56,9 +50,9 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART3_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
-    { /* Connected to STMOD+1 */
+    { // Connected to STMOD+1
         .dev        = USART2,
         .rcc_mask   = RCC_APB1ENR1_USART2EN,
         .rx_pin     = GPIO_PIN(PORT_A, 3),
@@ -68,9 +62,9 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART2_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
-    { /* Connected to Wireless */
+    { // Connected to Wireless
         .dev        = UART4,
         .rcc_mask   = RCC_APB1ENR1_UART4EN,
         .rx_pin     = GPIO_PIN(PORT_C, 11),
@@ -80,7 +74,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = UART4_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
 };
 
@@ -90,18 +84,16 @@ static const uart_conf_t uart_config[] = {
 #define UART_3_ISR          (isr_uart4)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev            = SPI1,
-        .mosi_pin       = GPIO_PIN(PORT_E, 15),     /* Arduino D11 */
-        .miso_pin       = GPIO_PIN(PORT_E, 14),     /* Arduino D12 */
-        .sclk_pin       = GPIO_PIN(PORT_E, 13),     /* Arduino D13 */
+        .mosi_pin       = GPIO_PIN(PORT_E, 15),     // Arduino D11
+        .miso_pin       = GPIO_PIN(PORT_E, 14),     // Arduino D12
+        .sclk_pin       = GPIO_PIN(PORT_E, 13),     // Arduino D13
         .cs_pin         = GPIO_UNDEF,
         .mosi_af        = GPIO_AF5,
         .miso_af        = GPIO_AF5,
@@ -110,7 +102,7 @@ static const spi_conf_t spi_config[] = {
         .rccmask        = RCC_APB2ENR_SPI1EN,
         .apbbus         = APB2,
     },
-    {   /* Connected to wireless */
+    {   // Connected to wireless
         .dev            = SPI2,
         .mosi_pin       = GPIO_PIN(PORT_D, 4),
         .miso_pin       = GPIO_PIN(PORT_D, 3),
@@ -123,7 +115,7 @@ static const spi_conf_t spi_config[] = {
         .rccmask        = RCC_APB1ENR1_SPI2EN,
         .apbbus         = APB1,
     },
-    {   /* Connected to STMOD+ 2 */
+    {   // Connected to STMOD+ 2
         .dev            = SPI3,
         .mosi_pin       = GPIO_PIN(PORT_D, 6),
         .miso_pin       = GPIO_PIN(PORT_G, 10),
@@ -139,12 +131,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -175,10 +165,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_0_ISR           isr_i2c1_er
 #define I2C_1_ISR           isr_i2c2_er
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

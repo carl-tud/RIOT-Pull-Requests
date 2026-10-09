@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Silke Hofstra
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Silke Hofstra
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the black/white e-paper SPI display driver.
- *
- * @author      Silke Hofstra <silke@slxh.eu>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the black/white e-paper SPI display driver.
+///
+/// @author      Silke Hofstra <silke@slxh.eu>
+/// @}
 
 #include <stdio.h>
 
@@ -26,9 +22,8 @@
 const uint8_t riot_32_width = 32;
 const uint16_t riot_32_height = ARRAY_SIZE(riot_logo_32);
 
-/* Draw the large RIOT logo with a full refresh */
-void draw_riot(epd_bw_spi_t *dev)
-{
+// Draw the large RIOT logo with a full refresh
+void draw_riot(epd_bw_spi_t *dev) {
     epd_bw_spi_wake(dev);
     epd_bw_spi_init_full(dev);
     epd_bw_spi_activate(dev);
@@ -41,9 +36,8 @@ void draw_riot(epd_bw_spi_t *dev)
     }
 }
 
-/* Draw a small RIOT logo with a partial refresh */
-void draw_small_riot(epd_bw_spi_t *dev, uint8_t x, uint16_t y)
-{
+// Draw a small RIOT logo with a partial refresh
+void draw_small_riot(epd_bw_spi_t *dev, uint8_t x, uint16_t y) {
     epd_bw_spi_wake(dev);
     epd_bw_spi_init_part(dev);
     epd_bw_spi_activate(dev);
@@ -56,8 +50,7 @@ void draw_small_riot(epd_bw_spi_t *dev, uint8_t x, uint16_t y)
     }
 }
 
-int main(void)
-{
+int main(void) {
     epd_bw_spi_t dev;
     int init = epd_bw_spi_init(&dev, epd_bw_spi_params);
 
@@ -67,11 +60,11 @@ int main(void)
     }
 
     while (1) {
-        /* Set both RAM buffers to the RIOT logo */
+        // Set both RAM buffers to the RIOT logo
         draw_riot(&dev);
         draw_riot(&dev);
 
-        /* Draw small RIOT logos on the display */
+        // Draw small RIOT logos on the display
         for (uint16_t y = 0; y < dev.params.size_y; y += riot_32_height) {
             for (uint16_t x = 0; x < dev.params.size_x; x += 32) {
                 draw_small_riot(&dev, x, y);

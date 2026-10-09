@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     core_sched
- * @{
- *
- * @file
- * @brief       Scheduler implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      René Kijewski <rene.kijewski@fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     core_sched
+/// @{
+///
+/// @file
+/// @brief       Scheduler implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      René Kijewski <rene.kijewski@fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <inttypes.h>
@@ -40,7 +36,7 @@
 #include <picotls.h>
 #endif
 
-/* Needed by OpenOCD to read sched_threads */
+// Needed by OpenOCD to read sched_threads
 #if defined(__APPLE__) && defined(__MACH__)
  #define FORCE_USED_SECTION __attribute__((used)) __attribute__((section( \
                                                                      "__OPENOCD,__openocd")))
@@ -49,10 +45,8 @@
                                                                      ".openocd")))
 #endif
 
-/**
- * @brief   Symbols also used by OpenOCD, keep in sync with src/rtos/riot.c
- * @{
- */
+/// @brief   Symbols also used by OpenOCD, keep in sync with src/rtos/riot.c
+/// @{
 volatile kernel_pid_t sched_active_pid = KERNEL_PID_UNDEF;
 volatile thread_t *sched_threads[KERNEL_PID_LAST + 1];
 volatile int sched_num_threads = 0;
@@ -63,12 +57,12 @@ FORCE_USED_SECTION
 const uint8_t max_threads = ARRAY_SIZE(sched_threads);
 
 #ifdef DEVELHELP
-/* OpenOCD can't determine struct offsets and additionally this member is only
- * available if compiled with DEVELHELP */
+// OpenOCD can't determine struct offsets and additionally this member is only
+// available if compiled with DEVELHELP
 FORCE_USED_SECTION
 const uint8_t _tcb_name_offset = offsetof(thread_t, name);
 #endif
-/** @} */
+/// @}
 
 volatile thread_t *sched_active_thread;
 volatile unsigned int sched_context_switch_request;
@@ -81,15 +75,13 @@ static void (*sched_cb)(kernel_pid_t active_thread,
                         kernel_pid_t next_thread) = NULL;
 #endif
 
-/* Depending on whether the CLZ instruction is available, the order of the
- * runqueue_bitcache is reversed. When the instruction is available, it is
- * faster to determine the MSBit set. When it is not available it is faster to
- * determine the LSBit set. These functions abstract the runqueue modifications
- * and readout away, switching between the two orders depending on the CLZ
- * instruction availability
- */
-static inline void _set_runqueue_bit(uint8_t priority)
-{
+// Depending on whether the CLZ instruction is available, the order of the
+// runqueue_bitcache is reversed. When the instruction is available, it is
+// faster to determine the MSBit set. When it is not available it is faster to
+// determine the LSBit set. These functions abstract the runqueue modifications
+// and readout away, switching between the two orders depending on the CLZ
+// instruction availability
+static inline void _set_runqueue_bit(uint8_t priority) {
 #if defined(BITARITHM_HAS_CLZ)
     runqueue_bitcache |= BIT31 >> priority;
 #else
@@ -97,8 +89,7 @@ static inline void _set_runqueue_bit(uint8_t priority)
 #endif
 }
 
-static inline void _clear_runqueue_bit(uint8_t priority)
-{
+static inline void _clear_runqueue_bit(uint8_t priority) {
 #if defined(BITARITHM_HAS_CLZ)
     runqueue_bitcache &= ~(BIT31 >> priority);
 #else
@@ -106,8 +97,7 @@ static inline void _clear_runqueue_bit(uint8_t priority)
 #endif
 }
 
-static inline unsigned _get_prio_queue_from_runqueue(void)
-{
+static inline unsigned _get_prio_queue_from_runqueue(void) {
 #if defined(BITARITHM_HAS_CLZ)
     return 31 - bitarithm_msb(runqueue_bitcache);
 #else
@@ -115,17 +105,15 @@ static inline unsigned _get_prio_queue_from_runqueue(void)
 #endif
 }
 
-static void _unschedule(thread_t *active_thread)
-{
+static void _unschedule(thread_t *active_thread) {
     if (active_thread->status == STATUS_RUNNING) {
         active_thread->status = STATUS_PENDING;
     }
 
 #if IS_ACTIVE(SCHED_TEST_STACK)
-    /* All platforms align the stack to word boundaries (possible wasting one
-     * word of RAM), so this access is not unaligned. Using an intermediate
-     * cast to uintptr_t to silence -Wcast-align
-     */
+    // All platforms align the stack to word boundaries (possible wasting one
+    // word of RAM), so this access is not unaligned. Using an intermediate
+    // cast to uintptr_t to silence -Wcast-align
     if (*((uintptr_t *)(uintptr_t)active_thread->stack_start) !=
         (uintptr_t)active_thread->stack_start) {
         LOG_ERROR(
@@ -141,8 +129,7 @@ static void _unschedule(thread_t *active_thread)
 #endif
 }
 
-thread_t *__attribute__((used)) sched_run(void)
-{
+thread_t *__attribute__((used)) sched_run(void) {
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
 
@@ -178,12 +165,11 @@ thread_t *__attribute__((used)) sched_run(void)
 
     if (previous_thread == next_thread) {
 #ifdef MODULE_SCHED_CB
-        /* Call the sched callback again only if the active thread is NULL. When
-         * active_thread is NULL, there was a sleep in between descheduling the
-         * previous thread and scheduling the new thread. Call the callback here
-         * again ensures that the time sleeping doesn't count as running the
-         * previous thread
-         */
+        // Call the sched callback again only if the active thread is NULL. When
+        // active_thread is NULL, there was a sleep in between descheduling the
+        // previous thread and scheduling the new thread. Call the callback here
+        // again ensures that the time sleeping doesn't count as running the
+        // previous thread
         if (sched_cb && !active_thread) {
             sched_cb(KERNEL_PID_UNDEF, next_thread->pid);
         }
@@ -210,9 +196,9 @@ thread_t *__attribute__((used)) sched_run(void)
 
 #ifdef MODULE_MPU_STACK_GUARD
         mpu_configure(
-            2,                                              /* MPU region 2 */
-            (uintptr_t)next_thread->stack_start + 31,       /* Base Address (rounded up) */
-            MPU_ATTR(1, AP_RO_RO, 0, 1, 0, 1, MPU_SIZE_32B) /* Attributes and Size */
+            2,                                              // MPU region 2
+            (uintptr_t)next_thread->stack_start + 31,       // Base Address (rounded up)
+            MPU_ATTR(1, AP_RO_RO, 0, 1, 0, 1, MPU_SIZE_32B) // Attributes and Size
             );
 #endif
         DEBUG("sched_run: done, changed sched_active_thread.\n");
@@ -221,19 +207,17 @@ thread_t *__attribute__((used)) sched_run(void)
     return next_thread;
 }
 
-/* Note: Forcing the compiler to inline this function will reduce .text for applications
- *       not linking in sched_change_priority(), which benefits the vast majority of apps.
- */
-static inline __attribute__((always_inline)) void _runqueue_push(thread_t *thread, uint8_t priority)
-{
+// Note: Forcing the compiler to inline this function will reduce .text for applications
+//       not linking in sched_change_priority(), which benefits the vast majority of apps.
+static inline __attribute__((always_inline)) void _runqueue_push(thread_t *thread, uint8_t priority) {
     DEBUG("sched_set_status: adding thread %" PRIkernel_pid " to runqueue %" PRIu8 ".\n",
           thread->pid, priority);
     clist_rpush(&sched_runqueues[priority], &(thread->rq_entry));
     _set_runqueue_bit(priority);
 
-    /* some thread entered a runqueue
-     * if it is the active runqueue
-     * inform the runqueue_change callback */
+    // some thread entered a runqueue
+    // if it is the active runqueue
+    // inform the runqueue_change callback
 #if (IS_USED(MODULE_SCHED_RUNQ_CALLBACK))
     thread_t *active_thread = thread_get_active();
     if (active_thread && active_thread->priority == priority) {
@@ -242,11 +226,9 @@ static inline __attribute__((always_inline)) void _runqueue_push(thread_t *threa
 #endif
 }
 
-/* Note: Forcing the compiler to inline this function will reduce .text for applications
- *       not linking in sched_change_priority(), which benefits the vast majority of apps.
- */
-static inline __attribute__((always_inline)) void _runqueue_pop(thread_t *thread)
-{
+// Note: Forcing the compiler to inline this function will reduce .text for applications
+//       not linking in sched_change_priority(), which benefits the vast majority of apps.
+static inline __attribute__((always_inline)) void _runqueue_pop(thread_t *thread) {
     DEBUG("sched_set_status: removing thread %" PRIkernel_pid " from runqueue %" PRIu8 ".\n",
           thread->pid, thread->priority);
     clist_remove(&sched_runqueues[thread->priority], &thread->rq_entry);
@@ -259,8 +241,7 @@ static inline __attribute__((always_inline)) void _runqueue_pop(thread_t *thread
     }
 }
 
-void sched_set_status(thread_t *process, thread_status_t status)
-{
+void sched_set_status(thread_t *process, thread_status_t status) {
     if (status >= STATUS_ON_RUNQUEUE) {
         if (!(process->status >= STATUS_ON_RUNQUEUE)) {
             _runqueue_push(process, process->priority);
@@ -275,8 +256,7 @@ void sched_set_status(thread_t *process, thread_status_t status)
     process->status = status;
 }
 
-void sched_switch(uint16_t other_prio)
-{
+void sched_switch(uint16_t other_prio) {
     thread_t *active_thread = thread_get_active();
     uint16_t current_prio = active_thread->priority;
     int on_runqueue = (active_thread->status >= STATUS_ON_RUNQUEUE);
@@ -301,8 +281,7 @@ void sched_switch(uint16_t other_prio)
     }
 }
 
-NORETURN void sched_task_exit(void)
-{
+NORETURN void sched_task_exit(void) {
     DEBUG("sched_task_exit: ending thread %" PRIkernel_pid "...\n",
           thread_getpid());
 
@@ -323,14 +302,12 @@ NORETURN void sched_task_exit(void)
 }
 
 #ifdef MODULE_SCHED_CB
-void sched_register_cb(void (*callback)(kernel_pid_t, kernel_pid_t))
-{
+void sched_register_cb(void (*callback)(kernel_pid_t, kernel_pid_t)) {
     sched_cb = callback;
 }
 #endif
 
-void sched_change_priority(thread_t *thread, uint8_t priority)
-{
+void sched_change_priority(thread_t *thread, uint8_t priority) {
     assert(thread && (priority < SCHED_PRIO_LEVELS));
 
     if (thread->priority == priority) {
@@ -352,23 +329,21 @@ void sched_change_priority(thread_t *thread, uint8_t priority)
     if ((active == thread)
         || ((active != NULL) && (active->priority > priority) && thread_is_active(thread))
         ) {
-        /* If the change in priority would result in a different decision of
-         * the scheduler, we need to yield to make sure the change in priority
-         * takes effect immediately. This can be due to one of the following:
-         *
-         * 1) The priority of the thread currently running has been reduced
-         *    (higher numeric value), so that other threads now have priority
-         *    over the currently running.
-         * 2) The priority of a pending thread has been increased (lower numeric value) so that it
-         *    now has priority over the running thread.
-         */
+        // If the change in priority would result in a different decision of
+        // the scheduler, we need to yield to make sure the change in priority
+        // takes effect immediately. This can be due to one of the following:
+        //
+        // 1) The priority of the thread currently running has been reduced
+        //    (higher numeric value), so that other threads now have priority
+        //    over the currently running.
+        // 2) The priority of a pending thread has been increased (lower numeric value) so that it
+        //    now has priority over the running thread.
         thread_yield_higher();
     }
 }
 
-/* for compat with POSIX's sched.h - intended to be used by external code only */
-int sched_yield(void)
-{
+// for compat with POSIX's sched.h - intended to be used by external code only
+int sched_yield(void) {
     thread_yield();
     return 0;
 }

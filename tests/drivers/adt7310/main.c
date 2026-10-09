@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the ADT7310 accelerometer driver
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the ADT7310 accelerometer driver
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se
+///
+/// @}
 
 #include <stdio.h>
 #include <math.h>
@@ -24,7 +20,7 @@
 #include "periph/spi.h"
 #include "adt7310.h"
 
-/* Check for definition of hardware settings */
+// Check for definition of hardware settings
 #ifndef TEST_ADT7310_SPI
 #error "TEST_ADT7310_SPI not defined"
 #endif
@@ -40,8 +36,7 @@
 #define READINGS_CONT (200)
 #define READINGS_1SPS (20)
 
-int test_adt7310_sample_print(adt7310_t *dev)
-{
+int test_adt7310_sample_print(adt7310_t *dev) {
     int16_t raw;
     float celsius_float;
     int32_t millicelsius;
@@ -70,8 +65,8 @@ int test_adt7310_sample_print(adt7310_t *dev)
         return 1;
     };
 
-    /* Several platforms usually build with nano.specs, (without float printf) */
-    /* Split value into two integer parts for printing. */
+    // Several platforms usually build with nano.specs, (without float printf)
+    // Split value into two integer parts for printing.
     float integral = 0;
     float fractional;
     fractional = modff(celsius_float, &integral);
@@ -81,8 +76,7 @@ int test_adt7310_sample_print(adt7310_t *dev)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     adt7310_t dev;
 
     puts("ADT7310 temperature driver test application\n");
@@ -108,11 +102,9 @@ int main(void)
             return 1;
         }
 
-        for (int i = 0; i < READINGS_CONT; ++i)
-        {
+        for (int i = 0; i < READINGS_CONT; ++i) {
             printf("%4d: ", i);
-            if (test_adt7310_sample_print(&dev) != 0)
-            {
+            if (test_adt7310_sample_print(&dev) != 0) {
                 return 1;
             }
             xtimer_usleep(SLEEP_CONT);
@@ -126,11 +118,9 @@ int main(void)
             return 1;
         }
 
-        for (int i = 0; i < READINGS_1SPS; ++i)
-        {
+        for (int i = 0; i < READINGS_1SPS; ++i) {
             printf("%4d: ", i);
-            if (test_adt7310_sample_print(&dev) != 0)
-            {
+            if (test_adt7310_sample_print(&dev) != 0) {
                 return 1;
             }
             xtimer_usleep(SLEEP_1SPS);

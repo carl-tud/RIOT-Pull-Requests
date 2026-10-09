@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_at86rf215
- * @{
- *
- * @file
- * @brief       Register Definitions for the AT86RF215 chip
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     drivers_at86rf215
+/// @{
+///
+/// @file
+/// @brief       Register Definitions for the AT86RF215 chip
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stdint.h>
 #include "vendor/at86rf215.h"
@@ -22,146 +18,140 @@
 extern "C" {
 #endif
 
-/**
- * @brief    Radio Frontend registers
- * @{
- */
+/// @brief    Radio Frontend registers
+/// @{
 struct at86rf215_RF_regs {
-    uint16_t RG_IRQS;           /**< see datasheet */
-    uint16_t RG_IRQM;           /**< see datasheet */
-    uint16_t RG_AUXS;           /**< see datasheet */
-    uint16_t RG_STATE;          /**< see datasheet */
-    uint16_t RG_CMD;            /**< see datasheet */
-    uint16_t RG_CS;             /**< see datasheet */
-    uint16_t RG_CCF0L;          /**< see datasheet */
-    uint16_t RG_CCF0H;          /**< see datasheet */
-    uint16_t RG_CNL;            /**< see datasheet */
-    uint16_t RG_CNM;            /**< see datasheet */
-    uint16_t RG_RXBWC;          /**< see datasheet */
-    uint16_t RG_RXDFE;          /**< see datasheet */
-    uint16_t RG_AGCC;           /**< see datasheet */
-    uint16_t RG_AGCS;           /**< see datasheet */
-    uint16_t RG_RSSI;           /**< see datasheet */
-    uint16_t RG_EDC;            /**< see datasheet */
-    uint16_t RG_EDD;            /**< see datasheet */
-    uint16_t RG_EDV;            /**< see datasheet */
-    uint16_t RG_RNDV;           /**< see datasheet */
-    uint16_t RG_TXCUTC;         /**< see datasheet */
-    uint16_t RG_TXDFE;          /**< see datasheet */
-    uint16_t RG_PAC;            /**< see datasheet */
-    uint16_t RG_PADFE;          /**< see datasheet */
-    uint16_t RG_PLL;            /**< see datasheet */
-    uint16_t RG_PLLCF;          /**< see datasheet */
-    uint16_t RG_TXCI;           /**< see datasheet */
-    uint16_t RG_TXCQ;           /**< see datasheet */
-    uint16_t RG_TXDACI;         /**< see datasheet */
-    uint16_t RG_TXDACQ;         /**< see datasheet */
+    uint16_t RG_IRQS;           ///< see datasheet
+    uint16_t RG_IRQM;           ///< see datasheet
+    uint16_t RG_AUXS;           ///< see datasheet
+    uint16_t RG_STATE;          ///< see datasheet
+    uint16_t RG_CMD;            ///< see datasheet
+    uint16_t RG_CS;             ///< see datasheet
+    uint16_t RG_CCF0L;          ///< see datasheet
+    uint16_t RG_CCF0H;          ///< see datasheet
+    uint16_t RG_CNL;            ///< see datasheet
+    uint16_t RG_CNM;            ///< see datasheet
+    uint16_t RG_RXBWC;          ///< see datasheet
+    uint16_t RG_RXDFE;          ///< see datasheet
+    uint16_t RG_AGCC;           ///< see datasheet
+    uint16_t RG_AGCS;           ///< see datasheet
+    uint16_t RG_RSSI;           ///< see datasheet
+    uint16_t RG_EDC;            ///< see datasheet
+    uint16_t RG_EDD;            ///< see datasheet
+    uint16_t RG_EDV;            ///< see datasheet
+    uint16_t RG_RNDV;           ///< see datasheet
+    uint16_t RG_TXCUTC;         ///< see datasheet
+    uint16_t RG_TXDFE;          ///< see datasheet
+    uint16_t RG_PAC;            ///< see datasheet
+    uint16_t RG_PADFE;          ///< see datasheet
+    uint16_t RG_PLL;            ///< see datasheet
+    uint16_t RG_PLLCF;          ///< see datasheet
+    uint16_t RG_TXCI;           ///< see datasheet
+    uint16_t RG_TXCQ;           ///< see datasheet
+    uint16_t RG_TXDACI;         ///< see datasheet
+    uint16_t RG_TXDACQ;         ///< see datasheet
 };
-/** @} */
+/// @}
 
-/**
- * @brief    Base Band Controller registers
- * @{
- */
+/// @brief    Base Band Controller registers
+/// @{
 struct at86rf215_BBC_regs {
-    uint16_t RG_IRQS;           /**< see datasheet */
-    uint16_t RG_FBRXS;          /**< see datasheet */
-    uint16_t RG_FBRXE;          /**< see datasheet */
-    uint16_t RG_FBTXS;          /**< see datasheet */
-    uint16_t RG_FBTXE;          /**< see datasheet */
-    uint16_t RG_IRQM;           /**< see datasheet */
-    uint16_t RG_PC;             /**< see datasheet */
-    uint16_t RG_PS;             /**< see datasheet */
-    uint16_t RG_RXFLL;          /**< see datasheet */
-    uint16_t RG_RXFLH;          /**< see datasheet */
-    uint16_t RG_TXFLL;          /**< see datasheet */
-    uint16_t RG_TXFLH;          /**< see datasheet */
-    uint16_t RG_FBLL;           /**< see datasheet */
-    uint16_t RG_FBLH;           /**< see datasheet */
-    uint16_t RG_FBLIL;          /**< see datasheet */
-    uint16_t RG_FBLIH;          /**< see datasheet */
-    uint16_t RG_OFDMPHRTX;      /**< see datasheet */
-    uint16_t RG_OFDMPHRRX;      /**< see datasheet */
-    uint16_t RG_OFDMC;          /**< see datasheet */
-    uint16_t RG_OFDMSW;         /**< see datasheet */
-    uint16_t RG_OQPSKC0;        /**< see datasheet */
-    uint16_t RG_OQPSKC1;        /**< see datasheet */
-    uint16_t RG_OQPSKC2;        /**< see datasheet */
-    uint16_t RG_OQPSKC3;        /**< see datasheet */
-    uint16_t RG_OQPSKPHRTX;     /**< see datasheet */
-    uint16_t RG_OQPSKPHRRX;     /**< see datasheet */
-    uint16_t RG_AFC0;           /**< see datasheet */
-    uint16_t RG_AFC1;           /**< see datasheet */
-    uint16_t RG_AFFTM;          /**< see datasheet */
-    uint16_t RG_AFFVM;          /**< see datasheet */
-    uint16_t RG_AFS;            /**< see datasheet */
-    uint16_t RG_MACEA0;         /**< see datasheet */
-    uint16_t RG_MACEA1;         /**< see datasheet */
-    uint16_t RG_MACEA2;         /**< see datasheet */
-    uint16_t RG_MACEA3;         /**< see datasheet */
-    uint16_t RG_MACEA4;         /**< see datasheet */
-    uint16_t RG_MACEA5;         /**< see datasheet */
-    uint16_t RG_MACEA6;         /**< see datasheet */
-    uint16_t RG_MACEA7;         /**< see datasheet */
-    uint16_t RG_MACPID0F0;      /**< see datasheet */
-    uint16_t RG_MACPID1F0;      /**< see datasheet */
-    uint16_t RG_MACSHA0F0;      /**< see datasheet */
-    uint16_t RG_MACSHA1F0;      /**< see datasheet */
-    uint16_t RG_MACPID0F1;      /**< see datasheet */
-    uint16_t RG_MACPID1F1;      /**< see datasheet */
-    uint16_t RG_MACSHA0F1;      /**< see datasheet */
-    uint16_t RG_MACSHA1F1;      /**< see datasheet */
-    uint16_t RG_MACPID0F2;      /**< see datasheet */
-    uint16_t RG_MACPID1F2;      /**< see datasheet */
-    uint16_t RG_MACSHA0F2;      /**< see datasheet */
-    uint16_t RG_MACSHA1F2;      /**< see datasheet */
-    uint16_t RG_MACPID0F3;      /**< see datasheet */
-    uint16_t RG_MACPID1F3;      /**< see datasheet */
-    uint16_t RG_MACSHA0F3;      /**< see datasheet */
-    uint16_t RG_MACSHA1F3;      /**< see datasheet */
-    uint16_t RG_AMCS;           /**< see datasheet */
-    uint16_t RG_AMEDT;          /**< see datasheet */
-    uint16_t RG_AMAACKPD;       /**< see datasheet */
-    uint16_t RG_AMAACKTL;       /**< see datasheet */
-    uint16_t RG_AMAACKTH;       /**< see datasheet */
-    uint16_t RG_FSKC0;          /**< see datasheet */
-    uint16_t RG_FSKC1;          /**< see datasheet */
-    uint16_t RG_FSKC2;          /**< see datasheet */
-    uint16_t RG_FSKC3;          /**< see datasheet */
-    uint16_t RG_FSKC4;          /**< see datasheet */
-    uint16_t RG_FSKPLL;         /**< see datasheet */
-    uint16_t RG_FSKSFD0L;       /**< see datasheet */
-    uint16_t RG_FSKSFD0H;       /**< see datasheet */
-    uint16_t RG_FSKSFD1L;       /**< see datasheet */
-    uint16_t RG_FSKSFD1H;       /**< see datasheet */
-    uint16_t RG_FSKPHRTX;       /**< see datasheet */
-    uint16_t RG_FSKPHRRX;       /**< see datasheet */
-    uint16_t RG_FSKRPC;         /**< see datasheet */
-    uint16_t RG_FSKRPCONT;      /**< see datasheet */
-    uint16_t RG_FSKRPCOFFT;     /**< see datasheet */
-    uint16_t RG_FSKRRXFLL;      /**< see datasheet */
-    uint16_t RG_FSKRRXFLH;      /**< see datasheet */
-    uint16_t RG_FSKDM;          /**< see datasheet */
-    uint16_t RG_FSKPE0;         /**< see datasheet */
-    uint16_t RG_FSKPE1;         /**< see datasheet */
-    uint16_t RG_FSKPE2;         /**< see datasheet */
-    uint16_t RG_PMUC;           /**< see datasheet */
-    uint16_t RG_PMUVAL;         /**< see datasheet */
-    uint16_t RG_PMUQF;          /**< see datasheet */
-    uint16_t RG_PMUI;           /**< see datasheet */
-    uint16_t RG_PMUQ;           /**< see datasheet */
-    uint16_t RG_CNTC;           /**< see datasheet */
-    uint16_t RG_CNT0;           /**< see datasheet */
-    uint16_t RG_CNT1;           /**< see datasheet */
-    uint16_t RG_CNT2;           /**< see datasheet */
-    uint16_t RG_CNT3;           /**< see datasheet */
+    uint16_t RG_IRQS;           ///< see datasheet
+    uint16_t RG_FBRXS;          ///< see datasheet
+    uint16_t RG_FBRXE;          ///< see datasheet
+    uint16_t RG_FBTXS;          ///< see datasheet
+    uint16_t RG_FBTXE;          ///< see datasheet
+    uint16_t RG_IRQM;           ///< see datasheet
+    uint16_t RG_PC;             ///< see datasheet
+    uint16_t RG_PS;             ///< see datasheet
+    uint16_t RG_RXFLL;          ///< see datasheet
+    uint16_t RG_RXFLH;          ///< see datasheet
+    uint16_t RG_TXFLL;          ///< see datasheet
+    uint16_t RG_TXFLH;          ///< see datasheet
+    uint16_t RG_FBLL;           ///< see datasheet
+    uint16_t RG_FBLH;           ///< see datasheet
+    uint16_t RG_FBLIL;          ///< see datasheet
+    uint16_t RG_FBLIH;          ///< see datasheet
+    uint16_t RG_OFDMPHRTX;      ///< see datasheet
+    uint16_t RG_OFDMPHRRX;      ///< see datasheet
+    uint16_t RG_OFDMC;          ///< see datasheet
+    uint16_t RG_OFDMSW;         ///< see datasheet
+    uint16_t RG_OQPSKC0;        ///< see datasheet
+    uint16_t RG_OQPSKC1;        ///< see datasheet
+    uint16_t RG_OQPSKC2;        ///< see datasheet
+    uint16_t RG_OQPSKC3;        ///< see datasheet
+    uint16_t RG_OQPSKPHRTX;     ///< see datasheet
+    uint16_t RG_OQPSKPHRRX;     ///< see datasheet
+    uint16_t RG_AFC0;           ///< see datasheet
+    uint16_t RG_AFC1;           ///< see datasheet
+    uint16_t RG_AFFTM;          ///< see datasheet
+    uint16_t RG_AFFVM;          ///< see datasheet
+    uint16_t RG_AFS;            ///< see datasheet
+    uint16_t RG_MACEA0;         ///< see datasheet
+    uint16_t RG_MACEA1;         ///< see datasheet
+    uint16_t RG_MACEA2;         ///< see datasheet
+    uint16_t RG_MACEA3;         ///< see datasheet
+    uint16_t RG_MACEA4;         ///< see datasheet
+    uint16_t RG_MACEA5;         ///< see datasheet
+    uint16_t RG_MACEA6;         ///< see datasheet
+    uint16_t RG_MACEA7;         ///< see datasheet
+    uint16_t RG_MACPID0F0;      ///< see datasheet
+    uint16_t RG_MACPID1F0;      ///< see datasheet
+    uint16_t RG_MACSHA0F0;      ///< see datasheet
+    uint16_t RG_MACSHA1F0;      ///< see datasheet
+    uint16_t RG_MACPID0F1;      ///< see datasheet
+    uint16_t RG_MACPID1F1;      ///< see datasheet
+    uint16_t RG_MACSHA0F1;      ///< see datasheet
+    uint16_t RG_MACSHA1F1;      ///< see datasheet
+    uint16_t RG_MACPID0F2;      ///< see datasheet
+    uint16_t RG_MACPID1F2;      ///< see datasheet
+    uint16_t RG_MACSHA0F2;      ///< see datasheet
+    uint16_t RG_MACSHA1F2;      ///< see datasheet
+    uint16_t RG_MACPID0F3;      ///< see datasheet
+    uint16_t RG_MACPID1F3;      ///< see datasheet
+    uint16_t RG_MACSHA0F3;      ///< see datasheet
+    uint16_t RG_MACSHA1F3;      ///< see datasheet
+    uint16_t RG_AMCS;           ///< see datasheet
+    uint16_t RG_AMEDT;          ///< see datasheet
+    uint16_t RG_AMAACKPD;       ///< see datasheet
+    uint16_t RG_AMAACKTL;       ///< see datasheet
+    uint16_t RG_AMAACKTH;       ///< see datasheet
+    uint16_t RG_FSKC0;          ///< see datasheet
+    uint16_t RG_FSKC1;          ///< see datasheet
+    uint16_t RG_FSKC2;          ///< see datasheet
+    uint16_t RG_FSKC3;          ///< see datasheet
+    uint16_t RG_FSKC4;          ///< see datasheet
+    uint16_t RG_FSKPLL;         ///< see datasheet
+    uint16_t RG_FSKSFD0L;       ///< see datasheet
+    uint16_t RG_FSKSFD0H;       ///< see datasheet
+    uint16_t RG_FSKSFD1L;       ///< see datasheet
+    uint16_t RG_FSKSFD1H;       ///< see datasheet
+    uint16_t RG_FSKPHRTX;       ///< see datasheet
+    uint16_t RG_FSKPHRRX;       ///< see datasheet
+    uint16_t RG_FSKRPC;         ///< see datasheet
+    uint16_t RG_FSKRPCONT;      ///< see datasheet
+    uint16_t RG_FSKRPCOFFT;     ///< see datasheet
+    uint16_t RG_FSKRRXFLL;      ///< see datasheet
+    uint16_t RG_FSKRRXFLH;      ///< see datasheet
+    uint16_t RG_FSKDM;          ///< see datasheet
+    uint16_t RG_FSKPE0;         ///< see datasheet
+    uint16_t RG_FSKPE1;         ///< see datasheet
+    uint16_t RG_FSKPE2;         ///< see datasheet
+    uint16_t RG_PMUC;           ///< see datasheet
+    uint16_t RG_PMUVAL;         ///< see datasheet
+    uint16_t RG_PMUQF;          ///< see datasheet
+    uint16_t RG_PMUI;           ///< see datasheet
+    uint16_t RG_PMUQ;           ///< see datasheet
+    uint16_t RG_CNTC;           ///< see datasheet
+    uint16_t RG_CNT0;           ///< see datasheet
+    uint16_t RG_CNT1;           ///< see datasheet
+    uint16_t RG_CNT2;           ///< see datasheet
+    uint16_t RG_CNT3;           ///< see datasheet
 };
-/** @} */
+/// @}
 
-/**
- * @name    sub-GHz Radio Frontend register map
- * @{
- */
+/// @name    sub-GHz Radio Frontend register map
+/// @{
 static const struct at86rf215_RF_regs RF09_regs = {
     .RG_IRQS   = 0x00,
     .RG_IRQM   = 0x100,
@@ -193,12 +183,10 @@ static const struct at86rf215_RF_regs RF09_regs = {
     .RG_TXDACI = 0x127,
     .RG_TXDACQ = 0x128,
 };
-/** @} */
+/// @}
 
-/**
- * @name    2.4 GHz Radio Frontend register map
- * @{
- */
+/// @name    2.4 GHz Radio Frontend register map
+/// @{
 static const struct at86rf215_RF_regs RF24_regs = {
     .RG_IRQS   = 0x01,
     .RG_IRQM   = 0x200,
@@ -230,12 +218,10 @@ static const struct at86rf215_RF_regs RF24_regs = {
     .RG_TXDACI = 0x227,
     .RG_TXDACQ = 0x228,
 };
-/** @} */
+/// @}
 
-/**
- * @name    sub-GHz Radio Frontend register map
- * @{
- */
+/// @name    sub-GHz Radio Frontend register map
+/// @{
 static const struct at86rf215_BBC_regs BBC0_regs = {
     .RG_IRQS       = 0x02,
     .RG_FBRXS      = 0x2000,
@@ -329,12 +315,10 @@ static const struct at86rf215_BBC_regs BBC0_regs = {
     .RG_CNT2       = 0x393,
     .RG_CNT3       = 0x394,
 };
-/** @} */
+/// @}
 
-/**
- * @name    2.4 GHz Radio Frontend register map
- * @{
- */
+/// @name    2.4 GHz Radio Frontend register map
+/// @{
 static const struct at86rf215_BBC_regs BBC1_regs = {
     .RG_IRQS       = 0x03,
     .RG_FBRXS      = 0x3000,
@@ -428,29 +412,23 @@ static const struct at86rf215_BBC_regs BBC1_regs = {
     .RG_CNT2       = 0x493,
     .RG_CNT3       = 0x494,
 };
-/** @} */
+/// @}
 
-/**
- * @name    Part Numbers
- * @{
- */
-#define AT86RF215_PN    (0x34)  /* sub-GHz & 2.4 GHz */
-#define AT86RF215IQ_PN  (0x35)  /* I/Q radio only */
-#define AT86RF215M_PN   (0x36)  /* sub-GHz only */
-/** @} */
+/// @name    Part Numbers
+/// @{
+#define AT86RF215_PN    (0x34)  // sub-GHz & 2.4 GHz
+#define AT86RF215IQ_PN  (0x35)  // I/Q radio only
+#define AT86RF215M_PN   (0x36)  // sub-GHz only
+/// @}
 
-/**
- * @name    SPI command prefixes
- * @{
- */
+/// @name    SPI command prefixes
+/// @{
 #define FLAG_WRITE        0x8000
 #define FLAG_READ         0x0000
-/** @} */
+/// @}
 
-/**
- * @name    Radio Commands written to RF->RG_CMD
- * @{
- */
+/// @name    Radio Commands written to RF->RG_CMD
+/// @{
 #define CMD_RF_NOP          0x0
 #define CMD_RF_SLEEP        0x1
 #define CMD_RF_TRXOFF       0x2
@@ -459,27 +437,24 @@ static const struct at86rf215_BBC_regs BBC1_regs = {
 #define CMD_RF_RX           0x5
 #define CMD_RF_RESET        0x7     /* transceiver reset, the transceiver state
                                        will automatically end up in state TRXOFF */
-/** @} */
+/// @}
 
-/**
- * @name    Radio States, read from RF->RG_STATE
- * @{
- */
-#define RF_STATE_TRXOFF     0x2     /* Transceiver off, SPI active */
-#define RF_STATE_TXPREP     0x3     /* Transmit preparation */
-#define RF_STATE_TX         0x4     /* Transmit */
-#define RF_STATE_RX         0x5     /* Receive */
-#define RF_STATE_TRANSITION 0x6     /* State transition in progress */
-#define RF_STATE_RESET      0x7     /* Transceiver is in state RESET or SLEEP */
-/** @} */
+/// @name    Radio States, read from RF->RG_STATE
+/// @{
+#define RF_STATE_TRXOFF     0x2     // Transceiver off, SPI active
+#define RF_STATE_TXPREP     0x3     // Transmit preparation
+#define RF_STATE_TX         0x4     // Transmit
+#define RF_STATE_RX         0x5     // Receive
+#define RF_STATE_TRANSITION 0x6     // State transition in progress
+#define RF_STATE_RESET      0x7     // Transceiver is in state RESET or SLEEP
+/// @}
 
-/** offset (in Hz) for CCF0 in 2.4 GHz mode */
+/// offset (in Hz) for CCF0 in 2.4 GHz mode
 #define CCF0_24G_OFFSET          1500000U
 
-/** The sub-register configures the sampling frequency of the received signal.
- *  Undefined values are mapped to default setting fS=4000kHz
- *  @{
- */
+/// The sub-register configures the sampling frequency of the received signal.
+///  Undefined values are mapped to default setting fS=4000kHz
+///  @{
 #define RF_SR_4000K                     0x1
 #define RF_SR_2000K                     0x2
 #define RF_SR_1333K                     0x3
@@ -488,63 +463,60 @@ static const struct at86rf215_BBC_regs BBC1_regs = {
 #define RF_SR_666K                      0x6
 #define RF_SR_500K                      0x8
 #define RF_SR_400K                      0xA
-/** @} */
+/// @}
 
-/* The sub-register configures the relative cut-off frequency fCUT
-    where 1.0 refers to half the sample frequency fS. */
-/** Fcut = 0.25 * Fs/2 */
+// The sub-register configures the relative cut-off frequency fCUT
+//     where 1.0 refers to half the sample frequency fS.
+/// Fcut = 0.25 * Fs/2
 #define RF_RCUT_FS_BY_8                 (0x0 << RXDFE_RCUT_SHIFT)
-/** Fcut = 0.375 * Fs/2 */
+/// Fcut = 0.375 * Fs/2
 #define RF_RCUT_FS_BY_5P3               (0x1 << RXDFE_RCUT_SHIFT)
-/** Fcut = 0.5 * Fs/2 */
+/// Fcut = 0.5 * Fs/2
 #define RF_RCUT_FS_BY_4                 (0x2 << RXDFE_RCUT_SHIFT)
-/** Fcut = 0.75 * Fs/2 */
+/// Fcut = 0.75 * Fs/2
 #define RF_RCUT_FS_BY_2P6               (0x3 << RXDFE_RCUT_SHIFT)
-/** Fcut = 1.0 * Fs/2 */
+/// Fcut = 1.0 * Fs/2
 #define RF_RCUT_FS_BY_2                 (0x4 << RXDFE_RCUT_SHIFT)
 
-/** The averaging time is calculated by T[μs]=DF*DTB.
- * @{
- */
+/// The averaging time is calculated by T[μs]=DF*DTB.
+/// @{
 #define RF_DTB_2_US                     0x0
 #define RF_DTB_8_US                     0x1
 #define RF_DTB_32_US                    0x2
 #define RF_DTB_128_US                   0x3
-/** @} */
+/// @}
 
-/** BPSK, rate ½, 4 x frequency repetition */
+/// BPSK, rate ½, 4 x frequency repetition
 #define BB_MCS_BPSK_REP4                0
-/** BPSK, rate ½, 2 x frequency repetition */
+/// BPSK, rate ½, 2 x frequency repetition
 #define BB_MCS_BPSK_REP2                1
-/** QPSK, rate ½, 2 x frequency repetition */
+/// QPSK, rate ½, 2 x frequency repetition
 #define BB_MCS_QPSK_REP2                2
-/** QPSK, rate ½ */
+/// QPSK, rate ½
 #define BB_MCS_QPSK_1BY2                3
-/** QPSK, rate ¾ */
+/// QPSK, rate ¾
 #define BB_MCS_QPSK_3BY4                4
-/** 16-QAM, rate ½ */
+/// 16-QAM, rate ½
 #define BB_MCS_16QAM_1BY2               5
-/** 16-QAM, rate ¾ */
+/// 16-QAM, rate ¾
 #define BB_MCS_16QAM_3BY4               6
 
-/** receive only MR-O-QPSK */
+/// receive only MR-O-QPSK
 #define RXM_MR_OQPSK                    0x0
-/** receive only legacy O-QPSK */
+/// receive only legacy O-QPSK
 #define RXM_LEGACY_OQPSK                0x1
-/** receive both legacy & MR-O-QPSK */
+/// receive both legacy & MR-O-QPSK
 #define RXM_BOTH_OQPSK                  0x2
-/** receive nothing */
+/// receive nothing
 #define RXM_DISABLE                     0x3
 
-/** Modulation Order 2-FSK */
+/// Modulation Order 2-FSK
 #define FSK_MORD_2SFK                   (0 << FSKC0_MORD_SHIFT)
-/** Modulation Order 4-FSK */
+/// Modulation Order 4-FSK
 #define FSK_MORD_4SFK                   (1 << FSKC0_MORD_SHIFT)
 
-/**
- * FSK modulation index
- * @{
- */
+/// FSK modulation index
+/// @{
 #define FSK_MIDX_3_BY_8                 (0 << FSKC0_MIDX_SHIFT)
 #define FSK_MIDX_4_BY_8                 (1 << FSKC0_MIDX_SHIFT)
 #define FSK_MIDX_6_BY_8                 (2 << FSKC0_MIDX_SHIFT)
@@ -553,59 +525,51 @@ static const struct at86rf215_BBC_regs BBC1_regs = {
 #define FSK_MIDX_12_BY_8                (5 << FSKC0_MIDX_SHIFT)
 #define FSK_MIDX_14_BY_8                (6 << FSKC0_MIDX_SHIFT)
 #define FSK_MIDX_16_BY_8                (7 << FSKC0_MIDX_SHIFT)
-/** @} */
+/// @}
 
-/**
- * FSK modulation index scale
- * @{
- */
+/// FSK modulation index scale
+/// @{
 #define FSK_MIDXS_SCALE_7_BY_8          (0 << FSKC0_MIDXS_SHIFT)
 #define FSK_MIDXS_SCALE_8_BY_8          (1 << FSKC0_MIDXS_SHIFT)
 #define FSK_MIDXS_SCALE_9_BY_8          (2 << FSKC0_MIDXS_SHIFT)
 #define FSK_MIDXS_SCALE_10_BY_8         (3 << FSKC0_MIDXS_SHIFT)
-/** @} */
+/// @}
 
-/**
- * FSK bandwidth time product
- * @{
- */
+/// FSK bandwidth time product
+/// @{
 #define FSK_BT_05                       (0 << FSKC0_BT_SHIFT)
 #define FSK_BT_10                       (1 << FSKC0_BT_SHIFT)
 #define FSK_BT_15                       (2 << FSKC0_BT_SHIFT)
 #define FSK_BT_20                       (3 << FSKC0_BT_SHIFT)
-/** @} */
+/// @}
 
-/**
- * FSK symbol rate (kHz)
- * @{
- */
+/// FSK symbol rate (kHz)
+/// @{
 #define FSK_SRATE_50K                   0x0
 #define FSK_SRATE_100K                  0x1
 #define FSK_SRATE_150K                  0x2
 #define FSK_SRATE_200K                  0x3
 #define FSK_SRATE_300K                  0x4
 #define FSK_SRATE_400K                  0x5
-/** @} */
+/// @}
 
-/**
- * FSK channel spacing (kHz)
- * @{
- */
+/// FSK channel spacing (kHz)
+/// @{
 #define FSK_CHANNEL_SPACING_200K        0x0
 #define FSK_CHANNEL_SPACING_400K        0x1
-/** @} */
+/// @}
 
-/** Lower values increase the SFD detector sensitivity.
-   Higher values increase the SFD selectivity.
-   The default value 8 is recommended for simultaneous sensing
-   of the SFD pairs according to IEEE 802.15.4g. */
+/// Lower values increase the SFD detector sensitivity.
+///    Higher values increase the SFD selectivity.
+///    The default value 8 is recommended for simultaneous sensing
+///    of the SFD pairs according to IEEE 802.15.4g.
 #define FSKC3_SFDT(n) (((n) << FSKC3_SFDT_SHIFT) & FSKC3_SFDT_MASK)
 
-/** Lower values increase the preamble detector sensitivity. */
+/// Lower values increase the preamble detector sensitivity.
 #define FSKC3_PDT(n)  (((n) << FSKC3_PDT_SHIFT) & FSKC3_PDT_MASK)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     unittests
- * @{
- *
- * @file
- * @brief       Test cases for the MD5 hash implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     unittests
+/// @{
+///
+/// @file
+/// @brief       Test cases for the MD5 hash implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -24,25 +20,23 @@
 
 #define MD5_DIGEST_LENGTH           (16U)
 
-static int calc_and_compare_hash(const char *str, const char *expected)
-{
+static int calc_and_compare_hash(const char *str, const char *expected) {
     uint8_t hash[MD5_DIGEST_LENGTH];
     char tmp[(2 * MD5_DIGEST_LENGTH) + 1];
 
-    /* calculate hash */
+    // calculate hash
     md5(hash, (const uint8_t *)str, strlen(str));
-    /* copy hash to string */
+    // copy hash to string
     for (size_t i = 0; i < MD5_DIGEST_LENGTH; i++) {
         sprintf(&(tmp[i * 2]), "%02x", hash[i]);
     }
     tmp[MD5_DIGEST_LENGTH * 2] = '\0';
-    /* compare with result string */
+    // compare with result string
     return strncmp(tmp, expected, strlen(tmp));
 }
 
-/* test cases copied from appendix A.5 of RFC 1321 */
-static void test_hashes_md5(void)
-{
+// test cases copied from appendix A.5 of RFC 1321
+static void test_hashes_md5(void) {
     TEST_ASSERT(calc_and_compare_hash("",
                 "d41d8cd98f00b204e9800998ecf8427e") == 0);
     TEST_ASSERT(calc_and_compare_hash("a",
@@ -61,8 +55,7 @@ static void test_hashes_md5(void)
                 "57edf4a22be3c955ac49da2e2107b67a") == 0);
 }
 
-Test *tests_hashes_md5_tests(void)
-{
+Test *tests_hashes_md5_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_hashes_md5),
     };

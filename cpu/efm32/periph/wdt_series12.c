@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_wdt
- * @{
- *
- * @file
- * @brief       Watchdog timer peripheral driver implementation for
- *              EFM32 Series 1 MCUs
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- * @author      Juergen Fitschen <me@jue.yt>
- * @}
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_wdt
+/// @{
+///
+/// @file
+/// @brief       Watchdog timer peripheral driver implementation for
+///              EFM32 Series 1 MCUs
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+/// @author      Juergen Fitschen <me@jue.yt>
+/// @}
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -39,8 +35,7 @@ static wdt_cb_t wdt_cb;
 static void *wdt_arg;
 #endif
 
-static inline uint32_t _get_clock(void)
-{
+static inline uint32_t _get_clock(void) {
 #if defined(_SILICON_LABS_32B_SERIES_0) || defined(_SILICON_LABS_32B_SERIES_1)
     return WDT_CLOCK_HZ;
 #else
@@ -48,13 +43,11 @@ static inline uint32_t _get_clock(void)
 #endif
 }
 
-static uint32_t _get_calculated_time(WDOG_PeriodSel_TypeDef period)
-{
+static uint32_t _get_calculated_time(WDOG_PeriodSel_TypeDef period) {
     return ((1 << (3 + (int)period)) + 1) / _get_clock() * MS_PER_SEC;
 }
 
-static  WDOG_PeriodSel_TypeDef _get_period(uint32_t max_time)
-{
+static  WDOG_PeriodSel_TypeDef _get_period(uint32_t max_time) {
     const uint32_t cycles = (max_time * _get_clock()) / MS_PER_SEC;
 
     DEBUG("[wdt_series1] _get_period: cycles=%" PRIu32 "\n", cycles);
@@ -62,8 +55,7 @@ static  WDOG_PeriodSel_TypeDef _get_period(uint32_t max_time)
     return (WDOG_PeriodSel_TypeDef) (32 - __builtin_clz(cycles - 1) - 3);
 }
 
-static WDOG_WinSel_TypeDef _get_illegal_window(uint32_t min_time, uint32_t calculated_time)
-{
+static WDOG_WinSel_TypeDef _get_illegal_window(uint32_t min_time, uint32_t calculated_time) {
     if (min_time == 0) {
         return wdogIllegalWindowDisable;
     }
@@ -79,16 +71,15 @@ static WDOG_WinSel_TypeDef _get_illegal_window(uint32_t min_time, uint32_t calcu
     return wdogIllegalWindowDisable;
 }
 
-static void _init(uint32_t min_time, uint32_t max_time, bool warn)
-{
-    /* avoid compilation errors when NDEBUG is defined */
+static void _init(uint32_t min_time, uint32_t max_time, bool warn) {
+    // avoid compilation errors when NDEBUG is defined
     (void)min_time;
     (void)max_time;
 #ifndef MODULE_PERIPH_WDT_CB
     (void)warn;
 #endif
 
-    /* assert timings */
+    // assert timings
     if (min_time == 0) {
         assert(max_time > NWDT_TIME_LOWER_LIMIT ||
                max_time < NWDT_TIME_UPPER_LIMIT);
@@ -98,7 +89,7 @@ static void _init(uint32_t min_time, uint32_t max_time, bool warn)
                max_time < WDT_TIME_UPPER_LIMIT);
     }
 
-    /* initialize clock */
+    // initialize clock
 #if defined(_SILICON_LABS_32B_SERIES_0) || defined(_SILICON_LABS_32B_SERIES_1)
     CMU_ClockEnable(cmuClock_HFLE, true);
 #else
@@ -106,7 +97,7 @@ static void _init(uint32_t min_time, uint32_t max_time, bool warn)
     CMU_ClockEnable(cmuClock_WDOG0, true);
 #endif
 
-    /* initialize watchdog */
+    // initialize watchdog
     WDOG_Init_TypeDef init = WDOG_INIT_DEFAULT;
 
     init.enable = false;
@@ -135,7 +126,7 @@ static void _init(uint32_t min_time, uint32_t max_time, bool warn)
 
     WDOGn_Init(WDOG0, &init);
 
-    /* Configure interrupts */
+    // Configure interrupts
     WDOGn_IntEnable(WDOG0, WDOG_IEN_WIN);
 
 #ifdef MODULE_PERIPH_WDT_CB
@@ -147,30 +138,25 @@ static void _init(uint32_t min_time, uint32_t max_time, bool warn)
     NVIC_EnableIRQ(WDOG0_IRQn);
 }
 
-void wdt_kick(void)
-{
+void wdt_kick(void) {
     WDOGn_Feed(WDOG0);
 }
 
-void wdt_start(void)
-{
+void wdt_start(void) {
     WDOGn_Enable(WDOG0, true);
 }
 
-void wdt_stop(void)
-{
+void wdt_stop(void) {
     WDOGn_Enable(WDOG0, false);
 }
 
-void wdt_setup_reboot(uint32_t min_time, uint32_t max_time)
-{
+void wdt_setup_reboot(uint32_t min_time, uint32_t max_time) {
     _init(min_time, max_time, false);
 }
 
 #if defined(MODULE_PERIPH_WDT_CB)
 void wdt_setup_reboot_with_callback(uint32_t min_time, uint32_t max_time,
-                                    wdt_cb_t cb, void *arg)
-{
+                                    wdt_cb_t cb, void *arg) {
     wdt_cb = cb;
     wdt_arg = arg;
 
@@ -178,8 +164,7 @@ void wdt_setup_reboot_with_callback(uint32_t min_time, uint32_t max_time,
 }
 #endif
 
-void isr_wdog0(void)
-{
+void isr_wdog0(void) {
     uint32_t flags = WDOGn_IntGet(WDOG0);
 
     if (flags & WDOG_IEN_WIN) {

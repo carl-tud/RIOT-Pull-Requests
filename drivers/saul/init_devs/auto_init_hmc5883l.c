@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @brief       Auto initialization of HMC5883L 3-axis digital compass
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- */
+// @ingroup     sys_auto_init_saul
+// @brief       Auto initialization of HMC5883L 3-axis digital compass
+// @author      Gunar Schorcht <gunar@schorcht.net>
+// @file
 
 #include "assert.h"
 #include "log.h"
@@ -17,33 +13,22 @@
 #include "hmc5883l.h"
 #include "hmc5883l_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define HMC5883L_NUM    ARRAY_SIZE(hmc5883l_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static hmc5883l_t hmc5883l_devs[HMC5883L_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[HMC5883L_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define HMC5883L_INFO_NUM    ARRAY_SIZE(hmc5883l_saul_info)
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern saul_driver_t hmc5883l_saul_driver;
 
-void auto_init_hmc5883l(void)
-{
+void auto_init_hmc5883l(void) {
     assert(HMC5883L_NUM == HMC5883L_INFO_NUM);
 
     for (unsigned int i = 0; i < HMC5883L_NUM; i++) {

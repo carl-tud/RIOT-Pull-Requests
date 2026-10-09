@@ -1,23 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @{
+///
+/// @file
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <errno.h>
 #include "string_utils.h"
 
-ssize_t strscpy(char *dest, const char *src, size_t count)
-{
+ssize_t strscpy(char *dest, const char *src, size_t count) {
     const char *start = dest;
 
     if (!count) {
@@ -37,8 +32,7 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
     }
 }
 
-const void *memchk(const void *data, uint8_t c, size_t len)
-{
+const void *memchk(const void *data, uint8_t c, size_t len) {
     const uint8_t *end = (uint8_t *)data + len;
     for (const uint8_t *d = data; d != end; ++d) {
         if (c != *d) {
@@ -49,8 +43,7 @@ const void *memchk(const void *data, uint8_t c, size_t len)
     return NULL;
 }
 
-int __swprintf(string_writer_t *sw, FLASH_ATTR const char *restrict format, ...)
-{
+int __swprintf(string_writer_t *sw, FLASH_ATTR const char *restrict format, ...) {
     va_list args;
     int res;
 
@@ -77,8 +70,7 @@ int __swprintf(string_writer_t *sw, FLASH_ATTR const char *restrict format, ...)
     return res;
 }
 
-void reverse_buf(void *buf, size_t len)
-{
+void reverse_buf(void *buf, size_t len) {
     uint8_t *cur = buf;
     uint8_t *end = cur + len - 1;
     while (cur < end) {
@@ -88,8 +80,7 @@ void reverse_buf(void *buf, size_t len)
     }
 }
 
-void memxor(void *dst, void* src, size_t size)
-{
+void memxor(void *dst, void* src, size_t size) {
     uint8_t *d = (uint8_t *)dst;
     uint8_t *s = (uint8_t *)src;
     if (d <= s) {
@@ -104,12 +95,11 @@ void memxor(void *dst, void* src, size_t size)
     }
 }
 
-void memcpy_reversed(void *restrict dst, const void *restrict src, size_t size)
-{
+void memcpy_reversed(void *restrict dst, const void *restrict src, size_t size) {
     size_t s = 0;
     while (size--) {
         ((uint8_t *)dst)[s++] = ((const uint8_t *)src)[size];
     }
 }
 
-/** @} */
+/// @}

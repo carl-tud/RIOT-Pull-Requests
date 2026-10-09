@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of LIS2DH12 accelerometers
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of LIS2DH12 accelerometers
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include "log.h"
 #include "assert.h"
@@ -21,29 +17,20 @@
 #include "lis2dh12.h"
 #include "lis2dh12_params.h"
 
-/**
- * @brief   Number of configured sensors
- */
+/// @brief   Number of configured sensors
 #define LIS2DH12_NUM    ARRAY_SIZE(lis2dh12_params)
 
-/**
- * @brief   Number of defined SAUL registry info entries
- */
+/// @brief   Number of defined SAUL registry info entries
 #define LIS2DH12_SAULINFO_NUM   (sizeof(lis2dh12_saul_info) / \
                                  sizeof(lis2dh12_saul_info[0]))
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static lis2dh12_t lis2dh12_devs[LIS2DH12_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[LIS2DH12_NUM * 2];
 
-void auto_init_lis2dh12(void)
-{
+void auto_init_lis2dh12(void) {
     assert(LIS2DH12_NUM == LIS2DH12_SAULINFO_NUM);
 
     for (unsigned int i = 0; i < LIS2DH12_NUM; i++) {

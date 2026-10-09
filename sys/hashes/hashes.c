@@ -1,18 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2013 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @author      Jason Linehan <patientulysses@gmail.com>
- * @author      Christian Mehlis <mehlis@inf.fu-berlin.de>
- */
+/// @file
+/// @author      Jason Linehan <patientulysses@gmail.com>
+/// @author      Christian Mehlis <mehlis@inf.fu-berlin.de>
 
 #include "hashes.h"
 
-uint32_t djb2_hash(const uint8_t *buf, size_t len)
-{
+uint32_t djb2_hash(const uint8_t *buf, size_t len) {
     uint32_t hash = 5381;
 
     for (size_t i = 0; i < len; i++) {
@@ -22,8 +17,7 @@ uint32_t djb2_hash(const uint8_t *buf, size_t len)
     return hash;
 }
 
-uint32_t sdbm_hash(const uint8_t *buf, size_t len)
-{
+uint32_t sdbm_hash(const uint8_t *buf, size_t len) {
     uint32_t hash = 0;
 
     for (size_t i = 0; i < len; i++) {
@@ -33,8 +27,7 @@ uint32_t sdbm_hash(const uint8_t *buf, size_t len)
     return hash;
 }
 
-uint32_t kr_hash(const uint8_t *buf, size_t len)
-{
+uint32_t kr_hash(const uint8_t *buf, size_t len) {
     uint32_t hash = 0;
 
     for (size_t i = 0; i < len; i++) {
@@ -44,8 +37,7 @@ uint32_t kr_hash(const uint8_t *buf, size_t len)
     return hash;
 }
 
-uint32_t sax_hash(const uint8_t *buf, size_t len)
-{
+uint32_t sax_hash(const uint8_t *buf, size_t len) {
     uint32_t hash = 0;
 
     for (size_t i = 0; i < len; i++) {
@@ -55,9 +47,8 @@ uint32_t sax_hash(const uint8_t *buf, size_t len)
     return hash;
 }
 
-uint32_t dek_hash(const uint8_t *buf, size_t len)
-{
-    uint32_t hash = 7919; /* prime */
+uint32_t dek_hash(const uint8_t *buf, size_t len) {
+    uint32_t hash = 7919; // prime
 
     for (size_t i = 0; i < len; i++) {
         hash = (hash << 5) ^ (hash >> 27) ^ buf[i];
@@ -66,8 +57,7 @@ uint32_t dek_hash(const uint8_t *buf, size_t len)
     return hash;
 }
 
-uint32_t fnv_hash(const uint8_t *buf, size_t len)
-{
+uint32_t fnv_hash(const uint8_t *buf, size_t len) {
     uint32_t FNV_PRIME = 0x811C9DC5;
     uint32_t hash = 0;
 
@@ -79,8 +69,7 @@ uint32_t fnv_hash(const uint8_t *buf, size_t len)
     return hash;
 }
 
-uint32_t rotating_hash(const uint8_t *buf, size_t len)
-{
+uint32_t rotating_hash(const uint8_t *buf, size_t len) {
     uint32_t hash = 0;
 
     for (size_t i = 0; i < len; i++) {
@@ -90,9 +79,8 @@ uint32_t rotating_hash(const uint8_t *buf, size_t len)
     return hash;
 }
 
-uint32_t one_at_a_time_hash(const uint8_t *buf, size_t len)
-{
-    uint32_t hash = 786431; /* prime */
+uint32_t one_at_a_time_hash(const uint8_t *buf, size_t len) {
+    uint32_t hash = 786431; // prime
 
     for (size_t i = 0; i < len; i++) {
         hash += buf[i];

@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief Transparent-box unit tests of vfs functions stubs used when the file
- * system does not implement the requested function.
- */
+/// @{
+///
+/// @file
+/// @brief Transparent-box unit tests of vfs functions stubs used when the file
+/// system does not implement the requested function.
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
@@ -61,93 +57,81 @@ static vfs_mount_t _test_vfs_mount_null = {
 
 static int _test_vfs_fs_op_mount_res = -1;
 
-static void setup(void)
-{
+static void setup(void) {
     _test_vfs_fs_op_mount_res = vfs_mount(&_test_vfs_mount_null);
 }
 
-static void teardown(void)
-{
+static void teardown(void) {
     vfs_umount(&_test_vfs_mount_null, false);
     atomic_store_u16(&_test_vfs_mount_null.open_files, 0);
 }
 
-static void test_vfs_null_fs_ops_mount(void)
-{
+static void test_vfs_null_fs_ops_mount(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     int res = vfs_mount(&_test_vfs_mount_null);
-    /* Already mounted */
+    // Already mounted
     TEST_ASSERT_EQUAL_INT(-EBUSY, res);
 }
 
-static void test_vfs_null_fs_ops_umount(void)
-{
+static void test_vfs_null_fs_ops_umount(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     int res = vfs_umount(&_test_vfs_mount_null, false);
     TEST_ASSERT_EQUAL_INT(0, res);
     res = vfs_umount(&_test_vfs_mount_null, false);
-    /* Not mounted */
+    // Not mounted
     TEST_ASSERT_EQUAL_INT(-EINVAL, res);
 }
 
-static void test_vfs_null_fs_ops_umount__EBUSY(void)
-{
+static void test_vfs_null_fs_ops_umount__EBUSY(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     uint16_t before = atomic_fetch_add_u16(&_test_vfs_mount_null.open_files, 1);
     TEST_ASSERT(before < UINT16_MAX);
     int res = vfs_umount(&_test_vfs_mount_null, false);
     TEST_ASSERT_EQUAL_INT(-EBUSY, res);
-    /* force unmount */
+    // force unmount
     res = vfs_umount(&_test_vfs_mount_null, true);
     TEST_ASSERT_EQUAL_INT(0, res);
 }
 
-static void test_vfs_null_fs_ops_rename(void)
-{
+static void test_vfs_null_fs_ops_rename(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     int res = vfs_rename("/test/foo", "/test/bar");
     TEST_ASSERT_EQUAL_INT(-EROFS, res);
 }
 
-static void test_vfs_null_fs_ops_unlink(void)
-{
+static void test_vfs_null_fs_ops_unlink(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     int res = vfs_unlink("/test/foo");
     TEST_ASSERT_EQUAL_INT(-EROFS, res);
 }
 
-static void test_vfs_null_fs_ops_mkdir(void)
-{
+static void test_vfs_null_fs_ops_mkdir(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     int res = vfs_mkdir("/test/foodir", 0);
     TEST_ASSERT_EQUAL_INT(-EROFS, res);
 }
 
-static void test_vfs_null_fs_ops_rmdir(void)
-{
+static void test_vfs_null_fs_ops_rmdir(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     int res = vfs_rmdir("/test/foodir");
     TEST_ASSERT_EQUAL_INT(-EROFS, res);
 }
 
-static void test_vfs_null_fs_ops_stat(void)
-{
+static void test_vfs_null_fs_ops_stat(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     struct stat buf;
     int res = vfs_stat("/test/foo", &buf);
     TEST_ASSERT_EQUAL_INT(-EPERM, res);
 }
 
-static void test_vfs_null_fs_ops_statvfs(void)
-{
+static void test_vfs_null_fs_ops_statvfs(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     struct statvfs buf;
     int res = vfs_statvfs("/test", &buf);
     TEST_ASSERT_EQUAL_INT(-EPERM, res);
 }
 
-static void test_vfs_null_fs_ops_fstatvfs(void)
-{
+static void test_vfs_null_fs_ops_fstatvfs(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_fs_op_mount_res);
     int fd = vfs_open("/test/baz", O_RDONLY, 0);
     TEST_ASSERT(fd >= 0);
@@ -156,8 +140,7 @@ static void test_vfs_null_fs_ops_fstatvfs(void)
     TEST_ASSERT_EQUAL_INT(-EINVAL, res);
 }
 
-Test *tests_vfs_null_file_system_ops_tests(void)
-{
+Test *tests_vfs_null_file_system_ops_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_vfs_null_fs_ops_mount),
         new_TestFixture(test_vfs_null_fs_ops_umount),
@@ -176,4 +159,4 @@ Test *tests_vfs_null_file_system_ops_tests(void)
     return (Test *)&vfs_fs_op_tests;
 }
 
-/** @} */
+/// @}

@@ -1,12 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tests-core.h"
 
-void tests_core(void)
-{
+void tests_core(void) {
     TESTS_RUN(tests_core_atomic_tests());
     TESTS_RUN(tests_core_bitarithm_tests());
     TESTS_RUN(tests_core_cib_tests());

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <string.h>
 #include "embUnit.h"
@@ -12,8 +10,7 @@
 
 #ifdef TESTS_CLIF_PRINT
 #include <stdio.h>
-static void _print_attr(clif_attr_t *attr)
-{
+static void _print_attr(clif_attr_t *attr) {
     if (attr->key) {
         printf("-- Attr: ");
         printf("%.*s", attr->key_len, attr->key);
@@ -25,24 +22,21 @@ static void _print_attr(clif_attr_t *attr)
         }
     }
 }
-#endif /* TESTS_CLIF_PRINT */
+#endif // TESTS_CLIF_PRINT
 
 #define _STR_LEN(s) (sizeof(s)-1)
 #define _NEW_ATTR(k, v) { .key = k, .key_len = _STR_LEN(k), .value = v, \
                           .value_len = _STR_LEN(v) }
 #define _NEW_ATTR_NO_VAL(k) { .key = k, .key_len = _STR_LEN(k), .value_len = 0 }
 
-/**
- * @brief Compares two link format attributes
- *
- * @param[in] p1 first attribute to compare
- * @param[in] p2 second attribute to compare
- *
- * @return 0 if attributes are equal
- * @return 1 otherwise
- */
-static unsigned _compare_attrs(clif_attr_t *p1, clif_attr_t *p2)
-{
+/// @brief Compares two link format attributes
+///
+/// @param[in] p1 first attribute to compare
+/// @param[in] p2 second attribute to compare
+///
+/// @return 0 if attributes are equal
+/// @return 1 otherwise
+static unsigned _compare_attrs(clif_attr_t *p1, clif_attr_t *p2) {
     unsigned result = 1;
     int res;
 
@@ -72,10 +66,9 @@ out:
     return result;
 }
 
-/* This also tests the functions `clif_add_target` and
- * `clif_add_attr`. */
-static void test_clif_encode_links(void)
-{
+// This also tests the functions `clif_add_target` and
+// `clif_add_attr`.
+static void test_clif_encode_links(void) {
     const char exp_string[] = "</sensor/temp>;rt=\"temperature\";if=\"sensor\","
                               "</node/info>,</node/ep>;ct=\"40\"";
     clif_attr_t attrs[] = {
@@ -95,7 +88,7 @@ static void test_clif_encode_links(void)
     size_t pos = 0;
     ssize_t res = 0;
 
-    /* first test with NULL output to check the needed bytes */
+    // first test with NULL output to check the needed bytes
     res = clif_encode_link(&links[0], NULL, 0);
     pos += res;
 
@@ -115,7 +108,7 @@ static void test_clif_encode_links(void)
 
     TEST_ASSERT_EQUAL_INT(exp_size, pos);
 
-    /* now actually encode the links */
+    // now actually encode the links
     pos = 0;
     res = clif_encode_link(&links[0], output, sizeof(output));
     pos += res;
@@ -143,13 +136,12 @@ static void test_clif_encode_links(void)
 #endif
 
     TEST_ASSERT_EQUAL_STRING(exp_string, output);
-    TEST_ASSERT_EQUAL_INT(exp_size, pos - 1); /* do not count '\0' */
+    TEST_ASSERT_EQUAL_INT(exp_size, pos - 1); // do not count '\0'
 }
 
-/* This also tests the functions `clif_get_target` and `clif_get_attr` */
-static void test_clif_decode_links(void)
-{
-    /* string to decode */
+// This also tests the functions `clif_get_target` and `clif_get_attr`
+static void test_clif_decode_links(void) {
+    // string to decode
     char input_string[] = "</sensors>;ct=40;title=\"\\\"Sensor\\\" Index, collection\","
                           "</sensors/temp>;rt=\"temperature-c\";if=\"sensor\","
                           "</sensors/light>;rt=\"light-lux\";if=sensor,"
@@ -159,7 +151,7 @@ static void test_clif_decode_links(void)
                           "This is \\\"escaped and has , \\\"\","
                           "</riot/board>,</riot/info>;obs";
 
-    /* ordered expected types to be decoded */
+    // ordered expected types to be decoded
     clif_attr_type_t exp_types[] = {
         CLIF_ATTR_CT, CLIF_ATTR_TITLE, CLIF_ATTR_RT, CLIF_ATTR_IF,
         CLIF_ATTR_RT, CLIF_ATTR_IF, CLIF_ATTR_ANCHOR, CLIF_ATTR_REL,
@@ -167,10 +159,10 @@ static void test_clif_decode_links(void)
         CLIF_ATTR_EXT, CLIF_ATTR_OBS
     };
 
-    /* ordered amount of expected attributes per link to be decoded */
+    // ordered amount of expected attributes per link to be decoded
     unsigned exp_attr_numof[] = { 2, 2, 2, 3, 4, 0, 1 };
 
-    /* ordered expected attributes to be decoded */
+    // ordered expected attributes to be decoded
     clif_attr_t exp_attrs[] = {
         _NEW_ATTR("ct", "40"),
         _NEW_ATTR("title", "\\\"Sensor\\\" Index, collection"),
@@ -188,7 +180,7 @@ static void test_clif_decode_links(void)
         _NEW_ATTR_NO_VAL("obs"),
     };
 
-    /* ordered expected targets to be decoded */
+    // ordered expected targets to be decoded
     const char *exp_targets[] = {
         "/sensors", "/sensors/temp", "/sensors/light",
         "http://www.example.com/sensors/t123", "/t", "/riot/board", "/riot/info"
@@ -202,8 +194,8 @@ static void test_clif_decode_links(void)
     char *pos = input_string;
     unsigned links_numof = 0;
 
-    /* first test without attributes array, to test the expected attributes
-     * functionality */
+    // first test without attributes array, to test the expected attributes
+    // functionality
     do {
         ssize_t res = clif_decode_link(&out_link, NULL, 0, pos,
                                        input_len - (pos - input_string));
@@ -212,10 +204,10 @@ static void test_clif_decode_links(void)
         }
         pos += res;
 
-        /* check expected target */
+        // check expected target
         TEST_ASSERT(!strncmp(exp_targets[links_numof], out_link.target, out_link.target_len));
 
-        /* check expected amount of attributes */
+        // check expected amount of attributes
         TEST_ASSERT_EQUAL_INT(exp_attr_numof[links_numof], out_link.attrs_len);
         links_numof++;
     } while (pos < input_string + sizeof(input_string));
@@ -227,7 +219,7 @@ static void test_clif_decode_links(void)
 #endif
     TEST_ASSERT(exp_links_numof == links_numof);
 
-    /* now decode again but saving the attributes */
+    // now decode again but saving the attributes
     clif_attr_t out_attrs[ARRAY_SIZE(exp_attrs)];
     pos = input_string;
     unsigned attrs_numof = 0;
@@ -251,16 +243,16 @@ static void test_clif_decode_links(void)
 #ifdef TESTS_CLIF_PRINT
             _print_attr(&out_link.attrs[i]);
 #endif
-            /* compare the attribute structure with the expected one */
+            // compare the attribute structure with the expected one
             TEST_ASSERT(!_compare_attrs(&out_link.attrs[i],
                                          &exp_attrs[attrs_numof]));
             clif_attr_type_t type = clif_get_attr_type(out_link.attrs[i].key,
                                                          out_link.attrs[i].key_len);
 
-            /* check that the returned type is the expected one */
+            // check that the returned type is the expected one
             TEST_ASSERT_EQUAL_INT(exp_types[attrs_numof], type);
 
-            /* test type to string conversion */
+            // test type to string conversion
             const char *t;
             if (clif_attr_type_to_str(type, &t) < 0) {
                 t = NULL;
@@ -273,19 +265,17 @@ static void test_clif_decode_links(void)
     TEST_ASSERT_EQUAL_INT(exp_attrs_numof, attrs_numof);
 }
 
-static void test_clif_get_attr_missing_value(void)
-{
+static void test_clif_get_attr_missing_value(void) {
     clif_attr_t attr;
     char *input = ";ct=";
 
-    /* Used to result in a spatial memory safety violation.
-     * See: https://github.com/RIOT-OS/RIOT/pull/15945 */
+    // Used to result in a spatial memory safety violation.
+    // See: https://github.com/RIOT-OS/RIOT/pull/15945
     int r = clif_get_attr(input, strlen(input), &attr);
     TEST_ASSERT_EQUAL_INT(CLIF_NOT_FOUND, r);
 }
 
-static void test_clif_get_attr_missing_quote(void)
-{
+static void test_clif_get_attr_missing_quote(void) {
     clif_attr_t attr;
     char *input = ";rt=\"temp";
 
@@ -293,8 +283,7 @@ static void test_clif_get_attr_missing_quote(void)
     TEST_ASSERT_EQUAL_INT(CLIF_NOT_FOUND, r);
 }
 
-static void test_clif_get_empty_attr_value(void)
-{
+static void test_clif_get_empty_attr_value(void) {
     clif_attr_t attr;
     char *input = ";rt=\"\"";
 
@@ -302,18 +291,16 @@ static void test_clif_get_empty_attr_value(void)
     TEST_ASSERT_EQUAL_INT(CLIF_NOT_FOUND, r);
 }
 
-static void test_clif_get_attr_empty(void)
-{
+static void test_clif_get_attr_empty(void) {
     clif_attr_t attr;
 
-    /* clif_get_attr used to access data even if input was empty.
-     * See: https://github.com/RIOT-OS/RIOT/pull/15947 */
+    // clif_get_attr used to access data even if input was empty.
+    // See: https://github.com/RIOT-OS/RIOT/pull/15947
     int r = clif_get_attr(NULL, 0, &attr);
     TEST_ASSERT_EQUAL_INT(CLIF_NOT_FOUND, r);
 }
 
-static void tests_clif_decode_encode_minimal(void)
-{
+static void tests_clif_decode_encode_minimal(void) {
     #define BUFF_SIZE 50
 
     char input_buf[] = "</sensors>";
@@ -337,8 +324,7 @@ static void tests_clif_decode_encode_minimal(void)
     TEST_ASSERT_EQUAL_STRING(input_buf, output_buf);
 }
 
-Test *tests_clif_tests(void)
-{
+Test *tests_clif_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_clif_encode_links),
         new_TestFixture(test_clif_decode_links),
@@ -354,7 +340,6 @@ Test *tests_clif_tests(void)
     return (Test *)&clif_tests;
 }
 
-void tests_clif(void)
-{
+void tests_clif(void) {
     TESTS_RUN(tests_clif_tests());
 }

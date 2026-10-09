@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    drivers_lis3dh LIS3DH accelerometer
- * @ingroup     drivers_sensors
- * @ingroup     drivers_saul
- * @brief       Device driver for the LIS3DH accelerometer
- *
- * This driver provides @ref drivers_saul capabilities.
- * @{
- *
- * @file
- * @brief       Device driver interface for the LIS3DH accelerometer
- *
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @defgroup    drivers_lis3dh LIS3DH accelerometer
+/// @ingroup     drivers_sensors
+/// @ingroup     drivers_saul
+/// @brief       Device driver for the LIS3DH accelerometer
+///
+/// This driver provides @ref drivers_saul capabilities.
+/// @{
+///
+/// @file
+/// @brief       Device driver interface for the LIS3DH accelerometer
+///
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #include <stdint.h>
 
@@ -30,18 +26,14 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Identifier register value
- *
- * The WHO_AM_I register should contain this value in order to correctly
- * identify the chip.
- */
+/// @brief   Identifier register value
+///
+/// The WHO_AM_I register should contain this value in order to correctly
+/// identify the chip.
 #define LIS3DH_WHO_AM_I_RESPONSE                 (0x33)
 
-/**
- * @name    LIS3DH hardware register addresses
- * @{
- */
+/// @name    LIS3DH hardware register addresses
+/// @{
 #define LIS3DH_REG_STATUS_AUX                    (0x07)
 #define LIS3DH_REG_OUT_AUX_ADC1_L                (0x08)
 #define LIS3DH_REG_OUT_AUX_ADC1_H                (0x09)
@@ -78,498 +70,352 @@ extern "C" {
 #define LIS3DH_REG_TIME_LIMIT                    (0x3B)
 #define LIS3DH_REG_TIME_LATENCY                  (0x3C)
 #define LIS3DH_REG_TIME_WINDOW                   (0x3D)
-/** @} */
+/// @}
 
-/*
- * Bit offsets within the individual registers
- * source: LIS3DH datasheet
- */
+// Bit offsets within the individual registers
+// source: LIS3DH datasheet
 
-/**
- * @name    TEMP_CFG_REG bitfield macros
- * @{
- */
-/**
- * @brief   ADC enable
- *
- * Default value: 0
- *
- * 0: ADC disabled; 1: ADC enabled
- */
+/// @name    TEMP_CFG_REG bitfield macros
+/// @{
+/// @brief   ADC enable
+///
+/// Default value: 0
+///
+/// 0: ADC disabled; 1: ADC enabled
 #define LIS3DH_TEMP_CFG_REG_ADC_PD_MASK          (1 << 7)
-/**
- * @brief   Temperature sensor (T) enable.
- *
- * Default value: 0
- *
- * 0: T disabled; 1: T enabled
- */
+/// @brief   Temperature sensor (T) enable.
+///
+/// Default value: 0
+///
+/// 0: T disabled; 1: T enabled
 #define LIS3DH_TEMP_CFG_REG_TEMP_EN_MASK         (1 << 6)
 /** @} */ /* TEMP_CFG_REG bitfield macros */
 
-/**
- * @name    CTRL_REG1 bitfield macros
- * @{
- */
-/**
- * @brief    ODR global shift
- */
+/// @name    CTRL_REG1 bitfield macros
+/// @{
+/// @brief    ODR global shift
 #define LIS3DH_CTRL_REG1_ODR_SHIFT               (4)
-/**
- * @brief    ODR fourth bit mask
- */
+/// @brief    ODR fourth bit mask
 #define LIS3DH_CTRL_REG1_ODR3_MASK               (1 << (LIS3DH_CTRL_REG1_ODR_SHIFT + 3))
-/**
- * @brief    ODR third bit mask
- */
+/// @brief    ODR third bit mask
 #define LIS3DH_CTRL_REG1_ODR2_MASK               (1 << (LIS3DH_CTRL_REG1_ODR_SHIFT + 2))
-/**
- * @brief    ODR second bit mask
- */
+/// @brief    ODR second bit mask
 #define LIS3DH_CTRL_REG1_ODR1_MASK               (1 << (LIS3DH_CTRL_REG1_ODR_SHIFT + 1))
-/**
- * @brief   ODR first bit mask
- */
+/// @brief   ODR first bit mask
 #define LIS3DH_CTRL_REG1_ODR0_MASK               (1 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   Output data rate (ODR) selection bitfield
- *
- * Default value: 0000
- *
- * 0000: Power down; Others: Refer to data sheet
- *
- * @see LIS3DH data sheet Table 25, “Data rate configuration”
- */
+/// @brief   Output data rate (ODR) selection bitfield
+///
+/// Default value: 0000
+///
+/// 0000: Power down; Others: Refer to data sheet
+///
+/// @see LIS3DH data sheet Table 25, “Data rate configuration”
 #define LIS3DH_CTRL_REG1_ODR_MASK                (LIS3DH_CTRL_REG1_ODR3_MASK | \
                                                   LIS3DH_CTRL_REG1_ODR2_MASK | \
                                                   LIS3DH_CTRL_REG1_ODR1_MASK | \
                                                   LIS3DH_CTRL_REG1_ODR0_MASK)
-/**
- * @brief   Low power mode enable.
- *
- * Default value: 0
- *
- *  0. normal mode
- *  1. low power mode
- */
+/// @brief   Low power mode enable.
+///
+/// Default value: 0
+///
+///  0. normal mode
+///  1. low power mode
 #define LIS3DH_CTRL_REG1_LPEN_MASK               (1 << 3)
-/**
- * @brief   Z enable bit offset
- */
+/// @brief   Z enable bit offset
 #define LIS3DH_CTRL_REG1_ZEN_SHIFT               (2)
-/**
- * @brief   Z axis enable.
- *
- * Default value: 1
- *
- *  0. Z axis disabled
- *  1. Z axis enabled
- */
+/// @brief   Z axis enable.
+///
+/// Default value: 1
+///
+///  0. Z axis disabled
+///  1. Z axis enabled
 #define LIS3DH_CTRL_REG1_ZEN_MASK                (1 << LIS3DH_CTRL_REG1_ZEN_SHIFT)
-/**
- * @brief   Y enable bit offset
- */
+/// @brief   Y enable bit offset
 #define LIS3DH_CTRL_REG1_YEN_SHIFT               (1)
-/**
- * @brief   Y axis enable.
- *
- * Default value: 1
- *
- *  0. Y axis disabled
- *  1. Y axis enabled
- */
+/// @brief   Y axis enable.
+///
+/// Default value: 1
+///
+///  0. Y axis disabled
+///  1. Y axis enabled
 #define LIS3DH_CTRL_REG1_YEN_MASK                (1 << LIS3DH_CTRL_REG1_YEN_SHIFT)
-/**
- * @brief   X enable bit offset
- */
+/// @brief   X enable bit offset
 #define LIS3DH_CTRL_REG1_XEN_SHIFT               (0)
-/**
- * @brief   X axis enable.
- *
- * Default value: 1
- *
- *  0. X axis disabled
- *  1. X axis enabled
- */
+/// @brief   X axis enable.
+///
+/// Default value: 1
+///
+///  0. X axis disabled
+///  1. X axis enabled
 #define LIS3DH_CTRL_REG1_XEN_MASK                (1 << LIS3DH_CTRL_REG1_XEN_SHIFT)
-/**
- * @brief   XYZ enable bitfield offset
- */
+/// @brief   XYZ enable bitfield offset
 #define LIS3DH_CTRL_REG1_XYZEN_SHIFT             (0)
-/**
- * @brief   X, Y, Z enable bitfield mask
- */
+/// @brief   X, Y, Z enable bitfield mask
 #define LIS3DH_CTRL_REG1_XYZEN_MASK              (LIS3DH_CTRL_REG1_XEN_MASK | \
                                                   LIS3DH_CTRL_REG1_YEN_MASK | LIS3DH_CTRL_REG1_ZEN_MASK)
 
-/**
- * @brief    enable X axis (Use when calling lis3dh_set_axes())
- */
+/// @brief    enable X axis (Use when calling lis3dh_set_axes())
 #define LIS3DH_AXES_X                            (LIS3DH_CTRL_REG1_XEN_MASK)
-/**
- * @brief   enable Y axis (Use when calling lis3dh_set_axes())
- */
+/// @brief   enable Y axis (Use when calling lis3dh_set_axes())
 #define LIS3DH_AXES_Y                            (LIS3DH_CTRL_REG1_YEN_MASK)
-/**
- * @brief   enable Z axis (Use when calling lis3dh_set_axes())
- */
+/// @brief   enable Z axis (Use when calling lis3dh_set_axes())
 #define LIS3DH_AXES_Z                            (LIS3DH_CTRL_REG1_ZEN_MASK)
 /** @} */  /* CTRL_REG1 bitfield macros */
 
-/**
- * @brief   Convenience macro for enabling all axes.
- */
+/// @brief   Convenience macro for enabling all axes.
 #define LIS3DH_AXES_XYZ (LIS3DH_CTRL_REG1_XYZEN_MASK)
 
-/**
- * @name    CTRL_REG2 bitfield macros
- * @{
- */
-/**
- * @brief   High pass filter mode selection second bit
- *
- * Default value: 0
- *
- * @see Refer to Table 29, "High pass filter mode configuration"
- */
+/// @name    CTRL_REG2 bitfield macros
+/// @{
+/// @brief   High pass filter mode selection second bit
+///
+/// Default value: 0
+///
+/// @see Refer to Table 29, "High pass filter mode configuration"
 #define LIS3DH_CTRL_REG2_HPM1_MASK               (1 << 7)
-/**
- * @brief   High pass filter mode selection first bit
- *
- * Default value: 0
- *
- * @see Refer to Table 29, "High pass filter mode configuration"
- */
+/// @brief   High pass filter mode selection first bit
+///
+/// Default value: 0
+///
+/// @see Refer to Table 29, "High pass filter mode configuration"
 #define LIS3DH_CTRL_REG2_HPM0_MASK               (1 << 6)
-/**
- * @brief   High pass filter cut off frequency selection second bit
- */
+/// @brief   High pass filter cut off frequency selection second bit
 #define LIS3DH_CTRL_REG2_HPCF2_MASK              (1 << 5)
-/**
- * @brief   High pass filter cut off frequency selection second bit
- */
+/// @brief   High pass filter cut off frequency selection second bit
 #define LIS3DH_CTRL_REG2_HPCF1_MASK              (1 << 4)
-/**
- * @brief   Filtered data selection
- *
- * Default value: 0
- *
- *  0. internal filter bypassed
- *  1. data from internal filter sent to output register and FIFO
- */
+/// @brief   Filtered data selection
+///
+/// Default value: 0
+///
+///  0. internal filter bypassed
+///  1. data from internal filter sent to output register and FIFO
 #define LIS3DH_CTRL_REG2_FDS_MASK                (1 << 3)
-/**
- * @brief   High pass filter enabled for CLICK function.
- *
- *  0. filter bypassed
- *  1. filter enabled
- */
+/// @brief   High pass filter enabled for CLICK function.
+///
+///  0. filter bypassed
+///  1. filter enabled
 #define LIS3DH_CTRL_REG2_HPCLICK_MASK            (1 << 2)
-/**
- * @brief   High pass filter enabled for AOI function on interrupt 2, second bit
- *
- *  0. filter bypassed
- *  1. filter enabled
- */
+/// @brief   High pass filter enabled for AOI function on interrupt 2, second bit
+///
+///  0. filter bypassed
+///  1. filter enabled
 #define LIS3DH_CTRL_REG2_HPIS2_MASK              (1 << 1)
-/**
- * @brief   High pass filter enabled for AOI function on interrupt 2, first bit
- *
- *  0. filter bypassed
- *  1. filter enabled
- */
+/// @brief   High pass filter enabled for AOI function on interrupt 2, first bit
+///
+///  0. filter bypassed
+///  1. filter enabled
 #define LIS3DH_CTRL_REG2_HPIS1_MASK              (1 << 0)
 /** @} */ /* CTRL_REG2 bitfield macros */
 
-/**
- * @name    CTRL_REG3 bitfield macros
- * @{
- */
-/**
- * @brief   CLICK interrupt on INT1
- *
- * Default value 0.
- *
- *  0. Disable
- *  1. Enable
- */
+/// @name    CTRL_REG3 bitfield macros
+/// @{
+/// @brief   CLICK interrupt on INT1
+///
+/// Default value 0.
+///
+///  0. Disable
+///  1. Enable
 #define LIS3DH_CTRL_REG3_I1_CLICK_MASK           (1 << 7)
-/**
- * @brief   AOI1 interrupt on INT1
- *
- * Default value 0.
- *
- *  0. Disable
- *  1. Enable
- */
+/// @brief   AOI1 interrupt on INT1
+///
+/// Default value 0.
+///
+///  0. Disable
+///  1. Enable
 #define LIS3DH_CTRL_REG3_I1_AOI1_MASK            (1 << 6)
-/**
- * @brief   AOI2 interrupt on INT1.
- *
- * Default value 0.
- *
- *  0. Disable
- *  1. Enable
- */
+/// @brief   AOI2 interrupt on INT1.
+///
+/// Default value 0.
+///
+///  0. Disable
+///  1. Enable
 #define LIS3DH_CTRL_REG3_I1_AOI2_MASK            (1 << 5)
-/**
- * @brief   DRDY1 interrupt on INT1
- *
- * Default value 0.
- *
- *  0. Disable
- *  1. Enable
- */
+/// @brief   DRDY1 interrupt on INT1
+///
+/// Default value 0.
+///
+///  0. Disable
+///  1. Enable
 #define LIS3DH_CTRL_REG3_I1_DRDY1_MASK           (1 << 4)
-/**
- * @brief   DRDY2 interrupt on INT1
- *
- * Default value 0.
- *
- *  0. Disable
- *  1. Enable
- */
+/// @brief   DRDY2 interrupt on INT1
+///
+/// Default value 0.
+///
+///  0. Disable
+///  1. Enable
 #define LIS3DH_CTRL_REG3_I1_DRDY2_MASK           (1 << 3)
-/**
- * @brief   FIFO Watermark interrupt on INT1
- *
- * Default value 0.
- *
- *  0. Disable
- *  1. Enable
- */
+/// @brief   FIFO Watermark interrupt on INT1
+///
+/// Default value 0.
+///
+///  0. Disable
+///  1. Enable
 #define LIS3DH_CTRL_REG3_I1_WTM_MASK             (1 << 2)
-/**
- * @brief   FIFO Overrun interrupt on INT1
- *
- * Default value 0.
- *
- *  0. Disable
- *  1. Enable
- */
+/// @brief   FIFO Overrun interrupt on INT1
+///
+/// Default value 0.
+///
+///  0. Disable
+///  1. Enable
 #define LIS3DH_CTRL_REG3_I1_OVERRUN_MASK         (1 << 1)
 /** @} */ /* CTRL_REG3 bitfield macros */
 
-/**
- * @name CTRL_REG4 bitfield macros
- * @{
- */
-/**
- * @brief   Block data update (BDU) bit mask
- *
- * Default value of BDU: 0
- *
- *  0. continuous update
- *  1. output registers not updated until MSB and LSB reading
- */
+/// @name CTRL_REG4 bitfield macros
+/// @{
+/// @brief   Block data update (BDU) bit mask
+///
+/// Default value of BDU: 0
+///
+///  0. continuous update
+///  1. output registers not updated until MSB and LSB reading
 #define LIS3DH_CTRL_REG4_BDU_MASK                (1 << 7)
-/**
- * @brief   Block data update (BDU) enable
- */
+/// @brief   Block data update (BDU) enable
 #define LIS3DH_CTRL_REG4_BDU_ENABLE              (LIS3DH_CTRL_REG4_BDU_MASK)
-/**
- * @brief    Block data update (BDU) disable
- */
+/// @brief    Block data update (BDU) disable
 #define LIS3DH_CTRL_REG4_BDU_DISABLE             (0)
-/**
- * @brief   Big/little endian bit mask
- *
- * Default value of BLE: 0.
- *
- *  0. Data LSB @ lower address
- *  1. Data MSB @ lower address
- */
+/// @brief   Big/little endian bit mask
+///
+/// Default value of BLE: 0.
+///
+///  0. Data LSB @ lower address
+///  1. Data MSB @ lower address
 #define LIS3DH_CTRL_REG4_BLE_MASK                (1 << 6)
-/**
- * @brief   Big/little endian little endian mode
- */
+/// @brief   Big/little endian little endian mode
 #define LIS3DH_CTRL_REG4_BLE_LITTLE_ENDIAN       (0)
-/**
- * @brief   Big/little endian big endian mode
- */
+/// @brief   Big/little endian big endian mode
 #define LIS3DH_CTRL_REG4_BLE_BIG_ENDIAN          (LIS3DH_CTRL_REG4_BLE_MASK)
-/**
- * @brief   Full scale selection mask second bit
- */
+/// @brief   Full scale selection mask second bit
 #define LIS3DH_CTRL_REG4_FS1_MASK                (1 << 5)
-/**
- * @brief   Full scale selection mask first bit
- */
+/// @brief   Full scale selection mask first bit
 #define LIS3DH_CTRL_REG4_FS0_MASK                (1 << 4)
-/**
- * @brief   Full scale selection mask
- */
+/// @brief   Full scale selection mask
 #define LIS3DH_CTRL_REG4_FS_MASK                 (LIS3DH_CTRL_REG4_FS1_MASK | \
                                                   LIS3DH_CTRL_REG4_FS0_MASK)
-/**
- * @brief   Scale register value: +/- 2G
- */
+/// @brief   Scale register value: +/- 2G
 #define LIS3DH_CTRL_REG4_SCALE_2G                (0)
-/**
- * @brief   Scale register value: +/- 4G
- */
+/// @brief   Scale register value: +/- 4G
 #define LIS3DH_CTRL_REG4_SCALE_4G                (LIS3DH_CTRL_REG4_FS0_MASK)
-/**
- * @brief   Scale register value: +/- 8G
- */
+/// @brief   Scale register value: +/- 8G
 #define LIS3DH_CTRL_REG4_SCALE_8G                (LIS3DH_CTRL_REG4_FS1_MASK)
-/**
- * @brief   Scale: +/- 16G
- */
+/// @brief   Scale: +/- 16G
 #define LIS3DH_CTRL_REG4_SCALE_16G               (LIS3DH_CTRL_REG4_FS1_MASK | LIS3DH_CTRL_REG4_FS0_MASK)
-/**
- * @brief   High resolution output mode
- *
- * Default value: 0
- *
- *  0. High resolution disable
- *  1. High resolution enable
- */
+/// @brief   High resolution output mode
+///
+/// Default value: 0
+///
+///  0. High resolution disable
+///  1. High resolution enable
 #define LIS3DH_CTRL_REG4_HR_MASK                 (1 << 3)
-/**
- * @brief   Self test enable second bit mask
- *
- * Default value of self test: 00
- *
- *  - 00: Self test disabled
- *  - Other: See Table 34
- *
- * @see Table 34
- */
+/// @brief   Self test enable second bit mask
+///
+/// Default value of self test: 00
+///
+///  - 00: Self test disabled
+///  - Other: See Table 34
+///
+/// @see Table 34
 #define LIS3DH_CTRL_REG4_ST1_MASK                (1 << 2)
-/**
- * @brief   Self test enable first bit mask
- */
+/// @brief   Self test enable first bit mask
 #define LIS3DH_CTRL_REG4_ST0_MASK                (1 << 1)
-/**
- * @brief   SPI serial interface mode selection
- *
- * Default value: 0
- *
- *  0. 4-wire interface
- *  1. 3-wire interface
- */
+/// @brief   SPI serial interface mode selection
+///
+/// Default value: 0
+///
+///  0. 4-wire interface
+///  1. 3-wire interface
 #define LIS3DH_CTRL_REG4_SIM_MASK                (1 << 0)
-/**
- * @brief   Reboot memory content
- *
- * Default value: 0
- *
- *  0. normal mode
- *  1. reboot memory content
- */
+/// @brief   Reboot memory content
+///
+/// Default value: 0
+///
+///  0. normal mode
+///  1. reboot memory content
 #define LIS3DH_CTRL_REG5_REBOOT_MASK             (1 << 7)
-/**
- * @brief   FIFO enable
- *
- * Default value: 0
- *
- *  0. FIFO disable
- *  1. FIFO enable
- */
+/// @brief   FIFO enable
+///
+/// Default value: 0
+///
+///  0. FIFO disable
+///  1. FIFO enable
 #define LIS3DH_CTRL_REG5_FIFO_EN_MASK            (1 << 6)
-/**
- * @brief   Latch interrupt request on INT1
- *
- * Latch interrupt request on INT1_SRC register, with INT1_SRC register
- * cleared by reading INT1_SRC itself.
- *
- * Default value: 0
- *
- *  0. interrupt request not latched
- *  1. interrupt request latched
- */
+/// @brief   Latch interrupt request on INT1
+///
+/// Latch interrupt request on INT1_SRC register, with INT1_SRC register
+/// cleared by reading INT1_SRC itself.
+///
+/// Default value: 0
+///
+///  0. interrupt request not latched
+///  1. interrupt request latched
 #define LIS3DH_CTRL_REG5_LIR_I1_MASK             (1 << 3)
-/**
- * @brief   4D enable
- *
- * 4D detection is enabled on INT1 when 6D bit on INT1_CFG is set to 1.
- */
+/// @brief   4D enable
+///
+/// 4D detection is enabled on INT1 when 6D bit on INT1_CFG is set to 1.
 #define LIS3DH_CTRL_REG5_D4D_I1_MASK             (1 << 2)
 /** @} */ /* CTRL_REG4 bitfield macros */
 
-/**
- * @name    STATUS_REG bitfield macros
- * @{
- */
-/**
- * @brief   X, Y or Z axis data overrun
- *
- * Default value: 0
- *
- *  0. no overrun has occurred
- *  1. a new set of data has overwritten the previous ones
- */
+/// @name    STATUS_REG bitfield macros
+/// @{
+/// @brief   X, Y or Z axis data overrun
+///
+/// Default value: 0
+///
+///  0. no overrun has occurred
+///  1. a new set of data has overwritten the previous ones
 #define LIS3DH_STATUS_REG_ZYXOR_MASK             (1 << 7)
-/**
- * @brief   Z axis data overrun
- *
- * Default value: 0
- *
- *  0. no overrun has occurred
- *  1. a new data for the Z-axis has overwritten the previous one
- */
+/// @brief   Z axis data overrun
+///
+/// Default value: 0
+///
+///  0. no overrun has occurred
+///  1. a new data for the Z-axis has overwritten the previous one
 #define LIS3DH_STATUS_REG_ZOR_MASK               (1 << 6)
-/**
- * @brief   Y axis data overrun
- *
- * Default value: 0
- *
- *  0. no overrun has occurred
- *  1. a new data for the Y-axis has overwritten the previous one
- */
+/// @brief   Y axis data overrun
+///
+/// Default value: 0
+///
+///  0. no overrun has occurred
+///  1. a new data for the Y-axis has overwritten the previous one
 #define LIS3DH_STATUS_REG_YOR_MASK               (1 << 5)
-/**
- * @brief   X axis data overrun
- *
- * Default value: 0
- *
- *  0. no overrun has occurred
- *  1. a new data for the X-axis has overwritten the previous one
- */
+/// @brief   X axis data overrun
+///
+/// Default value: 0
+///
+///  0. no overrun has occurred
+///  1. a new data for the X-axis has overwritten the previous one
 #define LIS3DH_STATUS_REG_XOR_MASK               (1 << 4)
-/**
- * @brief   X, Y or Z axis new data available
- *
- * Default value: 0
- *
- *  0. a new set of data is not yet available
- *  1. a new set of data is available
- */
+/// @brief   X, Y or Z axis new data available
+///
+/// Default value: 0
+///
+///  0. a new set of data is not yet available
+///  1. a new set of data is available
 #define LIS3DH_STATUS_REG_ZYXDA_MASK             (1 << 3)
-/**
- * @brief   Z axis new data available
- *
- * Default value: 0
- *
- *  0. a new data for the Z-axis is not yet available
- *  1. a new data for the Z-axis is available
- */
+/// @brief   Z axis new data available
+///
+/// Default value: 0
+///
+///  0. a new data for the Z-axis is not yet available
+///  1. a new data for the Z-axis is available
 #define LIS3DH_STATUS_REG_ZDA_MASK               (1 << 2)
-/**
- * @brief   Y axis new data available
- *
- * Default value: 0
- *
- *  0. a new data for the Y-axis is not yet available
- *  1. a new data for the Y-axis is available
- */
+/// @brief   Y axis new data available
+///
+/// Default value: 0
+///
+///  0. a new data for the Y-axis is not yet available
+///  1. a new data for the Y-axis is available
 #define LIS3DH_STATUS_REG_YDA_MASK               (1 << 1)
-/**
- * @brief   X axis new data available
- *
- * Default value: 0
- *
- *  0. a new data for the X-axis is not yet available
- *  1. a new data for the X-axis is available
- */
+/// @brief   X axis new data available
+///
+/// Default value: 0
+///
+///  0. a new data for the X-axis is not yet available
+///  1. a new data for the X-axis is available
 #define LIS3DH_STATUS_REG_XDA_MASK               (1 << 0)
 /** @} */ /* STATUS_REG bitfield macros */
 
-/**
- * @name    FIFO_CTRL_REG bitfield macros
- * @{
- */
+/// @name    FIFO_CTRL_REG bitfield macros
+/// @{
 #define LIS3DH_FIFO_CTRL_REG_FM_SHIFT            (6)
 #define LIS3DH_FIFO_CTRL_REG_FM1_MASK            (1 << 7)
 #define LIS3DH_FIFO_CTRL_REG_FM0_MASK            (1 << 6)
@@ -589,10 +435,8 @@ extern "C" {
                                                   LIS3DH_FIFO_CTRL_REG_FTH4_MASK)
 /** @} */ /* FIFO_CTRL_REG bitfield macros */
 
-/**
- * @name    FIFO_SRC_REG bitfield macros
- * @{
- */
+/// @name    FIFO_SRC_REG bitfield macros
+/// @{
 #define LIS3DH_FIFO_SRC_REG_WTM_MASK             (1 << 7)
 #define LIS3DH_FIFO_SRC_REG_OVRN_FIFO_MASK       (1 << 6)
 #define LIS3DH_FIFO_SRC_REG_EMPTY_MASK           (1 << 5)
@@ -609,296 +453,218 @@ extern "C" {
                                                   LIS3DH_FIFO_SRC_REG_FSS4_MASK)
 /** @} */ /* FIFO_CTRL_REG bitfield macros */
 
-/**
- * @name    Register address bitfield macros
- * @{
- */
-/**
- * @brief   Write to register
- */
+/// @name    Register address bitfield macros
+/// @{
+/// @brief   Write to register
 #define LIS3DH_SPI_WRITE_MASK                    (0 << 7)
-/**
- * @brief   The READ bit must be set when reading
- */
+/// @brief   The READ bit must be set when reading
 #define LIS3DH_SPI_READ_MASK                     (1 << 7)
-/**
- * @brief   Multi byte transfers must assert this bit when writing the address.
- */
+/// @brief   Multi byte transfers must assert this bit when writing the address.
 #define LIS3DH_SPI_MULTI_MASK                    (1 << 6)
-/**
- * @brief   Opposite of LIS3DH_SPI_MULTI_MASK.
- */
+/// @brief   Opposite of LIS3DH_SPI_MULTI_MASK.
 #define LIS3DH_SPI_SINGLE_MASK                   (0 << 6)
-/**
- * @brief   Mask of the address bits in the address byte during transfers.
- */
+/// @brief   Mask of the address bits in the address byte during transfers.
 #define LIS3DH_SPI_ADDRESS_MASK                  (0x3F)
 /** @} */ /* Register address bitfield macros */
 
-/**
- * @brief   Length of scalar measurement data in bytes.
- */
+/// @brief   Length of scalar measurement data in bytes.
 #define LIS3DH_ADC_DATA_SIZE                     (2U)
 
-/**
- * @name    FIFO modes.
- *
- * Used when calling lis3dh_set_fifo()
- * @{
- */
-/**
- * @brief   FIFO mode: Bypass
- */
+/// @name    FIFO modes.
+///
+/// Used when calling lis3dh_set_fifo()
+/// @{
+/// @brief   FIFO mode: Bypass
 #define LIS3DH_FIFO_MODE_BYPASS                  (0x00 << LIS3DH_FIFO_CTRL_REG_FM_SHIFT)
-/**
- * @brief   FIFO mode: FIFO
- */
+/// @brief   FIFO mode: FIFO
 #define LIS3DH_FIFO_MODE_FIFO                    (0x01 << LIS3DH_FIFO_CTRL_REG_FM_SHIFT)
-/**
- * @brief   FIFO mode: Stream
- */
+/// @brief   FIFO mode: Stream
 #define LIS3DH_FIFO_MODE_STREAM                  (0x02 << LIS3DH_FIFO_CTRL_REG_FM_SHIFT)
-/**
- * @brief   FIFO mode: Stream to FIFO
- */
+/// @brief   FIFO mode: Stream to FIFO
 #define LIS3DH_FIFO_MODE_STREAM_TO_FIFO          (0x03 << LIS3DH_FIFO_CTRL_REG_FM_SHIFT)
-/** @} */
+/// @}
 
-/**
- * @name    Output Data Rates (ODR) macros
- *
- * Use these when calling lis3dh_set_odr(odr).
- * @{
- */
-/**
- * @brief    Powerdown mode
- */
+/// @name    Output Data Rates (ODR) macros
+///
+/// Use these when calling lis3dh_set_odr(odr).
+/// @{
+/// @brief    Powerdown mode
 #define LIS3DH_ODR_POWERDOWN                     (0x00 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   1Hz mode
- */
+/// @brief   1Hz mode
 #define LIS3DH_ODR_1Hz                           (0x01 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   10Hz mode
- */
+/// @brief   10Hz mode
 #define LIS3DH_ODR_10Hz                          (0x02 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   25Hz mode
- */
+/// @brief   25Hz mode
 #define LIS3DH_ODR_25Hz                          (0x03 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   50Hz mode
- */
+/// @brief   50Hz mode
 #define LIS3DH_ODR_50Hz                          (0x04 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   100Hz mode
- */
+/// @brief   100Hz mode
 #define LIS3DH_ODR_100Hz                         (0x05 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   200Hz mode
- */
+/// @brief   200Hz mode
 #define LIS3DH_ODR_200Hz                         (0x06 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   400Hz mode
- */
+/// @brief   400Hz mode
 #define LIS3DH_ODR_400Hz                         (0x07 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   Low power 1600Hz mode
- */
+/// @brief   Low power 1600Hz mode
 #define LIS3DH_ODR_LP1600Hz                      (0x08 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   Normal mode 1250 Hz
- * @note    Normal mode 1250 Hz and Low power mode 5000 Hz share the same setting
- */
+/// @brief   Normal mode 1250 Hz
+/// @note    Normal mode 1250 Hz and Low power mode 5000 Hz share the same setting
 #define LIS3DH_ODR_NP1250Hz                      (0x09 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/**
- * @brief   Low power mode 5000 Hz
- * @note    Normal mode 1250 Hz and Low power mode 5000 Hz share the same setting
- */
+/// @brief   Low power mode 5000 Hz
+/// @note    Normal mode 1250 Hz and Low power mode 5000 Hz share the same setting
 #define LIS3DH_ODR_LP5000HZ                      (0x09 << LIS3DH_CTRL_REG1_ODR_SHIFT)
-/** @} */
+/// @}
 
-/**
- * @brief   Configuration parameters for LIS3DH devices
- */
+/// @brief   Configuration parameters for LIS3DH devices
 typedef struct {
-    spi_t spi;              /**< SPI device the sensor is connected to */
-    spi_clk_t clk;          /**< designated clock speed of the SPI bus */
-    gpio_t cs;              /**< Chip select pin */
-    gpio_t int1;            /**< INT1 pin */
-    gpio_t int2;            /**< INT2 (DRDY) pin */
-    uint8_t scale;          /**< Default sensor scale: 2, 4, 8, or 16 (G) */
-    uint8_t odr;            /**< Default sensor ODR setting: LIS3DH_ODR_xxxHz */
+    spi_t spi;              ///< SPI device the sensor is connected to
+    spi_clk_t clk;          ///< designated clock speed of the SPI bus
+    gpio_t cs;              ///< Chip select pin
+    gpio_t int1;            ///< INT1 pin
+    gpio_t int2;            ///< INT2 (DRDY) pin
+    uint8_t scale;          ///< Default sensor scale: 2, 4, 8, or 16 (G)
+    uint8_t odr;            ///< Default sensor ODR setting: LIS3DH_ODR_xxxHz
 } lis3dh_params_t;
 
-/**
- * @brief   Device descriptor for LIS3DH sensors
- */
+/// @brief   Device descriptor for LIS3DH sensors
 typedef struct {
-    lis3dh_params_t params; /**< Device initialization parameters */
-    uint16_t scale;         /**< Internal sensor scale */
+    lis3dh_params_t params; ///< Device initialization parameters
+    uint16_t scale;         ///< Internal sensor scale
 } lis3dh_t;
 
-/**
- * @brief   Result vector for accelerometer measurement
- */
+/// @brief   Result vector for accelerometer measurement
 typedef struct
 {
-    int16_t acc_x;          /**< Acceleration in the X direction in milli-G */
-    int16_t acc_y;          /**< Acceleration in the Y direction in milli-G */
-    int16_t acc_z;          /**< Acceleration in the Z direction in milli-G */
+    int16_t acc_x;          ///< Acceleration in the X direction in milli-G
+    int16_t acc_y;          ///< Acceleration in the Y direction in milli-G
+    int16_t acc_z;          ///< Acceleration in the Z direction in milli-G
 } lis3dh_data_t;
 
-/**
- * @brief   Initialize a LIS3DH sensor instance
- *
- * @param[in]  dev          Device descriptor of sensor to initialize
- * @param[in]  params       Configuration parameters
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Initialize a LIS3DH sensor instance
+///
+/// @param[in]  dev          Device descriptor of sensor to initialize
+/// @param[in]  params       Configuration parameters
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_init(lis3dh_t *dev, const lis3dh_params_t *params);
 
-/**
- * @brief   Read 3D acceleration data from the accelerometer
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[out] acc_data     Accelerometer data output buffer
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Read 3D acceleration data from the accelerometer
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[out] acc_data     Accelerometer data output buffer
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_read_xyz(const lis3dh_t *dev, lis3dh_data_t *acc_data);
 
-/**
- * @brief   Read auxiliary ADC channel 1 data from the accelerometer
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[out] out          The value of ADC1 (OUT_1_{L,H}) will be written to this buffer
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Read auxiliary ADC channel 1 data from the accelerometer
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[out] out          The value of ADC1 (OUT_1_{L,H}) will be written to this buffer
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_read_aux_adc1(const lis3dh_t *dev, int16_t *out);
 
-/**
- * @brief   Read auxiliary ADC channel 2 data from the accelerometer
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[out] out          The value of ADC2 (OUT_2_{L,H}) will be written to this buffer
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Read auxiliary ADC channel 2 data from the accelerometer
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[out] out          The value of ADC2 (OUT_2_{L,H}) will be written to this buffer
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_read_aux_adc2(const lis3dh_t *dev, int16_t *out);
 
-/**
- * @brief   Read auxiliary ADC channel 3 data from the accelerometer
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[out] out          The value of ADC3 (OUT_3_{L,H}) will be written to this buffer
- *
- * @note The internal temperature sensor is connected to the third channel on
- *       the auxiliary ADC when the TEMP_EN bit of TEMP_CFG_REG is set.
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Read auxiliary ADC channel 3 data from the accelerometer
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[out] out          The value of ADC3 (OUT_3_{L,H}) will be written to this buffer
+///
+/// @note The internal temperature sensor is connected to the third channel on
+///       the auxiliary ADC when the TEMP_EN bit of TEMP_CFG_REG is set.
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_read_aux_adc3(const lis3dh_t *dev, int16_t *out);
 
-/**
- * @brief   Turn on/off power to the auxiliary ADC in LIS3DH.
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[in]  enable       Power state of the auxiliary ADC
- * @param[in]  temperature  If not zero, switch the ADC mux so that a
- *                          temperature reading is available on OUT_3_L, OUT_3_H.
- *
- * @note This ADC is only used for the temperature reading and the external ADC
- *       pins. The accelerometer ADC is turned on by lis3dh_set_odr().
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Turn on/off power to the auxiliary ADC in LIS3DH.
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[in]  enable       Power state of the auxiliary ADC
+/// @param[in]  temperature  If not zero, switch the ADC mux so that a
+///                          temperature reading is available on OUT_3_L, OUT_3_H.
+///
+/// @note This ADC is only used for the temperature reading and the external ADC
+///       pins. The accelerometer ADC is turned on by lis3dh_set_odr().
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_set_aux_adc(const lis3dh_t *dev, const uint8_t enable, const uint8_t temperature);
 
-/**
- * @brief   Enable/disable accelerometer axes.
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[in]  axes         An OR-ed combination of LIS3DH_AXES_X,
- *                          LIS3DH_AXES_Y, LIS3DH_AXES_Z.
- *
- * @note The macro LIS3DH_AXES_XYZ is a convenience shortcut to enable all axes.
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Enable/disable accelerometer axes.
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[in]  axes         An OR-ed combination of LIS3DH_AXES_X,
+///                          LIS3DH_AXES_Y, LIS3DH_AXES_Z.
+///
+/// @note The macro LIS3DH_AXES_XYZ is a convenience shortcut to enable all axes.
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_set_axes(const lis3dh_t *dev, const uint8_t axes);
 
-/**
- * @brief   Enable/disable the FIFO.
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[in]  mode         FIFO mode, see data sheet for details.
- * @param[in]  watermark    Watermark level for FIFO level interrupts
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Enable/disable the FIFO.
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[in]  mode         FIFO mode, see data sheet for details.
+/// @param[in]  watermark    Watermark level for FIFO level interrupts
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_set_fifo(const lis3dh_t *dev, const uint8_t mode, const uint8_t watermark);
 
-/**
- * @brief   Set the output data rate of the sensor.
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[in]  odr          Chosen output data rate.
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Set the output data rate of the sensor.
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[in]  odr          Chosen output data rate.
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_set_odr(const lis3dh_t *dev, const uint8_t odr);
 
-/**
- * @brief   Set the full scale range of the sensor.
- *
- * Valid values for scale are 2, 4, 8, 16 and represents the full range of the
- * sensor.
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[in]  scale        The chosen sensitivity scale.
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Set the full scale range of the sensor.
+///
+/// Valid values for scale are 2, 4, 8, 16 and represents the full range of the
+/// sensor.
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[in]  scale        The chosen sensitivity scale.
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_set_scale(lis3dh_t *dev, const uint8_t scale);
 
-/**
- * @brief   Set INT1 pin function
- *
- * Set the bits of CTRL_REG3 for choosing sources for the INT1 pin.
- *
- * @param[in]  dev          Device descriptor of sensor
- * @param[in]  mode         CTRL_REG3 value, see data sheet for details.
- *
- * @return                  0 on success
- * @return                  -1 on error
- */
+/// @brief   Set INT1 pin function
+///
+/// Set the bits of CTRL_REG3 for choosing sources for the INT1 pin.
+///
+/// @param[in]  dev          Device descriptor of sensor
+/// @param[in]  mode         CTRL_REG3 value, see data sheet for details.
+///
+/// @return                  0 on success
+/// @return                  -1 on error
 int lis3dh_set_int1(const lis3dh_t *dev, const uint8_t mode);
 
-/**
- * @brief   Get the current number of elements in the FIFO
- *
- * @param[in]  dev          Device descriptor of sensor
- *
- * @return                  number of elements in device FIFO on success
- * @return                  -1 on error
- */
+/// @brief   Get the current number of elements in the FIFO
+///
+/// @param[in]  dev          Device descriptor of sensor
+///
+/// @return                  number of elements in device FIFO on success
+/// @return                  -1 on error
 int lis3dh_get_fifo_level(const lis3dh_t *dev);
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

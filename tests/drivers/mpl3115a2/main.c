@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the MPL3115A2 sensor driver.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Johann Fischer <j.fischer@phytec.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the MPL3115A2 sensor driver.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Johann Fischer <j.fischer@phytec.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,8 +23,7 @@
 #define SLEEP_USEC  (1UL * US_PER_SEC)
 static mpl3115a2_t dev;
 
-int main(void)
-{
+int main(void) {
     puts("MPL3115A2 pressure sensor driver test application\n");
     printf("Initializing MPL3115A2 sensor at I2C_%i... ", mpl3115a2_params[0].i2c);
 

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014-2017 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2017 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief riot thread test application
- *
- * @author Raphael Hiesgen <raphael.hiesgen@haw-hamburg.de>
- * @author Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief riot thread test application
+///
+/// @author Raphael Hiesgen <raphael.hiesgen@haw-hamburg.de>
+/// @author Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -30,8 +26,7 @@ static mutex_t mtx = MUTEX_INIT;
 static uint32_t storage = 1;
 static char stacks[PROBLEM][THREAD_STACKSIZE_DEFAULT];
 
-static void *run(void *arg)
-{
+static void *run(void *arg) {
     (void)arg;
 
     msg_t m, final;
@@ -42,12 +37,12 @@ static void *run(void *arg)
     msg_receive(&m);
     printf("T-%02d: got arg %" PRIu32 "\n", me, m.content.value);
 
-    /* Accessing shared variable `storage` requires a critical section to avoid
-     * data races. The mutex provides this and `mutex_lock()`/`mutex_unlock()`
-     * are an implicit memory barrier that will ensure that `storage` is read
-     * indeed from memory and the new value is written back to memory within
-     * the critical section. The use of `volatile` is, hence, not needed here
-     * (and in fact incorrect). */
+    // Accessing shared variable `storage` requires a critical section to avoid
+    // data races. The mutex provides this and `mutex_lock()`/`mutex_unlock()`
+    // are an implicit memory barrier that will ensure that `storage` is read
+    // indeed from memory and the new value is written back to memory within
+    // the critical section. The use of `volatile` is, hence, not needed here
+    // (and in fact incorrect).
     mutex_lock(&mtx);
     storage *= m.content.value;
     mutex_unlock(&mtx);
@@ -61,8 +56,7 @@ static void *run(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     msg_t args[PROBLEM];
     kernel_pid_t ths;
     uint32_t factorial = 1;

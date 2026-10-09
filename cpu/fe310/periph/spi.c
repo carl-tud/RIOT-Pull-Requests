@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2019 Tristan Bruns
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Tristan Bruns
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_fe310
- * @ingroup     drivers_periph_spi
- *
- * @{
- *
- * @file        spi.c
- * @brief       Low-level SPI driver implementation
- *
- * @author      Tristan Bruns
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu_fe310
+/// @ingroup     drivers_periph_spi
+///
+/// @{
+///
+/// @file        spi.c
+/// @brief       Low-level SPI driver implementation
+///
+/// @author      Tristan Bruns
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <assert.h>
 
@@ -33,7 +29,7 @@
 
 #define SPI_CLK_NUMOF       ARRAY_SIZE(_spi_clks)
 
-/* DIV_UP is division which rounds up instead of down */
+// DIV_UP is division which rounds up instead of down
 #define SPI_DIV_UP(a, b)    (((a) + ((b) - 1)) / (b))
 
 static const uint32_t _spi_clks[] = {
@@ -46,33 +42,29 @@ static const uint32_t _spi_clks[] = {
 
 static uint32_t _spi_clks_config[SPI_CLK_NUMOF] = { 0 };
 
-/**
- * @brief   Allocation device locks
- */
+/// @brief   Allocation device locks
 static mutex_t lock;
 
-void spi_init(spi_t dev)
-{
-    /* make sure given bus device is valid */
+void spi_init(spi_t dev) {
+    // make sure given bus device is valid
     assert(dev < SPI_NUMOF);
 
-    /* initialize the buses lock */
+    // initialize the buses lock
     mutex_init(&lock);
 
     for (uint8_t i = 0; i < SPI_CLK_NUMOF; ++i) {
         _spi_clks_config[i] = SPI_DIV_UP(coreclk(), 2 * _spi_clks[i]) - 1;
     }
 
-    /* trigger pin initialization */
+    // trigger pin initialization
     spi_init_pins(dev);
 
-    /* disable hardware chip select
-       (hardware chip select only supports one-byte transfers...) */
+    // disable hardware chip select
+    //    (hardware chip select only supports one-byte transfers...)
     _REG32(spi_config[dev].addr, SPI_REG_CSMODE) = SPI_CSMODE_OFF;
 }
 
-void spi_init_pins(spi_t dev)
-{
+void spi_init_pins(spi_t dev) {
     assert(dev < SPI_NUMOF);
 
     const gpio_t spi1_pins =
@@ -80,18 +72,17 @@ void spi_init_pins(spi_t dev)
         (1 << spi_config[dev].miso) |
         (1 << spi_config[dev].sclk);
 
-    /* Enable I/O Function 0 */
+    // Enable I/O Function 0
     GPIO_REG(GPIO_IOF_EN) |=  spi1_pins;
     GPIO_REG(GPIO_IOF_SEL) &= ~spi1_pins;
 }
 
-int spi_init_cs(spi_t dev, spi_cs_t cs)
-{
+int spi_init_cs(spi_t dev, spi_cs_t cs) {
     (void)dev;
     assert(dev < SPI_NUMOF);
 
-    /* setting the CS high before configuring it as an
-       output should be fine on FE310. */
+    // setting the CS high before configuring it as an
+    //    output should be fine on FE310.
     gpio_set(cs);
 
     if (gpio_init(cs, GPIO_OUT)) {
@@ -101,8 +92,7 @@ int spi_init_cs(spi_t dev, spi_cs_t cs)
     return SPI_OK;
 }
 
-void spi_acquire(spi_t dev, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
-{
+void spi_acquire(spi_t dev, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk) {
     (void)cs;
     assert(dev < SPI_NUMOF);
 
@@ -112,16 +102,14 @@ void spi_acquire(spi_t dev, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
     _REG32(spi_config[dev].addr, SPI_REG_SCKMODE) = mode;
 }
 
-void spi_release(spi_t dev)
-{
+void spi_release(spi_t dev) {
     (void)dev;
 
     mutex_unlock(&lock);
 }
 
 void spi_transfer_bytes(spi_t dev, spi_cs_t cs, bool cont,
-                        const void *out_, void *in_, size_t len)
-{
+                        const void *out_, void *in_, size_t len) {
     assert(dev < SPI_NUMOF);
     assert((out_ || in_) && len > 0);
     assert(_REG32(spi_config[dev].addr, SPI_REG_RXFIFO) & SPI_RXFIFO_EMPTY);

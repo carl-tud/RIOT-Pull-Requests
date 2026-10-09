@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Silke Hofstra
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Silke Hofstra
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Short SenML SAUL example
- *
- * @author      Silke Hofstra <silke@slxh.eu>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Short SenML SAUL example
+///
+/// @author      Silke Hofstra <silke@slxh.eu>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -23,15 +19,13 @@
 
 static uint8_t cbor_buf[1024];
 
-void print_hex(uint8_t *a, size_t len)
-{
+void print_hex(uint8_t *a, size_t len) {
     for (size_t i = 0; i < len; i++) {
         print_byte_hex(a[i]);
     }
 }
 
-int main(void)
-{
+int main(void) {
     size_t len = senml_saul_encode_cbor(cbor_buf, sizeof cbor_buf, saul_reg);
 
     if (len == 0) {

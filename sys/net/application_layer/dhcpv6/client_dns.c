@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "net/dhcpv6/client.h"
 #if IS_USED(MODULE_SOCK_DNS)
@@ -22,8 +18,7 @@
 
 static char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
-void dhcpv6_client_dns_rns_conf(const dhcpv6_opt_dns_rns_t *opt, uint16_t netif)
-{
+void dhcpv6_client_dns_rns_conf(const dhcpv6_opt_dns_rns_t *opt, uint16_t netif) {
     if (byteorder_ntohs(opt->len) < sizeof(ipv6_addr_t)) {
         DEBUG("dhcpv6_client_dns: no DNS recursive name server provided.\n");
         return;
@@ -40,4 +35,4 @@ void dhcpv6_client_dns_rns_conf(const dhcpv6_opt_dns_rns_t *opt, uint16_t netif)
 #endif
 }
 
-/** @} */
+/// @}

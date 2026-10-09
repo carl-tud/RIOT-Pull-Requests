@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2013 Christian Mehlis <mehlis@inf.fu-berlin.de>
- * SPDX-FileCopyrightText: 2013 René Kijewski <rene.kijewski@fu-berlin.de>
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Christian Mehlis <mehlis@inf.fu-berlin.de>
+// SPDX-FileCopyrightText: 2013 René Kijewski <rene.kijewski@fu-berlin.de>
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Semaphore test application
- *
- * @author Christian Mehlis <mehlis@inf.fu-berlin.de>
- * @author René Kijewski <rene.kijewski@fu-berlin.de>
- * @author Martine Lenders <mlenders@inf.fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Semaphore test application
+///
+/// @author Christian Mehlis <mehlis@inf.fu-berlin.de>
+/// @author René Kijewski <rene.kijewski@fu-berlin.de>
+/// @author Martine Lenders <mlenders@inf.fu-berlin.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -39,8 +35,7 @@ static msg_t test1_msg_queue[SEMAPHORE_MSG_QUEUE_SIZE];
 static sem_t s1;
 static sem_t s2;
 
-static void *test1_second_thread(void *arg)
-{
+static void *test1_second_thread(void *arg) {
     (void) arg;
     msg_init_queue(test1_msg_queue, SEMAPHORE_MSG_QUEUE_SIZE);
     puts("second: sem_trywait");
@@ -63,8 +58,7 @@ static void *test1_second_thread(void *arg)
     return NULL;
 }
 
-static void test1(void)
-{
+static void test1(void) {
     puts("first: sem_init");
 
     if (sem_init(&s1, 0, 0) < 0) {
@@ -128,8 +122,7 @@ static void test1(void)
 
 static msg_t _sema_thread_queue[SEMAPHORE_MSG_QUEUE_SIZE];
 
-static void *priority_sema_thread(void *name)
-{
+static void *priority_sema_thread(void *name) {
     msg_init_queue(_sema_thread_queue, SEMAPHORE_MSG_QUEUE_SIZE);
     sem_wait(&s1);
     printf("Thread '%s' woke up.\n", (const char *) name);
@@ -137,8 +130,7 @@ static void *priority_sema_thread(void *name)
 }
 
 char names[SEMAPHORE_TEST_THREADS][16];
-void test2(void)
-{
+void test2(void) {
     puts("first: sem_init");
 
     if (sem_init(&s1, 0, 0) < 0) {
@@ -176,8 +168,7 @@ void test2(void)
 
 static msg_t _one_two_queue[SEMAPHORE_MSG_QUEUE_SIZE];
 
-static void *test3_one_two_thread(void *arg)
-{
+static void *test3_one_two_thread(void *arg) {
     (void)arg;
     msg_init_queue(_one_two_queue, SEMAPHORE_MSG_QUEUE_SIZE);
     sem_wait(&s1);
@@ -189,8 +180,7 @@ static void *test3_one_two_thread(void *arg)
 
 static msg_t _two_one_queue[SEMAPHORE_MSG_QUEUE_SIZE];
 
-static void *test3_two_one_thread(void *arg)
-{
+static void *test3_two_one_thread(void *arg) {
     (void)arg;
     msg_init_queue(_two_one_queue, SEMAPHORE_MSG_QUEUE_SIZE);
     sem_wait(&s2);
@@ -200,8 +190,7 @@ static void *test3_two_one_thread(void *arg)
     return NULL;
 }
 
-void test3(void)
-{
+void test3(void) {
     puts("first: sem_init s1");
     if (sem_init(&s1, 0, 0) < 0) {
         puts("first: sem_init FAILED");
@@ -235,19 +224,16 @@ void test3(void)
     sem_post(&s1);
 }
 
-/*
- * Allowed margin for waiting too long.
- *
- * Waiting too short is forbidden by POSIX, but is checked elsewhere.
- *
- * This allows waiting a little (0.1%) longer than exactly 1000000us.
- * The value should be large enough to not trip over timer inaccuracies, but
- * small enough to catch any fundamental problems.
- */
+// Allowed margin for waiting too long.
+//
+// Waiting too short is forbidden by POSIX, but is checked elsewhere.
+//
+// This allows waiting a little (0.1%) longer than exactly 1000000us.
+// The value should be large enough to not trip over timer inaccuracies, but
+// small enough to catch any fundamental problems.
 #define TEST4_TIMEOUT_EXCEEDED_MARGIN (1000)
 
-void test4(void)
-{
+void test4(void) {
     char uint64_str[20];
     struct timespec abs;
     uint64_t start, elapsed;
@@ -289,8 +275,7 @@ void test4(void)
     }
 }
 
-int main(void)
-{
+int main(void) {
     msg_init_queue(main_msg_queue, SEMAPHORE_MSG_QUEUE_SIZE);
     puts("######################### TEST1:");
     test1();

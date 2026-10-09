@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2025 Prime Controls, Inc.(R)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Prime Controls, Inc.(R)
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <errno.h>
 #include <string.h>
@@ -11,98 +9,93 @@
 #include "isrpipe/read_timeout.h"
 #include "tests-isrpipe.h"
 
-static void test_read_timeout(void)
-{
+static void test_read_timeout(void) {
     uint8_t buffer[2] = {0};
     uint8_t read_buf[2];
     isrpipe_t pipe;
     int res;
 
-    /* prep the pipe */
+    // prep the pipe
     isrpipe_init(&pipe, buffer, ARRAY_SIZE(buffer));
 
-    /* test timeout */
+    // test timeout
     res = isrpipe_read_timeout(&pipe, read_buf, ARRAY_SIZE(read_buf), 1);
     TEST_ASSERT_EQUAL_INT(-ETIMEDOUT, res);
 
     TEST_ASSERT_EQUAL_INT(0, isrpipe_write_one(&pipe, 1));
     TEST_ASSERT_EQUAL_INT(0, isrpipe_write_one(&pipe, 2));
 
-    /* pipe now holds 1, 2 */
+    // pipe now holds 1, 2
 
-    /* test successful read */
+    // test successful read
     res = isrpipe_read_timeout(&pipe, read_buf, ARRAY_SIZE(read_buf), 1);
     TEST_ASSERT_EQUAL_INT(ARRAY_SIZE(read_buf), res);
 
-    /* pipe now empty */
+    // pipe now empty
 
     TEST_ASSERT_EQUAL_INT(0, isrpipe_write_one(&pipe, 3));
 
-    /* pipe now holds 3 */
+    // pipe now holds 3
 
-    /* test partial read */
+    // test partial read
     res = isrpipe_read_timeout(&pipe, read_buf, ARRAY_SIZE(read_buf), 1);
     TEST_ASSERT_EQUAL_INT(1, res);
 }
 
-static void test_read_timeout_zero(void)
-{
+static void test_read_timeout_zero(void) {
     uint8_t buffer[2] = {0};
     isrpipe_t pipe;
 
     isrpipe_init(&pipe, buffer, ARRAY_SIZE(buffer));
 
-    /* reading zero bytes is a no-op and should not time-out */
+    // reading zero bytes is a no-op and should not time-out
     TEST_ASSERT_EQUAL_INT(0, isrpipe_read_timeout(&pipe, NULL, 0, 1));
 }
 
-static void test_read_all_timeout(void)
-{
+static void test_read_all_timeout(void) {
     uint8_t buffer[2] = {0};
     uint8_t read_buf[2];
     isrpipe_t pipe;
     int res;
 
-    /* prep the pipe */
+    // prep the pipe
     isrpipe_init(&pipe, buffer, ARRAY_SIZE(buffer));
 
-    /* test timeout */
+    // test timeout
     res = isrpipe_read_all_timeout(&pipe, read_buf, ARRAY_SIZE(read_buf), 1);
     TEST_ASSERT_EQUAL_INT(-ETIMEDOUT, res);
 
     TEST_ASSERT_EQUAL_INT(0, isrpipe_write_one(&pipe, 1));
     TEST_ASSERT_EQUAL_INT(0, isrpipe_write_one(&pipe, 2));
 
-    /* pipe now holds 1, 2 */
+    // pipe now holds 1, 2
 
-    /* test successful read */
+    // test successful read
     res = isrpipe_read_all_timeout(&pipe, read_buf, ARRAY_SIZE(read_buf), 1);
     TEST_ASSERT_EQUAL_INT(ARRAY_SIZE(read_buf), res);
 
-    /* pipe now empty */
+    // pipe now empty
 
     TEST_ASSERT_EQUAL_INT(0, isrpipe_write_one(&pipe, 3));
 
-    /* pipe now holds 3 */
+    // pipe now holds 3
 
-    /* test timeout - isrpipe_read_all_timeout() does not allow partial reads */
+    // test timeout - isrpipe_read_all_timeout() does not allow partial reads
     res = isrpipe_read_all_timeout(&pipe, read_buf, ARRAY_SIZE(read_buf), 1);
     TEST_ASSERT_EQUAL_INT(-ETIMEDOUT, res);
 }
 
-static void test_read_all_timeout_zero(void)
-{
+static void test_read_all_timeout_zero(void) {
     uint8_t buffer[2] = {0};
     isrpipe_t pipe;
 
     isrpipe_init(&pipe, buffer, ARRAY_SIZE(buffer));
 
-    /* reading zero bytes is a no-op and should not time-out */
+    // reading zero bytes is a no-op and should not time-out
     TEST_ASSERT_EQUAL_INT(0, isrpipe_read_all_timeout(&pipe, NULL, 0, 1));
 }
 
-Test *tests_isrpipe_read_timeout_tests(void)
-{
+Test *tests_isrpipe_read_timeout_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_read_timeout),
         new_TestFixture(test_read_timeout_zero),

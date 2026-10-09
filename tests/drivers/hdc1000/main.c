@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the HDC1000 sensor driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Johann Fischer <j.fischer@phytec.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the HDC1000 sensor driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Johann Fischer <j.fischer@phytec.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -26,8 +22,7 @@
 
 #define SLEEP_USEC  (1000 * 1000U)
 
-int main(void)
-{
+int main(void) {
     hdc1000_t dev;
     int16_t temp, hum;
     char tstr[8];

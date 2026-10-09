@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * Implements @ref net_netif for @ref net_gnrc
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// Implements @ref net_netif for @ref net_gnrc
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <string.h>
 
@@ -21,8 +17,7 @@
 
 #include "net/netif.h"
 
-int netif_get_name(const netif_t *iface, char *name)
-{
+int netif_get_name(const netif_t *iface, char *name) {
     gnrc_netif_t *netif = container_of(iface, gnrc_netif_t, netif);
 
     int res = 0;
@@ -31,29 +26,25 @@ int netif_get_name(const netif_t *iface, char *name)
     return res;
 }
 
-int16_t netif_get_id(const netif_t *iface)
-{
+int16_t netif_get_id(const netif_t *iface) {
     const gnrc_netif_t *netif = container_of(iface, gnrc_netif_t, netif);
     return netif->pid;
 }
 
-netif_t *netif_get_by_id(int16_t id)
-{
+netif_t *netif_get_by_id(int16_t id) {
     return &gnrc_netif_get_by_pid((kernel_pid_t)id)->netif;
 }
 
 int netif_get_opt(const netif_t *iface, netopt_t opt, uint16_t context,
-                  void *value, size_t max_len)
-{
+                  void *value, size_t max_len) {
     const gnrc_netif_t *netif = container_of(iface, gnrc_netif_t, netif);
     return gnrc_netapi_get(netif->pid, opt, context, value, max_len);
 }
 
 int netif_set_opt(const netif_t *iface, netopt_t opt, uint16_t context,
-                  void *value, size_t value_len)
-{
+                  void *value, size_t value_len) {
     const gnrc_netif_t *netif = container_of(iface, gnrc_netif_t, netif);
     return gnrc_netapi_set(netif->pid, opt, context, value, value_len);
 }
 
-/** @} */
+/// @}

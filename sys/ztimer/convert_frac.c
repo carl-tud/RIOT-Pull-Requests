@@ -1,26 +1,22 @@
-/*
- * Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
- *               2020 Freie Universität Berlin
- *               2020 Inria
- *               2018 Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
- */
+// Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
+//               2020 Freie Universität Berlin
+//               2020 Inria
+//               2018 Joakim Nohlgård <joakim.nohlgard@eistec.se>
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for more
+// details.
 
-/**
- * @ingroup     sys_ztimer_convert_frac
- *
- * @{
- *
- * @file
- * @brief       ztimer conversion using frac implementation
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @}
- */
+/// @ingroup     sys_ztimer_convert_frac
+///
+/// @{
+///
+/// @file
+/// @brief       ztimer conversion using frac implementation
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @}
 
 #include <stdint.h>
 #include <inttypes.h>
@@ -34,19 +30,16 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief   Compute the scaling parameters for the given two frequencies
- *
- * @param[in]   self        pointer to instance to operate on
- * @param[in]   freq_self   desired frequency of this clock
- * @param[in]   freq_lower  frequency of the underlying clock
- */
+/// @brief   Compute the scaling parameters for the given two frequencies
+///
+/// @param[in]   self        pointer to instance to operate on
+/// @param[in]   freq_self   desired frequency of this clock
+/// @param[in]   freq_lower  frequency of the underlying clock
 static void ztimer_convert_frac_compute_scale(ztimer_convert_frac_t *self,
                                               uint32_t freq_self,
                                               uint32_t freq_lower);
 
-static void ztimer_convert_frac_op_set(ztimer_clock_t *z, uint32_t val)
-{
+static void ztimer_convert_frac_op_set(ztimer_clock_t *z, uint32_t val) {
     ztimer_convert_frac_t *self = (ztimer_convert_frac_t *)z;
     uint32_t target_lower = frac_scale(&self->scale_set, val + self->round);
 
@@ -55,8 +48,7 @@ static void ztimer_convert_frac_op_set(ztimer_clock_t *z, uint32_t val)
     ztimer_set(self->super.lower, &self->super.lower_entry, target_lower);
 }
 
-static uint32_t ztimer_convert_frac_op_now(ztimer_clock_t *z)
-{
+static uint32_t ztimer_convert_frac_op_now(ztimer_clock_t *z) {
     ztimer_convert_frac_t *self = (ztimer_convert_frac_t *)z;
     uint32_t lower_now = ztimer_now(self->super.lower);
 
@@ -82,8 +74,7 @@ static const ztimer_ops_t ztimer_convert_frac_ops = {
 
 static void ztimer_convert_frac_compute_scale(ztimer_convert_frac_t *self,
                                               uint32_t freq_self,
-                                              uint32_t freq_lower)
-{
+                                              uint32_t freq_lower) {
     assert(freq_self);
     assert(freq_lower);
     frac_init(&self->scale_now, freq_self, freq_lower);
@@ -92,8 +83,7 @@ static void ztimer_convert_frac_compute_scale(ztimer_convert_frac_t *self,
 
 void ztimer_convert_frac_init(ztimer_convert_frac_t *self,
                               ztimer_clock_t *lower, uint32_t freq_self,
-                              uint32_t freq_lower)
-{
+                              uint32_t freq_lower) {
     DEBUG("ztimer_convert_frac_init: %p->%p fs=%" PRIu32 " fl=%" PRIu32 "\n",
           (void *)self, (void *)lower, freq_self, freq_lower);
 
@@ -108,9 +98,9 @@ void ztimer_convert_frac_init(ztimer_convert_frac_t *self,
     if (freq_self < freq_lower) {
         self->super.super.max_value = frac_scale(&self->scale_now, UINT32_MAX);
 #if !MODULE_ZTIMER_ONDEMAND
-        /* extend lower clock only if the ondemand driver isn't selected
-         * otherwise, the clock extension will be called with the first
-         * ztimer_acquire() call */
+        // extend lower clock only if the ondemand driver isn't selected
+        // otherwise, the clock extension will be called with the first
+        // ztimer_acquire() call
         ztimer_init_extend(&self->super.super);
 #endif
     }

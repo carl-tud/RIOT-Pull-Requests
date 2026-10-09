@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 INRIA
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 INRIA
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_msp430
- * @{
- *
- * @file
- * @brief       Implementation of the peripheral flashpage interface
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     cpu_msp430
+/// @{
+///
+/// @file
+/// @brief       Implementation of the peripheral flashpage interface
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <assert.h>
 
@@ -23,8 +19,7 @@
 #include "irq.h"
 #include "periph/flashpage.h"
 
-static inline int _unlock(void)
-{
+static inline int _unlock(void) {
     int state;
     state = irq_disable();
     FCTL3 = FWKEY;
@@ -32,65 +27,61 @@ static inline int _unlock(void)
     return state;
 }
 
-static inline void _lock(int state)
-{
+static inline void _lock(int state) {
     FCTL3 = (FWKEY | LOCK);
     irq_restore(state);
 }
 
-static inline void _erase(uint16_t *page_addr)
-{
-    /* disable interrupts and unlock flash */
+static inline void _erase(uint16_t *page_addr) {
+    // disable interrupts and unlock flash
     int state = _unlock();
 
-    /* erase page */
+    // erase page
     FCTL1 = (FWKEY | ERASE);
     *page_addr = 0;
     while (FCTL3 & BUSY) {}
 
-    /* lock flash and re-enable interrupts */
+    // lock flash and re-enable interrupts
     _lock(state);
 }
 
-void flashpage_erase(unsigned page)
-{
+void flashpage_erase(unsigned page) {
     assert((unsigned) page < FLASHPAGE_NUMOF);
 
     uint16_t *page_addr = (uint16_t *)flashpage_addr(page);
 
-    /* erase page */
+    // erase page
     _erase(page_addr);
 }
 
-void flashpage_write(void *target_addr, const void *data, size_t len)
-{
-    /* assert multiples of FLASHPAGE_WRITE_BLOCK_SIZE are written and no less of
-       that length. */
+void flashpage_write(void *target_addr, const void *data, size_t len) {
+    // assert multiples of FLASHPAGE_WRITE_BLOCK_SIZE are written and no less of
+    //    that length.
     assert(!(len % FLASHPAGE_WRITE_BLOCK_SIZE));
 
-    /* ensure writes are aligned */
+    // ensure writes are aligned
     assert(!(((unsigned)target_addr % FLASHPAGE_WRITE_BLOCK_ALIGNMENT) ||
             ((unsigned)data % FLASHPAGE_WRITE_BLOCK_ALIGNMENT)));
 
-    /* ensure the length doesn't exceed the actual flash size */
+    // ensure the length doesn't exceed the actual flash size
     assert(((unsigned)target_addr + len) <
            (CPU_FLASH_BASE + (FLASHPAGE_SIZE * FLASHPAGE_NUMOF) - 1));
 
     uint8_t *page_addr = target_addr;
     const uint8_t *data_addr = data;
 
-   /* disable interrupts and unlock flash */
+   // disable interrupts and unlock flash
     int state = _unlock();
 
-   /* enable write access, and write*/
+   // enable write access, and write
     FCTL1 = (FWKEY | WRT);
     for (unsigned i = 0; i < len; i++) {
         *(page_addr++) = *(data_addr++);
         while (!(FCTL3 & WAIT)) {}
     }
-   /* disable write access */
+   // disable write access
     FCTL1 = (FWKEY);
 
-    /* lock flash and re-enable interrupts */
+    // lock flash and re-enable interrupts
     _lock(state);
 }

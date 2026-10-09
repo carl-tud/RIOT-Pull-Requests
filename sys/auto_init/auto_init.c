@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2013 INRIA
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2013 INRIA
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init
- * @{
- * @file
- * @brief   initializes any used module that has a trivial init function
- * @author  Oliver Hahm <oliver.hahm@inria.fr>
- * @author  Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- * @author  Martine S. Lenders <m.lenders@fu-berlin.de>
- * @}
- */
+/// @ingroup sys_auto_init
+/// @{
+/// @file
+/// @brief   initializes any used module that has a trivial init function
+/// @author  Oliver Hahm <oliver.hahm@inria.fr>
+/// @author  Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+/// @author  Martine S. Lenders <m.lenders@fu-berlin.de>
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -30,8 +26,7 @@
 
 XFA_INIT_CONST(auto_init_module_t, auto_init_xfa);
 
-static inline void _auto_init_module(const volatile auto_init_module_t *module)
-{
+static inline void _auto_init_module(const volatile auto_init_module_t *module) {
 #if IS_ACTIVE(CONFIG_AUTO_INIT_ENABLE_DEBUG)
     DEBUG("auto_init: %s (%u)\n", module->name, module->prio);
 #endif
@@ -227,13 +222,13 @@ extern void dsm_init(void);
 AUTO_INIT(dsm_init,
           AUTO_INIT_PRIO_MOD_DSM);
 #endif
-/* initialize USB devices */
+// initialize USB devices
 #if IS_USED(MODULE_AUTO_INIT_USBUS)
 extern void auto_init_usb(void);
 AUTO_INIT(auto_init_usb,
           AUTO_INIT_PRIO_MOD_USBUS);
 #endif
-/* initialize network devices */
+// initialize network devices
 #if IS_USED(MODULE_AUTO_INIT_GNRC_NETIF)
 extern void gnrc_netif_init_devs(void);
 AUTO_INIT(gnrc_netif_init_devs,
@@ -244,18 +239,17 @@ extern void auto_init_gnrc_uhcpc(void);
 AUTO_INIT(auto_init_gnrc_uhcpc,
           AUTO_INIT_PRIO_MOD_GNRC_UHCPC);
 #endif
-/* initialize NDN module after the network devices are initialized */
+// initialize NDN module after the network devices are initialized
 #if IS_USED(MODULE_NDN_RIOT)
 extern void ndn_init(void);
 AUTO_INIT(ndn_init,
           AUTO_INIT_PRIO_MOD_NDN);
 #endif
-/* initialize sensors and actuators */
+// initialize sensors and actuators
 #if IS_USED(MODULE_SHT1X)
-/* The sht1x module needs to be initialized regardless of SAUL being used,
- * as the shell commands rely on auto-initialization. auto_init_sht1x also
- * performs SAUL registration, but only if module auto_init_saul is used.
- */
+// The sht1x module needs to be initialized regardless of SAUL being used,
+// as the shell commands rely on auto-initialization. auto_init_sht1x also
+// performs SAUL registration, but only if module auto_init_saul is used.
 extern void auto_init_sht1x(void);
 AUTO_INIT(auto_init_sht1x,
           AUTO_INIT_PRIO_MOD_SHT1X);
@@ -362,8 +356,7 @@ extern void slipmux_init(void);
 AUTO_INIT(slipmux_init, AUTO_INIT_PRIO_MOD_SLIPDEV);
 #endif
 
-void auto_init(void)
-{
+void auto_init(void) {
     for (unsigned i = 0; i < XFA_LEN(auto_init_module_t, auto_init_xfa); i++) {
         _auto_init_module(&auto_init_xfa[i]);
     }

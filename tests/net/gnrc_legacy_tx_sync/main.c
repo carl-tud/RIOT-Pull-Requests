@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2025 Technische Universität Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Technische Universität Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Text application for gnrc_legacy_tx_sync
- *
- * @author      Lukas Luger     <lukas.luger@mailbox.tu-dresden.de>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       Text application for gnrc_legacy_tx_sync
+///
+/// @author      Lukas Luger     <lukas.luger@mailbox.tu-dresden.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -27,14 +23,12 @@ static const char test_msg[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTU"
                                "VWXYZ0123456789.,:;!?@#$%^&*()[]{}-_=+/<>`~\'\""
                                "\\";
 
-void print_failed(void *arg)
-{
+void print_failed(void *arg) {
     (void)arg;
     puts("TEST FAILED");
 }
 
-int main(void)
-{
+int main(void) {
     puts(
         "Test application for gnrc_legacy_tx_sync\n"
         "========================================\n"
@@ -47,25 +41,25 @@ int main(void)
         "If tx_sync does not finish in one second, the test will fail.\n"
     );
 
-    /* Preparing the gnrc message */
+    // Preparing the gnrc message
     gnrc_netif_t *netif = gnrc_netif_iter(NULL);
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, test_msg, sizeof(test_msg),
                                                         GNRC_NETTYPE_UNDEF);
     gnrc_tx_sync_t tx_sync;
     gnrc_tx_sync_append(pkt, &tx_sync);
 
-    /* Set timeout message in case tx sync fails */
+    // Set timeout message in case tx sync fails
     ztimer_t timer = {
         .callback = print_failed,
         .arg = NULL,
     };
     ztimer_set(ZTIMER_SEC, &timer, 1);
 
-    /* Sending and waiting */
+    // Sending and waiting
     gnrc_netapi_send(netif->pid, pkt);
     gnrc_tx_sync(&tx_sync);
 
-    /* Cancel error message and print success message */
+    // Cancel error message and print success message
     ztimer_remove(ZTIMER_SEC, &timer);
     puts("TEST PASSED");
 

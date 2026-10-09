@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2016 OTA keys
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2016 OTA keys
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @ingroup     drivers_periph_uart
- * @{
- *
- * @file
- * @brief       Low-level UART driver implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
- * @author      Fabian Nack <nack@inf.fu-berlin.de>
- * @author      Hermann Lelong <hermann@otakeys.com>
- * @author      Toon Stegen <toon.stegen@altran.com>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @ingroup     drivers_periph_uart
+/// @{
+///
+/// @file
+/// @brief       Low-level UART driver implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+/// @author      Fabian Nack <nack@inf.fu-berlin.de>
+/// @author      Hermann Lelong <hermann@otakeys.com>
+/// @author      Toon Stegen <toon.stegen@altran.com>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include "cpu.h"
 #include "sched.h"
@@ -78,27 +74,22 @@
 #ifdef MODULE_PERIPH_UART_NONBLOCKING
 
 #  include "tsrb.h"
-/**
- * @brief   Allocate for tx ring buffers
- */
+/// @brief   Allocate for tx ring buffers
 static tsrb_t uart_tx_rb[UART_NUMOF];
 static uint8_t uart_tx_rb_buf[UART_NUMOF][UART_TXBUF_SIZE];
 #endif
 
-/**
- * @brief   Allocate memory to store the callback functions
- *
- * Extend standard uart_isr_ctx_t with data_mask field. This is needed
- * in order to mask parity bit.
- */
+/// @brief   Allocate memory to store the callback functions
+///
+/// Extend standard uart_isr_ctx_t with data_mask field. This is needed
+/// in order to mask parity bit.
 static struct {
-    uart_rx_cb_t rx_cb;   /**< data received interrupt callback */
-    void *arg;            /**< argument to both callback routines */
-    uint8_t data_mask;    /**< mask applied to the data register */
+    uart_rx_cb_t rx_cb;   ///< data received interrupt callback
+    void *arg;            ///< argument to both callback routines
+    uint8_t data_mask;    ///< mask applied to the data register
 } isr_ctx[UART_NUMOF];
 
-static inline USART_TypeDef *dev(uart_t uart)
-{
+static inline USART_TypeDef *dev(uart_t uart) {
     return uart_config[uart].dev;
 }
 
@@ -114,8 +105,7 @@ static inline void uart_init_lpuart(uart_t uart, uint32_t baudrate);
 #endif
 
 #ifdef MODULE_PERIPH_UART_HW_FC
-static inline void uart_init_rts_pin(uart_t uart)
-{
+static inline void uart_init_rts_pin(uart_t uart) {
     if (uart_config[uart].rts_pin != GPIO_UNDEF) {
         gpio_init(uart_config[uart].rts_pin, GPIO_OUT);
 #  ifdef CPU_FAM_STM32F1
@@ -126,8 +116,7 @@ static inline void uart_init_rts_pin(uart_t uart)
     }
 }
 
-static inline void uart_init_cts_pin(uart_t uart)
-{
+static inline void uart_init_cts_pin(uart_t uart) {
     if (uart_config[uart].cts_pin != GPIO_UNDEF) {
         gpio_init(uart_config[uart].cts_pin, GPIO_IN);
 #  ifndef CPU_FAM_STM32F1
@@ -137,15 +126,14 @@ static inline void uart_init_cts_pin(uart_t uart)
 }
 #endif
 
-static inline void uart_init_pins(uart_t uart, uart_rx_cb_t rx_cb)
-{
-     /* configure TX pin */
+static inline void uart_init_pins(uart_t uart, uart_rx_cb_t rx_cb) {
+     // configure TX pin
 #ifdef CPU_FAM_STM32F1
     gpio_init_af(uart_config[uart].tx_pin, GPIO_AF_OUT_PP);
 #else
     gpio_init_af(uart_config[uart].tx_pin, uart_config[uart].tx_af);
 #endif
-    /* configure RX pin */
+    // configure RX pin
     if (rx_cb) {
         gpio_init(uart_config[uart].rx_pin, GPIO_IN_PU);
 #ifndef CPU_FAM_STM32F1
@@ -158,8 +146,7 @@ static inline void uart_init_pins(uart_t uart, uart_rx_cb_t rx_cb)
 #endif
 }
 
-static inline void uart_enable_clock(uart_t uart)
-{
+static inline void uart_enable_clock(uart_t uart) {
 #ifdef STM32_PM_STOP
     if (isr_ctx[uart].rx_cb) {
         pm_block(STM32_PM_STOP);
@@ -168,8 +155,7 @@ static inline void uart_enable_clock(uart_t uart)
     periph_clk_en(uart_config[uart].bus, uart_config[uart].rcc_mask);
 }
 
-static inline void uart_disable_clock(uart_t uart)
-{
+static inline void uart_disable_clock(uart_t uart) {
     periph_clk_dis(uart_config[uart].bus, uart_config[uart].rcc_mask);
 #ifdef STM32_PM_STOP
     if (isr_ctx[uart].rx_cb) {
@@ -178,23 +164,22 @@ static inline void uart_disable_clock(uart_t uart)
 #endif
 }
 
-int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
-{
+int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg) {
     assert(uart < UART_NUMOF);
 
-    /* save ISR context */
+    // save ISR context
     isr_ctx[uart].rx_cb     = rx_cb;
     isr_ctx[uart].arg       = arg;
     isr_ctx[uart].data_mask = 0xFF;
 
 #ifdef MODULE_PERIPH_UART_NONBLOCKING
-    /* set up the TX buffer */
+    // set up the TX buffer
     tsrb_init(&uart_tx_rb[uart], uart_tx_rb_buf[uart], UART_TXBUF_SIZE);
 #endif
 
     uart_enable_clock(uart);
 
-    /* reset UART configuration -> defaults to 8N1 mode */
+    // reset UART configuration -> defaults to 8N1 mode
     dev(uart)->CR1 = 0;
     dev(uart)->CR2 = 0;
     dev(uart)->CR3 = 0;
@@ -220,10 +205,10 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
     uart_init_usart(uart, baudrate);
 #endif
 
-    /* Attach pins to enabled UART periph. Note: It is important that the UART
-     * interface is configured prior to attaching the pins, as otherwise the
-     * signal level flickers during initialization resulting in garbage being
-     * sent. */
+    // Attach pins to enabled UART periph. Note: It is important that the UART
+    // interface is configured prior to attaching the pins, as otherwise the
+    // signal level flickers during initialization resulting in garbage being
+    // sent.
     uart_init_pins(uart, rx_cb);
 
 #ifdef MODULE_PERIPH_UART_HW_FC
@@ -235,7 +220,7 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
     }
 #endif
 
-    /* enable RX interrupt if applicable */
+    // enable RX interrupt if applicable
     if (rx_cb) {
         NVIC_EnableIRQ(uart_config[uart].irqn);
         dev(uart)->CR1 = (USART_CR1_UE | USART_CR1_TE | RXENABLE);
@@ -253,8 +238,7 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
 
 #ifdef MODULE_PERIPH_UART_MODECFG
 int uart_mode(uart_t uart, uart_data_bits_t data_bits, uart_parity_t parity,
-              uart_stop_bits_t stop_bits)
-{
+              uart_stop_bits_t stop_bits) {
     assert(uart < UART_NUMOF);
 
     isr_ctx[uart].data_mask = 0xFF;
@@ -299,26 +283,25 @@ int uart_mode(uart_t uart, uart_data_bits_t data_bits, uart_parity_t parity,
 
     return UART_OK;
 }
-#endif /* MODULE_PERIPH_UART_MODECFG */
+#endif // MODULE_PERIPH_UART_MODECFG
 
-static inline void uart_init_usart(uart_t uart, uint32_t baudrate)
-{
+static inline void uart_init_usart(uart_t uart, uint32_t baudrate) {
     uint16_t mantissa;
     uint8_t fraction;
     uint32_t clk;
 
-    /* calculate and apply baudrate */
+    // calculate and apply baudrate
 #ifdef CPU_FAM_STM32MP1
     RCC->UART35CKSELR = uart_config[uart].clk_src;
 
     switch (uart_config[uart].clk_src) {
-        case RCC_UART35CKSELR_UART35SRC_2:  /* HSI */
+        case RCC_UART35CKSELR_UART35SRC_2:  // HSI
             clk = CONFIG_CLOCK_HSI;
             break;
-        case RCC_UART35CKSELR_UART35SRC_4:  /* HSE */
+        case RCC_UART35CKSELR_UART35SRC_4:  // HSE
             clk = CONFIG_CLOCK_HSE;
             break;
-        default: /* return */
+        default: // return
             return;
     }
 
@@ -350,8 +333,7 @@ static inline void uart_init_usart(uart_t uart, uint32_t baudrate)
 #    define CCIPR                   CCIPR3
 #  endif
 #  ifdef MODULE_PERIPH_LPUART
-static inline void uart_init_lpuart(uart_t uart, uint32_t baudrate)
-{
+static inline void uart_init_lpuart(uart_t uart, uint32_t baudrate) {
     uint32_t clk;
 
     switch (uart_config[uart].clk_src) {
@@ -364,43 +346,40 @@ static inline void uart_init_lpuart(uart_t uart, uint32_t baudrate)
     case (RCC_CCIPR_LPUART1SEL_0 | RCC_CCIPR_LPUART1SEL_1):
         clk = 32768;
         break;
-    default: /* HSI is not supported */
+    default: // HSI is not supported
         return;
     }
 
     RCC->CCIPR |= uart_config[uart].clk_src;
 
-    /* LSE can only be used with baudrate <= 9600 */
+    // LSE can only be used with baudrate <= 9600
     if ( (clk < (3 * baudrate)) || (clk > (4096 * baudrate))) {
         return;
     }
 
-    /* LPUARTDIV = f_clk * 256 / baudrate */
+    // LPUARTDIV = f_clk * 256 / baudrate
     uint32_t brr = (uint32_t)(((uint64_t)clk << 8) / baudrate);
 
     dev(uart)->BRR = brr;
 }
-#  endif /* MODULE_PERIPH_LPUART */
+#  endif // MODULE_PERIPH_LPUART
 #endif
 
-static inline void send_byte(uart_t uart, uint8_t byte)
-{
+static inline void send_byte(uart_t uart, uint8_t byte) {
     while (!(dev(uart)->ISR_REG & ISR_TXE)) {}
     dev(uart)->TDR_REG = byte;
 }
 
 #ifndef MODULE_PERIPH_UART_NONBLOCKING
-static inline void wait_for_tx_complete(uart_t uart)
-{
+static inline void wait_for_tx_complete(uart_t uart) {
     while (!(dev(uart)->ISR_REG & ISR_TC)) {}
 }
 #endif
 
-void uart_write(uart_t uart, const uint8_t *data, size_t len)
-{
+void uart_write(uart_t uart, const uint8_t *data, size_t len) {
     assert(uart < UART_NUMOF);
 #if DEVELHELP
-    /* If tx is not enabled don't try to send */
+    // If tx is not enabled don't try to send
     if (!(dev(uart)->CR1 & USART_CR1_TE)) {
         return;
     }
@@ -411,7 +390,7 @@ void uart_write(uart_t uart, const uint8_t *data, size_t len)
         if (irq_is_in()) {
             uint16_t todo = 0;
             if (dev(uart)->CR3 & USART_CR3_DMAT) {
-                /* DMA transfer for UART on-going */
+                // DMA transfer for UART on-going
                 todo = dma_suspend(uart_config[uart].dma);
             }
             if (todo) {
@@ -432,8 +411,8 @@ void uart_write(uart_t uart, const uint8_t *data, size_t len)
             dev(uart)->CR3 |= USART_CR3_DMAT;
             dma_transfer(uart_config[uart].dma, uart_config[uart].dma_chan, data,
                          (void *)&dev(uart)->TDR_REG, len, DMA_MEM_TO_PERIPH, DMA_INC_SRC_ADDR);
-            /* make sure the function is synchronous by waiting for the transfer to
-             * finish */
+            // make sure the function is synchronous by waiting for the transfer to
+            // finish
             wait_for_tx_complete(uart);
             dev(uart)->CR3 &= ~USART_CR3_DMAT;
             dma_release(uart_config[uart].dma);
@@ -445,7 +424,7 @@ void uart_write(uart_t uart, const uint8_t *data, size_t len)
     for (size_t i = 0; i < len; i++) {
         dev(uart)->CR1 |= (USART_CR1_TCIE);
         if (irq_is_in() || __get_PRIMASK()) {
-            /* if ring buffer is full free up a spot */
+            // if ring buffer is full free up a spot
             if (tsrb_full(&uart_tx_rb[uart])) {
                 send_byte(uart, tsrb_get_one(&uart_tx_rb[uart]));
             }
@@ -459,14 +438,13 @@ void uart_write(uart_t uart, const uint8_t *data, size_t len)
     for (size_t i = 0; i < len; i++) {
         send_byte(uart, data[i]);
     }
-    /* make sure the function is synchronous by waiting for the transfer to
-     * finish */
+    // make sure the function is synchronous by waiting for the transfer to
+    // finish
     wait_for_tx_complete(uart);
 #endif
 }
 
-void uart_poweron(uart_t uart)
-{
+void uart_poweron(uart_t uart) {
     assert(uart < UART_NUMOF);
 
     uart_enable_clock(uart);
@@ -474,19 +452,18 @@ void uart_poweron(uart_t uart)
     dev(uart)->CR1 |= (USART_CR1_UE);
 
 #ifdef MODULE_PERIPH_UART_HW_FC
-    /* STM32F4 errata 2.10.9: nRTS is active while RE or UE = 0
-     * we should only configure nRTS pin after setting UE */
+    // STM32F4 errata 2.10.9: nRTS is active while RE or UE = 0
+    // we should only configure nRTS pin after setting UE
     uart_init_rts_pin(uart);
 #endif
 }
 
-void uart_poweroff(uart_t uart)
-{
+void uart_poweroff(uart_t uart) {
     assert(uart < UART_NUMOF);
 
 #ifdef MODULE_PERIPH_UART_HW_FC
-    /* the uart peripheral does not put RTS high from hardware when
-     * UE flag is cleared, so we need to do this manually */
+    // the uart peripheral does not put RTS high from hardware when
+    // UE flag is cleared, so we need to do this manually
     if (uart_config[uart].rts_pin != GPIO_UNDEF) {
         gpio_init(uart_config[uart].rts_pin, GPIO_OUT);
         gpio_set(uart_config[uart].rts_pin);
@@ -499,22 +476,20 @@ void uart_poweroff(uart_t uart)
 }
 
 #ifdef MODULE_PERIPH_UART_NONBLOCKING
-static inline void irq_handler_tx(uart_t uart)
-{
+static inline void irq_handler_tx(uart_t uart) {
     int byte = tsrb_get_one(&uart_tx_rb[uart]);
     if (byte >= 0) {
         dev(uart)->TDR_REG = byte;
     }
 
-    /* disable the interrupt if there are no more bytes to send */
+    // disable the interrupt if there are no more bytes to send
     if (tsrb_empty(&uart_tx_rb[uart])) {
         dev(uart)->CR1 &= ~(USART_CR1_TCIE);
     }
 }
 #endif
 
-static inline void irq_handler(uart_t uart)
-{
+static inline void irq_handler(uart_t uart) {
     uint32_t status = dev(uart)->ISR_REG;
 
 #ifdef MODULE_PERIPH_UART_NONBLOCKING
@@ -528,12 +503,12 @@ static inline void irq_handler(uart_t uart)
                             (uint8_t)dev(uart)->RDR_REG & isr_ctx[uart].data_mask);
     }
 #if defined(USART_ISR_ORE)
-    /* USART_ISR_ORE is cleared by writing 1 to ORECF */
+    // USART_ISR_ORE is cleared by writing 1 to ORECF
     if (status & USART_ISR_ORE) {
         dev(uart)->ICR |= USART_ICR_ORECF;
     }
 #else
-    /* USART_SR_ORE is cleared by reading SR and DR sequentially */
+    // USART_SR_ORE is cleared by reading SR and DR sequentially
     if (status & USART_SR_ORE) {
         dev(uart)->DR;
     }
@@ -543,71 +518,61 @@ static inline void irq_handler(uart_t uart)
 }
 
 #ifdef UART_0_ISR
-void UART_0_ISR(void)
-{
+void UART_0_ISR(void) {
     irq_handler(UART_DEV(0));
 }
 #endif
 
 #ifdef UART_1_ISR
-void UART_1_ISR(void)
-{
+void UART_1_ISR(void) {
     irq_handler(UART_DEV(1));
 }
 #endif
 
 #ifdef UART_2_ISR
-void UART_2_ISR(void)
-{
+void UART_2_ISR(void) {
     irq_handler(UART_DEV(2));
 }
 #endif
 
 #ifdef UART_3_ISR
-void UART_3_ISR(void)
-{
+void UART_3_ISR(void) {
     irq_handler(UART_DEV(3));
 }
 #endif
 
 #ifdef UART_4_ISR
-void UART_4_ISR(void)
-{
+void UART_4_ISR(void) {
     irq_handler(UART_DEV(4));
 }
 #endif
 
 #ifdef UART_5_ISR
-void UART_5_ISR(void)
-{
+void UART_5_ISR(void) {
     irq_handler(UART_DEV(5));
 }
 #endif
 
 #ifdef UART_6_ISR
-void UART_6_ISR(void)
-{
+void UART_6_ISR(void) {
     irq_handler(UART_DEV(6));
 }
 #endif
 
 #ifdef UART_7_ISR
-void UART_7_ISR(void)
-{
+void UART_7_ISR(void) {
     irq_handler(UART_DEV(7));
 }
 #endif
 
 #ifdef UART_8_ISR
-void UART_8_ISR(void)
-{
+void UART_8_ISR(void) {
     irq_handler(UART_DEV(8));
 }
 #endif
 
 #ifdef UART_9_ISR
-void UART_9_ISR(void)
-{
+void UART_9_ISR(void) {
     irq_handler(UART_DEV(9));
 }
 #endif

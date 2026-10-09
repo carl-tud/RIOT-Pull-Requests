@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_stm32
- * @{
- *
- * @file
- * @brief       Common configuration for STM32 Timer peripheral based on TIM2,
- *              TIM15, and TIM16
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- */
+/// @ingroup     boards_common_stm32
+/// @{
+///
+/// @file
+/// @brief       Common configuration for STM32 Timer peripheral based on TIM2,
+///              TIM15, and TIM16
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
 
 #include "periph_cpu.h"
 
@@ -22,12 +18,10 @@
 extern "C" {
 #endif
 
-/* Please note: This likely needs some generalization for use in STM32 families
- * other than L4. */
-/**
- * @name   Timer configuration
- * @{
- */
+// Please note: This likely needs some generalization for use in STM32 families
+// other than L4.
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev            = TIM2,
@@ -58,15 +52,15 @@ static const timer_conf_t timer_config[] = {
     },
 };
 
-#define TIMER_0_ISR         isr_tim2            /**< IRQ of timer at idx 0 */
-#define TIMER_1_ISR         isr_tim1_brk_tim15  /**< IRQ of timer at idx 1 */
-#define TIMER_2_ISR         isr_tim1_up_tim16   /**< IRQ of timer at idx 2 */
+#define TIMER_0_ISR         isr_tim2            ///< IRQ of timer at idx 0
+#define TIMER_1_ISR         isr_tim1_brk_tim15  ///< IRQ of timer at idx 1
+#define TIMER_2_ISR         isr_tim1_up_tim16   ///< IRQ of timer at idx 2
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2018 Mesotic SAS
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Mesotic SAS
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the bme680_driver package.
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the bme680_driver package.
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <stdio.h>
 
@@ -25,29 +21,25 @@
 #include "timex.h"
 #include "ztimer.h"
 
-#define BME680_TEST_PERIOD_MS   (5 * MS_PER_SEC)    /* 5s */
+#define BME680_TEST_PERIOD_MS   (5 * MS_PER_SEC)    // 5s
 
 ztimer_t timer;
 
-static void _timer_cb(void *arg)
-{
+static void _timer_cb(void *arg) {
     ztimer_set(ZTIMER_MSEC, &timer, BME680_TEST_PERIOD_MS);
     mutex_unlock(arg);
 }
 
-int main(void)
-{
+int main(void) {
     mutex_t timer_mtx = MUTEX_INIT_LOCKED;
 
     bme680_t dev[BME680_NUMOF];
 
     for (unsigned i = 0; i < BME680_NUMOF; i++) {
-        /*
-         * We use a fix temperature here. The ambient temperature could be
-         * determined by performing a few temperature readings without
-         * operating the gas sensor or by another temperature sensor. Function
-         * bme680_set_ambient_temp can be used at any time to change it.
-         */
+        // We use a fix temperature here. The ambient temperature could be
+        // determined by performing a few temperature readings without
+        // operating the gas sensor or by another temperature sensor. Function
+        // bme680_set_ambient_temp can be used at any time to change it.
         BME680_SENSOR(&dev[i]).amb_temp = 25;
 
         printf("Initialize BME680 sensor %u ... ", i);
@@ -64,18 +56,17 @@ int main(void)
     timer.arg = &timer_mtx;
     ztimer_set(ZTIMER_MSEC, &timer, BME680_TEST_PERIOD_MS);
 
-    while (1)
-    {
+    while (1) {
         struct bme680_field_data data;
 
         for (unsigned i = 0; i < BME680_NUMOF; i++) {
-            /* trigger one measuerment */
+            // trigger one measuerment
             bme680_force_measurement(&dev[i]);
-            /* get the duration for the measurement */
+            // get the duration for the measurement
             int duration = bme680_get_duration(&dev[i]);
-            /* wait for the duration */
+            // wait for the duration
             ztimer_sleep(ZTIMER_MSEC, duration);
-            /* read the data */
+            // read the data
             int res = bme680_get_data(&dev[i], &data);
 
             if (res == 0 && dev[i].sensor.new_fields) {
@@ -86,14 +77,14 @@ int main(void)
                        i, data.temperature / 100, data.temperature % 100,
                        data.pressure,
                        data.humidity / 1000, data.humidity % 1000);
-                /* Avoid using measurements from an unstable heating setup */
+                // Avoid using measurements from an unstable heating setup
                 if (data.status & BME680_GASM_VALID_MSK) {
                     printf(", G = %" PRIu32 " ohms", data.gas_resistance);
                 }
 #else
                 printf("[bme680]: dev=%u T = %.2f degC, P = %.2f Pa, H %.3f %%",
                        i, data.temperature, data.pressure, data.humidity);
-                /* Avoid using measurements from an unstable heating setup */
+                // Avoid using measurements from an unstable heating setup
                 if (data.status & BME680_GASM_VALID_MSK) {
                     printf(", G = %.0f ohms", data.gas_resistance);
                 }
@@ -110,6 +101,6 @@ int main(void)
         printf("+-----------------------------------------+\n");
         mutex_lock(&timer_mtx);
     }
-    /* Should never reach here */
+    // Should never reach here
     return 0;
 }

@@ -1,25 +1,21 @@
-/*
- * Copyright (C) 2018 Freie Universität Berlin
- * Copyright (C) 2019 Kaspar Schleiser <kaspar@schleiser.de>
- *               2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
-/**
- * @ingroup     sys_suit
- * @{
- *
- * @file
- * @brief       SUIT secure OTA firmware upgrade implementation for
- *              CBOR based manifests
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+// Copyright (C) 2018 Freie Universität Berlin
+// Copyright (C) 2019 Kaspar Schleiser <kaspar@schleiser.de>
+//               2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
+/// @ingroup     sys_suit
+/// @{
+///
+/// @file
+/// @brief       SUIT secure OTA firmware upgrade implementation for
+///              CBOR based manifests
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <nanocbor/nanocbor.h>
 #include <string.h>
@@ -35,8 +31,7 @@
 #include "debug.h"
 
 int suit_parse(suit_manifest_t *manifest, const uint8_t *buf,
-                  size_t len)
-{
+                  size_t len) {
     nanocbor_value_t it;
 
     manifest->buf = buf;

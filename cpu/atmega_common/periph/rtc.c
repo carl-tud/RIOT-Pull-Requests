@@ -1,38 +1,33 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-FileCopyrightText: 2023 Gerson Fernando Budke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-FileCopyrightText: 2023 Gerson Fernando Budke
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_periph_rtc
- * @{
- *
- * @file
- * @brief       Basic RTC implementation based on a 1 Hz clock
- *
- * @note        Unlike a real RTC, this emulated version is not guaranteed to keep
- *              time across reboots or deep sleep.
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author      Gerson Fernando Budke <nandojve@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_periph_rtc
+/// @{
+///
+/// @file
+/// @brief       Basic RTC implementation based on a 1 Hz clock
+///
+/// @note        Unlike a real RTC, this emulated version is not guaranteed to keep
+///              time across reboots or deep sleep.
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author      Gerson Fernando Budke <nandojve@gmail.com>
+///
+/// @}
 
 #include "irq.h"
 #include "periph/rtc.h"
 
-/* In .noinit so we don't reset the counter on reboot */
+// In .noinit so we don't reset the counter on reboot
 static struct tm tm_now __attribute__((section(".noinit")));
 static struct tm tm_alarm __attribute__((section(".noinit")));
 
 static rtc_alarm_cb_t alarm_cb;
 static void *alarm_cb_arg;
 
-/* will be called every second */
-static inline void tmr2_ovf_handler(void)
-{
+// will be called every second
+static inline void tmr2_ovf_handler(void) {
     if (++tm_now.tm_sec > 59) {
         rtc_tm_normalize(&tm_now);
     }
@@ -43,37 +38,35 @@ static inline void tmr2_ovf_handler(void)
 }
 AVR8_ISR(TIMER2_OVF_vect, tmr2_ovf_handler);
 
-void rtc_init(void)
-{
+void rtc_init(void) {
     static const struct tm zero = {0};
 
-    /* Disable all timer 2 interrupts */
+    // Disable all timer 2 interrupts
     TIMSK2 = 0;
 
-    /* avoid negative time values on init (uninitialized memory) */
+    // avoid negative time values on init (uninitialized memory)
     if (!rtc_tm_valid(&tm_now)) {
         tm_now = zero;
     }
 
-    /* Select asynchronous 32 kHz clock source */
+    // Select asynchronous 32 kHz clock source
     ASSR = (1 << AS2);
 
-    /* select normal operation */
+    // select normal operation
     TCCR2A = 0x0;
 
-    /* select divider 128 -> 1 Hz */
+    // select divider 128 -> 1 Hz
     TCCR2B = 0x5;
 
-    /* Clear interrupt flags */
+    // Clear interrupt flags
     TIFR2 = (1 << OCF2B) | (1 << OCF2A) | (1 << TOV2);
 
-    /* Enable 8-bit overflow interrupt */
+    // Enable 8-bit overflow interrupt
     TIMSK2 |= (1 << TOIE2);
 }
 
-int rtc_set_time(struct tm *time)
-{
-    /* second starts now */
+int rtc_set_time(struct tm *time) {
+    // second starts now
     TCNT2 = 0;
 
     tm_now = *time;
@@ -81,17 +74,15 @@ int rtc_set_time(struct tm *time)
     return 0;
 }
 
-int rtc_get_time(struct tm *time)
-{
+int rtc_get_time(struct tm *time) {
     uint8_t before;
 
-    /* loop in case of overflow */
+    // loop in case of overflow
     do {
         before = TCNT2;
 
-        /* prevent compiler from reordering memory access to tm_now,
-         * including moving it out of the loop
-         */
+        // prevent compiler from reordering memory access to tm_now,
+        // including moving it out of the loop
         __asm__ volatile ("" : : : "memory");
 
         *time = tm_now;
@@ -100,17 +91,15 @@ int rtc_get_time(struct tm *time)
     return 0;
 }
 
-int rtc_get_time_ms(struct tm *time, uint16_t *ms)
-{
+int rtc_get_time_ms(struct tm *time, uint16_t *ms) {
     uint8_t cnt_before, cnt_after;
 
-    /* loop in case of overflow */
+    // loop in case of overflow
     do {
         cnt_before = TCNT2;
 
-        /* prevent compiler from reordering memory access to tm_now,
-         * including moving it out of the loop
-         */
+        // prevent compiler from reordering memory access to tm_now,
+        // including moving it out of the loop
         __asm__ volatile ("" : : : "memory");
         *time = tm_now;
 
@@ -122,36 +111,31 @@ int rtc_get_time_ms(struct tm *time, uint16_t *ms)
     return 0;
 }
 
-int rtc_get_alarm(struct tm *time)
-{
+int rtc_get_alarm(struct tm *time) {
     *time = tm_alarm;
 
     return 0;
 }
 
-int rtc_set_alarm(struct tm *time, rtc_alarm_cb_t cb, void *arg)
-{
+int rtc_set_alarm(struct tm *time, rtc_alarm_cb_t cb, void *arg) {
     rtc_tm_normalize(time);
 
-    alarm_cb = NULL;    /* disable alarm */
+    alarm_cb = NULL;    // disable alarm
     tm_alarm = *time;
     alarm_cb_arg = arg;
-    alarm_cb = cb;      /* enable alarm */
+    alarm_cb = cb;      // enable alarm
 
     return 0;
 }
 
-void rtc_clear_alarm(void)
-{
+void rtc_clear_alarm(void) {
     alarm_cb = NULL;
 }
 
-void rtc_poweron(void)
-{
+void rtc_poweron(void) {
     power_timer2_enable();
 }
 
-void rtc_poweroff(void)
-{
+void rtc_poweroff(void) {
     power_timer2_disable();
 }

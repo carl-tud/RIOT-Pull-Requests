@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -51,14 +47,10 @@ static char _stack[GNRC_IPV6_STACK_SIZE + DEBUG_EXTRA_STACKSIZE];
 static msg_t _msg_q[GNRC_IPV6_MSG_QUEUE_SIZE];
 
 #ifdef MODULE_FIB
-/**
- * @brief buffer to store the entries in the IPv6 forwarding table
- */
+/// @brief buffer to store the entries in the IPv6 forwarding table
 static fib_entry_t _fib_entries[GNRC_IPV6_FIB_TABLE_SIZE];
 
-/**
- * @brief the IPv6 forwarding table
- */
+/// @brief the IPv6 forwarding table
 fib_table_t gnrc_ipv6_fib_table;
 #endif
 
@@ -66,21 +58,20 @@ static char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
 kernel_pid_t gnrc_ipv6_pid = KERNEL_PID_UNDEF;
 
-/* handles GNRC_NETAPI_MSG_TYPE_RCV commands */
+// handles GNRC_NETAPI_MSG_TYPE_RCV commands
 static void _receive(gnrc_pktsnip_t *pkt);
-/* Sends packet over the appropriate interface(s).
- * prep_hdr: prepare header for sending (call to _fill_ipv6_hdr()), otherwise
- * assume it is already prepared */
+// Sends packet over the appropriate interface(s).
+// prep_hdr: prepare header for sending (call to _fill_ipv6_hdr()), otherwise
+// assume it is already prepared
 static void _send(gnrc_pktsnip_t *pkt, bool prep_hdr);
 
 #ifdef MODULE_GNRC_IPV6_EXT_FRAG
 static void _send_by_netif_hdr(gnrc_pktsnip_t *pkt);
-#endif  /* MODULE_GNRC_IPV6_EXT_FRAG */
-/* Main event loop for IPv6 */
+#endif  // MODULE_GNRC_IPV6_EXT_FRAG
+// Main event loop for IPv6
 static void *_event_loop(void *args);
 
-kernel_pid_t gnrc_ipv6_init(void)
-{
+kernel_pid_t gnrc_ipv6_init(void) {
     if (gnrc_ipv6_pid == KERNEL_PID_UNDEF) {
         gnrc_ipv6_pid = thread_create(_stack, sizeof(_stack), GNRC_IPV6_PRIO,
                                       0,
@@ -103,13 +94,12 @@ static void _dispatch_next_header(gnrc_pktsnip_t *pkt, unsigned nh,
 static inline bool _gnrc_ipv6_is_interested(unsigned nh) {
 #ifdef MODULE_GNRC_ICMPV6
     return (nh == PROTNUM_ICMPV6);
-#else  /* MODULE_GNRC_ICMPV6 */
+#else  // MODULE_GNRC_ICMPV6
     return false;
-#endif /* MODULE_GNRC_ICMPV6 */
+#endif // MODULE_GNRC_ICMPV6
 }
 
-static void _demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt, unsigned nh)
-{
+static void _demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt, unsigned nh) {
     pkt->type = gnrc_nettype_from_protnum(nh);
     _dispatch_next_header(pkt, nh, _gnrc_ipv6_is_interested(nh));
     switch (nh) {
@@ -118,14 +108,13 @@ static void _demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt, unsigned nh)
             DEBUG("ipv6: handle ICMPv6 packet (nh = %u)\n", nh);
             gnrc_icmpv6_demux(netif, pkt);
             break;
-#endif /* MODULE_GNRC_ICMPV6 */
+#endif // MODULE_GNRC_ICMPV6
         default:
             break;
     }
 }
 
-ipv6_hdr_t *gnrc_ipv6_get_header(gnrc_pktsnip_t *pkt)
-{
+ipv6_hdr_t *gnrc_ipv6_get_header(gnrc_pktsnip_t *pkt) {
     gnrc_pktsnip_t *tmp = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_IPV6);
     if (tmp == NULL) {
         return NULL;
@@ -138,10 +127,9 @@ ipv6_hdr_t *gnrc_ipv6_get_header(gnrc_pktsnip_t *pkt)
     return ((ipv6_hdr_t*) tmp->data);
 }
 
-/* internal functions */
+// internal functions
 static void _dispatch_next_header(gnrc_pktsnip_t *pkt, unsigned nh,
-                                  bool interested)
-{
+                                  bool interested) {
     const bool has_nh_subs = (gnrc_netreg_num(GNRC_NETTYPE_IPV6, nh) > 0) ||
                              interested;
 
@@ -157,7 +145,7 @@ static void _dispatch_next_header(gnrc_pktsnip_t *pkt, unsigned nh,
         gnrc_pktbuf_release(pkt);
     }
     if (!has_nh_subs) {
-        /* we should exit early. pkt was already released above */
+        // we should exit early. pkt was already released above
         return;
     }
     if (interested) {
@@ -169,18 +157,15 @@ static void _dispatch_next_header(gnrc_pktsnip_t *pkt, unsigned nh,
     }
 }
 
-/**
- * @brief   Find entry in NIB neighbor cache.
- *
- * @param[in] l2addr        Layer 2 address of the neighbor.
- * @param[in] l2addr_len    Length of @p l2addr.
- * @param[out] ipv6         IPv6 address of the neighbor or NULL.
- *
- * @retval  True if a neighbor with @p l2addr was found in the nc.
- * @retval  False otherwise.
- */
-static inline bool _find_entry_in_nc(uint8_t *l2addr, uint8_t l2addr_len, ipv6_addr_t *ipv6)
-{
+/// @brief   Find entry in NIB neighbor cache.
+///
+/// @param[in] l2addr        Layer 2 address of the neighbor.
+/// @param[in] l2addr_len    Length of @p l2addr.
+/// @param[out] ipv6         IPv6 address of the neighbor or NULL.
+///
+/// @retval  True if a neighbor with @p l2addr was found in the nc.
+/// @retval  False otherwise.
+static inline bool _find_entry_in_nc(uint8_t *l2addr, uint8_t l2addr_len, ipv6_addr_t *ipv6) {
     void *state = NULL;
     gnrc_ipv6_nib_nc_t nce;
 
@@ -193,64 +178,55 @@ static inline bool _find_entry_in_nc(uint8_t *l2addr, uint8_t l2addr_len, ipv6_a
     return false;
 }
 
-/**
- * @brief   Handle a link-layer connection-established event.
- *
- * @param[in] if_pid        Network interface of the connection.
- * @param[in] l2addr        L2 address of the node on the connection.
- * @param[in] l2addr_len    Length of @p l2addr.
- */
-static inline void _on_l2_connected(kernel_pid_t if_pid, uint8_t *l2addr, uint8_t l2addr_len)
-{
+/// @brief   Handle a link-layer connection-established event.
+///
+/// @param[in] if_pid        Network interface of the connection.
+/// @param[in] l2addr        L2 address of the node on the connection.
+/// @param[in] l2addr_len    Length of @p l2addr.
+static inline void _on_l2_connected(kernel_pid_t if_pid, uint8_t *l2addr, uint8_t l2addr_len) {
     (void)if_pid;
 
     ipv6_addr_t ipv6;
 
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_6LN)
-    /* Add neighbor to neighbor cache if interface represents a 6LN. */
+    // Add neighbor to neighbor cache if interface represents a 6LN.
     gnrc_ipv6_nib_nc_set_6ln(if_pid, l2addr, l2addr_len);
-#endif /* CONFIG_GNRC_IPV6_NIB_6LN */
+#endif // CONFIG_GNRC_IPV6_NIB_6LN
 
-    /* Inform routing layer of new reachable neighbor. */
+    // Inform routing layer of new reachable neighbor.
     if (_find_entry_in_nc(l2addr, l2addr_len, &ipv6)) {
         gnrc_netapi_notify(GNRC_NETTYPE_L3_ROUTING, GNRC_NETREG_DEMUX_CTX_ALL,
                            NETAPI_NOTIFY_L3_DISCOVERED, &ipv6, sizeof(ipv6_addr_t));
     }
 }
 
-/**
- * @brief   Handle a link-layer connection-closed event.
- *
- * @param[in] if_pid        Network interface of the connection.
- * @param[in] l2addr        L2 address of the node on the connection.
- * @param[in] l2addr_len    Length of @p l2addr.
- */
-static inline void _on_l2_disconnected(kernel_pid_t if_pid, uint8_t *l2addr, uint8_t l2addr_len)
-{
+/// @brief   Handle a link-layer connection-closed event.
+///
+/// @param[in] if_pid        Network interface of the connection.
+/// @param[in] l2addr        L2 address of the node on the connection.
+/// @param[in] l2addr_len    Length of @p l2addr.
+static inline void _on_l2_disconnected(kernel_pid_t if_pid, uint8_t *l2addr, uint8_t l2addr_len) {
     (void)if_pid;
 
     ipv6_addr_t ipv6;
 
-    /* Inform routing layer of unreachable neighbor. This must be done *before* removing
-       the neighbor from the neighbor cache. */
+    // Inform routing layer of unreachable neighbor. This must be done *before* removing
+    //    the neighbor from the neighbor cache.
     if (_find_entry_in_nc(l2addr, l2addr_len, &ipv6)) {
         gnrc_netapi_notify(GNRC_NETTYPE_L3_ROUTING, GNRC_NETREG_DEMUX_CTX_ALL,
                            NETAPI_NOTIFY_L3_UNREACHABLE, &ipv6, sizeof(ipv6_addr_t));
     }
 
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_ARSM)
-    /* Remove from neighbor cache. */
+    // Remove from neighbor cache.
     gnrc_ipv6_nib_nc_del_l2(if_pid, l2addr, l2addr_len);
-#endif /* CONFIG_GNRC_IPV6_NIB_ARSM */
+#endif // CONFIG_GNRC_IPV6_NIB_ARSM
 }
 
-/**
- * @brief   Handles a netapi event notification.
- *
- * @param[in] notify    The type of notification.
- */
-static inline void _netapi_notify_event(gnrc_netapi_notify_t *notify)
-{
+/// @brief   Handles a netapi event notification.
+///
+/// @param[in] notify    The type of notification.
+static inline void _netapi_notify_event(gnrc_netapi_notify_t *notify) {
     if (!IS_USED(MODULE_GNRC_NETAPI_NOTIFY)) {
         return;
     }
@@ -276,39 +252,38 @@ static inline void _netapi_notify_event(gnrc_netapi_notify_t *notify)
     }
 }
 
-static void *_event_loop(void *args)
-{
+static void *_event_loop(void *args) {
     msg_t msg, reply;
 
-    /* Register entry for messages in IPv6 context. */
+    // Register entry for messages in IPv6 context.
     gnrc_netreg_entry_t me_ipv6_reg = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX_CTX_ALL,
                                                                  thread_getpid());
 #ifdef MODULE_GNRC_NETAPI_NOTIFY
-    /* Register entry for messages in L2 discovery context. */
+    // Register entry for messages in L2 discovery context.
     gnrc_netreg_entry_t me_discovery_reg = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX_CTX_ALL,
                                                                       thread_getpid());
-#endif /* MODULE_GNRC_NETAPI_NOTIFY */
+#endif // MODULE_GNRC_NETAPI_NOTIFY
 
     (void)args;
     msg_init_queue(_msg_q, GNRC_IPV6_MSG_QUEUE_SIZE);
 
-    /* initialize fragmentation data-structures */
+    // initialize fragmentation data-structures
 #ifdef MODULE_GNRC_IPV6_EXT_FRAG
     gnrc_ipv6_ext_frag_init();
-#endif  /* MODULE_GNRC_IPV6_EXT_FRAG */
+#endif  // MODULE_GNRC_IPV6_EXT_FRAG
 
-    /* Register interest in all IPv6 packets. */
+    // Register interest in all IPv6 packets.
     gnrc_netreg_register(GNRC_NETTYPE_IPV6, &me_ipv6_reg);
 
 #ifdef MODULE_GNRC_NETAPI_NOTIFY
-    /* Register interest in L2 neighbor discovery info. */
+    // Register interest in L2 neighbor discovery info.
     gnrc_netreg_register(GNRC_NETTYPE_L2_DISCOVERY, &me_discovery_reg);
-#endif /* MODULE_GNRC_NETAPI_NOTIFY */
+#endif // MODULE_GNRC_NETAPI_NOTIFY
 
-    /* preinitialize ACK */
+    // preinitialize ACK
     reply.type = GNRC_NETAPI_MSG_TYPE_ACK;
 
-    /* start event loop */
+    // start event loop
     while (1) {
         DEBUG("ipv6: waiting for incoming message.\n");
         msg_receive(&msg);
@@ -346,7 +321,7 @@ static void *_event_loop(void *args)
                 DEBUG("ipv6: send fragment\n");
                 _send_by_netif_hdr(msg.content.ptr);
                 break;
-#endif  /* MODULE_GNRC_IPV6_EXT_FRAG */
+#endif  // MODULE_GNRC_IPV6_EXT_FRAG
             case GNRC_IPV6_NIB_SND_UC_NS:
             case GNRC_IPV6_NIB_SND_MC_NS:
             case GNRC_IPV6_NIB_SND_NA:
@@ -380,11 +355,10 @@ static void *_event_loop(void *args)
     return NULL;
 }
 
-static void _send_to_iface(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
-{
+static void _send_to_iface(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt) {
     const ipv6_hdr_t *hdr = pkt->next->data;
 
-    (void)hdr;  /* only used for DEBUG messages */
+    (void)hdr;  // only used for DEBUG messages
     assert(netif != NULL);
     gnrc_netif_hdr_set_netif(pkt->data, netif);
     if (gnrc_pkt_len(pkt->next) > netif->ipv6.mtu) {
@@ -399,8 +373,8 @@ static void _send_to_iface(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
           ipv6_addr_to_str(addr_str, &hdr->dst, sizeof(addr_str)), hdr->nh,
           byteorder_ntohs(hdr->len));
 #ifdef MODULE_NETSTATS_IPV6
-    /* This is read from the netif thread. To prevent data corruptions, we
-     * have to guarantee mutually exclusive access */
+    // This is read from the netif thread. To prevent data corruptions, we
+    // have to guarantee mutually exclusive access
     unsigned irq_state = irq_disable();
     netif->ipv6.stats.tx_success++;
     netif->ipv6.stats.tx_bytes += gnrc_pkt_len(pkt->next);
@@ -426,8 +400,7 @@ static void _send_to_iface(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
 static gnrc_pktsnip_t *_create_netif_hdr(uint8_t *dst_l2addr,
                                          unsigned dst_l2addr_len,
                                          gnrc_pktsnip_t *pkt,
-                                         uint8_t flags)
-{
+                                         uint8_t flags) {
     gnrc_pktsnip_t *netif_hdr = gnrc_netif_hdr_build(NULL, 0, dst_l2addr, dst_l2addr_len);
     gnrc_netif_hdr_t *hdr;
 
@@ -437,16 +410,15 @@ static gnrc_pktsnip_t *_create_netif_hdr(uint8_t *dst_l2addr,
         return NULL;
     }
     hdr = netif_hdr->data;
-    /* previous netif header might have been allocated by some higher layer
-     * to provide some flags (provided to us via netif_flags). */
+    // previous netif header might have been allocated by some higher layer
+    // to provide some flags (provided to us via netif_flags).
     hdr->flags = flags;
 
-    /* add netif_hdr to front of the pkt list */
+    // add netif_hdr to front of the pkt list
     return gnrc_pkt_prepend(pkt, netif_hdr);
 }
 
-static bool _is_ipv6_hdr(gnrc_pktsnip_t *hdr)
-{
+static bool _is_ipv6_hdr(gnrc_pktsnip_t *hdr) {
 #ifdef MODULE_GNRC_IPV6_EXT
     return (hdr->type == GNRC_NETTYPE_IPV6) ||
            (hdr->type == GNRC_NETTYPE_IPV6_EXT);
@@ -455,8 +427,7 @@ static bool _is_ipv6_hdr(gnrc_pktsnip_t *hdr)
 #endif
 }
 
-static int _fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *ipv6)
-{
+static int _fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *ipv6) {
     int res;
     ipv6_hdr_t *hdr = ipv6->data;
     gnrc_pktsnip_t *payload, *prev;
@@ -465,7 +436,7 @@ static int _fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *ipv6)
     DEBUG("ipv6: set payload length to %u (network byteorder %04" PRIx16 ")\n",
           (unsigned)byteorder_ntohs(hdr->len), hdr->len.u16);
 
-    /* check if e.g. extension header was not already marked */
+    // check if e.g. extension header was not already marked
     if (hdr->nh == PROTNUM_RESERVED) {
         if (ipv6->next == NULL) {
             hdr->nh = PROTNUM_IPV6_NONXT;
@@ -473,7 +444,7 @@ static int _fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *ipv6)
         else {
             hdr->nh = gnrc_nettype_to_protnum(ipv6->next->type);
 
-            /* if still reserved: mark no next header */
+            // if still reserved: mark no next header
             if (hdr->nh == PROTNUM_RESERVED) {
                 hdr->nh = PROTNUM_IPV6_NONXT;
             }
@@ -504,7 +475,7 @@ static int _fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *ipv6)
                       ipv6_addr_to_str(addr_str, src, sizeof(addr_str)));
                 memcpy(&hdr->src, src, sizeof(ipv6_addr_t));
             }
-            /* Otherwise leave unspecified */
+            // Otherwise leave unspecified
         }
     }
     else {
@@ -532,11 +503,11 @@ static int _fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *ipv6)
                       ipv6_addr_to_str(addr_str, &hdr->src, sizeof(addr_str)));
                 return -EADDRNOTAVAIL;
             }
-#else   /* CONFIG_GNRC_IPV6_NIB_6LN */
+#else   // CONFIG_GNRC_IPV6_NIB_6LN
             DEBUG("ipv6: preset packet source address %s is invalid\n",
                   ipv6_addr_to_str(addr_str, &hdr->src, sizeof(addr_str)));
             return -EADDRNOTAVAIL;
-#endif  /* CONFIG_GNRC_IPV6_NIB_6LN */
+#endif  // CONFIG_GNRC_IPV6_NIB_6LN
         }
     }
 
@@ -544,12 +515,12 @@ static int _fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *ipv6)
     payload = ipv6;
     prev = ipv6;
     while (_is_ipv6_hdr(payload) && (payload->next != NULL)) {
-        /* IPv6 header itself was already write-protected in caller function,
-         * just write protect extension headers and payload header */
+        // IPv6 header itself was already write-protected in caller function,
+        // just write protect extension headers and payload header
         if ((payload = gnrc_pktbuf_start_write(payload->next)) == NULL) {
             DEBUG("ipv6: unable to get write access to IPv6 extension or payload header\n");
-            /* packet duplicated to this point will be released by caller,
-             * original packet by other subscriber */
+            // packet duplicated to this point will be released by caller,
+            // original packet by other subscriber
             return -ENOMEM;
         }
         prev->next = payload;
@@ -557,9 +528,9 @@ static int _fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *ipv6)
     }
     DEBUG("ipv6: calculate checksum for upper header.\n");
     if ((res = gnrc_netreg_calc_csum(payload, ipv6)) < 0) {
-        if (res != -ENOENT) {   /* if there is no checksum we are okay */
+        if (res != -ENOENT) {   // if there is no checksum we are okay
             DEBUG("ipv6: checksum calculation failed.\n");
-            /* packet will be released by caller */
+            // packet will be released by caller
             return res;
         }
     }
@@ -568,23 +539,21 @@ static int _fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *ipv6)
 }
 
 static bool _safe_fill_ipv6_hdr(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt,
-                                bool prep_hdr)
-{
+                                bool prep_hdr) {
     if (prep_hdr && (_fill_ipv6_hdr(netif, pkt) < 0)) {
-        /* error on filling up header */
+        // error on filling up header
         gnrc_pktbuf_release(pkt);
         return false;
     }
     return true;
 }
 
-/* functions for sending */
+// functions for sending
 static bool _fragment_pkt_if_needed(gnrc_pktsnip_t *pkt,
                                     gnrc_netif_t *netif,
-                                    bool from_me)
-{
+                                    bool from_me) {
 #ifdef MODULE_GNRC_IPV6_EXT_FRAG
-    /* TODO: get path MTU when PMTU discovery is implemented */
+    // TODO: get path MTU when PMTU discovery is implemented
     unsigned path_mtu = netif->ipv6.mtu;
 
     if (from_me && (gnrc_pkt_len(pkt->next) > path_mtu)) {
@@ -593,34 +562,32 @@ static bool _fragment_pkt_if_needed(gnrc_pktsnip_t *pkt,
         gnrc_ipv6_ext_frag_send_pkt(pkt, path_mtu);
         return true;
     }
-#else   /* MODULE_GNRC_IPV6_EXT_FRAG */
+#else   // MODULE_GNRC_IPV6_EXT_FRAG
     (void)pkt;
     (void)netif;
     (void)from_me;
-#endif  /* MODULE_GNRC_IPV6_EXT_FRAG */
+#endif  // MODULE_GNRC_IPV6_EXT_FRAG
     return false;
 }
 
 #ifdef MODULE_GNRC_IPV6_EXT_FRAG
-static void _send_by_netif_hdr(gnrc_pktsnip_t *pkt)
-{
+static void _send_by_netif_hdr(gnrc_pktsnip_t *pkt) {
     assert(pkt->type == GNRC_NETTYPE_NETIF);
     gnrc_netif_t *netif = gnrc_netif_hdr_get_netif(pkt->data);
 
     _send_to_iface(netif, pkt);
 }
-#endif  /* MODULE_GNRC_IPV6_EXT_FRAG */
+#endif  // MODULE_GNRC_IPV6_EXT_FRAG
 
 static void _send_unicast(gnrc_pktsnip_t *pkt, bool prep_hdr,
                           gnrc_netif_t *netif, ipv6_hdr_t *ipv6_hdr,
-                          uint8_t netif_hdr_flags)
-{
+                          uint8_t netif_hdr_flags) {
     gnrc_ipv6_nib_nc_t nce;
 
     DEBUG("ipv6: send unicast\n");
     if (gnrc_ipv6_nib_get_next_hop_l2addr(&ipv6_hdr->dst, netif, pkt,
                                           &nce) < 0) {
-        /* packet is released by NIB */
+        // packet is released by NIB
         DEBUG("ipv6: no link-layer address or interface for next hop to %s\n",
               ipv6_addr_to_str(addr_str, &ipv6_hdr->dst, sizeof(addr_str)));
         return;
@@ -633,17 +600,17 @@ static void _send_unicast(gnrc_pktsnip_t *pkt, bool prep_hdr,
                                      netif_hdr_flags)) == NULL) {
             return;
         }
-        /* prep_hdr => The packet is from me */
+        // prep_hdr => The packet is from me
         if (_fragment_pkt_if_needed(pkt, netif, prep_hdr)) {
             DEBUG("ipv6: packet is fragmented\n");
             return;
         }
         DEBUG("ipv6: send unicast over interface %" PRIkernel_pid "\n",
               netif->pid);
-        /* and send to interface */
+        // and send to interface
 #ifdef MODULE_NETSTATS_IPV6
-        /* This is read from the netif thread. To prevent data corruptions, we
-         * have to guarantee mutually exclusive access */
+        // This is read from the netif thread. To prevent data corruptions, we
+        // have to guarantee mutually exclusive access
         unsigned irq_state = irq_disable();
         netif->ipv6.stats.tx_unicast_count++;
         irq_restore(irq_state);
@@ -655,38 +622,36 @@ static void _send_unicast(gnrc_pktsnip_t *pkt, bool prep_hdr,
 static inline void _send_multicast_over_iface(gnrc_pktsnip_t *pkt,
                                               bool prep_hdr,
                                               gnrc_netif_t *netif,
-                                              uint8_t netif_hdr_flags)
-{
+                                              uint8_t netif_hdr_flags) {
     if ((pkt = _create_netif_hdr(NULL, 0, pkt,
                                  netif_hdr_flags |
                                  GNRC_NETIF_HDR_FLAGS_MULTICAST)) == NULL) {
         return;
     }
-    /* prep_hdr => The packet is from me */
+    // prep_hdr => The packet is from me
     if (_fragment_pkt_if_needed(pkt, netif, prep_hdr)) {
         DEBUG("ipv6: packet is fragmented\n");
         return;
     }
     DEBUG("ipv6: send multicast over interface %" PRIkernel_pid "\n", netif->pid);
 #ifdef MODULE_NETSTATS_IPV6
-    /* This is read from the netif thread. To prevent data corruptions, we
-     * have to guarantee mutually exclusive access */
+    // This is read from the netif thread. To prevent data corruptions, we
+    // have to guarantee mutually exclusive access
     unsigned irq_state = irq_disable();
     netif->ipv6.stats.tx_mcast_count++;
     irq_restore(irq_state);
 #endif
-    /* and send to interface */
+    // and send to interface
     _send_to_iface(netif, pkt);
 }
 
 static void _send_multicast(gnrc_pktsnip_t *pkt, bool prep_hdr,
-                            gnrc_netif_t *netif, uint8_t netif_hdr_flags)
-{
+                            gnrc_netif_t *netif, uint8_t netif_hdr_flags) {
     size_t ifnum = 0;
 
     if (netif == NULL) {
         ifnum = gnrc_netif_numof();
-        /* throw away packet if no one is interested */
+        // throw away packet if no one is interested
         if (ifnum == 0) {
             DEBUG("ipv6: no interfaces registered, dropping packet\n");
             gnrc_pktbuf_release(pkt);
@@ -695,20 +660,20 @@ static void _send_multicast(gnrc_pktsnip_t *pkt, bool prep_hdr,
     }
 
     if (!gnrc_netif_highlander()) {
-        /* interface not given: send over all interfaces */
+        // interface not given: send over all interfaces
         if (netif == NULL) {
-            /* the packet is replicated over all interfaces that it's being sent on */
+            // the packet is replicated over all interfaces that it's being sent on
             gnrc_pktbuf_hold(pkt, ifnum - 1);
 
             while ((netif = gnrc_netif_iter(netif))) {
                 gnrc_pktsnip_t *send_pkt = pkt;
-                /* for !prep_hdr just use pkt as we don't duplicate IPv6 header as
-                 * it is already filled and thus isn't filled with potentially
-                 * interface-specific data */
+                // for !prep_hdr just use pkt as we don't duplicate IPv6 header as
+                // it is already filled and thus isn't filled with potentially
+                // interface-specific data
                 if (prep_hdr) {
                     DEBUG("ipv6: prepare IPv6 header for sending\n");
-                    /* need to get second write access (duplication) to fill IPv6
-                     * header with interface-specific data */
+                    // need to get second write access (duplication) to fill IPv6
+                    // header with interface-specific data
                     send_pkt = gnrc_pktbuf_start_write(pkt);
 
                     if (send_pkt == NULL) {
@@ -718,7 +683,7 @@ static void _send_multicast(gnrc_pktsnip_t *pkt, bool prep_hdr,
                         return;
                     }
                     if (_fill_ipv6_hdr(netif, send_pkt) < 0) {
-                        /* error on filling up header */
+                        // error on filling up header
                         if (send_pkt != pkt) {
                             gnrc_pktbuf_release(send_pkt);
                         }
@@ -737,11 +702,11 @@ static void _send_multicast(gnrc_pktsnip_t *pkt, bool prep_hdr,
         }
     }
     else {
-        (void)ifnum; /* not used in this build branch */
+        (void)ifnum; // not used in this build branch
         if (netif == NULL) {
             netif = gnrc_netif_iter(NULL);
 
-            /* allocate interface header */
+            // allocate interface header
             if ((pkt = _create_netif_hdr(NULL, 0, pkt, netif_hdr_flags)) == NULL) {
                 return;
             }
@@ -753,14 +718,13 @@ static void _send_multicast(gnrc_pktsnip_t *pkt, bool prep_hdr,
 }
 
 static void _send_to_self(gnrc_pktsnip_t *pkt, bool prep_hdr,
-                          gnrc_netif_t *netif)
-{
-    /* _safe_fill_ipv6_hdr releases pkt on error */
+                          gnrc_netif_t *netif) {
+    // _safe_fill_ipv6_hdr releases pkt on error
     if (!_safe_fill_ipv6_hdr(netif, pkt, prep_hdr)) {
         DEBUG("ipv6: error looping packet to sender.\n");
         return;
     }
-    /* no netif header so we just merge the whole packet. */
+    // no netif header so we just merge the whole packet.
     else if (gnrc_pktbuf_merge(pkt) != 0) {
         DEBUG("ipv6: error looping packet to sender.\n");
         gnrc_pktbuf_release(pkt);
@@ -777,24 +741,23 @@ static void _send_to_self(gnrc_pktsnip_t *pkt, bool prep_hdr,
     }
 }
 
-static void _send(gnrc_pktsnip_t *pkt, bool prep_hdr)
-{
+static void _send(gnrc_pktsnip_t *pkt, bool prep_hdr) {
     gnrc_netif_t *netif = NULL;
     gnrc_pktsnip_t *tmp_pkt;
     ipv6_hdr_t *ipv6_hdr;
     uint8_t netif_hdr_flags = 0U;
 
-    /* get IPv6 snip and (if present) generic interface header */
+    // get IPv6 snip and (if present) generic interface header
     if (pkt->type == GNRC_NETTYPE_NETIF) {
-        /* If there is already a netif header (routing protocols and
-         * neighbor discovery might add them to preset sending interface or
-         * higher layers wants to provide flags to the interface ) */
+        // If there is already a netif header (routing protocols and
+        // neighbor discovery might add them to preset sending interface or
+        // higher layers wants to provide flags to the interface )
         const gnrc_netif_hdr_t *netif_hdr = pkt->data;
 
         netif = gnrc_netif_hdr_get_netif(pkt->data);
-        /* discard broadcast and multicast flags because those could be
-         * potentially wrong (dst is later checked to assure that multicast is
-         * set if dst is a multicast address) */
+        // discard broadcast and multicast flags because those could be
+        // potentially wrong (dst is later checked to assure that multicast is
+        // set if dst is a multicast address)
         netif_hdr_flags = netif_hdr->flags &
                           ~(GNRC_NETIF_HDR_FLAGS_BROADCAST |
                             GNRC_NETIF_HDR_FLAGS_MULTICAST);
@@ -805,11 +768,11 @@ static void _send(gnrc_pktsnip_t *pkt, bool prep_hdr)
             gnrc_pktbuf_release(pkt);
             return;
         }
-        /* discard to avoid complex checks for correctness (will be re-added
-         * with correct addresses anyway as for the case were there is no
-         * netif header provided)
-         * Also re-establish temporary pointer used for write protection as
-         * actual pointer */
+        // discard to avoid complex checks for correctness (will be re-added
+        // with correct addresses anyway as for the case were there is no
+        // netif header provided)
+        // Also re-establish temporary pointer used for write protection as
+        // actual pointer
         pkt = gnrc_pktbuf_remove_snip(tmp_pkt, tmp_pkt);
     }
     if (pkt->type != GNRC_NETTYPE_IPV6) {
@@ -839,13 +802,13 @@ static void _send(gnrc_pktsnip_t *pkt, bool prep_hdr)
     else {
         gnrc_netif_t *tmp_netif = gnrc_netif_get_by_ipv6_addr(&ipv6_hdr->dst);
 
-        /* only consider link-local addresses on the interface we are sending on */
+        // only consider link-local addresses on the interface we are sending on
         if (tmp_netif != netif && ipv6_addr_is_link_local(&ipv6_hdr->dst)) {
             tmp_netif = NULL;
         }
 
-        if (ipv6_addr_is_loopback(&ipv6_hdr->dst) ||    /* dst is loopback address */
-            /* or dst registered to a local interface */
+        if (ipv6_addr_is_loopback(&ipv6_hdr->dst) ||    // dst is loopback address
+            // or dst registered to a local interface
             (tmp_netif != NULL)) {
             _send_to_self(pkt, prep_hdr, tmp_netif);
         }
@@ -855,9 +818,8 @@ static void _send(gnrc_pktsnip_t *pkt, bool prep_hdr)
     }
 }
 
-/* functions for receiving */
-static inline bool _pkt_not_for_me(gnrc_netif_t **netif, ipv6_hdr_t *hdr)
-{
+// functions for receiving
+static inline bool _pkt_not_for_me(gnrc_netif_t **netif, ipv6_hdr_t *hdr) {
     if (ipv6_addr_is_loopback(&hdr->dst)) {
         return false;
     }
@@ -871,8 +833,7 @@ static inline bool _pkt_not_for_me(gnrc_netif_t **netif, ipv6_hdr_t *hdr)
     }
 }
 
-static void _receive(gnrc_pktsnip_t *pkt)
-{
+static void _receive(gnrc_pktsnip_t *pkt) {
     gnrc_netif_t *netif = NULL;
     gnrc_pktsnip_t *ipv6, *netif_hdr;
     ipv6_hdr_t *hdr;
@@ -886,8 +847,8 @@ static void _receive(gnrc_pktsnip_t *pkt)
         netif = gnrc_netif_hdr_get_netif(netif_hdr->data);
 #ifdef MODULE_NETSTATS_IPV6
         assert(netif != NULL);
-        /* This is read from the netif thread. To prevent data corruptions, we
-         * have to guarantee mutually exclusive access */
+        // This is read from the netif thread. To prevent data corruptions, we
+        // have to guarantee mutually exclusive access
         unsigned irq_state = irq_disable();
         netstats_t *stats = &netif->ipv6.stats;
         stats->rx_count++;
@@ -918,7 +879,7 @@ static void _receive(gnrc_pktsnip_t *pkt)
         return;
     }
 #endif
-    /* seize ipv6 as a temporary variable */
+    // seize ipv6 as a temporary variable
     ipv6 = gnrc_pktbuf_start_write(pkt);
 
     if (ipv6 == NULL) {
@@ -927,24 +888,24 @@ static void _receive(gnrc_pktsnip_t *pkt)
         return;
     }
 
-    pkt = ipv6;     /* reset pkt from temporary variable */
+    pkt = ipv6;     // reset pkt from temporary variable
 
     ipv6 = gnrc_pktbuf_mark(pkt, sizeof(ipv6_hdr_t), GNRC_NETTYPE_IPV6);
 
-    pkt->type = GNRC_NETTYPE_UNDEF; /* snip is no longer IPv6 */
+    pkt->type = GNRC_NETTYPE_UNDEF; // snip is no longer IPv6
 
     if (ipv6 == NULL) {
         DEBUG("ipv6: error marking IPv6 header, dropping packet\n");
         gnrc_pktbuf_release(pkt);
         return;
     }
-    /* extract header */
+    // extract header
     hdr = (ipv6_hdr_t *)ipv6->data;
 
     if (hdr->hl == 0) {
-        /* This is an illegal value in any case, not just in case of a
-         * forwarding step, so *do not* check it together with ((--hdr->hl) > 0)
-         * in forwarding code below */
+        // This is an illegal value in any case, not just in case of a
+        // forwarding step, so *do not* check it together with ((--hdr->hl) > 0)
+        // in forwarding code below
         DEBUG("ipv6: packet was received with hop-limit 0\n");
         gnrc_icmpv6_error_time_exc_send(ICMPV6_ERROR_TIME_EXC_HL, pkt);
         gnrc_pktbuf_release_error(pkt, ETIMEDOUT);
@@ -955,13 +916,13 @@ static void _receive(gnrc_pktsnip_t *pkt)
     first_nh = hdr->nh;
 
     if ((ipv6_len == 0) && (first_nh != PROTNUM_IPV6_NONXT)) {
-        /* this doesn't even make sense */
+        // this doesn't even make sense
         DEBUG("ipv6: payload length 0, but next header not NONXT\n");
         gnrc_pktbuf_release(pkt);
         return;
     }
-    /* if available, remove any padding that was added by lower layers
-     * to fulfill their minimum size requirements (e.g. ethernet) */
+    // if available, remove any padding that was added by lower layers
+    // to fulfill their minimum size requirements (e.g. ethernet)
     else if ((ipv6 != pkt) && (ipv6_len < pkt->size)) {
         gnrc_pktbuf_realloc_data(pkt, byteorder_ntohs(hdr->len));
     }
@@ -986,17 +947,16 @@ static void _receive(gnrc_pktsnip_t *pkt)
               "consumed due to it\n");
         return;
     }
-    if (_pkt_not_for_me(&netif, hdr)) { /* if packet is not for me */
+    if (_pkt_not_for_me(&netif, hdr)) { // if packet is not for me
         DEBUG("ipv6: packet destination not this host\n");
 
-#ifdef MODULE_GNRC_IPV6_ROUTER    /* only routers redirect */
-        /* redirect to next hop */
+#ifdef MODULE_GNRC_IPV6_ROUTER    // only routers redirect
+        // redirect to next hop
         DEBUG("ipv6: decrement hop limit to %u\n", (uint8_t) (hdr->hl - 1));
 
-        /* RFC 4291, section 2.5.6 states: "Routers must not forward any
-         * packets with Link-Local source or destination addresses to other
-         * links."
-         */
+        // RFC 4291, section 2.5.6 states: "Routers must not forward any
+        // packets with Link-Local source or destination addresses to other
+        // links."
         if ((ipv6_addr_is_link_local(&(hdr->src))) || (ipv6_addr_is_link_local(&(hdr->dst)))) {
             DEBUG("ipv6: do not forward packets with link-local source or"
                   " destination address\n");
@@ -1012,11 +972,11 @@ static void _receive(gnrc_pktsnip_t *pkt)
             gnrc_pktbuf_release(pkt);
             return;
         }
-        /* TODO: check if receiving interface is router */
-        else if (--(hdr->hl) > 0) {  /* drop packets that *reach* Hop Limit 0 */
+        // TODO: check if receiving interface is router
+        else if (--(hdr->hl) > 0) {  // drop packets that *reach* Hop Limit 0
             DEBUG("ipv6: forward packet to next hop\n");
 
-            /* remove L2 headers around IPV6 */
+            // remove L2 headers around IPV6
             if (netif_hdr != NULL) {
                 gnrc_pktbuf_remove_snip(pkt, netif_hdr);
             }
@@ -1037,12 +997,12 @@ static void _receive(gnrc_pktsnip_t *pkt)
             return;
         }
 
-#else  /* MODULE_GNRC_IPV6_ROUTER */
+#else  // MODULE_GNRC_IPV6_ROUTER
         DEBUG("ipv6: dropping packet\n");
-        /* non-routing hosts just drop the packet */
+        // non-routing hosts just drop the packet
         gnrc_pktbuf_release(pkt);
         return;
-#endif /* MODULE_GNRC_IPV6_ROUTER */
+#endif // MODULE_GNRC_IPV6_ROUTER
     }
     if ((pkt = gnrc_ipv6_ext_process_all(pkt, &first_nh)) == NULL) {
         DEBUG("ipv6: packet was consumed in extension header handling\n");
@@ -1051,4 +1011,4 @@ static void _receive(gnrc_pktsnip_t *pkt)
     _demux(netif, pkt, first_nh);
 }
 
-/** @} */
+/// @}

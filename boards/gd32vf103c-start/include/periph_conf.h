@@ -1,36 +1,32 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht <gunar@schorcht.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht <gunar@schorcht.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_gd32vf103c_start
- * @{
- *
- * @file
- * @brief       Board specific definitions for the GD32VF103C-START board
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
- */
+/// @ingroup     boards_gd32vf103c_start
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the GD32VF103C-START board
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
 
 #include "macros/units.h"
 
 #ifndef CONFIG_BOARD_HAS_HXTAL
-#define CONFIG_BOARD_HAS_HXTAL  1   /**< The board provides a high frequency oscillator. */
+#define CONFIG_BOARD_HAS_HXTAL  1   ///< The board provides a high frequency oscillator.
 #endif
 
 #ifndef CONFIG_BOARD_HAS_LXTAL
-#define CONFIG_BOARD_HAS_LXTAL  1   /**< The board provides a low frequency oscillator. */
+#define CONFIG_BOARD_HAS_LXTAL  1   ///< The board provides a low frequency oscillator.
 #endif
 
 #ifndef CONFIG_CLOCK_HXTAL
-#define CONFIG_CLOCK_HXTAL      MHZ(8)      /**< HXTAL frequency */
+#define CONFIG_CLOCK_HXTAL      MHZ(8)      ///< HXTAL frequency
 #endif
 
 #ifndef I2C_DEV_1_USED
-#define I2C_DEV_1_USED          1   /**< Enable I2C_DEV(1) by default */
+#define I2C_DEV_1_USED          1   ///< Enable I2C_DEV(1) by default
 #endif
 
 #include "periph_cpu.h"
@@ -44,18 +40,14 @@
 extern "C" {
 #endif
 
- /**
- * @name    I2C configuration
- *
- * @note    This board may require external pullup resistors for i2c operation.
- * @{
- */
+ /// @name    I2C configuration
+ ///
+ /// @note    This board may require external pullup resistors for i2c operation.
+ /// @{
 
-/**
- * @brief   PB10/PB11 (D15/D14) as I2C for Arduino UNO compatibility
- *
- * PB10/PB11 are located where Arduino UNO shields expect I2C.
- */
+/// @brief   PB10/PB11 (D15/D14) as I2C for Arduino UNO compatibility
+///
+/// PB10/PB11 are located where Arduino UNO shields expect I2C.
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -68,12 +60,10 @@ static const i2c_conf_t i2c_config[] = {
 };
 
 #define I2C_NUMOF   ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan = 1 },
     { .pin = GPIO_PIN(PORT_A, 2), .dev = 0, .chan = 2 },
@@ -81,19 +71,17 @@ static const adc_conf_t adc_config[] = {
     { .pin = GPIO_PIN(PORT_A, 4), .dev = 0, .chan = 4 },
     { .pin = GPIO_PIN(PORT_A, 5), .dev = 0, .chan = 5 },
     { .pin = GPIO_PIN(PORT_A, 6), .dev = 0, .chan = 6 },
-    /* ADC Temperature channel */
+    // ADC Temperature channel
     { .pin = GPIO_UNDEF, .dev = 0, .chan = 16 },
-    /* ADC VREF channel */
+    // ADC VREF channel
     { .pin = GPIO_UNDEF, .dev = 0, .chan = 17 },
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIMER0,
@@ -109,7 +97,7 @@ static const timer_conf_t timer_config[] = {
         .bus      = APB1,
         .irqn     = TIMER1_IRQn
     },
-    /* TIMER2 and TIMER3 are used for PWM pins */
+    // TIMER2 and TIMER3 are used for PWM pins
     {
         .dev      = TIMER4,
         .max      = 0x0000ffff,
@@ -124,12 +112,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_2_IRQN        TIMER4_IRQn
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIMER2,
@@ -137,7 +123,7 @@ static const pwm_conf_t pwm_config[] = {
         .chan     = {
                         { .pin = GPIO_PIN(PORT_B, 5), .cc_chan = 1 },
                         { .pin = GPIO_PIN(PORT_B, 0), .cc_chan = 2 },
-                        /* unused channels have to be defined by GPIO_UNDEF */
+                        // unused channels have to be defined by GPIO_UNDEF
                         { .pin = GPIO_UNDEF, .cc_chan = 0 },
                         { .pin = GPIO_UNDEF, .cc_chan = 3 },
                     },
@@ -150,7 +136,7 @@ static const pwm_conf_t pwm_config[] = {
         .chan     = {
                         { .pin = GPIO_PIN(PORT_B, 7), .cc_chan = 1 },
                         { .pin = GPIO_PIN(PORT_B, 8), .cc_chan = 2 },
-                        /* unused channels have to be defined by GPIO_UNDEF */
+                        // unused channels have to be defined by GPIO_UNDEF
                         { .pin = GPIO_UNDEF, .cc_chan = 0 },
                         { .pin = GPIO_UNDEF, .cc_chan = 3 },
                     },
@@ -160,10 +146,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

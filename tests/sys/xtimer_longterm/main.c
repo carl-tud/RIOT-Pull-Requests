@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       xtimer_msg test application
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       xtimer_msg test application
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @}
 
 #include <stdio.h>
 #include <time.h>
@@ -21,12 +17,12 @@
 #include "thread.h"
 #include "msg.h"
 
-/* some internally used msg types */
+// some internally used msg types
 #define MSG_LONG                (0xcafe)
 #define MSG_MID                 (0xe5e1)
 #define MSG_TICK                (0xaffe)
 
-/* define sleep and timeout intervals */
+// define sleep and timeout intervals
 #define MIN_TO_USEC(min)        (60UL * min * US_PER_SEC)
 #define INT_LONG_MSG            (MIN_TO_USEC(14))
 #define INT_LONG_SLEEP          (MIN_TO_USEC(18))
@@ -34,34 +30,33 @@
 #define INT_MID_SLEEP           (MIN_TO_USEC(5))
 #define INT_SHORT               (50UL * US_PER_MS)
 
-/* and some timeout conditions */
-#define SHORT_MIN_REACHED       (60 * 20)    /* 60 * 20 * 50ms = 1min */
+// and some timeout conditions
+#define SHORT_MIN_REACHED       (60 * 20)    // 60 * 20 * 50ms = 1min
 
-/* configure the print threads message queue */
+// configure the print threads message queue
 #define MSG_Q_SIZE              (8U)
 static msg_t mq[MSG_Q_SIZE];
 
-/* allocate some stacks */
+// allocate some stacks
 static char long_stack[THREAD_STACKSIZE_MAIN];
 static char mid_stack[THREAD_STACKSIZE_MAIN];
 static char short_stack[THREAD_STACKSIZE_MAIN];
 
-/* the main threads PID */
+// the main threads PID
 static kernel_pid_t print_pid;
 
-/* allocate timer structs for mid- and long-term timers */
+// allocate timer structs for mid- and long-term timers
 static xtimer_t long_timer;
 static xtimer_t mid_timer;
 
-/* and some software counters */
+// and some software counters
 static int long_msg_ticks = 0;
 static int long_sleep_ticks = 0;
 static int mid_msg_ticks = 0;
 static int mid_sleep_ticks = 0;
 static int short_ticks = 0;
 
-void *long_sleep(void *arg)
-{
+void *long_sleep(void *arg) {
     (void) arg;
 
     while (1) {
@@ -74,8 +69,7 @@ void *long_sleep(void *arg)
     return NULL;
 }
 
-void *mid_sleep(void *arg)
-{
+void *mid_sleep(void *arg) {
     (void) arg;
 
     while (1) {
@@ -88,8 +82,7 @@ void *mid_sleep(void *arg)
     return NULL;
 }
 
-void *ticker(void *arg)
-{
+void *ticker(void *arg) {
     (void)arg;
     xtimer_ticks32_t base = xtimer_now();
 
@@ -114,20 +107,19 @@ void *ticker(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     msg_t msg_mid, msg_long, msg;
 
     puts("xtimer long-term test");
     puts("Refer to the README to get information on the expected output.");
 
-    /* save the main threads PID */
+    // save the main threads PID
     print_pid = thread_getpid();
 
-    /* initialize the message queue */
+    // initialize the message queue
     msg_init_queue(mq, MSG_Q_SIZE);
 
-    /* create the other threads */
+    // create the other threads
     thread_create(long_stack, sizeof(long_stack), THREAD_PRIORITY_MAIN - 1,
                   0, long_sleep, NULL, "long_sleep");
     thread_create(mid_stack, sizeof(mid_stack), THREAD_PRIORITY_MAIN - 2,
@@ -135,13 +127,13 @@ int main(void)
     thread_create(short_stack, sizeof(short_stack), THREAD_PRIORITY_MAIN - 3,
                   0, ticker, NULL, "ticks");
 
-    /* initiate the mid- and long-term messages */
+    // initiate the mid- and long-term messages
     msg_long.type = MSG_LONG;
     xtimer_set_msg(&long_timer, INT_LONG_MSG, &msg_long, print_pid);
     msg_mid.type = MSG_MID;
     xtimer_set_msg(&mid_timer, INT_MID_MSG, &msg_mid, print_pid);
 
-    /* watch for incoming messages */
+    // watch for incoming messages
     while (1) {
         msg_receive(&msg);
 

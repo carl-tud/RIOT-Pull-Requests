@@ -1,35 +1,30 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_dht
- * @{
- *
- * @file
- * @brief       SAUL adaption for DHT devices
- *
- * The values exported to SAUL for DHT devices are buffered, meaning that new
- * values will only be read from the device, if the buffered values are older
- * then 1 second (being exactly the maximum sampling time for DHT devices).
- *
- * This buffering does further introduce a coupling between both SAUL endpoints,
- * meaning that if you read from both endpoints after each other, both values
- * are from the same sensor reading.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_dht
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption for DHT devices
+///
+/// The values exported to SAUL for DHT devices are buffered, meaning that new
+/// values will only be read from the device, if the buffered values are older
+/// then 1 second (being exactly the maximum sampling time for DHT devices).
+///
+/// This buffering does further introduce a coupling between both SAUL endpoints,
+/// meaning that if you read from both endpoints after each other, both values
+/// are from the same sensor reading.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
 #include "saul.h"
 #include "dht.h"
 
-static int read_temp(const void *dev, phydat_t *res)
-{
+static int read_temp(const void *dev, phydat_t *res) {
     if (dht_read((dht_t *)dev, &res->val[0], NULL)) {
         return -ECANCELED;
     }
@@ -38,8 +33,7 @@ static int read_temp(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int read_hum(const void *dev, phydat_t *res)
-{
+static int read_hum(const void *dev, phydat_t *res) {
     if (dht_read((dht_t *)dev, NULL, &res->val[0])) {
         return -ECANCELED;
     }

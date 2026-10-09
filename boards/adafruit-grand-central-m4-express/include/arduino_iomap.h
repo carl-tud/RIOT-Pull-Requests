@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_adafruit-grand-central-m4-express
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Arduino pins
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     boards_adafruit-grand-central-m4-express
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Arduino pins
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "periph/gpio.h"
 #include "periph/adc.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Mapping of MCU pins to Arduino pins
- * @{
- */
+/// @name    Mapping of MCU pins to Arduino pins
+/// @{
 #define ARDUINO_PIN_0           GPIO_PIN(PB, 25)
 #define ARDUINO_PIN_1           GPIO_PIN(PB, 24)
 #define ARDUINO_PIN_2           GPIO_PIN(PC, 18)
@@ -53,24 +47,20 @@ extern "C" {
 #define ARDUINO_PIN_21          GPIO_PIN(PC, 5)
 
 #define ARDUINO_PIN_LAST        21
-/** @} */
+/// @}
 
-/**
- * @name    Aliases for analog pins
- * @{
- */
+/// @name    Aliases for analog pins
+/// @{
 #define ARDUINO_PIN_A0          ARDUINO_PIN_16
 #define ARDUINO_PIN_A1          ARDUINO_PIN_17
 #define ARDUINO_PIN_A2          ARDUINO_PIN_18
 #define ARDUINO_PIN_A3          ARDUINO_PIN_19
 #define ARDUINO_PIN_A4          ARDUINO_PIN_20
 #define ARDUINO_PIN_A5          ARDUINO_PIN_21
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino analog pins to RIOT ADC lines
- * @{
- */
+/// @name    Mapping of Arduino analog pins to RIOT ADC lines
+/// @{
 #define ARDUINO_A0              ADC_LINE(0)
 #define ARDUINO_A1              ADC_LINE(1)
 #define ARDUINO_A2              ADC_LINE(2)
@@ -79,20 +69,16 @@ extern "C" {
 #define ARDUINO_A5              ADC_LINE(5)
 
 #define ARDUINO_ANALOG_PIN_LAST 5
-/** @} */
+/// @}
 
-/**
- * @name    Arduino's default SPI device
- * @{
- */
-/**
- * @brief   SPI_DEV(0) is connected to the ISP header *AND* the SD card reader
- */
+/// @name    Arduino's default SPI device
+/// @{
+/// @brief   SPI_DEV(0) is connected to the ISP header *AND* the SD card reader
 #define ARDUINO_SPI_ISP         SPI_DEV(0)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

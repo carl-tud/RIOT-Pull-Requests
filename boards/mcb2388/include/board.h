@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Beuth Hochschule für Technik Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Beuth Hochschule für Technik Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_mcb2388
- * @{
- *
- * @file
- * @brief       Basic definitions for the MCB2388 board
- *
- * @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
- */
+/// @ingroup     boards_mcb2388
+/// @{
+///
+/// @file
+/// @brief       Basic definitions for the MCB2388 board
+///
+/// @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
 
 #include "lpc23xx.h"
 
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(2, 0)
 #define LED1_PIN            GPIO_PIN(2, 1)
 #define LED2_PIN            GPIO_PIN(2, 2)
@@ -74,21 +68,17 @@ extern "C" {
 #define LED7_ON             (FIO2SET  = LED7_MASK)
 #define LED7_OFF            (FIO2CLR  = LED7_MASK)
 #define LED7_TOGGLE         (FIO2PIN ^= LED7_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    INT0 (Button) pin definitions
- * @{
- */
+/// @name    INT0 (Button) pin definitions
+/// @{
 #define BTN0_PIN            GPIO_PIN(2, 10)
 #define BTN0_MODE           GPIO_IN
 #define BTN0_INT_FLANK      GPIO_FALLING
-/** @} */
+/// @}
 
-/**
- * @name    Configuration for the 16x2 character LCD display
- * @{
- */
+/// @name    Configuration for the 16x2 character LCD display
+/// @{
 #define HD44780_PARAM_COLS              (16U)
 #define HD44780_PARAM_ROWS              (2U)
 #define HD44780_PARAM_PIN_RS            GPIO_PIN(1, 28)
@@ -98,19 +88,17 @@ extern "C" {
                                             GPIO_PIN(1, 26), GPIO_PIN(1, 27), \
                                             GPIO_UNDEF,     GPIO_UNDEF,     \
                                             GPIO_UNDEF,     GPIO_UNDEF      }
-/** @} */
+/// @}
 
-/**
- * @name MTD configuration
- * @{
- */
+/// @name MTD configuration
+/// @{
 #ifdef MODULE_MTD_MCI
 #define MTD_0 mtd_dev_get(0)
 #endif
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

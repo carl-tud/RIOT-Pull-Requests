@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_TEXTUIRUNNER_H
 #define EMBUNIT_TEXTUIRUNNER_H
 
@@ -23,4 +21,4 @@ int TextUIRunner_end(void);
 }
 #endif
 
-#endif /* EMBUNIT_TEXTUIRUNNER_H */
+#endif // EMBUNIT_TEXTUIRUNNER_H

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32
- * @ingroup     drivers_periph_pwm
- * @{
- *
- * @file
- * @brief       Low-level PWM driver implementation
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @ingroup     drivers_periph_pwm
+/// @{
+///
+/// @file
+/// @brief       Low-level PWM driver implementation
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include "bitarithm.h"
 #include "board.h"
@@ -40,7 +36,7 @@
 
 #if defined(PWM0_GPIOS) || defined(PWM1_GPIOS) || defined(PWM2_GPIOS) || defined(PWM3_GPIOS)
 
-/* Ensure that the PWMn_* symbols define PWM_DEV(n) */
+// Ensure that the PWMn_* symbols define PWM_DEV(n)
 #if defined(PWM1_GPIOS) && !defined(PWM0_GPIOS)
 #error "PWM1_GPIOS is used but PWM0_GPIOS is not defined"
 #elif defined(PWM2_GPIOS) && !defined(PWM1_GPIOS)
@@ -50,48 +46,47 @@
 #endif
 
 #define SOC_LEDC_CLK_DIV_BIT_NUM        18
-#define SOC_LEDC_CLK_DIV_INT_BIT_NUM    10  /* integral part of CLK divider */
-#define SOC_LEDC_CLK_DIV_FRAC_BIT_NUM   8   /* fractional part of CLK divider */
+#define SOC_LEDC_CLK_DIV_INT_BIT_NUM    10  // integral part of CLK divider
+#define SOC_LEDC_CLK_DIV_FRAC_BIT_NUM   8   // fractional part of CLK divider
 
 #define PWM_HW_RES_MAX  ((uint32_t)1 << SOC_LEDC_TIMER_BIT_WIDTH)
 #define PWM_HW_RES_MIN  ((uint32_t)1 << 1)
 
-#define _DEV     _pwm_dev[pwm]      /* shortcut for PWM device descriptor */
-#define _CFG     pwm_config[pwm]    /* shortcut for PWM device configuration */
+#define _DEV     _pwm_dev[pwm]      // shortcut for PWM device descriptor
+#define _CFG     pwm_config[pwm]    // shortcut for PWM device configuration
 
-/* data structure for dynamic channel parameters */
+// data structure for dynamic channel parameters
 typedef struct {
-    uint32_t duty;      /* actual duty value */
-    uint32_t hpoint;    /* actual hpoing value */
-    bool used;          /* true if the channel is set by pwm_set */
-    uint8_t ch;         /* actual channel index within used channel group */
+    uint32_t duty;      // actual duty value
+    uint32_t hpoint;    // actual hpoing value
+    bool used;          // true if the channel is set by pwm_set
+    uint8_t ch;         // actual channel index within used channel group
 } _pwm_ch_t;
 
-/* data structure for device handling at runtime */
+// data structure for device handling at runtime
 typedef struct {
-    uint32_t freq;                  /* specified frequency parameter */
-    uint32_t res;                   /* specified resolution parameter */
-    uint32_t hw_freq;               /* used hardware frequency */
-    uint32_t hw_res;                /* used hardware resolution */
-    uint32_t hw_clk_div;            /* used hardware clock divider */
-    _pwm_ch_t ch[PWM_CH_NUMOF_MAX]; /* dynamic channel parameters at runtime */
-    ledc_hal_context_t hw;          /* used hardware device context */
-    pwm_mode_t mode;                /* specified mode */
-    ledc_timer_bit_t hw_res_bit;    /* used hardware resolution in bit */
-    bool enabled;                   /* true if the device is used (powered on) */
+    uint32_t freq;                  // specified frequency parameter
+    uint32_t res;                   // specified resolution parameter
+    uint32_t hw_freq;               // used hardware frequency
+    uint32_t hw_res;                // used hardware resolution
+    uint32_t hw_clk_div;            // used hardware clock divider
+    _pwm_ch_t ch[PWM_CH_NUMOF_MAX]; // dynamic channel parameters at runtime
+    ledc_hal_context_t hw;          // used hardware device context
+    pwm_mode_t mode;                // specified mode
+    ledc_timer_bit_t hw_res_bit;    // used hardware resolution in bit
+    bool enabled;                   // true if the device is used (powered on)
 } _pwm_dev_t;
 
 static _pwm_dev_t _pwm_dev[PWM_NUMOF] = { };
 
-/* if pwm_init is called first time, it checks the pwm configuration */
+// if pwm_init is called first time, it checks the pwm configuration
 static bool _pwm_initialized = false;
 
-/* static configuration checks and initialization on first pwm_init */
+// static configuration checks and initialization on first pwm_init
 static bool _pwm_initialize(void);
 
-/* Initialize PWM device */
-uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res)
-{
+// Initialize PWM device
+uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res) {
     _Static_assert(PWM_NUMOF <= PWM_NUMOF_MAX, "Too many PWM devices defined");
 
     if (!_pwm_initialized) {
@@ -116,10 +111,8 @@ uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res)
         return 0;
     }
 
-    /*
-     * The hardware resolution must be a power of two, so we determine the
-     * next power of two, which covers the desired resolution
-     */
+    // The hardware resolution must be a power of two, so we determine the
+    // next power of two, which covers the desired resolution
     ledc_timer_bit_t hw_res_bit = bitarithm_msb(res - 1);
     if (hw_res_bit < SOC_LEDC_TIMER_BIT_WIDTH) {
         hw_res_bit++;
@@ -142,20 +135,18 @@ uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res)
         return 0;
     }
 
-    /* number of hardware ticks required, at maximum it can be APB clock */
+    // number of hardware ticks required, at maximum it can be APB clock
     uint32_t hw_ticks = MIN(freq * hw_res, clk_freq);
 
-    /*
-     * if the number of required ticks is less than the minimum supported by
-     * the hardware, we have to increase the resolution.
-     */
+    // if the number of required ticks is less than the minimum supported by
+    // the hardware, we have to increase the resolution.
     while (hw_ticks < hw_ticks_min) {
         hw_res_bit++;
         hw_res = 1 << hw_res_bit;
         hw_ticks = freq * hw_res;
     }
 
-    /* LEDC_CLK_DIV is given in Q10.8 format */
+    // LEDC_CLK_DIV is given in Q10.8 format
     uint32_t hw_clk_div =
         ((uint64_t)clk_freq << SOC_LEDC_CLK_DIV_FRAC_BIT_NUM) / hw_ticks;
 
@@ -171,12 +162,12 @@ uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res)
           _DEV.hw_freq, _DEV.hw_res, hw_ticks, _DEV.hw_clk_div);
 
     for (int i = 0; i < _CFG.ch_numof; i++) {
-        /* initialize channel data */
+        // initialize channel data
         _DEV.ch[i].used = false;
         _DEV.ch[i].duty = 0;
 
-         /* reset GPIO usage type if the pins were used already for PWM before
-            to make it possible to reinitialize PWM with new parameters */
+         // reset GPIO usage type if the pins were used already for PWM before
+         //    to make it possible to reinitialize PWM with new parameters
         if (gpio_get_pin_usage(_CFG.gpios[i]) == _PWM) {
             gpio_set_pin_usage(_CFG.gpios[i], _GPIO);
         }
@@ -188,7 +179,7 @@ uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res)
             return 0;
         }
 
-        /* initialize the GPIOs and route the PWM signal output to the GPIO */
+        // initialize the GPIOs and route the PWM signal output to the GPIO
         if (gpio_init(_CFG.gpios[i], GPIO_OUT) < 0) {
             return 0;
         }
@@ -207,14 +198,12 @@ uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res)
     return _DEV.hw_freq;
 }
 
-uint8_t pwm_channels(pwm_t pwm)
-{
+uint8_t pwm_channels(pwm_t pwm) {
     assert(pwm < PWM_NUMOF);
     return _CFG.ch_numof;
 }
 
-void pwm_set(pwm_t pwm, uint8_t channel, uint16_t value)
-{
+void pwm_set(pwm_t pwm, uint8_t channel, uint16_t value) {
     DEBUG("%s pwm=%u channel=%u value=%u\n", __func__, pwm, channel, value);
 
     assert(pwm < PWM_NUMOF);
@@ -241,7 +230,7 @@ void pwm_set(pwm_t pwm, uint8_t channel, uint16_t value)
     DEBUG("%s pwm=%u duty=%"PRIu32" hpoint=%"PRIu32"\n",
           __func__, pwm, _DEV.ch[channel].duty, _DEV.ch[channel].hpoint);
 
-    unsigned ch = _DEV.ch[channel].ch;  /* internal channel mapping */
+    unsigned ch = _DEV.ch[channel].ch;  // internal channel mapping
 
     critical_enter();
     ledc_hal_set_duty_int_part(&_DEV.hw, ch, _DEV.ch[channel].duty);
@@ -252,11 +241,10 @@ void pwm_set(pwm_t pwm, uint8_t channel, uint16_t value)
     critical_exit();
 }
 
-void pwm_poweron(pwm_t pwm)
-{
+void pwm_poweron(pwm_t pwm) {
     DEBUG("%s pwm=%u\n", __func__, pwm);
 
-    /* enable and init the module and select the right clock source */
+    // enable and init the module and select the right clock source
     periph_module_enable(_CFG.module);
     ledc_hal_init(&_DEV.hw, _CFG.group);
     ledc_ll_enable_clock(_DEV.hw.dev, true);
@@ -265,7 +253,7 @@ void pwm_poweron(pwm_t pwm)
     ledc_hal_set_clock_source(&_DEV.hw, _CFG.timer, (ledc_clk_src_t)LEDC_SCLK);
 #endif
 
-    /* update the timer according to determined parameters */
+    // update the timer according to determined parameters
     ledc_hal_set_clock_divider(&_DEV.hw, _CFG.timer, _DEV.hw_clk_div);
     ledc_hal_set_duty_resolution(&_DEV.hw, _CFG.timer, _DEV.hw_res_bit);
     ledc_hal_ls_timer_update(&_DEV.hw, _CFG.timer);
@@ -273,14 +261,14 @@ void pwm_poweron(pwm_t pwm)
 
     critical_enter();
     for (unsigned i = 0; i < _CFG.ch_numof; i++) {
-        /* static configuration of the channel, no fading */
+        // static configuration of the channel, no fading
         ledc_hal_set_fade_param(&_DEV.hw, _DEV.ch[i].ch, 0, 1, 1, 0, 1);
         ledc_hal_set_fade_end_intr(&_DEV.hw, _DEV.ch[i].ch, 0);
 
-        /* bind the channel to the timer and disable the output for now */
+        // bind the channel to the timer and disable the output for now
         ledc_hal_bind_channel_timer(&_DEV.hw, _DEV.ch[i].ch, _CFG.timer);
 
-        /* restore used parameters */
+        // restore used parameters
         ledc_hal_set_duty_int_part(&_DEV.hw, _DEV.ch[i].ch, _DEV.ch[i].duty);
         ledc_hal_set_hpoint(&_DEV.hw, _DEV.ch[i].ch, _DEV.ch[i].hpoint);
         ledc_hal_set_sig_out_en(&_DEV.hw, _DEV.ch[i].ch, _DEV.ch[i].used);
@@ -291,8 +279,7 @@ void pwm_poweron(pwm_t pwm)
     critical_exit();
 }
 
-void pwm_poweroff(pwm_t pwm)
-{
+void pwm_poweroff(pwm_t pwm) {
     DEBUG("%s pwm=%u\n", __func__, pwm);
 
     if (!_pwm_dev[pwm].enabled) {
@@ -301,7 +288,7 @@ void pwm_poweroff(pwm_t pwm)
 
     unsigned i;
 
-    /* disable the signal of all channels */
+    // disable the signal of all channels
     critical_enter();
     for (i = 0; i < _CFG.ch_numof; i++) {
         ledc_hal_set_idle_level(&_DEV.hw, _DEV.ch[i].ch, 0);
@@ -312,21 +299,20 @@ void pwm_poweroff(pwm_t pwm)
     _DEV.enabled = false;
     critical_exit();
 
-    /* check whether all devices of the same hardware module are disabled */
+    // check whether all devices of the same hardware module are disabled
     for (i = 0; i < PWM_NUMOF; i++) {
         if ((_CFG.module == pwm_config[i].module) && _pwm_dev[i].enabled) {
             break;
         }
     }
 
-    /* if all devices of the same hardware module are disable, it is powered off */
+    // if all devices of the same hardware module are disable, it is powered off
     if (i == PWM_NUMOF) {
         periph_module_disable(_CFG.module);
     }
 }
 
-void pwm_print_config(void)
-{
+void pwm_print_config(void) {
     for (unsigned pwm = 0; pwm < PWM_NUMOF; pwm++) {
         printf("\tPWM_DEV(%u)\tchannels=[ ", pwm);
         for (int i = 0; i < _CFG.ch_numof; i++) {
@@ -336,13 +322,12 @@ void pwm_print_config(void)
     }
 }
 
-/* do static configuration checks */
-static bool _pwm_initialize(void)
-{
+// do static configuration checks
+static bool _pwm_initialize(void) {
     unsigned ch_numof[2] = {};
 
     for (unsigned pwm = 0; pwm < PWM_NUMOF; pwm++) {
-        /* compute the channel indices */
+        // compute the channel indices
         for (unsigned i = 0; i < _CFG.ch_numof; i++) {
             _pwm_dev[pwm].ch[i].ch = ch_numof[_CFG.group] + i;
         }
@@ -391,8 +376,7 @@ static bool _pwm_initialize(void)
 
 #else
 
-void pwm_print_config(void)
-{
+void pwm_print_config(void) {
     LOG_TAG_INFO("pwm", "no PWM devices\n");
 }
 

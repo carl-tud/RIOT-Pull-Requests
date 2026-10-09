@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- *
- * @{
- * @file
- * @brief       Low-level ethernet driver implementation
- *
- * @note        This driver does not rely on an EMLIB abstraction for the
- *              ethernet peripheral, as it does not exist.
- *
- * @author      Bas Stottelaar <bas.stottelaar@gmail.com>
- * @}
- */
+/// @ingroup     cpu_efm32
+///
+/// @{
+/// @file
+/// @brief       Low-level ethernet driver implementation
+///
+/// @note        This driver does not rely on an EMLIB abstraction for the
+///              ethernet peripheral, as it does not exist.
+///
+/// @author      Bas Stottelaar <bas.stottelaar@gmail.com>
+/// @}
 
 #include <errno.h>
 #include <string.h>
@@ -44,34 +40,32 @@
 #  define TRACE_PUTS(...)
 #endif
 
-/**
- * @brief   Per-buffer length (one MTU + headroom)
- */
+/// @brief   Per-buffer length (one MTU + headroom)
 #define EFM32_ETH_BUF_LEN           (1536U)
 
-/* NETWORKCFG bits not provided as named constants in the vendor header */
-#define NETWORKCFG_CAF              (1UL << 4) /* Copy All Frames (promisc) */
+// NETWORKCFG bits not provided as named constants in the vendor header
+#define NETWORKCFG_CAF              (1UL << 4) // Copy All Frames (promisc)
 
-/* GEM RX descriptor word 0 (addr) bits */
+// GEM RX descriptor word 0 (addr) bits
 #define RX_ADDR_OWN                 (1UL << 0)
 #define RX_ADDR_WRAP                (1UL << 1)
 #define RX_ADDR_MASK                (~0x3UL)
 
-/* GEM RX descriptor word 1 (status) bits */
+// GEM RX descriptor word 1 (status) bits
 #define RX_STATUS_LEN_MASK          (0x1FFFUL)
 #define RX_STATUS_SOF               (1UL << 14)
 #define RX_STATUS_EOF               (1UL << 15)
 
-/* GEM TX descriptor word 1 (status) bits */
+// GEM TX descriptor word 1 (status) bits
 #define TX_STATUS_LEN_MASK          (0x3FFFUL)
 #define TX_STATUS_LAST              (1UL << 15)
-#define TX_STATUS_LATE_COLLISION    (1UL << 26) /* late collision, frame aborted */
-#define TX_STATUS_AHB_ERROR         (1UL << 27) /* frame corruption (AHB error) */
-#define TX_STATUS_RETRY_EXCEEDED    (1UL << 29) /* collision retry limit reached */
+#define TX_STATUS_LATE_COLLISION    (1UL << 26) // late collision, frame aborted
+#define TX_STATUS_AHB_ERROR         (1UL << 27) // frame corruption (AHB error)
+#define TX_STATUS_RETRY_EXCEEDED    (1UL << 29) // collision retry limit reached
 #define TX_STATUS_WRAP              (1UL << 30)
 #define TX_STATUS_USED              (1UL << 31)
 
-/* PHY management register fields */
+// PHY management register fields
 #define PHYMNGMNT_WRITE10           (0x2UL << 16)
 #define PHYMNGMNT_OP_WRITE          (0x1UL << 28)
 #define PHYMNGMNT_OP_READ           (0x2UL << 28)
@@ -97,8 +91,7 @@ static unsigned _rx_idx;
 static unsigned _tx_idx;
 static int _tx_len;
 
-static bool _mii_wait_idle(void)
-{
+static bool _mii_wait_idle(void) {
     uint32_t start = ztimer_now(ZTIMER_MSEC);
 
     while (!(ETH->NETWORKSTATUS & ETH_NETWORKSTATUS_MANDONE)) {
@@ -111,8 +104,7 @@ static bool _mii_wait_idle(void)
     return true;
 }
 
-static uint16_t _mii_read(uint8_t reg)
-{
+static uint16_t _mii_read(uint8_t reg) {
     ETH->PHYMNGMNT = PHYMNGMNT_HEADER | PHYMNGMNT_OP_READ | PHYMNGMNT_WRITE10
                      | ((uint32_t)eth_config.phy_addr << PHYMNGMNT_PHYADDR_SHIFT)
                      | ((uint32_t)(reg & 0x1F) << PHYMNGMNT_REGADDR_SHIFT);
@@ -128,8 +120,7 @@ static uint16_t _mii_read(uint8_t reg)
     return val;
 }
 
-static void _mii_write(uint8_t reg, uint16_t data)
-{
+static void _mii_write(uint8_t reg, uint16_t data) {
     TRACE("[eth] _mii_write: reg=0x%02x val=0x%04x\n", reg, data);
 
     ETH->PHYMNGMNT = PHYMNGMNT_HEADER | PHYMNGMNT_OP_WRITE | PHYMNGMNT_WRITE10
@@ -140,8 +131,7 @@ static void _mii_write(uint8_t reg, uint16_t data)
     _mii_wait_idle();
 }
 
-static int _phy_reset(void)
-{
+static int _phy_reset(void) {
     _mii_write(MII_BMCR, MII_BMCR_RESET);
 
     for (unsigned i = 0; i < 1000; i++) {
@@ -156,8 +146,7 @@ static int _phy_reset(void)
     return -ENODEV;
 }
 
-static int _phy_detect(void)
-{
+static int _phy_detect(void) {
     uint16_t bmsr = _mii_read(MII_BMSR);
 
     if (bmsr == 0x0000 || bmsr == 0xFFFF) {
@@ -170,13 +159,12 @@ static int _phy_detect(void)
     return 0;
 }
 
-static void _init_clock(void)
-{
+static void _init_clock(void) {
     CMU_ClockEnable(cmuClock_ETH, true);
     CMU_ClockEnable(cmuClock_GPIO, true);
     CMU_OscillatorEnable(cmuOsc_HFXO, true, true);
 
-    /* select HFXO as CMU_CLK2 source and route to PHY as RMII reference clock */
+    // select HFXO as CMU_CLK2 source and route to PHY as RMII reference clock
     CMU->CTRL |= CMU_CTRL_CLKOUTSEL2_HFXO;
 
     GPIO_PinModeSet((GPIO_Port_TypeDef)AF_CMU_CLK2_PORT(5),
@@ -187,8 +175,7 @@ static void _init_clock(void)
     CMU->ROUTEPEN |= CMU_ROUTEPEN_CLKOUT2PEN;
 }
 
-static void _init_pins(void)
-{
+static void _init_pins(void) {
     uint8_t rmii_loc = (eth_config.routeloc1 & _ETH_ROUTELOC1_RMIILOC_MASK)
                        >> _ETH_ROUTELOC1_RMIILOC_SHIFT;
     uint8_t mdio_loc = (eth_config.routeloc1 & _ETH_ROUTELOC1_MDIOLOC_MASK)
@@ -218,14 +205,14 @@ static void _init_pins(void)
     ETH->ROUTELOC1 = eth_config.routeloc1;
     ETH->ROUTEPEN = ETH_ROUTEPEN_RMIIPEN | ETH_ROUTEPEN_MDIOPEN;
 
-    /* enable the PHY if configured */
+    // enable the PHY if configured
     if (gpio_is_valid(eth_config.phy_en_pin)) {
         gpio_init(eth_config.phy_en_pin, GPIO_OUT);
         gpio_set(eth_config.phy_en_pin);
         ztimer_sleep(ZTIMER_MSEC, 10);
     }
 
-    /* reset the PHY if configured */
+    // reset the PHY if configured
     if (gpio_is_valid(eth_config.phy_rst_pin)) {
         gpio_init(eth_config.phy_rst_pin, GPIO_OUT);
 
@@ -236,8 +223,7 @@ static void _init_pins(void)
     }
 }
 
-static void _init_descriptors(void)
-{
+static void _init_descriptors(void) {
     memset(_rx_desc, 0, sizeof(_rx_desc));
     memset(_tx_desc, 0, sizeof(_tx_desc));
 
@@ -269,8 +255,7 @@ static void _init_descriptors(void)
     ETH->TXQPTR = (uint32_t)_tx_desc;
 }
 
-int efm32_eth_init(const uint8_t *mac)
-{
+int efm32_eth_init(const uint8_t *mac) {
     DEBUG_PUTS("[eth] efm32_eth_init: initializing peripheral");
 
     _init_clock();
@@ -285,7 +270,7 @@ int efm32_eth_init(const uint8_t *mac)
                   | ((EFM32_ETH_BUF_LEN / 64U) << _ETH_DMACFG_RXBUFSIZE_SHIFT)
                   | ETH_DMACFG_FRCDISCARDONERR;
 
-    /* configure MAC address (other three addresses are not used) */
+    // configure MAC address (other three addresses are not used)
     efm32_eth_set_mac(mac);
 
     ETH->SPECADDR2BOTTOM = 0;
@@ -295,7 +280,7 @@ int efm32_eth_init(const uint8_t *mac)
     ETH->SPECADDR4BOTTOM = 0;
     ETH->SPECADDR4TOP = 0;
 
-    /* initialize the PHY */
+    // initialize the PHY
     ETH->NETWORKCTRL = ETH_NETWORKCTRL_MANPORTEN;
 
     int res = _phy_reset();
@@ -310,16 +295,16 @@ int efm32_eth_init(const uint8_t *mac)
         return res;
     }
 
-    /* configure default (fallback) link speed */
+    // configure default (fallback) link speed
     efm32_eth_set_link_speed(eth_config.speed);
 
-    /* configure interrupts */
+    // configure interrupts
     ETH->IFCR = 0xFFFFFFFFUL;
     ETH->IENS = ETH_IENS_RXCMPLT | ETH_IENS_RXOVERRUN
                 | ETH_IENS_TXCMPLT | ETH_IENS_TXUNDERRUN;
     NVIC_EnableIRQ(ETH_IRQn);
 
-    /* enable RX and TX */
+    // enable RX and TX
     ETH->NETWORKCTRL = ETH_NETWORKCTRL_MANPORTEN
                        | ETH_NETWORKCTRL_ENBRX
                        | ETH_NETWORKCTRL_ENBTX;
@@ -327,8 +312,7 @@ int efm32_eth_init(const uint8_t *mac)
     return 0;
 }
 
-int efm32_eth_send(const iolist_t *iolist)
-{
+int efm32_eth_send(const iolist_t *iolist) {
     unsigned idx = _tx_idx;
 
     TRACE("[eth] efm32_eth_send: idx=%u\n", idx);
@@ -363,11 +347,11 @@ int efm32_eth_send(const iolist_t *iolist)
         status |= TX_STATUS_WRAP;
     }
 
-    /* clearing USED hands the buffer back to the MAC */
+    // clearing USED hands the buffer back to the MAC
     _tx_desc[idx].status = status;
     __DMB();
 
-    /* remember the queued length for efm32_eth_tx_status() */
+    // remember the queued length for efm32_eth_tx_status()
     _tx_len = (int)len;
 
     _tx_idx = (idx + 1) % CONFIG_EFM32_ETH_TX_BUF_NUMOF;
@@ -377,8 +361,7 @@ int efm32_eth_send(const iolist_t *iolist)
     return (int)len;
 }
 
-int efm32_eth_recv(void *buf, size_t max_len)
-{
+int efm32_eth_recv(void *buf, size_t max_len) {
     unsigned idx = _rx_idx;
 
     TRACE("[eth] efm32_eth_recv: idx=%u\n", idx);
@@ -400,7 +383,7 @@ int efm32_eth_recv(void *buf, size_t max_len)
         memcpy(buf, _rx_buf[idx], copy);
     }
 
-    /* hand the descriptor back to the MAC, preserving WRAP */
+    // hand the descriptor back to the MAC, preserving WRAP
     _rx_desc[idx].status = 0;
     _rx_desc[idx].addr &= ~RX_ADDR_OWN;
     __DMB();
@@ -410,8 +393,7 @@ int efm32_eth_recv(void *buf, size_t max_len)
     return frame_len;
 }
 
-void efm32_eth_get_mac(uint8_t out[6])
-{
+void efm32_eth_get_mac(uint8_t out[6]) {
     uint32_t bottom = ETH->SPECADDR1BOTTOM;
     uint32_t top = ETH->SPECADDR1TOP;
 
@@ -423,8 +405,7 @@ void efm32_eth_get_mac(uint8_t out[6])
     out[5] = (uint8_t)(top >> 8);
 }
 
-void efm32_eth_set_mac(const uint8_t mac[6])
-{
+void efm32_eth_set_mac(const uint8_t mac[6]) {
     DEBUG("[eth] efm32_eth_set_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
@@ -433,39 +414,36 @@ void efm32_eth_set_mac(const uint8_t mac[6])
     ETH->SPECADDR1TOP = ((uint32_t)mac[5] << 8) | mac[4];
 }
 
-bool efm32_eth_link_up(void)
-{
+bool efm32_eth_link_up(void) {
     return (_mii_read(MII_BMSR) & MII_BMSR_LINK) != 0;
 }
 
-bool efm32_eth_rx_pending(void)
-{
+bool efm32_eth_rx_pending(void) {
     return (_rx_desc[_rx_idx].addr & RX_ADDR_OWN) != 0;
 }
 
-int efm32_eth_tx_status(void)
-{
-    /* descriptor used by the most recent efm32_eth_send() */
+int efm32_eth_tx_status(void) {
+    // descriptor used by the most recent efm32_eth_send()
     unsigned idx = (_tx_idx + CONFIG_EFM32_ETH_TX_BUF_NUMOF - 1)
                    % CONFIG_EFM32_ETH_TX_BUF_NUMOF;
 
     uint32_t status = _tx_desc[idx].status;
 
-    /* the frame is still in flight until the MAC hands the descriptor back by
-     * setting the USED bit */
+    // the frame is still in flight until the MAC hands the descriptor back by
+    // setting the USED bit
     if (!(status & TX_STATUS_USED)) {
         return -EAGAIN;
     }
 
-    /* a collision aborted the frame, report as busy so the upper layer may
-     * retry */
+    // a collision aborted the frame, report as busy so the upper layer may
+    // retry
     if (status & (TX_STATUS_LATE_COLLISION | TX_STATUS_RETRY_EXCEEDED)) {
         DEBUG_PUTS("[eth] efm32_eth_tx_status: collision");
         return -EBUSY;
     }
 
-    /* any other error (underrun, excessive defer, no descriptor) is fatal for
-     * this frame */
+    // any other error (underrun, excessive defer, no descriptor) is fatal for
+    // this frame
     if (status & TX_STATUS_AHB_ERROR) {
         DEBUG_PUTS("[eth] efm32_eth_tx_status: AHB error");
         return -EIO;
@@ -474,13 +452,11 @@ int efm32_eth_tx_status(void)
     return _tx_len;
 }
 
-bool efm32_eth_get_promiscuous(void)
-{
+bool efm32_eth_get_promiscuous(void) {
     return (ETH->NETWORKCFG & NETWORKCFG_CAF) != 0;
 }
 
-void efm32_eth_set_promiscuous(bool enable)
-{
+void efm32_eth_set_promiscuous(bool enable) {
     if (enable) {
         ETH->NETWORKCFG |= NETWORKCFG_CAF;
     }
@@ -489,8 +465,7 @@ void efm32_eth_set_promiscuous(bool enable)
     }
 }
 
-void efm32_eth_set_link_speed(uint16_t speed)
-{
+void efm32_eth_set_link_speed(uint16_t speed) {
     DEBUG("[eth] efm32_eth_set_link_speed: %s Mbps %s duplex\n",
           (speed & MII_BMCR_SPEED_100) ? "100" : "10",
           (speed & MII_BMCR_FULL_DPLX) ? "full" : "half");
@@ -514,8 +489,7 @@ void efm32_eth_set_link_speed(uint16_t speed)
     ETH->NETWORKCFG = cfg;
 }
 
-int efm32_eth_start_auto_negotiation(void)
-{
+int efm32_eth_start_auto_negotiation(void) {
     DEBUG_PUTS("[eth] efm32_eth_start_auto_negotiation: starting auto-negotiation");
 
     if (!(_mii_read(MII_BMSR) & MII_BMSR_HAS_AN)) {
@@ -531,12 +505,11 @@ int efm32_eth_start_auto_negotiation(void)
     return 0;
 }
 
-void efm32_eth_complete_auto_negotiation(void)
-{
+void efm32_eth_complete_auto_negotiation(void) {
     uint32_t deadline = ztimer_now(ZTIMER_MSEC) + CONFIG_EFM32_ETH_AN_TIMEOUT_MS;
     uint16_t bmsr;
 
-    /* wait until AN has completed or the link drops */
+    // wait until AN has completed or the link drops
     do {
         bmsr = _mii_read(MII_BMSR);
 
@@ -581,13 +554,12 @@ void efm32_eth_complete_auto_negotiation(void)
     efm32_eth_set_link_speed(speed);
 }
 
-void isr_eth(void)
-{
+void isr_eth(void) {
     uint32_t status = ETH->IFCR;
 
     ETH->IFCR = status;
 
-    /* deliver ISR event to netdev */
+    // deliver ISR event to netdev
     extern netdev_t *efm32_eth_netdev;
 
     if (efm32_eth_netdev != NULL) {

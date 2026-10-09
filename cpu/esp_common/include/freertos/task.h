@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * FreeRTOS to RIOT-OS adaption module for source code compatibility
- */
+// FreeRTOS to RIOT-OS adaption module for source code compatibility
 
 #pragma once
 
 #ifndef DOXYGEN
 
-#include <limits.h> /* for INT_MAX */
+#include <limits.h> // for INT_MAX
 
 #include "thread.h"
 #include "freertos/FreeRTOS.h"
@@ -102,4 +98,4 @@ uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit,
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

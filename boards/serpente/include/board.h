@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_serpente
- * @brief       Support for the Serpente board.
- * @{
- *
- * @file
- * @brief       Board specific definitions for the Serpente
- *              board
- *
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- */
+/// @ingroup     boards_serpente
+/// @brief       Support for the Serpente board.
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the Serpente
+///              board
+///
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
 
 #include "cpu.h"
 #include "periph_conf.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED_PORT            PORT->Group[PA]
 
 #define LED0_PIN            GPIO_PIN(PA, 22)
@@ -54,12 +48,10 @@ extern "C" {
 #define LED2_OFF            (LED_PORT.OUTSET.reg = LED2_MASK)
 #define LED2_ON             (LED_PORT.OUTCLR.reg = LED2_MASK)
 #define LED2_TOGGLE         (LED_PORT.OUTTGL.reg = LED2_MASK)
-/** @} */
+/// @}
 
-/**
- * @name Serpente NOR flash hardware configuration
- * @{
- */
+/// @name Serpente NOR flash hardware configuration
+/// @{
 #define SERPENTE_NOR_PAGE_SIZE          (256)
 #define SERPENTE_NOR_PAGES_PER_SECTOR   (16)
 #define SERPENTE_NOR_SECTOR_COUNT       (1024)
@@ -68,27 +60,23 @@ extern "C" {
 #define SERPENTE_NOR_SPI_CLK            SPI_CLK_10MHZ
 #define SERPENTE_NOR_SPI_CS             GPIO_PIN(PA, 15)
 #define SERPENTE_NOR_SPI_MODE           SPI_MODE_3
-/** @} */
+/// @}
 
-/**
- * @name MTD configuration
- * @{
- */
+/// @name MTD configuration
+/// @{
 #define MTD_0 mtd_dev_get(0)
-/** @} */
+/// @}
 
-/**
- * @name USB configuration
- * @{
- */
+/// @name USB configuration
+/// @{
 #define INTERNAL_PERIPHERAL_VID         (0x239A)
 #define INTERNAL_PERIPHERAL_PID         (0x0057)
-/** @} */
+/// @}
 
-#define BOOTLOADER_UF2    1     /**< This board uses the UF2 bootloader */
+#define BOOTLOADER_UF2    1     ///< This board uses the UF2 bootloader
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

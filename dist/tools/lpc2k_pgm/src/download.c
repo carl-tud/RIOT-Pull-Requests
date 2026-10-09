@@ -1,32 +1,29 @@
-/*
- * LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
- * Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
- * Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
+// Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the
+// Free Software Foundation; version 2 of the License.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+// Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-/* If this code fails to build, please provide at least the following
- * information when requesting (free) technical support.
- *
- * 1: Complete copy of all messages during the build.
- * 2: Output of "gtk-config --version"
- * 3: Output of "gtk-config --libs"
- * 4: Output of "gtk-config --cflags"
- * 5: Output of "uname -a"
- * 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
- * 7: Other info... which linux distribution, version, other software
- */
+// If this code fails to build, please provide at least the following
+// information when requesting (free) technical support.
+//
+// 1: Complete copy of all messages during the build.
+// 2: Output of "gtk-config --version"
+// 3: Output of "gtk-config --libs"
+// 4: Output of "gtk-config --cflags"
+// 5: Output of "uname -a"
+// 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
+// 7: Other info... which linux distribution, version, other software
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -76,7 +73,7 @@ char *crystal = "16";
 
 /****************************************************************/
 /*                              */
-/*           Main Download Section          */
+// Main Download Section
 /*                              */
 /****************************************************************/
 
@@ -110,8 +107,7 @@ char *crystal = "16";
 
 
 
-int download_begin(char *file)
-{
+int download_begin(char *file) {
     int r;
 
     file_name = file;
@@ -122,7 +118,7 @@ int download_begin(char *file)
     r = read_intel_hex(file_name);
 
     if (r < 0) {
-        /* abort on ioerror */
+        // abort on ioerror
         return 0;
     }
 
@@ -135,8 +131,7 @@ int download_begin(char *file)
 }
 
 
-void soft_reboot_begin(void)
-{
+void soft_reboot_begin(void) {
     printf("\r\nEntering Bootloader Mode\r\n");
     hard_reset_to_bootloader();
     state = SYNC_1;
@@ -144,8 +139,7 @@ void soft_reboot_begin(void)
     download_main(BEGIN);
 }
 
-static void mk_valid_code_vector(void)
-{
+static void mk_valid_code_vector(void) {
     unsigned char b[4];
     unsigned int sum = 0;
     int addr;
@@ -167,8 +161,7 @@ static void mk_valid_code_vector(void)
 }
 
 
-static unsigned int sum(unsigned char *data, int num)
-{
+static unsigned int sum(unsigned char *data, int num) {
     unsigned int sum = 0;
 
     while (num > 0) {
@@ -180,8 +173,7 @@ static unsigned int sum(unsigned char *data, int num)
 }
 
 
-static int num_lines(const char *buf)
-{
+static int num_lines(const char *buf) {
     const char *p;
     int count = 0;
 
@@ -199,8 +191,7 @@ static int num_lines(const char *buf)
     return count;
 }
 
-void trim_crlf(char *str)
-{
+void trim_crlf(char *str) {
     char *p;
     p = strstr(str, "\r\n");
 
@@ -209,8 +200,7 @@ void trim_crlf(char *str)
     }
 }
 
-void copy_boot_code_to_memory(struct chip_info_struct *chip)
-{
+void copy_boot_code_to_memory(struct chip_info_struct *chip) {
     int i;
     unsigned char c[4];
 
@@ -243,8 +233,7 @@ of this message and any info about the chip and other\r\n\
 hardware you may be using.  Thanks :-)\r\n"
 
 
-static void download_main(int event)
-{
+static void download_main(int event) {
     char buf[4096 + 32];
     unsigned char bytes[256];
     double xtal;
@@ -1021,8 +1010,7 @@ static void download_main(int event)
 }
 
 
-void download_cancel(const char *mesg)
-{
+void download_cancel(const char *mesg) {
     printf("\r\nDownload Canceled");
 
     if (mesg && *mesg) {
@@ -1037,14 +1025,13 @@ void download_cancel(const char *mesg)
 
 /****************************************************************/
 /*                              */
-/*      Transmit Commands to Bootloader         */
+// Transmit Commands to Bootloader
 /*                              */
 /****************************************************************/
 
 
 
-static void xmit_cmd(const char *cmd, int max_time)
-{
+static void xmit_cmd(const char *cmd, int max_time) {
     int len;
 
     if (cmd == NULL || *cmd == '\0') {
@@ -1078,21 +1065,18 @@ static void xmit_cmd(const char *cmd, int max_time)
 
 /****************************************************************/
 /*                              */
-/*      Handlers that respond to input          */
+// Handlers that respond to input
 /*                              */
 /****************************************************************/
 
 
-/*
-Whenever the main gtk event loop detects more input has arrived from the
-serial port, and we're in the process of a download, it calls here to
-hand off the data.  We're supposed to match it up to the echo buffer,
-and then store it into the parsed response buffer and if it looks like
-this might be a complete response, call download_main with a response
-event.
-*/
-void download_rx_port(const unsigned char *buf, int num)
-{
+// Whenever the main gtk event loop detects more input has arrived from the
+// serial port, and we're in the process of a download, it calls here to
+// hand off the data.  We're supposed to match it up to the echo buffer,
+// and then store it into the parsed response buffer and if it looks like
+// this might be a complete response, call download_main with a response
+// event.
+void download_rx_port(const unsigned char *buf, int num) {
     int i = 0;
 
     if (num <= 0) {
@@ -1161,13 +1145,10 @@ void download_rx_port(const unsigned char *buf, int num)
 
 
 
-/*
-During a download, this is supposed to get called at 100 Hz.  Whenever
-something is transmitted and we expect a response, the response_timer
-is initialized to the maximum time we will wait.
-*/
-void download_timer(void)
-{
+// During a download, this is supposed to get called at 100 Hz.  Whenever
+// something is transmitted and we expect a response, the response_timer
+// is initialized to the maximum time we will wait.
+void download_timer(void) {
     if (response_timer > 0) {
         response_timer--;
 
@@ -1178,12 +1159,9 @@ void download_timer(void)
     }
 }
 
-/*
-During a download, all input the user types into the terminal is sent
-to this function, instead of passing it to xterm for display
-*/
-void download_rx_term(const unsigned char *buf, int num)
-{
+// During a download, all input the user types into the terminal is sent
+// to this function, instead of passing it to xterm for display
+void download_rx_term(const unsigned char *buf, int num) {
     // discard anything the user types into the terminal
     // while we are in the middle of downloading.  Maybe
     // we should look for CTRL-C and abort??

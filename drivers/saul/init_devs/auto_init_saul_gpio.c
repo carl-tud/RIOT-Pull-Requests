@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of GPIO pins directly mapped to SAUL reg
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization of GPIO pins directly mapped to SAUL reg
+//
+// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+//
+// @}
 
 #include "log.h"
 #include "saul_reg.h"
@@ -22,35 +18,25 @@
 #include "periph/gpio.h"
 #include "kernel_defines.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #if defined(SAUL_GPIO_NUMOF) && !(SAUL_GPIO_NUMOF > 0)
-void auto_init_gpio(void)
-{
-    /* do nothing, no GPIO configured for SAUL */
+void auto_init_gpio(void) {
+    // do nothing, no GPIO configured for SAUL
     LOG_DEBUG("[auto_init_saul] no SAUL GPIO configured!\n");
 }
 #else
 #define SAUL_GPIO_NUMOF ARRAY_SIZE(saul_gpio_params)
 
-/**
- * @brief   Memory for the registry entries
- */
+/// @brief   Memory for the registry entries
 static saul_reg_t saul_reg_entries[SAUL_GPIO_NUMOF];
 
-/**
- * @brief   Reference the input mode driver struct
- */
+/// @brief   Reference the input mode driver struct
 extern saul_driver_t gpio_in_saul_driver;
 
-/**
- * @brief   Reference to the output mode driver struct
- */
+/// @brief   Reference to the output mode driver struct
 extern saul_driver_t gpio_out_saul_driver;
 
-void auto_init_gpio(void)
-{
+void auto_init_gpio(void) {
     for (unsigned int i = 0; i < SAUL_GPIO_NUMOF; i++) {
         const saul_gpio_params_t *p = &saul_gpio_params[i];
 
@@ -65,15 +51,15 @@ void auto_init_gpio(void)
         else {
             saul_reg_entries[i].driver = &gpio_out_saul_driver;
         }
-        /* initialize the GPIO pin */
+        // initialize the GPIO pin
         gpio_init(p->pin, p->mode);
-        /* set initial pin state if configured */
+        // set initial pin state if configured
         if (p->flags & (SAUL_GPIO_INIT_CLEAR | SAUL_GPIO_INIT_SET)) {
             phydat_t s;
             s.val[0] = (p->flags & SAUL_GPIO_INIT_SET);
             saul_reg_entries[i].driver->write(p, &s);
         }
-        /* add to registry */
+        // add to registry
         saul_reg_add(&(saul_reg_entries[i]));
     }
 }

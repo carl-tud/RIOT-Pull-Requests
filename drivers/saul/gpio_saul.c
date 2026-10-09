@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_saul
- * @{
- *
- * @file
- * @brief       SAUL wrapper for direct access to GPIO pins
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_saul
+/// @{
+///
+/// @file
+/// @brief       SAUL wrapper for direct access to GPIO pins
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -22,8 +18,7 @@
 #include "periph/gpio.h"
 #include "saul/periph.h"
 
-static int read(const void *dev, phydat_t *res)
-{
+static int read(const void *dev, phydat_t *res) {
     const saul_gpio_params_t *p = (const saul_gpio_params_t *)dev;
     int inverted = (p->flags & SAUL_GPIO_INVERTED);
 
@@ -34,8 +29,7 @@ static int read(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int write(const void *dev, const phydat_t *state)
-{
+static int write(const void *dev, const phydat_t *state) {
     const saul_gpio_params_t *p = (const saul_gpio_params_t *)dev;
     int inverted = (p->flags & SAUL_GPIO_INVERTED);
     int value = (state->val[0] ? !inverted : inverted);

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016-2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf52dk
- * @{
- *
- * @file
- * @brief       Board specific configuration for the nRF52 DK
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     boards_nrf52dk
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration for the nRF52 DK
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "board_common.h"
 
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin configuration
- * @{
- */
+/// @name    LED pin configuration
+/// @{
 #define LED0_PIN            GPIO_PIN(0, 17)
 #define LED1_PIN            GPIO_PIN(0, 18)
 #define LED2_PIN            GPIO_PIN(0, 19)
@@ -53,12 +47,10 @@ extern "C" {
 #define LED3_ON             (LED_PORT->OUTCLR = LED3_MASK)
 #define LED3_OFF            (LED_PORT->OUTSET = LED3_MASK)
 #define LED3_TOGGLE         (LED_PORT->OUT   ^= LED3_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    Button pin configuration
- * @{
- */
+/// @name    Button pin configuration
+/// @{
 #define BTN0_PIN            GPIO_PIN(0, 13)
 #define BTN0_MODE           GPIO_IN_PU
 #define BTN1_PIN            GPIO_PIN(0, 14)
@@ -67,10 +59,10 @@ extern "C" {
 #define BTN2_MODE           GPIO_IN_PU
 #define BTN3_PIN            GPIO_PIN(0, 16)
 #define BTN3_MODE           GPIO_IN_PU
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

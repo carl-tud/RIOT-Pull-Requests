@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam0_common
- * @ingroup     drivers_periph_timer
- * @{
- *
- * @file        timer.c
- * @brief       Low-level timer driver implementation
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author      Juergen Fitschen <me@jue.yt>
- *
- * @}
- */
+/// @ingroup     cpu_sam0_common
+/// @ingroup     drivers_periph_timer
+/// @{
+///
+/// @file        timer.c
+/// @brief       Low-level timer driver implementation
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author      Juergen Fitschen <me@jue.yt>
+///
+/// @}
 
 #include <assert.h>
 #include <stdlib.h>
@@ -32,15 +28,13 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief Timer state memory
- */
+/// @brief Timer state memory
 static timer_isr_ctx_t config[TIMER_NUMOF];
 
 static uint32_t _oneshot;
 
-/* Number of right-shifts to perform on the input frequency to get the output
- * frequency the prescaler will divide it down to */
+// Number of right-shifts to perform on the input frequency to get the output
+// frequency the prescaler will divide it down to
 static const uint8_t _prescaler_shifts[] = {
     [TC_CTRLA_PRESCALER_DIV1_Val] = 0,
     [TC_CTRLA_PRESCALER_DIV2_Val] = 1,
@@ -55,57 +49,48 @@ static const uint8_t _prescaler_shifts[] = {
 static_assert(ARRAY_SIZE(_prescaler_shifts) == (TC_CTRLA_PRESCALER_DIV1024_Val + 1),
               "_prescaler_shifts needs an update for the selected MCU");
 
-static inline void set_oneshot(tim_t tim, int chan)
-{
+static inline void set_oneshot(tim_t tim, int chan) {
     _oneshot |= (1 << chan) << (TIMER_CHANNEL_NUMOF * tim);
 }
 
-static inline void clear_oneshot(tim_t tim, int chan)
-{
+static inline void clear_oneshot(tim_t tim, int chan) {
     _oneshot &= ~((1 << chan) << (TIMER_CHANNEL_NUMOF * tim));
 }
 
-static inline bool is_oneshot(tim_t tim, int chan)
-{
+static inline bool is_oneshot(tim_t tim, int chan) {
     return _oneshot & ((1 << chan) << (TIMER_CHANNEL_NUMOF * tim));
 }
 
-static inline TcCount32 *dev(tim_t tim)
-{
+static inline TcCount32 *dev(tim_t tim) {
     return &timer_config[tim].dev->COUNT32;
 }
 
-static inline TcCount16 *dev16(tim_t tim)
-{
+static inline TcCount16 *dev16(tim_t tim) {
     return &timer_config[tim].dev->COUNT16;
 }
 
-static inline TcCount8 *dev8(tim_t tim)
-{
+static inline TcCount8 *dev8(tim_t tim) {
     return &timer_config[tim].dev->COUNT8;
 }
 
-static inline void wait_synchronization(tim_t tim)
-{
+static inline void wait_synchronization(tim_t tim) {
 #if defined(TC_SYNCBUSY_MASK)
-    /* SYNCBUSY is a register */
+    // SYNCBUSY is a register
     while ((dev(tim)->SYNCBUSY.reg) != 0) {}
 #elif defined(TC_STATUS_SYNCBUSY)
-    /* SYNCBUSY is a bit */
+    // SYNCBUSY is a bit
     while ((dev(tim)->STATUS.reg & TC_STATUS_SYNCBUSY) != 0) {}
 #else
 #error Unsupported device
 #endif
 }
 
-/* enable timer interrupts */
-static inline void _irq_enable(tim_t tim)
-{
+// enable timer interrupts
+static inline void _irq_enable(tim_t tim) {
     NVIC_EnableIRQ(timer_config[tim].irq);
 }
 
-static uint8_t _get_prescaler(uint32_t freq_out, uint32_t freq_in)
-{
+static uint8_t _get_prescaler(uint32_t freq_out, uint32_t freq_in) {
     for (uint8_t scale = 0; scale < ARRAY_SIZE(_prescaler_shifts); scale++) {
         if ((freq_in >> _prescaler_shifts[scale]) == freq_out) {
             return scale;
@@ -115,9 +100,8 @@ static uint8_t _get_prescaler(uint32_t freq_out, uint32_t freq_in)
     return UINT8_MAX;
 }
 
-/* TOP value is CC0 */
-static inline void _set_mfrq(tim_t tim)
-{
+// TOP value is CC0
+static inline void _set_mfrq(tim_t tim) {
 #ifdef TC_WAVE_WAVEGEN_MFRQ
     dev(tim)->WAVE.reg = TC_WAVE_WAVEGEN_MFRQ;
 #else
@@ -127,9 +111,8 @@ static inline void _set_mfrq(tim_t tim)
 #endif
 }
 
-/* TOP value is MAX timer value */
-static inline void _set_nfrq(tim_t tim)
-{
+// TOP value is MAX timer value
+static inline void _set_nfrq(tim_t tim) {
 #ifdef TC_WAVE_WAVEGEN_NFRQ
     dev(tim)->WAVE.reg = TC_WAVE_WAVEGEN_NFRQ;
 #else
@@ -139,15 +122,13 @@ static inline void _set_nfrq(tim_t tim)
 #endif
 }
 
-uword_t timer_query_freqs_numof(tim_t dev)
-{
+uword_t timer_query_freqs_numof(tim_t dev) {
     assert(dev < TIMER_NUMOF);
     (void)dev;
     return ARRAY_SIZE(_prescaler_shifts);
 }
 
-uint32_t timer_query_freqs(tim_t dev, uword_t index)
-{
+uint32_t timer_query_freqs(tim_t dev, uword_t index) {
     assert(dev < TIMER_NUMOF);
     const tc32_conf_t *cfg = &timer_config[dev];
     if (index >= ARRAY_SIZE(_prescaler_shifts)) {
@@ -156,20 +137,17 @@ uint32_t timer_query_freqs(tim_t dev, uword_t index)
     return sam0_gclk_freq(cfg->gclk_src) >> _prescaler_shifts[index];
 }
 
-/**
- * @brief Setup the given timer
- */
-int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
-{
+/// @brief Setup the given timer
+int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg) {
     const tc32_conf_t *cfg = &timer_config[tim];
     uint8_t scale = _get_prescaler(freq, sam0_gclk_freq(cfg->gclk_src));
 
-    /* make sure given device is valid */
+    // make sure given device is valid
     if (tim >= TIMER_NUMOF) {
         return -1;
     }
 
-    /* make sure the prescaler is within range */
+    // make sure the prescaler is within range
     if (scale > TC_CTRLA_PRESCALER_DIV1024_Val) {
         DEBUG("[timer %d] scale %d is out of range\n", tim, scale);
         return -1;
@@ -184,10 +162,10 @@ int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
     PM->APBCMASK.reg |= cfg->pm_mask;
 #endif
 
-    /* make sure the timer is not running */
+    // make sure the timer is not running
     timer_stop(tim);
 
-    /* reset the timer */
+    // reset the timer
     dev(tim)->CTRLA.reg |= TC_CTRLA_SWRST;
     while (dev(tim)->CTRLA.reg & TC_CTRLA_SWRST) {}
 
@@ -206,20 +184,19 @@ int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
 
     dev(tim)->INTENCLR.reg = TC_INTENCLR_MASK;
 
-    /* save callback */
+    // save callback
     config[tim].cb = cb;
     config[tim].arg = arg;
 
     timer_start(tim);
 
-    /* enable interrupts for given timer */
+    // enable interrupts for given timer
     _irq_enable(tim);
 
     return 0;
 }
 
-static void _set_cc(tim_t tim, int cc, unsigned int value)
-{
+static void _set_cc(tim_t tim, int cc, unsigned int value) {
     const uint16_t flags = timer_config[tim].flags;
 
     if (flags & TC_CTRLA_MODE_COUNT32) {
@@ -232,15 +209,14 @@ static void _set_cc(tim_t tim, int cc, unsigned int value)
         return;
     }
 
-    /* 16 bit is the default */
+    // 16 bit is the default
     dev16(tim)->CC[cc].reg = value;
 }
 
-int timer_set_absolute(tim_t tim, int channel, unsigned int value)
-{
+int timer_set_absolute(tim_t tim, int channel, unsigned int value) {
     DEBUG("Setting timer %i channel %i to %i\n", tim, channel, value);
 
-    /* set timeout value */
+    // set timeout value
     switch (channel) {
     case 0:
         dev(tim)->INTFLAG.reg = TC_INTFLAG_MC0;
@@ -261,16 +237,15 @@ int timer_set_absolute(tim_t tim, int channel, unsigned int value)
     return 0;
 }
 
-int timer_set_periodic(tim_t tim, int channel, unsigned int value, uint8_t flags)
-{
+int timer_set_periodic(tim_t tim, int channel, unsigned int value, uint8_t flags) {
     DEBUG("Setting timer %i channel %i to %i (repeating)\n", tim, channel, value);
 
     timer_stop(tim);
 
-    /* set timeout value */
+    // set timeout value
     switch (channel) {
     case 0:
-        /* clear interrupt */
+        // clear interrupt
         dev(tim)->INTFLAG.reg = TC_INTFLAG_MC0;
 
         if (flags & TIM_FLAG_RESET_ON_MATCH) {
@@ -284,7 +259,7 @@ int timer_set_periodic(tim_t tim, int channel, unsigned int value, uint8_t flags
         break;
     case 1:
 
-        /* only CC0 can be used to set TOP */
+        // only CC0 can be used to set TOP
         if (flags & TIM_FLAG_RESET_ON_MATCH) {
             assert(0);
             return -1;
@@ -311,8 +286,7 @@ int timer_set_periodic(tim_t tim, int channel, unsigned int value, uint8_t flags
     return 0;
 }
 
-int timer_clear(tim_t tim, int channel)
-{
+int timer_clear(tim_t tim, int channel) {
     switch (channel) {
     case 0:
         dev(tim)->INTFLAG.reg = TC_INTFLAG_MC0;
@@ -329,23 +303,21 @@ int timer_clear(tim_t tim, int channel)
     return 0;
 }
 
-unsigned int timer_read(tim_t tim)
-{
-    /* WORKAROUND to prevent being stuck there if timer not init */
+unsigned int timer_read(tim_t tim) {
+    // WORKAROUND to prevent being stuck there if timer not init
     if (!(dev(tim)->CTRLA.reg & TC_CTRLA_ENABLE)) {
         return 0;
     }
 
-    /* request synchronisation */
+    // request synchronisation
 #ifdef TC_CTRLBSET_CMD_READSYNC_Val
     uint32_t cmd;
     dev(tim)->CTRLBSET.reg = TC_CTRLBSET_CMD_READSYNC;
-     /* work around a possible hardware bug where it takes some
-        cycles for the timer peripheral to set the SYNCBUSY/READSYNC bit
-        after writing the READSYNC bit
-
-        The problem was observed on SAME54.
-      */
+     // work around a possible hardware bug where it takes some
+     //    cycles for the timer peripheral to set the SYNCBUSY/READSYNC bit
+     //    after writing the READSYNC bit
+     //
+     //    The problem was observed on SAME54.
     do {
         cmd = ((dev(tim)->CTRLBSET.reg & TC_CTRLBSET_CMD_Msk) >> TC_CTRLBSET_CMD_Pos);
     } while(cmd == TC_CTRLBSET_CMD_READSYNC_Val);
@@ -359,10 +331,9 @@ unsigned int timer_read(tim_t tim)
     return dev(tim)->COUNT.reg;
 }
 
-void timer_stop(tim_t tim)
-{
+void timer_stop(tim_t tim) {
 #if IS_ACTIVE(MODULE_PM_LAYERED) && defined(SAM0_TIMER_PM_BLOCK)
-    /* unblock power mode if the timer is running */
+    // unblock power mode if the timer is running
     if (dev(tim)->CTRLA.reg & TC_CTRLA_ENABLE) {
         DEBUG("[timer %d] pm_unblock\n", tim);
         pm_unblock(SAM0_TIMER_PM_BLOCK);
@@ -373,12 +344,11 @@ void timer_stop(tim_t tim)
     wait_synchronization(tim);
 }
 
-void timer_start(tim_t tim)
-{
+void timer_start(tim_t tim) {
     wait_synchronization(tim);
 
 #if IS_ACTIVE(MODULE_PM_LAYERED) && defined(SAM0_TIMER_PM_BLOCK)
-    /* block power mode if the timer is not running, yet */
+    // block power mode if the timer is not running, yet
     if (!(dev(tim)->CTRLA.reg & TC_CTRLA_ENABLE)) {
         DEBUG("[timer %d] pm_block\n", tim);
         pm_block(SAM0_TIMER_PM_BLOCK);
@@ -388,12 +358,11 @@ void timer_start(tim_t tim)
     dev(tim)->CTRLA.reg |= TC_CTRLA_ENABLE;
 }
 
-static inline void timer_isr(tim_t tim)
-{
+static inline void timer_isr(tim_t tim) {
     TcCount32 *tc  = dev(tim);
     uint8_t status = tc->INTFLAG.reg;
 
-    /* Acknowledge all interrupts */
+    // Acknowledge all interrupts
     tc->INTFLAG.reg = status;
 
     if ((status & TC_INTFLAG_MC0) && (tc->INTENSET.reg & TC_INTENSET_MC0)) {
@@ -420,29 +389,25 @@ static inline void timer_isr(tim_t tim)
 }
 
 #ifdef TIMER_0_ISR
-void TIMER_0_ISR(void)
-{
+void TIMER_0_ISR(void) {
     timer_isr(0);
     cortexm_isr_end();
 }
 #endif
 #ifdef TIMER_1_ISR
-void TIMER_1_ISR(void)
-{
+void TIMER_1_ISR(void) {
     timer_isr(1);
     cortexm_isr_end();
 }
 #endif
 #ifdef TIMER_2_ISR
-void TIMER_2_ISR(void)
-{
+void TIMER_2_ISR(void) {
     timer_isr(2);
     cortexm_isr_end();
 }
 #endif
 #ifdef TIMER_3_ISR
-void TIMER_3_ISR(void)
-{
+void TIMER_3_ISR(void) {
     timer_isr(3);
     cortexm_isr_end();
 }

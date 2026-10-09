@@ -1,8 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2026 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2026 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2026 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -19,32 +17,26 @@
 #include "private/packet.h"
 #include "private/messaging.h"
 
-/**
- * @defgroup net_unicoap_private Private API
- * @ingroup  net_unicoap_internal
- * @brief    Implementation details of `unicoap`
- * @{
- *
- * @warning Do not call any of these APIs and do not interact with any of unicoap's private types,
- * unless you know what you are doing. You risk corrupting `unicoap`'s internal state.
- */
+/// @defgroup net_unicoap_private Private API
+/// @ingroup  net_unicoap_internal
+/// @brief    Implementation details of `unicoap`
+/// @{
+///
+/// @warning Do not call any of these APIs and do not interact with any of unicoap's private types,
+/// unless you know what you are doing. You risk corrupting `unicoap`'s internal state.
 
-/**
- * @file
- * @brief  Private API
- * @author Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @brief  Private API
+/// @author Carl Seifert <carl.seifert@tu-dresden.de>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* MARK: - Debugging */
-/**
- * @name Debugging
- * @{
- */
-/** @brief Debug log prefix */
+// MARK: - Debugging
+/// @name Debugging
+/// @{
+/// @brief Debug log prefix
 #define UNICOAP_DEBUG_PREFIX "coap"
 
 #ifndef DOXYGEN
@@ -52,13 +44,11 @@ extern "C" {
 #endif
 
 #ifndef DOXYGEN
-/**
- * @brief Debug with category prefix
- *
- * Prints `unicoap.category: __VA_ARGS__`
- *
- * @param category Category string
- */
+/// @brief Debug with category prefix
+///
+/// Prints `unicoap.category: __VA_ARGS__`
+///
+/// @param category Category string
 #  define _UNICOAP_PREFIX_DEBUG(category, ...) DEBUG(UNICOAP_DEBUG_PREFIX category ": " __VA_ARGS__)
 #  define UNICOAP_DEBUG(...)                   _UNICOAP_PREFIX_DEBUG("", __VA_ARGS__)
 #  define _OPTIONS_DEBUG(...)                   _UNICOAP_PREFIX_DEBUG(".options", __VA_ARGS__)
@@ -74,22 +64,14 @@ extern "C" {
 #endif
 
 #if ENABLE_DEBUG
-/**
- * @brief Debug print endpoint
- */
+/// @brief Debug print endpoint
 #  define DEBUG_ENDPOINT(endpoint) unicoap_print_endpoint(endpoint)
-/**
- * @brief Debug print flags
- */
+/// @brief Debug print flags
 #  define DEBUG_FLAGS(flags, role) unicoap_print_flags(flags, role)
 #else
-/**
- * @brief Debug print endpoint
- */
+/// @brief Debug print endpoint
 #  define DEBUG_ENDPOINT(endpoint) (void)endpoint
-/**
- * @brief Debug print flags
- */
+/// @brief Debug print flags
 #  define DEBUG_FLAGS(flags, role) \
       (void)flags;                 \
       (void)role
@@ -107,50 +89,40 @@ extern "C" {
       } while (0)
 #endif
 
-/**
- * @brief Emit a diagnostic stating that a driver is missing
- */
+/// @brief Emit a diagnostic stating that a driver is missing
 void unicoap_assist_emit_diagnostic_missing_driver(unicoap_proto_t proto);
-/** @} */
+/// @}
 
-/* MARK: - Thread */
-/**
- * @name Thread
- * @{
- */
-/** @brief Name of background thread spawned upon calls to @ref unicoap_init */
+// MARK: - Thread
+/// @name Thread
+/// @{
+/// @brief Name of background thread spawned upon calls to @ref unicoap_init
 #define UNICOAP_THREAD_IDENTIFIER "unicoap"
 
-/** @brief Locks internal state lock */
+/// @brief Locks internal state lock
 void unicoap_state_lock(void);
 
-/** @brief Unlocks internal state lock */
+/// @brief Unlocks internal state lock
 void unicoap_state_unlock(void);
-/** @} */
+/// @}
 
-/* MARK: - State and initialization */
-/**
- * @name State and initialization
- * @{
- */
-/**
- * @brief Container the unicoap stacks keeps state in
- */
+// MARK: - State and initialization
+/// @name State and initialization
+/// @{
+/// @brief Container the unicoap stacks keeps state in
 typedef struct {
-    /**
-     * @brief Used when allocating listener, transaction, carbon copy, observer, or registration
-     */
+    /// @brief Used when allocating listener, transaction, carbon copy, observer, or registration
     mutex_t lock;
 
 #if IS_USED(MODULE_UNICOAP_SERVER) || defined(DOXYGEN)
-    /** @brief Groups of resources */
+    /// @brief Groups of resources
     unicoap_listener_t* listeners;
 #endif
 
-    /* TODO: Client and advanced server features: Exchange-layer state objects */
+    // TODO: Client and advanced server features: Exchange-layer state objects
 } unicoap_state_t;
 
-/** @brief Sets listener array on @p state object to @p listeners */
+/// @brief Sets listener array on @p state object to @p listeners
 static inline void unicoap_set_listeners(unicoap_state_t* state, unicoap_listener_t* listeners) {
 #if IS_USED(MODULE_UNICOAP_SERVER)
     state->listeners = listeners;
@@ -160,7 +132,7 @@ static inline void unicoap_set_listeners(unicoap_state_t* state, unicoap_listene
 #endif
 }
 
-/** @brief Gets listener array from @p state object */
+/// @brief Gets listener array from @p state object
 static inline unicoap_listener_t* unicoap_get_listeners(unicoap_state_t* state) {
 #if IS_USED(MODULE_UNICOAP_SERVER)
     return state->listeners;
@@ -170,135 +142,118 @@ static inline unicoap_listener_t* unicoap_get_listeners(unicoap_state_t* state) 
 #endif
 }
 
-/** @brief Initializes the CoAP over UDP driver on the given @p queue */
+/// @brief Initializes the CoAP over UDP driver on the given @p queue
 int unicoap_init_udp(event_queue_t* queue);
 
-/** @brief Deinitializes the CoAP over UDP driver on the given @p queue */
+/// @brief Deinitializes the CoAP over UDP driver on the given @p queue
 int unicoap_deinit_udp(event_queue_t* queue);
 
-/** @brief Initializes the CoAP over DTLS over UDP driver on the given @p queue */
+/// @brief Initializes the CoAP over DTLS over UDP driver on the given @p queue
 int unicoap_init_dtls(event_queue_t* queue);
 
-/** @brief Deinitializes the CoAP over DTLS over UDP driver on the given @p queue */
+/// @brief Deinitializes the CoAP over DTLS over UDP driver on the given @p queue
 int unicoap_deinit_dtls(event_queue_t* queue);
 
-/** @brief Initializes the CoAP over Slipmux driver on the given @p queue */
+/// @brief Initializes the CoAP over Slipmux driver on the given @p queue
 int unicoap_init_slipmux(event_queue_t* queue);
 
-/** @brief Deinitializes the CoAP over Slipmux driver on the given @p queue */
+/// @brief Deinitializes the CoAP over Slipmux driver on the given @p queue
 int unicoap_deinit_slipmux(event_queue_t* queue);
 
-/** @brief Initializes the common RFC 7252 driver on the given @p queue */
+/// @brief Initializes the common RFC 7252 driver on the given @p queue
 int unicoap_init_rfc7252_common(event_queue_t* queue);
 
-/** @brief DeiInitializes the common RFC 7252 driver on the given @p queue */
+/// @brief DeiInitializes the common RFC 7252 driver on the given @p queue
 int unicoap_deinit_rfc7252_common(event_queue_t* queue);
 
-/* MARK: unicoap_driver_extension_point */
-/** @} */
+// MARK: unicoap_driver_extension_point
+/// @}
 
-/* MARK: - Private Server Utils */
-/**
- * @name Resource-request matching
- * @{
- */
-/**
- * @brief Tries to find a resource for the given packet
- *
- * The resource and listener variables passed by reference will be set to the respective resource
- * and encompassing listener, if found.
- *
- * This method calls each listeners @ref unicoap_listener_t.request_matcher to check whether
- * the given resource can be matched to the given packet.
- *
- * @note The default request matcher is @ref unicoap_resource_match_request_default
- *
- * @param[in] packet Packet to find resource for
- * @param[in] resource_ptr Pointer to a resource variable
- * @param[in] listener_ptr Pointer to a listener variable
- *
- * @retval `0` if found
- * @retval or @ref unicoap_status_t if not found, method mismatch, or server error
- */
+// MARK: - Private Server Utils
+/// @name Resource-request matching
+/// @{
+/// @brief Tries to find a resource for the given packet
+///
+/// The resource and listener variables passed by reference will be set to the respective resource
+/// and encompassing listener, if found.
+///
+/// This method calls each listeners @ref unicoap_listener_t.request_matcher to check whether
+/// the given resource can be matched to the given packet.
+///
+/// @note The default request matcher is @ref unicoap_resource_match_request_default
+///
+/// @param[in] packet Packet to find resource for
+/// @param[in] resource_ptr Pointer to a resource variable
+/// @param[in] listener_ptr Pointer to a listener variable
+///
+/// @retval `0` if found
+/// @retval or @ref unicoap_status_t if not found, method mismatch, or server error
 int unicoap_resource_find(const unicoap_packet_t* packet, const unicoap_resource_t** resource_ptr,
                           const unicoap_listener_t** listener_ptr);
 
-/**
- * @brief Default request-resource matcher for listeners
- *
- * The resource variable passed by reference will be set to the respective resource, if found.
- *
- * @param[in] listener Listener
- * @param[out] resource_ptr Pointer to a resource variable
- * @param[in] request Request message
- * @param[in] endpoint Remote endpoint the request originates from
- *
- * @retval `0` if found
- * @retval An @ref unicoap_status_t if not found, method mismatch, or server error
- */
+/// @brief Default request-resource matcher for listeners
+///
+/// The resource variable passed by reference will be set to the respective resource, if found.
+///
+/// @param[in] listener Listener
+/// @param[out] resource_ptr Pointer to a resource variable
+/// @param[in] request Request message
+/// @param[in] endpoint Remote endpoint the request originates from
+///
+/// @retval `0` if found
+/// @retval An @ref unicoap_status_t if not found, method mismatch, or server error
 int unicoap_resource_match_request_default(const unicoap_listener_t* listener,
                                            const unicoap_resource_t** resource_ptr,
                                            const unicoap_message_t* request,
                                            const unicoap_endpoint_t* endpoint);
 
-/**
- * @brief Default resource handler for `/.well-known/core`
- *
- * @see @ref unicoap_request_handler_t
- */
+/// @brief Default resource handler for `/.well-known/core`
+///
+/// @see @ref unicoap_request_handler_t
 int unicoap_resource_handle_well_known_core(unicoap_message_t* message, const unicoap_aux_t* aux,
                                             unicoap_request_context_t* ctx, void* arg);
-/** @} */
+/// @}
 
-/* MARK: - Other Utils */
-/**
- * @name Other Utils
- * @{
- */
+// MARK: - Other Utils
+/// @name Other Utils
+/// @{
 
-/**
- * @brief Declares internal receiver storage buffer
- *
- * This buffer is used by sock network backends not emitting contiguous data
- */
+/// @brief Declares internal receiver storage buffer
+///
+/// This buffer is used by sock network backends not emitting contiguous data
 #define UNICOAP_DECL_RECEIVER_STORAGE \
     uint8_t unicoap_receiver_buffer[CONFIG_UNICOAP_PDU_SIZE_MAX]
 
-/**
- * @brief `extern` declaration of @ref UNICOAP_DECL_RECEIVER_STORAGE
- */
+/// @brief `extern` declaration of @ref UNICOAP_DECL_RECEIVER_STORAGE
 #define UNICOAP_DECL_RECEIVER_STORAGE_EXTERN extern UNICOAP_DECL_RECEIVER_STORAGE
 
-/**
- * @brief Determines whether the chunk of the given size must be truncated to fit into a buffer of
- * size @ref CONFIG_UNICOAP_PDU_SIZE_MAX
- *
- * Use this method when receiving fragmented/scattered data, e.g., when reading from a socket.
- *
- * This method returns `false` if a chunk of the given @p chunk_size can still be copied into a
- * buffer of size @ref CONFIG_UNICOAP_PDU_SIZE_MAX when @p received bytes are already stored in
- * that buffer.
- *
- * If said buffer cannot store a chunk of the given size while also holding @p received bytes
- * already saved, the chunk needs to be truncated. In this case, `true` is returned and the chunk
- * size is truncated to the largest chunk size that is still acceptable. Stop your receiver loop as
- * further calls to this function will, consequently, also return `true` and yield a chunk_size of
- * zero (buffer is full).
- *
- * @param[in,out] chunk_size Number of bytes in the currently received chunk. Written to if chunk
- *                           does not fit into buffer.
- *
- * @param received Number of bytes already stored in the buffer (received byte count)
- *
- * @returns Boolean value indicating whether the chunk, and therefore also its size, needed to be
- * truncated.
- */
-static inline bool unicoap_transport_truncate_received(size_t* chunk_size, size_t received)
-{
-    /* cannot use sizeof() here, because we want this function to be inlinable,
-     * extern decl would affect transport.c, too */
+/// @brief Determines whether the chunk of the given size must be truncated to fit into a buffer of
+/// size @ref CONFIG_UNICOAP_PDU_SIZE_MAX
+///
+/// Use this method when receiving fragmented/scattered data, e.g., when reading from a socket.
+///
+/// This method returns `false` if a chunk of the given @p chunk_size can still be copied into a
+/// buffer of size @ref CONFIG_UNICOAP_PDU_SIZE_MAX when @p received bytes are already stored in
+/// that buffer.
+///
+/// If said buffer cannot store a chunk of the given size while also holding @p received bytes
+/// already saved, the chunk needs to be truncated. In this case, `true` is returned and the chunk
+/// size is truncated to the largest chunk size that is still acceptable. Stop your receiver loop as
+/// further calls to this function will, consequently, also return `true` and yield a chunk_size of
+/// zero (buffer is full).
+///
+/// @param[in,out] chunk_size Number of bytes in the currently received chunk. Written to if chunk
+///                           does not fit into buffer.
+///
+/// @param received Number of bytes already stored in the buffer (received byte count)
+///
+/// @returns Boolean value indicating whether the chunk, and therefore also its size, needed to be
+/// truncated.
+static inline bool unicoap_transport_truncate_received(size_t* chunk_size, size_t received) {
+    // cannot use sizeof() here, because we want this function to be inlinable,
+    // extern decl would affect transport.c, too
     if (received + *chunk_size > CONFIG_UNICOAP_PDU_SIZE_MAX) {
-        /* Limit chunk size to remaining available storage capacity */
+        // Limit chunk size to remaining available storage capacity
         _TRANSPORT_DEBUG("truncated\n");
         _TRANSPORT_DEBUG("warning: recv storage too small, need at least %" PRIdSIZE "\n",
                         received + *chunk_size);
@@ -307,11 +262,10 @@ static inline bool unicoap_transport_truncate_received(size_t* chunk_size, size_
     }
     return false;
 }
-/** @} */
+/// @}
 
 #ifndef DOXYGEN
-static inline void __debug_hex(const uint8_t* buffer, size_t size)
-{
+static inline void __debug_hex(const uint8_t* buffer, size_t size) {
     for (size_t i = 0; i < size; i += 1) {
         printf("%02X", buffer[i]);
     }
@@ -329,4 +283,4 @@ static inline void __debug_hex(const uint8_t* buffer, size_t size)
 }
 #endif
 
-/** @} */
+/// @}

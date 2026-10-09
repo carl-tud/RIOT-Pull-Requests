@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for AT86RF2XX IEEE 802.15.4 device driver
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for AT86RF2XX IEEE 802.15.4 device driver
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -33,8 +29,7 @@ static at86rf2xx_bhp_ev_t at86rf2xx_bhp[AT86RF2XX_NUM];
 static netdev_ieee802154_submac_t at86rf2xx_netdev[AT86RF2XX_NUM];
 
 #if AT86RF2XX_RANDOM_NUMBER_GENERATOR
-int random_by_at86rf2xx(int argc, char **argv)
-{
+int random_by_at86rf2xx(int argc, char **argv) {
     (void)argc;
     (void)argv;
     for (unsigned int i = 0; i < AT86RF2XX_NUM; i++) {
@@ -57,15 +52,15 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
 
     for (unsigned i = 0; i < AT86RF2XX_NUM; i++) {
         printf("%d out of %u\n", i + 1, (unsigned)AT86RF2XX_NUM);
-        /* setup the specific driver */
+        // setup the specific driver
         at86rf2xx_init_event(&at86rf2xx_bhp[i], &at86rf2xx_params[i], &at86rf2xx_netdev[i].submac.dev, EVENT_PRIO_HIGHEST);
 
         netdev_register(&at86rf2xx_netdev[i].dev.netdev, NETDEV_AT86RF2XX, i);
         netdev_ieee802154_submac_init(&at86rf2xx_netdev[i]);
-        /* set the application-provided callback */
+        // set the application-provided callback
         at86rf2xx_netdev[i].dev.netdev.event_callback = cb;
 
-        /* initialize the device driver */
+        // initialize the device driver
         int res = at86rf2xx_netdev[i].dev.netdev.driver->init(&at86rf2xx_netdev[i].dev.netdev);
         if (res != 0) {
             return -1;
@@ -75,8 +70,7 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Test application for AT86RF2XX IEEE 802.15.4 device driver");
 
     int res = netdev_ieee802154_minimal_init();
@@ -85,7 +79,7 @@ int main(void)
         return 1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Manual test application for UART peripheral drivers
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Manual test application for UART peripheral drivers
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -44,7 +40,7 @@
 
 #define POWEROFF_DELAY_MS   (250U)
 
-/* if stdio is not done via UART, allow to use the stdio UART for the test */
+// if stdio is not done via UART, allow to use the stdio UART for the test
 #ifndef MODULE_STDIO_UART
 #  undef STDIO_UART_DEV
 #endif
@@ -59,27 +55,23 @@
 
 static char *_endline = "\n";
 
-static void _write_newline(uart_t dev)
-{
+static void _write_newline(uart_t dev) {
     uart_write(dev, (uint8_t *)_endline, strlen(_endline));
 }
 
-static void _delay_ms(uint32_t msec)
-{
+static void _delay_ms(uint32_t msec) {
     if (IS_USED(MODULE_ZTIMER)) {
         ztimer_sleep(ZTIMER_MSEC, msec);
     }
     else {
-        /*
-         * As fallback for freshly ported boards with no timer drivers written
-         * yet, we just use the CPU to delay execution and assume that roughly
-         * 20 CPU cycles are spend per loop iteration.
-         *
-         * Note that the volatile qualifier disables compiler optimizations for
-         * all accesses to the counter variable. Without volatile, modern
-         * compilers would detect that the loop is only wasting CPU cycles and
-         * optimize it out - but here the wasting of CPU cycles is desired.
-         */
+        // As fallback for freshly ported boards with no timer drivers written
+        // yet, we just use the CPU to delay execution and assume that roughly
+        // 20 CPU cycles are spend per loop iteration.
+        //
+        // Note that the volatile qualifier disables compiler optimizations for
+        // all accesses to the counter variable. Without volatile, modern
+        // compilers would detect that the loop is only wasting CPU cycles and
+        // optimize it out - but here the wasting of CPU cycles is desired.
         uint32_t loops = (coreclk() / 20) / 1000;
         for (volatile uint32_t j = 0; j < msec; j++) {
             for (volatile uint32_t i = 0; i < loops; i++) { }
@@ -110,8 +102,7 @@ static int stop_bits_lut_len = ARRAY_SIZE(stop_bits_lut);
 
 static BITFIELD(uarts_initialized_mask, UART_NUMOF);
 
-static int parse_dev(char *arg)
-{
+static int parse_dev(char *arg) {
     unsigned dev = atoi(arg);
     if (dev >= UART_NUMOF) {
         printf("Error: Invalid UART_DEV device specified (%u).\n", dev);
@@ -125,14 +116,12 @@ static int parse_dev(char *arg)
 }
 
 #ifdef MODULE_PERIPH_UART_RXSTART_IRQ
-static void rxs_cb(void *arg)
-{
+static void rxs_cb(void *arg) {
     ringbuffer_add_one(arg, STX);
 }
 #endif
 
-static void rx_cb(void *arg, uint8_t data)
-{
+static void rx_cb(void *arg, uint8_t data) {
     uart_t dev = (uart_t)(uintptr_t)arg;
 
     ringbuffer_add_one(&ctx[dev].rx_buf, data);
@@ -144,8 +133,7 @@ static void rx_cb(void *arg, uint8_t data)
     }
 }
 
-static int _self_test(uart_t dev, unsigned baud)
-{
+static int _self_test(uart_t dev, unsigned baud) {
     const char test_string[] = "Hello UART!";
 
     int res = uart_init(UART_DEV(dev), baud, rx_cb, (void *)(uintptr_t)dev);
@@ -159,7 +147,7 @@ static int _self_test(uart_t dev, unsigned baud)
     }
 
     uart_write(dev, (uint8_t*)test_string, sizeof(test_string));
-    /* wait 1ms for rx callback to be triggered by HW */
+    // wait 1ms for rx callback to be triggered by HW
     _delay_ms(1);
     for (unsigned i = 0; i < sizeof(test_string); ++i) {
         int c = ringbuffer_get_one(&ctx[dev].rx_buf);
@@ -174,7 +162,7 @@ static int _self_test(uart_t dev, unsigned baud)
     }
 
 #ifdef MODULE_PERIPH_UART_RXSTART_IRQ
-    /* test RX Start detection if available */
+    // test RX Start detection if available
     uart_rxstart_irq_configure(dev, rxs_cb, &ctx[dev].rx_buf);
     uart_rxstart_irq_enable(dev);
 
@@ -210,13 +198,12 @@ static int _self_test(uart_t dev, unsigned baud)
     return 0;
 
 failure:
-    /* flush ringbuffer */
+    // flush ringbuffer
     ringbuffer_remove(&ctx[dev].rx_buf, UART_BUFSIZE);
     return -1;
 }
 
-static void *printer(void *arg)
-{
+static void *printer(void *arg) {
     (void)arg;
     msg_t msg;
     msg_t msg_queue[8];
@@ -246,12 +233,11 @@ static void *printer(void *arg)
         puts("]");
     }
 
-    /* this should never be reached */
+    // this should never be reached
     return NULL;
 }
 
-static void sleep_test(int num, uart_t uart)
-{
+static void sleep_test(int num, uart_t uart) {
     printf("UARD_DEV(%i): test uart_poweron() and uart_poweroff()  ->  ", num);
     uart_poweroff(uart);
     _delay_ms(POWEROFF_DELAY_MS);
@@ -259,8 +245,7 @@ static void sleep_test(int num, uart_t uart)
     puts("[OK]");
 }
 
-static int cmd_init(int argc, char **argv)
-{
+static int cmd_init(int argc, char **argv) {
     int dev, res;
     uint32_t baud;
 
@@ -268,7 +253,7 @@ static int cmd_init(int argc, char **argv)
         printf("usage: %s <dev> <baudrate>\n", argv[0]);
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     dev = parse_dev(argv[1]);
     if (dev < 0) {
         return 1;
@@ -280,7 +265,7 @@ static int cmd_init(int argc, char **argv)
         bf_unset(uarts_initialized_mask, dev);
     }
 
-    /* initialize UART */
+    // initialize UART
     res = uart_init(UART_DEV(dev), baud, rx_cb, (void *)(intptr_t)dev);
     if (res == UART_NOBAUD) {
         printf("Error: Given baudrate (%u) not possible\n", (unsigned int)baud);
@@ -294,8 +279,8 @@ static int cmd_init(int argc, char **argv)
 
     bf_set(uarts_initialized_mask, dev);
 
-    /* also test if poweron() and poweroff() work (or at least don't break
-     * anything) */
+    // also test if poweron() and poweroff() work (or at least don't break
+    // anything)
     sleep_test(dev, UART_DEV(dev));
 
     return 0;
@@ -303,8 +288,7 @@ static int cmd_init(int argc, char **argv)
 
 SHELL_COMMAND(init, "Initialize a UART device with a given baudrate", cmd_init);
 
-static int cmd_off(int argc, char **argv)
-{
+static int cmd_off(int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s <dev>\n", argv[0]);
         return 1;
@@ -323,8 +307,7 @@ static int cmd_off(int argc, char **argv)
 SHELL_COMMAND(off, "Power off the given UART device", cmd_off);
 
 #ifdef MODULE_PERIPH_UART_MODECFG
-static int cmd_mode(int argc, char **argv)
-{
+static int cmd_mode(int argc, char **argv) {
     int dev, data_bits_arg, stop_bits_arg;
     uart_data_bits_t data_bits;
     uart_parity_t  parity;
@@ -390,17 +373,16 @@ static int cmd_mode(int argc, char **argv)
 }
 
 SHELL_COMMAND(mode, "Setup data bits, stop bits and parity for a given UART device", cmd_mode);
-#endif /* MODULE_PERIPH_UART_MODECFG */
+#endif // MODULE_PERIPH_UART_MODECFG
 
-static int cmd_send(int argc, char **argv)
-{
+static int cmd_send(int argc, char **argv) {
     int dev;
 
     if (argc < 3) {
         printf("usage: %s <dev> <data (string)>\n", argv[0]);
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     dev = parse_dev(argv[1]);
     if (dev < 0) {
         return 1;
@@ -414,15 +396,14 @@ static int cmd_send(int argc, char **argv)
 
 SHELL_COMMAND(send, "Send a string through given UART device", cmd_send);
 
-static int cmd_test(int argc, char **argv)
-{
+static int cmd_test(int argc, char **argv) {
     int dev;
 
     if (argc < 2) {
         printf("usage: %s <dev>\n", argv[0]);
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     dev = parse_dev(argv[1]);
     if (dev < 0) {
         return 1;
@@ -435,7 +416,7 @@ static int cmd_test(int argc, char **argv)
         bf_unset(uarts_initialized_mask, dev);
     }
 
-    /* run self test with different baud rates */
+    // run self test with different baud rates
     test_mode = true;
     for (unsigned i = 1; i <= 12; ++i) {
         if (_self_test(dev, 9600 * i)) {
@@ -451,8 +432,7 @@ static int cmd_test(int argc, char **argv)
 
 SHELL_COMMAND(test, "Run an automated test on a UART with RX and TX connected", cmd_test);
 
-static int cmd_eol_cr(int argc, char **argv)
-{
+static int cmd_eol_cr(int argc, char **argv) {
     (void)argc;
     (void)argv;
     _endline = "\r";
@@ -461,8 +441,7 @@ static int cmd_eol_cr(int argc, char **argv)
 
 SHELL_COMMAND(eol_cr, "Set CR as the end-of-line for send", cmd_eol_cr);
 
-static int cmd_eol_lf(int argc, char **argv)
-{
+static int cmd_eol_lf(int argc, char **argv) {
     (void)argc;
     (void)argv;
     _endline = "\n";
@@ -471,8 +450,7 @@ static int cmd_eol_lf(int argc, char **argv)
 
 SHELL_COMMAND(eol_lf, "Set LF as the end-of-line for send (default)", cmd_eol_lf);
 
-static int cmd_eol_crlf(int argc, char **argv)
-{
+static int cmd_eol_crlf(int argc, char **argv) {
     (void)argc;
     (void)argv;
     _endline = "\r\n";
@@ -481,8 +459,7 @@ static int cmd_eol_crlf(int argc, char **argv)
 
 SHELL_COMMAND(eol_crlf, "Set CRLF as the end-of-line for send", cmd_eol_crlf);
 
-int main(void)
-{
+int main(void) {
     puts("\nManual UART driver test application");
     puts("===================================");
     puts("This application is intended for testing additional UART\n"
@@ -495,10 +472,10 @@ int main(void)
          "being printed to STDOUT.\n\n"
          "NOTE: all strings need to be '\\n' terminated!\n");
 
-    /* do sleep test for UART used as STDIO. There is a possibility that the
-     * value given in STDIO_UART_DEV is not a numeral (depends on the CPU
-     * implementation), so we rather break the output by printing a
-     * non-numerical value instead of breaking the UART device descriptor */
+    // do sleep test for UART used as STDIO. There is a possibility that the
+    // value given in STDIO_UART_DEV is not a numeral (depends on the CPU
+    // implementation), so we rather break the output by printing a
+    // non-numerical value instead of breaking the UART device descriptor
     if (STDIO_UART_DEV != UART_UNDEF) {
         sleep_test(STDIO_UART_DEV, STDIO_UART_DEV);
     }
@@ -510,16 +487,16 @@ int main(void)
                (unsigned)STDIO_UART_DEV);
     }
 
-    /* initialize ringbuffers */
+    // initialize ringbuffers
     for (unsigned i = 0; i < UART_NUMOF; i++) {
         ringbuffer_init(&(ctx[i].rx_buf), ctx[i].rx_mem, UART_BUFSIZE);
     }
 
-    /* start the printer thread */
+    // start the printer thread
     printer_pid = thread_create(printer_stack, sizeof(printer_stack),
                                 PRINTER_PRIO, 0, printer, NULL, "printer");
 
-    /* run the shell */
+    // run the shell
     char line_buf[SHELL_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_BUFSIZE);
     return 0;

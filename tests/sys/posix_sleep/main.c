@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Posix sleep test application
- *
- * @author Christian Mehlis <mehlis@inf.fu-berlin.de>
- * @author Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Posix sleep test application
+///
+/// @author Christian Mehlis <mehlis@inf.fu-berlin.de>
+/// @author Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
-/* needed for posix usleep */
+// needed for posix usleep
 #ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 600
 #endif
@@ -24,8 +20,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-int main(void)
-{
+int main(void) {
     puts("5 x usleep(i++ * 500000)");
     for (unsigned i = 0; i < 5; i++) {
         useconds_t us = i * 500000u;

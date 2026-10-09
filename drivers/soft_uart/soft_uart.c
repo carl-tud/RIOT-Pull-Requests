@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_soft_uart
- * @{
- *
- * @file
- * @brief       Software UART implementation
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     drivers_soft_uart
+/// @{
+///
+/// @file
+/// @brief       Software UART implementation
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stdio.h>
 
@@ -34,19 +30,19 @@ enum {
 };
 
 struct uart_ctx {
-    mutex_t lock;       /**< UART mutex          */
-    mutex_t sync;       /**< TX byte done signal */
-    uart_rx_cb_t rx_cb; /**< RX callback         */
-    void* rx_cb_arg;    /**< RX callback arg     */
-    uint32_t bit_time;  /**< timer ticks per bit */
-    uint16_t byte_tx;   /**< current TX byte     */
-    uint16_t byte_rx;   /**< current RX byte     */
-    uint8_t bits_tx;    /**< TX bit pos          */
-    uint8_t state_rx;   /**< RX state            */
+    mutex_t lock;       ///< UART mutex
+    mutex_t sync;       ///< TX byte done signal
+    uart_rx_cb_t rx_cb; ///< RX callback
+    void* rx_cb_arg;    ///< RX callback arg
+    uint32_t bit_time;  ///< timer ticks per bit
+    uint16_t byte_tx;   ///< current TX byte
+    uint16_t byte_rx;   ///< current RX byte
+    uint8_t bits_tx;    ///< TX bit pos
+    uint8_t state_rx;   ///< RX state
 #ifdef MODULE_SOFT_UART_MODECFG
-    uint8_t data_bits;  /**< number of data bits */
-    uint8_t stop_bits;  /**< number of stop bits */
-    uint8_t parity;     /**< parity mode         */
+    uint8_t data_bits;  ///< number of data bits
+    uint8_t stop_bits;  ///< number of stop bits
+    uint8_t parity;     ///< parity mode
 #endif
 } soft_uart_ctx[SOFT_UART_NUMOF];
 
@@ -60,8 +56,7 @@ struct uart_ctx {
 #define BITS_PARITY(ctx)    0
 #endif
 
-static void _tx_timer_cb(void *arg, int chan)
-{
+static void _tx_timer_cb(void *arg, int chan) {
     soft_uart_t uart = (soft_uart_t)(uintptr_t)arg;
 
     const soft_uart_conf_t *cfg = &soft_uart_config[uart];
@@ -76,8 +71,7 @@ static void _tx_timer_cb(void *arg, int chan)
     }
 }
 
-static void _rx_timer_cb(void *arg, int chan)
-{
+static void _rx_timer_cb(void *arg, int chan) {
     soft_uart_t uart = (soft_uart_t)(uintptr_t)arg;
 
     const soft_uart_conf_t *cfg = &soft_uart_config[uart];
@@ -87,7 +81,7 @@ static void _rx_timer_cb(void *arg, int chan)
 
     timer_stop(cfg->rx_timer);
 
-    /* ignore spurious interrupts */
+    // ignore spurious interrupts
     if (ctx->state_rx == STATE_RX_IDLE) {
         return;
     }
@@ -96,14 +90,13 @@ static void _rx_timer_cb(void *arg, int chan)
     ctx->rx_cb(ctx->rx_cb_arg, ctx->byte_rx);
 }
 
-static void _rx_gpio_cb(void *arg)
-{
+static void _rx_gpio_cb(void *arg) {
     soft_uart_t uart = (soft_uart_t)(uintptr_t)arg;
 
     const soft_uart_conf_t *cfg = &soft_uart_config[uart];
     struct uart_ctx *ctx = &soft_uart_ctx[uart];
 
-    /* TODO: use Timer Capture feature */
+    // TODO: use Timer Capture feature
     const uint32_t now = timer_read(cfg->rx_timer);
 
     if (ctx->state_rx == STATE_RX_IDLE) {
@@ -113,8 +106,8 @@ static void _rx_gpio_cb(void *arg)
         return;
     }
 
-    /* we only get interrupts on flanks, so all bits
-     * till the next interrupt will have the same level. */
+    // we only get interrupts on flanks, so all bits
+    // till the next interrupt will have the same level.
     uint8_t bit = now / ctx->bit_time;
     uint8_t mask = 0xff << bit;
 
@@ -127,8 +120,7 @@ static void _rx_gpio_cb(void *arg)
     }
 }
 
-int soft_uart_init(soft_uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
-{
+int soft_uart_init(soft_uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg) {
     if (uart >= SOFT_UART_NUMOF) {
         return UART_NODEV;
     }
@@ -171,7 +163,7 @@ int soft_uart_init(soft_uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void
     if (rx_cb) {
         timer_init(cfg->rx_timer, cfg->timer_freq, _rx_timer_cb, (void *)(uintptr_t)uart);
         timer_stop(cfg->rx_timer);
-        /* timer should fire at the end of the byte */
+        // timer should fire at the end of the byte
         timer_set_periodic(cfg->rx_timer, 0, ctx->bit_time * (BITS_DATA(ctx) + BITS_PARITY(ctx) + 1),
                            TIM_FLAG_RESET_ON_MATCH | TIM_FLAG_RESET_ON_SET);
         gpio_init_int(cfg->rx_pin, GPIO_IN, GPIO_BOTH, _rx_gpio_cb, (void*)(uintptr_t)uart);
@@ -182,8 +174,7 @@ int soft_uart_init(soft_uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void
 
 #ifdef MODULE_SOFT_UART_MODECFG
 int soft_uart_mode(soft_uart_t uart, uart_data_bits_t data_bits, uart_parity_t parity,
-                   uart_stop_bits_t stop_bits)
-{
+                   uart_stop_bits_t stop_bits) {
     if (uart >= SOFT_UART_NUMOF) {
         return UART_NODEV;
     }
@@ -237,14 +228,13 @@ int soft_uart_mode(soft_uart_t uart, uart_data_bits_t data_bits, uart_parity_t p
 
     return 0;
 }
-#endif /* MODULE_SOFT_UART_MODECF */
+#endif // MODULE_SOFT_UART_MODECF
 
-static void soft_uart_write_byte(soft_uart_t uart, uint8_t data)
-{
+static void soft_uart_write_byte(soft_uart_t uart, uint8_t data) {
     const soft_uart_conf_t *cfg = &soft_uart_config[uart];
     struct uart_ctx *ctx = &soft_uart_ctx[uart];
 
-    /* start bit (LOW) + data bits */
+    // start bit (LOW) + data bits
     ctx->bits_tx = 1 + BITS_DATA(ctx);
     ctx->byte_tx = data << 1;
 
@@ -284,8 +274,7 @@ static void soft_uart_write_byte(soft_uart_t uart, uint8_t data)
     mutex_lock(&ctx->sync);
 }
 
-void soft_uart_write(soft_uart_t uart, const uint8_t *data, size_t len)
-{
+void soft_uart_write(soft_uart_t uart, const uint8_t *data, size_t len) {
     const soft_uart_conf_t *cfg = &soft_uart_config[uart];
     struct uart_ctx *ctx = &soft_uart_ctx[uart];
 
@@ -302,8 +291,7 @@ void soft_uart_write(soft_uart_t uart, const uint8_t *data, size_t len)
     mutex_unlock(&soft_uart_ctx[uart].lock);
 }
 
-void soft_uart_poweron(soft_uart_t uart)
-{
+void soft_uart_poweron(soft_uart_t uart) {
     const soft_uart_conf_t *cfg = &soft_uart_config[uart];
     struct uart_ctx *ctx = &soft_uart_ctx[uart];
 
@@ -312,8 +300,7 @@ void soft_uart_poweron(soft_uart_t uart)
     }
 }
 
-void soft_uart_poweroff(soft_uart_t uart)
-{
+void soft_uart_poweroff(soft_uart_t uart) {
     const soft_uart_conf_t *cfg = &soft_uart_config[uart];
     struct uart_ctx *ctx = &soft_uart_ctx[uart];
 
@@ -321,5 +308,5 @@ void soft_uart_poweroff(soft_uart_t uart)
         gpio_irq_disable(cfg->rx_pin);
     }
 
-    /* timers are already stopped after RX/TX */
+    // timers are already stopped after RX/TX
 }

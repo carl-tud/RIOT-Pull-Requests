@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_nrf52_802154
- * @{
- *
- * @file
- * @brief       Implementation of the IEEE 802.15.4 for nRF52 radios
- *
- * @author      José I. Alamos <jose.alamos@haw-hamburg.de>
- * @}
- */
+/// @ingroup     drivers_nrf52_802154
+/// @{
+///
+/// @file
+/// @brief       Implementation of the IEEE 802.15.4 for nRF52 radios
+///
+/// @author      José I. Alamos <jose.alamos@haw-hamburg.de>
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -29,41 +25,37 @@
 #define ENABLE_DEBUG        0
 #include "debug.h"
 
-#define ED_RSSISCALE        (4U)    /**< RSSI scale for internal HW value */
-#define ED_RSSIOFFS         (-92)   /**< RSSI offset for internal HW value */
+#define ED_RSSISCALE        (4U)    ///< RSSI scale for internal HW value
+#define ED_RSSIOFFS         (-92)   ///< RSSI offset for internal HW value
 
-/* Set timer period to 16 us (IEEE 802.15.4 symbol time) */
+// Set timer period to 16 us (IEEE 802.15.4 symbol time)
 #define TIMER_FREQ          (62500UL)
 
-#define TX_POWER_MIN        (-40)                               /* in dBm */
-#define TX_POWER_MAX        ((int)RADIO_TXPOWER_TXPOWER_Max)    /* in dBm */
+#define TX_POWER_MIN        (-40)                               // in dBm
+#define TX_POWER_MAX        ((int)RADIO_TXPOWER_TXPOWER_Max)    // in dBm
 
-/**
- * @brief Default nrf802154 radio shortcuts
- *
- * With this configuration the radio goes on the RXREADY event to RXSTART
- * and on TXREADY to TXSTART, without requiring to trigger the task manually.
- */
+/// @brief Default nrf802154 radio shortcuts
+///
+/// With this configuration the radio goes on the RXREADY event to RXSTART
+/// and on TXREADY to TXSTART, without requiring to trigger the task manually.
 #define DEFAULT_SHORTS      (RADIO_SHORTS_RXREADY_START_Msk | \
                              RADIO_SHORTS_TXREADY_START_Msk)
 
-/**
- * @brief nrf52840 shortcuts for CCA on send
- *
- * With this configuration the radio automatically triggers a CCA request on
- * RXREADY event. If the CCA succeeds, the radio will automatically send the
- * frame. Otherwise it will simply go to DISABLE.
- */
+/// @brief nrf52840 shortcuts for CCA on send
+///
+/// With this configuration the radio automatically triggers a CCA request on
+/// RXREADY event. If the CCA succeeds, the radio will automatically send the
+/// frame. Otherwise it will simply go to DISABLE.
 #define CCA_SHORTS          (RADIO_SHORTS_RXREADY_CCASTART_Msk | \
                              RADIO_SHORTS_CCAIDLE_STOP_Msk | \
                              RADIO_SHORTS_CCAIDLE_TXEN_Msk | \
                              RADIO_SHORTS_CCABUSY_DISABLE_Msk | \
                              RADIO_SHORTS_TXREADY_START_Msk)
 
-#define MAC_TIMER_CHAN_IFS  (1U)    /**< MAC timer channel for handling IFS logic */
+#define MAC_TIMER_CHAN_IFS  (1U)    ///< MAC timer channel for handling IFS logic
 
-static uint8_t rxbuf[IEEE802154_FRAME_LEN_MAX + 3]; /* len PHR + PSDU + LQI */
-static uint8_t txbuf[IEEE802154_FRAME_LEN_MAX + 3]; /* len PHR + PSDU + LQI */
+static uint8_t rxbuf[IEEE802154_FRAME_LEN_MAX + 3]; // len PHR + PSDU + LQI
+static uint8_t txbuf[IEEE802154_FRAME_LEN_MAX + 3]; // len PHR + PSDU + LQI
 
 typedef enum {
     STATE_IDLE,
@@ -80,11 +72,11 @@ static uint8_t nrf802154_long_addr[IEEE802154_LONG_ADDRESS_LEN];
 static uint16_t nrf802154_pan_id;
 
 static struct {
-    bool ifs        : 1;    /**< if true, the device is currently inside the IFS period */
-    bool cca_send   : 1;    /**< whether the next transmission uses CCA or not */
-    bool ack_filter : 1;    /**< whether the ACK filter is activated or not */
-    bool promisc    : 1;    /**< whether the device is in promiscuous mode or not */
-    bool pending    : 1;    /**< whether there pending bit should be set in the ACK frame or not */
+    bool ifs        : 1;    ///< if true, the device is currently inside the IFS period
+    bool cca_send   : 1;    ///< whether the next transmission uses CCA or not
+    bool ack_filter : 1;    ///< whether the ACK filter is activated or not
+    bool promisc    : 1;    ///< whether the device is in promiscuous mode or not
+    bool pending    : 1;    ///< whether there pending bit should be set in the ACK frame or not
 } cfg = {
     .cca_send   = true,
     .ack_filter = true,
@@ -93,24 +85,21 @@ static struct {
 static const ieee802154_radio_ops_t nrf802154_ops;
 static ieee802154_dev_t *nrf802154_hal_dev;
 
-static void _power_on(void)
-{
+static void _power_on(void) {
     if (NRF_RADIO->POWER == 0) {
         clock_hfxo_request();
         NRF_RADIO->POWER = 1;
     }
 }
 
-static void _power_off(void)
-{
+static void _power_off(void) {
     if (NRF_RADIO->POWER == 1) {
         NRF_RADIO->POWER = 0;
         clock_hfxo_release();
     }
 }
 
-static bool _l2filter(uint8_t *mhr)
-{
+static bool _l2filter(uint8_t *mhr) {
     uint8_t dst_addr[IEEE802154_LONG_ADDRESS_LEN];
     uint8_t src_addr[IEEE802154_LONG_ADDRESS_LEN];
     le_uint16_t dst_pan;
@@ -130,15 +119,15 @@ static bool _l2filter(uint8_t *mhr)
             }
         }
     }
-    /* filter PAN ID */
-    /* Will only work on little endian platform (all?) */
+    // filter PAN ID
+    // Will only work on little endian platform (all?)
 
     if ((memcmp(pan_bcast, dst_pan.u8, 2) != 0) &&
         (memcmp(&nrf802154_pan_id, dst_pan.u8, 2) != 0)) {
         return false;
     }
 
-    /* check destination address */
+    // check destination address
     if (((dst_addr_len == IEEE802154_SHORT_ADDRESS_LEN) &&
           (memcmp(nrf802154_short_addr, dst_addr, dst_addr_len) == 0 ||
            memcmp(ieee802154_addr_bcast, dst_addr, dst_addr_len) == 0)) ||
@@ -150,22 +139,21 @@ static bool _l2filter(uint8_t *mhr)
     return false;
 }
 
-static int _write(ieee802154_dev_t *dev, const iolist_t *iolist)
-{
+static int _write(ieee802154_dev_t *dev, const iolist_t *iolist) {
     (void)dev;
 
     DEBUG("[nrf802154] Send a packet\n");
 
     assert(iolist);
 
-    /* copy packet data into the transmit buffer */
+    // copy packet data into the transmit buffer
     unsigned int len = 0;
 
-    /* Load packet data into FIFO. Size checks are handled by higher
-     * layers */
+    // Load packet data into FIFO. Size checks are handled by higher
+    // layers
     for (; iolist; iolist = iolist->iol_next) {
-        /* Check if there is data to copy, prevents undefined behaviour with
-         * memcpy when iolist->iol_base == NULL */
+        // Check if there is data to copy, prevents undefined behaviour with
+        // memcpy when iolist->iol_base == NULL
         if (iolist->iol_len) {
             memcpy(&txbuf[len + 1], iolist->iol_base, iolist->iol_len);
             len += iolist->iol_len;
@@ -174,15 +162,14 @@ static int _write(ieee802154_dev_t *dev, const iolist_t *iolist)
 
     DEBUG("[nrf802154] send: putting %i bytes into the frame buffer\n", len);
 
-    /* specify the length of the package. */
+    // specify the length of the package.
     txbuf[0] = len + IEEE802154_FCS_LEN;
 
     return 0;
 }
 
-static void _disable(void)
-{
-    /* set device into DISABLED state */
+static void _disable(void) {
+    // set device into DISABLED state
     if (NRF_RADIO->STATE != RADIO_STATE_STATE_Disabled) {
         NRF_RADIO->EVENTS_DISABLED = 0;
         NRF_RADIO->TASKS_DISABLE = 1;
@@ -190,16 +177,14 @@ static void _disable(void)
     }
 }
 
-static void _disable_blocking(void)
-{
+static void _disable_blocking(void) {
     _disable();
 
-    /* This will take in worst case 21 us */
+    // This will take in worst case 21 us
     while (NRF_RADIO->STATE != RADIO_STATE_STATE_Disabled) {};
 }
 
-static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
-{
+static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx) {
     (void)dev;
 
     int res = -EBUSY;
@@ -255,8 +240,7 @@ end:
     return res;
 }
 
-static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
-{
+static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx) {
     (void)dev;
     bool eagain;
     ieee802154_tx_info_t *info = ctx;
@@ -309,8 +293,7 @@ static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
 }
 
 static int _read(ieee802154_dev_t *dev, void *buf, size_t max_size,
-                          ieee802154_rx_info_t *info)
-{
+                          ieee802154_rx_info_t *info) {
     (void)dev;
     size_t pktlen = (size_t)rxbuf[0] - IEEE802154_FCS_LEN;
     int res = -ENOBUFS;
@@ -323,17 +306,17 @@ static int _read(ieee802154_dev_t *dev, void *buf, size_t max_size,
     DEBUG("[nrf802154] recv: reading packet of length %i\n", pktlen);
     if (info != NULL) {
         ieee802154_rx_info_t *radio_info = info;
-        /* Hardware link quality indicator */
+        // Hardware link quality indicator
         uint8_t hwlqi = rxbuf[pktlen + 1];
-        /* Convert to 802.15.4 LQI (page 319 of product spec v1.1) */
+        // Convert to 802.15.4 LQI (page 319 of product spec v1.1)
         radio_info->lqi = (uint8_t)(hwlqi > UINT8_MAX/ED_RSSISCALE
                                    ? UINT8_MAX
                                    : hwlqi * ED_RSSISCALE);
-        /* Converting the hardware-provided LQI value back to the
-           original RSSI value is not properly documented in the PS.
-           The linear mapping used here has been found empirically
-           through comparison with the RSSI value provided by NRF_RADIO->RSSISAMPLE
-           after enabling the ADDRESS_RSSISTART short. */
+        // Converting the hardware-provided LQI value back to the
+        //    original RSSI value is not properly documented in the PS.
+        //    The linear mapping used here has been found empirically
+        //    through comparison with the RSSI value provided by NRF_RADIO->RSSISAMPLE
+        //    after enabling the ADDRESS_RSSISTART short.
         int16_t rssi_dbm = hwlqi + ED_RSSIOFFS - 1;
         radio_info->rssi = ieee802154_dbm_to_rssi(rssi_dbm);
     }
@@ -342,17 +325,13 @@ static int _read(ieee802154_dev_t *dev, void *buf, size_t max_size,
     return pktlen;
 }
 
-/**
- * @brief   Convert from dBm to the internal representation, when the
- *          radio operates as a IEEE802.15.4 transceiver.
- */
-static inline uint8_t _dbm_to_ieee802154_hwval(int8_t dbm)
-{
+/// @brief   Convert from dBm to the internal representation, when the
+///          radio operates as a IEEE802.15.4 transceiver.
+static inline uint8_t _dbm_to_ieee802154_hwval(int8_t dbm) {
     return ((dbm - ED_RSSIOFFS) / ED_RSSISCALE);
 }
 
-static int set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold)
-{
+static int set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold) {
     (void)dev;
 
     if (threshold < ED_RSSIOFFS) {
@@ -366,8 +345,7 @@ static int set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold)
     return 0;
 }
 
-static void _set_txpower(int16_t txpower)
-{
+static void _set_txpower(int16_t txpower) {
     DEBUG("[nrf802154]: Setting TX power to %i\n", txpower);
     if (txpower > (int)RADIO_TXPOWER_TXPOWER_Max) {
         NRF_RADIO->TXPOWER = RADIO_TXPOWER_TXPOWER_Max;
@@ -398,8 +376,7 @@ static void _set_txpower(int16_t txpower)
     }
 }
 
-static void _set_ifs_timer(bool lifs)
-{
+static void _set_ifs_timer(bool lifs) {
     uint8_t timeout;
     cfg.ifs = true;
     if (lifs) {
@@ -413,8 +390,7 @@ static void _set_ifs_timer(bool lifs)
     timer_start(NRF802154_TIMER);
 }
 
-static void _timer_cb(void *arg, int chan)
-{
+static void _timer_cb(void *arg, int chan) {
     (void)arg;
     if (chan == MAC_TIMER_CHAN_IFS) {
         cfg.ifs = false;
@@ -422,13 +398,10 @@ static void _timer_cb(void *arg, int chan)
     timer_stop(NRF802154_TIMER);
 }
 
-/**
- * @brief   Set radio into DISABLED state
- */
-int nrf802154_init(void)
-{
+/// @brief   Set radio into DISABLED state
+int nrf802154_init(void) {
     DEBUG("[nrf802154]: Init\n");
-    /* reset buffer */
+    // reset buffer
     rxbuf[0] = 0;
     txbuf[0] = 0;
 
@@ -437,15 +410,14 @@ int nrf802154_init(void)
     (void)result;
     timer_stop(NRF802154_TIMER);
 
-    /* power off peripheral (but do not release the HFXO as we never requested
-     * it so far) */
+    // power off peripheral (but do not release the HFXO as we never requested
+    // it so far)
     NRF_RADIO->POWER = 0;
 
     return 0;
 }
 
-void isr_radio(void)
-{
+void isr_radio(void) {
     ieee802154_dev_t *dev = nrf802154_hal_dev;
 
     if (NRF_RADIO->EVENTS_FRAMESTART) {
@@ -493,28 +465,28 @@ void isr_radio(void)
             if (NRF_RADIO->CRCSTATUS) {
                 bool is_ack = rxbuf[1] & IEEE802154_FCF_TYPE_ACK;
 
-                /* If radio is in promiscuous mode, indicate packet and
-                 * don't event think of sending an ACK frame :) */
+                // If radio is in promiscuous mode, indicate packet and
+                // don't event think of sending an ACK frame :)
                 if (cfg.promisc) {
                     DEBUG("[nrf802154] Promiscuous mode is enabled.\n");
                     _state = STATE_IDLE;
                     dev->cb(dev, IEEE802154_RADIO_INDICATION_RX_DONE);
                 }
-                /* In case the packet is an ACK and the ACK filter is disabled,
-                 * indicate the frame reception */
+                // In case the packet is an ACK and the ACK filter is disabled,
+                // indicate the frame reception
                 else if (is_ack && !cfg.ack_filter) {
                     DEBUG("[nrf802154] Received ACK.\n");
                     _state = STATE_IDLE;
                     dev->cb(dev, IEEE802154_RADIO_INDICATION_RX_DONE);
                 }
-                /* If the L2 filter passes the frame is indicated directly */
+                // If the L2 filter passes the frame is indicated directly
                 else if (_l2filter(rxbuf+1)) {
                     DEBUG("[nrf802154] RX data frame.\n");
                     _state = STATE_IDLE;
                     dev->cb(dev, IEEE802154_RADIO_INDICATION_RX_DONE);
                 }
-                /* If all failed, simply drop the frame and continue listening
-                 * to incoming frames */
+                // If all failed, simply drop the frame and continue listening
+                // to incoming frames
                 else {
                     DEBUG("[nrf802154] Addr filter failed or ACK filter on.\n");
                     NRF_RADIO->TASKS_START = 1;
@@ -533,44 +505,42 @@ void isr_radio(void)
     cortexm_isr_end();
 }
 
-static int _confirm_on(ieee802154_dev_t *dev)
-{
+static int _confirm_on(ieee802154_dev_t *dev) {
     (void)dev;
     return 0;
 }
 
-static int _request_on(ieee802154_dev_t *dev)
-{
+static int _request_on(ieee802154_dev_t *dev) {
     (void)dev;
     _state = STATE_IDLE;
     DEBUG("[nrf802154]: Request to turn on\n");
     _power_on();
-    /* make sure the radio is disabled/stopped */
+    // make sure the radio is disabled/stopped
     _disable();
-    /* we configure it to run in IEEE802.15.4 mode */
+    // we configure it to run in IEEE802.15.4 mode
     NRF_RADIO->MODE = RADIO_MODE_MODE_Ieee802154_250Kbit;
-    /* and set some fitting configuration */
+    // and set some fitting configuration
     NRF_RADIO->PCNF0 = ((8 << RADIO_PCNF0_LFLEN_Pos) |
                         (RADIO_PCNF0_PLEN_32bitZero << RADIO_PCNF0_PLEN_Pos) |
                         (RADIO_PCNF0_CRCINC_Include << RADIO_PCNF0_CRCINC_Pos));
     NRF_RADIO->PCNF1 = IEEE802154_FRAME_LEN_MAX;
-    /* set start frame delimiter */
+    // set start frame delimiter
     NRF_RADIO->SFD = IEEE802154_SFD;
-    /* set MHR filters */
-    NRF_RADIO->MHRMATCHCONF = 0;              /* Search Pattern Configuration */
-    NRF_RADIO->MHRMATCHMAS = 0xff0007ff;      /* Pattern mask */
-    /* configure CRC conform to IEEE802154 */
+    // set MHR filters
+    NRF_RADIO->MHRMATCHCONF = 0;              // Search Pattern Configuration
+    NRF_RADIO->MHRMATCHMAS = 0xff0007ff;      // Pattern mask
+    // configure CRC conform to IEEE802154
     NRF_RADIO->CRCCNF = ((RADIO_CRCCNF_LEN_Two << RADIO_CRCCNF_LEN_Pos) |
                          (RADIO_CRCCNF_SKIPADDR_Ieee802154 << RADIO_CRCCNF_SKIPADDR_Pos));
     NRF_RADIO->CRCPOLY = 0x011021;
     NRF_RADIO->CRCINIT = 0;
 
-    /* Disable the hardware IFS handling  */
+    // Disable the hardware IFS handling
     NRF_RADIO->MODECNF0 |= RADIO_MODECNF0_RU_Msk;
 
     NRF_RADIO->SHORTS = DEFAULT_SHORTS;
 
-    /* enable interrupts */
+    // enable interrupts
     NVIC_EnableIRQ(RADIO_IRQn);
     NRF_RADIO->INTENSET = RADIO_INTENSET_END_Msk |
                           RADIO_INTENSET_FRAMESTART_Msk |
@@ -580,8 +550,7 @@ static int _request_on(ieee802154_dev_t *dev)
     return 0;
 }
 
-static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf)
-{
+static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf) {
     (void)dev;
     int8_t pow = conf->pow;
 
@@ -591,11 +560,10 @@ static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf)
 
     assert(NRF_RADIO->STATE == RADIO_STATE_STATE_Disabled);
 
-    /* The value of this register represents the frequency offset (in MHz) from
-     * 2400 MHz.  Channel 11 (first 2.4 GHz band channel) starts at 2405 MHz
-     * and all channels have a bandwidth of 5 MHz. Thus, we subtract 10 to the
-     * channel number and multiply by 5 to calculate the offset.
-     */
+    // The value of this register represents the frequency offset (in MHz) from
+    // 2400 MHz.  Channel 11 (first 2.4 GHz band channel) starts at 2405 MHz
+    // and all channels have a bandwidth of 5 MHz. Thus, we subtract 10 to the
+    // channel number and multiply by 5 to calculate the offset.
     NRF_RADIO->FREQUENCY = (((uint8_t) conf->channel) - 10) * 5;
 
     DEBUG("[nrf802154] setting channel to %i\n", conf->channel);
@@ -605,23 +573,20 @@ static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf)
     return 0;
 }
 
-static int _off(ieee802154_dev_t *dev)
-{
+static int _off(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[nrf802154] Turning off the radio\n");
     _power_off();
     return 0;
 }
 
-int _len(ieee802154_dev_t *dev)
-{
+int _len(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[nrf802154] Length of frame is %i\n", (size_t)rxbuf[0] - IEEE802154_FCS_LEN);
     return (size_t)rxbuf[0] - IEEE802154_FCS_LEN;
 }
 
-int _peek(ieee802154_dev_t *dev, void *buf, size_t offset, size_t size)
-{
+int _peek(ieee802154_dev_t *dev, void *buf, size_t offset, size_t size) {
     (void)dev;
     DEBUG("[nrf802154] peek %zu bytes at offset %zu\n", size, offset);
 
@@ -636,8 +601,7 @@ int _peek(ieee802154_dev_t *dev, void *buf, size_t offset, size_t size)
     return size;
 }
 
-int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
-{
+int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode) {
     (void)dev;
 
     NRF_RADIO->CCACTRL &= RADIO_CCACTRL_CCAMODE_Msk;
@@ -667,8 +631,7 @@ int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
     return 0;
 }
 
-static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value)
-{
+static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value) {
     (void)dev;
     const uint16_t *pan_id = value;
     switch (cmd) {
@@ -689,8 +652,7 @@ static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, c
 }
 
 static int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t cmd,
-                                  const void *value)
-{
+                                  const void *value) {
     (void)dev;
     switch (cmd) {
         case IEEE802154_SRC_MATCH_EN:
@@ -702,8 +664,7 @@ static int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t 
     return 0;
 }
 
-static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t mode)
-{
+static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t mode) {
     (void)dev;
 
     bool ackf = true;
@@ -728,8 +689,7 @@ static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_
     return 0;
 }
 
-static int _get_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t *mode)
-{
+static int _get_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t *mode) {
     (void) dev;
     if (cfg.promisc) {
         *mode = IEEE802154_FILTER_PROMISC;
@@ -744,8 +704,7 @@ static int _get_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_
 }
 
 static int _set_csma_params(ieee802154_dev_t *dev, const ieee802154_csma_be_t *bd,
-                            int8_t retries)
-{
+                            int8_t retries) {
     (void)dev;
     (void)bd;
 
@@ -758,16 +717,14 @@ static int _set_csma_params(ieee802154_dev_t *dev, const ieee802154_csma_be_t *b
     return 0;
 }
 
-void nrf802154_setup(nrf802154_t *dev)
-{
+void nrf802154_setup(nrf802154_t *dev) {
     (void)dev;
     nrf802154_init();
 }
 
-void nrf802154_hal_setup(ieee802154_dev_t *hal)
-{
-    /* We don't set hal->priv because the context of this device is global */
-    /* We need to store a reference to the HAL descriptor though for the ISR */
+void nrf802154_hal_setup(ieee802154_dev_t *hal) {
+    // We don't set hal->priv because the context of this device is global
+    // We need to store a reference to the HAL descriptor though for the ISR
     hal->driver = &nrf802154_ops;
     nrf802154_hal_dev = hal;
 }

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Atomic util benchmark
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Atomic util benchmark
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdatomic.h>
@@ -23,11 +19,11 @@
 #include "macros/utils.h"
 #include "xtimer.h"
 
-/* On fast CPUs: 1.000.000 loops */
+// On fast CPUs: 1.000.000 loops
 #if defined(CPU_CORE_CORTEX_M7) || defined(CPU_ESP32)
 #define LOOPS 1000000
 #else
-/* Else 100.000 loops */
+// Else 100.000 loops
 #define LOOPS 100000
 #endif
 
@@ -299,8 +295,7 @@ BENCH_SEMI_ATOMIC_FETCH_OP(and, &, u64, uint64_t, atomic_uint_least64_t)
              "------------------+------------------+"
 #define FMT "| %4s | %8s | %4u | %13" PRIu32 " µs | %13" PRIu32 " µs | "       \
             "%13" PRIu32 " µs |\n"
-int main(void)
-{
+int main(void) {
     uint32_t results[IMPL_NUMOF];
 
     puts("Note: LOWER IS BETTER!\n");
@@ -335,7 +330,7 @@ int main(void)
     printf(FMT, "atom", "load", 64, results[IMPL_VOLATILE],
            results[IMPL_ATOMIC_UTIL], results[IMPL_C11_ATOMIC]);
 
-    /* atomic read-modify-write operations */
+    // atomic read-modify-write operations
     bench_atomic_fetch_add_u8(results);
     printf(FMT, "atom", "add", 8, results[IMPL_VOLATILE],
            results[IMPL_ATOMIC_UTIL], results[IMPL_C11_ATOMIC]);
@@ -401,7 +396,7 @@ int main(void)
     printf(FMT, "atom", "and", 64, results[IMPL_VOLATILE],
            results[IMPL_ATOMIC_UTIL], results[IMPL_C11_ATOMIC]);
 
-    /* atomic bit setting and clearing */
+    // atomic bit setting and clearing
     bench_atomic_set_bit_u8(results);
     printf(FMT, "atom", "set", 8, results[IMPL_VOLATILE],
            results[IMPL_ATOMIC_UTIL], results[IMPL_C11_ATOMIC]);
@@ -428,7 +423,7 @@ int main(void)
     printf(FMT, "atom", "clear", 64, results[IMPL_VOLATILE],
            results[IMPL_ATOMIC_UTIL], results[IMPL_C11_ATOMIC]);
 
-    /* semi-atomic read-modify-write operations */
+    // semi-atomic read-modify-write operations
     bench_semi_atomic_fetch_add_u8(results);
     printf(FMT, "semi", "add", 8, results[IMPL_VOLATILE],
            results[IMPL_ATOMIC_UTIL], results[IMPL_C11_ATOMIC]);

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ad7746
- * @{
- *
- * @file
- * @brief       AD7746 adaption to the RIOT actuator/sensor interface
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_ad7746
+/// @{
+///
+/// @file
+/// @brief       AD7746 adaption to the RIOT actuator/sensor interface
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -21,8 +17,7 @@
 #include "saul.h"
 #include "ad7746.h"
 
-static int _read_cap(const void *dev, phydat_t *res)
-{
+static int _read_cap(const void *dev, phydat_t *res) {
     int val;
     if (ad7746_read_capacitance_1((ad7746_t *)dev, &val)) {
         return -ECANCELED;
@@ -35,8 +30,7 @@ static int _read_cap(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int _read_temp(const void *dev, phydat_t *res)
-{
+static int _read_temp(const void *dev, phydat_t *res) {
     int val;
     int result;
     do {
@@ -54,8 +48,7 @@ static int _read_temp(const void *dev, phydat_t *res)
     }
 }
 
-static int _read_volt(const void *dev, phydat_t *res)
-{
+static int _read_volt(const void *dev, phydat_t *res) {
     int val;
     int result;
     do {

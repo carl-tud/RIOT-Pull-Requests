@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Université de Lille
- * SPDX-License-Identifier: LGPL-2.1-or-later
- */
+// SPDX-FileCopyrightText: 2024-2026 Université de Lille
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       An application demonstrating xipfs using a pre-made offboard mount point.
- *
- * @author      Gregory Guche <gregory.guche@univ-lille.fr>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       An application demonstrating xipfs using a pre-made offboard mount point.
+///
+/// @author      Gregory Guche <gregory.guche@univ-lille.fr>
+///
+/// @}
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -23,12 +19,10 @@
 #include "shell.h"
 #include "vfs.h"
 
-/*
- * Include a mount point image that has been built on a PC workstation.
- *
- * Please mind the deliberate missing semicolon character after
- * XIPFS_START_PARTITION_INCLUSION(nvme0p0).
- */
+// Include a mount point image that has been built on a PC workstation.
+//
+// Please mind the deliberate missing semicolon character after
+// XIPFS_START_PARTITION_INCLUSION(nvme0p0).
 static
 XIPFS_START_PARTITION_INCLUSION(nvme0p0)
 #include "blob/nvme0p0.flash.h"
@@ -36,8 +30,7 @@ XIPFS_END_PARTITION_INCLUSION(nvme0p0, "/nvme0p0", nvme0p0_flash, nvme0p0_flash_
 
 static shell_command_t shell_commands[] = { {NULL, NULL, NULL} };
 
-int main(void)
-{
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
 
     if (vfs_mount(&nvme0p0.vfs_mp) < 0) {

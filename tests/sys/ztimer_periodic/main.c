@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     test
- * @{
- *
- * @file
- * @brief       ztimer periodic test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     test
+/// @{
+///
+/// @file
+/// @brief       ztimer periodic test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -39,20 +35,19 @@ static uint32_t _intervals[] = { 100, 10000 };
 static uint32_t _max_offsets[] = {
     2,
 #ifdef CPU_NATIVE
-    /* native is running on top of a multi-media OS, not a real-time OS */
+    // native is running on top of a multi-media OS, not a real-time OS
     1000
 #else
     100
 #endif
 };
 
-static bool callback(void *arg)
-{
+static bool callback(void *arg) {
     _times[_count] = ztimer_now(arg);
 
     _count += 1;
 
-    /* enable this to test underflow behavior */
+    // enable this to test underflow behavior
 #if 0
     if (count == 2) {
         ztimer_spin(arg, INTERVAL * 2);
@@ -66,8 +61,7 @@ static bool callback(void *arg)
     return _count < REPEAT;
 }
 
-int main(void)
-{
+int main(void) {
     ztimer_periodic_t t;
     ztimer_clock_t * const clocks[] = ZTIMER_CLOCKS;
     int failed = 0;
@@ -79,10 +73,10 @@ int main(void)
 
         _count = 0;
         ztimer_periodic_start(&t);
-        /* ztimer_periodic_start stores the value of ztimer_now() + period into t.last. We use that
-         * value instead of calling ztimer_now() again, as on slow boards the introduced offset can
-         * result in a failing test, despite the timeout actually being triggered close enough
-         * to the target. */
+        // ztimer_periodic_start stores the value of ztimer_now() + period into t.last. We use that
+        // value instead of calling ztimer_now() again, as on slow boards the introduced offset can
+        // result in a failing test, despite the timeout actually being triggered close enough
+        // to the target.
         uint32_t last = t.last - _intervals[j];
 
         if (!ztimer_is_set(clock, &t.timer)) {
@@ -90,7 +84,7 @@ int main(void)
             return 1;
         }
 
-        /* wait for periodic to trigger REPEAT times */
+        // wait for periodic to trigger REPEAT times
         mutex_lock(&_mutex);
 
         for (unsigned i = 0; i < REPEAT; i++) {

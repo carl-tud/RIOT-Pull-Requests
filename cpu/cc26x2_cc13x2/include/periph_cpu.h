@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Leon George
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Leon George
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_cc26x2_cc13x2
- * @{
- *
- * @file
- * @brief           CPU specific definitions for internal peripheral handling
- *
- * @author          Leon M. George <leon@georgemail.de>
- */
+/// @ingroup         cpu_cc26x2_cc13x2
+/// @{
+///
+/// @file
+/// @brief           CPU specific definitions for internal peripheral handling
+///
+/// @author          Leon M. George <leon@georgemail.de>
 
 #include "periph_cpu_common.h"
 
@@ -27,4 +23,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

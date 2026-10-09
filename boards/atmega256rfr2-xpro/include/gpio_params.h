@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_atmega256rfr2-xpro
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_atmega256rfr2-xpro
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   GPIO configuration
- */
+/// @brief   GPIO configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -45,4 +39,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

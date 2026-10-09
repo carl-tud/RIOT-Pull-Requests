@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016-2017 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2017 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_dac
- * @{
- *
- * @file
- * @brief       Low-level DAC driver implementation
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_dac
+/// @{
+///
+/// @file
+/// @brief       Low-level DAC driver implementation
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include "cpu.h"
 #include "macros/units.h"
@@ -29,7 +25,7 @@
 #include "em_vdac.h"
 #endif
 
-/* DAC implementation can be used for VDAC by mapping the symbols */
+// DAC implementation can be used for VDAC by mapping the symbols
 #if defined(VDAC_COUNT) && VDAC_COUNT > 0
 
 #define DAC_INIT_DEFAULT        VDAC_INIT_DEFAULT
@@ -44,20 +40,19 @@
 
 #endif
 
-int8_t dac_init(dac_t line)
-{
-    /* check if device is valid */
+int8_t dac_init(dac_t line) {
+    // check if device is valid
     if (line >= DAC_NUMOF) {
         return -1;
     }
 
     uint8_t dev = dac_channel_config[line].dev;
 
-    /* enable clock */
+    // enable clock
     CMU_ClockEnable(cmuClock_HFPER, true);
     CMU_ClockEnable(dac_config[dev].cmu, true);
 
-    /* reset and initialize peripheral */
+    // reset and initialize peripheral
     DAC_Init_TypeDef init = DAC_INIT_DEFAULT;
 
 #if defined(VDAC_COUNT)
@@ -68,7 +63,7 @@ int8_t dac_init(dac_t line)
     DAC_Reset(dac_config[dev].dev);
     DAC_Init(dac_config[dev].dev, &init);
 
-    /* initialize channel */
+    // initialize channel
     DAC_InitChannel_TypeDef init_channel = DAC_INITCHANNEL_DEFAULT;
 
     init_channel.enable = true;
@@ -80,8 +75,7 @@ int8_t dac_init(dac_t line)
     return 0;
 }
 
-void dac_set(dac_t line, uint16_t value)
-{
+void dac_set(dac_t line, uint16_t value) {
     uint8_t dev = dac_channel_config[line].dev;
 
     DAC_ChannelOutputSet(dac_config[dev].dev,
@@ -89,15 +83,13 @@ void dac_set(dac_t line, uint16_t value)
                          value >> 4);
 }
 
-void dac_poweron(dac_t line)
-{
+void dac_poweron(dac_t line) {
     uint8_t dev = dac_channel_config[line].dev;
 
     CMU_ClockEnable(dac_config[dev].cmu, true);
 }
 
-void dac_poweroff(dac_t line)
-{
+void dac_poweroff(dac_t line) {
     uint8_t dev = dac_channel_config[line].dev;
 
     CMU_ClockEnable(dac_config[dev].cmu, false);

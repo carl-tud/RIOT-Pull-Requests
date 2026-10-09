@@ -1,32 +1,29 @@
-/*
- * LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
- * Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
- * Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
+// Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the
+// Free Software Foundation; version 2 of the License.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+// Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-/* If this code fails to build, please provide at least the following
- * information when requesting (free) technical support.
- *
- * 1: Complete copy of all messages during the build.
- * 2: Output of "gtk-config --version"
- * 3: Output of "gtk-config --libs"
- * 4: Output of "gtk-config --cflags"
- * 5: Output of "uname -a"
- * 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
- * 7: Other info... which linux distribution, version, other software
- */
+// If this code fails to build, please provide at least the following
+// information when requesting (free) technical support.
+//
+// 1: Complete copy of all messages during the build.
+// 2: Output of "gtk-config --version"
+// 3: Output of "gtk-config --libs"
+// 4: Output of "gtk-config --cflags"
+// 5: Output of "uname -a"
+// 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
+// 7: Other info... which linux distribution, version, other software
 
 
 #include <stdio.h>
@@ -55,8 +52,7 @@ static void report_open_error(const char *filename, int err);
 
 char *baud_rate = "115200";
 
-int open_serial_port(const char *port_name)
-{
+int open_serial_port(const char *port_name) {
     int r;
     struct termios term_setting;
 
@@ -95,7 +91,7 @@ int open_serial_port(const char *port_name)
 #ifdef LINUX
     {
         struct serial_struct kernel_serial_settings;
-        /* attempt to set low latency mode, but don't worry if we can't */
+        // attempt to set low latency mode, but don't worry if we can't
         r = ioctl(port_fd, TIOCGSERIAL, &kernel_serial_settings);
 
         if (r < 0) {
@@ -110,11 +106,9 @@ int open_serial_port(const char *port_name)
 }
 
 
-/* if the port can't be opened, try to print as much info as
- * possible, so the problem can be resolved (usually permissions)
- */
-static void report_open_error(const char *filename, int err)
-{
+// if the port can't be opened, try to print as much info as
+// possible, so the problem can be resolved (usually permissions)
+static void report_open_error(const char *filename, int err) {
     struct stat info;
     uid_t my_uid;
     gid_t my_gid;
@@ -198,8 +192,8 @@ static void report_open_error(const char *filename, int err)
                  "(uid=%d)", (int)info.st_gid);
     }
 
-    /* printf("%s is owned by: user %s, group %s\r\n",
-        filename, file_uname, file_gname); */
+    // printf("%s is owned by: user %s, group %s\r\n",
+    //     filename, file_uname, file_gname);
 
     perm = info.st_mode;
 
@@ -239,20 +233,17 @@ static void report_open_error(const char *filename, int err)
 
 
 
-int write_serial_port(const void *buf, int num)
-{
+int write_serial_port(const void *buf, int num) {
     return (write(port_fd, buf, num));
 }
 
 
-void input_flush_serial_port(void)
-{
+void input_flush_serial_port(void) {
     tcflush(port_fd, TCIFLUSH);
 }
 
 
-int read_serial_port_nb(unsigned char *buf, int bufsize)
-{
+int read_serial_port_nb(unsigned char *buf, int bufsize) {
     int num, flags;
 
     flags = fcntl(port_fd, F_GETFL);
@@ -262,8 +253,7 @@ int read_serial_port_nb(unsigned char *buf, int bufsize)
     return num;
 }
 
-int read_serial_port(unsigned char *buf, int bufsize)
-{
+int read_serial_port(unsigned char *buf, int bufsize) {
     int num;
 
     num = read(port_fd, buf, bufsize);
@@ -272,14 +262,12 @@ int read_serial_port(unsigned char *buf, int bufsize)
 }
 
 
-void send_break_signal(void)
-{
+void send_break_signal(void) {
     tcsendbreak(port_fd, 0);
 }
 
 
-void close_serial_port(void)
-{
+void close_serial_port(void) {
     if (port_fd >= 0) {
         close(port_fd);
         port_fd = -1;
@@ -287,8 +275,7 @@ void close_serial_port(void)
 }
 
 
-tcflag_t baud_name_to_flags(const char *baud_name)
-{
+tcflag_t baud_name_to_flags(const char *baud_name) {
     if (strcmp(baud_name, "230400") == 0) {
         return B230400;
     }
@@ -333,8 +320,7 @@ tcflag_t baud_name_to_flags(const char *baud_name)
 }
 
 
-int set_baud(const char *baud_name)
-{
+int set_baud(const char *baud_name) {
     struct termios port_setting;
     tcflag_t baud;
     int r;
@@ -379,15 +365,13 @@ int set_baud(const char *baud_name)
 // Normally this should never be used... except to pass the port
 // file descriptor to the GTK event monitoring loop.  All other
 // use of the serial port is supposed to happen in the file.
-int serial_port_fd(void)
-{
+int serial_port_fd(void) {
     return port_fd;
 }
 
 
 
-void set_rts(int val)
-{
+void set_rts(int val) {
     int flags;
     int result;
 
@@ -418,8 +402,7 @@ void set_rts(int val)
 
 
 
-void set_dtr(int val)
-{
+void set_dtr(int val) {
     int flags;
     int result;
 

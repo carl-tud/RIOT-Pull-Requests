@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2018-2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2018-2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Default STM32F4 clock configuration for 180MHz boards
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Default STM32F4 clock configuration for 180MHz boards
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "kernel_defines.h"
 #include "macros/units.h"
@@ -26,15 +22,12 @@
 extern "C" {
 #endif
 
-/**
- * @name    Clock PLL settings (180MHz)
- * @{
- */
-/* The following parameters configure a 180MHz system clock with HSE (8MHz,
-   12MHz or 16MHz) or HSI (16MHz) as PLL input clock.
-   If USB is used and no alternative 48MHz is available, the clock frequency is
-   decreased to 168MHZ so the PLLQ can output 48MHz.
-   */
+/// @name    Clock PLL settings (180MHz)
+/// @{
+// The following parameters configure a 180MHz system clock with HSE (8MHz,
+//    12MHz or 16MHz) or HSI (16MHz) as PLL input clock.
+//    If USB is used and no alternative 48MHz is available, the clock frequency is
+//    decreased to 168MHZ so the PLLQ can output 48MHz.
 #ifndef CONFIG_CLOCK_PLL_M
 #if IS_ACTIVE(CONFIG_BOARD_HAS_HSE) && (CONFIG_CLOCK_HSE == MHZ(12))
 #define CONFIG_CLOCK_PLL_M              (12)
@@ -67,7 +60,7 @@ extern "C" {
 #else
 #define CONFIG_CLOCK_PLL_N              (90)
 #endif
-#endif /* MODULE_PERIPH_USBDEV_CLK || MODULE_PERIPH_SDMMC_CLK */
+#endif // MODULE_PERIPH_USBDEV_CLK || MODULE_PERIPH_SDMMC_CLK
 #endif
 #ifndef CONFIG_CLOCK_PLL_P
 #define CONFIG_CLOCK_PLL_P              (2)
@@ -86,19 +79,17 @@ extern "C" {
 #ifndef CONFIG_CLOCK_PLL_R
 #define CONFIG_CLOCK_PLL_R              (8)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    Clock bus settings (APB1 and APB2)
- * @{
- */
+/// @name    Clock bus settings (APB1 and APB2)
+/// @{
 #ifndef CONFIG_CLOCK_APB1_DIV
-#define CONFIG_CLOCK_APB1_DIV           (4)         /* max 45MHz */
+#define CONFIG_CLOCK_APB1_DIV           (4)         // max 45MHz
 #endif
 #ifndef CONFIG_CLOCK_APB2_DIV
-#define CONFIG_CLOCK_APB2_DIV           (2)         /* max 90MHz */
+#define CONFIG_CLOCK_APB2_DIV           (2)         // max 90MHz
 #endif
-/** @} */
+/// @}
 
 #if CLOCK_CORECLOCK > MHZ(180)
 #error "SYSCLK cannot exceed 180MHz"
@@ -108,4 +99,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

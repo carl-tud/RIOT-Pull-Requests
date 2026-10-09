@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup         cpu_gd32v
- * @{
- *
- * @file
- * @brief           GD32V CPU initialization
- *
- * @author          Koen Zandberg <koen@bergzand.net>
- */
+/// @ingroup         cpu_gd32v
+/// @{
+///
+/// @file
+/// @brief           GD32V CPU initialization
+///
+/// @author          Koen Zandberg <koen@bergzand.net>
 #include "kernel_init.h"
 #include "stdio_uart.h"
 #include "periph/init.h"
@@ -24,19 +20,18 @@
 
 extern void __libc_init_array(void);
 
-void cpu_init(void)
-{
+void cpu_init(void) {
     gd32vf103_clock_init();
-    /* enable PMU required for pm_layered */
+    // enable PMU required for pm_layered
     periph_clk_en(APB1, RCU_APB1EN_PMUEN_Msk);
-    /* Common RISC-V initialization */
+    // Common RISC-V initialization
     riscv_init();
 
-    /* Apply configured SWJ_CFG, unless it is configured to the reset value */
+    // Apply configured SWJ_CFG, unless it is configured to the reset value
     if (CONFIG_AFIO_PCF0_SWJ_CFG != SWJ_CFG_FULL_JTAG) {
-        /* The remapping periph clock must first be enabled */
+        // The remapping periph clock must first be enabled
         RCU->APB2EN |= RCU_APB2EN_AFEN_Msk;
-        /* Then the remap can occur */
+        // Then the remap can occur
         AFIO->PCF0 |= CONFIG_AFIO_PCF0_SWJ_CFG;
     }
 

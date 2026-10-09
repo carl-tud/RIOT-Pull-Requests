@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Command to low-level access Memory Technology Devices (MTD)
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Command to low-level access Memory Technology Devices (MTD)
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
+///
+/// @}
 
 #include <assert.h>
 #include <inttypes.h>
@@ -32,21 +28,18 @@
 #include "od.h"
 #include "shell.h"
 
-static uint64_t _get_size(mtd_dev_t *dev)
-{
+static uint64_t _get_size(mtd_dev_t *dev) {
     return (uint64_t)dev->sector_count
          * dev->pages_per_sector
          * dev->page_size;
 }
 
-static int _print_read_usage(const char *progname)
-{
+static int _print_read_usage(const char *progname) {
     printf("usage: %s <addr> <len>\n", progname);
     return -1;
 }
 
-static int cmd_read(mtd_dev_t *dev, int argc, char **argv)
-{
+static int cmd_read(mtd_dev_t *dev, int argc, char **argv) {
     uint32_t addr, len;
 
     assert(strcmp(*argv, "read") == 0);
@@ -63,7 +56,7 @@ static int cmd_read(mtd_dev_t *dev, int argc, char **argv)
         return -1;
     }
 
-    /* don't print random data if read fails */
+    // don't print random data if read fails
     memset(buffer, 0x3F, len);
 
     int res = mtd_read(dev, buffer, addr, len);
@@ -80,14 +73,12 @@ static int cmd_read(mtd_dev_t *dev, int argc, char **argv)
     return res;
 }
 
-static int _print_read_page_usage(const char *progname)
-{
+static int _print_read_page_usage(const char *progname) {
     printf("usage: %s <page> <offset> <len>\n", progname);
     return -1;
 }
 
-static int cmd_read_page(mtd_dev_t *dev, int argc, char **argv)
-{
+static int cmd_read_page(mtd_dev_t *dev, int argc, char **argv) {
     uint32_t page, offset, len;
 
     assert(strcmp(*argv, "read_page") == 0);
@@ -119,14 +110,12 @@ static int cmd_read_page(mtd_dev_t *dev, int argc, char **argv)
     return res;
 }
 
-static int _print_write_usage(const char *progname)
-{
+static int _print_write_usage(const char *progname) {
     printf("usage: %s [-b] <addr> <data>\n", progname);
     return -1;
 }
 
-ssize_t _fmt_binary(char *buf)
-{
+ssize_t _fmt_binary(char *buf) {
     size_t len = 0;
     if (strlen(buf) % 2) {
         return -1;
@@ -139,8 +128,7 @@ ssize_t _fmt_binary(char *buf)
     return fmt_hex_bytes((uint8_t *)buf, buf);
 }
 
-static int cmd_write(mtd_dev_t *dev, int argc, char **argv)
-{
+static int cmd_write(mtd_dev_t *dev, int argc, char **argv) {
     uint32_t addr, len;
     void *data;
 
@@ -175,14 +163,12 @@ static int cmd_write(mtd_dev_t *dev, int argc, char **argv)
     return res;
 }
 
-static int _print_write_page_raw_usage(const char *progname)
-{
+static int _print_write_page_raw_usage(const char *progname) {
     printf("usage: %s [-b] <page> <offset> <data>\n", progname);
     return -1;
 }
 
-static int cmd_write_page_raw(mtd_dev_t *dev, int argc, char **argv)
-{
+static int cmd_write_page_raw(mtd_dev_t *dev, int argc, char **argv) {
     uint32_t page, offset, len;
     void *data;
 
@@ -219,14 +205,12 @@ static int cmd_write_page_raw(mtd_dev_t *dev, int argc, char **argv)
     return res;
 }
 
-static int _print_write_page_usage(const char *progname)
-{
+static int _print_write_page_usage(const char *progname) {
     printf("usage: %s [-b] <page> <offset> <data>\n", progname);
     return -1;
 }
 
-static int cmd_write_page(mtd_dev_t *dev, int argc, char **argv)
-{
+static int cmd_write_page(mtd_dev_t *dev, int argc, char **argv) {
 #if IS_USED(MODULE_MTD_WRITE_PAGE)
     uint32_t page, offset, len;
     void *data;
@@ -271,14 +255,12 @@ static int cmd_write_page(mtd_dev_t *dev, int argc, char **argv)
 #endif
 }
 
-static int _print_erase_usage(const char *progname)
-{
+static int _print_erase_usage(const char *progname) {
     printf("usage: %s <addr> <len>\n", progname);
     return -1;
 }
 
-static int cmd_erase(mtd_dev_t *dev, int argc, char **argv)
-{
+static int cmd_erase(mtd_dev_t *dev, int argc, char **argv) {
     uint32_t addr;
     uint32_t len;
 
@@ -299,14 +281,12 @@ static int cmd_erase(mtd_dev_t *dev, int argc, char **argv)
     return res;
 }
 
-static int _print_erase_sector_usage(const char *progname)
-{
+static int _print_erase_sector_usage(const char *progname) {
     printf("usage: %s <sector> [count]\n", progname);
     return -1;
 }
 
-static int cmd_erase_sector(mtd_dev_t *dev, int argc, char **argv)
-{
+static int cmd_erase_sector(mtd_dev_t *dev, int argc, char **argv) {
     uint32_t sector, count = 1;
 
     assert(strcmp(*argv, "erase_sector") == 0);
@@ -328,8 +308,7 @@ static int cmd_erase_sector(mtd_dev_t *dev, int argc, char **argv)
     return res;
 }
 
-static void _print_size(uint64_t size)
-{
+static void _print_size(uint64_t size) {
     unsigned long len;
     const char *unit;
 
@@ -357,8 +336,7 @@ static void _print_size(uint64_t size)
     printf("%lu %s", len, unit);
 }
 
-static void _print_info(mtd_dev_t *dev)
-{
+static void _print_info(mtd_dev_t *dev) {
     assert(dev);
     printf("sectors: %"PRIu32"\n", dev->sector_count);
     printf("pages per sector: %"PRIu32"\n", dev->pages_per_sector);
@@ -368,8 +346,7 @@ static void _print_info(mtd_dev_t *dev)
     puts("");
 }
 
-static int cmd_info(mtd_dev_t *dev, int argc, char **argv)
-{
+static int cmd_info(mtd_dev_t *dev, int argc, char **argv) {
     (void)argc;
     (void)argv;
     assert(strcmp(*argv, "info") == 0);
@@ -388,14 +365,12 @@ static int cmd_info(mtd_dev_t *dev, int argc, char **argv)
     return 0;
 }
 
-static int _print_power_usage(const char *progname)
-{
+static int _print_power_usage(const char *progname) {
     printf("usage: %s <on|off>\n", progname);
     return -1;
 }
 
-static int cmd_power(mtd_dev_t *dev, int argc, char **argv)
-{
+static int cmd_power(mtd_dev_t *dev, int argc, char **argv) {
     enum mtd_power_state state;
 
     assert(strcmp(*argv, "power") == 0);
@@ -418,8 +393,7 @@ static int cmd_power(mtd_dev_t *dev, int argc, char **argv)
     return 0;
 }
 
-static int _cmd_mtd(int argc, char **argv)
-{
+static int _cmd_mtd(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s [dev] <command> [args]\n", argv[0]);
         printf("commands:\n"

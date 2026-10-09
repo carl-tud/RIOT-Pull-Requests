@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for testing ztimer_mutex_lock_timeout_timeout
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for testing ztimer_mutex_lock_timeout_timeout
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -36,8 +32,7 @@
 
 static mutex_t testlock = MUTEX_INIT;
 
-int main(void)
-{
+int main(void) {
     ztimer_now_t pre, post;
     puts(
         "Test Application for ztimer_mutex_lock_timeout_timeout()\n"
@@ -58,9 +53,9 @@ int main(void)
     pre = ztimer_now(TEST_CLOCK);
     expect(ztimer_mutex_lock_timeout(TEST_CLOCK, &testlock, US_PER_SEC / 2) == 0);
     post = ztimer_now(TEST_CLOCK);
-    /* Call shouldn't block on unlocked mutex. So the duration spent on the
-    * function call should be short. Let's take a very generous definition of
-    * "short duration" here to not get false failures on slow boards */
+    // Call shouldn't block on unlocked mutex. So the duration spent on the
+    // function call should be short. Let's take a very generous definition of
+    // "short duration" here to not get false failures on slow boards
     expect(post - pre < TIMEOUT_LARGE);
     puts("OK");
 

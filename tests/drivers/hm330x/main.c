@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       HM330X driver test application
- *
- * @author      Francisco Molina <francois-xavier.molinas@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       HM330X driver test application
+///
+/// @author      Francisco Molina <francois-xavier.molinas@inria.fr>
+///
+/// @}
 
 #include "fmt.h"
 #include "fmt_table.h"
@@ -23,15 +19,14 @@
 #include "hm330x.h"
 #include "hm330x_params.h"
 
-int main(void)
-{
+int main(void) {
     hm330x_t dev;
 
     print_str("HM330X test application\n");
 
     print_str("+------------Initializing------------+\n");
 
-    /* initialize the sensor with default configuration parameters */
+    // initialize the sensor with default configuration parameters
     if (hm330x_init(&dev, &hm330x_params[0])) {
         print_str("Initialization failed\n");
         return 1;
@@ -57,7 +52,7 @@ int main(void)
     while (1) {
         ztimer_sleep(ZTIMER_MSEC, 1 * MS_PER_SEC);
 
-        /* read the data and print them on success */
+        // read the data and print them on success
         if (hm330x_read(&dev, &data) == 0) {
             print("|", 1);
             print_col_u32_dec(data.mc_pm_1, 7);

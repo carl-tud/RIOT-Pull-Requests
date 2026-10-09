@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Implementation of the CAN controller driver
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Implementation of the CAN controller driver
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -99,8 +95,7 @@ static uint8_t _status[CANDEV_STM32_CHAN_NUMOF];
 
 static can_t *_can[CANDEV_STM32_CHAN_NUMOF];
 
-static inline int get_channel(CAN_TypeDef *can)
-{
+static inline int get_channel(CAN_TypeDef *can) {
 #if CANDEV_STM32_CHAN_NUMOF == 1
     (void)can;
     return 0;
@@ -109,8 +104,7 @@ static inline int get_channel(CAN_TypeDef *can)
 #endif
 }
 
-static inline can_mode_t get_mode(CAN_TypeDef *can)
-{
+static inline can_mode_t get_mode(CAN_TypeDef *can) {
     if ((can->MCR & CAN_MCR_SLEEP) == CAN_MCR_SLEEP) {
         return MODE_SLEEP;
     }
@@ -122,21 +116,20 @@ static inline can_mode_t get_mode(CAN_TypeDef *can)
     }
 }
 
-static int set_mode(CAN_TypeDef *can, can_mode_t mode)
-{
+static int set_mode(CAN_TypeDef *can, can_mode_t mode) {
     int max_loop = CAN_MAX_WAIT_CHANGE;
     int res = 0;
 
     switch (mode) {
         case MODE_NORMAL:
             can->MCR &= ~(CAN_MCR_SLEEP | CAN_MCR_INRQ);
-            /* wait for hardware confirmation */
+            // wait for hardware confirmation
             while (((can->MSR & CAN_MSR_INAK) || (can->MSR & CAN_MSR_SLAK)) && max_loop != 0) {
                 max_loop--;
             }
             break;
         case MODE_SLEEP:
-            /* set sleep mode */
+            // set sleep mode
             can->MCR &= ~CAN_MCR_INRQ;
             can->MCR |= CAN_MCR_SLEEP;
             while (((can->MSR & CAN_MSR_INAK) || !(can->MSR & CAN_MSR_SLAK)) && max_loop != 0) {
@@ -146,7 +139,7 @@ static int set_mode(CAN_TypeDef *can, can_mode_t mode)
         case MODE_INIT:
             can->MCR &= ~CAN_MCR_SLEEP;
             can->MCR |= CAN_MCR_INRQ;
-            /* wait for hardware confirmation */
+            // wait for hardware confirmation
             while ((!(can->MSR & CAN_MSR_INAK) || (can->MSR & CAN_MSR_SLAK)) && max_loop != 0) {
                 max_loop--;
             }
@@ -164,13 +157,11 @@ static int set_mode(CAN_TypeDef *can, can_mode_t mode)
     return res;
 }
 
-static inline int filter_is_set(CAN_TypeDef *master, uint8_t filter)
-{
+static inline int filter_is_set(CAN_TypeDef *master, uint8_t filter) {
     return (master->FA1R & (1 << filter)) >> filter;
 }
 
-void can_init(can_t *dev, const can_conf_t *conf)
-{
+void can_init(can_t *dev, const can_conf_t *conf) {
     dev->candev.driver = &candev_stm32_driver;
 
     struct can_bittiming timing = { .bitrate = CANDEV_STM32_DEFAULT_BITRATE,
@@ -184,9 +175,8 @@ void can_init(can_t *dev, const can_conf_t *conf)
     dev->tx_pin = GPIO_UNDEF;
 }
 
-static void set_filter(CAN_TypeDef *can, uint32_t fr1, uint32_t fr2, uint8_t filter, uint8_t fifo)
-{
-    /* Set filter/mask */
+static void set_filter(CAN_TypeDef *can, uint32_t fr1, uint32_t fr2, uint8_t filter, uint8_t fifo) {
+    // Set filter/mask
     if ((fr1 & CAN_EFF_FLAG) == CAN_EFF_FLAG) {
         can->sFilterRegister[filter].FR1 = ((fr1 & CAN_EFF_MASK) << CAN_TIxR_EFF_SHIFT)
                                            | CAN_TI0R_IDE;
@@ -198,18 +188,17 @@ static void set_filter(CAN_TypeDef *can, uint32_t fr1, uint32_t fr2, uint8_t fil
         can->sFilterRegister[filter].FR2 = (fr2 & CAN_SFF_MASK) << CAN_TIxR_SFF_SHIFT;
     }
     if (fifo == 0) {
-        can->FFA1R &= ~(1 << filter); /* To FIFO 0 */
+        can->FFA1R &= ~(1 << filter); // To FIFO 0
     }
     else {
-        can->FFA1R |= (1 << filter);    /* To FIFO 1 */
+        can->FFA1R |= (1 << filter);    // To FIFO 1
     }
-    can->FM1R &= ~(1 << filter);        /* Identifier Mask mode */
-    can->FS1R |= (1 << filter);         /* Single 32-bit scale config */
-    can->FA1R |= (1 << filter);         /* Activate filer */
+    can->FM1R &= ~(1 << filter);        // Identifier Mask mode
+    can->FS1R |= (1 << filter);         // Single 32-bit scale config
+    can->FA1R |= (1 << filter);         // Activate filer
 }
 
-static void get_can_filter(CAN_TypeDef *can, uint8_t filter_id, uint32_t *filter, uint32_t *mask)
-{
+static void get_can_filter(CAN_TypeDef *can, uint8_t filter_id, uint32_t *filter, uint32_t *mask) {
     uint32_t fr1 = can->sFilterRegister[filter_id].FR1;
     uint32_t fr2 = can->sFilterRegister[filter_id].FR2;
 
@@ -229,8 +218,7 @@ static void get_can_filter(CAN_TypeDef *can, uint8_t filter_id, uint32_t *filter
     }
 }
 
-static inline void unset_filter(CAN_TypeDef *can, uint8_t filter)
-{
+static inline void unset_filter(CAN_TypeDef *can, uint8_t filter) {
     can->FA1R &= ~(1 << filter);
 }
 
@@ -251,7 +239,7 @@ void candev_stm32_set_pins(can_t *dev, gpio_t tx_pin, gpio_t rx_pin)
     }
     dev->tx_pin = tx_pin;
     dev->rx_pin = rx_pin;
-    /* configure pins */
+    // configure pins
     gpio_init(rx_pin, GPIO_IN);
     gpio_init(tx_pin, GPIO_OUT);
 #ifndef CPU_FAM_STM32F1
@@ -263,8 +251,7 @@ void candev_stm32_set_pins(can_t *dev, gpio_t tx_pin, gpio_t rx_pin)
 #endif
 }
 
-static int _init(candev_t *candev)
-{
+static int _init(candev_t *candev) {
     can_t *dev = container_of(candev, can_t, candev);
     int res = 0;
 
@@ -277,15 +264,15 @@ static int _init(candev_t *candev)
     dev->isr_flags.isr_rx = 0;
 
 #if CANDEV_STM32_CHAN_NUMOF > 1
-    /* Enable master clock */
+    // Enable master clock
     periph_clk_en(APB1, dev->conf->master_rcc_mask);
 #endif
-    /* Enable device clock */
+    // Enable device clock
     periph_clk_en(APB1, dev->conf->rcc_mask);
 
     _status[get_channel(dev->conf->can)] = STATUS_ON;
 
-    /* configure pins */
+    // configure pins
 #ifndef CPU_FAM_STM32F1
     candev_stm32_set_pins(dev, dev->conf->tx_pin, dev->conf->rx_pin, dev->conf->af);
 #else
@@ -294,7 +281,7 @@ static int _init(candev_t *candev)
 
     set_mode(dev->conf->can, MODE_INIT);
 
-    /* Set configuration */
+    // Set configuration
     uint32_t mask_config = (CAN_MCR_TTCM * dev->conf->ttcm) | (CAN_MCR_ABOM * dev->conf->abom) |
                            (CAN_MCR_AWUM * dev->conf->awum) | (CAN_MCR_NART * dev->conf->nart) |
                            (CAN_MCR_RFLM * dev->conf->rflm) | (CAN_MCR_TXFP * dev->conf->txfp);
@@ -303,10 +290,10 @@ static int _init(candev_t *candev)
 
     set_bit_timing(dev);
 
-    /* Loopback and/or silent mode */
+    // Loopback and/or silent mode
     dev->conf->can->BTR |= (CAN_BTR_LBKM * dev->conf->lbkm) | (CAN_BTR_SILM * dev->conf->silm);
 
-    /* Default filter config: No rx frame */
+    // Default filter config: No rx frame
 #if CANDEV_STM32_CHAN_NUMOF > 1
     if (dev->conf->can == dev->conf->can_master) {
 
@@ -316,9 +303,9 @@ static int _init(candev_t *candev)
 
     dev->conf->can->FMR = CAN_FMR_FINIT;
 #if CANDEV_STM32_CHAN_NUMOF > 1
-    /* Clear start bank */
+    // Clear start bank
     dev->conf->can->FMR &= ~CAN_FMR_CAN2SB;
-    /* Set start filter */
+    // Set start filter
     dev->conf->can->FMR |= dev->conf->nb_filters << 8;
 
     for (int i = 0; i < dev->conf->nb_filters; i++) {
@@ -344,7 +331,7 @@ else {
 }
 #endif
 
-    /* Clear interrupt flags */
+    // Clear interrupt flags
     dev->conf->can->TSR |= CAN_TSR_RQCP0 | CAN_TSR_RQCP1 | CAN_TSR_RQCP2;
     dev->conf->can->RF0R |= CAN_RF0R_FMP0 | CAN_RF0R_FULL0 | CAN_RF0R_FOVR0;
     dev->conf->can->RF1R |= CAN_RF1R_FMP1 | CAN_RF1R_FULL1 | CAN_RF1R_FOVR1;
@@ -355,7 +342,7 @@ else {
                           CAN_IER_EPVIE | CAN_IER_EWGIE | CAN_IER_ERRIE | CAN_IER_BOFIE |
                           CAN_IER_FOVIE1 | CAN_IER_FMPIE1 | CAN_IER_FOVIE0 | CAN_IER_FMPIE0 |
                           CAN_IER_TMEIE;
-    /* Enable interrupts */
+    // Enable interrupts
 #if defined(CPU_FAM_STM32F0)
     NVIC_EnableIRQ(dev->conf->irqn);
 #else
@@ -373,9 +360,8 @@ else {
     return res;
 }
 
-static inline void set_bit_timing(can_t *dev)
-{
-    /* Set bit timing */
+static inline void set_bit_timing(can_t *dev) {
+    // Set bit timing
     dev->conf->can->BTR = (((uint32_t)(dev->candev.bittiming.sjw - 1) << 24) & CAN_BTR_SJW) |
                           (((uint32_t)(dev->candev.bittiming.phase_seg2 - 1) << 20) & CAN_BTR_TS2) |
                           (((uint32_t)((dev->candev.bittiming.phase_seg1 +
@@ -384,8 +370,7 @@ static inline void set_bit_timing(can_t *dev)
                           ((uint32_t)(dev->candev.bittiming.brp - 1) & CAN_BTR_BRP);
 }
 
-static int _send(candev_t *candev, const struct can_frame *frame)
-{
+static int _send(candev_t *candev, const struct can_frame *frame) {
     can_t *dev = container_of(candev, can_t, candev);
     CAN_TypeDef *can = dev->conf->can;
     int mailbox = 0;
@@ -425,8 +410,7 @@ static int _send(candev_t *candev, const struct can_frame *frame)
     return mailbox;
 }
 
-static int _abort(candev_t *candev, const struct can_frame *frame)
-{
+static int _abort(candev_t *candev, const struct can_frame *frame) {
     can_t *dev = container_of(candev, can_t, candev);
     CAN_TypeDef *can = dev->conf->can;
     int mailbox = 0;
@@ -450,11 +434,10 @@ static int _abort(candev_t *candev, const struct can_frame *frame)
 #define CAN_RIxR_EFF_SHIFT 3
 #define CAN_RDTxR_FMI_SHIFT 8
 
-static int read_frame(can_t *dev, struct can_frame *frame, int mailbox)
-{
+static int read_frame(can_t *dev, struct can_frame *frame, int mailbox) {
     CAN_TypeDef *can = dev->conf->can;
 
-    /* Get frame ID */
+    // Get frame ID
     if ((can->sFIFOMailBox[mailbox].RIR & CAN_RI0R_IDE) == CAN_RI0R_IDE) {
         frame->can_id = can->sFIFOMailBox[mailbox].RIR >> CAN_RIxR_EFF_SHIFT;
         frame->can_id |= CAN_EFF_FLAG;
@@ -466,10 +449,10 @@ static int read_frame(can_t *dev, struct can_frame *frame, int mailbox)
         frame->can_id |= CAN_RTR_FLAG;
     }
 
-    /* Get DLC */
+    // Get DLC
     frame->len = can->sFIFOMailBox[mailbox].RDTR & CAN_RDT0R_DLC;
 
-    /* Get Data */
+    // Get Data
     for (int j = 0; j < 4; j++) {
         frame->data[j] = (can->sFIFOMailBox[mailbox].RDLR >> (j * 8)) & 0xFF;
     }
@@ -477,10 +460,10 @@ static int read_frame(can_t *dev, struct can_frame *frame, int mailbox)
         frame->data[j] = (can->sFIFOMailBox[mailbox].RDHR >> ((j - 4) * 8)) & 0xFF;
     }
 
-    /* filter number matching the received frame */
-    /* filter = (can->sFIFOMailBox[mailbox].RDTR & CAN_RDT0R_FMI) >> CAN_RDTxR_FMI_SHIFT; */
+    // filter number matching the received frame
+    // filter = (can->sFIFOMailBox[mailbox].RDTR & CAN_RDT0R_FMI) >> CAN_RDTxR_FMI_SHIFT;
 
-    /* Release input mailbox */
+    // Release input mailbox
     if (mailbox == 0) {
         can->RF0R |= CAN_RF0R_RFOM0;
     }
@@ -491,8 +474,7 @@ static int read_frame(can_t *dev, struct can_frame *frame, int mailbox)
     return 0;
 }
 
-static void _isr(candev_t *candev)
-{
+static void _isr(candev_t *candev) {
     can_t *dev = container_of(candev, can_t, candev);
 
     if (dev->isr_flags.isr_tx) {
@@ -528,8 +510,7 @@ static void _isr(candev_t *candev)
     }
 }
 
-static inline int get_first_filter(can_t *dev)
-{
+static inline int get_first_filter(can_t *dev) {
 #if CANDEV_STM32_CHAN_NUMOF == 1
     (void)dev;
     return 0;
@@ -538,8 +519,7 @@ static inline int get_first_filter(can_t *dev)
 #endif
 }
 
-static inline int get_nb_filter(can_t *dev)
-{
+static inline int get_nb_filter(can_t *dev) {
 #if CANDEV_STM32_CHAN_NUMOF == 1
     (void)dev;
     return CAN_STM32_NB_FILTER;
@@ -548,8 +528,7 @@ static inline int get_nb_filter(can_t *dev)
 #endif
 }
 
-static inline CAN_TypeDef *get_master(can_t *dev)
-{
+static inline CAN_TypeDef *get_master(can_t *dev) {
 #if CANDEV_STM32_CHAN_NUMOF == 1
     return dev->conf->can;
 #else
@@ -557,8 +536,7 @@ static inline CAN_TypeDef *get_master(can_t *dev)
 #endif
 }
 
-static inline int is_master(can_t *dev)
-{
+static inline int is_master(can_t *dev) {
 #if CANDEV_STM32_CHAN_NUMOF == 1
     (void)dev;
     return 1;
@@ -567,8 +545,7 @@ static inline int is_master(can_t *dev)
 #endif
 }
 
-static void _wkup_cb(void *arg)
-{
+static void _wkup_cb(void *arg) {
     can_t *dev = arg;
     gpio_irq_disable(dev->rx_pin);
 
@@ -582,8 +559,7 @@ static void _wkup_cb(void *arg)
 }
 
 #if CANDEV_STM32_CHAN_NUMOF > 1
-static void enable_int(can_t *dev, int master_from_slave)
-{
+static void enable_int(can_t *dev, int master_from_slave) {
     DEBUG("EN int (%d) (%p)\n", master_from_slave, (void *)dev);
 
     if (master_from_slave) {
@@ -596,8 +572,7 @@ static void enable_int(can_t *dev, int master_from_slave)
 }
 #endif
 
-static void disable_int(can_t *dev, int master_from_slave)
-{
+static void disable_int(can_t *dev, int master_from_slave) {
     DEBUG("DIS int (%d) (%p)\n", master_from_slave, (void *)dev);
 
     if (master_from_slave) {
@@ -621,8 +596,7 @@ static void disable_int(can_t *dev, int master_from_slave)
     }
 }
 
-static void turn_off(can_t *dev)
-{
+static void turn_off(can_t *dev) {
     DEBUG("turn off (%p)\n", (void *)dev);
 
     unsigned irq = irq_disable();
@@ -630,11 +604,11 @@ static void turn_off(can_t *dev)
     if (is_master(dev)) {
         int chan = get_channel(dev->conf->can);
         if (chan < CANDEV_STM32_CHAN_NUMOF - 1 && _status[chan + 1] != STATUS_SLEEP) {
-            /* a slave exists and is not sleeping */
+            // a slave exists and is not sleeping
             _status[chan] = STATUS_READY_FOR_SLEEP;
         }
         else {
-            /* no slave or slave already sleeping */
+            // no slave or slave already sleeping
             if (_status[get_channel(dev->conf->can)] != STATUS_SLEEP) {
 #ifdef STM32_PM_STOP
                 pm_unblock(STM32_PM_STOP);
@@ -655,7 +629,7 @@ static void turn_off(can_t *dev)
 #ifdef STM32_PM_STOP
                 pm_unblock(STM32_PM_STOP);
 #endif
-            /* Fall through */
+            // Fall through
             case STATUS_NOT_USED:
                 if (dev->conf->en_deep_sleep_wake_up) {
                     periph_clk_dis(APB1, dev->conf->master_rcc_mask);
@@ -693,8 +667,7 @@ static void turn_off(can_t *dev)
     irq_restore(irq);
 }
 
-static void turn_on(can_t *dev)
-{
+static void turn_on(can_t *dev) {
     DEBUG("turn on (%p)\n", (void *)dev);
 
     unsigned irq = irq_disable();
@@ -710,7 +683,7 @@ static void turn_on(can_t *dev)
 #ifdef STM32_PM_STOP
                 pm_block(STM32_PM_STOP);
 #endif
-            /* Fall through */
+            // Fall through
             case STATUS_NOT_USED:
                 periph_clk_en(APB1, dev->conf->master_rcc_mask);
                 break;
@@ -731,21 +704,18 @@ static void turn_on(can_t *dev)
     irq_restore(irq);
 }
 
-static int _wake_up(can_t *dev)
-{
+static int _wake_up(can_t *dev) {
     turn_on(dev);
     return set_mode(dev->conf->can, MODE_NORMAL);
 }
 
-static int _sleep(can_t *dev)
-{
+static int _sleep(can_t *dev) {
     int res = set_mode(dev->conf->can, MODE_SLEEP);
     turn_off(dev);
     return res;
 }
 
-static int _set(candev_t *candev, canopt_t opt, void *value, size_t value_len)
-{
+static int _set(candev_t *candev, canopt_t opt, void *value, size_t value_len) {
     can_t *dev = container_of(candev, can_t, candev);
     CAN_TypeDef *can = dev->conf->can;
     int res = 0;
@@ -822,8 +792,7 @@ static int _set(candev_t *candev, canopt_t opt, void *value, size_t value_len)
 #define CAN_ESR_REC_SHIFT 24
 #define CAN_ESR_TEC_SHIFT 16
 
-static int _get(candev_t *candev, canopt_t opt, void *value, size_t max_len)
-{
+static int _get(candev_t *candev, canopt_t opt, void *value, size_t max_len) {
     can_t *dev = container_of(candev, can_t, candev);
     CAN_TypeDef *can = dev->conf->can;
     int res = 0;
@@ -911,8 +880,7 @@ static int _get(candev_t *candev, canopt_t opt, void *value, size_t max_len)
     return res;
 }
 
-static int _set_filter(candev_t *candev, const struct can_filter *filter)
-{
+static int _set_filter(candev_t *candev, const struct can_filter *filter) {
     can_t *dev = container_of(candev, can_t, candev);
 
     DEBUG("_set_filter: dev=%p, filter=0x%" PRIx32 "\n", (void *)candev, filter->can_id);
@@ -937,8 +905,7 @@ static int _set_filter(candev_t *candev, const struct can_filter *filter)
     return i - first_filter;
 }
 
-static int _remove_filter(candev_t *candev, const struct can_filter *filter)
-{
+static int _remove_filter(candev_t *candev, const struct can_filter *filter) {
     can_t *dev = container_of(candev, can_t, candev);
 
     int first_filter = get_first_filter(dev);
@@ -949,16 +916,16 @@ static int _remove_filter(candev_t *candev, const struct can_filter *filter)
     for (i = first_filter; i < last_filter; i++) {
         if (filter_is_set(get_master(dev), i)) {
             uint32_t filt, mask;
-            /* Clear RTR and ERR flags as they are ignored by the set/get filter */
+            // Clear RTR and ERR flags as they are ignored by the set/get filter
             get_can_filter(get_master(dev), i, &filt, &mask);
             DEBUG("_remove_filter: filter=0x%" PRIx32 ",0x%" PRIx32 ", nb=%d, "
                   "dev_filter=0x%" PRIx32 ",0x%" PRIx32 "\n",
                   filter->can_id, filter->can_mask, (int)i, filt, mask);
-            if ((filt == filter->can_id) && /* ID match */
-                                            /* Filter match (extended case */
+            if ((filt == filter->can_id) && // ID match
+                                            // Filter match (extended case
                 (((filt & CAN_EFF_FLAG) &&
                   ((mask & CAN_EFF_MASK) == (filter->can_mask & CAN_EFF_MASK)))
-                 /* Filter match (standard case */
+                 // Filter match (standard case
                  || (!(filt & CAN_EFF_FLAG) &&
                      ((mask & CAN_SFF_MASK) == (filter->can_mask & CAN_SFF_MASK))))) {
                 get_master(dev)->FMR = CAN_FMR_FINIT;
@@ -975,8 +942,7 @@ static int _remove_filter(candev_t *candev, const struct can_filter *filter)
     return 0;
 }
 
-static void tx_conf(can_t *dev, int mailbox)
-{
+static void tx_conf(can_t *dev, int mailbox) {
     candev_t *candev = (candev_t *) dev;
     const struct can_frame *frame = dev->tx_mailbox[mailbox];
 
@@ -990,8 +956,7 @@ static void tx_conf(can_t *dev, int mailbox)
     }
 }
 
-static void tx_irq_handler(can_t *dev)
-{
+static void tx_irq_handler(can_t *dev) {
     CAN_TypeDef *can = dev->conf->can;
     int flags = dev->isr_flags.isr_tx;
 
@@ -1021,8 +986,7 @@ static void tx_irq_handler(can_t *dev)
     }
 }
 
-static void tx_isr(can_t *dev)
-{
+static void tx_isr(can_t *dev) {
     unsigned int irq;
 
     irq = irq_disable();
@@ -1056,8 +1020,7 @@ static void tx_isr(can_t *dev)
     }
 }
 
-static void rx_irq_handler(can_t *dev, int mailbox)
-{
+static void rx_irq_handler(can_t *dev, int mailbox) {
     CAN_TypeDef *can = dev->conf->can;
     candev_t *candev = (candev_t *) dev;
 
@@ -1103,8 +1066,7 @@ static void rx_irq_handler(can_t *dev, int mailbox)
     }
 }
 
-static void rx_isr(can_t *dev)
-{
+static void rx_isr(can_t *dev) {
     DEBUG("_rx_isr: device=%p\n", (void *)dev);
 
     while (dev->rx_fifo.is_full || dev->rx_fifo.read_idx != dev->rx_fifo.write_idx) {
@@ -1125,8 +1087,7 @@ static void rx_isr(can_t *dev)
     }
 }
 
-static void sce_irq_handler(can_t *dev)
-{
+static void sce_irq_handler(can_t *dev) {
     CAN_TypeDef *can = dev->conf->can;
     candev_t *candev = (candev_t *) dev;
 
@@ -1171,8 +1132,7 @@ static void sce_irq_handler(can_t *dev)
 #define CAN_RFxR_INT_MASK 0x0000001B
 #define CAN_ESR_INT_MASK  0x00000077
 
-void isr_cec_can(void)
-{
+void isr_cec_can(void) {
     DEBUG("bxCAN irq\n");
 
     if ((CAN->ESR & CAN_ESR_INT_MASK) || (CAN->MSR & CAN_MSR_INT_MASK)) {
@@ -1191,58 +1151,50 @@ void isr_cec_can(void)
     cortexm_isr_end();
 }
 #else
-void ISR_CAN1_TX(void)
-{
+void ISR_CAN1_TX(void) {
     tx_irq_handler(_can[0]);
 
     cortexm_isr_end();
 }
 
-void ISR_CAN1_RX0(void)
-{
+void ISR_CAN1_RX0(void) {
     rx_irq_handler(_can[0], 0);
 
     cortexm_isr_end();
 }
 
-void ISR_CAN1_RX1(void)
-{
+void ISR_CAN1_RX1(void) {
     rx_irq_handler(_can[0], 1);
 
     cortexm_isr_end();
 }
 
-void ISR_CAN1_SCE(void)
-{
+void ISR_CAN1_SCE(void) {
     sce_irq_handler(_can[0]);
 
     cortexm_isr_end();
 }
 
 #if CANDEV_STM32_CHAN_NUMOF > 1
-void ISR_CAN2_TX(void)
-{
+void ISR_CAN2_TX(void) {
     tx_irq_handler(_can[1]);
 
     cortexm_isr_end();
 }
 
-void ISR_CAN2_RX0(void)
-{
+void ISR_CAN2_RX0(void) {
     rx_irq_handler(_can[1], 0);
 
     cortexm_isr_end();
 }
 
-void ISR_CAN2_RX1(void)
-{
+void ISR_CAN2_RX1(void) {
     rx_irq_handler(_can[1], 1);
 
     cortexm_isr_end();
 }
 
-void ISR_CAN2_SCE(void)
-{
+void ISR_CAN2_SCE(void) {
     sce_irq_handler(_can[1]);
 
     cortexm_isr_end();
@@ -1250,29 +1202,25 @@ void ISR_CAN2_SCE(void)
 #endif
 
 #if CANDEV_STM32_CHAN_NUMOF > 2
-void ISR_CAN3_TX(void)
-{
+void ISR_CAN3_TX(void) {
     tx_irq_handler(_can[2]);
 
     cortexm_isr_end();
 }
 
-void ISR_CAN3_RX0(void)
-{
+void ISR_CAN3_RX0(void) {
     rx_irq_handler(_can[2], 0);
 
     cortexm_isr_end();
 }
 
-void ISR_CAN3_RX1(void)
-{
+void ISR_CAN3_RX1(void) {
     rx_irq_handler(_can[2], 1);
 
     cortexm_isr_end();
 }
 
-void ISR_CAN3_SCE(void)
-{
+void ISR_CAN3_SCE(void) {
     sce_irq_handler(_can[2]);
 
     cortexm_isr_end();

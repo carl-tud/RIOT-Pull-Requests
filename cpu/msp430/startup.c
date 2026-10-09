@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu
- * @{
- *
- * @file
- * @brief       Calls startup functions on MSP430-based platforms
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu
+/// @{
+///
+/// @file
+/// @brief       Calls startup functions on MSP430-based platforms
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -32,8 +28,7 @@
 extern void board_init(void);
 extern void msp430_cpu_init(void);
 
-__attribute__((constructor)) static void startup(void)
-{
+__attribute__((constructor)) static void startup(void) {
     msp430_cpu_init();
 
     board_init();
@@ -47,11 +42,11 @@ __attribute__((constructor)) static void startup(void)
     _init();
 #endif
 
-    /* initialize stdio prior to periph_init() to allow use of DEBUG() there */
+    // initialize stdio prior to periph_init() to allow use of DEBUG() there
     early_init();
-    /* trigger static peripheral initialization */
+    // trigger static peripheral initialization
     periph_init();
-    /* continue with kernel initialization */
+    // continue with kernel initialization
     kernel_init();
 
     __builtin_unreachable();

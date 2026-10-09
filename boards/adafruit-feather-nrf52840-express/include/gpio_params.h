@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_adafruit-feather-nrf52840-express
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Martine S. Lenders <m.lenders@fu-berlin.de>
- */
+/// @ingroup     boards_adafruit-feather-nrf52840-express
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Martine S. Lenders <m.lenders@fu-berlin.de>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    LED configuration
- */
+/// @brief    LED configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -51,4 +45,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

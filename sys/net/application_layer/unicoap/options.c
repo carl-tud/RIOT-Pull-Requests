@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2026 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2026 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2026 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup net_unicoap_options
- * @brief   Options implementation
- * @author  Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @ingroup net_unicoap_options
+/// @brief   Options implementation
+/// @author  Carl Seifert <carl.seifert@tu-dresden.de>
 
 #include <stddef.h>
 #include <stdio.h>
@@ -20,7 +16,7 @@
 #include "byteorder.h"
 #include "compiler_hints.h"
 #include "modules.h"
-#include "ztimer.h" /* needed for generating observe value */
+#include "ztimer.h" // needed for generating observe value
 
 #include "net/unicoap/message.h"
 #include "net/unicoap/options.h"
@@ -86,7 +82,7 @@
 #define DECODE_LENGTH_NIBBLE(head)    (head & 0xf)
 #define ENCODE_LENGTH_NIBBLE(nibble)  (nibble)
 
-/* MARK: - Unsigned Integer Parsing */
+// MARK: - Unsigned Integer Parsing
 
 #define UINT4_MAX                    (12)
 #define UINT12_MAX                   (13 + 0xff)
@@ -98,8 +94,7 @@
 #define DECODE_UINT20(extended)      14 + 0xff + byteorder_bebuftohs(extended)
 #define ENCODE_UINT20(value, cursor) byteorder_htobebufs(cursor, value - (14 + 0xff))
 
-static int _uint_extended_size_from_nibble(uint8_t nibble)
-{
+static int _uint_extended_size_from_nibble(uint8_t nibble) {
     if (nibble < 13) {
         return 0;
     }
@@ -114,8 +109,7 @@ static int _uint_extended_size_from_nibble(uint8_t nibble)
     }
 }
 
-static inline ssize_t _uint_extended_size(uint32_t uint)
-{
+static inline ssize_t _uint_extended_size(uint32_t uint) {
     if (uint <= UINT4_MAX) {
         return 0;
     }
@@ -130,8 +124,7 @@ static inline ssize_t _uint_extended_size(uint32_t uint)
     }
 }
 
-ssize_t _uint_read_in_range(uint8_t nibble, const uint8_t** cursor, const uint8_t* end)
-{
+ssize_t _uint_read_in_range(uint8_t nibble, const uint8_t** cursor, const uint8_t* end) {
     const uint8_t* extended = *cursor;
     if (nibble < 13) {
         return nibble;
@@ -158,8 +151,7 @@ ssize_t _uint_read_in_range(uint8_t nibble, const uint8_t** cursor, const uint8_
     }
 }
 
-static ssize_t _uint_read(uint8_t nibble, const uint8_t** cursor)
-{
+static ssize_t _uint_read(uint8_t nibble, const uint8_t** cursor) {
     if (nibble < 13) {
         return nibble;
     }
@@ -179,8 +171,7 @@ static ssize_t _uint_read(uint8_t nibble, const uint8_t** cursor)
     }
 }
 
-static int _uint_write(uint32_t value, uint8_t** cursor)
-{
+static int _uint_write(uint32_t value, uint8_t** cursor) {
     if (value <= UINT4_MAX) {
         return value;
     }
@@ -200,15 +191,13 @@ static int _uint_write(uint32_t value, uint8_t** cursor)
     }
 }
 
-/* MARK: - Private API - */
+// MARK: - Private API -
 
-static inline ssize_t _option_size_diff(uint16_t new_delta, uint8_t current_delta_nibble)
-{
+static inline ssize_t _option_size_diff(uint16_t new_delta, uint8_t current_delta_nibble) {
     return _uint_extended_size(new_delta) - _uint_extended_size_from_nibble(current_delta_nibble);
 }
 
-static inline ssize_t _option_size(uint16_t delta, size_t value_size)
-{
+static inline ssize_t _option_size(uint16_t delta, size_t value_size) {
     ssize_t delta_field_size = _uint_extended_size(delta);
     if (delta_field_size < 0) {
         return delta_field_size;
@@ -218,25 +207,22 @@ static inline ssize_t _option_size(uint16_t delta, size_t value_size)
         return length_field_size;
     }
 
-    /* add extended delta field size, extended length field size + actual size of value */
+    // add extended delta field size, extended length field size + actual size of value
     return sizeof(uint8_t) + delta_field_size + length_field_size + value_size;
 }
 
-/**
- * @brief Reads option
- *
- * @param[in,out]   cursor Buffer cursor variable
- * @param[in]       end Pointer to after last buffer element
- * @param[out]      delta Option delta of this option
- * @param[out]      value  Option value
- *
- * @return Size of option value, value starting at `value`
- * @return `-EPAYLD` if @p cursor points at the payload marker
- * @return `-EBADOPT` if reading this option fails
- */
+/// @brief Reads option
+///
+/// @param[in,out]   cursor Buffer cursor variable
+/// @param[in]       end Pointer to after last buffer element
+/// @param[out]      delta Option delta of this option
+/// @param[out]      value  Option value
+///
+/// @return Size of option value, value starting at `value`
+/// @return `-EPAYLD` if @p cursor points at the payload marker
+/// @return `-EBADOPT` if reading this option fails
 static inline ssize_t _read_option_in_range(const uint8_t** cursor, const uint8_t* end,
-                                                   uint16_t* delta, const uint8_t** value)
-{
+                                                   uint16_t* delta, const uint8_t** value) {
     uint8_t head = **cursor;
     *cursor += 1;
 
@@ -272,18 +258,15 @@ static inline ssize_t _read_option_in_range(const uint8_t** cursor, const uint8_
     return value_size;
 }
 
-/**
- * @brief Reads option
- *
- * @param[in,out]   cursor Buffer cursor variable
- * @param[out]   value  Option value
- *
- * @return Size of option value, value starting at `value`
- * @return `-EPAYLD` if @p cursor points at the payload marker
- * @return `-EBADOPT` if reading this option fails
- */
-static inline ssize_t _read_option(const uint8_t** cursor, const uint8_t** value)
-{
+/// @brief Reads option
+///
+/// @param[in,out]   cursor Buffer cursor variable
+/// @param[out]   value  Option value
+///
+/// @return Size of option value, value starting at `value`
+/// @return `-EPAYLD` if @p cursor points at the payload marker
+/// @return `-EBADOPT` if reading this option fails
+static inline ssize_t _read_option(const uint8_t** cursor, const uint8_t** value) {
     uint8_t head = **cursor;
     *cursor += 1;
 
@@ -305,8 +288,7 @@ static inline ssize_t _read_option(const uint8_t** cursor, const uint8_t** value
     return value_size;
 }
 
-static void _write_option(uint8_t** cursor, uint16_t delta, const uint8_t* value, size_t value_size)
-{
+static void _write_option(uint8_t** cursor, uint16_t delta, const uint8_t* value, size_t value_size) {
     uint8_t* head = *cursor;
     *cursor += 1;
     *head = ENCODE_DELTA_NIBBLE(_uint_write(delta, cursor));
@@ -317,34 +299,30 @@ static void _write_option(uint8_t** cursor, uint16_t delta, const uint8_t* value
     }
 }
 
-static inline void _write_head_partial(uint8_t** cursor, uint16_t delta, uint8_t length_nibble)
-{
+static inline void _write_head_partial(uint8_t** cursor, uint16_t delta, uint8_t length_nibble) {
     uint8_t* head = *cursor;
     *cursor += 1;
     *head = ENCODE_DELTA_NIBBLE(_uint_write(delta, cursor)) | ENCODE_LENGTH_NIBBLE(length_nibble);
 }
 
-/**
- * @brief Moves options in storage buffer freely in both directions
- *
- * @param[in,out] options Option struct whose storage buffer to mutate
- * @param[in,out] src Start of memory region to move
- * @param[in,out] dest Start of target memory region where to move @p src
- *
- * Moves memory region starting at @p src and ending the last of the currently used buffer
- * to @p dest.
- *
- * @pre @p dest lies within storage buffer capacity
- * @pre @p src lies within storage buffer capacity
- *
- * @warning You must perform runtime bounds checks at the call site.
- */
+/// @brief Moves options in storage buffer freely in both directions
+///
+/// @param[in,out] options Option struct whose storage buffer to mutate
+/// @param[in,out] src Start of memory region to move
+/// @param[in,out] dest Start of target memory region where to move @p src
+///
+/// Moves memory region starting at @p src and ending the last of the currently used buffer
+/// to @p dest.
+///
+/// @pre @p dest lies within storage buffer capacity
+/// @pre @p src lies within storage buffer capacity
+///
+/// @warning You must perform runtime bounds checks at the call site.
 static inline
-void _move_options_in_storage_buffer(unicoap_options_t* options, uint8_t* dest, uint8_t* src)
-{
+void _move_options_in_storage_buffer(unicoap_options_t* options, uint8_t* dest, uint8_t* src) {
     uint8_t* start = unicoap_options_data(options);
     uint8_t* end = start + options->storage_capacity;
-    (void)end; /* unused with NDEBUG */
+    (void)end; // unused with NDEBUG
     assert(src >= start && src < end);
     assert(dest >= start && dest < end);
     size_t from_start = (uintptr_t)src - (uintptr_t)start;
@@ -353,39 +331,33 @@ void _move_options_in_storage_buffer(unicoap_options_t* options, uint8_t* dest, 
     memmove(dest, src, remainder);
 }
 
-/**
- * @brief Adds diff to pointers in lookup array ('entries')
- *
- * @param[in,out] options Options with lookup array ('entries')
- * @param i Index in lookup array where to begin applying @p data_diff (equals option index)
- * @param data_diff Positive or negative difference in storage buffer at the `i`-th option.
- *
- * Positive diff shifts towards higher addresses, negative diff towards lower ones.
- *
- * Use this function to update entries in the lookup array after you have moved options in the
- * storage buffer using @ref _move_options_in_storage_buffer.
- */
+/// @brief Adds diff to pointers in lookup array ('entries')
+///
+/// @param[in,out] options Options with lookup array ('entries')
+/// @param i Index in lookup array where to begin applying @p data_diff (equals option index)
+/// @param data_diff Positive or negative difference in storage buffer at the `i`-th option.
+///
+/// Positive diff shifts towards higher addresses, negative diff towards lower ones.
+///
+/// Use this function to update entries in the lookup array after you have moved options in the
+/// storage buffer using @ref _move_options_in_storage_buffer.
 static inline void _update_option_entries_with_storage_diff(unicoap_options_t* options,
-                                                            size_t i, ssize_t data_diff)
-{
+                                                            size_t i, ssize_t data_diff) {
     for (; i < options->option_count; i += 1) {
         options->entries[i].data += data_diff;
     }
 }
 
-/**
- * @brief Shifts entries in lookup array ('entries') by given diff
- *
- * @param[in,out] options Options with lookup array ('entries')
- * @param i Index in lookup array where to begin shifting (equals index of option)
- * @param diff Positive or negative difference.
- *
- * Positive diff shifts towards higher addresses, negative diff towards lower ones.
- *
- * @warning You must perform bounds checks at the call site.
- */
-static inline void _shift_option_entries(unicoap_options_t* options, size_t i, ssize_t diff)
-{
+/// @brief Shifts entries in lookup array ('entries') by given diff
+///
+/// @param[in,out] options Options with lookup array ('entries')
+/// @param i Index in lookup array where to begin shifting (equals index of option)
+/// @param diff Positive or negative difference.
+///
+/// Positive diff shifts towards higher addresses, negative diff towards lower ones.
+///
+/// @warning You must perform bounds checks at the call site.
+static inline void _shift_option_entries(unicoap_options_t* options, size_t i, ssize_t diff) {
     assert(i < CONFIG_UNICOAP_OPTIONS_MAX);
     unicoap_option_entry_t* e = &options->entries[i];
     assert((uint8_t*)(e + diff) < (uint8_t*)(options->entries) + sizeof(options->entries));
@@ -393,27 +365,24 @@ static inline void _shift_option_entries(unicoap_options_t* options, size_t i, s
     options->option_count += diff;
 }
 
-/**
- * @brief Shifts options in storage buffer and updates entries in lookup array accordingly
- *
- * @param[in,out] options Options struct whose storage buffer to mutate, with lookup
- * array ('entries')
- *
- * @param i Index in lookup array where to begin shifting (equals index of option)
- * @param data_diff Positive or negative difference.
- *
- * Positive diff shifts towards higher addresses, negative diff towards lower ones.
- *
- * This function checks if the storage buffer has enough remaining capacity and is roughly equal
- * to calling @ref _move_options_in_storage_buffer first, followed by
- * @ref _update_option_entries_with_storage_diff.
- *
- * @remark If @p i is equal to the end index
- * (one index after the last valid index, i.e., the count), this function does not shift as there is
- * nothing to shift at all.
- */
-static int _shift_options(unicoap_options_t* options, size_t i, ssize_t data_diff)
-{
+/// @brief Shifts options in storage buffer and updates entries in lookup array accordingly
+///
+/// @param[in,out] options Options struct whose storage buffer to mutate, with lookup
+/// array ('entries')
+///
+/// @param i Index in lookup array where to begin shifting (equals index of option)
+/// @param data_diff Positive or negative difference.
+///
+/// Positive diff shifts towards higher addresses, negative diff towards lower ones.
+///
+/// This function checks if the storage buffer has enough remaining capacity and is roughly equal
+/// to calling @ref _move_options_in_storage_buffer first, followed by
+/// @ref _update_option_entries_with_storage_diff.
+///
+/// @remark If @p i is equal to the end index
+/// (one index after the last valid index, i.e., the count), this function does not shift as there is
+/// nothing to shift at all.
+static int _shift_options(unicoap_options_t* options, size_t i, ssize_t data_diff) {
     size_t new_size = options->storage_size + data_diff;
     if (new_size > options->storage_capacity) {
         _OPTIONS_DEBUG("buf too small, " _UNICOAP_NEED_HAVE "\n", new_size,
@@ -426,15 +395,14 @@ static int _shift_options(unicoap_options_t* options, size_t i, ssize_t data_dif
         _move_options_in_storage_buffer(options, data + data_diff, data);
         _update_option_entries_with_storage_diff(options, i, data_diff);
     } else {
-        /* Nothing to shift, see @remark above */
+        // Nothing to shift, see @remark above
     }
 
     options->storage_size = new_size;
     return 0;
 }
 
-static int _find_option_index(const unicoap_options_t* options, unicoap_option_number_t number)
-{
+static int _find_option_index(const unicoap_options_t* options, unicoap_option_number_t number) {
     size_t count = options->option_count;
     for (size_t i = 0; i < count; i += 1) {
         uint16_t n = options->entries[i].number;
@@ -449,47 +417,45 @@ static int _find_option_index(const unicoap_options_t* options, unicoap_option_n
 }
 
 ssize_t unicoap_pdu_parse_options_and_payload(uint8_t* cursor, const uint8_t* end,
-                                              unicoap_message_t* message)
-{
+                                              unicoap_message_t* message) {
     uint8_t* start = cursor;
     assert(message->options);
-    /* e points to the current entry in the lookup array */
+    // e points to the current entry in the lookup array
     unicoap_option_entry_t* e = message->options->entries;
     unicoap_option_number_t option_number = 0;
     message->options->option_count = 0;
 
-    /* Set the pointer of the first entry in the lookup array to the start of the storage buffer. */
+    // Set the pointer of the first entry in the lookup array to the start of the storage buffer.
     message->options->entries->data = start;
     message->options->storage_size = 0;
 
-    /* In case someone wants to parse a message and that message does not contains an FF
-     * payload separator, they can actually set/add options and mutate the storage buffer.
-     * If there is a payload separator however, below at (<-) we adjust the capacity to exactly
-     * the size of options blob. I.e., you could still mutate the options buffer by setting
-     * options (or removing, and then setting/adding), but you won't be able to write beyond
-     * the last byte before the FF separator.
-     *
-     * Parsing and getters in unicoap do not mutate the storage buffer.
-     * After having parsed a message, callers can still decide not to treat their own buffer
-     * as const and add/set/remove options (mutate). This of course requires global reasoning in
-     * the application. If the original buffer passed to this function was considered const
-     * by the applications, so should the options. If it wasn't considered const, options can be
-     * mutated.
-     */
+    // In case someone wants to parse a message and that message does not contains an FF
+    // payload separator, they can actually set/add options and mutate the storage buffer.
+    // If there is a payload separator however, below at (<-) we adjust the capacity to exactly
+    // the size of options blob. I.e., you could still mutate the options buffer by setting
+    // options (or removing, and then setting/adding), but you won't be able to write beyond
+    // the last byte before the FF separator.
+    //
+    // Parsing and getters in unicoap do not mutate the storage buffer.
+    // After having parsed a message, callers can still decide not to treat their own buffer
+    // as const and add/set/remove options (mutate). This of course requires global reasoning in
+    // the application. If the original buffer passed to this function was considered const
+    // by the applications, so should the options. If it wasn't considered const, options can be
+    // mutated.
     message->options->storage_capacity = (uintptr_t)end - (uintptr_t)start;
 
     while (cursor < end) {
         uint8_t* option_start = cursor;
         uint16_t delta = 0;
 
-        /* Casting from non-const to const is safe. */
+        // Casting from non-const to const is safe.
         ssize_t option_size = _read_option_in_range((const uint8_t **)&cursor, end, &delta, NULL);
 
         if (option_size == -EPAYLD) {
-            /* we hit the payload marker */
+            // we hit the payload marker
             message->payload_size = (size_t)(end - cursor);
             message->payload = message->payload_size > 0 ? cursor : NULL;
-            message->options->storage_capacity = (uintptr_t)cursor - (uintptr_t)start; /* (<-) */
+            message->options->storage_capacity = (uintptr_t)cursor - (uintptr_t)start; // (<-)
             _OPTIONS_DEBUG("payload size = %" PRIuSIZE " opts capacity = %" PRIuSIZE "\n",
                           message->payload_size, message->options->storage_capacity);
             return 0;
@@ -506,31 +472,27 @@ ssize_t unicoap_pdu_parse_options_and_payload(uint8_t* cursor, const uint8_t* en
             e->size = (uintptr_t)cursor - (uintptr_t)option_start;
             message->options->storage_size += e->size;
 
-            /*
-            _OPTIONS_DEBUG("option nr=%u label=%s\n", (unsigned int)option_number,
-             unicoap_string_from_option_number(option_number));
-             */
+            // _OPTIONS_DEBUG("option nr=%u label=%s\n", (unsigned int)option_number,
+            //  unicoap_string_from_option_number(option_number));
             e += 1;
             message->options->option_count += 1;
         }
         else {
-            /* return error */
+            // return error
             return option_size;
         }
     }
     return 0;
 }
 
-/* MARK: - Public API - */
+// MARK: - Public API -
 
-bool unicoap_options_contains(const unicoap_options_t* options, unicoap_option_number_t number)
-{
+bool unicoap_options_contains(const unicoap_options_t* options, unicoap_option_number_t number) {
     return _find_option_index(options, number) >= 0;
 }
 
 ssize_t unicoap_options_get(const unicoap_options_t* options, unicoap_option_number_t number,
-                           const uint8_t** value)
-{
+                           const uint8_t** value) {
     int option_index = _find_option_index(options, number);
     if (option_index < 0) {
         return -ENOENT;
@@ -541,8 +503,7 @@ ssize_t unicoap_options_get(const unicoap_options_t* options, unicoap_option_num
 }
 
 ssize_t unicoap_options_copy_value(const unicoap_options_t* options, unicoap_option_number_t number,
-                                   uint8_t* dest, size_t capacity)
-{
+                                   uint8_t* dest, size_t capacity) {
     assert(dest && capacity > 0);
 
     const uint8_t* src = NULL;
@@ -551,7 +512,7 @@ ssize_t unicoap_options_copy_value(const unicoap_options_t* options, unicoap_opt
         return size;
     }
     if (size == 0) {
-        /* value 0 SHOULD have been encoded as zero-length value, see RFC7252, Section 3.2 */
+        // value 0 SHOULD have been encoded as zero-length value, see RFC7252, Section 3.2
         *dest = 0;
         return size;
     }
@@ -564,11 +525,10 @@ ssize_t unicoap_options_copy_value(const unicoap_options_t* options, unicoap_opt
 
 ssize_t unicoap_options_copy_values_joined(const unicoap_options_t* options,
                                            unicoap_option_number_t number,
-                                           uint8_t* buffer, size_t capacity, uint8_t separator)
-{
+                                           uint8_t* buffer, size_t capacity, uint8_t separator) {
     assert(buffer && capacity > 0);
 
-    /* We are not mutating options here and the iterator does not escape. */
+    // We are not mutating options here and the iterator does not escape.
     unicoap_options_iterator_t iterator;
     unicoap_options_iterator_init(&iterator, (unicoap_options_t*)options);
     size_t size = 0;
@@ -580,7 +540,7 @@ ssize_t unicoap_options_copy_values_joined(const unicoap_options_t* options,
             return -ENOBUFS;
         }
 
-        /* Only insert separator between values, not at the beginning */
+        // Only insert separator between values, not at the beginning
         if (size > 0) {
             *buffer = separator;
             buffer += 1;
@@ -595,8 +555,7 @@ ssize_t unicoap_options_copy_values_joined(const unicoap_options_t* options,
 }
 
 int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t number,
-                        const uint8_t* value, size_t value_size)
-{
+                        const uint8_t* value, size_t value_size) {
     unicoap_option_entry_t* opts = options->entries;
     assert(value_size <= UNICOAP_UINT_MAX);
     assert(opts->data);
@@ -614,7 +573,7 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
         }
     }
     else if (count == 0 || opts[count-1].number <= number) {
-        /* allowed in-order addition */
+        // allowed in-order addition
         i = count;
     }
     else {
@@ -630,7 +589,7 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
 
     if (i == count) {
         size_t storage_size = options->storage_size + option_size;
-        /* Option to be inserted is trailing option, can just add after last option */
+        // Option to be inserted is trailing option, can just add after last option
         if (storage_size > options->storage_capacity) {
             _OPTIONS_DEBUG("buf too small to insert opt " _UNICOAP_NEED_HAVE "\n",
                           storage_size, options->storage_capacity);
@@ -644,7 +603,7 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
         options->option_count += 1;
     }
     else {
-        /* The successor's option delta will change */
+        // The successor's option delta will change
         uint8_t* cursor = e->data;
         uint8_t length_nibble = DECODE_LENGTH_NIBBLE(*cursor);
         uint16_t new_delta = e->number - number;
@@ -656,40 +615,39 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
             return -ENOBUFS;
         }
 
-        /* The size of the option (not just the value) grows if its new delta is wider than before.
-         * If it is smaller, the entire option shrinks. */
+        // The size of the option (not just the value) grows if its new delta is wider than before.
+        // If it is smaller, the entire option shrinks.
         e->size += diff;
 
-        /* If the options grows due to the delta field becoming wider, we extend the option in the
-         * leading direction. Otherwise, we would need to move once to adjust for the delta width
-         * and once again to accommodate the new option. We already created exactly enough space to
-         * fit the new delta width AND the new option by calling
-         * _shift_options(options, i, total_diff) above.
-         *
-         * Before:
-         * ... value ] [ Nibbles (1B) | extended delta | extended length | value ]
-         *            ^\_______ shift remainder ______>
-         *            |
-         *    New opt goes here
-         *
-         * After making space for new option + changed delta of successor option:
-         * ... value ]                    [ Nibbles (1B) | extended delta | extended length | value]
-         *            ^                   ^
-         *            |                   |
-         *    New opt goes here        e->data
-         *
-         * If successor opt delta width grows, e->data must move in leading direction
-         * ... value ] ________________ [#######[ Nibbles old (1B) | extended old delta | ... ]
-         *            ^       NEW       ^ (new) ^ (old)
-         *            |                  \      |
-         *    New opt goes here           \__ e->data
-         *
-         * If successor opt delta width shrinks, e->data must move in trailing direction
-         * ... value ] ________________ [Nibbles old (1B) | extended old delta | ... ]
-         *            ^    NEW   ^ (old) ^ (new)
-         *            |          |      /
-         *    New opt goes here  e->data
-         */
+        // If the options grows due to the delta field becoming wider, we extend the option in the
+        // leading direction. Otherwise, we would need to move once to adjust for the delta width
+        // and once again to accommodate the new option. We already created exactly enough space to
+        // fit the new delta width AND the new option by calling
+        // _shift_options(options, i, total_diff) above.
+        //
+        // Before:
+        // ... value ] [ Nibbles (1B) | extended delta | extended length | value ]
+        //            ^\_______ shift remainder ______>
+        //            |
+        //    New opt goes here
+        //
+        // After making space for new option + changed delta of successor option:
+        // ... value ]                    [ Nibbles (1B) | extended delta | extended length | value]
+        //            ^                   ^
+        //            |                   |
+        //    New opt goes here        e->data
+        //
+        // If successor opt delta width grows, e->data must move in leading direction
+        // ... value ] ________________ [#######[ Nibbles old (1B) | extended old delta | ... ]
+        //            ^       NEW       ^ (new) ^ (old)
+        //            |                  \      |
+        //    New opt goes here           \__ e->data
+        //
+        // If successor opt delta width shrinks, e->data must move in trailing direction
+        // ... value ] ________________ [Nibbles old (1B) | extended old delta | ... ]
+        //            ^    NEW   ^ (old) ^ (new)
+        //            |          |      /
+        //    New opt goes here  e->data
         e->data -= diff;
         _shift_option_entries(options, i, 1);
 
@@ -704,8 +662,7 @@ int unicoap_options_add(unicoap_options_t* options, unicoap_option_number_t numb
 }
 
 int unicoap_options_add_values_joined(unicoap_options_t* options, unicoap_option_number_t number,
-                               const uint8_t* buffer, size_t size, uint8_t separator)
-{
+                               const uint8_t* buffer, size_t size, uint8_t separator) {
     int res = 0;
     const uint8_t* end = buffer + size;
     if (*buffer == separator) {
@@ -713,8 +670,8 @@ int unicoap_options_add_values_joined(unicoap_options_t* options, unicoap_option
     }
     const uint8_t* start = buffer;
     while (buffer <= end) {
-        /* Add option when encountering separator and when there is nothing following.
-         * This would be bar in /foo/bar. */
+        // Add option when encountering separator and when there is nothing following.
+        // This would be bar in /foo/bar.
         if ((*buffer == separator) || ((buffer != start) && (buffer == end))) {
             if ((res = unicoap_options_add(options, number, start,
                                            (uintptr_t)buffer - (uintptr_t)start)) < 0) {
@@ -731,8 +688,7 @@ int unicoap_options_add_values_joined(unicoap_options_t* options, unicoap_option
 }
 
 int unicoap_options_set(unicoap_options_t* options, unicoap_option_number_t number,
-                        const uint8_t* value, size_t value_size)
-{
+                        const uint8_t* value, size_t value_size) {
     unicoap_option_entry_t* opts = options->entries;
     assert(value_size <= UNICOAP_UINT_MAX);
     assert(opts->data);
@@ -764,8 +720,7 @@ int unicoap_options_set(unicoap_options_t* options, unicoap_option_number_t numb
     return 0;
 }
 
-int unicoap_options_remove_all(unicoap_options_t* options, unicoap_option_number_t number)
-{
+int unicoap_options_remove_all(unicoap_options_t* options, unicoap_option_number_t number) {
     if (!IS_ACTIVE(CONFIG_UNICOAP_OPTIONS_FULL_SUPPORT)) {
         unicoap_assist(API_ERROR("Removing options not supported.")
                        FIXIT("Enable CONFIG_UNICOAP_OPTIONS_FULL_SUPPORT")
@@ -783,7 +738,7 @@ int unicoap_options_remove_all(unicoap_options_t* options, unicoap_option_number
     unicoap_option_entry_t* removed_entry = &options->entries[option_index];
 
     int count = (int)options->option_count;
-    /* index of next option */
+    // index of next option
     int next_option_index = option_index + 1;
     while (next_option_index < count && options->entries[next_option_index].number == number) {
         next_option_index += 1;
@@ -792,24 +747,24 @@ int unicoap_options_remove_all(unicoap_options_t* options, unicoap_option_number
     ssize_t index_offset = next_option_index - option_index;
 
     if (next_option_index == count) {
-        /* just drop last entries, no succeeding options */
+        // just drop last entries, no succeeding options
         for (int k = option_index; k < next_option_index; k += 1) {
             options->storage_size -= options->entries[k].size;
         }
         options->option_count -= index_offset;
     }
     else {
-        /* the successor's option delta will change */
+        // the successor's option delta will change
         unicoap_option_entry_t* next = removed_entry + index_offset;
         unicoap_option_entry_t* prev = (option_index > 0) ? (&options->entries[option_index - 1]) : NULL;
         uint8_t length_nibble = DECODE_LENGTH_NIBBLE(*next->data);
         uint16_t new_delta = next->number - (prev ? prev->number : 0);
 
-        /* This diff corresponds to the number of bytes the next option
-         * grows (positive) or shrinks by (negative). */
+        // This diff corresponds to the number of bytes the next option
+        // grows (positive) or shrinks by (negative).
         ssize_t diff = _option_size_diff(new_delta, DECODE_DELTA_NIBBLE(*next->data));
-        /* The extended delta field's size might change due to a new
-         * delta value. */
+        // The extended delta field's size might change due to a new
+        // delta value.
         ssize_t total_diff = diff;
         for (int k = option_index; k < next_option_index; k += 1) {
             total_diff -= options->entries[k].size;
@@ -821,46 +776,44 @@ int unicoap_options_remove_all(unicoap_options_t* options, unicoap_option_number
             return -ENOBUFS;
         }
 
-        /* shift, starting at extended length field
-         * [ Nibbles (1B) | extended delta | extended length | value ] [ Nib...
-         *   \______ changes anyway ______/^\_______ shift remainder _______
-         *                                 |
-         *                               cursor
-         *
-         * Fig. 1: Cursor for shifting the remaining options blob
-         */
+        // shift, starting at extended length field
+        // [ Nibbles (1B) | extended delta | extended length | value ] [ Nib...
+        //   \______ changes anyway ______/^\_______ shift remainder _______
+        //                                 |
+        //                               cursor
+        //
+        // Fig. 1: Cursor for shifting the remaining options blob
         uint8_t* cursor =
             next->data + 1 + _uint_extended_size_from_nibble(DECODE_DELTA_NIBBLE(*next->data));
 
-        /* next option is shifted to the start of the first removed option
-         * (there might be multiple (repeatable) options with this number */
+        // next option is shifted to the start of the first removed option
+        // (there might be multiple (repeatable) options with this number
         next->data = removed_entry->data;
-        next->size += diff; /* amount for changes in ext. delta field size */
+        next->size += diff; // amount for changes in ext. delta field size
 
-        /* this is the number of bytes following the cursor in Fig. 1 */
+        // this is the number of bytes following the cursor in Fig. 1
         size_t remainder_size =
             options->storage_size - ((uintptr_t)cursor - (uintptr_t)options->entries->data);
-        /* need to move next and all options after that at the same time,
-         * otherwise we may overwrite data of another */
+        // need to move next and all options after that at the same time,
+        // otherwise we may overwrite data of another
         memmove(cursor + total_diff, cursor, remainder_size);
         options->storage_size = new_size;
 
-        /* rewrite Nibbles (1 byte) and extended delta field */
+        // rewrite Nibbles (1 byte) and extended delta field
         cursor = removed_entry->data;
         _write_head_partial(&cursor, new_delta, length_nibble);
 
-        /* remove entry from options lookup array */
+        // remove entry from options lookup array
         _shift_option_entries(options, option_index + index_offset, -index_offset);
         _update_option_entries_with_storage_diff(options, option_index + 1, total_diff);
     }
     return 0;
 }
 
-/* MARK: - Iterator */
+// MARK: - Iterator
 
 ssize_t unicoap_options_get_next(unicoap_options_iterator_t* iterator,
-                                 unicoap_option_number_t* number, const uint8_t** value)
-{
+                                 unicoap_option_number_t* number, const uint8_t** value) {
     assert(iterator->options);
     assert(iterator->options->entries->data);
 
@@ -883,8 +836,7 @@ ssize_t unicoap_options_get_next(unicoap_options_iterator_t* iterator,
 }
 
 ssize_t unicoap_options_get_next_by_number(unicoap_options_iterator_t* iterator,
-                                           unicoap_option_number_t number, const uint8_t** value)
-{
+                                           unicoap_option_number_t number, const uint8_t** value) {
     unicoap_options_t* options = iterator->options;
     while ((iterator->index < options->option_count) &&
            (options->entries[iterator->index].number != number)) {
@@ -897,8 +849,7 @@ ssize_t unicoap_options_get_next_by_number(unicoap_options_iterator_t* iterator,
 ssize_t unicoap_options_get_next_query_by_name(unicoap_options_iterator_t* iterator,
                                                unicoap_option_number_t number,
                                                const char* name, size_t length,
-                                               const char** value)
-{
+                                               const char** value) {
     const uint8_t* _name = NULL;
     const uint8_t* component = NULL;
     ssize_t res = -1;
@@ -935,8 +886,7 @@ ssize_t unicoap_options_get_next_query_by_name(unicoap_options_iterator_t* itera
     return -ENOENT;
 }
 
-static inline uint32_t _ntoh_variable(const uint8_t* variable_network_uint, size_t size)
-{
+static inline uint32_t _ntoh_variable(const uint8_t* variable_network_uint, size_t size) {
     switch (size) {
         case sizeof(uint8_t):
             return (uint32_t)*variable_network_uint;
@@ -955,8 +905,7 @@ static inline uint32_t _ntoh_variable(const uint8_t* variable_network_uint, size
 
 ssize_t _unicoap_options_get_variable_uint(const unicoap_options_t* options,
                                           unicoap_option_number_t number, uint32_t* uint,
-                                          size_t max_size)
-{
+                                          size_t max_size) {
     assert(max_size <= sizeof(uint32_t));
     const uint8_t* src = NULL;
     ssize_t size = unicoap_options_get(options, number, &src);
@@ -964,7 +913,7 @@ ssize_t _unicoap_options_get_variable_uint(const unicoap_options_t* options,
         return size;
     }
     if (size == 0) {
-        /* value 0 SHOULD have been encoded as zero-length value, see RFC7252, Section 3.2 */
+        // value 0 SHOULD have been encoded as zero-length value, see RFC7252, Section 3.2
         *uint = 0;
         return size;
     }
@@ -976,22 +925,21 @@ ssize_t _unicoap_options_get_variable_uint(const unicoap_options_t* options,
     return size;
 }
 
-static size_t _encode_variable_uint(uint32_t* value)
-{
+static size_t _encode_variable_uint(uint32_t* value) {
     uint8_t* dest = (uint8_t*)value;
     size_t size = 0;
 
-    /* count number of used bytes */
+    // count number of used bytes
     uint32_t tmp = *value;
     while (tmp) {
         size += 1;
         tmp >>= 8;
     }
 
-    /* convert to network byte order */
+    // convert to network byte order
     tmp = htonl(*value);
 
-    /* copy bytewise, starting with first actually used byte */
+    // copy bytewise, starting with first actually used byte
     *value = 0;
     uint8_t* cursor = (uint8_t*)&tmp;
     cursor += (sizeof(uint32_t) - size);
@@ -1005,29 +953,25 @@ static size_t _encode_variable_uint(uint32_t* value)
 }
 
 int unicoap_options_set_uint(unicoap_options_t* options, unicoap_option_number_t number,
-                             uint32_t value)
-{
+                             uint32_t value) {
     size_t size = _encode_variable_uint(&value);
     return unicoap_options_set(options, number, (uint8_t*)&value, size);
 }
 
 int unicoap_options_add_uint(unicoap_options_t* options, unicoap_option_number_t number,
-                             uint32_t value)
-{
+                             uint32_t value) {
     size_t size = _encode_variable_uint(&value);
     return unicoap_options_add(options, number, (uint8_t*)&value, size);
 }
 
-int unicoap_options_set_observe_generated(unicoap_options_t* options)
-{
-    /* generate notification value */
+int unicoap_options_set_observe_generated(unicoap_options_t* options) {
+    // generate notification value
     return unicoap_options_set_observe(
         options, (ztimer_now(ZTIMER_MSEC) >> UNICOAP_OBSERVE_TICK_EXPONENT) & 0xFFFFFF);
 }
 
 ssize_t unicoap_options_swap_storage(unicoap_options_t* options, uint8_t* destination,
-                                     size_t capacity)
-{
+                                     size_t capacity) {
     if (options->storage_size == 0) {
         return 0;
     }

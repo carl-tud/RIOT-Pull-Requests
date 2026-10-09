@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_touch_dev_gestures
- * @{
- *
- * @file
- * @brief       Gesture recognition for touch devices
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     drivers_touch_dev_gestures
+/// @{
+///
+/// @file
+/// @brief       Gesture recognition for touch devices
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <assert.h>
 #include <stddef.h>
@@ -30,8 +26,7 @@
 #include "debug.h"
 
 static touch_dev_gesture_t _handle_swipe(const touch_t *prev,
-                                         const touch_t *curr)
-{
+                                         const touch_t *curr) {
     DEBUG("[touch_dev] @%" PRIu32 " handle swipe (%u, %u) -> (%u, %u): ",
           ztimer_now(ZTIMER_MSEC), prev[0].x, prev[0].y, curr[0].x, curr[0].y);
 
@@ -44,7 +39,7 @@ static touch_dev_gesture_t _handle_swipe(const touch_t *prev,
     uint16_t y_diff = MAX(curr[0].y, prev[0].y) - MIN(curr[0].y, prev[0].y);
 
     if ((x_diff > y_diff) && (x_diff > CONFIG_TOUCH_DEV_SWIPE_TRESH)) {
-        /* movement in x direction is dominant */
+        // movement in x direction is dominant
         if (curr[0].x > prev[0].x) {
             DEBUG("swipe right\n");
             return TOUCH_DEV_GEST_SWIPE_RIGHT;
@@ -55,7 +50,7 @@ static touch_dev_gesture_t _handle_swipe(const touch_t *prev,
         }
     }
     else if (y_diff > CONFIG_TOUCH_DEV_SWIPE_TRESH) {
-        /* movement in y direction is dominant */
+        // movement in y direction is dominant
         if (curr[0].y > prev[0].y) {
             DEBUG("swipe down\n");
             return TOUCH_DEV_GEST_SWIPE_DOWN;
@@ -71,8 +66,7 @@ static touch_dev_gesture_t _handle_swipe(const touch_t *prev,
 }
 
 static touch_dev_gesture_t _handle_zoom(const touch_t *prev,
-                                        const touch_t *curr)
-{
+                                        const touch_t *curr) {
     DEBUG("[touch_dev] @%" PRIu32 " handle zoom  "
           "(%u, %u)(%u, %u) -> (%u, %u)(%u, %u): ",
           ztimer_now(ZTIMER_MSEC),
@@ -107,22 +101,21 @@ static touch_dev_gesture_t _handle_zoom(const touch_t *prev,
 }
 
 touch_dev_gesture_t touch_dev_recognize_gesture(touch_dev_gesture_ctx_t *ctx,
-                                                touch_t *pos)
-{
+                                                touch_t *pos) {
     assert(ctx);
 
     touch_dev_gesture_t gesture = TOUCH_DEV_GEST_NONE;
 
     uint8_t max_num = touch_dev_max_numof(ctx->dev);
 
-    /* a maximum of 2 touches are supported */
+    // a maximum of 2 touches are supported
     max_num = (max_num > TOUCH_DEV_TOUCHES_MAX_NUMOF) ? TOUCH_DEV_TOUCHES_MAX_NUMOF
                                                       : max_num;
 
     touch_t curr[TOUCH_DEV_TOUCHES_MAX_NUMOF];
     uint8_t curr_num = touch_dev_touches(ctx->dev, curr, max_num);
 
-    /* a maximum of TOUCH_DEV_TOUCHES_MAX_NUMOF touches are supported */
+    // a maximum of TOUCH_DEV_TOUCHES_MAX_NUMOF touches are supported
     curr_num = (curr_num > TOUCH_DEV_TOUCHES_MAX_NUMOF) ? 2 : curr_num;
 
     uint32_t t_now = ztimer_now(ZTIMER_MSEC);
@@ -250,8 +243,7 @@ touch_dev_gesture_t touch_dev_recognize_gesture(touch_dev_gesture_ctx_t *ctx,
 }
 
 void touch_dev_init_gesture(touch_dev_t *dev,
-                            touch_dev_gesture_ctx_t *ctx)
-{
+                            touch_dev_gesture_ctx_t *ctx) {
     assert(dev);
     assert(ctx);
 

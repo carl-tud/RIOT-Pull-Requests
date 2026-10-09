@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017-2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017-2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_cord_ep_standalone
- * @{
- *
- * @file
- * @brief       Standalone extension for the CoRE RD endpoint implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     net_cord_ep_standalone
+/// @{
+///
+/// @file
+/// @brief       Standalone extension for the CoRE RD endpoint implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdint.h>
 
@@ -28,7 +24,7 @@
 #define ENABLE_DEBUG        0
 #include "debug.h"
 
-/* stack configuration */
+// stack configuration
 #define STACKSIZE           (THREAD_STACKSIZE_DEFAULT)
 #define PRIO                (THREAD_PRIORITY_MAIN - 1)
 #define TNAME               "cord_ep"
@@ -45,24 +41,21 @@ static msg_t _msg;
 
 static cord_ep_standalone_cb_t _cb = NULL;
 
-static void _set_timer(void)
-{
+static void _set_timer(void) {
     ztimer_set_msg(ZTIMER_MSEC, &_timer, TIMEOUT_MS, &_msg, _runner_pid);
 }
 
-static void _notify(cord_ep_standalone_event_t event)
-{
+static void _notify(cord_ep_standalone_event_t event) {
     if (_cb) {
         _cb(event);
     }
 }
 
-static void *_reg_runner(void *arg)
-{
+static void *_reg_runner(void *arg) {
     (void)arg;
     msg_t in;
 
-    /* prepare context and message */
+    // prepare context and message
     _runner_pid = thread_getpid();
     _msg.type = UPDATE_TIMEOUT;
 
@@ -79,20 +72,18 @@ static void *_reg_runner(void *arg)
         }
     }
 
-    return NULL;    /* should never be reached */
+    return NULL;    // should never be reached
 }
 
-void cord_ep_standalone_run(void)
-{
+void cord_ep_standalone_run(void) {
     thread_create(_stack, sizeof(_stack), PRIO, 0,
                   _reg_runner, NULL, TNAME);
 }
 
-void cord_ep_standalone_signal(bool connected)
-{
-    /* clear timer in any case */
+void cord_ep_standalone_signal(bool connected) {
+    // clear timer in any case
     ztimer_remove(ZTIMER_MSEC, &_timer);
-    /* reset the update timer in case a connection was established or updated */
+    // reset the update timer in case a connection was established or updated
     if (connected) {
         _set_timer();
         _notify(CORD_EP_REGISTERED);
@@ -101,11 +92,10 @@ void cord_ep_standalone_signal(bool connected)
     }
 }
 
-void cord_ep_standalone_reg_cb(cord_ep_standalone_cb_t cb)
-{
-    /* Note: we do not allow re-setting the callback (via passing cb := NULL),
-     *       as this would mean additional complexity for synchronizing the
-     *       value of `_cb` to prevent concurrency issues... */
+void cord_ep_standalone_reg_cb(cord_ep_standalone_cb_t cb) {
+    // Note: we do not allow re-setting the callback (via passing cb := NULL),
+    //       as this would mean additional complexity for synchronizing the
+    //       value of `_cb` to prevent concurrency issues...
     assert(cb);
     _cb = cb;
 }

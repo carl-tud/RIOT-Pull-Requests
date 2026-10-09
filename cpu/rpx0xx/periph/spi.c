@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Frank Engelhardt
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Frank Engelhardt
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_rpx0xx
- * @{
- *
- * @file
- * @brief       Implementation of SPI.
- *
- * @author      Frank Engelhardt <frank@f9e.de>
- *
- * @}
- */
+/// @ingroup     cpu_rpx0xx
+/// @{
+///
+/// @file
+/// @brief       Implementation of SPI.
+///
+/// @author      Frank Engelhardt <frank@f9e.de>
+///
+/// @}
 
 #include "assert.h"
 #include "bitarithm.h"
@@ -25,14 +21,10 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief   Allocate one lock per SPI device.
- */
+/// @brief   Allocate one lock per SPI device.
 static mutex_t locks[SPI_NUMOF];
 
-/**
- * @brief   Save the clock prescaler values for faster bus acquisition.
- */
+/// @brief   Save the clock prescaler values for faster bus acquisition.
 typedef struct {
     spi_clk_t clk;
     uint8_t cpsdvsr;
@@ -40,26 +32,22 @@ typedef struct {
 } _pl022_clk_t;
 static _pl022_clk_t pl022_clk[SPI_NUMOF];
 
-gpio_t spi_pin_clk(spi_t spi)
-{
+gpio_t spi_pin_clk(spi_t spi) {
     assert((unsigned)spi < SPI_NUMOF);
     return spi_config[spi].clk_pin;
 }
 
-gpio_t spi_pin_miso(spi_t spi)
-{
+gpio_t spi_pin_miso(spi_t spi) {
     assert((unsigned)spi < SPI_NUMOF);
     return spi_config[spi].miso_pin;
 }
 
-gpio_t spi_pin_mosi(spi_t spi)
-{
+gpio_t spi_pin_mosi(spi_t spi) {
     assert((unsigned)spi < SPI_NUMOF);
     return spi_config[spi].mosi_pin;
 }
 
-static void _poweron(spi_t spi)
-{
+static void _poweron(spi_t spi) {
     uint32_t reset_bit_mask = (spi_config[spi].dev == SPI0)
         ? RESETS_RESET_spi0_Msk
         : RESETS_RESET_spi1_Msk;
@@ -68,8 +56,7 @@ static void _poweron(spi_t spi)
     periph_reset_done(reset_bit_mask);
 }
 
-static void _poweroff(spi_t spi)
-{
+static void _poweroff(spi_t spi) {
     uint32_t reset_bit_mask = (spi_config[spi].dev == SPI0)
         ? RESETS_RESET_spi0_Msk
         : RESETS_RESET_spi1_Msk;
@@ -77,35 +64,33 @@ static void _poweroff(spi_t spi)
     periph_reset(reset_bit_mask);
 }
 
-void spi_init(spi_t spi)
-{
+void spi_init(spi_t spi) {
     DEBUG("[rpx0xx] Call spi_init(spi=%" PRIdFAST8 ")", spi);
 
     assert((unsigned)spi < SPI_NUMOF);
 
-    /* initialize device lock */
+    // initialize device lock
     mutex_init(&locks[spi]);
-    /* trigger pin initialization */
+    // trigger pin initialization
     spi_init_pins(spi);
-    /* clock prescaler values must be calculated */
+    // clock prescaler values must be calculated
     pl022_clk[spi].clk = 0xff;
 }
 
-void spi_init_pins(spi_t spi)
-{
+void spi_init_pins(spi_t spi) {
     DEBUG("[rpx0xx] Call spi_init_pins(spi=%" PRIdFAST8 ")", spi);
 
     assert((unsigned)spi < SPI_NUMOF);
 
     const gpio_pad_ctrl_t mosi_pad_config = {
-        /* SPI should typically draw less than 2 mA */
+        // SPI should typically draw less than 2 mA
         .drive_strength = DRIVE_STRENGTH_2MA,
     };
     const gpio_io_ctrl_t mosi_io_config = {
         .function_select = FUNCTION_SELECT_SPI,
     };
     const gpio_pad_ctrl_t clk_pad_config = {
-        /* SPI should typically draw less than 2 mA */
+        // SPI should typically draw less than 2 mA
         .drive_strength = DRIVE_STRENGTH_2MA,
     };
     const gpio_io_ctrl_t clk_io_config = {
@@ -132,15 +117,14 @@ void spi_init_pins(spi_t spi)
         gpio_set_io_config(spi_config[spi].miso_pin, miso_io_config);
     }
 
-    /* allow access to the bus */
+    // allow access to the bus
     mutex_unlock(&locks[spi]);
 }
 
-void spi_deinit_pins(spi_t spi)
-{
+void spi_deinit_pins(spi_t spi) {
     DEBUG("[rpx0xx] Call spi_deinit_pins(spi=%" PRIdFAST8 ")\n", spi);
 
-    /* lock mutex to block usage of the SPI bus */
+    // lock mutex to block usage of the SPI bus
     mutex_lock(&locks[spi]);
 
     assert((unsigned)spi < SPI_NUMOF);
@@ -158,8 +142,7 @@ void spi_deinit_pins(spi_t spi)
     }
 }
 
-int spi_init_cs(spi_t spi, spi_cs_t cs)
-{
+int spi_init_cs(spi_t spi, spi_cs_t cs) {
     DEBUG("[rpx0xx] Call spi_init_cs(spi=%" PRIdFAST8 ", cs=%" PRIu32 ")\n",
           spi, cs);
 
@@ -176,8 +159,7 @@ int spi_init_cs(spi_t spi, spi_cs_t cs)
     return SPI_OK;
 }
 
-int spi_deinit_cs(spi_t spi, spi_cs_t cs)
-{
+int spi_deinit_cs(spi_t spi, spi_cs_t cs) {
     DEBUG("[rpx0xx] Call spi_deinit_cs(spi=%" PRIdFAST8 ", cs=%" PRIu32 ")\n",
           spi, cs);
 
@@ -199,8 +181,7 @@ static inline void _check_best_clk_result(uint16_t target_dvsr,
                                           uint8_t cpsdvsr,
                                           uint16_t *best_diff,
                                           uint16_t *best_scr,
-                                          uint8_t *best_cpsdvsr)
-{
+                                          uint8_t *best_cpsdvsr) {
     uint16_t diff = (target_dvsr > cur_dvsr)
                     ? target_dvsr - cur_dvsr
                     : cur_dvsr - target_dvsr;
@@ -212,18 +193,17 @@ static inline void _check_best_clk_result(uint16_t target_dvsr,
     }
 }
 
-static void _calc_pl022_clk(_pl022_clk_t *pl022_clk, spi_clk_t clk)
-{
+static void _calc_pl022_clk(_pl022_clk_t *pl022_clk, spi_clk_t clk) {
     uint16_t dvsr = CLOCK_PERIPH / clk;
-    /* The divisor must be split into two 8-bit divisors, cpsdvsr and scr,
-     * dvsr = cpsdvsr*scr. cpsdvsr must be an even number greater than 0. */
+    // The divisor must be split into two 8-bit divisors, cpsdvsr and scr,
+    // dvsr = cpsdvsr*scr. cpsdvsr must be an even number greater than 0.
     uint8_t cpsdvsr = 2, best_cpsdvsr = 2;
     uint16_t scr = 256, best_scr = 256;
     uint16_t best_diff = dvsr;
     uint16_t cur_dvsr = scr * cpsdvsr;
 
-    /* Come from above with cpsdvsr and from below with scr.
-     * Check all intermediate combinations and use the best. */
+    // Come from above with cpsdvsr and from below with scr.
+    // Check all intermediate combinations and use the best.
     _check_best_clk_result(dvsr, cur_dvsr, scr, cpsdvsr, &best_diff,
                            &best_scr, &best_cpsdvsr);
     while (scr > 0 && cpsdvsr < 254 && best_diff != 0) {
@@ -244,15 +224,14 @@ static void _calc_pl022_clk(_pl022_clk_t *pl022_clk, spi_clk_t clk)
 
     pl022_clk->clk = clk;
     pl022_clk->cpsdvsr = best_cpsdvsr;
-    /* For scr, +1 is added internally. */
+    // For scr, +1 is added internally.
     pl022_clk->scr = (best_scr - 1);
     DEBUG("[rpx0xx] Values for spi clock divider registers CPSDVSR=%" PRIu16
           ", SCR=%" PRIu16 ". Resulting clock is %" PRIu32 " Hz.\n",
           best_cpsdvsr, best_scr - 1, resulting_clk_hz);
 }
 
-void spi_acquire(spi_t spi, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
-{
+void spi_acquire(spi_t spi, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk) {
     DEBUG("[rpx0xx] Call spi_acquire(spi=%" PRIuFAST8 ", cs=%" PRIu32
           ", mode=%" PRIu16 ", clk=%" PRIu32 ")\n", spi, cs, mode, clk);
 
@@ -261,7 +240,7 @@ void spi_acquire(spi_t spi, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
            || clk == SPI_CLK_400KHZ || clk == SPI_CLK_5MHZ);
     (void)cs;
 
-    /* lock bus */
+    // lock bus
     mutex_lock(&locks[spi]);
 
     _poweron(spi);
@@ -271,10 +250,10 @@ void spi_acquire(spi_t spi, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
     io_reg_write_dont_corrupt(&dev->SSPCR0,
                               0x7 << SPI0_SSPCR0_DSS_Pos,
                               SPI0_SSPCR0_DSS_Msk);
-    /* uncomment the following line for debug loopback mode */
-    /* io_reg_atomic_set(&dev->SSPCR1, SPI0_SSPCR1_LBM_Msk); */
+    // uncomment the following line for debug loopback mode
+    // io_reg_atomic_set(&dev->SSPCR1, SPI0_SSPCR1_LBM_Msk);
 
-    /* set SPI mode */
+    // set SPI mode
     switch (mode) {
     case SPI_MODE_0:
         io_reg_atomic_clear(&dev->SSPCR0, SPI0_SSPCR0_SPO_Msk);
@@ -294,7 +273,7 @@ void spi_acquire(spi_t spi, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
         break;
     }
 
-    /* set clock speed */
+    // set clock speed
     if (clk != pl022_clk[spi].clk) {
         _calc_pl022_clk(&pl022_clk[spi], clk);
     }
@@ -305,19 +284,18 @@ void spi_acquire(spi_t spi, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
                               pl022_clk[spi].scr << SPI0_SSPCR0_SCR_Pos,
                               SPI0_SSPCR0_SCR_Msk);
 
-    /* enable SPI */
+    // enable SPI
     io_reg_atomic_set(&dev->SSPCR1, SPI0_SSPCR1_SSE_Msk);
 }
 
-void spi_release(spi_t spi)
-{
+void spi_release(spi_t spi) {
     DEBUG("[rpx0xx] Call spi_release(spi=%" PRIdFAST8 ")\n", spi);
 
     assert((unsigned)spi < SPI_NUMOF);
 
     SPI0_Type *dev = spi_config[spi].dev;
 
-    /* disable SPI */
+    // disable SPI
     io_reg_atomic_clear(&dev->SSPCR1, SPI0_SSPCR1_SSE_Msk);
 
     _poweroff(spi);
@@ -325,8 +303,7 @@ void spi_release(spi_t spi)
     mutex_unlock(&locks[spi]);
 }
 
-static inline void _wait_for_end(spi_t spi)
-{
+static inline void _wait_for_end(spi_t spi) {
     DEBUG("[rpx0xx] Call _wait_for_end(spi=%" PRIdFAST8 ")\n", spi);
     SPI0_Type *dev = spi_config[spi].dev;
 
@@ -334,8 +311,7 @@ static inline void _wait_for_end(spi_t spi)
     while (dev->SSPSR & SPI0_SSPSR_BSY_Msk) {}
 }
 
-static void _transfer_no_dma(spi_t spi, const void *out, void *in, size_t len)
-{
+static void _transfer_no_dma(spi_t spi, const void *out, void *in, size_t len) {
     DEBUG("[rpx0xx] Call _transfer_no_dma(spi=%" PRIdFAST8
           ", out=%p, in=%p, len=%" PRIu16 ")\n",
           spi, out, in, len);
@@ -344,13 +320,13 @@ static void _transfer_no_dma(spi_t spi, const void *out, void *in, size_t len)
     uint8_t *inbuf = in;
     SPI0_Type *dev = spi_config[spi].dev;
 
-    /* transfer data, use shortpath if only sending data */
+    // transfer data, use shortpath if only sending data
     if (!inbuf) {
         for (size_t i = 0; i < len; i++) {
             while (!(dev->SSPSR & SPI0_SSPSR_TFE_Msk)) {}
             dev->SSPDR = outbuf[i];
         }
-        /* wait until everything is finished and empty the receive buffer */
+        // wait until everything is finished and empty the receive buffer
         while (!(dev->SSPSR & SPI0_SSPSR_TFE_Msk)) {}
         while (dev->SSPSR & SPI0_SSPSR_BSY_Msk) {}
         while (dev->SSPSR & SPI0_SSPSR_RNE_Msk) {
@@ -378,23 +354,22 @@ static void _transfer_no_dma(spi_t spi, const void *out, void *in, size_t len)
 }
 
 void spi_transfer_bytes(spi_t spi, spi_cs_t cs, bool cont,
-                        const void *out, void *in, size_t len)
-{
+                        const void *out, void *in, size_t len) {
     DEBUG("[rpx0xx] Call spi_transfer_bytes(spi=%" PRIdFAST8
           ", out=%p, in=%p, len=%" PRIu16 ")\n",
           spi, out, in, len);
 
-    /* make sure at least one input or one output buffer is given */
+    // make sure at least one input or one output buffer is given
     assert(out || in);
 
-    /* activate the given chip select line */
+    // activate the given chip select line
     if (gpio_is_valid(cs)) {
         gpio_clear((gpio_t)cs);
     }
 
     _transfer_no_dma(spi, out, in, len);
 
-    /* release the chip select if not specified differently */
+    // release the chip select if not specified differently
     if ((!cont) && gpio_is_valid(cs)) {
         gpio_set((gpio_t)cs);
     }

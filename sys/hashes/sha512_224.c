@@ -1,30 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2023 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_hashes
- *
- * @{
- * @file
- * @brief       SHA512/224 hash function implementation
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     sys_hashes
+///
+/// @{
+/// @file
+/// @brief       SHA512/224 hash function implementation
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+///
+/// @}
 
 #include <assert.h>
 
 #include "hashes/sha512_224.h"
 
-void sha512_224_init(sha512_224_context_t *ctx)
-{
-    /* Zero bits processed so far */
+void sha512_224_init(sha512_224_context_t *ctx) {
+    // Zero bits processed so far
     ctx->count[0] = ctx->count[1] = 0;
 
-    /* Magic initialization constants */
+    // Magic initialization constants
     ctx->state[0] = 0x8C3D37C819544DA2;
     ctx->state[1] = 0x73E1996689DCD4D6;
     ctx->state[2] = 0x1DFAB7AE32FF9C82;
@@ -35,8 +30,7 @@ void sha512_224_init(sha512_224_context_t *ctx)
     ctx->state[7] = 0x1112E6AD91D692A1;
 }
 
-void sha512_224(const void *data, size_t len, void *digest)
-{
+void sha512_224(const void *data, size_t len, void *digest) {
     sha512_224_context_t c;
     assert(digest);
 

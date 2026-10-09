@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_stm32
- * @{
- *
- * @file
- * @brief       Common configuration for STM32 Timer peripheral based on TIM2
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_common_stm32
+/// @{
+///
+/// @file
+/// @brief       Common configuration for STM32 Timer peripheral based on TIM2
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "periph_cpu.h"
 
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -48,10 +42,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_0_ISR         isr_tim2
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

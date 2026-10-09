@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Kees Bakker, SODAQ
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Kees Bakker, SODAQ
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of SHT2X driver.
- *
- * @author      Kees Bakker <kees@sodaq.com>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of SHT2X driver.
+///
+/// @author      Kees Bakker <kees@sodaq.com>
+///
+/// @}
 
 #include "log.h"
 #include "saul_reg.h"
@@ -21,27 +17,20 @@
 #include "sht2x_params.h"
 #include "sht2x.h"
 
-/**
- * @brief   Allocation of memory for device descriptors
- */
+/// @brief   Allocation of memory for device descriptors
 static sht2x_t sht2x_devs[SHT2X_NUMOF];
 
-/**
- * @brief   Reference the driver structs.
- * @{
- */
+/// @brief   Reference the driver structs.
+/// @{
 extern const saul_driver_t sht2x_temperature_saul_driver;
 extern const saul_driver_t sht2x_relative_humidity_saul_driver;
-/** @} */
+/// @}
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 #define SENSORS_NUMOF 2
 static saul_reg_t saul_entries[SHT2X_NUMOF * SENSORS_NUMOF];
 
-void auto_init_sht2x(void)
-{
+void auto_init_sht2x(void) {
     size_t se_ix = 0;
     for (size_t i = 0; i < SHT2X_NUMOF; i++) {
         LOG_DEBUG("[auto_init_saul] initializing SHT2X #%u\n", i);
@@ -51,14 +40,14 @@ void auto_init_sht2x(void)
             continue;
         }
 
-        /* temperature */
+        // temperature
         saul_entries[se_ix].dev = &sht2x_devs[i];
         saul_entries[se_ix].name = sht2x_saul_reg_info[i].name;
         saul_entries[se_ix].driver = &sht2x_temperature_saul_driver;
         saul_reg_add(&saul_entries[se_ix]);
         se_ix++;
 
-        /* relative humidity */
+        // relative humidity
         saul_entries[se_ix].dev = &sht2x_devs[i];
         saul_entries[se_ix].name = sht2x_saul_reg_info[i].name;
         saul_entries[se_ix].driver = &sht2x_relative_humidity_saul_driver;

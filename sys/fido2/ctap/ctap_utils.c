@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup fido2_ctap_utils
- * @{
- * @file
- *
- * @author     Nils Ollrogge <nils.ollrogge@fu-berlin.de>
- * @}
- */
+/// @ingroup fido2_ctap_utils
+/// @{
+/// @file
+///
+/// @author     Nils Ollrogge <nils.ollrogge@fu-berlin.de>
+/// @}
 
 #include "ztimer.h"
 #include "led.h"
@@ -25,23 +21,16 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief Flag holding information if user is present or not
- */
+/// @brief Flag holding information if user is present or not
 static bool _user_present = false;
 
-/**
- * @brief GPIO pin to use for user presence test
- */
+/// @brief GPIO pin to use for user presence test
 static gpio_t _pin;
 
-/**
- * @brief Button callback function
- */
+/// @brief Button callback function
 static void _gpio_cb(void *arg);
 
-ctap_status_code_t fido2_ctap_utils_init_gpio_pin(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank)
-{
+ctap_status_code_t fido2_ctap_utils_init_gpio_pin(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank) {
     if (gpio_init_int(pin, mode, flank, _gpio_cb, NULL) < 0) {
         return CTAP1_ERR_OTHER;
     }
@@ -51,8 +40,7 @@ ctap_status_code_t fido2_ctap_utils_init_gpio_pin(gpio_t pin, gpio_mode_t mode, 
     return CTAP2_OK;
 }
 
-ctap_status_code_t fido2_ctap_utils_user_presence_test(void)
-{
+ctap_status_code_t fido2_ctap_utils_user_presence_test(void) {
     int ret;
 
     gpio_irq_enable(_pin);
@@ -67,14 +55,12 @@ ctap_status_code_t fido2_ctap_utils_user_presence_test(void)
     return ret;
 }
 
-static void _gpio_cb(void *arg)
-{
+static void _gpio_cb(void *arg) {
     (void)arg;
     _user_present = true;
 }
 
-void fido2_ctap_utils_wait_for_user_presence(void)
-{
+void fido2_ctap_utils_wait_for_user_presence(void) {
     uint32_t start = ztimer_now(ZTIMER_MSEC);
     uint32_t diff = 0;
     uint32_t delay = 500;

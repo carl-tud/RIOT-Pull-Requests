@@ -1,24 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2013 Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_msba2
- * @{
- */
+/// @ingroup     boards_msba2
+/// @{
 
-/**
- * @file
- * @brief       MSB-A2 board initialization
- *
- * @author      Heiko Will
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Michael Baar <baar@inf.fu-berlin.de>
- * @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
- *
- * @note        $Id$
- */
+/// @file
+/// @brief       MSB-A2 board initialization
+///
+/// @author      Heiko Will
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Michael Baar <baar@inf.fu-berlin.de>
+/// @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
+///
+/// @note        $Id$
 
 #include "board.h"
 #include "cpu.h"

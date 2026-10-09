@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_disp_dev
- * @{
- *
- * @file
- * @brief       Helper functions for generic API of display device
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_disp_dev
+/// @{
+///
+/// @file
+/// @brief       Helper functions for generic API of display device
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <assert.h>
 #include <stdbool.h>
@@ -25,17 +21,16 @@
 
 disp_dev_reg_t *disp_dev_reg = NULL;
 
-int disp_dev_reg_add(disp_dev_reg_t *dev)
-{
+int disp_dev_reg_add(disp_dev_reg_t *dev) {
     disp_dev_reg_t *tmp = disp_dev_reg;
 
     if (dev == NULL) {
         return -ENODEV;
     }
 
-    /* prepare new entry */
+    // prepare new entry
     dev->next = NULL;
-    /* add to registry */
+    // add to registry
     if (disp_dev_reg == NULL) {
         disp_dev_reg = dev;
     }
@@ -48,8 +43,7 @@ int disp_dev_reg_add(disp_dev_reg_t *dev)
     return 0;
 }
 
-disp_dev_reg_t *disp_dev_reg_find_screen(uint8_t screen_id)
-{
+disp_dev_reg_t *disp_dev_reg_find_screen(uint8_t screen_id) {
     disp_dev_reg_t *tmp = disp_dev_reg;
 
     while (tmp && tmp->screen_id != screen_id) {
@@ -61,36 +55,31 @@ disp_dev_reg_t *disp_dev_reg_find_screen(uint8_t screen_id)
 
 void disp_dev_map(const disp_dev_t *dev,
                   const disp_dev_area_t *area,
-                  const uint16_t *color)
-{
+                  const uint16_t *color) {
     assert(dev);
 
     dev->driver->map(dev, area, color);
 }
 
-uint16_t disp_dev_height(const disp_dev_t *dev)
-{
+uint16_t disp_dev_height(const disp_dev_t *dev) {
     assert(dev);
 
     return dev->driver->height(dev);
 }
 
-uint16_t disp_dev_width(const disp_dev_t *dev)
-{
+uint16_t disp_dev_width(const disp_dev_t *dev) {
     assert(dev);
 
     return dev->driver->width(dev);
 }
 
-uint8_t disp_dev_color_depth(const disp_dev_t *dev)
-{
+uint8_t disp_dev_color_depth(const disp_dev_t *dev) {
     assert(dev);
 
     return dev->driver->color_depth(dev);
 }
 
-void disp_dev_set_invert(const disp_dev_t *dev, bool invert)
-{
+void disp_dev_set_invert(const disp_dev_t *dev, bool invert) {
     assert(dev);
 
     dev->driver->set_invert(dev, invert);

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_at24mac
- *
- * @{
- * @file
- * @brief       Default configuration for the AT24MAC chip
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     drivers_at24mac
+///
+/// @{
+/// @file
+/// @brief       Default configuration for the AT24MAC chip
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include "board.h"
 #include "at24mac.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for AT24Mac driver
- * @{
- */
+/// @name    Set default configuration parameters for AT24Mac driver
+/// @{
 #ifndef AT24MAC_PARAM_I2C_DEV
 #define AT24MAC_PARAM_I2C_DEV       I2C_DEV(0)
 #endif
@@ -41,11 +35,9 @@ extern "C" {
                                       .i2c_addr     = AT24MAC_PARAM_I2C_ADDR,\
                                       .type         = AT24MAC_PARAM_TYPE     }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configuration for AT24MACs
- */
+/// @brief   Configuration for AT24MACs
 static const at24mac_params_t at24mac_params[] =
 {
     AT24MAC_PARAMS
@@ -55,4 +47,4 @@ static const at24mac_params_t at24mac_params[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mtd
- * @{
- * @brief       Low level Memory Technology Device interface
- *
- * Generic memory technology device interface
- *
- * @file
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- */
+/// @ingroup     drivers_mtd
+/// @{
+/// @brief       Low level Memory Technology Device interface
+///
+/// Generic memory technology device interface
+///
+/// @file
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
 
 #include <assert.h>
 #include <errno.h>
@@ -27,18 +23,17 @@
 #include "mtd.h"
 #include "xfa.h"
 
-/* Automatic MTD handling */
+// Automatic MTD handling
 XFA_INIT_CONST(mtd_dev_t *, mtd_dev_xfa);
 
-static bool out_of_bounds(mtd_dev_t *mtd, uint32_t page, uint32_t offset, uint32_t len)
-{
+static bool out_of_bounds(mtd_dev_t *mtd, uint32_t page, uint32_t offset, uint32_t len) {
     const uint32_t page_shift = bitarithm_msb(mtd->page_size);
     const uint32_t pages_numof = mtd->sector_count * mtd->pages_per_sector;
 
-    /* 2 TiB SD cards might be a problem */
+    // 2 TiB SD cards might be a problem
     assert(pages_numof >= mtd->sector_count);
 
-    /* read n byte buffer -> last byte will be at n - 1 */
+    // read n byte buffer -> last byte will be at n - 1
     page += (offset + len - 1) >> page_shift;
     if (page >= pages_numof) {
         return true;
@@ -47,8 +42,7 @@ static bool out_of_bounds(mtd_dev_t *mtd, uint32_t page, uint32_t offset, uint32
     return false;
 }
 
-int mtd_init(mtd_dev_t *mtd)
-{
+int mtd_init(mtd_dev_t *mtd) {
     if (!mtd || !mtd->driver) {
         return -ENODEV;
     }
@@ -62,13 +56,13 @@ int mtd_init(mtd_dev_t *mtd)
         }
     }
 
-    /* Drivers preceding the introduction of write_size need to set it. While
-     * this assert breaks applications that previously worked, it is likely
-     * that these applications silently assumed a certain write size and would
-     * break when switching the MTD backend. When tripping over this assert,
-     * please update your driver to produce a correct value *and* place a check
-     * in your application for whether the backend allows sufficiently small
-     * writes. */
+    // Drivers preceding the introduction of write_size need to set it. While
+    // this assert breaks applications that previously worked, it is likely
+    // that these applications silently assumed a certain write size and would
+    // break when switching the MTD backend. When tripping over this assert,
+    // please update your driver to produce a correct value *and* place a check
+    // in your application for whether the backend allows sufficiently small
+    // writes.
     assert(mtd->write_size != 0);
 
 #ifdef MODULE_MTD_WRITE_PAGE
@@ -85,8 +79,7 @@ int mtd_init(mtd_dev_t *mtd)
     return res;
 }
 
-int mtd_read(mtd_dev_t *mtd, void *dest, uint32_t addr, uint32_t count)
-{
+int mtd_read(mtd_dev_t *mtd, void *dest, uint32_t addr, uint32_t count) {
     if (!mtd || !mtd->driver) {
         return -ENODEV;
     }
@@ -99,7 +92,7 @@ int mtd_read(mtd_dev_t *mtd, void *dest, uint32_t addr, uint32_t count)
         return mtd->driver->read(mtd, dest, addr, count);
     }
 
-    /* page size is always a power of two */
+    // page size is always a power of two
     const uint32_t page_shift = bitarithm_msb(mtd->page_size);
     const uint32_t page_mask = mtd->page_size - 1;
 
@@ -107,8 +100,7 @@ int mtd_read(mtd_dev_t *mtd, void *dest, uint32_t addr, uint32_t count)
 }
 
 int mtd_read_page(mtd_dev_t *mtd, void *dest, uint32_t page, uint32_t offset,
-                  uint32_t count)
-{
+                  uint32_t count) {
     if (!mtd || !mtd->driver) {
         return -ENODEV;
     }
@@ -118,7 +110,7 @@ int mtd_read_page(mtd_dev_t *mtd, void *dest, uint32_t page, uint32_t offset,
     }
 
     if (mtd->driver->read_page == NULL) {
-        /* TODO: remove when all backends implement read_page */
+        // TODO: remove when all backends implement read_page
         if (mtd->driver->read) {
             return mtd->driver->read(mtd, dest, mtd->page_size * page + offset, count);
         } else {
@@ -126,16 +118,16 @@ int mtd_read_page(mtd_dev_t *mtd, void *dest, uint32_t page, uint32_t offset,
         }
     }
 
-    /* Implementation assumes page size is <= INT_MAX and a power of two. */
-    /* We didn't find hardware yet where this is not true.                */
+    // Implementation assumes page size is <= INT_MAX and a power of two.
+    // We didn't find hardware yet where this is not true.
     assert(mtd->page_size <= INT_MAX);
     assert(bitarithm_bits_set(mtd->page_size) == 1);
 
-    /* page size is always a power of two */
+    // page size is always a power of two
     const uint32_t page_shift = bitarithm_msb(mtd->page_size);
     const uint32_t page_mask = mtd->page_size - 1;
 
-    /* ensure offset is within a page */
+    // ensure offset is within a page
     page  += offset >> page_shift;
     offset = offset & page_mask;
 
@@ -162,13 +154,12 @@ int mtd_read_page(mtd_dev_t *mtd, void *dest, uint32_t page, uint32_t offset,
     return 0;
 }
 
-int mtd_write(mtd_dev_t *mtd, const void *src, uint32_t addr, uint32_t count)
-{
+int mtd_write(mtd_dev_t *mtd, const void *src, uint32_t addr, uint32_t count) {
     if (!mtd || !mtd->driver) {
         return -ENODEV;
     }
 
-    /* page size is always a power of two */
+    // page size is always a power of two
     const uint32_t page_shift = bitarithm_msb(mtd->page_size);
     const uint32_t page_mask = mtd->page_size - 1;
 
@@ -176,25 +167,22 @@ int mtd_write(mtd_dev_t *mtd, const void *src, uint32_t addr, uint32_t count)
 }
 
 #ifdef MODULE_MTD_WRITE_PAGE
-/**
- * @brief   Write to a sector on a Memory Technology Device (MTD) by performing a
- *          read-modify-write cycle.
- *
- *          This reads the sector into RAM, modifies it, clears the sector on the
- *          device and writes it back from RAM.
- *
- * @param[in]  mtd      Pointer to the selected device
- * @param[in]  data     Pointer to the data to be written
- * @param[in]  sector   Sector to write
- * @param[in]  offset   Byte offset from the start of the sector
- * @param[in]  len      Number of bytes
- *
- * @return bytes written on success
- * @return < 0 value on error
- */
+/// @brief   Write to a sector on a Memory Technology Device (MTD) by performing a
+///          read-modify-write cycle.
+///
+///          This reads the sector into RAM, modifies it, clears the sector on the
+///          device and writes it back from RAM.
+///
+/// @param[in]  mtd      Pointer to the selected device
+/// @param[in]  data     Pointer to the data to be written
+/// @param[in]  sector   Sector to write
+/// @param[in]  offset   Byte offset from the start of the sector
+/// @param[in]  len      Number of bytes
+///
+/// @return bytes written on success
+/// @return < 0 value on error
 static size_t _write_sector(mtd_dev_t *mtd, const void *data, uint32_t sector,
-                            uint32_t offset, uint32_t len)
-{
+                            uint32_t offset, uint32_t len) {
     int res;
     uint8_t *work = mtd->work_area;
     const uint32_t sector_page = sector * mtd->pages_per_sector;
@@ -208,29 +196,29 @@ static size_t _write_sector(mtd_dev_t *mtd, const void *data, uint32_t sector,
         len = sector_size - offset;
     }
 
-    /* fast path: skip reading the sector if we overwrite it completely */
+    // fast path: skip reading the sector if we overwrite it completely
     if (offset == 0 && len == sector_size) {
         work = (void *)data;
         goto write;
     }
 
-    /* copy sector to RAM */
+    // copy sector to RAM
     res = mtd_read_page(mtd, work, sector_page, 0, sector_size);
     if (res < 0) {
         return res;
     }
 
-    /* erase sector */
+    // erase sector
     res = mtd_erase_sector(mtd, sector, 1);
     if (res < 0) {
         return res;
     }
 
-    /* modify sector in RAM */
+    // modify sector in RAM
     memcpy(work + offset, data, len);
 
 write:
-    /* write back modified sector copy */
+    // write back modified sector copy
     res = mtd_write_page_raw(mtd, work, sector_page, 0, sector_size);
     if (res < 0) {
         return res;
@@ -240,8 +228,7 @@ write:
 }
 
 int mtd_write_page(mtd_dev_t *mtd, const void *data, uint32_t page,
-                   uint32_t offset, uint32_t len)
-{
+                   uint32_t offset, uint32_t len) {
     if (!mtd || !mtd->driver) {
         return -ENODEV;
     }
@@ -281,8 +268,7 @@ int mtd_write_page(mtd_dev_t *mtd, const void *data, uint32_t page,
 #endif
 
 int mtd_write_page_raw(mtd_dev_t *mtd, const void *src, uint32_t page, uint32_t offset,
-                       uint32_t count)
-{
+                       uint32_t count) {
     if (!mtd || !mtd->driver) {
         return -ENODEV;
     }
@@ -295,16 +281,16 @@ int mtd_write_page_raw(mtd_dev_t *mtd, const void *src, uint32_t page, uint32_t 
         return -ENOTSUP;
     }
 
-    /* Implementation assumes page size is <= INT_MAX and a power of two. */
-    /* We didn't find hardware yet where this is not true.                */
+    // Implementation assumes page size is <= INT_MAX and a power of two.
+    // We didn't find hardware yet where this is not true.
     assert(mtd->page_size <= INT_MAX);
     assert(bitarithm_bits_set(mtd->page_size) == 1);
 
-    /* page size is always a power of two */
+    // page size is always a power of two
     const uint32_t page_shift = bitarithm_msb(mtd->page_size);
     const uint32_t page_mask = mtd->page_size - 1;
 
-    /* ensure offset is within a page */
+    // ensure offset is within a page
     page  += offset >> page_shift;
     offset = offset & page_mask;
 
@@ -331,8 +317,7 @@ int mtd_write_page_raw(mtd_dev_t *mtd, const void *src, uint32_t page, uint32_t 
     return 0;
 }
 
-int mtd_erase(mtd_dev_t *mtd, uint32_t addr, uint32_t count)
-{
+int mtd_erase(mtd_dev_t *mtd, uint32_t addr, uint32_t count) {
     if (!mtd || !mtd->driver) {
         return -ENODEV;
     }
@@ -354,8 +339,7 @@ int mtd_erase(mtd_dev_t *mtd, uint32_t addr, uint32_t count)
     return mtd_erase_sector(mtd, addr / sector_size, count / sector_size);
 }
 
-int mtd_erase_sector(mtd_dev_t *mtd, uint32_t sector, uint32_t count)
-{
+int mtd_erase_sector(mtd_dev_t *mtd, uint32_t sector, uint32_t count) {
     if (!mtd || !mtd->driver) {
         return -ENODEV;
     }
@@ -369,7 +353,7 @@ int mtd_erase_sector(mtd_dev_t *mtd, uint32_t sector, uint32_t count)
     }
 
     if (mtd->driver->erase_sector == NULL) {
-        /* TODO: remove when all backends implement erase_sector */
+        // TODO: remove when all backends implement erase_sector
         if (mtd->driver->erase) {
             uint32_t sector_size = mtd->pages_per_sector * mtd->page_size;
             return mtd->driver->erase(mtd,
@@ -384,8 +368,7 @@ int mtd_erase_sector(mtd_dev_t *mtd, uint32_t sector, uint32_t count)
 }
 
 int mtd_write_sector(mtd_dev_t *mtd, const void *data, uint32_t sector,
-                     uint32_t count)
-{
+                     uint32_t count) {
     if (!(mtd->driver->flags & MTD_DRIVER_FLAG_DIRECT_WRITE)) {
         int res = mtd_erase_sector(mtd, sector, count);
         if (res) {
@@ -398,8 +381,7 @@ int mtd_write_sector(mtd_dev_t *mtd, const void *data, uint32_t sector,
                               count * mtd->pages_per_sector * mtd->page_size);
 }
 
-int mtd_power(mtd_dev_t *mtd, enum mtd_power_state power)
-{
+int mtd_power(mtd_dev_t *mtd, enum mtd_power_state power) {
     if (!mtd || !mtd->driver) {
         return -ENODEV;
     }
@@ -412,4 +394,4 @@ int mtd_power(mtd_dev_t *mtd, enum mtd_power_state power)
     }
 }
 
-/** @} */
+/// @}

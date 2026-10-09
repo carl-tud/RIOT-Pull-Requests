@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
- * SPDX-FileCopyrightText: 2021 Francisco Molina
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
+// SPDX-FileCopyrightText: 2021 Francisco Molina
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_st77xx
- *
- * @{
- * @file
- * @brief       Default configuration for ST77xx LCD controllers
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     drivers_st77xx
+///
+/// @{
+/// @file
+/// @brief       Default configuration for ST77xx LCD controllers
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "board.h"
 #include "lcd.h"
@@ -27,17 +23,15 @@
 extern "C" {
 #endif
 
-#if !DOXYGEN    /* hide from documentation */
-/**
- * @name    Mapping of former ST7735 configuration parameters for backward compatibility
- *
- * If a board definition already used the ST7735 driver, `ST7735_*` macros were
- * used in the board definitions to define the default configuration parameter
- * set. For backward compatibility these symbols are mapped to the `ST77XX_*`
- * macros if they are defined.
- *
- * @{
- */
+#if !DOXYGEN    // hide from documentation
+/// @name    Mapping of former ST7735 configuration parameters for backward compatibility
+///
+/// If a board definition already used the ST7735 driver, `ST7735_*` macros were
+/// used in the board definitions to define the default configuration parameter
+/// set. For backward compatibility these symbols are mapped to the `ST77XX_*`
+/// macros if they are defined.
+///
+/// @{
 #ifdef ST7735_PARAM_SPI
 #define ST77XX_PARAM_SPI            ST7735_PARAM_SPI
 #endif
@@ -84,57 +78,55 @@ extern "C" {
 #define ST77XX_PARAM_SCREEN_IDS     ST7735_PARAM_SCREEN_IDS
 #endif
 
-#endif /* !DOXYGEN */
+#endif // !DOXYGEN
 
-/**
- * @name    Set default configuration parameters for the ST77xx
- * @{
- */
+/// @name    Set default configuration parameters for the ST77xx
+/// @{
 #ifndef ST77XX_PARAM_CNTRL
-#define ST77XX_PARAM_CNTRL      ST77XX_CNTRL_ST7735 /**< ST77xx controller variant */
+#define ST77XX_PARAM_CNTRL      ST77XX_CNTRL_ST7735 ///< ST77xx controller variant
 #endif
 #ifndef ST77XX_PARAM_SPI
-#define ST77XX_PARAM_SPI        SPI_DEV(0)          /**< SPI device */
+#define ST77XX_PARAM_SPI        SPI_DEV(0)          ///< SPI device
 #endif
 #ifndef ST77XX_PARAM_SPI_CLK
-#define ST77XX_PARAM_SPI_CLK    SPI_CLK_5MHZ        /**< SPI clock frequency */
+#define ST77XX_PARAM_SPI_CLK    SPI_CLK_5MHZ        ///< SPI clock frequency
 #endif
 #ifndef ST77XX_PARAM_CS
-#define ST77XX_PARAM_CS         GPIO_PIN(2, 2)      /**< Chip Select pin */
+#define ST77XX_PARAM_CS         GPIO_PIN(2, 2)      ///< Chip Select pin
 #endif
 #ifndef ST77XX_PARAM_DCX
-#define ST77XX_PARAM_DCX        GPIO_PIN(3, 13)     /**< DCX pin */
+#define ST77XX_PARAM_DCX        GPIO_PIN(3, 13)     ///< DCX pin
 #endif
 #ifndef ST77XX_PARAM_RST
-#define ST77XX_PARAM_RST        GPIO_UNDEF          /**< Reset pin */
+#define ST77XX_PARAM_RST        GPIO_UNDEF          ///< Reset pin
 #endif
 #ifndef ST77XX_PARAM_SPI_MODE
-#define ST77XX_PARAM_SPI_MODE   SPI_MODE_0          /**< SPI mode */
+#define ST77XX_PARAM_SPI_MODE   SPI_MODE_0          ///< SPI mode
 #endif
 #ifndef ST77XX_PARAM_RGB
-#define ST77XX_PARAM_RGB        0                   /**< RGB mode enable */
+#define ST77XX_PARAM_RGB        0                   ///< RGB mode enable
 #endif
 #ifndef ST77XX_PARAM_INVERTED
-#define ST77XX_PARAM_INVERTED   0                   /**< Inverted mode enable */
+#define ST77XX_PARAM_INVERTED   0                   ///< Inverted mode enable
 #endif
 #ifndef ST77XX_PARAM_NUM_LINES
-#define ST77XX_PARAM_NUM_LINES      160U            /**< Number of lines */
+#define ST77XX_PARAM_NUM_LINES      160U            ///< Number of lines
 #endif
 #ifndef ST77XX_PARAM_RGB_CHANNELS
-#define ST77XX_PARAM_RGB_CHANNELS   128U            /**< Number of RGB channels (e.g. columns) */
+#define ST77XX_PARAM_RGB_CHANNELS   128U            ///< Number of RGB channels (e.g. columns)
 #endif
 #ifndef ST77XX_PARAM_ROTATION
-#define ST77XX_PARAM_ROTATION       ST77XX_ROTATION_HORZ    /**< Rotation mode */
+#define ST77XX_PARAM_ROTATION       ST77XX_ROTATION_HORZ    ///< Rotation mode
 #endif
 #ifndef ST77XX_PARAM_OFFSET_X
-#define ST77XX_PARAM_OFFSET_X       0               /**< Horizontal offset */
+#define ST77XX_PARAM_OFFSET_X       0               ///< Horizontal offset
 #endif
 #ifndef ST77XX_PARAM_OFFSET_Y
-#define ST77XX_PARAM_OFFSET_Y       0               /**< Vertival offset */
+#define ST77XX_PARAM_OFFSET_Y       0               ///< Vertival offset
 #endif
 
 #if MODULE_LCD_SPI || DOXYGEN
-/** Default interface params if SPI serial interface is enabled */
+/// Default interface params if SPI serial interface is enabled
 #define ST77XX_PARAM_IF_SPI         .spi = ST77XX_PARAM_SPI, \
                                     .spi_clk = ST77XX_PARAM_SPI_CLK, \
                                     .spi_mode = ST77XX_PARAM_SPI_MODE,
@@ -143,7 +135,7 @@ extern "C" {
 #endif
 
 #if MODULE_LCD_PARALLEL || DOXYGEN
-/** Default interface params if MCU 8080 8-bit parallel interface is enabled */
+/// Default interface params if MCU 8080 8-bit parallel interface is enabled
 #define ST77XX_PARAM_IF_PAR         .d0_pin = ST77XX_PARAM_D0, \
                                     .d1_pin = ST77XX_PARAM_D1, \
                                     .d2_pin = ST77XX_PARAM_D2, \
@@ -159,7 +151,7 @@ extern "C" {
 #endif
 
 #if MODULE_LCD_PARALLEL_16BIT || DOXYGEN
-/** Additional default interface params if MCU 8080 16-bit parallel interface is enabled */
+/// Additional default interface params if MCU 8080 16-bit parallel interface is enabled
 #define ST77XX_PARAM_IF_PAR_16BIT   .d8_pin = ST77XX_PARAM_D8, \
                                     .d9_pin = ST77XX_PARAM_D9, \
                                     .d10_pin = ST77XX_PARAM_D10, \
@@ -173,27 +165,25 @@ extern "C" {
 #endif
 
 #if MODULE_LCD_PARALLEL_16BIT || DOXYGEN
-/** Interface mode is MCU 8080 16-bit parallel */
+/// Interface mode is MCU 8080 16-bit parallel
 #define ST77XX_PARAM_IF_MODE        .mode = LCD_IF_PARALLEL_16BIT,
 #elif MODULE_LCD_PARALLEL
-/** Interface mode is MCU 8080 8-bit parallel */
+/// Interface mode is MCU 8080 8-bit parallel
 #define ST77XX_PARAM_IF_MODE        .mode = LCD_IF_PARALLEL_8BIT,
 #else
-/** Interface mode parameter is not defined */
+/// Interface mode parameter is not defined
 #define ST77XX_PARAM_IF_MODE
 #endif
 
-/**
- * @brief   Default params
- *
- * @note The default parameter set defined here can only be used if a single
- *       ST77xx display and only one interface mode is used. If multiple
- *       ST77xx displays are used or if multiple interface modes are enabled
- *       by the modules `lcd_spi`, lcd_parallel and `lcd_parallel_16bit`, a user
- *       defined parameter set @ref ST77XX_PARAMS has to be defined. In the
- *       latter case @ref lcd_params_t::spi must then be set to @ref SPI_UNDEF
- *       for displays with MCU 8080 8-/16-bit parallel interfaces.
- */
+/// @brief   Default params
+///
+/// @note The default parameter set defined here can only be used if a single
+///       ST77xx display and only one interface mode is used. If multiple
+///       ST77xx displays are used or if multiple interface modes are enabled
+///       by the modules `lcd_spi`, lcd_parallel and `lcd_parallel_16bit`, a user
+///       defined parameter set @ref ST77XX_PARAMS has to be defined. In the
+///       latter case @ref lcd_params_t::spi must then be set to @ref SPI_UNDEF
+///       for displays with MCU 8080 8-/16-bit parallel interfaces.
 #ifndef ST77XX_PARAMS
 #define ST77XX_PARAMS              {  ST77XX_PARAM_IF_MODE \
                                       ST77XX_PARAM_IF_SPI \
@@ -211,43 +201,33 @@ extern "C" {
                                       .offset_y = ST77XX_PARAM_OFFSET_Y, \
                                       .cntrl = ST77XX_PARAM_CNTRL, \
                                     }
-#endif /* ST77XX_PARAMS */
-/** @} */
+#endif // ST77XX_PARAMS
+/// @}
 
-/**
- * @brief   Default screen identifiers
- */
+/// @brief   Default screen identifiers
 #ifndef ST77XX_PARAM_SCREEN_IDS
 #define ST77XX_PARAM_SCREEN_IDS    0
 #endif
 
-/**
- * @brief   Configure LCD
- */
+/// @brief   Configure LCD
 static const lcd_params_t st77xx_params[] =
 {
     ST77XX_PARAMS,
 };
 
-/**
- * @brief   Configure screen identifiers
- */
+/// @brief   Configure screen identifiers
 static const uint8_t st77xx_screen_ids[] =
 {
     ST77XX_PARAM_SCREEN_IDS,
 };
 
-/**
- * @brief   Define the number of configured displays
- */
+/// @brief   Define the number of configured displays
 #define ST77XX_NUMOF           ARRAY_SIZE(st77xx_params)
-/**
- * @brief   Define the number screens this display driver is attached to
- */
+/// @brief   Define the number screens this display driver is attached to
 #define ST77XX_SCREEN_NUMOF    ARRAY_SIZE(st77xx_screen_ids)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

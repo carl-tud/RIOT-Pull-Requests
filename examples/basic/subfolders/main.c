@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Application showcasing the use of subfolders in RIOT applications
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Application showcasing the use of subfolders in RIOT applications
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -23,8 +19,7 @@ void folder_a(void);
 void folder_b(void);
 void folder_c(void);
 
-int main(void)
-{
+int main(void) {
     puts("./main.c");
     // call functions from RIOT module
     module_a();

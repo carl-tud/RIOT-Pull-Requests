@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the SHT2x temperature and humidity sensor
- *
- * @author      Kees Bakker <kees@sodaq.com>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the SHT2x temperature and humidity sensor
+///
+/// @author      Kees Bakker <kees@sodaq.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,12 +20,11 @@
 #include "sht2x.h"
 #include "ztimer.h"
 
-#define SLEEP_2S   (2)  /* 2 seconds delay between printf */
+#define SLEEP_2S   (2)  // 2 seconds delay between printf
 
 static void dump_buffer(const char* txt, uint8_t* buffer, size_t len);
 
-int main(void)
-{
+int main(void) {
     sht2x_t dev;
     uint8_t ident[8];
     int result;
@@ -40,7 +35,7 @@ int main(void)
     puts("SHT2X test application\n");
 
     printf("+------------Initializing------------+\n");
-    /* Use the first default parameter set */
+    // Use the first default parameter set
     result = sht2x_init(&dev, &sht2x_params[0]);
     if (result != SHT2X_OK) {
         puts("[Error] The given i2c is not enabled");
@@ -61,7 +56,7 @@ int main(void)
         int16_t temperature;
 
         {
-            /* Print the identification every so often */
+            // Print the identification every so often
             static int count = 0;
             if (++count >= 100) {
                 ident_size = sht2x_read_ident(&dev, ident, sizeof(ident));
@@ -72,7 +67,7 @@ int main(void)
             }
         }
 
-        /* Get temperature in centi degrees celsius */
+        // Get temperature in centi degrees celsius
         temperature = sht2x_read_temperature(&dev);
         if (temperature == INT16_MIN) {
             printf("\n+--------Soft Reset--------+\n");
@@ -80,7 +75,7 @@ int main(void)
         } else {
             uint16_t humidity;
 
-            /* Get humidity in %RH */
+            // Get humidity in %RH
             humidity = sht2x_read_humidity(&dev);
 
             printf("Temperature [°C]: %d.%d\n"
@@ -97,8 +92,7 @@ int main(void)
     return 0;
 }
 
-static void dump_buffer(const char* txt, uint8_t* buffer, size_t len)
-{
+static void dump_buffer(const char* txt, uint8_t* buffer, size_t len) {
     size_t ix;
     printf("%s\n", txt);
     for (ix = 0; ix < len; ++ix) {

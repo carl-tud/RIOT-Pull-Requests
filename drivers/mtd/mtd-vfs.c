@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #if MODULE_VFS
 
@@ -12,22 +10,20 @@
 #include "mtd.h"
 #include "vfs.h"
 
-/**
- * @ingroup     drivers_mtd
- * @{
- *
- * @file
- *
- * @brief       MTD generic VFS operations
- *
- * This allows the MTD driver to register as a node on DevFS
- *
- * See boards/mulle or tests/unittests/tests-devfs for examples on how to use.
- *
- * Tested with mtd_spi_nor on Mulle
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @ingroup     drivers_mtd
+/// @{
+///
+/// @file
+///
+/// @brief       MTD generic VFS operations
+///
+/// This allows the MTD driver to register as a node on DevFS
+///
+/// See boards/mulle or tests/unittests/tests-devfs for examples on how to use.
+///
+/// Tested with mtd_spi_nor on Mulle
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 static int mtd_vfs_fstat(vfs_file_t *filp, struct stat *buf);
 static off_t mtd_vfs_lseek(vfs_file_t *filp, off_t off, int whence);
@@ -41,8 +37,7 @@ const vfs_file_ops_t mtd_vfs_ops = {
     .write = mtd_vfs_write,
 };
 
-static int mtd_vfs_fstat(vfs_file_t *filp, struct stat *buf)
-{
+static int mtd_vfs_fstat(vfs_file_t *filp, struct stat *buf) {
     if (buf == NULL) {
         return -EFAULT;
     }
@@ -55,8 +50,7 @@ static int mtd_vfs_fstat(vfs_file_t *filp, struct stat *buf)
     return 0;
 }
 
-static off_t mtd_vfs_lseek(vfs_file_t *filp, off_t off, int whence)
-{
+static off_t mtd_vfs_lseek(vfs_file_t *filp, off_t off, int whence) {
     const mtd_dev_t *mtd = filp->private_data.ptr;
     if (mtd == NULL) {
         return -EFAULT;
@@ -74,16 +68,15 @@ static off_t mtd_vfs_lseek(vfs_file_t *filp, off_t off, int whence)
             return -EINVAL;
     }
     if (off < 0) {
-        /* the resulting file offset would be negative */
+        // the resulting file offset would be negative
         return -EINVAL;
     }
-    /* POSIX allows seeking past the end of the file */
+    // POSIX allows seeking past the end of the file
     filp->pos = off;
     return off;
 }
 
-static ssize_t mtd_vfs_read(vfs_file_t *filp, void *dest, size_t nbytes)
-{
+static ssize_t mtd_vfs_read(vfs_file_t *filp, void *dest, size_t nbytes) {
     mtd_dev_t *mtd = filp->private_data.ptr;
     if (mtd == NULL) {
         return -EFAULT;
@@ -100,13 +93,12 @@ static ssize_t mtd_vfs_read(vfs_file_t *filp, void *dest, size_t nbytes)
     if (res != 0) {
         return -EIO;
     }
-    /* Advance file position */
+    // Advance file position
     filp->pos += nbytes;
     return nbytes;
 }
 
-static ssize_t mtd_vfs_write(vfs_file_t *filp, const void *src, size_t nbytes)
-{
+static ssize_t mtd_vfs_write(vfs_file_t *filp, const void *src, size_t nbytes) {
     mtd_dev_t *mtd = filp->private_data.ptr;
     if (mtd == NULL) {
         return -EFAULT;
@@ -114,7 +106,7 @@ static ssize_t mtd_vfs_write(vfs_file_t *filp, const void *src, size_t nbytes)
     uint32_t size = mtd->page_size * mtd->sector_count * mtd->pages_per_sector;
     uint32_t dest = filp->pos;
     if (dest >= size) {
-        /* attempt to write outside the device memory */
+        // attempt to write outside the device memory
         return -ENOSPC;
     }
     if ((dest + nbytes) > size) {
@@ -124,13 +116,13 @@ static ssize_t mtd_vfs_write(vfs_file_t *filp, const void *src, size_t nbytes)
     if (res != 0) {
         return -EIO;
     }
-    /* Advance file position */
+    // Advance file position
     filp->pos += nbytes;
     return nbytes;
 }
 
-/** @} */
+/// @}
 
 #else
 typedef int dont_be_pedantic;
-#endif /* MODULE_VFS */
+#endif // MODULE_VFS

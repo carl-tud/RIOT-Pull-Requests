@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #if MODULE_VFS
 
@@ -12,22 +10,20 @@
 #include "nvram.h"
 #include "vfs.h"
 
-/**
- * @ingroup     drivers_nvram
- * @{
- *
- * @file
- *
- * @brief       NVRAM generic VFS operations
- *
- * This allows the nvram driver to register as a node on DevFS
- *
- * See boards/mulle or tests/unittests/tests-devfs for examples on how to use.
- *
- * Tested with nvram_spi on Mulle
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @ingroup     drivers_nvram
+/// @{
+///
+/// @file
+///
+/// @brief       NVRAM generic VFS operations
+///
+/// This allows the nvram driver to register as a node on DevFS
+///
+/// See boards/mulle or tests/unittests/tests-devfs for examples on how to use.
+///
+/// Tested with nvram_spi on Mulle
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 static int nvram_vfs_fstat(vfs_file_t *filp, struct stat *buf);
 static off_t nvram_vfs_lseek(vfs_file_t *filp, off_t off, int whence);
@@ -41,8 +37,7 @@ const vfs_file_ops_t nvram_vfs_ops = {
     .write = nvram_vfs_write,
 };
 
-static int nvram_vfs_fstat(vfs_file_t *filp, struct stat *buf)
-{
+static int nvram_vfs_fstat(vfs_file_t *filp, struct stat *buf) {
     if (buf == NULL) {
         return -EFAULT;
     }
@@ -55,8 +50,7 @@ static int nvram_vfs_fstat(vfs_file_t *filp, struct stat *buf)
     return 0;
 }
 
-static off_t nvram_vfs_lseek(vfs_file_t *filp, off_t off, int whence)
-{
+static off_t nvram_vfs_lseek(vfs_file_t *filp, off_t off, int whence) {
     nvram_t *dev = filp->private_data.ptr;
     if (dev == NULL) {
         return -EFAULT;
@@ -74,16 +68,15 @@ static off_t nvram_vfs_lseek(vfs_file_t *filp, off_t off, int whence)
             return -EINVAL;
     }
     if (off < 0) {
-        /* the resulting file offset would be negative */
+        // the resulting file offset would be negative
         return -EINVAL;
     }
-    /* POSIX allows seeking past the end of the file */
+    // POSIX allows seeking past the end of the file
     filp->pos = off;
     return off;
 }
 
-static ssize_t nvram_vfs_read(vfs_file_t *filp, void *dest, size_t nbytes)
-{
+static ssize_t nvram_vfs_read(vfs_file_t *filp, void *dest, size_t nbytes) {
     nvram_t *dev = filp->private_data.ptr;
     if (dev == NULL) {
         return -EFAULT;
@@ -99,13 +92,12 @@ static ssize_t nvram_vfs_read(vfs_file_t *filp, void *dest, size_t nbytes)
     if (res < 0) {
         return res;
     }
-    /* Advance file position */
+    // Advance file position
     filp->pos += res;
     return res;
 }
 
-static ssize_t nvram_vfs_write(vfs_file_t *filp, const void *src, size_t nbytes)
-{
+static ssize_t nvram_vfs_write(vfs_file_t *filp, const void *src, size_t nbytes) {
     nvram_t *dev = filp->private_data.ptr;
     if (dev == NULL) {
         return -EFAULT;
@@ -121,13 +113,13 @@ static ssize_t nvram_vfs_write(vfs_file_t *filp, const void *src, size_t nbytes)
     if (res < 0) {
         return res;
     }
-    /* Advance file position */
+    // Advance file position
     filp->pos += res;
     return res;
 }
 
-/** @} */
+/// @}
 
 #else
 typedef int dont_be_pedantic;
-#endif /* MODULE_VFS */
+#endif // MODULE_VFS

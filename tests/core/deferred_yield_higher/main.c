@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2021 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2021 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   Application for testing thread_yield_higher() with IRQs disabled
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   Application for testing thread_yield_higher() with IRQs disabled
+///
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "irq.h"
@@ -23,14 +19,12 @@
 
 static char t2_stack[THREAD_STACKSIZE_DEFAULT];
 
-static void *second_thread(void *arg)
-{
+static void *second_thread(void *arg) {
     puts("2. second thread scheduled");
     return arg;
 }
 
-int main(void)
-{
+int main(void) {
     thread_create(
         t2_stack, sizeof(t2_stack),
         THREAD_PRIORITY_MAIN - 1,

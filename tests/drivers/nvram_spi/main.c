@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the SPI NVRAM driver
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the SPI NVRAM driver
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -50,14 +46,12 @@
 #define SPI_CLK     (SPI_CLK_10MHZ)
 #endif
 
-/* This will only work on small memories. Modify if you need to test NVRAM
- * memories which do not fit inside free RAM */
+// This will only work on small memories. Modify if you need to test NVRAM
+// memories which do not fit inside free RAM
 static uint8_t buf_out[TEST_NVRAM_SPI_SIZE];
 static uint8_t buf_in[TEST_NVRAM_SPI_SIZE];
 
-/**
- * @brief xxd-like printing of a binary buffer
- */
+/// @brief xxd-like printing of a binary buffer
 static void print_buffer(const uint8_t * buf, size_t length) {
     static const unsigned int bytes_per_line = 16;
     static const unsigned int bytes_per_group = 2;
@@ -65,7 +59,7 @@ static void print_buffer(const uint8_t * buf, size_t length) {
     while (i < length) {
         unsigned int col;
         for (col = 0; col < bytes_per_line; ++col) {
-            /* Print hex data */
+            // Print hex data
             if (col == 0) {
                 printf("\n%08lx: ", i);
             }
@@ -82,7 +76,7 @@ static void print_buffer(const uint8_t * buf, size_t length) {
         putchar(' ');
         for (col = 0; col < bytes_per_line; ++col) {
             if ((i + col) < length) {
-                /* Echo only printable chars */
+                // Echo only printable chars
                 if (isprint(buf[i + col])) {
                     putchar(buf[i + col]);
                 } else {
@@ -94,21 +88,20 @@ static void print_buffer(const uint8_t * buf, size_t length) {
         }
         i += bytes_per_line;
     }
-    /* end with a newline */
+    // end with a newline
     puts("");
 }
 
-/* weak PRNG for generating "random" test data */
+// weak PRNG for generating "random" test data
 static uint8_t lcg_rand8(void) {
     static const uint32_t a = 1103515245;
     static const uint32_t c = 12345;
-    static uint32_t val = 123456; /* seed value */
+    static uint32_t val = 123456; // seed value
     val = val * a + c;
     return (val >> 16) & 0xff;
 }
 
-int main(void)
-{
+int main(void) {
     uint32_t i;
     nvram_spi_params_t spi_params = {
         .spi = TEST_NVRAM_SPI_DEV,

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_efm32
- * @{
- *
- * @file
- * @brief       Implementation specific CPU configuration options
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- */
+/// @ingroup     cpu_efm32
+/// @{
+///
+/// @file
+/// @brief       Implementation specific CPU configuration options
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
 
 #include "cpu_conf_common.h"
 
@@ -24,40 +20,33 @@
 extern "C" {
 #endif
 
-/**
- * @brief   ARM Cortex-M specific CPU configuration
- * @{
- */
+/// @brief   ARM Cortex-M specific CPU configuration
+/// @{
 #define CPU_DEFAULT_IRQ_PRIO            (1U)
 #define CPU_IRQ_NUMOF                   (EXT_IRQ_COUNT + 1)
 #define CPU_FLASH_BASE                  (FLASH_BASE)
-/** @} */
+/// @}
 
-/**
- * @brief   Flash page configuration
- * @{
- */
+/// @brief   Flash page configuration
+/// @{
 #define FLASHPAGE_SIZE                  (FLASH_PAGE_SIZE)
 #define FLASHPAGE_NUMOF                 (FLASH_SIZE / FLASH_PAGE_SIZE)
-/* The minimum block size which can be written is 4B. However, the erase
- * block is always FLASHPAGE_SIZE.
- */
+// The minimum block size which can be written is 4B. However, the erase
+// block is always FLASHPAGE_SIZE.
 #define FLASHPAGE_WRITE_BLOCK_SIZE      (4U)
-/* Writing should be always 4 bytes aligned */
+// Writing should be always 4 bytes aligned
 #define FLASHPAGE_WRITE_BLOCK_ALIGNMENT (4U)
-/** @} */
+/// @}
 
-/**
- * @brief   Bit-Band configuration
- * @{
- */
+/// @brief   Bit-Band configuration
+/// @{
 #ifdef BITBAND_RAM_BASE
 #define CPU_HAS_BITBAND 1
 #endif
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

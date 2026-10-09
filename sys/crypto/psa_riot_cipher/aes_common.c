@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_psa_crypto
- * @{
- *
- * @file
- * @brief       Glue code translating between PSA Crypto and the RIOT Cipher module
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     sys_psa_crypto
+/// @{
+///
+/// @file
+/// @brief       Glue code translating between PSA Crypto and the RIOT Cipher module
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include "psa/crypto.h"
 #include "crypto/modes/cbc.h"
@@ -21,8 +17,7 @@
 #define ENABLE_DEBUG    0
 #include "debug.h"
 
-psa_status_t cipher_to_psa_error(int error)
-{
+psa_status_t cipher_to_psa_error(int error) {
     switch (error) {
     case CIPHER_ERR_INVALID_KEY_SIZE:
     case CIPHER_ERR_INVALID_LENGTH:
@@ -41,8 +36,7 @@ psa_status_t cbc_aes_common_encrypt_decrypt(cipher_t *ctx,
                                             size_t input_length,
                                             uint8_t *output,
                                             size_t *output_length,
-                                            psa_encrypt_or_decrypt_t direction)
-{
+                                            psa_encrypt_or_decrypt_t direction) {
     int ret = 0;
 
     ret = cipher_init(ctx, CIPHER_AES, key_buffer, key_buffer_size);

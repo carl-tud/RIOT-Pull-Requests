@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_sodaq-sara-aff
- * @{
- *
- * @file
- * @brief       Board specific definitions for the SODAQ SARA AFF boards
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- */
+/// @ingroup     boards_sodaq-sara-aff
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the SODAQ SARA AFF boards
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
 
 #include "cpu.h"
 #include "board_common.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(PA, 21)
 
 #define LED0_PORT           PORT->Group[PA]
@@ -77,20 +71,16 @@ extern "C" {
 #define LED_BLUE_OFF         LED3_OFF
 #define LED_BLUE_ON          LED3_ON
 #define LED_BLUE_TOGGLE      LED3_TOGGLE
-/** @} */
+/// @}
 
-/**
- * @name    GPS Time Pulse
- * @{
- */
+/// @name    GPS Time Pulse
+/// @{
 #define GPS_TIMEPULSE_PIN   GPIO_PIN(PA, 7)
 #define GPS_TIMEPULSE_MODE  GPIO_IN
-/** @} */
+/// @}
 
-/**
- * @name    GPS Enable
- * @{
- */
+/// @name    GPS Enable
+/// @{
 #define GPS_ENABLE_PIN      GPIO_PIN(PA, 28)
 
 #define GPS_ENABLE_PORT     PORT->Group[PA]
@@ -98,12 +88,10 @@ extern "C" {
 
 #define GPS_ENABLE_ON       (GPS_ENABLE_PORT.OUTSET.reg = GPS_ENABLE_MASK)
 #define GPS_ENABLE_OFF      (GPS_ENABLE_PORT.OUTCLR.reg = GPS_ENABLE_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    NB-IoT SARA module
- * @{
- */
+/// @name    NB-IoT SARA module
+/// @{
 #define NB_IOT_ENABLE_PIN      GPIO_PIN(PA, 27)
 
 #define NB_IOT_ENABLE_PORT     PORT->Group[PA]
@@ -143,10 +131,10 @@ extern "C" {
 
 #define NB_IOT_TOGGLE_ON        (NB_IOT_TOGGLE_PORT.OUTSET.reg = NB_IOT_TOGGLE_MASK)
 #define NB_IOT_TOGGLE_OFF       (NB_IOT_TOGGLE_PORT.OUTCLR.reg = NB_IOT_TOGGLE_MASK)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

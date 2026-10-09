@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW-Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW-Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mtd_sdcard
- * @{
- *
- * @file
- * @brief       Driver for using sdcard_spi via mtd interface
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_mtd_sdcard
+/// @{
+///
+/// @file
+/// @brief       Driver for using sdcard_spi via mtd interface
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+///
+/// @}
 #define ENABLE_DEBUG 0
 #include "debug.h"
 #include "kernel_defines.h"
@@ -27,18 +23,17 @@
 #include <errno.h>
 #include <string.h>
 
-static int mtd_sdcard_init(mtd_dev_t *dev)
-{
+static int mtd_sdcard_init(mtd_dev_t *dev) {
     DEBUG("mtd_sdcard_init\n");
     mtd_sdcard_t *mtd_sd = (mtd_sdcard_t*)dev;
     if ((mtd_sd->sd_card->init_done == true) ||
         (sdcard_spi_init(mtd_sd->sd_card, mtd_sd->params) == 0)) {
-        /* erasing whole sectors is handled internally by the card so you can
-           delete single blocks (i.e. pages) */
+        // erasing whole sectors is handled internally by the card so you can
+        //    delete single blocks (i.e. pages)
         dev->pages_per_sector = 1;
         dev->sector_count     = sdcard_spi_get_sector_count(mtd_sd->sd_card);
 
-        /* sdcard_spi always uses the fixed block size of SD-HC cards */
+        // sdcard_spi always uses the fixed block size of SD-HC cards
         dev->page_size        = SD_HC_BLOCK_SIZE;
         dev->write_size       = SD_HC_BLOCK_SIZE;
         return 0;
@@ -47,8 +42,7 @@ static int mtd_sdcard_init(mtd_dev_t *dev)
 }
 
 static int mtd_sdcard_read_page(mtd_dev_t *dev, void *buff, uint32_t page,
-                                uint32_t offset, uint32_t size)
-{
+                                uint32_t offset, uint32_t size) {
     sd_rw_response_t err;
     mtd_sdcard_t *mtd_sd = (mtd_sdcard_t*)dev;
 
@@ -89,8 +83,7 @@ static int mtd_sdcard_read_page(mtd_dev_t *dev, void *buff, uint32_t page,
 }
 
 static int mtd_sdcard_write_page(mtd_dev_t *dev, const void *buff, uint32_t page,
-                                 uint32_t offset, uint32_t size)
-{
+                                 uint32_t offset, uint32_t size) {
     sd_rw_response_t err;
     mtd_sdcard_t *mtd_sd = (mtd_sdcard_t*)dev;
 
@@ -134,8 +127,7 @@ static int mtd_sdcard_write_page(mtd_dev_t *dev, const void *buff, uint32_t page
     return size;
 }
 
-static int mtd_sdcard_erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t count)
-{
+static int mtd_sdcard_erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t count) {
 #if IS_ACTIVE(CONFIG_MTD_SDCARD_ERASE) && IS_USED(MODULE_MTD_WRITE_PAGE)
     mtd_sdcard_t *mtd_sd = (mtd_sdcard_t*)dev;
 
@@ -170,19 +162,17 @@ static int mtd_sdcard_erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t cou
     return 0;
 }
 
-static int mtd_sdcard_power(mtd_dev_t *dev, enum mtd_power_state power)
-{
+static int mtd_sdcard_power(mtd_dev_t *dev, enum mtd_power_state power) {
     (void)dev;
     (void)power;
 
-    /* TODO: implement power down of sdcard in sdcard_spi
-    (make use of sdcard_spi_params_t.power pin) */
-    return -ENOTSUP; /* currently not supported */
+    // TODO: implement power down of sdcard in sdcard_spi
+    // (make use of sdcard_spi_params_t.power pin)
+    return -ENOTSUP; // currently not supported
 }
 
 static int mtd_sdcard_read(mtd_dev_t *dev, void *buff, uint32_t addr,
-                           uint32_t size)
-{
+                           uint32_t size) {
     int res = mtd_sdcard_read_page(dev, buff, addr / SD_HC_BLOCK_SIZE,
                                    addr % SD_HC_BLOCK_SIZE, size);
     if (res < 0) {
@@ -227,7 +217,7 @@ const mtd_desc_t mtd_sdcard_driver = {
 #define MTD_SDCARD_DEV_FS(n, m, filesystem) \
     VFS_AUTO_MOUNT(filesystem, VFS_MTD(mtd_sdcard_dev ## n), VFS_DEFAULT_SD(n), m)
 
-/* this is provided by the sdcard_spi driver see drivers/sdcard_spi/sdcard_spi.c */
+// this is provided by the sdcard_spi driver see drivers/sdcard_spi/sdcard_spi.c
 extern sdcard_spi_t sdcard_spi_devs[SDCARD_NUMOF];
 
 MTD_SDCARD_DEV(0, CONFIG_SDCARD_GENERIC_MTD_OFFSET);

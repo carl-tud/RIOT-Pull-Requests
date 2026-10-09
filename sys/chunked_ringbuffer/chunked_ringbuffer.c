@@ -1,23 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- *
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @{
+///
+/// @file
+///
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <string.h>
 #include "atomic_utils.h"
 #include "chunked_ringbuffer.h"
 #include "irq.h"
 
-static int _get_free_chunk(chunk_ringbuf_t *rb)
-{
+static int _get_free_chunk(chunk_ringbuf_t *rb) {
     int idx = rb->chunk_cur;
     for (int i = 0; i < CONFIG_CHUNK_NUM_MAX; ++i) {
         uintptr_t _ptr = atomic_load_uintptr((uintptr_t *)&rb->chunk_start[idx]);
@@ -33,8 +28,7 @@ static int _get_free_chunk(chunk_ringbuf_t *rb)
     return -1;
 }
 
-static int _get_complete_chunk(chunk_ringbuf_t *rb)
-{
+static int _get_complete_chunk(chunk_ringbuf_t *rb) {
     int idx = rb->chunk_cur;
     for (int i = 0; i < CONFIG_CHUNK_NUM_MAX; ++i) {
         uintptr_t _ptr = atomic_load_uintptr((uintptr_t *)&rb->chunk_start[idx]);
@@ -50,8 +44,7 @@ static int _get_complete_chunk(chunk_ringbuf_t *rb)
     return -1;
 }
 
-bool crb_add_bytes(chunk_ringbuf_t *rb, const void *data, size_t len)
-{
+bool crb_add_bytes(chunk_ringbuf_t *rb, const void *data, size_t len) {
     const uint8_t *in = data;
     for (size_t i = 0; i < len; ++i) {
         if (!crb_add_byte(rb, in[i])) {
@@ -62,8 +55,7 @@ bool crb_add_bytes(chunk_ringbuf_t *rb, const void *data, size_t len)
     return true;
 }
 
-bool crb_add_chunk(chunk_ringbuf_t *rb, const void *data, size_t len)
-{
+bool crb_add_chunk(chunk_ringbuf_t *rb, const void *data, size_t len) {
     if (!crb_start_chunk(rb)) {
         return false;
     }
@@ -73,22 +65,20 @@ bool crb_add_chunk(chunk_ringbuf_t *rb, const void *data, size_t len)
     return crb_end_chunk(rb, keep);
 }
 
-static unsigned _get_cur_len(chunk_ringbuf_t *rb)
-{
+static unsigned _get_cur_len(chunk_ringbuf_t *rb) {
     if (rb->cur > rb->cur_start) {
         return rb->cur - rb->cur_start;
     } else {
-        /* buffer_end point to the last element */
+        // buffer_end point to the last element
         return (rb->cur - rb->buffer) + 1
              + (rb->buffer_end - rb->cur_start);
     }
 }
 
-unsigned crb_end_chunk(chunk_ringbuf_t *rb, bool keep)
-{
+unsigned crb_end_chunk(chunk_ringbuf_t *rb, bool keep) {
     int idx;
 
-    /* no chunk was started */
+    // no chunk was started
     if (rb->cur_start == NULL) {
         return 0;
     }
@@ -99,7 +89,7 @@ unsigned crb_end_chunk(chunk_ringbuf_t *rb, bool keep)
         idx = -1;
     }
 
-    /* discard chunk */
+    // discard chunk
     if (idx < 0) {
         if (rb->protect == rb->cur_start) {
             rb->protect = NULL;
@@ -109,7 +99,7 @@ unsigned crb_end_chunk(chunk_ringbuf_t *rb, bool keep)
         return 0;
     }
 
-    /* store complete chunk */
+    // store complete chunk
     rb->chunk_start[idx] = rb->cur_start;
     rb->chunk_len[idx] = _get_cur_len(rb);
     rb->cur_start = NULL;
@@ -117,8 +107,7 @@ unsigned crb_end_chunk(chunk_ringbuf_t *rb, bool keep)
     return rb->chunk_len[idx];
 }
 
-bool crb_get_chunk_size(chunk_ringbuf_t *rb, size_t *len)
-{
+bool crb_get_chunk_size(chunk_ringbuf_t *rb, size_t *len) {
     int idx = _get_complete_chunk(rb);
     if (idx < 0) {
         return false;
@@ -128,8 +117,7 @@ bool crb_get_chunk_size(chunk_ringbuf_t *rb, size_t *len)
     return true;
 }
 
-bool crb_peek_bytes(chunk_ringbuf_t *rb, void *dst, size_t offset, size_t len)
-{
+bool crb_peek_bytes(chunk_ringbuf_t *rb, void *dst, size_t offset, size_t len) {
     int idx = _get_complete_chunk(rb);
     if (idx < 0) {
         return false;
@@ -156,8 +144,7 @@ bool crb_peek_bytes(chunk_ringbuf_t *rb, void *dst, size_t offset, size_t len)
     return true;
 }
 
-bool crb_chunk_foreach(chunk_ringbuf_t *rb, crb_foreach_callback_t func, void *ctx)
-{
+bool crb_chunk_foreach(chunk_ringbuf_t *rb, crb_foreach_callback_t func, void *ctx) {
     size_t len;
     int idx = _get_complete_chunk(rb);
     if (idx < 0) {
@@ -167,10 +154,10 @@ bool crb_chunk_foreach(chunk_ringbuf_t *rb, crb_foreach_callback_t func, void *c
     len = rb->chunk_len[idx];
 
     if (rb->chunk_start[idx] + len <= rb->buffer_end) {
-        /* chunk is continuous */
+        // chunk is continuous
         func(ctx, rb->chunk_start[idx], len);
     } else {
-        /* chunk wraps around */
+        // chunk wraps around
         size_t len_0 = 1 + rb->buffer_end - rb->chunk_start[idx];
         func(ctx, rb->chunk_start[idx], len_0);
         func(ctx, rb->buffer, len - len_0);
@@ -179,8 +166,7 @@ bool crb_chunk_foreach(chunk_ringbuf_t *rb, crb_foreach_callback_t func, void *c
     return true;
 }
 
-bool crb_consume_chunk(chunk_ringbuf_t *rb, void *dst, size_t len)
-{
+bool crb_consume_chunk(chunk_ringbuf_t *rb, void *dst, size_t len) {
     int idx = _get_complete_chunk(rb);
     if (idx < 0) {
         return false;
@@ -192,10 +178,10 @@ bool crb_consume_chunk(chunk_ringbuf_t *rb, void *dst, size_t len)
 
     if (dst) {
         if (rb->chunk_start[idx] + len <= rb->buffer_end) {
-            /* chunk is continuous */
+            // chunk is continuous
             memcpy(dst, rb->chunk_start[idx], len);
         } else {
-            /* chunk wraps around */
+            // chunk wraps around
             uint8_t *dst8 = dst;
             size_t len_0 = 1 + rb->buffer_end - rb->chunk_start[idx];
             memcpy(dst8, rb->chunk_start[idx], len_0);
@@ -207,7 +193,7 @@ bool crb_consume_chunk(chunk_ringbuf_t *rb, void *dst, size_t len)
 
     rb->chunk_start[idx] = NULL;
 
-    /* advance protect marker */
+    // advance protect marker
     idx = _get_complete_chunk(rb);
     if (idx < 0) {
         rb->protect = rb->cur_start;
@@ -215,7 +201,7 @@ bool crb_consume_chunk(chunk_ringbuf_t *rb, void *dst, size_t len)
         rb->protect = rb->chunk_start[idx];
     }
 
-    /* advance first used slot nr */
+    // advance first used slot nr
     rb->chunk_cur = (rb->chunk_cur + 1) % CONFIG_CHUNK_NUM_MAX;
 
     irq_restore(state);
@@ -223,12 +209,11 @@ bool crb_consume_chunk(chunk_ringbuf_t *rb, void *dst, size_t len)
     return true;
 }
 
-void crb_init(chunk_ringbuf_t *rb, void *buffer, size_t len)
-{
+void crb_init(chunk_ringbuf_t *rb, void *buffer, size_t len) {
     memset(rb, 0, sizeof(*rb));
     rb->buffer = buffer;
     rb->buffer_end = &rb->buffer[len - 1];
     rb->cur = rb->buffer;
 }
 
-/** @} */
+/// @}

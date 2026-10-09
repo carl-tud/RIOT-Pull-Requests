@@ -1,24 +1,20 @@
-/*
- * Copyright 2013 INRIA.
- * Copyright 2014 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright 2013 INRIA.
+// Copyright 2014 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell command implementation for the peripheral RTC interface
- *
- * @author  Oliver Hahm <oliver.hahm@inria.fr>
- * @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>#
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell command implementation for the peripheral RTC interface
+///
+/// @author  Oliver Hahm <oliver.hahm@inria.fr>
+/// @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>#
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -30,24 +26,21 @@
 #include "rtc_utils.h"
 #include "shell.h"
 
-static void _alarm_handler(void *arg)
-{
+static void _alarm_handler(void *arg) {
     (void) arg;
 
     puts("The alarm rang");
 }
 
-/** Read a ["YYYY-MM-DD", "hh:mm:ss"] formatted value from a string array.
- *
- * This performs no validation on the entered time -- that'd be trivial on some
- * fields (month), but excessive on others (day of month -- we don't do leap
- * year calculation otherwise) and need information we don't have (leap
- * seconds) on yet others.
- *
- * Invalid inputs merely lead to out-of-range values inside the time struct.
- */
-static void _parse_time(char **argv, struct tm *time)
-{
+/// Read a ["YYYY-MM-DD", "hh:mm:ss"] formatted value from a string array.
+///
+/// This performs no validation on the entered time -- that'd be trivial on some
+/// fields (month), but excessive on others (day of month -- we don't do leap
+/// year calculation otherwise) and need information we don't have (leap
+/// seconds) on yet others.
+///
+/// Invalid inputs merely lead to out-of-range values inside the time struct.
+static void _parse_time(char **argv, struct tm *time) {
     short i;
     char *end;
 
@@ -69,13 +62,12 @@ static void _parse_time(char **argv, struct tm *time)
     i = strtol(end + 1, &end, 10);
     time->tm_sec = i;
 
-    time->tm_isdst = -1; /* undefined */
+    time->tm_isdst = -1; // undefined
 
     rtc_tm_normalize(time);
 }
 
-static int _print_time(struct tm *time)
-{
+static int _print_time(struct tm *time) {
     printf("%04i-%02i-%02i %02i:%02i:%02i\n",
             time->tm_year + 1900, time->tm_mon + 1, time->tm_mday,
             time->tm_hour, time->tm_min, time->tm_sec
@@ -83,8 +75,7 @@ static int _print_time(struct tm *time)
     return 0;
 }
 
-static int _rtc_getalarm(void)
-{
+static int _rtc_getalarm(void) {
     struct tm t;
     if (rtc_get_alarm(&t) == 0) {
         _print_time(&t);
@@ -96,8 +87,7 @@ static int _rtc_getalarm(void)
     }
 }
 
-static int _rtc_setalarm(char **argv)
-{
+static int _rtc_setalarm(char **argv) {
     struct tm now;
 
     _parse_time(argv, &now);
@@ -110,8 +100,7 @@ static int _rtc_setalarm(char **argv)
     return 0;
 }
 
-static int _rtc_gettime(void)
-{
+static int _rtc_gettime(void) {
     struct tm t;
     if (rtc_get_time(&t) == 0) {
         _print_time(&t);
@@ -123,8 +112,7 @@ static int _rtc_gettime(void)
     }
 }
 
-static int _rtc_settime(char **argv)
-{
+static int _rtc_settime(char **argv) {
     struct tm now;
 
     _parse_time(argv, &now);
@@ -137,8 +125,7 @@ static int _rtc_settime(char **argv)
     return 0;
 }
 
-static int _rtc_usage(void)
-{
+static int _rtc_usage(void) {
     puts("usage: rtc <command> [arguments]");
     puts("commands:");
     puts("\tpoweron\t\tpower the interface on");
@@ -151,8 +138,7 @@ static int _rtc_usage(void)
     return 0;
 }
 
-static int _rtc_handler(int argc, char **argv)
-{
+static int _rtc_handler(int argc, char **argv) {
     if (argc < 2) {
         _rtc_usage();
         return 1;

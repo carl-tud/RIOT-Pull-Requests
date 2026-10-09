@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_common_esp8266
- * @{
- *
- * @file
- * @brief       Definitions for all esp8266 board.
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     boards_common_esp8266
+/// @{
+///
+/// @file
+/// @brief       Definitions for all esp8266 board.
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "board.h"
 #include "esp_common.h"
@@ -33,8 +29,7 @@ extern void uart_print_config(void);
 extern void timer_print_config(void);
 extern void can_print_config(void);
 
-void board_print_config (void)
-{
+void board_print_config (void) {
     ets_printf("\nBoard configuration:\n");
 
     #if MODULE_PERIPH_ADC
@@ -90,7 +85,7 @@ void board_print_config (void)
 }
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_nrf52840dk
- * @{
- *
- * @file
- * @brief       MTD configuration for the nRF52840 DK
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     boards_nrf52840dk
+/// @{
+///
+/// @file
+/// @brief       MTD configuration for the nRF52840 DK
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #ifdef MODULE_MTD
 

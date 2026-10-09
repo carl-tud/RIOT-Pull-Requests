@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2015 Ludwig Knüpfer
- * SPDX-FileCopyrightText: 2015 Christian Mehlis
- * SPDX-FileCopyrightText: 2016-2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Ludwig Knüpfer
+// SPDX-FileCopyrightText: 2015 Christian Mehlis
+// SPDX-FileCopyrightText: 2016-2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the dht humidity and temperature sensor driver
- *
- * @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * @author      Christian Mehlis <mehlis@inf.fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the dht humidity and temperature sensor driver
+///
+/// @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+/// @author      Christian Mehlis <mehlis@inf.fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -28,14 +24,13 @@
 
 #define DELAY           (2 * US_PER_SEC)
 
-int main(void)
-{
+int main(void) {
     dht_t dev;
     int16_t temp, hum;
 
     puts("DHT temperature and humidity sensor test application\n");
 
-    /* initialize first configured sensor */
+    // initialize first configured sensor
     printf("Initializing DHT sensor...\t");
     if (dht_init(&dev, &dht_params[0]) == 0) {
         puts("[OK]\n");
@@ -45,7 +40,7 @@ int main(void)
         return 1;
     }
 
-    /* periodically read temp and humidity values */
+    // periodically read temp and humidity values
     while (1) {
         ztimer_sleep(ZTIMER_USEC, DELAY);
 

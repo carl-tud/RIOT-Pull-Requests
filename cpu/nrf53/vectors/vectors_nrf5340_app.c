@@ -1,32 +1,28 @@
-/*
- * SPDX-FileCopyrightText: 2023 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf53
- * @{
- *
- * @file
- * @brief       nRF5340 interrupt vector definitions
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup     cpu_nrf53
+/// @{
+///
+/// @file
+/// @brief       nRF5340 interrupt vector definitions
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include <stdint.h>
 
 #include "cpu.h"
 #include "vectors_cortexm.h"
 
-/* define a local dummy handler as it needs to be in the same compilation unit
- * as the alias definition */
+// define a local dummy handler as it needs to be in the same compilation unit
+// as the alias definition
 void dummy_handler(void) {
     dummy_handler_default();
 }
 
-/* nRF5340 specific interrupt vectors */
+// nRF5340 specific interrupt vectors
 WEAK_DEFAULT void isr_fpu(void);
 WEAK_DEFAULT void isr_cache(void);
 WEAK_DEFAULT void isr_spu(void);
@@ -69,7 +65,7 @@ WEAK_DEFAULT void isr_usb_regulator(void);
 WEAK_DEFAULT void isr_kmu(void);
 WEAK_DEFAULT void isr_cryptocell(void);
 
-/* CPU specific interrupt vector table */
+// CPU specific interrupt vector table
 ISR_VECTOR(1) const isr_t vector_cpu[CPU_IRQ_NUMOF] = {
  [0] = isr_fpu,
  [1] = isr_cache,

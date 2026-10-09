@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2013 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2013 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2013 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       shows how to set up own and use the system shell commands.
- *              By typing help in the serial console, all the supported commands
- *              are listed.
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
- *
- */
+/// @file
+/// @brief       shows how to set up own and use the system shell commands.
+///              By typing help in the serial console, all the supported commands
+///              are listed.
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
+///
 
 #include <stdio.h>
 #include <string.h>
@@ -26,27 +22,24 @@
 #include "architecture.h"
 #include "shell.h"
 
-/* define buffer to be used by the shell. Note: This is intentionally
- * smaller than 64 bytes, as the EDBG integrated UART bridge of the samr21-xpro
- * (and likely all other EDBG boards) drops chars when sending more than 64
- * bytes at a time. This results in the buffer overflow test failing. */
+// define buffer to be used by the shell. Note: This is intentionally
+// smaller than 64 bytes, as the EDBG integrated UART bridge of the samr21-xpro
+// (and likely all other EDBG boards) drops chars when sending more than 64
+// bytes at a time. This results in the buffer overflow test failing.
 static char line_buf[60];
 
 #if MODULE_SHELL_HOOKS
-void shell_post_readline_hook(void)
-{
+void shell_post_readline_hook(void) {
     puts("shell_post_readline_hook");
 }
 
-void shell_pre_command_hook(int argc, char **argv)
-{
+void shell_pre_command_hook(int argc, char **argv) {
     (void)argc;
     (void)argv;
     puts("shell_pre_command_hook");
 }
 
-void shell_post_command_hook(int ret, int argc, char **argv)
-{
+void shell_post_command_hook(int ret, int argc, char **argv) {
     (void)ret;
     (void)argc;
     (void)argv;
@@ -54,8 +47,7 @@ void shell_post_command_hook(int ret, int argc, char **argv)
 }
 #endif
 
-static int print_teststart(int argc, char **argv)
-{
+static int print_teststart(int argc, char **argv) {
     (void)argc;
     (void)argv;
     printf("[TEST_START]\n");
@@ -63,8 +55,7 @@ static int print_teststart(int argc, char **argv)
     return 0;
 }
 
-static int print_testend(int argc, char **argv)
-{
+static int print_testend(int argc, char **argv) {
     (void)argc;
     (void)argv;
     printf("[TEST_END]\n");
@@ -72,8 +63,7 @@ static int print_testend(int argc, char **argv)
     return 0;
 }
 
-static int print_echo(int argc, char **argv)
-{
+static int print_echo(int argc, char **argv) {
     for (int i = 0; i < argc; ++i) {
         printf("\"%s\"", argv[i]);
     }
@@ -82,8 +72,7 @@ static int print_echo(int argc, char **argv)
     return 0;
 }
 
-static int print_shell_bufsize(int argc, char **argv)
-{
+static int print_shell_bufsize(int argc, char **argv) {
     (void)argc;
     (void)argv;
     printf("%" PRIuSIZE "\n", sizeof(line_buf));
@@ -91,8 +80,7 @@ static int print_shell_bufsize(int argc, char **argv)
     return 0;
 }
 
-static int print_empty(int argc, char **argv)
-{
+static int print_empty(int argc, char **argv) {
     (void)argc;
     (void)argv;
     return 0;
@@ -104,8 +92,7 @@ static struct {
     uint16_t reps;
 } _periodic_ctx;
 
-static void *_func(void *arg)
-{
+static void *_func(void *arg) {
     (void)arg;
 
     while (_periodic_ctx.reps--) {
@@ -116,9 +103,8 @@ static void *_func(void *arg)
     return NULL;
 }
 
-/* test to make sure that waiting for stdin does not block other threads */
-static int print_periodic(int argc, char **argv)
-{
+// test to make sure that waiting for stdin does not block other threads
+static int print_periodic(int argc, char **argv) {
     if (argc > 1) {
         _periodic_ctx.reps = atoi(argv[1]);
     } else {
@@ -143,8 +129,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-static int _xfa_test1(int argc, char **argv)
-{
+static int _xfa_test1(int argc, char **argv) {
     (void)argc;
     (void)argv;
     printf("[XFA TEST 1 OK]\n");
@@ -152,8 +137,7 @@ static int _xfa_test1(int argc, char **argv)
     return 0;
 }
 
-static int _xfa_test2(int argc, char **argv)
-{
+static int _xfa_test2(int argc, char **argv) {
     (void)argc;
     (void)argv;
     printf("[XFA TEST 2 OK]\n");
@@ -161,27 +145,26 @@ static int _xfa_test2(int argc, char **argv)
     return 0;
 }
 
-/* Add above commands to the shell commands XFA using helper macro.
- * Intentionally reversed order to test linker script based alphanumeric
- * ordering. */
+// Add above commands to the shell commands XFA using helper macro.
+// Intentionally reversed order to test linker script based alphanumeric
+// ordering.
 SHELL_COMMAND(xfa_test2, "xfa test command 2", _xfa_test2);
 SHELL_COMMAND(xfa_test1, "xfa test command 1", _xfa_test1);
 
-int main(void)
-{
+int main(void) {
     printf("test_shell.\n");
 
-    /* define own shell commands */
+    // define own shell commands
     shell_run_once(shell_commands, line_buf, sizeof(line_buf));
 
     puts("shell exited");
 
-    /* Restart the shell after the previous one exits, so that we can test
-     * Ctrl-D exit */
+    // Restart the shell after the previous one exits, so that we can test
+    // Ctrl-D exit
     shell_run(shell_commands, line_buf, sizeof(line_buf));
 
-    /* or use only system shell commands */
-    /* shell_run(NULL, line_buf, sizeof(line_buf)); */
+    // or use only system shell commands
+    // shell_run(NULL, line_buf, sizeof(line_buf));
 
     return 0;
 }

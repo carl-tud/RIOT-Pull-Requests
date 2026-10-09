@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-or-later
- */
+// SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-/**
- * @ingroup  tests
- * @{
- * @file
- * @brief    Test the `struct tm` helpers in "tm.h" of the module "timex".
- * @author   René Kijewski <rene.kijewski@fu-berlin.de>
- * @}
- */
+/// @ingroup  tests
+/// @{
+/// @file
+/// @brief    Test the `struct tm` helpers in "tm.h" of the module "timex".
+/// @author   René Kijewski <rene.kijewski@fu-berlin.de>
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,15 +29,13 @@ static const char DAY_NAMES[7][3] = {
 NONSTRING
 static const char BOOL_NAMES[2][3] = { "NO", "YES" };
 
-bool proper_atoi(const char *a, int *i)
-{
+bool proper_atoi(const char *a, int *i) {
     char *end;
     *i = strtol(a, &end, 0);
     return (a != end) && (*end == '\0');
 }
 
-static int cmd_days_in(int argc, char **argv)
-{
+static int cmd_days_in(int argc, char **argv) {
     int mon;
     if ((argc != 2) || (proper_atoi(argv[1], &mon) != 1) || (mon < 1) || (mon > 12)) {
         printf("Usage: %s <Month[1..12]>\n", argv[0]);
@@ -58,8 +52,7 @@ static int cmd_days_in(int argc, char **argv)
 
 SHELL_COMMAND(days_in, "Tells you the number of days in a month.", cmd_days_in);
 
-static int cmd_leap_year(int argc, char **argv)
-{
+static int cmd_leap_year(int argc, char **argv) {
     int year;
     if ((argc != 2) || (proper_atoi(argv[1], &year) != 1)) {
         printf("Usage: %s <Year>\n", argv[0]);
@@ -76,8 +69,7 @@ static int cmd_leap_year(int argc, char **argv)
 
 SHELL_COMMAND(leap_year, "Tells you if a supplied year is a leap year.", cmd_leap_year);
 
-static int cmd_doomsday(int argc, char **argv)
-{
+static int cmd_doomsday(int argc, char **argv) {
     int year;
     if ((argc != 2) || (proper_atoi(argv[1], &year) != 1)) {
         printf("Usage: %s <Year>\n", argv[0]);
@@ -94,8 +86,7 @@ static int cmd_doomsday(int argc, char **argv)
 
 SHELL_COMMAND(doomsday, "Tells you the wday Doomsday of the supplied year.", cmd_doomsday);
 
-static int cmd_day(int argc, char **argv)
-{
+static int cmd_day(int argc, char **argv) {
     int year, mon, day;
     if ((argc != 4) || (proper_atoi(argv[1], &year) != 1)
                     || (proper_atoi(argv[2], &mon) != 1)
@@ -126,8 +117,7 @@ static int cmd_day(int argc, char **argv)
 
 SHELL_COMMAND(day, "Tells you the day of the supplied date.", cmd_day);
 
-int main(void)
-{
+int main(void) {
     puts("`struct tm` utility shell.");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

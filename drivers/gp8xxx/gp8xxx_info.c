@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_gp8xxx
- * @{
- *
- * @file
- * @brief       Definitions of the Guestgood GP8xxx I2C DACs
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_gp8xxx
+/// @{
+///
+/// @file
+/// @brief       Definitions of the Guestgood GP8xxx I2C DACs
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include "gp8xxx_info.h"
 

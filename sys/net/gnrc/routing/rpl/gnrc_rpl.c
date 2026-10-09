@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-FileCopyrightText: 2015-2017 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-FileCopyrightText: 2015-2017 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- *
- * @author  Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+///
+/// @author  Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
 
 #include "net/ipv6/addr.h"
 #include <assert.h>
@@ -61,7 +57,7 @@ static msg_t _msg_q[GNRC_RPL_MSG_QUEUE_SIZE];
 static gnrc_netreg_entry_t _me_icmpv6_reg;
 #ifdef MODULE_GNRC_NETAPI_NOTIFY
 static gnrc_netreg_entry_t _me_routing_reg;
-#endif /* MODULE_GNRC_NETAPI_NOTIFY*/
+#endif // MODULE_GNRC_NETAPI_NOTIFY
 
 static mutex_t _inst_id_mutex = MUTEX_INIT;
 static uint8_t _instance_id;
@@ -82,14 +78,13 @@ static void *_event_loop(void *args);
 
 evtimer_msg_t gnrc_rpl_evtimer;
 
-kernel_pid_t gnrc_rpl_init(kernel_pid_t if_pid)
-{
-    /* check if RPL was initialized before */
+kernel_pid_t gnrc_rpl_init(kernel_pid_t if_pid) {
+    // check if RPL was initialized before
     if (gnrc_rpl_pid == KERNEL_PID_UNDEF) {
         mutex_t eventloop_startup = MUTEX_INIT_LOCKED;
 
         _instance_id = 0;
-        /* start the event loop */
+        // start the event loop
         gnrc_rpl_pid = thread_create(_stack, sizeof(_stack), GNRC_RPL_PRIO,
                                      0,
                                      _event_loop, (void*)&eventloop_startup,
@@ -100,21 +95,21 @@ kernel_pid_t gnrc_rpl_init(kernel_pid_t if_pid)
             return KERNEL_PID_UNDEF;
         }
 
-        /* Wait for the event loop to indicate that it set up its message
-         * queue, and registration with netreg can commence. */
+        // Wait for the event loop to indicate that it set up its message
+        // queue, and registration with netreg can commence.
         mutex_lock(&eventloop_startup);
 
-        /* Register interest in all ICMPv6 packets. */
+        // Register interest in all ICMPv6 packets.
         _me_icmpv6_reg.demux_ctx = ICMPV6_RPL_CTRL;
         _me_icmpv6_reg.target.pid = gnrc_rpl_pid;
         gnrc_netreg_register(GNRC_NETTYPE_ICMPV6, &_me_icmpv6_reg);
 
 #ifdef MODULE_GNRC_NETAPI_NOTIFY
-        /* Register interest in L3 routing info. */
+        // Register interest in L3 routing info.
         _me_routing_reg.demux_ctx = GNRC_NETREG_DEMUX_CTX_ALL;
         _me_routing_reg.target.pid = gnrc_rpl_pid;
         gnrc_netreg_register(GNRC_NETTYPE_L3_ROUTING, &_me_routing_reg);
-#endif /* MODULE_GNRC_NETAPI_NOTIFY*/
+#endif // MODULE_GNRC_NETAPI_NOTIFY
 
         gnrc_rpl_of_manager_init();
         evtimer_init_msg(&gnrc_rpl_evtimer);
@@ -132,22 +127,21 @@ kernel_pid_t gnrc_rpl_init(kernel_pid_t if_pid)
 #endif
     }
 
-    /* register all_RPL_nodes multicast address */
+    // register all_RPL_nodes multicast address
     gnrc_netif_t *netif = gnrc_netif_get_by_pid(if_pid);
     gnrc_netif_ipv6_group_join_internal(netif, &ipv6_addr_all_rpl_nodes);
 
-    /* send DODAG Information Solicitation */
+    // send DODAG Information Solicitation
     gnrc_rpl_send_DIS(NULL, (ipv6_addr_t *) &ipv6_addr_all_rpl_nodes, NULL, 0);
 
-    /* RPL enables routing, start advertising ourself as a router */
+    // RPL enables routing, start advertising ourself as a router
     gnrc_ipv6_nib_change_rtr_adv_iface(netif, true);
 
     return gnrc_rpl_pid;
 }
 
 gnrc_rpl_instance_t *gnrc_rpl_root_init(uint8_t instance_id, const ipv6_addr_t *dodag_id,
-                                        bool gen_inst_id, bool local_inst_id)
-{
+                                        bool gen_inst_id, bool local_inst_id) {
     if (gen_inst_id) {
         instance_id = gnrc_rpl_gen_instance_id(local_inst_id);
     }
@@ -164,8 +158,7 @@ gnrc_rpl_instance_t *gnrc_rpl_root_init(uint8_t instance_id, const ipv6_addr_t *
     return inst;
 }
 
-static void _receive(gnrc_pktsnip_t *icmpv6)
-{
+static void _receive(gnrc_pktsnip_t *icmpv6) {
     gnrc_pktsnip_t *ipv6, *netif;
     ipv6_hdr_t *ipv6_hdr;
     icmpv6_hdr_t *icmpv6_hdr;
@@ -232,8 +225,7 @@ static void _receive(gnrc_pktsnip_t *icmpv6)
     gnrc_pktbuf_release(icmpv6);
 }
 
-static void _parent_timeout(gnrc_rpl_parent_t *parent)
-{
+static void _parent_timeout(gnrc_rpl_parent_t *parent) {
     if (!parent || (parent->state == GNRC_RPL_PARENT_UNUSED)) {
         return;
     }
@@ -261,42 +253,33 @@ static void _parent_timeout(gnrc_rpl_parent_t *parent)
     evtimer_add_msg(&gnrc_rpl_evtimer, &parent->timeout_event, gnrc_rpl_pid);
 }
 
-/**
- * @brief   Handles the event that a new neighbor was discovered and is reachable.
- *
- * @param[in] addr  The address of the neighbor.
- */
-static inline void _handle_discovered_neighbor(ipv6_addr_t *addr)
-{
-    /* Send DODAG soliciation message to node. */
+/// @brief   Handles the event that a new neighbor was discovered and is reachable.
+///
+/// @param[in] addr  The address of the neighbor.
+static inline void _handle_discovered_neighbor(ipv6_addr_t *addr) {
+    // Send DODAG soliciation message to node.
     gnrc_rpl_send_DIS(NULL, addr, NULL, 0);
 }
 
-/**
- * @brief   Handles the event that a neighbor became unreachable.
- *
- * @param[in] addr  The address of the neighbor.
- */
-static inline void _handle_unreachable_neighbor(ipv6_addr_t *addr)
-{
+/// @brief   Handles the event that a neighbor became unreachable.
+///
+/// @param[in] addr  The address of the neighbor.
+static inline void _handle_unreachable_neighbor(ipv6_addr_t *addr) {
     gnrc_rpl_parent_t *parent;
     int idx = 0;
 
-    /* Iterate through all parents and timeout the ones with matching address.
-     * There can be multiple parents with the same address because the same node
-     * can be a parent in multiple different DODAGs. */
+    // Iterate through all parents and timeout the ones with matching address.
+    // There can be multiple parents with the same address because the same node
+    // can be a parent in multiple different DODAGs.
     while ((idx = gnrc_rpl_parent_iter_by_addr(addr, &parent, idx)) >= 0) {
         _parent_timeout(parent);
     }
 }
 
-/**
- * @brief   Handles a netapi event notification.
- *
- * @param[in] notify    The type of notification.
- */
-static inline void _netapi_notify_event(gnrc_netapi_notify_t *notify)
-{
+/// @brief   Handles a netapi event notification.
+///
+/// @param[in] notify    The type of notification.
+static inline void _netapi_notify_event(gnrc_netapi_notify_t *notify) {
     if (!IS_USED(MODULE_GNRC_NETAPI_NOTIFY)) {
         return;
     }
@@ -323,21 +306,17 @@ static inline void _netapi_notify_event(gnrc_netapi_notify_t *notify)
     }
 }
 
-/**
- * @brief   Handles the timeout for floating DODAG by poisoning all routes.
- *
- * @param[in] dodag  Pointer to the dodag.
- */
-static void _dodag_float_timeout(gnrc_rpl_dodag_t *dodag)
-{
+/// @brief   Handles the timeout for floating DODAG by poisoning all routes.
+///
+/// @param[in] dodag  Pointer to the dodag.
+static void _dodag_float_timeout(gnrc_rpl_dodag_t *dodag) {
     if (dodag->grounded != GNRC_RPL_GROUNDED) {
         gnrc_rpl_poison_routes(dodag);
     }
     evtimer_del(&gnrc_rpl_evtimer, (evtimer_event_t *)&dodag->float_timeout_event);
 }
 
-static void *_event_loop(void *args)
-{
+static void *_event_loop(void *args) {
     msg_t msg, reply;
 
     {
@@ -345,19 +324,19 @@ static void *_event_loop(void *args)
 
         msg_init_queue(_msg_q, GNRC_RPL_MSG_QUEUE_SIZE);
 
-        /* Message queue is initialized, gnrc_rpl_init can continue and will
-         * pop the underlying mutex off its stack. */
+        // Message queue is initialized, gnrc_rpl_init can continue and will
+        // pop the underlying mutex off its stack.
         mutex_unlock(eventloop_startup);
     }
 
-    /* preinitialize ACK */
+    // preinitialize ACK
     reply.type = GNRC_NETAPI_MSG_TYPE_ACK;
 
     trickle_t *trickle;
     gnrc_rpl_parent_t *parent;
     gnrc_rpl_instance_t *instance;
 
-    /* start event loop */
+    // start event loop
     while (1) {
         DEBUG("RPL: waiting for incoming message.\n");
         msg_receive(&msg);
@@ -423,8 +402,7 @@ static void *_event_loop(void *args)
 }
 
 #ifdef MODULE_GNRC_RPL_P2P
-void _update_lifetime(void)
-{
+void _update_lifetime(void) {
     gnrc_rpl_p2p_update();
 
 #if IS_USED(MODULE_ZTIMER_MSEC)
@@ -435,8 +413,7 @@ void _update_lifetime(void)
 }
 #endif
 
-void gnrc_rpl_delay_dao(gnrc_rpl_dodag_t *dodag)
-{
+void gnrc_rpl_delay_dao(gnrc_rpl_dodag_t *dodag) {
     evtimer_del(&gnrc_rpl_evtimer, (evtimer_event_t *)&dodag->dao_event);
     ((evtimer_event_t *)&(dodag->dao_event))->offset = random_uint32_range(
         CONFIG_GNRC_RPL_DAO_DELAY_DEFAULT,
@@ -447,8 +424,7 @@ void gnrc_rpl_delay_dao(gnrc_rpl_dodag_t *dodag)
     dodag->dao_ack_received = false;
 }
 
-void gnrc_rpl_long_delay_dao(gnrc_rpl_dodag_t *dodag)
-{
+void gnrc_rpl_long_delay_dao(gnrc_rpl_dodag_t *dodag) {
     evtimer_del(&gnrc_rpl_evtimer, (evtimer_event_t *)&dodag->dao_event);
     ((evtimer_event_t *)&(dodag->dao_event))->offset = random_uint32_range(
         CONFIG_GNRC_RPL_DAO_DELAY_LONG,
@@ -459,8 +435,7 @@ void gnrc_rpl_long_delay_dao(gnrc_rpl_dodag_t *dodag)
     dodag->dao_ack_received = false;
 }
 
-void _dao_handle_send(gnrc_rpl_dodag_t *dodag)
-{
+void _dao_handle_send(gnrc_rpl_dodag_t *dodag) {
     if (dodag->node_status == GNRC_RPL_ROOT_NODE) {
         return;
     }
@@ -482,8 +457,7 @@ void _dao_handle_send(gnrc_rpl_dodag_t *dodag)
     }
 }
 
-uint8_t gnrc_rpl_gen_instance_id(bool local)
-{
+uint8_t gnrc_rpl_gen_instance_id(bool local) {
     mutex_lock(&_inst_id_mutex);
     uint8_t instance_id = CONFIG_GNRC_RPL_DEFAULT_INSTANCE;
 
@@ -498,8 +472,7 @@ uint8_t gnrc_rpl_gen_instance_id(bool local)
     return instance_id;
 }
 
-void gnrc_rpl_configure_root(gnrc_netif_t *netif, const ipv6_addr_t *dodag_id)
-{
+void gnrc_rpl_configure_root(gnrc_netif_t *netif, const ipv6_addr_t *dodag_id) {
     gnrc_rpl_init(netif->pid);
     gnrc_rpl_instance_t *inst = gnrc_rpl_instance_get(
             CONFIG_GNRC_RPL_DEFAULT_INSTANCE
@@ -510,6 +483,4 @@ void gnrc_rpl_configure_root(gnrc_netif_t *netif, const ipv6_addr_t *dodag_id)
     gnrc_rpl_root_init(CONFIG_GNRC_RPL_DEFAULT_INSTANCE, dodag_id, false, false);
 }
 
-/**
- * @}
- */
+/// @}

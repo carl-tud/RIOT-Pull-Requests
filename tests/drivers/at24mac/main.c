@@ -1,25 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2019 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the AT24MAC driver
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the AT24MAC driver
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdio.h>
 #include "at24mac.h"
 
-static int test_get_eui48(void)
-{
+static int test_get_eui48(void) {
     if (at24mac_get_type(0) != AT24MAC4XX) {
         return 0;
     }
@@ -39,8 +34,7 @@ static int test_get_eui48(void)
     return 0;
 }
 
-static int test_get_eui64(void)
-{
+static int test_get_eui64(void) {
     if (at24mac_get_type(0) != AT24MAC6XX) {
         return 0;
     }
@@ -60,8 +54,7 @@ static int test_get_eui64(void)
     return 0;
 }
 
-static int test_get_id128(void)
-{
+static int test_get_id128(void) {
     uint8_t id[AT24MAC_ID_LEN];
     if (at24mac_get_id128(0, &id) != 0) {
         puts("[FAILED]");
@@ -77,8 +70,7 @@ static int test_get_id128(void)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     if (test_get_eui48()) {
         return -1;
     }

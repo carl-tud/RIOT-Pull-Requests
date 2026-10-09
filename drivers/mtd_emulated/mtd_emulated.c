@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <errno.h>
 #include <string.h>
@@ -10,8 +8,7 @@
 #include "macros/utils.h"
 #include "mtd_emulated.h"
 
-static int _init(mtd_dev_t *dev)
-{
+static int _init(mtd_dev_t *dev) {
     mtd_emulated_t *mtd = (mtd_emulated_t *)dev;
 
     assert(mtd);
@@ -23,8 +20,7 @@ static int _init(mtd_dev_t *dev)
     return 0;
 }
 
-static int _read(mtd_dev_t *dev, void *dest, uint32_t addr, uint32_t count)
-{
+static int _read(mtd_dev_t *dev, void *dest, uint32_t addr, uint32_t count) {
     mtd_emulated_t *mtd = (mtd_emulated_t *)dev;
 
     assert(mtd);
@@ -33,12 +29,12 @@ static int _read(mtd_dev_t *dev, void *dest, uint32_t addr, uint32_t count)
     uint32_t addr_count;
 
     if (__builtin_add_overflow(addr, count, &addr_count)) {
-        /* check for integer overflow */
+        // check for integer overflow
         return -EOVERFLOW;
     }
 
     if (addr_count > mtd->size) {
-        /* addr + count must not exceed the size of memory */
+        // addr + count must not exceed the size of memory
         return -EOVERFLOW;
     }
     memcpy(dest, mtd->memory + addr, count);
@@ -47,8 +43,7 @@ static int _read(mtd_dev_t *dev, void *dest, uint32_t addr, uint32_t count)
 }
 
 static int _read_page(mtd_dev_t *dev, void *dest,
-                      uint32_t page, uint32_t offset, uint32_t size)
-{
+                      uint32_t page, uint32_t offset, uint32_t size) {
     mtd_emulated_t *mtd = (mtd_emulated_t *)dev;
 
     (void)mtd;
@@ -59,26 +54,26 @@ static int _read_page(mtd_dev_t *dev, void *dest,
     uint32_t page_addr;
 
     if (__builtin_mul_overflow(page, mtd->base.page_size, &page_addr)) {
-        /* check for integer overflow */
+        // check for integer overflow
         return -EOVERFLOW;
     }
 
     uint32_t offset_size;
 
     if (__builtin_add_overflow(offset, size, &offset_size)) {
-        /* check for integer overflow */
+        // check for integer overflow
         return -EOVERFLOW;
     }
 
     uint32_t page_addr_offset_size;
 
     if (__builtin_add_overflow(page_addr, offset_size, &page_addr_offset_size)) {
-        /* check for integer overflow */
+        // check for integer overflow
         return -EOVERFLOW;
     }
 
     if (page_addr_offset_size > mtd->size) {
-        /* page addr + offset + size must not exceed the size of memory */
+        // page addr + offset + size must not exceed the size of memory
         return -EOVERFLOW;
     }
     memcpy(dest, mtd->memory + page_addr + offset, size);
@@ -87,8 +82,7 @@ static int _read_page(mtd_dev_t *dev, void *dest,
 }
 
 int _write_page(mtd_dev_t *dev, const void *src,
-                uint32_t page, uint32_t offset, uint32_t size)
-{
+                uint32_t page, uint32_t offset, uint32_t size) {
     mtd_emulated_t *mtd = (mtd_emulated_t *)dev;
 
     (void)mtd;
@@ -97,42 +91,42 @@ int _write_page(mtd_dev_t *dev, const void *src,
     assert(src);
 
     if (offset >= mtd->base.page_size) {
-        /* offset must be smaller than the page size */
+        // offset must be smaller than the page size
         return -EOVERFLOW;
     }
 
     uint32_t page_addr;
 
     if (__builtin_mul_overflow(page, mtd->base.page_size, &page_addr)) {
-        /* check for integer overflow */
+        // check for integer overflow
         return -EOVERFLOW;
     }
 
     uint32_t offset_size;
 
     if (__builtin_add_overflow(offset, size, &offset_size)) {
-        /* check for integer overflow */
+        // check for integer overflow
         return -EOVERFLOW;
     }
 
     uint32_t page_addr_offset_size;
 
     if (__builtin_add_overflow(page_addr, offset_size, &page_addr_offset_size)) {
-        /* check for integer overflow */
+        // check for integer overflow
         return -EOVERFLOW;
     }
 
     if (page_addr_offset_size > mtd->size) {
-        /* page addr + offset + size must not exceed the size of memory */
+        // page addr + offset + size must not exceed the size of memory
         return -EOVERFLOW;
     }
 
-    /* a page program never wraps into the next page, so write at most up to
-     * the end of the page and leave the remainder to the caller */
+    // a page program never wraps into the next page, so write at most up to
+    // the end of the page and leave the remainder to the caller
     size = MIN(size, mtd->base.page_size - offset);
 
-    /* emulate the programming behavior of a flash memory: bits can only be
-     * changed from 1 to 0 when writing */
+    // emulate the programming behavior of a flash memory: bits can only be
+    // changed from 1 to 0 when writing
     uint8_t *dst = mtd->memory + page_addr + offset;
     const uint8_t *bytes = src;
 
@@ -143,8 +137,7 @@ int _write_page(mtd_dev_t *dev, const void *src,
     return size;
 }
 
-static int _erase(mtd_dev_t *dev, uint32_t addr, uint32_t count)
-{
+static int _erase(mtd_dev_t *dev, uint32_t addr, uint32_t count) {
     mtd_emulated_t *mtd = (mtd_emulated_t *)dev;
 
     (void)mtd;
@@ -153,22 +146,22 @@ static int _erase(mtd_dev_t *dev, uint32_t addr, uint32_t count)
     uint32_t addr_count;
 
     if (__builtin_add_overflow(addr, count, &addr_count)) {
-        /* check for integer overflow */
+        // check for integer overflow
         return -EOVERFLOW;
     }
 
     if (addr % (mtd->base.pages_per_sector * mtd->base.page_size) != 0) {
-        /* addr must be aligned on a sector boundary */
+        // addr must be aligned on a sector boundary
         return -EOVERFLOW;
     }
 
     if (count % (mtd->base.pages_per_sector * mtd->base.page_size) != 0) {
-        /* count must be a multiple of a sector size. */
+        // count must be a multiple of a sector size.
         return -EOVERFLOW;
     }
 
     if (addr_count > mtd->size) {
-        /* addr + count must not exceed the size of memory */
+        // addr + count must not exceed the size of memory
         return -EOVERFLOW;
     }
 
@@ -177,8 +170,7 @@ static int _erase(mtd_dev_t *dev, uint32_t addr, uint32_t count)
     return 0;
 }
 
-static int _erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t num)
-{
+static int _erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t num) {
     mtd_emulated_t *mtd = (mtd_emulated_t *)dev;
 
     (void)mtd;
@@ -187,17 +179,17 @@ static int _erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t num)
     uint32_t sector_num;
 
     if (__builtin_add_overflow(sector, num, &sector_num)) {
-        /* check for integer overflow */
+        // check for integer overflow
         return -EOVERFLOW;
     }
 
     if (sector >= mtd->base.sector_count) {
-        /* sector must not exceed the number of sectors */
+        // sector must not exceed the number of sectors
         return -EOVERFLOW;
     }
 
     if (sector_num > mtd->base.sector_count) {
-        /* sector + num must not exceed the number of sectors */
+        // sector + num must not exceed the number of sectors
         return -EOVERFLOW;
     }
 
@@ -207,8 +199,7 @@ static int _erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t num)
     return 0;
 }
 
-static int _power(mtd_dev_t *dev, enum mtd_power_state power)
-{
+static int _power(mtd_dev_t *dev, enum mtd_power_state power) {
     (void)dev;
     (void)power;
     return 0;

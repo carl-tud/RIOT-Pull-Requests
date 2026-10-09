@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2018 Acutam Automation, LLC
- * SPDX-FileCopyrightText: 2025 Baptiste Le Duc <baptiste.leduc38@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2018 Acutam Automation, LLC
+// SPDX-FileCopyrightText: 2025 Baptiste Le Duc <baptiste.leduc38@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the ADS101x/111x ADC driver
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Matthew Blue <matthew.blue.neuro@gmail.com>
- * @author      Baptiste Le Duc <baptiste.leduc38@gmail.com>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the ADS101x/111x ADC driver
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Matthew Blue <matthew.blue.neuro@gmail.com>
+/// @author      Baptiste Le Duc <baptiste.leduc38@gmail.com>
+/// @}
 
 #include <stdio.h>
 
@@ -54,14 +50,12 @@ static ads1x1x_params_t ads111x_params =  {
     .bits_res = ADS111X_BITS_RES
 };
 
-static void alert_cb(void *arg)
-{
+static void alert_cb(void *arg) {
     (void)arg;
     puts("\n[Alert!]");
 }
 
-int run_test(ads1x1x_params_t * params)
-{
+int run_test(ads1x1x_params_t * params) {
     int16_t data;
 
     if (ads1x1x_init(&dev, params) == ADS1X1X_OK) {
@@ -153,8 +147,7 @@ int run_test(ads1x1x_params_t * params)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     puts("ADS1X1X analog to digital driver test application\n");
 
     printf("Testing ADS101X on I2C_DEV(%i)... ", ads101x_params.i2c);

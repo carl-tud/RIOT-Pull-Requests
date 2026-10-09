@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_fe310
- * @{
- *
- * @file
- * @brief       CPU specific definitions
- */
+/// @ingroup     cpu_fe310
+/// @{
+///
+/// @file
+/// @brief       CPU specific definitions
 
 #include "cpu_common.h"
 
@@ -23,4 +19,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

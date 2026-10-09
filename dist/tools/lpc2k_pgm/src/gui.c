@@ -1,32 +1,29 @@
-/*
- * LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
- * Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
- * Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
+// Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the
+// Free Software Foundation; version 2 of the License.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+// Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-/* If this code fails to build, please provide at least the following
- * information when requesting (free) technical support.
- *
- * 1: Complete copy of all messages during the build.
- * 2: Output of "gtk-config --version"
- * 3: Output of "gtk-config --libs"
- * 4: Output of "gtk-config --cflags"
- * 5: Output of "uname -a"
- * 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
- * 7: Other info... which linux distribution, version, other software
- */
+// If this code fails to build, please provide at least the following
+// information when requesting (free) technical support.
+//
+// 1: Complete copy of all messages during the build.
+// 2: Output of "gtk-config --version"
+// 3: Output of "gtk-config --libs"
+// 4: Output of "gtk-config --cflags"
+// 5: Output of "uname -a"
+// 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
+// 7: Other info... which linux distribution, version, other software
 
 
 #include <stdio.h>
@@ -57,14 +54,12 @@ static int port_timeout = 0;
 static int baud_timeout = 0;
 static int download_in_progress = 0;
 
-gint do_quit(GtkWidget *widget, gpointer *data)
-{
+gint do_quit(GtkWidget *widget, gpointer *data) {
     gtk_main_quit();
     return FALSE;
 }
 
-gint do_program(GtkWidget *widget, gpointer *data)
-{
+gint do_program(GtkWidget *widget, gpointer *data) {
     if (download_in_progress) {
         // error... not supposed to get here
         gtk_widget_set_sensitive(program_button, FALSE);
@@ -79,8 +74,7 @@ gint do_program(GtkWidget *widget, gpointer *data)
     return FALSE;
 }
 
-int file_exists(const char *filename)
-{
+int file_exists(const char *filename) {
     struct stat file_stats;
     int r;
 
@@ -97,8 +91,7 @@ int file_exists(const char *filename)
     return 1;
 }
 
-void done_program(int still_in_bootloader)
-{
+void done_program(int still_in_bootloader) {
     download_in_progress = 0;
 
     if (file_exists(gtk_entry_get_text(GTK_ENTRY(firmware_entry)))) {
@@ -112,8 +105,7 @@ void done_program(int still_in_bootloader)
     gtk_widget_set_sensitive(reboot_button, TRUE);
 }
 
-gint do_reboot(GtkWidget *widget, gpointer *data)
-{
+gint do_reboot(GtkWidget *widget, gpointer *data) {
     if (download_in_progress) {
         download_cancel(NULL);
         gtk_widget_set_sensitive(program_button, FALSE);
@@ -143,8 +135,7 @@ gint do_reboot(GtkWidget *widget, gpointer *data)
     return FALSE;
 }
 
-gint do_bootloader(GtkWidget *widget, gpointer *data)
-{
+gint do_bootloader(GtkWidget *widget, gpointer *data) {
     if (download_in_progress) {
         download_cancel(NULL);
         gtk_widget_set_sensitive(program_button, FALSE);
@@ -166,20 +157,17 @@ gint do_bootloader(GtkWidget *widget, gpointer *data)
     return FALSE;
 }
 
-gint do_new_port(GtkWidget *widget, gpointer *data)
-{
+gint do_new_port(GtkWidget *widget, gpointer *data) {
     port_timeout = 12;
     return FALSE;
 }
 
-gint do_new_baud(GtkWidget *widget, gpointer *data)
-{
+gint do_new_baud(GtkWidget *widget, gpointer *data) {
     baud_timeout = 7;
     return FALSE;
 }
 
-gint do_new_file(GtkWidget *widget, gpointer *data)
-{
+gint do_new_file(GtkWidget *widget, gpointer *data) {
     const char *filename;
 
     filename = gtk_entry_get_text(GTK_ENTRY(firmware_entry));
@@ -201,8 +189,7 @@ gint do_new_file(GtkWidget *widget, gpointer *data)
     return FALSE;
 }
 
-gint do_new_crystal(GtkWidget *widget, gpointer *data)
-{
+gint do_new_crystal(GtkWidget *widget, gpointer *data) {
     const char *xtal;
 
     xtal = gtk_entry_get_text(GTK_ENTRY(crystal_entry));
@@ -211,8 +198,7 @@ gint do_new_crystal(GtkWidget *widget, gpointer *data)
 }
 
 
-gint do_timer(gpointer data)
-{
+gint do_timer(gpointer data) {
     if (port_timeout && --port_timeout == 0) {
         open_serial_port(gtk_entry_get_text(GTK_ENTRY(port_entry)));
     }
@@ -229,8 +215,7 @@ gint do_timer(gpointer data)
     return TRUE;
 }
 
-void do_term_input(gpointer data, int fd, GdkInputCondition cond)
-{
+void do_term_input(gpointer data, int fd, GdkInputCondition cond) {
     char buf[256];
     int num, flags;
 
@@ -249,8 +234,7 @@ void do_term_input(gpointer data, int fd, GdkInputCondition cond)
     }
 }
 
-void do_port_input(gpointer data, int fd, GdkInputCondition cond)
-{
+void do_port_input(gpointer data, int fd, GdkInputCondition cond) {
     char buf[256];
     int num;
 
@@ -267,8 +251,7 @@ void do_port_input(gpointer data, int fd, GdkInputCondition cond)
 }
 
 
-void run_gui(void)
-{
+void run_gui(void) {
     gtk_signal_connect(GTK_OBJECT(main_window), "delete_event",
                        GTK_SIGNAL_FUNC(do_quit), NULL);
     gtk_signal_connect(GTK_OBJECT(quit_button), "pressed",
@@ -296,8 +279,7 @@ void run_gui(void)
 }
 
 
-void create_window(int *argc, char ***argv)
-{
+void create_window(int *argc, char ***argv) {
     GList *gtk_baud_list = NULL;
     int i;
 

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_feetech
- *
- * @{
- *
- * @file
- * @brief       Feetech protocol definitions
- *
- * @author      Loïc Dauphin <loic.dauphin@inria.fr>
- */
+/// @ingroup     drivers_feetech
+///
+/// @{
+///
+/// @file
+/// @brief       Feetech protocol definitions
+///
+/// @author      Loïc Dauphin <loic.dauphin@inria.fr>
 
 #ifdef __cplusplus
 extern "C" {
@@ -91,4 +87,4 @@ typedef enum {
 }
 #endif
 
-/** @} */
+/// @}

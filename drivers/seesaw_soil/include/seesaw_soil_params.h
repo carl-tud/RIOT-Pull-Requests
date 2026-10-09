@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Viktor Gal
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Viktor Gal
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_seesaw_soil
- *
- * @{
- * @file
- * @brief       Default configuration for Seesaw Soil devices
- *
- * @author      Viktor Gal <viktor.gal@maeth.com>
- */
+/// @ingroup     drivers_seesaw_soil
+///
+/// @{
+/// @file
+/// @brief       Default configuration for Seesaw Soil devices
+///
+/// @author      Viktor Gal <viktor.gal@maeth.com>
 
 #include "board.h"
 #include "seesaw_soil.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the SEESAW_SOIL driver
- * @{
- */
+/// @name    Set default configuration parameters for the SEESAW_SOIL driver
+/// @{
 #ifndef SEESAW_SOIL_PARAM_I2C
 #define SEESAW_SOIL_PARAM_I2C            I2C_DEV(0)
 #endif
@@ -41,19 +35,15 @@ extern "C" {
 #ifndef SEESAW_SOIL_SAUL_INFO
 #define SEESAW_SOIL_SAUL_INFO            { .name = "seesaw_soil" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Seesaw Soil configuration
- */
+/// @brief   Seesaw Soil configuration
 static const seesaw_soil_params_t seesaw_soil_params[] =
 {
     SEESAW_SOIL_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t seesaw_soil_saul_info[] =
 {
     SEESAW_SOIL_SAUL_INFO
@@ -63,4 +53,4 @@ static const saul_reg_info_t seesaw_soil_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

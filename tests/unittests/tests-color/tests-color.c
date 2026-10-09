@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2016 Cenk Gündoğan <mail@cgundogan.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Cenk Gündoğan <mail@cgundogan.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 #include <stdint.h>
 
@@ -21,8 +17,7 @@
 
 #define HSV_EPSILON     (1E-2f)
 
-static void test_str2rgb_upper_case__success(void)
-{
+static void test_str2rgb_upper_case__success(void) {
     const char *color_str = "F09A1D";
     color_rgb_t rgb;
 
@@ -32,8 +27,7 @@ static void test_str2rgb_upper_case__success(void)
     TEST_ASSERT_EQUAL_INT(0x1D, rgb.b);
 }
 
-static void test_str2rgb_lower_case__success(void)
-{
+static void test_str2rgb_lower_case__success(void) {
     const char *color_str = "f09a1d";
     color_rgb_t rgb;
 
@@ -43,8 +37,7 @@ static void test_str2rgb_lower_case__success(void)
     TEST_ASSERT_EQUAL_INT(0x1D, rgb.b);
 }
 
-static void test_rgb2str__success(void)
-{
+static void test_rgb2str__success(void) {
     char color_str[7] = { 0 };
     const color_rgb_t rgb = { .r = 0x0A, .g = 0xB1, .b = 0x3C };
 
@@ -53,8 +46,7 @@ static void test_rgb2str__success(void)
     TEST_ASSERT_EQUAL_STRING("0AB13C", (char *) color_str);
 }
 
-static void test_hex2rgb__success(void)
-{
+static void test_hex2rgb__success(void) {
     const uint32_t hex = 0x8Fa1b9;
     color_rgb_t rgb;
 
@@ -64,8 +56,7 @@ static void test_hex2rgb__success(void)
     TEST_ASSERT_EQUAL_INT(0xB9, rgb.b);
 }
 
-static void test_rgb2hex__success(void)
-{
+static void test_rgb2hex__success(void) {
     uint32_t hex = 0x0;
     const color_rgb_t rgb = { .r = 0x0A, .g = 0xB1, .b = 0x3C };
 
@@ -74,25 +65,24 @@ static void test_rgb2hex__success(void)
     TEST_ASSERT_EQUAL_INT(0x000AB13C, hex);
 }
 
-static void test_rgb2hsv(void)
-{
+static void test_rgb2hsv(void) {
     struct { color_hsv_t hsv; color_rgb_t rgb; } h_r[] = {
-        { { 0, 0, 0 }, { 0, 0, 0 } },           /*Black*/
-        { { 0, 0, 100 }, { 255, 255, 255 } },   /*White*/
-        { { 0, 100, 100 }, { 255, 0, 0 } },     /*Red*/
-        { { 120, 100, 100 }, { 0, 255, 0 } },   /*Lime*/
-        { { 240, 100, 100 }, { 0, 0, 255 } },   /*Blue*/
-        { { 60, 100, 100 }, { 255, 255, 0 } },  /*Yellow*/
-        { { 180, 100, 100 }, { 0, 255, 255 } }, /*Cyan*/
-        { { 300, 100, 100 }, { 255, 0, 255 } }, /*Magenta*/
-        { { 0, 0, 75 }, { 191, 191, 191 } },    /*Silver*/
-        { { 0, 0, 50 }, { 128, 128, 128 } },    /*Gray*/
-        { { 0, 100, 50 }, { 128, 0, 0 } },      /*Maroon*/
-        { { 60, 100, 50 }, { 128, 128, 0 } },   /*Olive*/
-        { { 120, 100, 50 }, { 0, 128, 0 } },    /*Green*/
-        { { 300, 100, 50 }, { 128, 0, 128 } },  /*Purple*/
-        { { 180, 100, 50 }, { 0, 128, 128 } },  /*Teal*/
-        { { 240, 100, 50 }, { 0, 0, 128 } }     /*Navy*/
+        { { 0, 0, 0 }, { 0, 0, 0 } },           // Black
+        { { 0, 0, 100 }, { 255, 255, 255 } },   // White
+        { { 0, 100, 100 }, { 255, 0, 0 } },     // Red
+        { { 120, 100, 100 }, { 0, 255, 0 } },   // Lime
+        { { 240, 100, 100 }, { 0, 0, 255 } },   // Blue
+        { { 60, 100, 100 }, { 255, 255, 0 } },  // Yellow
+        { { 180, 100, 100 }, { 0, 255, 255 } }, // Cyan
+        { { 300, 100, 100 }, { 255, 0, 255 } }, // Magenta
+        { { 0, 0, 75 }, { 191, 191, 191 } },    // Silver
+        { { 0, 0, 50 }, { 128, 128, 128 } },    // Gray
+        { { 0, 100, 50 }, { 128, 0, 0 } },      // Maroon
+        { { 60, 100, 50 }, { 128, 128, 0 } },   // Olive
+        { { 120, 100, 50 }, { 0, 128, 0 } },    // Green
+        { { 300, 100, 50 }, { 128, 0, 128 } },  // Purple
+        { { 180, 100, 50 }, { 0, 128, 128 } },  // Teal
+        { { 240, 100, 50 }, { 0, 0, 128 } }     // Navy
     };
     unsigned len = ARRAY_SIZE(h_r);
 
@@ -107,13 +97,13 @@ static void test_rgb2hsv(void)
         color_hsv_t hsv;
         color_rgb2hsv(&rgb_o, &hsv);
 
-        /* XXX floats should never be compared for equality, so we check if we
-         * are within HSV_EPSILON of tolerance */
+        // XXX floats should never be compared for equality, so we check if we
+        // are within HSV_EPSILON of tolerance
         TEST_ASSERT(-HSV_EPSILON <= hsv.s - hsv_o.s);
         TEST_ASSERT( HSV_EPSILON >= hsv.s - hsv_o.s);
         TEST_ASSERT(-HSV_EPSILON <= hsv.v - hsv_o.v);
         TEST_ASSERT( HSV_EPSILON >= hsv.v - hsv_o.v);
-        /* Hue for grey is undefined so we don't check it */
+        // Hue for grey is undefined so we don't check it
         if (hsv.s >= 0.0001f) {
             TEST_ASSERT(-HSV_EPSILON <= hsv.h - hsv_o.h);
             TEST_ASSERT( HSV_EPSILON >= hsv.h - hsv_o.h);
@@ -121,25 +111,24 @@ static void test_rgb2hsv(void)
     }
 }
 
-static void test_hsv2rgb(void)
-{
+static void test_hsv2rgb(void) {
     struct { color_hsv_t hsv; color_rgb_t rgb; } h_r[] = {
-        { { 0, 0, 0 }, { 0, 0, 0 } },           /*Black*/
-        { { 0, 0, 100 }, { 255, 255, 255 } },   /*White*/
-        { { 0, 100, 100 }, { 255, 0, 0 } },     /*Red*/
-        { { 120, 100, 100 }, { 0, 255, 0 } },   /*Lime*/
-        { { 240, 100, 100 }, { 0, 0, 255 } },   /*Blue*/
-        { { 60, 100, 100 }, { 255, 255, 0 } },  /*Yellow*/
-        { { 180, 100, 100 }, { 0, 255, 255 } }, /*Cyan*/
-        { { 300, 100, 100 }, { 255, 0, 255 } }, /*Magenta*/
-        { { 0, 0, 75 }, { 191, 191, 191 } },    /*Silver*/
-        { { 0, 0, 50 }, { 128, 128, 128 } },    /*Gray*/
-        { { 0, 100, 50 }, { 128, 0, 0 } },      /*Maroon*/
-        { { 60, 100, 50 }, { 128, 128, 0 } },   /*Olive*/
-        { { 120, 100, 50 }, { 0, 128, 0 } },    /*Green*/
-        { { 300, 100, 50 }, { 128, 0, 128 } },  /*Purple*/
-        { { 180, 100, 50 }, { 0, 128, 128 } },  /*Teal*/
-        { { 240, 100, 50 }, { 0, 0, 128 } }     /*Navy*/
+        { { 0, 0, 0 }, { 0, 0, 0 } },           // Black
+        { { 0, 0, 100 }, { 255, 255, 255 } },   // White
+        { { 0, 100, 100 }, { 255, 0, 0 } },     // Red
+        { { 120, 100, 100 }, { 0, 255, 0 } },   // Lime
+        { { 240, 100, 100 }, { 0, 0, 255 } },   // Blue
+        { { 60, 100, 100 }, { 255, 255, 0 } },  // Yellow
+        { { 180, 100, 100 }, { 0, 255, 255 } }, // Cyan
+        { { 300, 100, 100 }, { 255, 0, 255 } }, // Magenta
+        { { 0, 0, 75 }, { 191, 191, 191 } },    // Silver
+        { { 0, 0, 50 }, { 128, 128, 128 } },    // Gray
+        { { 0, 100, 50 }, { 128, 0, 0 } },      // Maroon
+        { { 60, 100, 50 }, { 128, 128, 0 } },   // Olive
+        { { 120, 100, 50 }, { 0, 128, 0 } },    // Green
+        { { 300, 100, 50 }, { 128, 0, 128 } },  // Purple
+        { { 180, 100, 50 }, { 0, 128, 128 } },  // Teal
+        { { 240, 100, 50 }, { 0, 0, 128 } }     // Navy
     };
     unsigned len = ARRAY_SIZE(h_r);
 
@@ -161,8 +150,7 @@ static void test_hsv2rgb(void)
     }
 }
 
-static void test_rgb_invert__success(void)
-{
+static void test_rgb_invert__success(void) {
     const color_rgb_t col = {.r = 100, .g = 128, .b =   0};
     const color_rgb_t res = {.r = 155, .g = 127, .b = 255};
     color_rgb_t tmp;
@@ -174,9 +162,8 @@ static void test_rgb_invert__success(void)
     TEST_ASSERT_EQUAL_INT(res.b, tmp.b);
 }
 
-static void test_rgb_complementary__success(void)
-{
-    /* See example: https://helpx.adobe.com/illustrator/using/adjusting-colors.html */
+static void test_rgb_complementary__success(void) {
+    // See example: https://helpx.adobe.com/illustrator/using/adjusting-colors.html
     const color_rgb_t col = {.r = 102, .g = 153, .b =  51};
     const color_rgb_t res = {.r = 102, .g =  51, .b = 153};
     color_rgb_t tmp;
@@ -188,8 +175,7 @@ static void test_rgb_complementary__success(void)
     TEST_ASSERT_EQUAL_INT(res.b, tmp.b);
 }
 
-Test *tests_color_tests(void)
-{
+Test *tests_color_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_str2rgb_upper_case__success),
         new_TestFixture(test_str2rgb_lower_case__success),
@@ -207,8 +193,7 @@ Test *tests_color_tests(void)
     return (Test *)&color_tests;
 }
 
-void tests_color(void)
-{
+void tests_color(void) {
     TESTS_RUN(tests_color_tests());
 }
-/** @} */
+/// @}

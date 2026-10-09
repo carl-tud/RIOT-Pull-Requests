@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- * @file
- * @brief       initializes ft5x06 touch panel device
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+/// @file
+/// @brief       initializes ft5x06 touch panel device
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include <stddef.h>
 
@@ -28,8 +24,7 @@
 ft5x06_t ft5x06_devs[FT5X06_NUMOF];
 static touch_dev_reg_t touch_dev_entries[FT5X06_NUMOF];
 
-void auto_init_ft5x06(void)
-{
+void auto_init_ft5x06(void) {
     assert(FT5X06_NUMOF == ARRAY_SIZE(ft5x06_screen_ids));
 
     for (size_t i = 0; i < FT5X06_NUMOF; i++) {
@@ -43,7 +38,7 @@ void auto_init_ft5x06(void)
         touch_dev_entries[i].screen_id = ft5x06_screen_ids[i];
         touch_dev_entries[i].dev->driver = &ft5x06_touch_dev_driver;
 
-        /* add to touch_dev registry */
+        // add to touch_dev registry
         touch_dev_reg_add(&(touch_dev_entries[i]));
     }
 }

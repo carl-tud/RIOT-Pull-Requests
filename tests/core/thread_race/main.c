@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 Matthew Blue <matthew.blue.neuro@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Matthew Blue <matthew.blue.neuro@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test for race conditions in context switching
- *
- * May have false negatives.
- *
- * @author      Matthew Blue <matthew.blue.neuro@gmail.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test for race conditions in context switching
+///
+/// May have false negatives.
+///
+/// @author      Matthew Blue <matthew.blue.neuro@gmail.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -27,8 +23,7 @@ char iqr_check_stack[THREAD_STACKSIZE_DEFAULT];
 
 static volatile uint8_t irq_occurred;
 
-static void *_thread_irq_check(void *arg)
-{
+static void *_thread_irq_check(void *arg) {
     (void)arg;
 
     while (1) {
@@ -40,9 +35,8 @@ static void *_thread_irq_check(void *arg)
     return NULL;
 }
 
-/* Mostly copied from thread_wakeup() */
-static void _thread_wake_wo_yield(kernel_pid_t pid)
-{
+// Mostly copied from thread_wakeup()
+static void _thread_wake_wo_yield(kernel_pid_t pid) {
     unsigned old_state = irq_disable();
 
     thread_t *other_thread = thread_get(pid);
@@ -52,16 +46,14 @@ static void _thread_wake_wo_yield(kernel_pid_t pid)
     irq_restore(old_state);
 }
 
-static void _spin(void)
-{
-    /* Volatile so it is not messed with by optimizations */
+static void _spin(void) {
+    // Volatile so it is not messed with by optimizations
     volatile uint8_t i;
 
     for (i = 0; i < 255; i++) {};
 }
 
-int main(void)
-{
+int main(void) {
     puts("Context swap race condition test application");
 
     kernel_pid_t pid;
@@ -78,7 +70,7 @@ int main(void)
 
     thread_yield_higher();
 
-    /* Delay so we are not testing for race conditions also */
+    // Delay so we are not testing for race conditions also
     _spin();
 
     if (irq_occurred == 1) {
@@ -95,7 +87,7 @@ int main(void)
 
     thread_yield_higher();
 
-    /* Delay so we are not testing for race conditions also */
+    // Delay so we are not testing for race conditions also
     _spin();
 
     if (irq_occurred == 1) {
@@ -106,7 +98,7 @@ int main(void)
         return -1;
     }
 
-    /* Volatile so it is not messed with by optimizations */
+    // Volatile so it is not messed with by optimizations
     volatile uint8_t race_test;
 
     printf("Checking for context swap race condition... ");
@@ -115,7 +107,7 @@ int main(void)
 
     thread_yield_higher();
 
-    /* Race instruction */
+    // Race instruction
     race_test = irq_occurred;
 
     if (race_test == 1) {

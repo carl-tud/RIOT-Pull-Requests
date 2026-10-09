@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 Sören Tempel <tempel@uni-bremen.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Sören Tempel <tempel@uni-bremen.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <assert.h>
 #include <stddef.h>
@@ -14,18 +12,16 @@
 #include "net/gnrc/netif/raw.h"
 #include "net/gnrc/netif.h"
 
-/* unlocked once the device is initialized. */
+// unlocked once the device is initialized.
 static mutex_t initmtx = MUTEX_INIT_LOCKED;
 
-static int _dev_init(netdev_t *netdev)
-{
+static int _dev_init(netdev_t *netdev) {
     (void)netdev;
     mutex_unlock(&initmtx);
     return 0;
 }
 
-static int _dev_get_device_type(netdev_t *netdev, void *value, size_t max_len)
-{
+static int _dev_get_device_type(netdev_t *netdev, void *value, size_t max_len) {
     (void)max_len;
     assert(max_len == sizeof(uint16_t));
     (void)netdev;

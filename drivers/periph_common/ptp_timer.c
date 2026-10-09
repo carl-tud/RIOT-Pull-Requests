@@ -1,30 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_periph_ptp
- * @{
- *
- * @file
- * @brief       Common code for PTP clocks and timers
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_periph_ptp
+/// @{
+///
+/// @file
+/// @brief       Common code for PTP clocks and timers
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 #include "kernel_defines.h"
 #include "irq.h"
 #include "periph/ptp.h"
 
 #if !defined(HAVE_PTP_TIMER_SET_U64)
-void ptp_timer_set_u64(uint64_t target)
-{
+void ptp_timer_set_u64(uint64_t target) {
     unsigned irq_state = irq_disable();
     if (IS_ACTIVE(HAVE_PTP_TIMER_SET_ABSOLUTE) && IS_ACTIVE(HAVE_PTP_CLOCK_READ)) {
-        /* This is slightly more efficient when the PTP clock implementation
-         * uses ptp_timestamp_t natively */
+        // This is slightly more efficient when the PTP clock implementation
+        // uses ptp_timestamp_t natively
         ptp_timestamp_t now;
         ptp_clock_read(&now);
         now.seconds += target / NS_PER_SEC;
@@ -40,4 +35,4 @@ void ptp_timer_set_u64(uint64_t target)
     }
     irq_restore(irq_state);
 }
-#endif /* !defined(HAVE_PTP_TIMER_SET_U64) */
+#endif // !defined(HAVE_PTP_TIMER_SET_U64)

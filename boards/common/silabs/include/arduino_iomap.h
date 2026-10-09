@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Federico Pellegrin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Federico Pellegrin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_silabs
- * @brief       SiLabs Boards configuration for the Arduino API
- * @file
- * @author      Federico Pellegrin <fede@evolware.org>
- * @{
- */
+/// @ingroup     boards_common_silabs
+/// @brief       SiLabs Boards configuration for the Arduino API
+/// @file
+/// @author      Federico Pellegrin <fede@evolware.org>
+/// @{
 
 #include "board.h"
 #include "periph_cpu.h"
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Arduino's digital pins mappings
- * @{
- */
+/// @name    Arduino's digital pins mappings
+/// @{
 #define ARDUINO_PIN_0       LED0_PIN
 #define ARDUINO_PIN_1       LED1_PIN
 #define ARDUINO_PIN_2       PB0_PIN
@@ -35,19 +29,17 @@ extern "C" {
 #else
 #  define ARDUINO_PIN_LAST  2
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    Arduino's analog pins mappings
- * @{
- */
+/// @name    Arduino's analog pins mappings
+/// @{
 #define ARDUINO_A0              ADC_LINE(0)
 
 #define ARDUINO_ANALOG_PIN_LAST 0
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

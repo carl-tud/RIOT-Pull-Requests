@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2015 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2015 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_saul_reg
- * @{
- *
- * @file
- * @brief       SAUL registry implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_saul_reg
+/// @{
+///
+/// @file
+/// @brief       SAUL registry implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stddef.h>
 #include <stdio.h>
@@ -25,22 +21,19 @@
 
 #include "saul_reg.h"
 
-/**
- * @brief   Keep the head of the device list as global variable
- */
+/// @brief   Keep the head of the device list as global variable
 saul_reg_t *saul_reg = NULL;
 
-int saul_reg_add(saul_reg_t *dev)
-{
+int saul_reg_add(saul_reg_t *dev) {
     saul_reg_t *tmp = saul_reg;
 
     if (dev == NULL) {
         return -ENODEV;
     }
 
-    /* prepare new entry */
+    // prepare new entry
     dev->next = NULL;
-    /* add to registry */
+    // add to registry
     if (saul_reg == NULL) {
         saul_reg = dev;
     }
@@ -53,8 +46,7 @@ int saul_reg_add(saul_reg_t *dev)
     return 0;
 }
 
-saul_reg_t *saul_reg_find_nth(int pos)
-{
+saul_reg_t *saul_reg_find_nth(int pos) {
     saul_reg_t *tmp = saul_reg;
 
     for (int i = 0; (i < pos) && tmp; i++) {
@@ -63,8 +55,7 @@ saul_reg_t *saul_reg_find_nth(int pos)
     return tmp;
 }
 
-saul_reg_t *saul_reg_find_type(uint8_t type)
-{
+saul_reg_t *saul_reg_find_type(uint8_t type) {
     saul_reg_t *tmp = saul_reg;
 
     while (tmp) {
@@ -76,8 +67,7 @@ saul_reg_t *saul_reg_find_type(uint8_t type)
     return NULL;
 }
 
-saul_reg_t *saul_reg_find_name(const char *name)
-{
+saul_reg_t *saul_reg_find_name(const char *name) {
     saul_reg_t *tmp = saul_reg;
 
     while (tmp) {
@@ -89,8 +79,7 @@ saul_reg_t *saul_reg_find_name(const char *name)
     return NULL;
 }
 
-saul_reg_t *saul_reg_find_type_and_name(uint8_t type, const char *name)
-{
+saul_reg_t *saul_reg_find_type_and_name(uint8_t type, const char *name) {
     saul_reg_t *tmp = saul_reg;
 
     while (tmp) {
@@ -102,16 +91,14 @@ saul_reg_t *saul_reg_find_type_and_name(uint8_t type, const char *name)
     return NULL;
 }
 
-int saul_reg_read(saul_reg_t *dev, phydat_t *res)
-{
+int saul_reg_read(saul_reg_t *dev, phydat_t *res) {
     if (dev == NULL) {
         return -ENODEV;
     }
     return dev->driver->read(dev->dev, res);
 }
 
-int saul_reg_write(saul_reg_t *dev, const phydat_t *data)
-{
+int saul_reg_write(saul_reg_t *dev, const phydat_t *data) {
     if (dev == NULL) {
         return -ENODEV;
     }

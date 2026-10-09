@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_credman
- * @{
- *
- * @file
- * @brief       (D)TLS Credentials management module implementation
- *
- * @author  Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
- */
+/// @ingroup     net_credman
+/// @{
+///
+/// @file
+/// @brief       (D)TLS Credentials management module implementation
+///
+/// @author  Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
 
 #include "kernel_defines.h"
 #include "mutex.h"
@@ -30,16 +26,16 @@ static mutex_t _mutex = MUTEX_INIT;
 #if IS_USED(MODULE_CREDMAN_LOAD)
 #include "tiny-asn1.h"
 
-/* Context-specific tag in DER encoding
- * (see section 8.1.2.2 of ITU-T X.690 https://www.itu.int/rec/T-REC-X.690-200811-S) */
+// Context-specific tag in DER encoding
+// (see section 8.1.2.2 of ITU-T X.690 https://www.itu.int/rec/T-REC-X.690-200811-S)
 #define ASN1_CONTEXT_TAG(v)     (0xA0 | (v & 0x1F))
 
-/* ASN.1 representation of ecPublicKey - OID 1.2.840.10045.2.1
- * (see https://oidref.com/1.2.840.10045.2.1) */
+// ASN.1 representation of ecPublicKey - OID 1.2.840.10045.2.1
+// (see https://oidref.com/1.2.840.10045.2.1)
 static const uint8_t ecPublicKey[] = { 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01 };
 
 static int _parse_ecc_point(const asn1_tree *key, const void **x, const void **y);
-#endif /* MODULE_CREDMAN_LOAD */
+#endif // MODULE_CREDMAN_LOAD
 
 static credman_credential_t credentials[CONFIG_CREDMAN_MAX_CREDENTIALS];
 static unsigned used = 0;
@@ -47,8 +43,7 @@ static unsigned used = 0;
 static int _find_credential_pos(credman_tag_t tag, credman_type_t type,
                                 credman_credential_t **empty);
 
-int credman_add(const credman_credential_t *credential)
-{
+int credman_add(const credman_credential_t *credential) {
     credman_credential_t *entry = NULL;
     assert(credential);
     mutex_lock(&_mutex);
@@ -105,8 +100,7 @@ end:
 }
 
 #if IS_USED(MODULE_CREDMAN_LOAD)
-int credman_load_public_key(const void *buf, size_t buf_len, ecdsa_public_key_t *out)
-{
+int credman_load_public_key(const void *buf, size_t buf_len, ecdsa_public_key_t *out) {
     asn1_tree objects[CONFIG_CREDMAN_MAX_ASN1_OBJ];
     asn1_tree pub_key;
 
@@ -132,19 +126,17 @@ int credman_load_public_key(const void *buf, size_t buf_len, ecdsa_public_key_t 
         return CREDMAN_INVALID;
     }
 
-    /*
-     * From https://tools.ietf.org/html/rfc5280#section-4.1
-     *
-     * SubjectPublicKeyInfo  ::=  SEQUENCE  {
-     *      algorithm               AlgorithmIdentifier,
-     *      subjectPublicKey        BIT STRING  }
-     *
-     * AlgorithmIdentifier   ::=  SEQUENCE  {
-     *      algorithm               OBJECT IDENTIFIER,
-     *      parameters              ANY DEFINED BY algorithm OPTIONAL  }
-     */
+    // From https://tools.ietf.org/html/rfc5280#section-4.1
+    //
+    // SubjectPublicKeyInfo  ::=  SEQUENCE  {
+    //      algorithm               AlgorithmIdentifier,
+    //      subjectPublicKey        BIT STRING  }
+    //
+    // AlgorithmIdentifier   ::=  SEQUENCE  {
+    //      algorithm               OBJECT IDENTIFIER,
+    //      parameters              ANY DEFINED BY algorithm OPTIONAL  }
 
-    /* the outer container is a 'SubjectPublicKeyInfo', which should be a SEQUENCE */
+    // the outer container is a 'SubjectPublicKeyInfo', which should be a SEQUENCE
     if (pub_key.type != ASN1_TYPE_SEQUENCE) {
         DEBUG("credman: the public key information should be contained in an ASN.1 SEQUENCE\n");
         return CREDMAN_INVALID;
@@ -153,8 +145,8 @@ int credman_load_public_key(const void *buf, size_t buf_len, ecdsa_public_key_t 
     asn1_tree *algorithm_id = pub_key.child;
     asn1_tree *algorithm = algorithm_id->child;
 
-    /* for now only ECDSA is supported by credman */
-    /* the algorithm should be Elliptic Curve Public Key (OID 1.2.840.10045.2.1) */
+    // for now only ECDSA is supported by credman
+    // the algorithm should be Elliptic Curve Public Key (OID 1.2.840.10045.2.1)
     if (sizeof(ecPublicKey) != algorithm->length) {
         DEBUG("credman: wrong OID length for algorithm\n");
         return CREDMAN_INVALID;
@@ -168,8 +160,7 @@ int credman_load_public_key(const void *buf, size_t buf_len, ecdsa_public_key_t 
     return _parse_ecc_point(algorithm_id->next, &out->x, &out->y);
 }
 
-int credman_load_private_key(const void *buf, size_t buf_len, credman_credential_t *cred)
-{
+int credman_load_private_key(const void *buf, size_t buf_len, credman_credential_t *cred) {
 
     asn1_tree objects[CONFIG_CREDMAN_MAX_ASN1_OBJ];
     asn1_tree priv_key;
@@ -195,40 +186,38 @@ int credman_load_private_key(const void *buf, size_t buf_len, credman_credential
         return CREDMAN_INVALID;
     }
 
-    /*
-     * From https://tools.ietf.org/html/rfc5958#section-2
-     *
-     * OneAsymmetricKey ::= SEQUENCE {
-     *      version                   Version,
-     *      privateKeyAlgorithm       PrivateKeyAlgorithmIdentifier,
-     *      privateKey                PrivateKey,
-     *      attributes            [0] Attributes OPTIONAL,
-     *      ...,
-     *      [[2: publicKey        [1] PublicKey OPTIONAL ]],
-     *      ...
-     * }
-     *
-     * PrivateKeyAlgorithmIdentifier ::= AlgorithmIdentifier
-     *                                   { PUBLIC-KEY,
-     *                                     { PrivateKeyAlgorithms } }
-     *
-     * AlgorithmIdentifier   ::=  SEQUENCE  {
-     *      algorithm               OBJECT IDENTIFIER,
-     *      parameters              ANY DEFINED BY algorithm OPTIONAL  }
-     *
-     * PrivateKey ::= OCTET STRING
-     *                   -- Content varies based on type of key.  The
-     *                   -- algorithm identifier dictates the format of
-     *                   -- the key.
-     */
+    // From https://tools.ietf.org/html/rfc5958#section-2
+    //
+    // OneAsymmetricKey ::= SEQUENCE {
+    //      version                   Version,
+    //      privateKeyAlgorithm       PrivateKeyAlgorithmIdentifier,
+    //      privateKey                PrivateKey,
+    //      attributes            [0] Attributes OPTIONAL,
+    //      ...,
+    //      [[2: publicKey        [1] PublicKey OPTIONAL ]],
+    //      ...
+    // }
+    //
+    // PrivateKeyAlgorithmIdentifier ::= AlgorithmIdentifier
+    //                                   { PUBLIC-KEY,
+    //                                     { PrivateKeyAlgorithms } }
+    //
+    // AlgorithmIdentifier   ::=  SEQUENCE  {
+    //      algorithm               OBJECT IDENTIFIER,
+    //      parameters              ANY DEFINED BY algorithm OPTIONAL  }
+    //
+    // PrivateKey ::= OCTET STRING
+    //                   -- Content varies based on type of key.  The
+    //                   -- algorithm identifier dictates the format of
+    //                   -- the key.
 
-    /* the outer container is a 'OneAsymmetricKey', which should be a SEQUENCE */
+    // the outer container is a 'OneAsymmetricKey', which should be a SEQUENCE
     if (priv_key.type != ASN1_TYPE_SEQUENCE) {
         DEBUG("credman: the private key information should be contained in an ASN.1 SEQUENCE\n");
         return CREDMAN_INVALID;
     }
 
-    /* point to version */
+    // point to version
     asn1_tree *node = priv_key.child;
 
     if (!node || node->type != ASN1_TYPE_INTEGER) {
@@ -236,15 +225,15 @@ int credman_load_private_key(const void *buf, size_t buf_len, credman_credential
         return CREDMAN_INVALID;
     }
 
-    /* point to privateKeyAlgorithm */
+    // point to privateKeyAlgorithm
     node = node->next;
     if (!node || node->type != ASN1_TYPE_SEQUENCE || !node->length) {
         DEBUG("credman: invalid private key algorithm identifier\n");
         return CREDMAN_INVALID;
     }
 
-    /* for now only ECDSA is supported by credman */
-    /* the algorithm should be Elliptic Curve Public Key (OID 1.2.840.10045.2.1) */
+    // for now only ECDSA is supported by credman
+    // the algorithm should be Elliptic Curve Public Key (OID 1.2.840.10045.2.1)
     asn1_tree *algorithm = node->child;
     if (sizeof(ecPublicKey) != algorithm->length) {
         DEBUG("credman: wrong private key algorithm, only ecPublicKey is supported\n");
@@ -256,7 +245,7 @@ int credman_load_private_key(const void *buf, size_t buf_len, credman_credential
         return CREDMAN_INVALID;
     }
 
-    /* point to privateKey */
+    // point to privateKey
     node = node->next;
     if (!node || node->type != ASN1_TYPE_OCTET_STRING || !node->data || !node->length) {
         DEBUG("credman: no private key found\n");
@@ -267,8 +256,7 @@ int credman_load_private_key(const void *buf, size_t buf_len, credman_credential
 
 }
 
-int credman_load_private_ecc_key(const void *buf, size_t buf_len, credman_credential_t *cred)
-{
+int credman_load_private_ecc_key(const void *buf, size_t buf_len, credman_credential_t *cred) {
     asn1_tree objects[CONFIG_CREDMAN_MAX_ASN1_OBJ];
     asn1_tree priv_key;
 
@@ -293,25 +281,23 @@ int credman_load_private_ecc_key(const void *buf, size_t buf_len, credman_creden
         return CREDMAN_INVALID;
     }
 
-    /*
-     * From https://tools.ietf.org/html/rfc5915#section-3
-     *
-     * ECPrivateKey ::= SEQUENCE {
-     *      version        INTEGER { ecPrivkeyVer1(1) } (ecPrivkeyVer1),
-     *      privateKey     OCTET STRING,
-     *      parameters [0] ECParameters {{ NamedCurve }} OPTIONAL,
-     *      publicKey  [1] BIT STRING OPTIONAL
-     * }
-     */
+    // From https://tools.ietf.org/html/rfc5915#section-3
+    //
+    // ECPrivateKey ::= SEQUENCE {
+    //      version        INTEGER { ecPrivkeyVer1(1) } (ecPrivkeyVer1),
+    //      privateKey     OCTET STRING,
+    //      parameters [0] ECParameters {{ NamedCurve }} OPTIONAL,
+    //      publicKey  [1] BIT STRING OPTIONAL
+    // }
 
-    /* point to version, it SHALL be 1 */
+    // point to version, it SHALL be 1
     asn1_tree *node = priv_key.child;
     if (!node || node->type != ASN1_TYPE_INTEGER || node->data[0] != 0x01) {
         DEBUG("credman: invalid private key version\n");
         return CREDMAN_INVALID;
     }
 
-    /* point to privateKey */
+    // point to privateKey
     node = node->next;
     if (!node || node->type != ASN1_TYPE_OCTET_STRING || !node->data || !node->length) {
         DEBUG("credman: invalid private key\n");
@@ -324,7 +310,7 @@ int credman_load_private_ecc_key(const void *buf, size_t buf_len, credman_creden
 
     cred->params.ecdsa.private_key = node->data;
 
-    /* try to find a publicKey by tag */
+    // try to find a publicKey by tag
     while (node && node->type != ASN1_CONTEXT_TAG(1)) {
         node = node->next;
     }
@@ -337,8 +323,7 @@ int credman_load_private_ecc_key(const void *buf, size_t buf_len, credman_creden
                             &cred->params.ecdsa.public_key.y);
 }
 
-static int _parse_ecc_point(const asn1_tree *key, const void **x, const void **y)
-{
+static int _parse_ecc_point(const asn1_tree *key, const void **x, const void **y) {
     if (!key || key->type != ASN1_TYPE_BIT_STRING) {
         DEBUG("credman: the key should be an ASN.1 BIT STRING\n");
         return CREDMAN_INVALID;
@@ -349,15 +334,15 @@ static int _parse_ecc_point(const asn1_tree *key, const void **x, const void **y
         return CREDMAN_INVALID;
     }
 
-    /* SEC 1: Elliptic Curve Cryptography - Section 2.3.4 (https://www.secg.org/sec1-v2.pdf) */
-    /* check for uncompressed key format */
+    // SEC 1: Elliptic Curve Cryptography - Section 2.3.4 (https://www.secg.org/sec1-v2.pdf)
+    // check for uncompressed key format
     if (key->data[1] != 0x04) {
         DEBUG("credman: only uncompressed format is supported\n");
         return CREDMAN_INVALID;
     }
 
     size_t coords_len = (key->length - 2) / 2;
-    const uint8_t *_x = &key->data[2]; /* skip format specifier and unused bits */
+    const uint8_t *_x = &key->data[2]; // skip format specifier and unused bits
     const uint8_t *_y = &_x[coords_len];
 
     *x = _x;
@@ -365,11 +350,10 @@ static int _parse_ecc_point(const asn1_tree *key, const void **x, const void **y
 
     return CREDMAN_OK;
 }
-#endif /* MODULE_CREDMAN_LOAD */
+#endif // MODULE_CREDMAN_LOAD
 
 int credman_get(credman_credential_t *credential, credman_tag_t tag,
-                credman_type_t type)
-{
+                credman_type_t type) {
     assert(credential);
     mutex_lock(&_mutex);
     int ret = CREDMAN_ERROR;
@@ -388,8 +372,7 @@ int credman_get(credman_credential_t *credential, credman_tag_t tag,
     return ret;
 }
 
-void credman_delete(credman_tag_t tag, credman_type_t type)
-{
+void credman_delete(credman_tag_t tag, credman_type_t type) {
     mutex_lock(&_mutex);
     int pos = _find_credential_pos(tag, type, NULL);
     if (pos >= 0) {
@@ -399,20 +382,18 @@ void credman_delete(credman_tag_t tag, credman_type_t type)
     mutex_unlock(&_mutex);
 }
 
-int credman_get_used_count(void)
-{
+int credman_get_used_count(void) {
     return used;
 }
 
 static int _find_credential_pos(credman_tag_t tag, credman_type_t type,
-                                credman_credential_t **empty)
-{
+                                credman_credential_t **empty) {
     for (unsigned i = 0; i < CONFIG_CREDMAN_MAX_CREDENTIALS; i++) {
         credman_credential_t *c = &credentials[i];
         if ((c->tag == tag) && (c->type == type)) {
             return i;
         }
-        /* only check until empty position found */
+        // only check until empty position found
         if ((empty) && (*empty == NULL) &&
             (c->tag == CREDMAN_TAG_EMPTY) && (c->type == CREDMAN_TYPE_EMPTY)) {
             *empty = c;
@@ -422,12 +403,11 @@ static int _find_credential_pos(credman_tag_t tag, credman_type_t type,
 }
 
 #ifdef TEST_SUITES
-void credman_reset(void)
-{
+void credman_reset(void) {
     mutex_lock(&_mutex);
     memset(credentials, 0,
            sizeof(credman_credential_t) * CONFIG_CREDMAN_MAX_CREDENTIALS);
     used = 0;
     mutex_unlock(&_mutex);
 }
-#endif /* TEST_SUITES */
+#endif // TEST_SUITES

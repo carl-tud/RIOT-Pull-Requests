@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2020 Gunar Schorcht
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Gunar Schorcht
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell command implementation for the peripheral rtt interface
- *
- * @author  Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell command implementation for the peripheral rtt interface
+///
+/// @author  Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -27,114 +23,94 @@
 #include "periph/rtt.h"
 #include "shell.h"
 
-/*
- * Since some RTT implementations do not implement all API functions, default
- * dummy functions are required to avoid compilation errors.
- */
+// Since some RTT implementations do not implement all API functions, default
+// dummy functions are required to avoid compilation errors.
 
-static inline void _rtt_cmd_not_supported(void)
-{
+static inline void _rtt_cmd_not_supported(void) {
     puts("Command not supported by used RTT implementation.\n");
 }
 
-__attribute__((weak)) void rtt_init(void)
-{
+__attribute__((weak)) void rtt_init(void) {
     _rtt_cmd_not_supported();
 }
 
-__attribute__((weak)) void rtt_set_overflow_cb(rtt_cb_t cb, void *arg)
-{
+__attribute__((weak)) void rtt_set_overflow_cb(rtt_cb_t cb, void *arg) {
     (void)cb;
     (void)arg;
     _rtt_cmd_not_supported();
 }
 
-__attribute__((weak)) void rtt_clear_overflow_cb(void)
-{
+__attribute__((weak)) void rtt_clear_overflow_cb(void) {
     _rtt_cmd_not_supported();
 }
 
-__attribute__((weak)) uint32_t rtt_get_counter(void)
-{
+__attribute__((weak)) uint32_t rtt_get_counter(void) {
     _rtt_cmd_not_supported();
     return 0;
 }
 
-__attribute__((weak)) void rtt_set_counter(uint32_t counter)
-{
+__attribute__((weak)) void rtt_set_counter(uint32_t counter) {
     (void)counter;
     _rtt_cmd_not_supported();
 }
 
-__attribute__((weak)) void rtt_set_alarm(uint32_t alarm, rtt_cb_t cb, void *arg)
-{
+__attribute__((weak)) void rtt_set_alarm(uint32_t alarm, rtt_cb_t cb, void *arg) {
     (void)alarm;
     (void)cb;
     (void)arg;
     _rtt_cmd_not_supported();
 }
 
-__attribute__((weak)) uint32_t rtt_get_alarm(void)
-{
+__attribute__((weak)) uint32_t rtt_get_alarm(void) {
     _rtt_cmd_not_supported();
     return 0;
 }
 
-__attribute__((weak)) void rtt_clear_alarm(void)
-{
+__attribute__((weak)) void rtt_clear_alarm(void) {
     _rtt_cmd_not_supported();
 }
 
-__attribute__((weak)) void rtt_poweron(void)
-{
+__attribute__((weak)) void rtt_poweron(void) {
     _rtt_cmd_not_supported();
 }
 
-__attribute__((weak)) void rtt_poweroff(void)
-{
+__attribute__((weak)) void rtt_poweroff(void) {
     _rtt_cmd_not_supported();
 }
 
-static void _alarm_handler(void *arg)
-{
+static void _alarm_handler(void *arg) {
     (void) arg;
     puts("The alarm rang");
 }
 
-static void _overflow_handler(void *arg)
-{
+static void _overflow_handler(void *arg) {
     (void) arg;
     puts("RTT overflow");
 }
 
-static int _rtt_cmd_get_alarm(void)
-{
+static int _rtt_cmd_get_alarm(void) {
     printf("%" PRIu32 "\n", rtt_get_alarm());
     return 0;
 }
 
-static int _rtt_cmd_set_alarm(char **argv)
-{
+static int _rtt_cmd_set_alarm(char **argv) {
     uint32_t alarm = strtoul(argv[0], NULL, 10);
     rtt_set_alarm(alarm, _alarm_handler, NULL);
     return 0;
 }
 
-static int _rtt_cmd_get_counter(void)
-{
+static int _rtt_cmd_get_counter(void) {
     printf("%" PRIu32 "\n", rtt_get_counter());
     return 0;
 }
 
-static int _rtt_cmd_set_counter(char **argv)
-{
+static int _rtt_cmd_set_counter(char **argv) {
     uint32_t counter = strtoul(argv[0], NULL, 10);
     rtt_set_counter(counter);
     return 0;
 }
 
-static int _rtt_cmd_usage(void)
-{
+static int _rtt_cmd_usage(void) {
     puts("usage: rtt <command> [arguments]");
     puts("commands:");
     puts("\tinit\t\tinit the interface");
@@ -150,8 +126,7 @@ static int _rtt_cmd_usage(void)
     return 0;
 }
 
-static int _rtt_handler(int argc, char **argv)
-{
+static int _rtt_handler(int argc, char **argv) {
     if (argc < 2) {
         _rtt_cmd_usage();
         return 1;

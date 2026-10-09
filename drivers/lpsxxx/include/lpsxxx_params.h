@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_lpsxxx
- *
- * @{
- * @file
- * @brief       Default configuration for LPSXXX family of devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_lpsxxx
+///
+/// @{
+/// @file
+/// @brief       Default configuration for LPSXXX family of devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "lpsxxx.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef LPSXXX_PARAM_I2C
 #define LPSXXX_PARAM_I2C                I2C_DEV(0)
 #endif
@@ -59,19 +53,15 @@ extern "C" {
 #ifndef LPSXXX_SAUL_INFO
 #define LPSXXX_SAUL_INFO                { .name = LPSXXX_SAUL_NAME }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const lpsxxx_params_t lpsxxx_params[] =
 {
     LPSXXX_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t lpsxxx_saul_info[] =
 {
     LPSXXX_SAUL_INFO
@@ -81,4 +71,4 @@ static const saul_reg_info_t lpsxxx_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

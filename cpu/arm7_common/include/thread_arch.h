@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2008-2009 Heiko Will <hwill@inf.fu-berlin.de>
- * SPDX-FileCopyrightText: 2009 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2008-2009 Heiko Will <hwill@inf.fu-berlin.de>
+// SPDX-FileCopyrightText: 2009 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_arm7_common
- * @{
- *
- * @file
- * @brief       Implementation of the kernels thread interface
- *
- * @author Kaspar Schleiser <kaspar@schleiser.de>
- * @author Heiko Will <heiko.will@fu-berlin.de>
- */
+/// @ingroup     cpu_arm7_common
+/// @{
+///
+/// @file
+/// @brief       Implementation of the kernels thread interface
+///
+/// @author Kaspar Schleiser <kaspar@schleiser.de>
+/// @author Heiko Will <heiko.will@fu-berlin.de>
 
 #include "irq.h"
 
@@ -25,10 +21,9 @@ extern "C" {
 
 #define THREAD_API_INLINED
 
-#ifndef DOXYGEN /* Doxygen is in core/include/thread.h */
+#ifndef DOXYGEN // Doxygen is in core/include/thread.h
 
-static inline __attribute__((always_inline)) void thread_yield_higher(void)
-{
+static inline __attribute__((always_inline)) void thread_yield_higher(void) {
     if (irq_is_in()) {
         sched_context_switch_request = 1;
     }
@@ -37,10 +32,10 @@ static inline __attribute__((always_inline)) void thread_yield_higher(void)
     }
 }
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

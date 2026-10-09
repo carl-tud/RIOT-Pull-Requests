@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ds75lx
- *
- * @{
- * @file
- * @brief       Default configuration for DS75LX
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_ds75lx
+///
+/// @{
+/// @file
+/// @brief       Default configuration for DS75LX
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "ds75lx.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the DS75LX
- * @{
- */
+/// @name    Set default configuration parameters for the DS75LX
+/// @{
 #ifndef DS75LX_PARAM_I2C_DEV
 #define DS75LX_PARAM_I2C_DEV         I2C_DEV(0)
 #endif
@@ -46,19 +40,15 @@ extern "C" {
 #ifndef DS75LX_SAUL_INFO
 #define DS75LX_SAUL_INFO             { .name = "ds75lx" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure DS75LX
- */
+/// @brief   Configure DS75LX
 static const ds75lx_params_t ds75lx_params[] =
 {
     DS75LX_PARAMS
 };
 
-/**
- * @brief   Configure SAUL registry entries
- */
+/// @brief   Configure SAUL registry entries
 static const saul_reg_info_t ds75lx_saul_info[] =
 {
     DS75LX_SAUL_INFO
@@ -68,4 +58,4 @@ static const saul_reg_info_t ds75lx_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

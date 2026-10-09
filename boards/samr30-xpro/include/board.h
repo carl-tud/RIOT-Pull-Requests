@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Baptiste Clenet <bapclenet@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Baptiste Clenet <bapclenet@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_samr30-xpro
- * @{
- *
- * @file
- * @brief       Board specific definitions for the Atmel SAM R30 Xplained Pro board.
- *
- * @author      Baptiste Clenet <bapclenet@gmail.com>
- */
+/// @ingroup     boards_samr30-xpro
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the Atmel SAM R30 Xplained Pro board.
+///
+/// @author      Baptiste Clenet <bapclenet@gmail.com>
 
 #include "cpu.h"
 #include "periph/gpio.h"
@@ -22,22 +18,18 @@
 extern "C" {
 #endif
 
-/**
- * @name NG_AT86RF212B configuration
- * @{
- */
+/// @name NG_AT86RF212B configuration
+/// @{
 #define AT86RF2XX_PARAM_SPI         SPI_DEV(0)
 #define AT86RF2XX_PARAM_CS          GPIO_PIN(PB, 31)
 #define AT86RF2XX_PARAM_INT         GPIO_PIN(PB, 0)
 #define AT86RF2XX_PARAM_SLEEP       GPIO_PIN(PA, 20)
 #define AT86RF2XX_PARAM_RESET       GPIO_PIN(PB, 15)
 #define AT86RF2XX_PARAM_SPI_CLK     SPI_CLK_5MHZ
-/** @}*/
+/// @}
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED_PORT                    PORT->Group[0]
 
 #define LED0_PIN                    GPIO_PIN(PA, 18)
@@ -51,48 +43,38 @@ extern "C" {
 #define LED1_ON                     (LED_PORT.OUTCLR.reg = LED1_MASK)
 #define LED1_OFF                    (LED_PORT.OUTSET.reg = LED1_MASK)
 #define LED1_TOGGLE                 (LED_PORT.OUTTGL.reg = LED1_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    BTN0 (SW0 Button) pin definitions
- * @{
- */
+/// @name    BTN0 (SW0 Button) pin definitions
+/// @{
 #define BTN0_PIN                    GPIO_PIN(PA, 28)
 #define BTN0_MODE                   GPIO_IN_PU
-/** @} */
+/// @}
 
-/**
- * @name    Antenna configuration pin interface
- * @{
- */
+/// @name    Antenna configuration pin interface
+/// @{
 #define RFCTL1_PIN                  GPIO_PIN(PA, 9)
 #define RFCTL2_PIN                  GPIO_PIN(PA, 12)
-/** @} */
+/// @}
 
-/**
- * @brief   Antenna configuration values
- */
+/// @brief   Antenna configuration values
 enum {
     RFCTL_ANTENNA_BOARD,
     RFCTL_ANTENNA_EXT,
 };
 
-/**
- * @name    Default antenna configuration
- * @{
- */
+/// @name    Default antenna configuration
+/// @{
 #ifndef RFCTL_ANTENNA_DEFAULT
 #define RFCTL_ANTENNA_DEFAULT      RFCTL_ANTENNA_BOARD
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   Set antenna switch
- */
+/// @brief   Set antenna switch
 void board_antenna_config(uint8_t antenna);
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_arduino_due
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for Arduino Due based boards
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- * @author      Andreas "Paul" Pauli <andreas.pauli@haw-hamburg.de>
- */
+/// @ingroup     boards_common_arduino_due
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for Arduino Due based boards
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+/// @author      Andreas "Paul" Pauli <andreas.pauli@haw-hamburg.de>
 
 #include "periph_cpu.h"
 
@@ -24,40 +20,34 @@
 extern "C" {
 #endif
 
-/**
- * @name    Clock configuration
- * @{
- */
-/* targeted system core clock */
+/// @name    Clock configuration
+/// @{
+// targeted system core clock
 #define CLOCK_CORECLOCK     (84000000UL)
-/* external oscillator clock */
+// external oscillator clock
 #define CLOCK_EXT_OSC       (12000000UL)
-/* define PLL configuration
- *
- * The values must fulfill this equation:
- * CORECLOCK = (EXT_OCS / PLL_DIV) * (PLL_MUL + 1)
- */
+// define PLL configuration
+//
+// The values must fulfill this equation:
+// CORECLOCK = (EXT_OCS / PLL_DIV) * (PLL_MUL + 1)
 #define CLOCK_PLL_MUL       (83)
 #define CLOCK_PLL_DIV       (12)
 
-/* number of wait states before flash read and write operations */
-#define CLOCK_FWS           (4)         /* 4 is save for 84MHz */
-/** @} */
+// number of wait states before flash read and write operations
+#define CLOCK_FWS           (4)         // 4 is save for 84MHz
+/// @}
 
-/**
- * @name    Enable external oscillator for driving the slow clock
- *
- * @warning Many (older?) arduino-due boards do not have the external 32khz
- *          oscillator soldered on, so only enable this after you make sure its
- *          equipped on your specific board */
+/// @name    Enable external oscillator for driving the slow clock
+///
+/// @warning Many (older?) arduino-due boards do not have the external 32khz
+///          oscillator soldered on, so only enable this after you make sure its
+///          equipped on your specific board
 #ifndef CLOCK_SCLK_XTAL
 #define CLOCK_SCLK_XTAL     (0)
 #endif
 
-/**
- * @name    Timer peripheral configuration
- * @{
- */
+/// @name    Timer peripheral configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     { .dev = TC0, .id_ch0 = ID_TC0 },
     { .dev = TC1, .id_ch0 = ID_TC3 }
@@ -67,21 +57,17 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tc3
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    RTT configuration
- * @{
- */
+/// @name    RTT configuration
+/// @{
 #ifndef RTT_FREQUENCY
-#define RTT_FREQUENCY       (1U)        /* 1Hz */
+#define RTT_FREQUENCY       (1U)        // 1Hz
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev    = (Uart *)UART,
@@ -117,19 +103,17 @@ static const uart_conf_t uart_config[] = {
     }
 };
 
-/* define interrupt vectors */
+// define interrupt vectors
 #define UART_0_ISR          isr_uart
 #define UART_1_ISR          isr_usart0
 #define UART_2_ISR          isr_usart1
 #define UART_3_ISR          isr_usart3
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
-* @name     SPI configuration
-* @{
-*/
+/// @name     SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev   = SPI0,
@@ -142,12 +126,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_chan_conf_t pwm_chan[] = {
     { .pin = GPIO_PIN(PC, 21), .hwchan = 4 },
     { .pin = GPIO_PIN(PC, 22), .hwchan = 5 },
@@ -157,10 +139,10 @@ static const pwm_chan_conf_t pwm_chan[] = {
 
 #define PWM_NUMOF           (1U)
 #define PWM_CHAN_NUMOF      ARRAY_SIZE(pwm_chan)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

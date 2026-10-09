@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Default STM32U3 clock configuration (bring-up)
- *
- * This configuration is intentionally conservative for early bring-up.
- * By default it uses HSI (16 MHz) as SYSCLK and disables PLL usage.
- *
- * @author      Adarsh Nair Mullachery <adarsh.mullachery@tuhh.de>
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Default STM32U3 clock configuration (bring-up)
+///
+/// This configuration is intentionally conservative for early bring-up.
+/// By default it uses HSI (16 MHz) as SYSCLK and disables PLL usage.
+///
+/// @author      Adarsh Nair Mullachery <adarsh.mullachery@tuhh.de>
 
 #include "cfg_clock_common_lx_u5_wx.h"
 #include "kernel_defines.h"
@@ -26,31 +22,29 @@
 extern "C" {
 #endif
 
-/**
- * @name    Clock system configuration (STM32U3)
- * @{
- */
-/** Set to 1 to use the PLL as system clock source (STM32U3 has no main PLL) */
+/// @name    Clock system configuration (STM32U3)
+/// @{
+/// Set to 1 to use the PLL as system clock source (STM32U3 has no main PLL)
 #ifndef CONFIG_USE_CLOCK_PLL
 #  define CONFIG_USE_CLOCK_PLL 0
 #endif
 
-/** Set to 1 to use HSI as system clock source (default for bring-up) */
+/// Set to 1 to use HSI as system clock source (default for bring-up)
 #ifndef CONFIG_USE_CLOCK_HSI
 #  define CONFIG_USE_CLOCK_HSI 1
 #endif
 
-/** HSI (high-speed internal) oscillator frequency */
+/// HSI (high-speed internal) oscillator frequency
 #ifndef CONFIG_CLOCK_HSI
 #  define CONFIG_CLOCK_HSI MHZ(16)
 #endif
 
-/** HSE (high-speed external) oscillator frequency */
+/// HSE (high-speed external) oscillator frequency
 #ifndef CONFIG_CLOCK_HSE
 #  define CONFIG_CLOCK_HSE MHZ(8)
 #endif
 
-/** MSIS (multi-speed internal) oscillator frequency, used when MSI is selected */
+/// MSIS (multi-speed internal) oscillator frequency, used when MSI is selected
 #ifndef CONFIG_CLOCK_MSI
 #  define CONFIG_CLOCK_MSI MHZ(12)
 #endif
@@ -63,7 +57,7 @@ extern "C" {
 #  define CLOCK_CORECLOCK CONFIG_CLOCK_HSI
 #endif
 
-/** Maximum system core clock (SYSCLK) allowed on the STM32U3 */
+/// Maximum system core clock (SYSCLK) allowed on the STM32U3
 #define CLOCK_CORECLOCK_MAX MHZ(96)
 
 #if CLOCK_CORECLOCK > CLOCK_CORECLOCK_MAX
@@ -86,12 +80,12 @@ extern "C" {
 
 #define CLOCK_APB1 (CLOCK_AHB / CONFIG_CLOCK_APB1_DIV)
 #define CLOCK_APB2 (CLOCK_AHB / CONFIG_CLOCK_APB2_DIV)
-/** APB3 peripheral clock */
+/// APB3 peripheral clock
 #define CLOCK_APB3 (CLOCK_AHB / CONFIG_CLOCK_APB3_DIV)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

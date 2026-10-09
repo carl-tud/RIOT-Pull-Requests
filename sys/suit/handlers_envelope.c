@@ -1,25 +1,21 @@
-/*
- * Copyright (C) 2019 Koen Zandberg
- *               2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
-/**
- * @ingroup     sys_suit
- * @{
- *
- * @file
- * @brief       SUIT handlers for the SUIT outer wrapper
- *
- * This file contains the handlers for the content of the SUIT outer wrapper.
- * This includes the authentication wrapper and the manifest itself.
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+// Copyright (C) 2019 Koen Zandberg
+//               2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
+/// @ingroup     sys_suit
+/// @{
+///
+/// @file
+/// @brief       SUIT handlers for the SUIT outer wrapper
+///
+/// This file contains the handlers for the content of the SUIT outer wrapper.
+/// This includes the authentication wrapper and the manifest itself.
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include <cose/sign.h>
 #include <nanocbor/nanocbor.h>
@@ -32,13 +28,12 @@
 #include "suit/handlers.h"
 #include "suit.h"
 
-bool suit_get_public_key(uint8_t idx, cose_key_t *pkey)
-{
+bool suit_get_public_key(uint8_t idx, cose_key_t *pkey) {
     if (idx >= ARRAY_SIZE(public_key)) {
         return false;
     }
 
-    /* Initialize key from hardcoded public key */
+    // Initialize key from hardcoded public key
     cose_key_init(pkey);
     cose_key_set_keys(pkey, COSE_EC_CURVE_ED25519, COSE_ALGO_EDDSA,
                       (void *)public_key[idx], NULL, NULL);
@@ -46,8 +41,7 @@ bool suit_get_public_key(uint8_t idx, cose_key_t *pkey)
 }
 
 static int _verify_with_key(suit_manifest_t *manifest, const nanocbor_value_t *it,
-                            cose_key_t *pkey)
-{
+                            cose_key_t *pkey) {
     cose_sign_dec_t verify;
     const uint8_t *cose_buf;
     const uint8_t *auth_container;
@@ -55,7 +49,7 @@ static int _verify_with_key(suit_manifest_t *manifest, const nanocbor_value_t *i
     size_t cose_len = 0;
     nanocbor_value_t tmp = *it;
 
-    /* It is a list of cose signatures */
+    // It is a list of cose signatures
     if (nanocbor_get_bstr(&tmp, &auth_container, &auth_container_len) < 0) {
         LOG_INFO("Unable to get auth container\n");
         return SUIT_ERR_INVALID_MANIFEST;
@@ -84,7 +78,7 @@ static int _verify_with_key(suit_manifest_t *manifest, const nanocbor_value_t *i
                 LOG_INFO("Unable to parse COSE signature\n");
                 return SUIT_ERR_INVALID_MANIFEST;
             }
-            /* Iterate over signatures, should only be a single signature */
+            // Iterate over signatures, should only be a single signature
             cose_signature_dec_t signature;
 
             cose_sign_signature_iter_init(&signature);
@@ -113,8 +107,7 @@ static int _verify_with_key(suit_manifest_t *manifest, const nanocbor_value_t *i
 }
 
 static int _auth_handler(suit_manifest_t *manifest, int key,
-                         nanocbor_value_t *it)
-{
+                         nanocbor_value_t *it) {
     (void)key;
 
     int res = 0;
@@ -132,8 +125,7 @@ static int _auth_handler(suit_manifest_t *manifest, int key,
 }
 
 static int _manifest_handler(suit_manifest_t *manifest, int key,
-                             nanocbor_value_t *it)
-{
+                             nanocbor_value_t *it) {
     (void)key;
     const uint8_t *manifest_buf;
     size_t manifest_len;
@@ -147,15 +139,14 @@ static int _manifest_handler(suit_manifest_t *manifest, int key,
     nanocbor_get_subcbor(&cbor_buf, &manifest_buf, &manifest_len);
 
     uint8_t digest_struct[4 + SHA256_DIGEST_LENGTH] =
-        /* CBOR array of length 2, sha256 digest and a bytestring of SHA256
-         * length
-         */
+        // CBOR array of length 2, sha256 digest and a bytestring of SHA256
+        // length
     { 0x82, 0x02, 0x58, SHA256_DIGEST_LENGTH };
     sha256(manifest_buf, manifest_len, digest_struct + 4);
 
-    /* The COSE payload and the sha256 of the manifest itself is public info and
-     * verification does not depend on secret info. No need for cryptographic
-     * memcmp here */
+    // The COSE payload and the sha256 of the manifest itself is public info and
+    // verification does not depend on secret info. No need for cryptographic
+    // memcmp here
     if (memcmp(digest_struct, manifest->cose_payload,
                sizeof(digest_struct)) != 0) {
         LOG_ERROR("SUIT manifest digest and COSE digest mismatch\n");
@@ -170,11 +161,11 @@ static int _manifest_handler(suit_manifest_t *manifest, int key,
                                                suit_global_handlers_len);
 }
 
-/* begin{code-style-ignore} */
+// begin{code-style-ignore}
 const suit_manifest_handler_t suit_envelope_handlers[] = {
     [SUIT_WRAPPER_AUTHENTICATION] = _auth_handler,
     [SUIT_WRAPPER_MANIFEST]       = _manifest_handler,
 };
-/* end{code-style-ignore} */
+// end{code-style-ignore}
 
 const size_t suit_envelope_handlers_len = ARRAY_SIZE(suit_envelope_handlers);

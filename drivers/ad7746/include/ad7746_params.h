@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ad7746
- * @{
- *
- * @file
- * @brief       Default configuration for AD7746 capaticance-to-digital
- *              converter
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- */
+/// @ingroup     drivers_ad7746
+/// @{
+///
+/// @file
+/// @brief       Default configuration for AD7746 capaticance-to-digital
+///              converter
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
 
 #include "board.h"
 #include "saul_reg.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the AD7746 driver
- * @{
- */
+/// @name    Set default configuration parameters for the AD7746 driver
+/// @{
 #ifndef AD7746_PARAM_I2C
 #define AD7746_PARAM_I2C        (I2C_DEV(0))
 #endif
@@ -44,7 +38,7 @@ extern "C" {
 #define AD7746_PARAM_VT_MD      (AD7746_VT_MD_TEMP)
 #endif
 #ifndef AD7746_PARAM_DAC_A
-#define AD7746_PARAM_DAC_A      (39) /* ~1.2pF */
+#define AD7746_PARAM_DAC_A      (39) // ~1.2pF
 #endif
 #ifndef AD7746_PARAM_DAC_B
 #define AD7746_PARAM_DAC_B      (0)
@@ -70,19 +64,15 @@ extern "C" {
 #ifndef AD7746_SAUL_INFO
 #define AD7746_SAUL_INFO       { .name = "ad7746" }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   AD7746 configuration
- */
+/// @brief   AD7746 configuration
 static const ad7746_params_t ad7746_params[] =
 {
     AD7746_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t ad7746_saul_info[] =
 {
     AD7746_SAUL_INFO
@@ -92,4 +82,4 @@ static const saul_reg_info_t ad7746_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

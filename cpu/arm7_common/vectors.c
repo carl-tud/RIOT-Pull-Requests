@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2008-2009 Freie Universität Berlin (FUB)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2008-2009 Freie Universität Berlin (FUB)
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_arm7_common
- * @{
- *
- * @file
- * @brief       Default implementations for ARM7 specific interrupt and
- *              exception handlers
- *
- * @author      Heiko Will <hwill@inf.fu-berlin.de>
- * @author      Michael Baar <michael.baar@fu-berlin.de>
- */
+/// @ingroup     cpu_arm7_common
+/// @{
+///
+/// @file
+/// @brief       Default implementations for ARM7 specific interrupt and
+///              exception handlers
+///
+/// @author      Heiko Will <hwill@inf.fu-berlin.de>
+/// @author      Michael Baar <michael.baar@fu-berlin.de>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,22 +23,19 @@ void isr_undef(void) __attribute__((interrupt("UNDEF")));
 
 volatile int arm_abortflag = 0;
 
-void isr_fio(void)
-{
+void isr_fio(void) {
     LOG_ERROR("Kernel Panic,\nEarly FIQ call\n");
 
     while (1) {}
 }
 
-void isr_swi(void)
-{
+void isr_swi(void) {
     LOG_ERROR("Kernel Panic,\nEarly SWI call\n");
 
     while (1) {}
 }
 
-void abtorigin(const char *vector, unsigned long *lnk_ptr1)
-{
+void abtorigin(const char *vector, unsigned long *lnk_ptr1) {
     register unsigned long *lnk_ptr2;
     register unsigned long *sp;
     register unsigned int cpsr, spsr;
@@ -61,10 +54,9 @@ void abtorigin(const char *vector, unsigned long *lnk_ptr1)
     while (1) {}
 }
 
-void isr_undef(void)
-{
-    /* cppcheck-suppress variableScope
-     * (reason: used within __asm__ which cppcheck doesn't pick up) */
+void isr_undef(void) {
+    // cppcheck-suppress variableScope
+    // (reason: used within __asm__ which cppcheck doesn't pick up)
     register unsigned long *lnk_ptr;
 
     __asm__ __volatile__ ("sub %0, lr, #8" : "=r" (lnk_ptr));     // get aborting instruction
@@ -77,10 +69,9 @@ void isr_undef(void)
     while (1) {}
 }
 
-void isr_pabt(void)
-{
-    /* cppcheck-suppress variableScope
-     * (reason: used within __asm__ which cppcheck doesn't pick up) */
+void isr_pabt(void) {
+    // cppcheck-suppress variableScope
+    // (reason: used within __asm__ which cppcheck doesn't pick up)
     register unsigned long *lnk_ptr;
 
     __asm__ __volatile__ ("sub %0, lr, #8" : "=r" (lnk_ptr));     // get aborting instruction
@@ -93,10 +84,9 @@ void isr_pabt(void)
     while (1) {}
 }
 
-void isr_dabt(void)
-{
-    /* cppcheck-suppress variableScope
-     * (reason: used within __asm__ which cppcheck doesn't pick up) */
+void isr_dabt(void) {
+    // cppcheck-suppress variableScope
+    // (reason: used within __asm__ which cppcheck doesn't pick up)
     register unsigned long *lnk_ptr;
 
     __asm__ __volatile__ ("sub %0, lr, #8" : "=r" (lnk_ptr));     // get aborting instruction

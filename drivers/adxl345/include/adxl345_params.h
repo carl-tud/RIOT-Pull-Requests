@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_adxl345
- * @{
- *
- * @file
- * @brief       Default configuration for ADXL345 devices
- *
- * @author     Dylan Laduranty <dylan.laduranty@mesotic.com>
- */
+/// @ingroup     drivers_adxl345
+/// @{
+///
+/// @file
+/// @brief       Default configuration for ADXL345 devices
+///
+/// @author     Dylan Laduranty <dylan.laduranty@mesotic.com>
 
 #include "board.h"
 #include "saul_reg.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the ADXL345 driver
- * @{
- */
+/// @name    Set default configuration parameters for the ADXL345 driver
+/// @{
 #ifndef ADXL345_PARAM_I2C
 #define ADXL345_PARAM_I2C           (I2C_DEV(0))
 #endif
@@ -61,19 +55,15 @@ extern "C" {
 #ifndef ADXL345_SAUL_INFO
 #define ADXL345_SAUL_INFO           { .name = "adxl345" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   ADXL345 configuration
- */
+/// @brief   ADXL345 configuration
 static const adxl345_params_t adxl345_params[] =
 {
     ADXL345_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t adxl345_saul_info[] =
 {
     ADXL345_SAUL_INFO
@@ -83,4 +73,4 @@ static const saul_reg_info_t adxl345_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

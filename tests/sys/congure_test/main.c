@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine S. Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine S. Lenders <m.lenders@fu-berlin.de>
 
 #include <stdlib.h>
 
@@ -21,20 +17,17 @@
 
 static congure_test_snd_t _congure_state;
 
-int main(void)
-{
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
     return 0;
 }
 
-congure_test_snd_t *congure_test_get_state(void)
-{
+congure_test_snd_t *congure_test_get_state(void) {
     return &_congure_state;
 }
 
-static int _print_congure_snd_msg(clist_node_t *node, void *arg)
-{
+static int _print_congure_snd_msg(clist_node_t *node, void *arg) {
     congure_snd_msg_t *msg = (congure_snd_msg_t *)node;
 
     (void)arg;
@@ -56,8 +49,7 @@ static int _print_congure_snd_msg(clist_node_t *node, void *arg)
     return 0;
 }
 
-static int _print_congure_snd_ack(congure_snd_ack_t *ack)
-{
+static int _print_congure_snd_ack(congure_snd_ack_t *ack) {
     print_str("{");
 
     print_str("\"recv_time\":");
@@ -89,8 +81,7 @@ static int _print_congure_snd_ack(congure_snd_ack_t *ack)
     return 0;
 }
 
-static void _print_init_state(void)
-{
+static void _print_init_state(void) {
     print_str("\"init\":{");
 
     print_str("\"calls\":");
@@ -112,8 +103,7 @@ static void _print_init_state(void)
     print_str("},");
 }
 
-static void _print_inter_msg_interval_state(void)
-{
+static void _print_inter_msg_interval_state(void) {
     print_str("\"inter_msg_interval\":{");
 
     print_str("\"calls\":");
@@ -135,8 +125,7 @@ static void _print_inter_msg_interval_state(void)
     print_str("},");
 }
 
-static void _print_report_msg_sent_state(void)
-{
+static void _print_report_msg_sent_state(void) {
     print_str("\"report_msg_sent\":{");
 
     print_str("\"calls\":");
@@ -158,8 +147,7 @@ static void _print_report_msg_sent_state(void)
     print_str("},");
 }
 
-static void _print_report_msg_discarded_state(void)
-{
+static void _print_report_msg_discarded_state(void) {
     print_str("\"report_msg_discarded\":{");
 
     print_str("\"calls\":");
@@ -181,8 +169,7 @@ static void _print_report_msg_discarded_state(void)
     print_str("},");
 }
 
-static void _print_report_msgs_timeout_state(void)
-{
+static void _print_report_msgs_timeout_state(void) {
     print_str("\"report_msgs_timeout\":{");
 
     print_str("\"calls\":");
@@ -205,8 +192,7 @@ static void _print_report_msgs_timeout_state(void)
     print_str("},");
 }
 
-static void _print_report_msgs_lost_state(void)
-{
+static void _print_report_msgs_lost_state(void) {
     print_str("\"report_msgs_lost\":{");
 
     print_str("\"calls\":");
@@ -229,8 +215,7 @@ static void _print_report_msgs_lost_state(void)
     print_str("},");
 }
 
-static void _print_report_msg_acked_state(void)
-{
+static void _print_report_msg_acked_state(void) {
     clist_node_t msgs = {
         .next = &_congure_state.report_msg_acked_args.msg->super,
     };
@@ -246,8 +231,8 @@ static void _print_report_msg_acked_state(void)
     print_u32_hex((intptr_t)_congure_state.report_msg_acked_args.c);
     print_str("\",");
 
-    /* Check sanity of `congure_test` internal message list: `cong_msg_add`
-     * should have been only called at most once by the test script */
+    // Check sanity of `congure_test` internal message list: `cong_msg_add`
+    // should have been only called at most once by the test script
     assert(clist_count(&msgs) < 2);
     print_str("\"msg\":");
     if (_congure_state.report_msg_acked_args.msg) {
@@ -270,8 +255,7 @@ static void _print_report_msg_acked_state(void)
     print_str("},");
 }
 
-static void _print_report_ecn_ce_state(void)
-{
+static void _print_report_ecn_ce_state(void) {
     print_str("\"report_ecn_ce\":{");
 
     print_str("\"calls\":");
@@ -293,8 +277,7 @@ static void _print_report_ecn_ce_state(void)
     print_str("},");
 }
 
-static int _json_statham(int argc, char **argv)
-{
+static int _json_statham(int argc, char **argv) {
     (void)argc;
     (void)argv;
     print_str("{");
@@ -325,4 +308,4 @@ static int _json_statham(int argc, char **argv)
 
 SHELL_COMMAND(state, "Prints current CongURE state object as JSON", _json_statham);
 
-/** @} */
+/// @}

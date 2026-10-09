@@ -1,30 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "periph/gpio_ll.h"
 
-/* Optimizing for low stack usage by not using printf(), which on newlib is
- * prohibitively costly. This will allow developers to use this for debugging
- * even in ISR - hopefully without increasing the ISR stack size.
- *
- * If module fmt is used, there is a stack friendly print_str() provided.
- * Otherwise, fall back to fputs(), which is still way more stack friendly than
- * printf().
- */
+// Optimizing for low stack usage by not using printf(), which on newlib is
+// prohibitively costly. This will allow developers to use this for debugging
+// even in ISR - hopefully without increasing the ISR stack size.
+//
+// If module fmt is used, there is a stack friendly print_str() provided.
+// Otherwise, fall back to fputs(), which is still way more stack friendly than
+// printf().
 #ifdef MODULE_FMT
 #  include "fmt.h"
 #else
 #  include <stdio.h>
-static inline void print_str(const char *str)
-{
+static inline void print_str(const char *str) {
     fputs(str, stdout);
 }
 #endif
 
-void gpio_ll_print_conf_common(const gpio_conf_t conf)
-{
+void gpio_ll_print_conf_common(const gpio_conf_t conf) {
     const char *off_on[] = { "off", "on" };
 
     print_str("state: ");
@@ -81,9 +76,8 @@ void gpio_ll_print_conf_common(const gpio_conf_t conf)
     print_str(off_on[conf.initial_value]);
 }
 
-/* implement gpio_ll_print_conf as weak alias symbol for
- * gpio_ll_print_conf_common - so that platform specific implementations can
- * override gpio_ll_print_conf while reusing gpio_ll_print_conf_common()
- */
+// implement gpio_ll_print_conf as weak alias symbol for
+// gpio_ll_print_conf_common - so that platform specific implementations can
+// override gpio_ll_print_conf while reusing gpio_ll_print_conf_common()
 __attribute__((weak, alias("gpio_ll_print_conf_common")))
 void gpio_ll_print_conf(gpio_conf_t conf);

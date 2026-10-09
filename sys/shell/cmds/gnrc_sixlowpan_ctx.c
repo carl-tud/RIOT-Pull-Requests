@@ -1,18 +1,14 @@
-/*
- * Copyright (C) 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
-/* Required for strtok_r in string.h, when building with -std=c99 */
+// Required for strtok_r in string.h, when building with -std=c99
 #define _DEFAULT_SOURCE 1
 #include <inttypes.h>
 #include <stdio.h>
@@ -34,23 +30,20 @@ static ztimer_t del_timer[GNRC_SIXLOWPAN_CTX_SIZE];
 static xtimer_t del_timer[GNRC_SIXLOWPAN_CTX_SIZE];
 #endif
 
-void _del_cb(void *ptr)
-{
+void _del_cb(void *ptr) {
     gnrc_sixlowpan_ctx_t *ctx = ptr;
     uint8_t cid = ctx->flags_id & GNRC_SIXLOWPAN_CTX_FLAGS_CID_MASK;
     ctx->prefix_len = 0;
     del_timer[cid].callback = NULL;
 }
 
-static void _usage(char *cmd_str)
-{
+static void _usage(char *cmd_str) {
     printf("usage: %s [{add <0-15> <prefix>/<prefix_len> <ltime in min>|del <ctx>}]\n", cmd_str);
     printf("       `del` will only invalidate the context for compression. It can be\n");
     printf("       reassigned after 5 min.\n");
 }
 
-static int _gnrc_6ctx_list(void)
-{
+static int _gnrc_6ctx_list(void) {
     printf("cid|prefix                                     |C|ltime\n");
     printf("-----------------------------------------------------------\n");
     for (uint8_t cid = 0; cid < GNRC_SIXLOWPAN_CTX_SIZE; cid++) {
@@ -66,8 +59,7 @@ static int _gnrc_6ctx_list(void)
     return 0;
 }
 
-static int _gnrc_6ctx_add(char *cmd_str, char *ctx_str, char *prefix_str, char *ltime_str)
-{
+static int _gnrc_6ctx_add(char *cmd_str, char *ctx_str, char *prefix_str, char *ltime_str) {
     ipv6_addr_t prefix;
     char *addr_str, *prefix_len_str, *save_ptr;
     unsigned prefix_len;
@@ -109,8 +101,7 @@ static int _gnrc_6ctx_add(char *cmd_str, char *ctx_str, char *prefix_str, char *
     return 0;
 }
 
-static int _gnrc_6ctx_del(char *cmd_str, char *ctx_str)
-{
+static int _gnrc_6ctx_del(char *cmd_str, char *ctx_str) {
     gnrc_sixlowpan_ctx_t *ctx;
     unsigned cid = atoi(ctx_str);
     if (cid >= GNRC_SIXLOWPAN_CTX_SIZE) {
@@ -143,8 +134,7 @@ static int _gnrc_6ctx_del(char *cmd_str, char *ctx_str)
     return 0;
 }
 
-static int _gnrc_6ctx(int argc, char **argv)
-{
+static int _gnrc_6ctx(int argc, char **argv) {
     if (argc < 2) {
         _gnrc_6ctx_list();
     }
@@ -167,4 +157,4 @@ static int _gnrc_6ctx(int argc, char **argv)
 
 SHELL_COMMAND(6ctx, "6LoWPAN context configuration tool", _gnrc_6ctx);
 
-/** @} */
+/// @}

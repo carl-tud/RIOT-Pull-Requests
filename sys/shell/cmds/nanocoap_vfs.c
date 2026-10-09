@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2022 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2022 ML!PA Consulting GmbH
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       NanoCoAP commands that interact with the filesystem
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       NanoCoAP commands that interact with the filesystem
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -31,9 +27,7 @@
 #include "vfs_default.h"
 #include "vfs_util.h"
 
-/**
- * @brief   Default download location for ncget
- */
+/// @brief   Default download location for ncget
 #ifndef CONFIG_NCGET_DEFAULT_DATA_DIR
 #define CONFIG_NCGET_DEFAULT_DATA_DIR VFS_DEFAULT_DATA
 #endif
@@ -47,14 +41,12 @@ struct dir_list_ctx {
     char *end;
 };
 
-static bool _is_dir(const char *url)
-{
+static bool _is_dir(const char *url) {
     int len = strlen(url);
     return url[len - 1] == '/';
 }
 
-static int _resource_cb(char *entry, void *ctx)
-{
+static int _resource_cb(char *entry, void *ctx) {
     bool *too_long = ctx;
     char *start, *end;
 
@@ -83,8 +75,7 @@ find_end:
     return 0;
 }
 
-static int _print_cb(void *arg, size_t offset, uint8_t *buf, size_t len, int more)
-{
+static int _print_cb(void *arg, size_t offset, uint8_t *buf, size_t len, int more) {
     (void)arg;
     (void)offset;
 
@@ -96,8 +87,7 @@ static int _print_cb(void *arg, size_t offset, uint8_t *buf, size_t len, int mor
     return 0;
 }
 
-static int _nanocoap_get_handler(int argc, char **argv)
-{
+static int _nanocoap_get_handler(int argc, char **argv) {
     int res;
     char *dst, *url = argv[1];
 
@@ -142,7 +132,7 @@ static int _nanocoap_get_handler(int argc, char **argv)
         }
     }
 
-    /* alternatively write the file to stdout */
+    // alternatively write the file to stdout
     if (strcmp(dst, "-") == 0) {
         return nanocoap_get_blockwise_url(url, CONFIG_NANOCOAP_BLOCKSIZE_DEFAULT,
                                           _print_cb, NULL);
@@ -157,8 +147,7 @@ static int _nanocoap_get_handler(int argc, char **argv)
     return res;
 }
 
-static int _nanocoap_put_handler(int argc, char **argv)
-{
+static int _nanocoap_put_handler(int argc, char **argv) {
     int res;
     char *file, *url;
     static char work_buf[COAP_SZX2SIZE(CONFIG_NANOCOAP_BLOCKSIZE_DEFAULT) + 1];

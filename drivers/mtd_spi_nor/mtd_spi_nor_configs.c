@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mtd_spi_nor
- * @{
- *
- * @file
- * @brief       Configurations for some known serial flash memory devices
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @ingroup     drivers_mtd_spi_nor
+/// @{
+///
+/// @file
+/// @brief       Configurations for some known serial flash memory devices
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #include <stdint.h>
 #include "mtd_spi_nor.h"
 
-/* Define opcode tables for SPI NOR flash memory devices here. */
+// Define opcode tables for SPI NOR flash memory devices here.
 
-/* Linker garbage collection (gcc -fdata-sections -Wl,--gc-sections) should ensure
- * that only the tables that are actually used by the application will take up
- * space in the .rodata section in program ROM. */
+// Linker garbage collection (gcc -fdata-sections -Wl,--gc-sections) should ensure
+// that only the tables that are actually used by the application will take up
+// space in the .rodata section in program ROM.
 
 const mtd_spi_nor_opcode_t mtd_spi_nor_opcode_default = {
     .rdid            = 0x9f,
@@ -54,4 +50,4 @@ const mtd_spi_nor_opcode_t mtd_spi_nor_opcode_default_4bytes = {
     .wake            = 0xab,
 };
 
-/** @} */
+/// @}

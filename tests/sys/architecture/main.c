@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for sys/architecture
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for sys/architecture
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -22,30 +18,27 @@
 #include "architecture.h"
 #include "kernel_defines.h"
 
-/* On all but 8bit architectures, at least one of the following should be
- * misaligned */
+// On all but 8bit architectures, at least one of the following should be
+// misaligned
 static char unaligned_a[1];
 static char unaligned_b[1];
 
-/* If WORD_ALIGNED is not working correctly, at least one of the following
- * should be misaligned (except for 8bit architectures, on which alignment
- * doesn't matter). */
+// If WORD_ALIGNED is not working correctly, at least one of the following
+// should be misaligned (except for 8bit architectures, on which alignment
+// doesn't matter).
 static char WORD_ALIGNED aligned_a[1];
 static char WORD_ALIGNED aligned_b[1];
 
-static inline unsigned get_misalignemnt(const char *ptr)
-{
-    /* word size is always a power of two, so we can speed up the modulo */
+static inline unsigned get_misalignemnt(const char *ptr) {
+    // word size is always a power of two, so we can speed up the modulo
     return (uintptr_t)ptr & (ARCHITECTURE_WORD_BYTES - 1);
 }
 
-int main(void)
-{
-    /* Most can be evaluated at compile time, so we just do this :-)
-     * Using multiple static asserts in a single function doesn't play nicely
-     * with the non-C11 fallback implementation of static_assert, so we just
-     * use a single use statement.
-     */
+int main(void) {
+    // Most can be evaluated at compile time, so we just do this :-)
+    // Using multiple static asserts in a single function doesn't play nicely
+    // with the non-C11 fallback implementation of static_assert, so we just
+    // use a single use statement.
      static_assert((ARCHITECTURE_WORD_BITS == CORRECT_WORD_BITS)
                    && (ARCHITECTURE_WORD_BYTES == CORRECT_WORD_BITS / 8)
                    && (sizeof(uword_t) == ARCHITECTURE_WORD_BYTES)

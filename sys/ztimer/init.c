@@ -1,41 +1,37 @@
-/*
- * Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
- *               2020 Freie Universität Berlin
- *               2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
- */
+// Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
+//               2020 Freie Universität Berlin
+//               2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for more
+// details.
 
-/**
- * @ingroup     sys_ztimer
- * @{
- *
- * @file
- * @brief       ztimer initialization code
- *
- *
- * This file could benefit a lot from code generation...
- *
- * Anyhow, this configures ztimer as follows:
- *
- * 1. if ztimer_usec in USEMODULE:
- * 1.1. assume ztimer_usec uses periph_timer
- * 1.2a. if no config given
- * 1.2a.1a. use xtimer config if available
- * 1.2a.1b. default to TIMER_DEV(0), 32bit
- * 1.2b. else, use config
- *
- * 2. if ztimer_msec in USEMODULE:
- * 2.1a. if periph_rtt in USEMODULE: use that
- * 2.1b: else: convert from ZTIMER_USEC
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Karl Fessel <kfessel>
- *
- * @}
- */
+/// @ingroup     sys_ztimer
+/// @{
+///
+/// @file
+/// @brief       ztimer initialization code
+///
+///
+/// This file could benefit a lot from code generation...
+///
+/// Anyhow, this configures ztimer as follows:
+///
+/// 1. if ztimer_usec in USEMODULE:
+/// 1.1. assume ztimer_usec uses periph_timer
+/// 1.2a. if no config given
+/// 1.2a.1a. use xtimer config if available
+/// 1.2a.1b. default to TIMER_DEV(0), 32bit
+/// 1.2b. else, use config
+///
+/// 2. if ztimer_msec in USEMODULE:
+/// 2.1a. if periph_rtt in USEMODULE: use that
+/// 2.1b: else: convert from ZTIMER_USEC
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Karl Fessel <kfessel>
+///
+/// @}
 
 #include "kernel_defines.h"
 
@@ -52,9 +48,9 @@
 #include "ztimer/periph_rtc.h"
 #include "ztimer/config.h"
 
-/* both 'stdio_rtt' and 'stdio_semihosting' rely on ztimer for stdio output,
-   so not output is possible before 'ztimer' has been initiated, silence all
-   logs */
+// both 'stdio_rtt' and 'stdio_semihosting' rely on ztimer for stdio output,
+//    so not output is possible before 'ztimer' has been initiated, silence all
+//    logs
 #if IS_USED(MODULE_STDIO_RTT) || IS_USED(MODULE_STDIO_SEMIHOSTING)
 #undef LOG_LEVEL
 #define LOG_LEVEL   LOG_NONE
@@ -69,7 +65,7 @@
 #define FREQ_1KHZ       1000LU
 #define FREQ_1HZ        1LU
 
-/* Step 0: define available ztimer-periphery by activated modules */
+// Step 0: define available ztimer-periphery by activated modules
 
 #if MODULE_ZTIMER_PERIPH_TIMER
 #  define ZTIMER_TIMER      _ztimer_periph_timer
@@ -98,13 +94,12 @@
 #  define ZTIMER_RTC_FREQ FREQ_1HZ
 #endif
 
-/* Step 1: select which periphery to use for the higher level ZTIMER_*SEC
- *         selected periphery is marked for initialisation (INIT_ZTIMER_<periph>
- *         prepare defines for ztimer initialization
- */
+// Step 1: select which periphery to use for the higher level ZTIMER_*SEC
+//         selected periphery is marked for initialisation (INIT_ZTIMER_<periph>
+//         prepare defines for ztimer initialization
 
-/* ZTIMER_USEC always uses the basic timer
- * basic timer is available on all boards */
+// ZTIMER_USEC always uses the basic timer
+// basic timer is available on all boards
 #if MODULE_ZTIMER_USEC
 #  ifdef ZTIMER_TIMER
 #    define ZTIMER_USEC_TIMER 1
@@ -114,13 +109,13 @@
 #  endif
 #endif
 
-/* ZTIMER_MSEC uses one of in order of preference:
- * - ZTIMER_LPTIMER (ztimer_periph_lptimer)
- *      if it is available and running at a frequency > 1kHz
- * - ZTIMER_RTT (ztimer_periph_rtt)
- *      if it is available and running at a frequency > 1kHz,
- * if there is neither of those it falls back to use the basic timer
- * if that is available (there should be a basic timer with all boards)*/
+// ZTIMER_MSEC uses one of in order of preference:
+// - ZTIMER_LPTIMER (ztimer_periph_lptimer)
+//      if it is available and running at a frequency > 1kHz
+// - ZTIMER_RTT (ztimer_periph_rtt)
+//      if it is available and running at a frequency > 1kHz,
+// if there is neither of those it falls back to use the basic timer
+// if that is available (there should be a basic timer with all boards)
 #if MODULE_ZTIMER_MSEC
 #  if defined(ZTIMER_LPTIMER) && ZTIMER_LPTIMER_FREQ >= FREQ_1KHZ
 #    define ZTIMER_MSEC_LPTIMER 1
@@ -147,15 +142,15 @@
 #  endif
 #endif
 
-/* ZTIMER_SEC uses one of in order of preference:
- * - ZTIMER_LPTIMER (ztimer_periph_lptimer)
- *      if it is available and running at a frequency > 1Hz
- * - ZTIMER_RTT (ztimer_periph_rtt)
- *      if it is available and running at a frequency > 1Hz,
- * - ZTIMER_RTC (ztimer_periph_rtc)
- *      if it is available (this should be avoided)
- * if there is neither of those it falls back to use the basic timer
- * if that is available (there should be a basic timer with all boards)*/
+// ZTIMER_SEC uses one of in order of preference:
+// - ZTIMER_LPTIMER (ztimer_periph_lptimer)
+//      if it is available and running at a frequency > 1Hz
+// - ZTIMER_RTT (ztimer_periph_rtt)
+//      if it is available and running at a frequency > 1Hz,
+// - ZTIMER_RTC (ztimer_periph_rtc)
+//      if it is available (this should be avoided)
+// if there is neither of those it falls back to use the basic timer
+// if that is available (there should be a basic timer with all boards)
 #if MODULE_ZTIMER_SEC
 #  if defined(ZTIMER_LPTIMER) && ZTIMER_LPTIMER_FREQ >= FREQ_1HZ
 #    define ZTIMER_SEC_LPTIMER 1
@@ -187,7 +182,7 @@
 #  endif
 #endif
 
-/* Step 2: setup static memory for used ztimer-periphery */
+// Step 2: setup static memory for used ztimer-periphery
 
 #if INIT_ZTIMER_TIMER
 static ztimer_periph_timer_t ZTIMER_TIMER = {
@@ -207,7 +202,7 @@ static ztimer_periph_rtt_t ZTIMER_RTT;
 static ztimer_periph_rtc_t ZTIMER_RTC;
 #endif
 
-/* Step 3: setup constants for ztimers and memory for converters */
+// Step 3: setup constants for ztimers and memory for converters
 
 #if MODULE_ZTIMER_USEC
 #  ifdef ZTIMER_USEC_TIMER
@@ -277,8 +272,7 @@ ztimer_clock_t *const ZTIMER_SEC = ZTIMER_SEC_BASE;
 #endif
 
 static void _ztimer_usec_overhead(unsigned samples, unsigned base, uint16_t *adjust_value,
-                                  int32_t (*overhead_fn)(ztimer_clock_t *clock, uint32_t base))
-{
+                                  int32_t (*overhead_fn)(ztimer_clock_t *clock, uint32_t base)) {
     int32_t min = INT32_MAX;
 
     for (unsigned i = 0; i < samples; i++) {
@@ -291,9 +285,8 @@ static void _ztimer_usec_overhead(unsigned samples, unsigned base, uint16_t *adj
 }
 #endif
 
-void ztimer_init(void)
-{
-/* Step 4: initialize used ztimer-periphery */
+void ztimer_init(void) {
+// Step 4: initialize used ztimer-periphery
 #if INIT_ZTIMER_TIMER
     LOG_DEBUG(
         "ztimer_init(): ZTIMER_TIMER using periph timer %u, freq %lu, width %u\n",
@@ -345,7 +338,7 @@ void ztimer_init(void)
 #  endif
 #endif
 
-/* Step 5: initialize ztimers requested */
+// Step 5: initialize ztimers requested
 #if MODULE_ZTIMER_USEC
 #  if (ZTIMER_TIMER_FREQ != FREQ_1MHZ) || CONFIG_ZTIMER_PERIPH_TIMER_FORCE_CONVERSION
 #    if (ZTIMER_TIMER_FREQ == FREQ_250KHZ) && !(CONFIG_ZTIMER_PERIPH_TIMER_FORCE_CONVERSION)
@@ -382,7 +375,7 @@ void ztimer_init(void)
     LOG_DEBUG("ztimer_init(): ZTIMER_USEC without conversion\n");
 #  endif
 
-    /* warm-up time if set and needed */
+    // warm-up time if set and needed
     if (IS_USED(MODULE_ZTIMER_AUTO_ADJUST) &&
         !(CONFIG_ZTIMER_USEC_ADJUST_SET != 0 && CONFIG_ZTIMER_USEC_ADJUST_SLEEP != 0)) {
         if (CONFIG_ZTIMER_AUTO_ADJUST_SETTLE) {
@@ -391,13 +384,13 @@ void ztimer_init(void)
     }
 
 #  if MODULE_ZTIMER_ONDEMAND
-    /* configure 'adjust_clock_start' */
+    // configure 'adjust_clock_start'
     if (CONFIG_ZTIMER_USEC_ADJUST_CLOCK_START) {
         ZTIMER_USEC->adjust_clock_start = CONFIG_ZTIMER_USEC_ADJUST_CLOCK_START;
     }
 #  endif
 
-    /* calculate or set 'adjust_set' */
+    // calculate or set 'adjust_set'
     if (CONFIG_ZTIMER_USEC_ADJUST_SET != 0) {
         ZTIMER_USEC->adjust_set = CONFIG_ZTIMER_USEC_ADJUST_SET;
     }
@@ -410,7 +403,7 @@ void ztimer_init(void)
                   ZTIMER_USEC->adjust_set);
     }
 
-    /* calculate or set 'adjust_sleep' */
+    // calculate or set 'adjust_sleep'
     if (CONFIG_ZTIMER_USEC_ADJUST_SLEEP != 0) {
         ZTIMER_USEC->adjust_sleep = CONFIG_ZTIMER_USEC_ADJUST_SLEEP;
     }

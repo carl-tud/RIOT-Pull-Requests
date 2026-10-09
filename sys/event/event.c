@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_event
- * @{
- *
- * @file
- * @brief       Event loop implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_event
+/// @{
+///
+/// @file
+/// @brief       Event loop implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <assert.h>
 #include <stdbool.h>
@@ -31,8 +27,7 @@
 #include "xtimer.h"
 #endif
 
-void event_post(event_queue_t *queue, event_t *event)
-{
+void event_post(event_queue_t *queue, event_t *event) {
     assert(queue && event);
     assert(event->handler);
 
@@ -48,8 +43,7 @@ void event_post(event_queue_t *queue, event_t *event)
     }
 }
 
-void event_cancel(event_queue_t *queue, event_t *event)
-{
+void event_cancel(event_queue_t *queue, event_t *event) {
     assert(queue);
     assert(event);
 
@@ -59,8 +53,7 @@ void event_cancel(event_queue_t *queue, event_t *event)
     irq_restore(state);
 }
 
-bool event_is_queued(const event_queue_t *queue, const event_t *event)
-{
+bool event_is_queued(const event_queue_t *queue, const event_t *event) {
     assert(queue);
     assert(event);
 
@@ -70,8 +63,7 @@ bool event_is_queued(const event_queue_t *queue, const event_t *event)
     return result;
 }
 
-event_t *event_get(event_queue_t *queue)
-{
+event_t *event_get(event_queue_t *queue) {
     unsigned state = irq_disable();
     event_t *result = container_of(clist_lpop(&queue->event_list), event_t, list_node);
     if (result) {
@@ -82,8 +74,7 @@ event_t *event_get(event_queue_t *queue)
     return result;
 }
 
-event_t *event_wait_multi(event_queue_t *queues, size_t n_queues)
-{
+event_t *event_wait_multi(event_queue_t *queues, size_t n_queues) {
     assert(queues && n_queues);
     event_t *result = NULL;
 
@@ -110,8 +101,7 @@ event_t *event_wait_multi(event_queue_t *queues, size_t n_queues)
 }
 
 #if IS_USED(MODULE_XTIMER) || IS_USED(MODULE_ZTIMER)
-static event_t *_wait_timeout(event_queue_t *queue)
-{
+static event_t *_wait_timeout(event_queue_t *queue) {
     assert(queue);
     assert(queue->waiter);
     event_t *result;
@@ -130,8 +120,7 @@ static event_t *_wait_timeout(event_queue_t *queue)
 #endif
 
 #if IS_USED(MODULE_XTIMER)
-static event_t *_wait_timeout_xtimer(event_queue_t *queue, xtimer_t *timer)
-{
+static event_t *_wait_timeout_xtimer(event_queue_t *queue, xtimer_t *timer) {
     event_t *result = _wait_timeout(queue);
     if (result) {
         xtimer_remove(timer);
@@ -140,8 +129,7 @@ static event_t *_wait_timeout_xtimer(event_queue_t *queue, xtimer_t *timer)
     return result;
 }
 
-event_t *event_wait_timeout(event_queue_t *queue, uint32_t timeout)
-{
+event_t *event_wait_timeout(event_queue_t *queue, uint32_t timeout) {
     xtimer_t timer;
 
     thread_flags_clear(THREAD_FLAG_TIMEOUT);
@@ -149,8 +137,7 @@ event_t *event_wait_timeout(event_queue_t *queue, uint32_t timeout)
     return _wait_timeout_xtimer(queue, &timer);
 }
 
-event_t *event_wait_timeout64(event_queue_t *queue, uint64_t timeout)
-{
+event_t *event_wait_timeout64(event_queue_t *queue, uint64_t timeout) {
     xtimer_t timer;
 
     thread_flags_clear(THREAD_FLAG_TIMEOUT);
@@ -161,8 +148,7 @@ event_t *event_wait_timeout64(event_queue_t *queue, uint64_t timeout)
 
 #if IS_USED(MODULE_ZTIMER)
 event_t *event_wait_timeout_ztimer(event_queue_t *queue,
-                                   ztimer_clock_t *clock, uint32_t timeout)
-{
+                                   ztimer_clock_t *clock, uint32_t timeout) {
     ztimer_t timer;
     event_t *result;
 
@@ -181,15 +167,13 @@ typedef struct {
     mutex_t synced;
 } sync_ev_t;
 
-static void sync_ev_handler(event_t *ev)
-{
+static void sync_ev_handler(event_t *ev) {
     sync_ev_t *sync_ev = (sync_ev_t *)ev;
     mutex_unlock(&sync_ev->synced);
 }
 
-void event_sync(event_queue_t *queue)
-{
-    /* if we're on the queue, this would block forever */
+void event_sync(event_queue_t *queue) {
+    // if we're on the queue, this would block forever
     assert(!queue->waiter || queue->waiter->pid != thread_getpid());
 
     sync_ev_t sync_ev = {

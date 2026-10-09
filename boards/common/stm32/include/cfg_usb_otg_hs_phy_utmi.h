@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2019 Koen Zandberg
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Koen Zandberg
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_stm32
- * @{
- *
- * @file
- * @brief       Common configuration for STM32 OTG HS peripheral with internal UTMI HS PHY
- *
- * All STM32 boards which use the internal UTMI HS PHY for the USB OTG HS
- * peripheral use the same configuration. Therefore a common configuration file
- * can be used for these boards.
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     boards_common_stm32
+/// @{
+///
+/// @file
+/// @brief       Common configuration for STM32 OTG HS peripheral with internal UTMI HS PHY
+///
+/// All STM32 boards which use the internal UTMI HS PHY for the USB OTG HS
+/// peripheral use the same configuration. Therefore a common configuration file
+/// can be used for these boards.
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "periph_cpu.h"
 #include "usbdev_synopsys_dwc2.h"
@@ -28,31 +24,25 @@
 extern "C" {
 #endif
 
-/**
- * @brief Enable the high speed USB OTG peripheral
- */
+/// @brief Enable the high speed USB OTG peripheral
 #define DWC2_USB_OTG_HS_ENABLED
 
 #ifndef USBPHYC_TUNE_VALUE
-/**
- * @brief Default value of USBPHYC tuning control register
- *
- * The value of the USBPHYC tuning control register (USBPHYC_TUNE) is used by
- * the USB HS PHY controller for the tuning interface of the internal
- * USB HS PHY, please refer the Reference Manual for STM32F72xxx and STM32F73xxx
- * for details.
- *
- * The value as defined in the [STM32CubeF7 HAL Driver MCU Component for F7]
- * (https://bit.ly/3es9eFA) is used as default value.
- * If necessary, it can be overridden by the board configuration in
- * `periph_conf.h` by defining the value before this file is included.
- */
+/// @brief Default value of USBPHYC tuning control register
+///
+/// The value of the USBPHYC tuning control register (USBPHYC_TUNE) is used by
+/// the USB HS PHY controller for the tuning interface of the internal
+/// USB HS PHY, please refer the Reference Manual for STM32F72xxx and STM32F73xxx
+/// for details.
+///
+/// The value as defined in the [STM32CubeF7 HAL Driver MCU Component for F7]
+/// (https://bit.ly/3es9eFA) is used as default value.
+/// If necessary, it can be overridden by the board configuration in
+/// `periph_conf.h` by defining the value before this file is included.
 #define USBPHYC_TUNE_VALUE  0x00000f13U
 #endif
 
-/**
- * @brief Common USB OTG HS configuration
- */
+/// @brief Common USB OTG HS configuration
 static const dwc2_usb_otg_fshs_config_t dwc2_usb_otg_fshs_config[] = {
     {
         .periph   = USB_OTG_HS_PERIPH_BASE,
@@ -68,13 +58,11 @@ static const dwc2_usb_otg_fshs_config_t dwc2_usb_otg_fshs_config[] = {
     }
 };
 
-/**
- * @brief Number of available USB OTG peripherals
- */
+/// @brief Number of available USB OTG peripherals
 #define USBDEV_NUMOF           ARRAY_SIZE(dwc2_usb_otg_fshs_config)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

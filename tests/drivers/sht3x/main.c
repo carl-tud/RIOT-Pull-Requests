@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @brief       Test application for the Sensirion SHT30/SHT31/SHT35 device driver
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- * @}
- */
+/// @ingroup     tests
+/// @brief       Test application for the Sensirion SHT30/SHT31/SHT35 device driver
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -19,8 +15,7 @@
 #include "sht3x.h"
 #include "sht3x_params.h"
 
-int main(void)
-{
+int main(void) {
     sht3x_dev_t dev;
     int res;
 

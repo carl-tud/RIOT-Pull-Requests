@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 Dario Petrillo
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Dario Petrillo
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ir_nec
- * @{
- *
- * @file
- * @brief       Device driver implementation for the IR NEC Remote receiver
- *
- * @author      Dario Petrillo <dario.pk1@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_ir_nec
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the IR NEC Remote receiver
+///
+/// @author      Dario Petrillo <dario.pk1@gmail.com>
+///
+/// @}
 
 #include "ir_nec.h"
 #include "ir_nec_constants.h"
@@ -24,8 +20,7 @@
 
 #include "ir_nec.h"
 
-static void ir_nec_isr(void *arg)
-{
+static void ir_nec_isr(void *arg) {
     ir_nec_t *ir = (ir_nec_t *)arg;
 
     if (gpio_read(ir->pin) != 0) { // rising edge
@@ -66,8 +61,7 @@ static void ir_nec_isr(void *arg)
     }
 }
 
-int ir_nec_read(ir_nec_t *ir, ir_nec_cmd_t *command)
-{
+int ir_nec_read(ir_nec_t *ir, ir_nec_cmd_t *command) {
     int to_read = sizeof(ir_nec_cmd_t);
     if (isrpipe_read(&ir->isrpipe, (void*)command, to_read) != to_read) {
         return -1;
@@ -75,8 +69,7 @@ int ir_nec_read(ir_nec_t *ir, ir_nec_cmd_t *command)
     return 0;
 }
 
-int ir_nec_init(ir_nec_t *ir, const ir_nec_params_t *params)
-{
+int ir_nec_init(ir_nec_t *ir, const ir_nec_params_t *params) {
     ir->pin = params->pin;
     ir->data = 0;
     ir->last_rising = 0;

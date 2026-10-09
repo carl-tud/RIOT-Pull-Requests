@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2026 Matvii Ivashchenko
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Matvii Ivashchenko
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief       Auto initialization for Gaisler GRETH Ethernet devices
- *
- * @author      Matvii Ivashchenko
- * @}
- */
+/// @ingroup     sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief       Auto initialization for Gaisler GRETH Ethernet devices
+///
+/// @author      Matvii Ivashchenko
+/// @}
 
 #include <assert.h>
 
@@ -30,16 +26,15 @@
 
 #define GRETH_NUM               ARRAY_SIZE(greth_params)
 
-/* The GRETH driver keeps its DMA descriptor rings and ISR device pointer in
- * file-scope state, so it currently supports a single instance only. */
+// The GRETH driver keeps its DMA descriptor rings and ISR device pointer in
+// file-scope state, so it currently supports a single instance only.
 static_assert(GRETH_NUM == 1, "the greth driver supports only one instance");
 
 static greth_t dev[GRETH_NUM];
 static gnrc_netif_t _netif[GRETH_NUM];
 static char stack[GRETH_NUM][GRETH_MAC_STACKSIZE];
 
-void auto_init_greth(void)
-{
+void auto_init_greth(void) {
     for (unsigned i = 0; i < GRETH_NUM; i++) {
         LOG_DEBUG("[auto_init_netif] initializing greth #%u\n", i);
         greth_setup(&dev[i], &greth_params[i], i);
@@ -48,4 +43,4 @@ void auto_init_greth(void)
                                    &dev[i].netdev);
     }
 }
-/** @} */
+/// @}

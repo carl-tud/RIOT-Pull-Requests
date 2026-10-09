@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Unittests for the ``flashpage`` periph driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Unittests for the ``flashpage`` periph driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
 
 #include <errno.h>
 #include <stdint.h>
@@ -22,7 +18,7 @@
 #include "embUnit/embUnit.h"
 #include "modules.h"
 
-/* need to define these values before including the header */
+// need to define these values before including the header
 #ifndef FLASHPAGE_SIZE
 #define FLASHPAGE_SIZE      256
 #endif
@@ -30,7 +26,7 @@
 #define FLASHPAGE_NUMOF     128
 #endif
 
-/* fake uniform flashpage sizes for devices that don't have it */
+// fake uniform flashpage sizes for devices that don't have it
 #undef PERIPH_FLASHPAGE_CUSTOM_PAGESIZES
 
 #include "periph/flashpage.h"
@@ -39,8 +35,7 @@
 char _native_flash[FLASHPAGE_SIZE * FLASHPAGE_NUMOF];
 #endif
 
-static void test_flashbase_addr(void)
-{
+static void test_flashbase_addr(void) {
     void *addr;
 
     addr = flashpage_addr(0);
@@ -52,8 +47,7 @@ static void test_flashbase_addr(void)
     TEST_ASSERT_EQUAL_INT((unsigned int)CPU_FLASH_BASE + (12 * FLASHPAGE_SIZE), (uintptr_t)addr);
 }
 
-static void test_flashbase_page(void)
-{
+static void test_flashbase_page(void) {
     int page;
 
     page = flashpage_page((void *)CPU_FLASH_BASE);
@@ -70,8 +64,7 @@ static void test_flashbase_page(void)
     TEST_ASSERT_EQUAL_INT(FLASHPAGE_NUMOF - 1, page);
 }
 
-Test *tests_flashpage_tests(void)
-{
+Test *tests_flashpage_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_flashbase_addr),
         new_TestFixture(test_flashbase_page)
@@ -82,11 +75,10 @@ Test *tests_flashpage_tests(void)
     return (Test *)&flashbase_tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_flashpage_tests());
     TESTS_END();
     return 0;
 }
-/** @} */
+/// @}

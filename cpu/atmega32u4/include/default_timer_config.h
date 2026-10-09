@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Thomas Perrot <thomas.perrot@tupi.fr>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Thomas Perrot <thomas.perrot@tupi.fr>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_atmega32u4
- * @{
- *
- * @file
- * @brief           Default ATmega32U4 Timer Config
- *
- * @author          Thomas Perrot <thomas.perrot@tupi.fr>
- *
- */
+/// @ingroup         cpu_atmega32u4
+/// @{
+///
+/// @file
+/// @brief           Default ATmega32U4 Timer Config
+///
+/// @author          Thomas Perrot <thomas.perrot@tupi.fr>
+///
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,10 +33,10 @@ extern "C" {
 #define TIMER_1_ISRA        TIMER3_COMPA_vect
 #define TIMER_1_ISRB        TIMER3_COMPB_vect
 #define TIMER_1_ISRC        TIMER3_COMPC_vect
-#endif /* TIMER_NUMOF */
+#endif // TIMER_NUMOF
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

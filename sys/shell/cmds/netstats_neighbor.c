@@ -1,23 +1,19 @@
-/*
- * Copyright (C) Koen Zandberg <koen@bergzand.net>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) Koen Zandberg <koen@bergzand.net>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands for displaying neighbor statistics
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands for displaying neighbor statistics
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -26,8 +22,7 @@
 #include "net/netstats/neighbor.h"
 #include "shell.h"
 
-static void _print_neighbors(netif_t *dev)
-{
+static void _print_neighbors(netif_t *dev) {
     netstats_nb_t *stats = &dev->neighbors.pstats[0];
     unsigned header_len = 0;
     char l2addr_str[3 * L2UTIL_ADDR_MAX_LEN];
@@ -89,8 +84,7 @@ static void _print_neighbors(netif_t *dev)
     }
 }
 
-static int _netstats_nb(int argc, char **argv)
-{
+static int _netstats_nb(int argc, char **argv) {
     (void) argc;
     (void) argv;
 

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for AT86RF215 IEEE 802.15.4 device driver
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for AT86RF215 IEEE 802.15.4 device driver
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -34,8 +30,7 @@ static at86rf215_t at86rf215[NETDEV_IEEE802154_MINIMAL_NUMOF];
 
 static char batmon_stack[THREAD_STACKSIZE_MAIN];
 
-void *batmon_thread(void *arg)
-{
+void *batmon_thread(void *arg) {
     (void) arg;
 
     msg_t msg;
@@ -51,8 +46,7 @@ void *batmon_thread(void *arg)
     }
 }
 
-static int cmd_enable_batmon(int argc, char **argv)
-{
+static int cmd_enable_batmon(int argc, char **argv) {
     int res;
     uint16_t voltage;
     netdev_t *netdev = &(at86rf215[0].netdev.netdev);
@@ -72,8 +66,7 @@ static int cmd_enable_batmon(int argc, char **argv)
     return res;
 }
 
-static int cmd_set_trim(int argc, char **argv)
-{
+static int cmd_set_trim(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <trim>\n", argv[0]);
         return 1;
@@ -93,8 +86,7 @@ static int cmd_set_trim(int argc, char **argv)
     return 0;
 }
 
-static int cmd_set_clock_out(int argc, char **argv)
-{
+static int cmd_set_clock_out(int argc, char **argv) {
     const char *keys[] = {
         [AT86RF215_CLKO_OFF]    = "off",
         [AT86RF215_CLKO_26_MHz] = "26",
@@ -137,8 +129,7 @@ static int cmd_set_clock_out(int argc, char **argv)
     return 0;
 }
 
-static int cmd_get_random(int argc, char **argv)
-{
+static int cmd_get_random(int argc, char **argv) {
     uint8_t values;
     uint8_t buffer[256];
     at86rf215_t *dev = at86rf215;
@@ -162,20 +153,18 @@ static int cmd_get_random(int argc, char **argv)
     return 0;
 }
 
-int test_init(void)
-{
-    /* create battery monitor thread */
+int test_init(void) {
+    // create battery monitor thread
     thread_create(batmon_stack, sizeof(batmon_stack), THREAD_PRIORITY_MAIN - 1,
                   0, batmon_thread, NULL, "batmon");
     return 0;
 }
 
-static int _init_driver(netdev_t *netdev, netdev_event_cb_t cb)
-{
-    /* set the application-provided callback */
+static int _init_driver(netdev_t *netdev, netdev_event_cb_t cb) {
+    // set the application-provided callback
     netdev->event_callback = cb;
 
-    /* initialize the device driver */
+    // initialize the device driver
     return netdev->driver->init(netdev);
 }
 
@@ -202,7 +191,7 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
             idx++;
         }
 
-        /* setup the specific driver */
+        // setup the specific driver
         at86rf215_setup(at86rf215_subghz, at86rf215_24ghz, &at86rf215_params[i], i);
 
         int res = 0;
@@ -232,8 +221,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("Test application for AT86RF215 IEEE 802.15.4 device driver");
 
     int res = netdev_ieee802154_minimal_init();
@@ -242,11 +230,11 @@ int main(void)
         return 1;
     }
 
-    /* create battery monitor thread */
+    // create battery monitor thread
     thread_create(batmon_stack, sizeof(batmon_stack), THREAD_PRIORITY_MAIN - 1,
                   0, batmon_thread, NULL, "batmon");
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

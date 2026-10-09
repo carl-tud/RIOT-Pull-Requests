@@ -1,30 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_mpu9x50
- * @{
- *
- * @file
- * @brief       Register and bit definitions for the MPU-9X50 (MPU9150 and MPU9250) 9-Axis Motion Sensor
- *
- * @author      Fabian Nack <nack@inf.fu-berlin.de>
- * @author      Jannes Volkens <jannes.volkens@haw-hamburg.de>
- */
+/// @ingroup     drivers_mpu9x50
+/// @{
+///
+/// @file
+/// @brief       Register and bit definitions for the MPU-9X50 (MPU9150 and MPU9250) 9-Axis Motion Sensor
+///
+/// @author      Fabian Nack <nack@inf.fu-berlin.de>
+/// @author      Jannes Volkens <jannes.volkens@haw-hamburg.de>
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-/**
- * @name    MPU-9X50 register definitions
- * @{
- */
+/// @name    MPU-9X50 register definitions
+/// @{
 #define MPU9X50_YG_OFFS_TC_REG          (0x01)
 #define MPU9X50_RATE_DIV_REG            (0x19)
 #define MPU9X50_LPF_REG                 (0x1A)
@@ -59,12 +53,10 @@
 #define MPU9X50_FIFO_COUNT_START_REG    (0x72)
 #define MPU9X50_FIFO_RW_REG             (0x74)
 #define MPU9X50_WHO_AM_I_REG            (0x75)
-/** @} */
+/// @}
 
- /**
-  * @name    Compass register definitions
-  * @{
-  */
+ /// @name    Compass register definitions
+ /// @{
 #define COMPASS_WHOAMI_REG              (0x00)
 #define COMPASS_ST1_REG                 (0x02)
 #define COMPASS_DATA_START_REG          (0x03)
@@ -74,12 +66,10 @@
 #define COMPASS_ASAX_REG                (0x10)
 #define COMPASS_ASAY_REG                (0x11)
 #define COMPASS_ASAZ_REG                (0x12)
-/** @} */
+/// @}
 
-/**
- * @name    MPU9X50 bitfield definitions
- * @{
- */
+/// @name    MPU9X50 bitfield definitions
+/// @{
 #define BIT_SLV0_DELAY_EN               (0x01)
 #define BIT_SLV1_DELAY_EN               (0x02)
 #define BIT_I2C_BYPASS_EN               (0x02)
@@ -90,10 +80,10 @@
 #define BIT_SLAVE_RW                    (0x80)
 #define BIT_SLAVE_EN                    (0x80)
 #define BIT_DMP_EN                      (0x80)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

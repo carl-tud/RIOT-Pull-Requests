@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-FileCopyrightText: 2023 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-FileCopyrightText: 2023 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_atwinc15x0
- * @{
- *
- * @file
- * @brief       Netdev driver for the ATWINC15x0 WiFi module
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     drivers_atwinc15x0
+/// @{
+///
+/// @file
+/// @brief       Netdev driver for the ATWINC15x0 WiFi module
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
+///
+/// @}
 
 #include <string.h>
 
@@ -53,12 +49,10 @@
 #define ATWINC15X0_WAIT_TIMEOUT         (20)
 #define ATWINC15X0_WAIT_RECONNECT_MS    (5000)
 
-/**
- *  @brief   Maximum number of scan list entries to deliver
- */
+///  @brief   Maximum number of scan list entries to deliver
 #define ATWINC15X0_SCAN_LIST_NUMOF  CONFIG_ATWINC15X0_SCAN_LIST_NUMOF
 
-/* Forward function declarations */
+// Forward function declarations
 static void _atwinc15x0_wifi_cb(uint8_t event, void *msg);
 static void _atwinc15x0_eth_cb(uint8_t type, void *msg, void *ctrl);
 static int _atwinc15x0_connect(const wifi_connect_request_t *req);
@@ -69,26 +63,24 @@ static int _set_state(atwinc15x0_t *dev, netopt_state_t state);
 static netopt_state_t _get_state(const atwinc15x0_t *dev);
 static void _atwinc15x0_isr(netdev_t *netdev);
 
-/**
- * The following buffer is required by the ATWINC15x0 vendor driver to store
- * packets received from the ATWINC15x0 WiFI module in it. Its size has to be
- * at least one Ethernet frame of maximum length.
- *
- * The event-driven handling of incoming packets is strictly sequential in
- * the context of the `netif` thread. This means that an incoming packet
- * is first received by the `netif` thread and copied to its packet buffer
- * before the next event of an incoming packet is handled by the ATWINC15x0
- * vendor driver. It can therefore be assumed that only one received packet
- * can be in the buffer at a time. No further separate intermediate buffer
- * is required.
- *
- * Furthermore, this buffer can be used for preparing a packet to be sent,
- * since it can be assumed that receiving and sending packets are implicitly
- * mutually exclusive due to their strictly sequential processing.
- */
+/// The following buffer is required by the ATWINC15x0 vendor driver to store
+/// packets received from the ATWINC15x0 WiFI module in it. Its size has to be
+/// at least one Ethernet frame of maximum length.
+///
+/// The event-driven handling of incoming packets is strictly sequential in
+/// the context of the `netif` thread. This means that an incoming packet
+/// is first received by the `netif` thread and copied to its packet buffer
+/// before the next event of an incoming packet is handled by the ATWINC15x0
+/// vendor driver. It can therefore be assumed that only one received packet
+/// can be in the buffer at a time. No further separate intermediate buffer
+/// is required.
+///
+/// Furthermore, this buffer can be used for preparing a packet to be sent,
+/// since it can be assumed that receiving and sending packets are implicitly
+/// mutually exclusive due to their strictly sequential processing.
 static uint8_t atwinc15x0_eth_buf[ETHERNET_MAX_LEN];
 
-/* ATWINC15x0 vendor driver initialization structure (can't be const) */
+// ATWINC15x0 vendor driver initialization structure (can't be const)
 static tstrWifiInitParam atwinc15x0_wifi_params = {
     .pfAppWifiCb = _atwinc15x0_wifi_cb,
     .strEthInitParam = {
@@ -100,15 +92,13 @@ static tstrWifiInitParam atwinc15x0_wifi_params = {
     },
 };
 
-/**
- * Reference to the single ATWINC15x0 device instance
- *
- * Since the vendor ATWINC15x0 host driver uses many global variables, only
- * a single ATWINC15x0 device can be used. Therefore, the RIOT driver only
- * supports a single instance of an ATWINC15x0 device. The reference is
- * needed in callback functions where a reference to the device is not
- * available.
- */
+/// Reference to the single ATWINC15x0 device instance
+///
+/// Since the vendor ATWINC15x0 host driver uses many global variables, only
+/// a single ATWINC15x0 device can be used. Therefore, the RIOT driver only
+/// supports a single instance of an ATWINC15x0 device. The reference is
+/// needed in callback functions where a reference to the device is not
+/// available.
 atwinc15x0_t *atwinc15x0 = NULL;
 
 MAYBE_UNUSED
@@ -117,8 +107,7 @@ static struct {
     wifi_scan_list_node_t array[ATWINC15X0_SCAN_LIST_NUMOF];
 } _atwinc15x0_scan_list;
 
-static inline void _wifi_scan_list_empty(void)
-{
+static inline void _wifi_scan_list_empty(void) {
 #if IS_USED(MODULE_WIFI_SCAN_LIST)
     wifi_scan_list_empty(&_atwinc15x0_scan_list.head,
                          _atwinc15x0_scan_list.array,
@@ -126,8 +115,7 @@ static inline void _wifi_scan_list_empty(void)
 #endif
 }
 
-static inline void _wifi_scan_list_insert(const wifi_scan_result_t *result)
-{
+static inline void _wifi_scan_list_insert(const wifi_scan_result_t *result) {
     (void)result;
 #if IS_USED(MODULE_WIFI_SCAN_LIST)
     wifi_scan_list_insert(&_atwinc15x0_scan_list.head,
@@ -140,8 +128,7 @@ static inline void _wifi_scan_list_insert(const wifi_scan_result_t *result)
 MAYBE_UNUSED
 static wifi_scan_request_t _atwinc15x0_scan_req;
 
-static inline void _wifi_scan_result_callback(const wifi_scan_list_t *scan_list)
-{
+static inline void _wifi_scan_result_callback(const wifi_scan_list_t *scan_list) {
     if (_atwinc15x0_scan_req.base.scan_cb) {
         void *netif = netif_get_by_id(thread_getpid());
         ((wifi_on_scan_result_t)_atwinc15x0_scan_req.base.scan_cb)(netif,
@@ -150,17 +137,11 @@ static inline void _wifi_scan_result_callback(const wifi_scan_list_t *scan_list)
     _atwinc15x0_scan_req.base.scan_cb = NULL;
 }
 
-/**
- * @brief   Internal next timeout type
- */
+/// @brief   Internal next timeout type
 typedef enum {
-    /**
-     * @brief   No / clear timeout
-     */
+    /// @brief   No / clear timeout
     ATWINC15X0_WIFI_STA_TIMEOUT_NONE = 0,
-    /**
-     * @brief   Timeout to reconnect to
-     */
+    /// @brief   Timeout to reconnect to
     ATWINC15X0_WIFI_STA_TIMEOUT_RECONNECT,
 } atwinc15x0_wifi_sta_timeout_t;
 
@@ -170,19 +151,17 @@ static union {
     wifi_connect_request_t conn_req;
 } _atwinc15x0_connect_req;
 
-static inline void _wifi_connect_result_callback(const wifi_connect_result_t *result)
-{
+static inline void _wifi_connect_result_callback(const wifi_connect_result_t *result) {
     if (_atwinc15x0_connect_req.conn_req.base.conn_cb) {
         void *netif = netif_get_by_id(thread_getpid());
         ((wifi_on_connect_result_t)_atwinc15x0_connect_req.conn_req.base.conn_cb)(netif,
                                                                                   result);
     }
     _atwinc15x0_connect_req.conn_req.base.conn_cb = NULL;
-    /* _atwinc15x0_connect_req.conn_req.base.disconn_cb is called when connection is lost */
+    // _atwinc15x0_connect_req.conn_req.base.disconn_cb is called when connection is lost
 }
 
-static inline void _wifi_disconnect_result_callback(const wifi_disconnect_result_t *result)
-{
+static inline void _wifi_disconnect_result_callback(const wifi_disconnect_result_t *result) {
     if (_atwinc15x0_connect_req.conn_req.base.disconn_cb) {
         void *netif = netif_get_by_id(thread_getpid());
         ((wifi_on_disconnect_result_t)_atwinc15x0_connect_req.conn_req.base.disconn_cb)(netif,
@@ -198,29 +177,25 @@ static struct {
     ztimer_t timer;
 } _atwinc15x0_timer;
 
-static void _atwinc15x0_reconnect_timer(void *arg)
-{
+static void _atwinc15x0_reconnect_timer(void *arg) {
     (void)arg;
     _atwinc15x0_timer.timeout = ATWINC15X0_WIFI_STA_TIMEOUT_RECONNECT;
     _atwinc15x0_timer.timer.callback = NULL;
     atwinc15x0_irq();
 }
 
-static void _atwinc15x0_set_timer(void *arg, ztimer_callback_t cb, uint32_t timeout)
-{
+static void _atwinc15x0_set_timer(void *arg, ztimer_callback_t cb, uint32_t timeout) {
     ztimer_remove(ZTIMER_MSEC, &_atwinc15x0_timer.timer);
     _atwinc15x0_timer.timer.arg = arg;
     _atwinc15x0_timer.timer.callback = cb;
     ztimer_set(ZTIMER_MSEC, &_atwinc15x0_timer.timer, timeout);
 }
 
-static inline void _atwinc15x0_set_reconnect_timer(void)
-{
+static inline void _atwinc15x0_set_reconnect_timer(void) {
     _atwinc15x0_set_timer(NULL, _atwinc15x0_reconnect_timer, ATWINC15X0_WAIT_RECONNECT_MS);
 }
 
-static int _atwinc15x0_static_connect(void)
-{
+static int _atwinc15x0_static_connect(void) {
     if (!IS_USED(MODULE_ATWINC15X0_STATIC_CONNECT)) {
         return 0;
     }
@@ -246,13 +221,13 @@ static int _atwinc15x0_static_connect(void)
     strncpy((char *)&auth_info.strCred1x.au8UserName, WIFI_USER, M2M_1X_USR_NAME_MAX);
     strncpy((char *)&auth_info.strCred1x.au8Passwd, WIFI_PASS, M2M_1X_PWD_MAX);
     auth_type = M2M_WIFI_SEC_802_1X;
-#else /* defined(WIFI_USER) && defined(WIFI_PASS) */
+#else // defined(WIFI_USER) && defined(WIFI_PASS)
 #error WIFI_EAP_USER and WIFI_EAP_PASS have to define the user name \
        and the password for EAP phase 2 authentication in wifi_enterprise
-#endif /* defined(WIFI_USER) && defined(WIFI_PASS) */
+#endif // defined(WIFI_USER) && defined(WIFI_PASS)
 
-#endif /* defined(MODULE_WIFI_ENTERPRISE) */
-    /* connect */
+#endif // defined(MODULE_WIFI_ENTERPRISE)
+    // connect
     int8_t res;
     if ((res = m2m_wifi_connect(WIFI_SSID, sizeof(WIFI_SSID),
                                 auth_type, &auth_info,
@@ -264,8 +239,7 @@ static int _atwinc15x0_static_connect(void)
     return 0;
 }
 
-static inline int _atwinc15x0_get_sec_mode(tenuM2mSecType mode)
-{
+static inline int _atwinc15x0_get_sec_mode(tenuM2mSecType mode) {
     switch (mode) {
         case M2M_WIFI_SEC_OPEN:
             return WIFI_SECURITY_MODE_OPEN;
@@ -280,8 +254,7 @@ static inline int _atwinc15x0_get_sec_mode(tenuM2mSecType mode)
     }
 }
 
-static void _atwinc15x0_eth_cb(uint8_t type, void *msg, void *ctrl_buf)
-{
+static void _atwinc15x0_eth_cb(uint8_t type, void *msg, void *ctrl_buf) {
     assert(atwinc15x0);
     assert(msg != NULL);
     assert(ctrl_buf != NULL);
@@ -295,17 +268,15 @@ static void _atwinc15x0_eth_cb(uint8_t type, void *msg, void *ctrl_buf)
         od_hex_dump(msg, ctrl->u16DataSize, 16);
     }
 
-    /* the buffer shouldn't be used here */
+    // the buffer shouldn't be used here
     assert(atwinc15x0->rx_buf == NULL);
 
     atwinc15x0->rx_buf = msg;
     atwinc15x0->rx_len = ctrl->u16DataSize;
 
-    /**
-     * This function is executed in the thread context. Therefore
-     * netdev.event_callback can be called directly, which avoids an
-     * additional intermediate buffer.
-     */
+    /// This function is executed in the thread context. Therefore
+    /// netdev.event_callback can be called directly, which avoids an
+    /// additional intermediate buffer.
     atwinc15x0->netdev.event_callback(&atwinc15x0->netdev,
                                       NETDEV_EVENT_RX_COMPLETE);
 }
@@ -320,15 +291,14 @@ typedef union {
 
 static bool _rssi_info_ready = false;
 
-static void _atwinc15x0_handle_resp_scan_done(const tstrM2mScanDone* scan_done)
-{
+static void _atwinc15x0_handle_resp_scan_done(const tstrM2mScanDone* scan_done) {
     DEBUG("%s scan done, %d APs found\n", __func__, scan_done->u8NumofCh);
     if (scan_done->u8NumofCh > 0) {
-        /* read the first scan result record */
+        // read the first scan result record
         m2m_wifi_req_scan_result(0);
     }
     else {
-        /* no results */
+        // no results
         _atwinc15x0_set_idle(atwinc15x0);
         if (IS_USED(MODULE_ATWINC15X0_DYNAMIC_SCAN)) {
             _wifi_scan_result_callback(&_atwinc15x0_scan_list.head);
@@ -336,8 +306,7 @@ static void _atwinc15x0_handle_resp_scan_done(const tstrM2mScanDone* scan_done)
     }
 }
 
-static void _atwinc15x0_handle_resp_scan_result(const tstrM2mWifiscanResult* scan_result)
-{
+static void _atwinc15x0_handle_resp_scan_result(const tstrM2mWifiscanResult* scan_result) {
     LOG_DEBUG("[atwinc15x0] %s: rssi %d, auth %d, ch %d, bssid "
               ATWINC15X0_MAC_STR "\n",
               scan_result->au8SSID,
@@ -347,7 +316,7 @@ static void _atwinc15x0_handle_resp_scan_result(const tstrM2mWifiscanResult* sca
               ATWINC15X0_MAC_STR_ARG(scan_result->au8BSSID));
     if (_atwinc15x0_is_connected(atwinc15x0)) {
         if (!memcmp(scan_result->au8BSSID, &atwinc15x0->ap, ETHERNET_ADDR_LEN)) {
-            /* use the results for current AP to set the current channel */
+            // use the results for current AP to set the current channel
             atwinc15x0->channel = scan_result->u8ch;
         }
     }
@@ -362,7 +331,7 @@ static void _atwinc15x0_handle_resp_scan_result(const tstrM2mWifiscanResult* sca
         }
     }
     if (scan_result->u8index < m2m_wifi_get_num_ap_found() - 1) {
-        /* read the next scan result record */
+        // read the next scan result record
         m2m_wifi_req_scan_result(scan_result->u8index + 1);
     }
     else {
@@ -373,38 +342,35 @@ static void _atwinc15x0_handle_resp_scan_result(const tstrM2mWifiscanResult* sca
     }
 }
 
-static void _atwinc15x0_handle_resp_con_state_changed(const tstrM2mWifiStateChanged *state_changed)
-{
-    /**
-     * The logic here can be tested with the following test cases:
-     * 1. connect when disconnected
-     * 2. connect to another AP when connected
-     * 3. disconnect when connected
-     * 4. go to sleep when connected
-     */
+static void _atwinc15x0_handle_resp_con_state_changed(const tstrM2mWifiStateChanged *state_changed) {
+    /// The logic here can be tested with the following test cases:
+    /// 1. connect when disconnected
+    /// 2. connect to another AP when connected
+    /// 3. disconnect when connected
+    /// 4. go to sleep when connected
     switch (state_changed->u8CurrState) {
         case M2M_WIFI_DISCONNECTED:
             LOG_INFO("[atwinc15x0] WiFi disconnected\n");
-            /* We disconnect before we connect, so we will first get a disconnect event when we
-               were connected. After that when connection to the new AP fails we are already in a
-               disconnected state. */
+            // We disconnect before we connect, so we will first get a disconnect event when we
+            //    were connected. After that when connection to the new AP fails we are already in a
+            //    disconnected state.
             bool was_connected = _atwinc15x0_is_connected(atwinc15x0);
             bool is_connecting = _atwinc15x0_is_connecting(atwinc15x0);
             bool is_disconnecting = _atwinc15x0_is_disconnecting(atwinc15x0);
             bool is_sleeping;
             if (!(is_sleeping = _atwinc15x0_is_sleeping(atwinc15x0))) {
-                /* We requested to disconnect before sleep.
-                   Don´t override the sleep state when the disconnect event is received. */
+                // We requested to disconnect before sleep.
+                //    Don´t override the sleep state when the disconnect event is received.
                 _atwinc15x0_set_disconnected(atwinc15x0);
             }
             if (was_connected || is_disconnecting || is_sleeping) {
-                /* notify when connection state changed or when we disconnected due to sleep */
+                // notify when connection state changed or when we disconnected due to sleep
                 DEBUG("atwinc15x0: notify upper layer about disconnect\n");
                 atwinc15x0->netdev.event_callback(&atwinc15x0->netdev, NETDEV_EVENT_LINK_DOWN);
             }
             if (IS_USED(MODULE_ATWINC15X0_DYNAMIC_CONNECT)) {
                 if (!was_connected && !is_disconnecting && !is_sleeping) {
-                    /* connection failed */
+                    // connection failed
                     DEBUG("atwinc15x0: notify about connection failure\n");
                     wifi_disconnect_result_t disconn
                         = WIFI_DISCONNECT_RESULT_INITIALIZER(
@@ -413,7 +379,7 @@ static void _atwinc15x0_handle_resp_con_state_changed(const tstrM2mWifiStateChan
                     _wifi_disconnect_result_callback(&disconn);
                 }
                 else if ((was_connected || is_disconnecting || is_sleeping) && !is_connecting) {
-                    /* disconnect from previous connection */
+                    // disconnect from previous connection
                     DEBUG("atwinc15x0: notify about disconnect\n");
                     wifi_disconnect_result_t disconn
                         = WIFI_DISCONNECT_RESULT_INITIALIZER(
@@ -423,11 +389,11 @@ static void _atwinc15x0_handle_resp_con_state_changed(const tstrM2mWifiStateChan
                 }
             }
             if (IS_USED(MODULE_ATWINC15X0_STATIC_CONNECT)) {
-                /* do not reconnect on sleep */
+                // do not reconnect on sleep
                 if (!_atwinc15x0_is_sleeping(atwinc15x0)) {
-                    /* schedule reconnect timer:
-                    Not trying to reconnect immediately allows
-                    other connect requests to get through. */
+                    // schedule reconnect timer:
+                    // Not trying to reconnect immediately allows
+                    // other connect requests to get through.
                     _atwinc15x0_set_reconnect_timer();
                 }
             }
@@ -436,7 +402,7 @@ static void _atwinc15x0_handle_resp_con_state_changed(const tstrM2mWifiStateChan
             LOG_INFO("[atwinc15x0] WiFi connected\n");
             _atwinc15x0_set_connected(atwinc15x0);
             atwinc15x0->netdev.event_callback(&atwinc15x0->netdev, NETDEV_EVENT_LINK_UP);
-            /* get information about the current AP */
+            // get information about the current AP
             m2m_wifi_get_connection_info();
             if (IS_USED(MODULE_ATWINC15X0_DYNAMIC_CONNECT)) {
                 _atwinc15x0_sta_set_current_ssid(atwinc15x0,
@@ -463,15 +429,14 @@ static void _atwinc15x0_handle_resp_con_state_changed(const tstrM2mWifiStateChan
                 _wifi_connect_result_callback(&conn);
             }
             if (IS_USED(MODULE_ATWINC15X0_STATIC_CONNECT)) {
-                /* start a scan for additional info, e.g. used channel */
+                // start a scan for additional info, e.g. used channel
                 m2m_wifi_request_scan(M2M_WIFI_CH_ALL);
             }
             break;
     }
 }
 
-static void _atwinc15x0_handle_resp_conn_info(const tstrM2MConnInfo *conn_info)
-{
+static void _atwinc15x0_handle_resp_conn_info(const tstrM2MConnInfo *conn_info) {
     DEBUG("%s conn info %s, rssi %d, sec %u, bssid "
           ATWINC15X0_MAC_STR "\n", __func__,
           conn_info->acSSID,
@@ -479,7 +444,7 @@ static void _atwinc15x0_handle_resp_conn_info(const tstrM2MConnInfo *conn_info)
           conn_info->u8SecType,
           ATWINC15X0_MAC_STR_ARG(conn_info->au8MACAddress));
 
-    /* set the RSSI and BSSID of the current AP */
+    // set the RSSI and BSSID of the current AP
     atwinc15x0->rssi = conn_info->s8RSSI;
     memcpy(atwinc15x0->ap, conn_info->au8MACAddress, ETHERNET_ADDR_LEN);
     if (IS_USED(MODULE_ATWINC15X0_DYNAMIC_CONNECT)) {
@@ -487,20 +452,16 @@ static void _atwinc15x0_handle_resp_conn_info(const tstrM2MConnInfo *conn_info)
     }
 }
 
-static void _atwinc15x0_handle_resp_current_rssi(int8_t rssi)
-{
+static void _atwinc15x0_handle_resp_current_rssi(int8_t rssi) {
     DEBUG("%s current rssi %d\n", __func__, rssi);
-    /* set the RSSI */
+    // set the RSSI
     atwinc15x0->rssi = rssi;
     _rssi_info_ready = true;
 }
 
-static void _atwinc15x0_wifi_cb(uint8_t type, void *msg)
-{
-    /**
-     * This function is executed in thread context. There is no need to call
-     * netdev_trigger_event_isr and to handle the events in _atwinc15x0_isr
-     */
+static void _atwinc15x0_wifi_cb(uint8_t type, void *msg) {
+    /// This function is executed in thread context. There is no need to call
+    /// netdev_trigger_event_isr and to handle the events in _atwinc15x0_isr
 
     DEBUG("%s %u %p\n", __func__, type, msg);
 
@@ -525,15 +486,14 @@ static void _atwinc15x0_wifi_cb(uint8_t type, void *msg)
     }
 }
 
-static int _atwinc15x0_send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _atwinc15x0_send(netdev_t *netdev, const iolist_t *iolist) {
     atwinc15x0_t *dev = (atwinc15x0_t *)netdev;
 
     assert(dev);
     assert(dev == atwinc15x0);
     assert(iolist);
 
-    /* send wakes from standby but not from sleep */
+    // send wakes from standby but not from sleep
     if (_atwinc15x0_is_sleeping(dev)) {
         DEBUG("%s WiFi is in SLEEP state, cannot send\n", __func__);
         return -ENETDOWN;
@@ -542,12 +502,12 @@ static int _atwinc15x0_send(netdev_t *netdev, const iolist_t *iolist)
         DEBUG("%s WiFi is still not connected to AP, cannot send\n", __func__);
         return -ENETDOWN;
     }
-    /* atwinc15x0_eth_buf should not be used for incoming packets here */
+    // atwinc15x0_eth_buf should not be used for incoming packets here
     assert(dev->rx_buf == NULL);
 
     uint16_t tx_len = 0;
 
-    /* load packet data into the buffer */
+    // load packet data into the buffer
     for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
         if (tx_len + iol->iol_len > ETHERNET_MAX_LEN) {
             return -EOVERFLOW;
@@ -565,7 +525,7 @@ static int _atwinc15x0_send(netdev_t *netdev, const iolist_t *iolist)
         }
     }
 
-    /* send the packet */
+    // send the packet
     if (m2m_wifi_send_ethernet_pkt(atwinc15x0_eth_buf, tx_len) == M2M_SUCCESS) {
         return tx_len;
     }
@@ -575,16 +535,14 @@ static int _atwinc15x0_send(netdev_t *netdev, const iolist_t *iolist)
     }
 }
 
-static int _confirm_send(netdev_t *netdev, void *info)
-{
+static int _confirm_send(netdev_t *netdev, void *info) {
     (void)netdev;
     (void)info;
 
     return -EOPNOTSUPP;
 }
 
-static int _atwinc15x0_recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _atwinc15x0_recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     atwinc15x0_t *dev = (atwinc15x0_t *)netdev;
 
     (void)info;
@@ -594,14 +552,14 @@ static int _atwinc15x0_recv(netdev_t *netdev, void *buf, size_t len, void *info)
     uint16_t rx_size = dev->rx_len;
 
     if (!rx_size) {
-        /* there is nothing in receive buffer */
+        // there is nothing in receive buffer
         return 0;
     }
 
     if (!buf) {
-        /* get the size of the frame */
+        // get the size of the frame
         if (len > 0) {
-            /* if len > 0, drop the frame */
+            // if len > 0, drop the frame
             dev->rx_len = 0;
             dev->rx_buf = NULL;
         }
@@ -609,15 +567,15 @@ static int _atwinc15x0_recv(netdev_t *netdev, void *buf, size_t len, void *info)
     }
 
     if (len < rx_size) {
-        /* buffer is smaller than the number of received bytes */
+        // buffer is smaller than the number of received bytes
         DEBUG("%s not enough space in receive buffer", __func__);
-        /* newest API requires to drop the frame in that case */
+        // newest API requires to drop the frame in that case
         dev->rx_len = 0;
         dev->rx_buf = NULL;
         return -ENOBUFS;
     }
 
-    /* remove length bytes, copy received packet to buffer */
+    // remove length bytes, copy received packet to buffer
     memcpy(buf, dev->rx_buf, dev->rx_len);
     dev->rx_len = 0;
     dev->rx_buf = NULL;
@@ -635,14 +593,12 @@ static int _atwinc15x0_recv(netdev_t *netdev, void *buf, size_t len, void *info)
     return rx_size;
 }
 
-static netopt_enable_t _get_link_state(atwinc15x0_t *dev)
-{
+static netopt_enable_t _get_link_state(atwinc15x0_t *dev) {
     return _atwinc15x0_is_connected(dev) ? NETOPT_ENABLE : NETOPT_DISABLE;
 }
 
 static int _atwinc15x0_get(netdev_t *netdev, netopt_t opt, void *val,
-                           size_t max_len)
-{
+                           size_t max_len) {
     atwinc15x0_t *dev = (atwinc15x0_t *)netdev;
 
     (void)max_len;
@@ -683,16 +639,16 @@ static int _atwinc15x0_get(netdev_t *netdev, netopt_t opt, void *val,
             if (!_atwinc15x0_is_connected(dev)) {
                 return -ECANCELED;
             }
-            /* trigger the request current RSSI (asynchronous function) */
+            // trigger the request current RSSI (asynchronous function)
             if (m2m_wifi_req_curr_rssi() != M2M_SUCCESS) {
                 return 0;
             }
-            /* wait for the response with a given timeout */
+            // wait for the response with a given timeout
             unsigned int _rssi_info_time_out = ATWINC15X0_WAIT_TIMEOUT;
             while (!_rssi_info_ready && _rssi_info_time_out--) {
                 ztimer_sleep(ZTIMER_MSEC, ATWINC15X0_WAIT_TIME_MS);
             }
-            /* return the RSSI */
+            // return the RSSI
             *((int16_t *)val) = dev->rssi;
             return sizeof(int16_t);
 
@@ -701,8 +657,7 @@ static int _atwinc15x0_get(netdev_t *netdev, netopt_t opt, void *val,
     }
 }
 
-static int _set_state(atwinc15x0_t *dev, netopt_state_t state)
-{
+static int _set_state(atwinc15x0_t *dev, netopt_state_t state) {
     if (_atwinc15x0_is_busy(dev)) {
         return -EBUSY;
     }
@@ -744,8 +699,7 @@ static int _set_state(atwinc15x0_t *dev, netopt_state_t state)
     return -ENOTSUP;
 }
 
-static netopt_state_t _get_state(const atwinc15x0_t *dev)
-{
+static netopt_state_t _get_state(const atwinc15x0_t *dev) {
     if (dev->state == ATWINC15X0_STATE_SLEEP) {
         return NETOPT_STATE_SLEEP;
     }
@@ -755,8 +709,7 @@ static netopt_state_t _get_state(const atwinc15x0_t *dev)
 }
 
 static int _atwinc15x0_set(netdev_t *netdev, netopt_t opt, const void *val,
-                           size_t max_len)
-{
+                           size_t max_len) {
     atwinc15x0_t *dev = (atwinc15x0_t *)netdev;
 
     DEBUG("%s dev=%p opt=%u val=%p max_len=%" PRIuSIZE "\n", __func__,
@@ -772,9 +725,9 @@ static int _atwinc15x0_set(netdev_t *netdev, netopt_t opt, const void *val,
             assert(max_len <= sizeof(netopt_state_t));
             return _set_state(dev, *((const netopt_state_t *)val));
         case NETOPT_L2_GROUP:
-            /* sometimes m2m_wifi_enable_mac_mcast() fails with M2M_ERR_MEM_ALLOC */
+            // sometimes m2m_wifi_enable_mac_mcast() fails with M2M_ERR_MEM_ALLOC
             m2m_wifi_enable_mac_mcast((void *)val, 0);
-            /* sometimes it fails with M2M_ERR_BUS_FAIL */
+            // sometimes it fails with M2M_ERR_BUS_FAIL
             int tries = 5;
             do {
                 ret = m2m_wifi_enable_mac_mcast((void *)val, 1);
@@ -830,8 +783,7 @@ static int _atwinc15x0_set(netdev_t *netdev, netopt_t opt, const void *val,
     return netdev_eth_set(netdev, opt, val, max_len);
 }
 
-static void _print_firmware_version(const tstrM2mRev *info)
-{
+static void _print_firmware_version(const tstrM2mRev *info) {
     LOG_DEBUG("[atwinc15x0] CHIP ID: %lu\n",
               info->u32Chipid);
     LOG_DEBUG("[atwinc15x0] FIRMWARE: %u.%u.%u\n",
@@ -840,8 +792,7 @@ static void _print_firmware_version(const tstrM2mRev *info)
               info->u8DriverMajor, info->u8DriverMinor, info->u8DriverPatch);
 }
 
-static int _atwinc15x0_init(netdev_t *netdev)
-{
+static int _atwinc15x0_init(netdev_t *netdev) {
     atwinc15x0_t *dev = (atwinc15x0_t *)netdev;
 
     (void)netdev;
@@ -859,7 +810,7 @@ static int _atwinc15x0_init(netdev_t *netdev)
     nm_bsp_init();
 
     int res;
-    /* initialize the WINC Driver*/
+    // initialize the WINC Driver
     if ((res = m2m_wifi_init(&atwinc15x0_wifi_params)) != M2M_SUCCESS) {
         DEBUG("m2m_wifi_init failed with code %d\n", res);
         if (res == M2M_ERR_FW_VER_MISMATCH) {
@@ -872,7 +823,7 @@ static int _atwinc15x0_init(netdev_t *netdev)
         }
     }
 
-    /* get firmware version */
+    // get firmware version
     if (IS_ACTIVE(ENABLE_DEBUG)) {
         tstrM2mRev fw_ver;
         if ((res = m2m_wifi_get_firmware_version(&fw_ver)) != M2M_SUCCESS) {
@@ -882,7 +833,7 @@ static int _atwinc15x0_init(netdev_t *netdev)
             _print_firmware_version(&fw_ver);
         }
     }
-    /* set Wi-Fi region */
+    // set Wi-Fi region
     if (WIFI_REGION == WIFI_REGION_EUROPE) {
         res = m2m_wifi_set_scan_region(EUROPE);
     }
@@ -895,25 +846,24 @@ static int _atwinc15x0_init(netdev_t *netdev)
     if (res != M2M_SUCCESS) {
         return -ENOTSUP;
     }
-    /* disable the built-in DHCP client */
+    // disable the built-in DHCP client
     if ((res = m2m_wifi_enable_dhcp(false)) != M2M_SUCCESS) {
         LOG_ERROR("[atwinc15x0] m2m_wifi_enable_dhcp failed with %d\n", res);
         return res;
     }
 
-    /* enable automatic power saving */
+    // enable automatic power saving
     m2m_wifi_set_sleep_mode(M2M_PS_DEEP_AUTOMATIC, CONFIG_ATWINC15X0_RECV_BCAST);
 
     res = 0;
     if (IS_USED(MODULE_ATWINC15X0_STATIC_CONNECT)) {
-        /* try to connect and return */
+        // try to connect and return
         res = _atwinc15x0_static_connect();
     }
     return res;
 }
 
-static int _atwinc15x0_scan(const wifi_scan_request_t *req)
-{
+static int _atwinc15x0_scan(const wifi_scan_request_t *req) {
     assert(req);
     (void)req;
     if (!IS_USED(MODULE_ATWINC15X0_DYNAMIC_SCAN)) {
@@ -963,14 +913,13 @@ static int _atwinc15x0_scan(const wifi_scan_request_t *req)
     return 0;
 }
 
-static int _atwinc15x0_disconnect(const wifi_disconnect_request_t *req)
-{
+static int _atwinc15x0_disconnect(const wifi_disconnect_request_t *req) {
     assert(req);
     if (_atwinc15x0_is_busy(atwinc15x0)) {
         return -EBUSY;
     }
     if (!_atwinc15x0_is_connected(atwinc15x0)) {
-        /* also when sleeping */
+        // also when sleeping
         return -EALREADY;
     }
     int ret;
@@ -983,8 +932,7 @@ static int _atwinc15x0_disconnect(const wifi_disconnect_request_t *req)
     return 0;
 }
 
-static int _atwinc15x0_connect(const wifi_connect_request_t *req)
-{
+static int _atwinc15x0_connect(const wifi_connect_request_t *req) {
     assert(req);
     if (!IS_USED(MODULE_ATWINC15X0_DYNAMIC_CONNECT)) {
         return 0;
@@ -1028,13 +976,13 @@ static int _atwinc15x0_connect(const wifi_connect_request_t *req)
     }
     int8_t res;
     if (_atwinc15x0_is_connected(atwinc15x0)) {
-        /* late disconnect to not interrupt connection on errors before */
+        // late disconnect to not interrupt connection on errors before
         if ((res = m2m_wifi_disconnect()) != M2M_SUCCESS) {
             LOG_ERROR("[atwinc15x0] WiFi disconnect failed with %d\n", res);
             return -EIO;
         }
     }
-    /* connect */
+    // connect
     if ((res = m2m_wifi_connect((char *)req->ssid, strlen(req->ssid),
                                 auth_type, &auth_info,
                                 M2M_WIFI_CH_ALL)) != M2M_SUCCESS) {
@@ -1046,8 +994,7 @@ static int _atwinc15x0_connect(const wifi_connect_request_t *req)
     return 0;
 }
 
-static void _atwinc15x0_isr(netdev_t *netdev)
-{
+static void _atwinc15x0_isr(netdev_t *netdev) {
     atwinc15x0_t *dev = (atwinc15x0_t *)netdev;
 
     assert(dev);
@@ -1055,7 +1002,7 @@ static void _atwinc15x0_isr(netdev_t *netdev)
 
     DEBUG("%s dev=%p\n", __func__, (void *)dev);
 
-    /* handle pending ATWINC15x0 module events */
+    // handle pending ATWINC15x0 module events
     if (m2m_wifi_handle_events(NULL) != M2M_SUCCESS) {
         DEBUG("%s handle events failed, reset device\n", __func__);
         _atwinc15x0_init(netdev);
@@ -1064,7 +1011,7 @@ static void _atwinc15x0_isr(netdev_t *netdev)
     if (IS_USED(MODULE_ATWINC15X0_STATIC_CONNECT)) {
         if (_atwinc15x0_timer.timeout == ATWINC15X0_WIFI_STA_TIMEOUT_RECONNECT) {
             if (!_atwinc15x0_is_connected(atwinc15x0)) {
-                /* try again if device is busy or the Atmel firmware throws an error */
+                // try again if device is busy or the Atmel firmware throws an error
                 if ((err = _atwinc15x0_static_connect()) == -EBUSY || err == -EIO) {
                     _atwinc15x0_set_reconnect_timer();
                 }
@@ -1084,8 +1031,7 @@ const netdev_driver_t atwinc15x0_netdev_driver = {
     .confirm_send = _confirm_send,
 };
 
-void atwinc15x0_setup(atwinc15x0_t *dev, const atwinc15x0_params_t *params, uint8_t idx)
-{
+void atwinc15x0_setup(atwinc15x0_t *dev, const atwinc15x0_params_t *params, uint8_t idx) {
     assert(dev);
 
     atwinc15x0 = dev;
@@ -1095,8 +1041,7 @@ void atwinc15x0_setup(atwinc15x0_t *dev, const atwinc15x0_params_t *params, uint
     netdev_register(&dev->netdev, NETDEV_ATWINC15X0, idx);
 }
 
-void atwinc15x0_irq(void)
-{
+void atwinc15x0_irq(void) {
     if (atwinc15x0) {
         netdev_trigger_event_isr(&atwinc15x0->netdev);
     }

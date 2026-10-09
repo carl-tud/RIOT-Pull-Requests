@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Telnet server implementation
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       Telnet server implementation
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <string.h>
 #include <fcntl.h>
@@ -73,34 +69,28 @@ static mutex_t connected_mutex = MUTEX_INIT_LOCKED;
 static mutex_t sock_mutex;
 
 __attribute__((weak))
-void telnet_cb_pre_connected(sock_tcp_t *sock)
-{
+void telnet_cb_pre_connected(sock_tcp_t *sock) {
     (void)sock;
 }
 
 __attribute__((weak))
-void telnet_cb_connected(sock_tcp_t *sock)
-{
+void telnet_cb_connected(sock_tcp_t *sock) {
     (void)sock;
 }
 
 __attribute__((weak))
-void telnet_cb_disconneced(void)
-{
+void telnet_cb_disconneced(void) {
 }
 
-static void _acquire(void)
-{
+static void _acquire(void) {
     mutex_lock(&sock_mutex);
 }
 
-static void _release(void)
-{
+static void _release(void) {
     mutex_unlock(&sock_mutex);
 }
 
-static void _connected(void)
-{
+static void _connected(void) {
     telnet_cb_pre_connected(client);
 
     connected = true;
@@ -111,8 +101,7 @@ static void _connected(void)
     telnet_cb_connected(client);
 }
 
-static void _disconnect(void)
-{
+static void _disconnect(void) {
     if (!IS_USED(MODULE_STDIO_TELNET)) {
         mutex_trylock(&connected_mutex);
     }
@@ -126,27 +115,26 @@ static void _disconnect(void)
     _release();
 }
 
-static int _write_buffer(const void* buffer, size_t len)
-{
+static int _write_buffer(const void* buffer, size_t len) {
     int res = 0;
     const char *buf = buffer;
     _acquire();
 
     while (len) {
-        /* telnet expects \r\n line endings */
-        /* https://datatracker.ietf.org/doc/html/rfc5198#appendix-C */
+        // telnet expects \r\n line endings
+        // https://datatracker.ietf.org/doc/html/rfc5198#appendix-C
         const char *nl = memchr(buf, '\n', len);
         if (nl) {
             const char cr = '\r';
             size_t before_nl = nl - buf;
 
-            /* write string before \n */
+            // write string before \n
             res = sock_tcp_write(client, buf, before_nl);
             if (res < 0) {
                 break;
             }
 
-            /* insert \r */
+            // insert \r
             res = sock_tcp_write(client, &cr, 1);
             if (res < 0) {
                 break;
@@ -168,19 +156,17 @@ static int _write_buffer(const void* buffer, size_t len)
     return res < 0 ? res : 0;
 }
 
-static uint8_t _will(uint8_t option)
-{
+static uint8_t _will(uint8_t option) {
     switch (option) {
-    /* agree to suppress go-ahead packets */
-    /* see RFC 858 */
+    // agree to suppress go-ahead packets
+    // see RFC 858
     case TELNET_OPT_SUP_GO_AHEAD: return TELNET_CMD_DO;
     }
 
     return TELNET_CMD_WONT;
 }
 
-static void _process_cmd(uint8_t cmd, uint8_t option)
-{
+static void _process_cmd(uint8_t cmd, uint8_t option) {
     DEBUG("cmd: %u, option: %u\n", cmd, option);
     switch (cmd) {
     case TELNET_CMD_WILL:
@@ -192,10 +178,9 @@ static void _process_cmd(uint8_t cmd, uint8_t option)
     }
 }
 
-static void _send_opts(void)
-{
+static void _send_opts(void) {
     if (IS_USED(MODULE_STDIO_TELNET)) {
-        /* RIOT will echo stdio, disable local echo */
+        // RIOT will echo stdio, disable local echo
         const uint8_t opt_echo[] = {
             TELNET_CMD_IAC, TELNET_CMD_WILL, TELNET_OPT_ECHO
         };
@@ -203,8 +188,7 @@ static void _send_opts(void)
     }
 }
 
-static void *telnet_thread(void *arg)
-{
+static void *telnet_thread(void *arg) {
     (void)arg;
 
     static uint8_t rx_buf[64];
@@ -290,8 +274,7 @@ disco:
     return NULL;
 }
 
-ssize_t telnet_server_write(const void* buffer, size_t len)
-{
+ssize_t telnet_server_write(const void* buffer, size_t len) {
     if (connected) {
         int res = _write_buffer(buffer, len);
         return res ? res : (int)len;
@@ -300,9 +283,8 @@ ssize_t telnet_server_write(const void* buffer, size_t len)
 }
 
 #ifndef MODULE_STDIO_TELNET
-int telnet_server_read(void* buffer, size_t count)
-{
-    /* block until a connection is established */
+int telnet_server_read(void* buffer, size_t count) {
+    // block until a connection is established
     mutex_lock(&connected_mutex);
     int res = pipe_read(&_stdin_pipe, buffer, count);
     if (connected) {
@@ -312,15 +294,13 @@ int telnet_server_read(void* buffer, size_t count)
 }
 #endif
 
-void telnet_server_disconnect(void)
-{
+void telnet_server_disconnect(void) {
     if (connected) {
         _want_disconnect = true;
     }
 }
 
-int telnet_server_start(void)
-{
+int telnet_server_start(void) {
     sock_tcp_ep_t ep = SOCK_IPV6_EP_ANY;
     ep.port = CONFIG_TELNET_PORT;
 
@@ -330,12 +310,12 @@ int telnet_server_start(void)
     }
 
     if (!IS_USED(MODULE_STDIO_TELNET)) {
-        /* init RX ringbuffer */
+        // init RX ringbuffer
         ringbuffer_init(&_stdin_ringbuffer, _stdin_pipe_buf, sizeof(_stdin_pipe_buf));
         pipe_init(&_stdin_pipe, &_stdin_ringbuffer, NULL);
     }
 
-    /* initiate telnet server */
+    // initiate telnet server
     thread_create(telnet_stack, sizeof(telnet_stack),
                   THREAD_PRIORITY_MAIN - 1, 0,
                   telnet_thread, NULL, "telnet");

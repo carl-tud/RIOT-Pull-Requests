@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_thingy52
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the Thingy:52
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- */
+/// @ingroup     boards_thingy52
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the Thingy:52
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
 
 #include "periph_cpu.h"
 #include "cfg_clock_32_1.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = NRF_UARTE0,
@@ -44,22 +38,20 @@ static const uart_conf_t uart_config[] = {
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
 #define UART_0_ISR          (isr_uart0)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
-        /* main I2C bus */
+        // main I2C bus
         .dev = NRF_TWIM0,
         .scl = 8,
         .sda = 7,
         .speed = I2C_SPEED_NORMAL
     },
     {
-        /* EXT I2C bus */
+        // EXT I2C bus
         .dev = NRF_TWIM1,
         .scl = 15,
         .sda = 14,
@@ -68,10 +60,10 @@ static const i2c_conf_t i2c_config[] = {
 };
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

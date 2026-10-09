@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- * @file
- */
+/// @ingroup tests
+/// @{
+///
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
+/// @file
 #include <errno.h>
 #include <stdint.h>
 
@@ -29,8 +25,8 @@
 #define TEST_DST_LEN        (8U)
 #define TEST_TAG            (26U)
 
-/* The interface is not used for anything by the VRB (it just is kept as a
- * reference for forwarding) so an uninitialized one is enough */
+// The interface is not used for anything by the VRB (it just is kept as a
+// reference for forwarding) so an uninitialized one is enough
 static gnrc_netif_t _dummy_netif;
 
 static const gnrc_sixlowpan_frag_rb_int_t _interval = {
@@ -51,14 +47,12 @@ static const gnrc_sixlowpan_frag_rb_base_t _base = {
 };
 static uint8_t _out_dst[] = TEST_OUT_DST;
 
-static void set_up(void)
-{
+static void set_up(void) {
     gnrc_sixlowpan_frag_vrb_reset();
     gnrc_sixlowpan_frag_fb_reset();
 }
 
-static void test_vrb_add__success(void)
-{
+static void test_vrb_add__success(void) {
     gnrc_sixlowpan_frag_vrb_t *res;
 
     TEST_ASSERT_NOT_NULL((res = gnrc_sixlowpan_frag_vrb_add(&_base,
@@ -67,9 +61,9 @@ static void test_vrb_add__success(void)
                                                             sizeof(_out_dst))));
     TEST_ASSERT_NOT_NULL(res->super.ints);
     TEST_ASSERT_NULL(res->super.ints->next);
-    /* make sure _base and res->super are distinct*/
+    // make sure _base and res->super are distinct
     TEST_ASSERT((&_base) != (&res->super));
-    /* but that the values are the same */
+    // but that the values are the same
     TEST_ASSERT_EQUAL_INT(_interval.start, res->super.ints->start);
     TEST_ASSERT_EQUAL_INT(_interval.end, res->super.ints->end);
     TEST_ASSERT_EQUAL_INT(_base.src_len, res->super.src_len);
@@ -85,8 +79,7 @@ static void test_vrb_add__success(void)
                         "TEST_DST != res->super.dst");
 }
 
-static void test_vrb_add__duplicate(void)
-{
+static void test_vrb_add__duplicate(void) {
     gnrc_sixlowpan_frag_vrb_t *res1, *res2;
 
     TEST_ASSERT_NOT_NULL((res1 = gnrc_sixlowpan_frag_vrb_add(&_base,
@@ -100,11 +93,10 @@ static void test_vrb_add__duplicate(void)
     TEST_ASSERT(res1 == res2);
 }
 
-static void test_vrb_add__full(void)
-{
+static void test_vrb_add__full(void) {
     gnrc_sixlowpan_frag_rb_base_t base = _base;
 
-    /* fill up VRB */
+    // fill up VRB
     for (unsigned i = 0; i < CONFIG_GNRC_SIXLOWPAN_FRAG_VRB_SIZE; i++) {
         TEST_ASSERT_NOT_NULL(gnrc_sixlowpan_frag_vrb_add(&base,
                                                          &_dummy_netif,
@@ -112,22 +104,20 @@ static void test_vrb_add__full(void)
                                                          sizeof(_out_dst)));
         base.tag++;
     }
-    /* another entry will not fit */
+    // another entry will not fit
     TEST_ASSERT_NULL(gnrc_sixlowpan_frag_vrb_add(&base, &_dummy_netif,
                                                  _out_dst, sizeof(_out_dst)));
-    /* check if it really isn't in the VRB */
+    // check if it really isn't in the VRB
     TEST_ASSERT_NULL(gnrc_sixlowpan_frag_vrb_get(base.src, base.src_len,
                                                  base.tag));
 }
 
-static void test_vrb_get__empty(void)
-{
+static void test_vrb_get__empty(void) {
     TEST_ASSERT_NULL(gnrc_sixlowpan_frag_vrb_get(_base.src, _base.src_len,
                                                  _base.tag));
 }
 
-static void test_vrb_get__after_add(void)
-{
+static void test_vrb_get__after_add(void) {
     gnrc_sixlowpan_frag_vrb_t *res1, *res2;
 
     TEST_ASSERT_NOT_NULL((res1 = gnrc_sixlowpan_frag_vrb_add(&_base,
@@ -140,8 +130,7 @@ static void test_vrb_get__after_add(void)
     TEST_ASSERT(res1 == res2);
 }
 
-static void test_vrb_rm(void)
-{
+static void test_vrb_rm(void) {
     gnrc_sixlowpan_frag_vrb_t *res;
 
     TEST_ASSERT_NOT_NULL((res = gnrc_sixlowpan_frag_vrb_add(&_base,
@@ -153,8 +142,7 @@ static void test_vrb_rm(void)
                                                  _base.tag));
 }
 
-static void test_vrb_gc(void)
-{
+static void test_vrb_gc(void) {
     gnrc_sixlowpan_frag_rb_base_t base = _base;
     gnrc_sixlowpan_frag_vrb_t *res;
 
@@ -168,8 +156,7 @@ static void test_vrb_gc(void)
                                                  base.tag));
 }
 
-static Test *tests_gnrc_sixlowpan_frag_vrb_tests(void)
-{
+static Test *tests_gnrc_sixlowpan_frag_vrb_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_vrb_add__success),
         new_TestFixture(test_vrb_add__duplicate),
@@ -185,9 +172,8 @@ static Test *tests_gnrc_sixlowpan_frag_vrb_tests(void)
     return (Test *)&vrb_tests;
 }
 
-void tests_gnrc_sixlowpan_frag_vrb(void)
-{
+void tests_gnrc_sixlowpan_frag_vrb(void) {
     xtimer_init();
     TESTS_RUN(tests_gnrc_sixlowpan_frag_vrb_tests());
 }
-/** @} */
+/// @}

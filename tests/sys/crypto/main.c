@@ -1,13 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2014 Philipp Rosenkranz
- * SPDX-FileCopyrightText: 2014 Nico von Geyso
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Philipp Rosenkranz
+// SPDX-FileCopyrightText: 2014 Nico von Geyso
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tests-crypto.h"
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_crypto_helper_tests());
     TESTS_RUN(tests_crypto_chacha_tests());

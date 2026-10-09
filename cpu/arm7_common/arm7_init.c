@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2008-2009 Freie Universitaet Berlin (FUB)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2008-2009 Freie Universitaet Berlin (FUB)
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_arm7_common
- * @{
- *
- * @file
- * @brief       Common ARM7 boot up code
- *
- * @author      Heiko Will <hwill@inf.fu-berlin.de>
- * @author      Michael Baar <michael.baar@fu-berlin.de>
- */
+/// @ingroup     cpu_arm7_common
+/// @{
+///
+/// @file
+/// @brief       Common ARM7 boot up code
+///
+/// @author      Heiko Will <hwill@inf.fu-berlin.de>
+/// @author      Michael Baar <michael.baar@fu-berlin.de>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,16 +20,15 @@
 #include "cpu.h"
 #include "log.h"
 
-static inline void _init_data(void)
-{
-    /* (linker script ensures that data is 32-bit aligned) */
+static inline void _init_data(void) {
+    // (linker script ensures that data is 32-bit aligned)
     extern unsigned int _etext;
-    extern unsigned int _srelocate; /* .data section */
+    extern unsigned int _srelocate; // .data section
     extern unsigned int _erelocate;
-    extern unsigned int _szero;     /* .bss section */
+    extern unsigned int _szero;     // .bss section
     extern unsigned int _ezero;
 
-/* Support for Battery Backup RAM */
+// Support for Battery Backup RAM
 #ifdef CPU_HAS_BACKUP_RAM
     extern unsigned int _sbackup_data_load[];
     extern unsigned int _sbackup_data[];
@@ -47,96 +42,95 @@ static inline void _init_data(void)
     register unsigned int *end;
 
 #ifdef DEVELHELP
-    /* Fill user stack with canary values up until the current stack pointer */
-    /* Read current stack pointer from CPU register */
+    // Fill user stack with canary values up until the current stack pointer
+    // Read current stack pointer from CPU register
     __asm__ volatile ("mov %[end], sp" : [end] "=r" (end) : : );
     dst = &__stack_start;
     while (dst < end) {
         *(dst++) = STACK_CANARY_WORD;
     }
 
-    /* fill the interrupt stacks with canary values */
+    // fill the interrupt stacks with canary values
     extern unsigned int __stack_usr_start;
     extern unsigned int __stack_end;
 
     dst = &__stack_usr_start;
     end = &__stack_end;
-    /* cppcheck-suppress comparePointers
-     * (addresses exported as symbols via linker script and look unrelated
-     * to cppcheck) */
+    // cppcheck-suppress comparePointers
+    // (addresses exported as symbols via linker script and look unrelated
+    // to cppcheck)
     while (dst < end) {
         *(dst++) = STACK_CANARY_WORD;
     }
 #endif
 
-    /* initialize data from flash */
+    // initialize data from flash
     src = &_etext;
     dst = &_srelocate;
     end = &_erelocate;
 
-    /* cppcheck-suppress comparePointers
-     * (addresses exported as symbols via linker script and look unrelated
-     * to cppcheck) */
+    // cppcheck-suppress comparePointers
+    // (addresses exported as symbols via linker script and look unrelated
+    // to cppcheck)
     while (dst < end) {
         *dst++ = *src++;
     }
 
-    /* clear bss */
+    // clear bss
     dst = &_szero;
     end = &_ezero;
 
-    /* cppcheck-suppress comparePointers
-     * (addresses exported as symbols via linker script and look unrelated
-     * to cppcheck) */
+    // cppcheck-suppress comparePointers
+    // (addresses exported as symbols via linker script and look unrelated
+    // to cppcheck)
     while (dst < end) {
         *dst++ = 0;
     }
 
 #ifdef CPU_HAS_BACKUP_RAM
-    /* only initialize battery backup on cold boot */
+    // only initialize battery backup on cold boot
     if (cpu_backup_ram_is_initialized()) {
         return;
     }
 
-    /* load low-power data section. */
+    // load low-power data section.
     src = _sbackup_data_load;
     dst = _sbackup_data;
     end = _ebackup_data;
 
-    /* cppcheck-suppress comparePointers
-     * (addresses exported as symbols via linker script and look unrelated
-     * to cppcheck) */
+    // cppcheck-suppress comparePointers
+    // (addresses exported as symbols via linker script and look unrelated
+    // to cppcheck)
     while (dst < end) {
         *dst++ = *src++;
     }
 
-    /* zero-out low-power bss. */
+    // zero-out low-power bss.
     dst = _sbackup_bss;
     end = _ebackup_bss;
 
-    /* cppcheck-suppress comparePointers
-     * (addresses exported as symbols via linker script and look unrelated
-     * to cppcheck) */
+    // cppcheck-suppress comparePointers
+    // (addresses exported as symbols via linker script and look unrelated
+    // to cppcheck)
     while (dst < end) {
         *dst++ = 0;
     }
-#endif /* CPU_HAS_BACKUP_RAM */
+#endif // CPU_HAS_BACKUP_RAM
 }
 
-void bootloader(void)
-{
+void bootloader(void) {
     extern void cpu_init(void);
 
-    /* initialize bss and data */
+    // initialize bss and data
     _init_data();
 
 #ifdef MODULE_PUF_SRAM
-    /* use uninitialized heap */
+    // use uninitialized heap
     extern unsigned _sheap;
     puf_sram_init((uint8_t *) &_sheap, SEED_RAM_LEN);
 #endif
 
-    /* cpu specific setup of clocks, peripherals */
+    // cpu specific setup of clocks, peripherals
     cpu_init();
 
 #if defined(MODULE_NEWLIB) || defined(MODULE_PICOLIBC)
@@ -145,4 +139,4 @@ void bootloader(void)
 #endif
 }
 
-/** @} */
+/// @}

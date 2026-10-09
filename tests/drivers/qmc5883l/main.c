@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
-
- * @file
- * @brief       Test application for the QMC5883L magnetic sensor
-
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the QMC5883L magnetic sensor
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -27,21 +23,19 @@
 #define PWR_OFF_DELAY       (1u)
 #define FLAG_DRDY           (0x0400)
 
-/* allocate the device descriptor */
+// allocate the device descriptor
 static qmc5883l_t _dev;
 
 #ifdef MODULE_QMC5883L_INT
 static thread_t *_tmain;
 
-static void _on_drdy(void *arg)
-{
+static void _on_drdy(void *arg) {
     (void)arg;
     thread_flags_set(_tmain, FLAG_DRDY);
 }
 #endif
 
-static void _read_and_dump(void)
-{
+static void _read_and_dump(void) {
     int16_t data[3];
     int res = qmc5883l_read(&_dev, data);
     if ((res == QMC5883L_OK) || (res == QMC5883L_OVERFLOW)) {
@@ -60,14 +54,13 @@ static void _read_and_dump(void)
     }
 }
 
-int main(void)
-{
+int main(void) {
     uint32_t delay = US_PER_MS;
 
     puts("QMC5883L test application");
     puts("Please refer to the README.md for more information\n");
 
-    /* initialize the sensor with default configuration parameters */
+    // initialize the sensor with default configuration parameters
     if (qmc5883l_init(&_dev, &qmc5883l_params[0]) != QMC5883L_OK) {
         puts("Error: unable to initialize device");
         return 1;
@@ -103,7 +96,7 @@ int main(void)
 #endif
     puts("");
 
-    /* test the driver's power cycling */
+    // test the driver's power cycling
     puts("Power cycle test: powering device off now");
     if (qmc5883l_poweroff(&_dev) != QMC5883L_OK) {
         puts("Error: unable to power off device");
@@ -117,7 +110,7 @@ int main(void)
     puts("Power cycle test: device is powered back on now");
 
 #ifdef MODULE_QMC5883L_INT
-    /* safe a reference to the main thread TCB so we can wait for flags */
+    // safe a reference to the main thread TCB so we can wait for flags
     if (gpio_is_valid(qmc5883l_params[0].pin_drdy)) {
         _tmain = thread_get_active();
 
@@ -142,6 +135,6 @@ int main(void)
         _read_and_dump();
     }
 
-    /* should never be reached */
+    // should never be reached
     return 0;
 }

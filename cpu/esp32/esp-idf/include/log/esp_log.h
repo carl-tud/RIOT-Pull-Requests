@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       Wrapper for source code compatibility of ESP-IDF log with RIOT's log module
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       Wrapper for source code compatibility of ESP-IDF log with RIOT's log module
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
-#ifndef DOXYGEN     /* Hide implementation details from doxygen */
+#ifndef DOXYGEN     // Hide implementation details from doxygen
 
 #ifdef __cplusplus
 extern "C" {
@@ -93,10 +89,10 @@ extern "C" {
 #define ESP_DRAM_LOGD(tag, format, ...) ESP_DRAM_LOG_LEVEL(LOG_DEBUG  , D, tag, format "\n", ##__VA_ARGS__)
 #define ESP_DRAM_LOGV(tag, format, ...) ESP_DRAM_LOG_LEVEL(LOG_ALL    , V, tag, format "\n", ##__VA_ARGS__)
 
-#endif /* defined(RIOT_VERSION) */
+#endif // defined(RIOT_VERSION)
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

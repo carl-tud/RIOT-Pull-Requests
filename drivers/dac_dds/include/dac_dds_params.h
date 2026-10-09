@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_periph_dac
- * @{
- *
- * @file
- * @brief       Default configuration for the DAC DDS driver
- *
- * @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
- */
+/// @ingroup     drivers_periph_dac
+/// @{
+///
+/// @file
+/// @brief       Default configuration for the DAC DDS driver
+///
+/// @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
 
 #include "board.h"
 #include "macros/units.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the DAC DDS driver
- * @{
- */
+/// @name    Set default configuration parameters for the DAC DDS driver
+/// @{
 #ifndef DAC_DDS_PARAM_DAC
 #define DAC_DDS_PARAM_DAC       DAC_LINE(0)
 #endif
@@ -42,23 +36,19 @@ extern "C" {
                                   .timer_hz = DAC_DDS_PARAM_TIMER_HZ, \
                                 }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   DAC DDS configuration
- */
+/// @brief   DAC DDS configuration
 static const dac_dds_params_t dac_dds_params[] =
 {
     DAC_DDS_PARAMS
 };
 
-/**
- * @brief   DAC DDS instances
- */
+/// @brief   DAC DDS instances
 #define DAC_DDS_NUMOF           ARRAY_SIZE(dac_dds_params)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

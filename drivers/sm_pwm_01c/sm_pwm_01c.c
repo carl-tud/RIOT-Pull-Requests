@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sm_pwm_01c
- * @{
- * @file
- * @brief       Implementation of SM_PWM_01C dust sensor
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @}
- */
+/// @ingroup     drivers_sm_pwm_01c
+/// @{
+/// @file
+/// @brief       Implementation of SM_PWM_01C dust sensor
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -26,20 +22,18 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* Scaling value to get 1/100 of a % resolution for lpo values */
+// Scaling value to get 1/100 of a % resolution for lpo values
 #define LPO_SCALING         (100)
 
-/* Circular average for moving average calculation, this is always
-   called in irq context */
+// Circular average for moving average calculation, this is always
+//    called in irq context
 #ifdef MODULE_SM_PWM_01C_MA
-static void _circ_buf_push(circ_buf_t *buf, uint16_t data)
-{
+static void _circ_buf_push(circ_buf_t *buf, uint16_t data) {
     buf->buf[buf->head] = data;
     buf->head = (buf->head + 1) % (SM_PWM_01C_BUFFER_LEN);
 }
 
-static uint16_t _circ_buf_avg(circ_buf_t *buf)
-{
+static uint16_t _circ_buf_avg(circ_buf_t *buf) {
     uint32_t sum = 0;
 
     for (size_t i = 0; i < SM_PWM_01C_BUFFER_LEN; i++) {
@@ -49,10 +43,9 @@ static uint16_t _circ_buf_avg(circ_buf_t *buf)
 }
 #endif
 
-/* Interval approximation of theoretical Dust Concentration / LPO % curve
-   https://www.sgbotic.com/products/datasheets/sensors/app-SM-PWM-01C.pdf */
-static uint16_t _lpo_to_dust_cons(uint16_t lpo)
-{
+// Interval approximation of theoretical Dust Concentration / LPO % curve
+//    https://www.sgbotic.com/products/datasheets/sensors/app-SM-PWM-01C.pdf
+static uint16_t _lpo_to_dust_cons(uint16_t lpo) {
     if (lpo <= (2 * LPO_SCALING)) {
         return (143 * lpo) / (2 * LPO_SCALING);
     }
@@ -67,17 +60,16 @@ static uint16_t _lpo_to_dust_cons(uint16_t lpo)
     }
 }
 
-static void _sample_timer_cb(void *arg)
-{
+static void _sample_timer_cb(void *arg) {
     sm_pwm_01c_t *dev = (sm_pwm_01c_t *)arg;
 
-    /* schedule next sample */
+    // schedule next sample
     ztimer_set(ZTIMER_USEC, &dev->_sampler, CONFIG_SM_PWM_01C_SAMPLE_TIME);
     DEBUG("[sm_pwm_01c] tsp_lpo %" PRIu32 "\n", dev->_values.tsp_lpo);
     DEBUG("[sm_pwm_01c] tlp_lpo %" PRIu32 "\n", dev->_values.tlp_lpo);
 
-    /* calculate low Pulse Output Occupancy in (% * LPO_SCALING),
-       e.g. 1% -> 100 */
+    // calculate low Pulse Output Occupancy in (% * LPO_SCALING),
+    //    e.g. 1% -> 100
     uint16_t tsp_ratio =
         (uint16_t)((uint64_t)(100 * LPO_SCALING * dev->_values.tsp_lpo) /
                    CONFIG_SM_PWM_01C_SAMPLE_TIME);
@@ -87,13 +79,13 @@ static void _sample_timer_cb(void *arg)
     DEBUG("[sm_pwm_01c] tsp_ratio %" PRIu16 "/%d %%\n", tsp_ratio, LPO_SCALING);
     DEBUG("[sm_pwm_01c] tlp_ratio %" PRIu16 "/%d %%\n", tlp_ratio, LPO_SCALING);
 
-    /* convert lpo to particle concentration */
+    // convert lpo to particle concentration
     uint16_t tsp = _lpo_to_dust_cons(tsp_ratio);
     uint16_t tlp = _lpo_to_dust_cons(tlp_ratio);
     DEBUG("[sm_pwm_01c] new sample tsp conc: %" PRIu16 " ug/m3\n", tsp);
     DEBUG("[sm_pwm_01c] new sample tlp conc: %" PRIu16 " ug/m3\n", tlp);
 
-    /* update concentration values*/
+    // update concentration values
 #ifdef MODULE_SM_PWM_01C_MA
     _circ_buf_push(&dev->_values.tsp_circ_buf, tsp);
     _circ_buf_push(&dev->_values.tlp_circ_buf, tlp);
@@ -106,13 +98,12 @@ static void _sample_timer_cb(void *arg)
                     dev->_values.data.mc_pm_2p5) / CONFIG_SM_PWM_01C_EXP_WEIGHT);
 #endif
 
-    /* reset lpo */
+    // reset lpo
     dev->_values.tlp_lpo = 0;
     dev->_values.tsp_lpo = 0;
 }
 
-static void _tsp_pin_cb(void *arg)
-{
+static void _tsp_pin_cb(void *arg) {
     sm_pwm_01c_t *dev = (sm_pwm_01c_t *)arg;
     uint32_t now = ztimer_now(ZTIMER_USEC);
 
@@ -124,8 +115,7 @@ static void _tsp_pin_cb(void *arg)
     }
 }
 
-static void _tlp_pin_cb(void *arg)
-{
+static void _tlp_pin_cb(void *arg) {
     sm_pwm_01c_t *dev = (sm_pwm_01c_t *)arg;
     uint32_t now = ztimer_now(ZTIMER_USEC);
 
@@ -137,11 +127,10 @@ static void _tlp_pin_cb(void *arg)
     }
 }
 
-int sm_pwm_01c_init(sm_pwm_01c_t *dev, const sm_pwm_01c_params_t *params)
-{
+int sm_pwm_01c_init(sm_pwm_01c_t *dev, const sm_pwm_01c_params_t *params) {
     dev->params = *params;
 
-    /* set up irq */
+    // set up irq
     if (gpio_init_int(dev->params.tsp_pin, GPIO_IN_PU, GPIO_BOTH, _tsp_pin_cb,
                       dev) < 0) {
         DEBUG("[sm_pwm_01c] init_int of tsp_pin failed [ERROR]\n");
@@ -153,7 +142,7 @@ int sm_pwm_01c_init(sm_pwm_01c_t *dev, const sm_pwm_01c_params_t *params)
         return -EIO;
     }
 
-    /* setup timer */
+    // setup timer
     dev->_sampler.callback = _sample_timer_cb;
     dev->_sampler.arg = dev;
 
@@ -165,30 +154,27 @@ int sm_pwm_01c_init(sm_pwm_01c_t *dev, const sm_pwm_01c_params_t *params)
     return 0;
 }
 
-void sm_pwm_01c_start(sm_pwm_01c_t *dev)
-{
+void sm_pwm_01c_start(sm_pwm_01c_t *dev) {
     assert(dev);
-    /* reset old values */
+    // reset old values
     memset((void *)&dev->_values, 0, sizeof(sm_pwm_01c_values_t));
-    /* enable irq and set timer */
+    // enable irq and set timer
     ztimer_set(ZTIMER_USEC, &dev->_sampler, CONFIG_SM_PWM_01C_SAMPLE_TIME);
     gpio_irq_enable(dev->params.tsp_pin);
     gpio_irq_enable(dev->params.tlp_pin);
     DEBUG("[sm_pwm_01c] started average measurements\n");
 }
 
-void sm_pwm_01c_stop(sm_pwm_01c_t *dev)
-{
+void sm_pwm_01c_stop(sm_pwm_01c_t *dev) {
     assert(dev);
-    /* disable irq and remove timer */
+    // disable irq and remove timer
     ztimer_remove(ZTIMER_USEC, &dev->_sampler);
     gpio_irq_disable(dev->params.tsp_pin);
     gpio_irq_disable(dev->params.tlp_pin);
     DEBUG("[sm_pwm_01c] stopped average measurements\n");
 }
 
-void sm_pwm_01c_read_data(sm_pwm_01c_t *dev, sm_pwm_01c_data_t *data)
-{
+void sm_pwm_01c_read_data(sm_pwm_01c_t *dev, sm_pwm_01c_data_t *data) {
     assert(dev);
     unsigned int state = irq_disable();
 #ifdef MODULE_SM_PWM_01C_MA

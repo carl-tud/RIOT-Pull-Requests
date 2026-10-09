@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2017 Gilles DOFFE <g.doffe@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Gilles DOFFE <g.doffe@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_qdec
- * @brief   Low-level QDEC driver implementation
- * @author  Gilles DOFFE <g.doffe@gmail.com>
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_qdec
+/// @brief   Low-level QDEC driver implementation
+/// @author  Gilles DOFFE <g.doffe@gmail.com>
 
 #include <time.h>
 #include <sys/time.h>
@@ -34,25 +30,23 @@
 
 #define NATIVE_QDEC_MAX     (0x7FFFFFFFL)
 
-/* QDEC devices */
+// QDEC devices
 uint32_t qdecs[QDEC_NUMOF];
-/* QDEC values for each device, should be set externally */
+// QDEC values for each device, should be set externally
 int32_t  qdecs_value[QDEC_NUMOF];
 
-int32_t qdec_init(qdec_t qdec, qdec_mode_t mode, qdec_cb_t cb, void *arg)
-{
-    /* no interrupt needed since it is externally incremented */
+int32_t qdec_init(qdec_t qdec, qdec_mode_t mode, qdec_cb_t cb, void *arg) {
+    // no interrupt needed since it is externally incremented
     (void)cb;
     (void)arg;
 
-    /* Verify parameters */
+    // Verify parameters
     assert((qdec < QDEC_NUMOF));
 
-    /* Count on A (TI1) signal edges, B (TI2) signal edges or both,
-     * default to EINVAL (Invalid argument).
-     */
+    // Count on A (TI1) signal edges, B (TI2) signal edges or both,
+    // default to EINVAL (Invalid argument).
     switch (mode) {
-        /* X1 mode */
+        // X1 mode
         case QDEC_X1:
             break;
         case QDEC_X2:
@@ -62,22 +56,21 @@ int32_t qdec_init(qdec_t qdec, qdec_mode_t mode, qdec_cb_t cb, void *arg)
             goto err_invalid_mode;
     }
 
-    /* Initialize qdec channels */
+    // Initialize qdec channels
     qdecs[qdec] = 0;
 
-    /* Reset counter and start qdec */
+    // Reset counter and start qdec
     qdec_start(qdec);
 
     return 0;
 
-/* Error management */
+// Error management
 err_invalid_mode:
     return errno;
 }
 
-/* Return QDEC value */
-inline int32_t qdec_read_and_reset(qdec_t qdec)
-{
+// Return QDEC value
+inline int32_t qdec_read_and_reset(qdec_t qdec) {
     int32_t count = 0;
 
     count = qdecs_value[qdec];
@@ -86,21 +79,18 @@ inline int32_t qdec_read_and_reset(qdec_t qdec)
     return count;
 }
 
-/* Return QDEC value */
-inline int32_t qdec_read(qdec_t qdec)
-{
+// Return QDEC value
+inline int32_t qdec_read(qdec_t qdec) {
     return qdecs_value[qdec];
 }
 
-/* Empty functions to keep API */
-void qdec_start(qdec_t qdec)
-{
+// Empty functions to keep API
+void qdec_start(qdec_t qdec) {
     (void)qdec;
 }
 
-void qdec_stop(qdec_t qdec)
-{
+void qdec_stop(qdec_t qdec) {
     (void)qdec;
 }
 
-#endif /* QDEC_NUMOF */
+#endif // QDEC_NUMOF

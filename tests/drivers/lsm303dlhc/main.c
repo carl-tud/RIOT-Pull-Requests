@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the LSM303DLHC accelerometer/magnetometer
- *
- * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the LSM303DLHC accelerometer/magnetometer
+///
+/// @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -23,8 +19,7 @@
 
 #define SLEEP_USEC  (100 * 1000U)
 
-int main(void)
-{
+int main(void) {
     lsm303dlhc_t dev;
 
     puts("LSM303DLHC temperature test application\n");

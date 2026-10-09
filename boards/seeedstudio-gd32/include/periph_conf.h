@@ -1,42 +1,38 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht <gunar@schorcht.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht <gunar@schorcht.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_seeedstudio-gd32
- * @{
- *
- * @file
- * @brief       Board specific definitions for the SeeedStudio GD32 RISC-V board
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     boards_seeedstudio-gd32
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the SeeedStudio GD32 RISC-V board
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "macros/units.h"
 
 #ifndef CONFIG_BOARD_HAS_HXTAL
-#define CONFIG_BOARD_HAS_HXTAL  1   /**< The board provides a high frequency oscillator. */
+#define CONFIG_BOARD_HAS_HXTAL  1   ///< The board provides a high frequency oscillator.
 #endif
 
 #ifndef CONFIG_BOARD_HAS_LXTAL
-#define CONFIG_BOARD_HAS_LXTAL  1   /**< The board provides a low frequency oscillator. */
+#define CONFIG_BOARD_HAS_LXTAL  1   ///< The board provides a low frequency oscillator.
 #endif
 
 #ifndef CONFIG_CLOCK_HXTAL
-#define CONFIG_CLOCK_HXTAL      MHZ(8)      /**< HXTAL frequency */
+#define CONFIG_CLOCK_HXTAL      MHZ(8)      ///< HXTAL frequency
 #endif
 
 #ifndef SPI_DEV_1_USED
-#define SPI_DEV_1_USED          1   /**< Enable SPI_DEV(1) by default for the connected Flash */
+#define SPI_DEV_1_USED          1   ///< Enable SPI_DEV(1) by default for the connected Flash
 #endif
 
 #ifndef I2C_DEV_1_USED
-#define I2C_DEV_1_USED          1   /**< Enable I2C_DEV(1) by default */
+#define I2C_DEV_1_USED          1   ///< Enable I2C_DEV(1) by default
 #endif
 
 #include "periph_cpu.h"
@@ -52,10 +48,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan = 1 },
     { .pin = GPIO_PIN(PORT_A, 2), .dev = 0, .chan = 2 },
@@ -66,19 +60,17 @@ static const adc_conf_t adc_config[] = {
     { .pin = GPIO_PIN(PORT_C, 3), .dev = 0, .chan = 13 },
     { .pin = GPIO_PIN(PORT_C, 4), .dev = 0, .chan = 14 },
     { .pin = GPIO_PIN(PORT_C, 5), .dev = 0, .chan = 15 },
-    /* ADC Temperature channel */
+    // ADC Temperature channel
     { .pin = GPIO_UNDEF, .dev = 0, .chan = 16 },
-    /* ADC VREF channel */
+    // ADC VREF channel
     { .pin = GPIO_UNDEF, .dev = 0, .chan = 17 },
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIMER2,
@@ -86,7 +78,7 @@ static const pwm_conf_t pwm_config[] = {
         .chan     = {
                         { .pin = GPIO_PIN(PORT_B, 0), .cc_chan = 2 },
                         { .pin = GPIO_PIN(PORT_B, 1), .cc_chan = 3 },
-                        /* unused channels have to be defined by GPIO_UNDEF */
+                        // unused channels have to be defined by GPIO_UNDEF
                         { .pin = GPIO_UNDEF, .cc_chan = 0 },
                         { .pin = GPIO_UNDEF, .cc_chan = 1 },
                     },
@@ -100,7 +92,7 @@ static const pwm_conf_t pwm_config[] = {
         .chan     = {
                         { .pin = GPIO_PIN(PORT_B, 8), .cc_chan = 2 },
                         { .pin = GPIO_PIN(PORT_B, 9), .cc_chan = 3 },
-                        /* unused channels have to be defined by GPIO_UNDEF */
+                        // unused channels have to be defined by GPIO_UNDEF
                         { .pin = GPIO_UNDEF, .cc_chan = 0 },
                         { .pin = GPIO_UNDEF, .cc_chan = 1 },
                     },
@@ -111,10 +103,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

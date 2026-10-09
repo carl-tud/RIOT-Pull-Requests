@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_serpente
- * @{
- *
- * @file
- * @brief       Board specific implementations for the Serpente board
- *
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- *
- * @}
- */
+/// @ingroup     boards_serpente
+/// @{
+///
+/// @file
+/// @brief       Board specific implementations for the Serpente board
+///
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
+///
+/// @}
 
 #include "cpu.h"
 #include "board.h"
@@ -24,7 +20,7 @@
 #include "timex.h"
 
 #ifdef MODULE_MTD
-/* GD25Q32C */
+// GD25Q32C
 static const mtd_spi_nor_params_t _serpente_nor_params = {
     .opcode = &mtd_spi_nor_opcode_default,
     .wait_chip_erase = 15LU * US_PER_SEC,
@@ -51,4 +47,4 @@ static mtd_spi_nor_t serpente_nor_dev = {
 };
 
 MTD_XFA_ADD(serpente_nor_dev, 0);
-#endif /* MODULE_MTD */
+#endif // MODULE_MTD

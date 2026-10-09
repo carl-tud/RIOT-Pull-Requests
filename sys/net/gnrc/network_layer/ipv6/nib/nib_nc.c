@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -23,11 +19,10 @@
 #include "_nib-internal.h"
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_6LN)
 #  include "_nib-6ln.h"
-#endif /* CONFIG_GNRC_IPV6_NIB_6LN */
+#endif // CONFIG_GNRC_IPV6_NIB_6LN
 
 int gnrc_ipv6_nib_nc_set(const ipv6_addr_t *ipv6, unsigned iface,
-                         const uint8_t *l2addr, size_t l2addr_len)
-{
+                         const uint8_t *l2addr, size_t l2addr_len) {
     _nib_onl_entry_t *node;
 
     assert(ipv6 != NULL);
@@ -60,8 +55,7 @@ int gnrc_ipv6_nib_nc_set(const ipv6_addr_t *ipv6, unsigned iface,
 }
 
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_6LN)
-int gnrc_ipv6_nib_nc_set_6ln(unsigned iface, const uint8_t *l2addr, size_t l2addr_len)
-{
+int gnrc_ipv6_nib_nc_set_6ln(unsigned iface, const uint8_t *l2addr, size_t l2addr_len) {
     int res;
     ipv6_addr_t ipv6addr;
 
@@ -70,12 +64,12 @@ int gnrc_ipv6_nib_nc_set_6ln(unsigned iface, const uint8_t *l2addr, size_t l2add
     if (netif == NULL) {
         return -ENOENT;
     }
-    /* Build link-local IPv6 address based on L2-address. */
+    // Build link-local IPv6 address based on L2-address.
     res = _build_ll_ipv6_from_addr(netif, l2addr, l2addr_len, &ipv6addr);
     if (res < 0) {
         return res;
     }
-    /* Add as unmanaged entry to neighbor cache. */
+    // Add as unmanaged entry to neighbor cache.
     res = gnrc_ipv6_nib_nc_set(&ipv6addr, netif->pid, l2addr, l2addr_len);
     if (res < 0) {
         return res;
@@ -85,8 +79,7 @@ int gnrc_ipv6_nib_nc_set_6ln(unsigned iface, const uint8_t *l2addr, size_t l2add
 }
 #endif
 
-void gnrc_ipv6_nib_nc_del(const ipv6_addr_t *ipv6, unsigned iface)
-{
+void gnrc_ipv6_nib_nc_del(const ipv6_addr_t *ipv6, unsigned iface) {
     _nib_onl_entry_t *node = NULL;
 
     _nib_acquire();
@@ -101,14 +94,13 @@ void gnrc_ipv6_nib_nc_del(const ipv6_addr_t *ipv6, unsigned iface)
 }
 
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_ARSM)
-bool gnrc_ipv6_nib_nc_del_l2(unsigned iface, const uint8_t *l2addr, size_t l2addr_len)
-{
+bool gnrc_ipv6_nib_nc_del_l2(unsigned iface, const uint8_t *l2addr, size_t l2addr_len) {
     _nib_onl_entry_t *node = NULL;
     bool res = false;
 
     _nib_acquire();
 
-    /* Find and remove entry with matching l2 address.*/
+    // Find and remove entry with matching l2 address.
     while ((node = _nib_onl_iter(node)) != NULL) {
         if ((_nib_onl_get_if(node) == iface) &&
             l2util_addr_equal(l2addr, l2addr_len, node->l2addr, node->l2addr_len)) {
@@ -121,16 +113,15 @@ bool gnrc_ipv6_nib_nc_del_l2(unsigned iface, const uint8_t *l2addr, size_t l2add
 
     return res;
 }
-#endif /* CONFIG_GNRC_IPV6_NIB_ARSM */
+#endif // CONFIG_GNRC_IPV6_NIB_ARSM
 
-void gnrc_ipv6_nib_nc_mark_reachable(const ipv6_addr_t *ipv6)
-{
+void gnrc_ipv6_nib_nc_mark_reachable(const ipv6_addr_t *ipv6) {
     _nib_onl_entry_t *node = NULL;
 
     _nib_acquire();
     while ((node = _nib_onl_iter(node)) != NULL) {
         if ((node->mode & _NC) && ipv6_addr_equal(ipv6, &node->ipv6)) {
-            /* only set reachable if not unmanaged */
+            // only set reachable if not unmanaged
             if ((node->info & GNRC_IPV6_NIB_NC_INFO_NUD_STATE_MASK)) {
                 _nib_nc_set_reachable(node);
             }
@@ -141,8 +132,7 @@ void gnrc_ipv6_nib_nc_mark_reachable(const ipv6_addr_t *ipv6)
 }
 
 bool gnrc_ipv6_nib_nc_iter(unsigned iface, void **state,
-                           gnrc_ipv6_nib_nc_t *entry)
-{
+                           gnrc_ipv6_nib_nc_t *entry) {
     _nib_onl_entry_t *node = *state;
 
     _nib_acquire();
@@ -181,8 +171,7 @@ static const char *_ar_str[] = {
 };
 #endif
 
-void gnrc_ipv6_nib_nc_print(gnrc_ipv6_nib_nc_t *entry)
-{
+void gnrc_ipv6_nib_nc_print(gnrc_ipv6_nib_nc_t *entry) {
     char addr_str[(IPV6_ADDR_MAX_STR_LEN > CONFIG_GNRC_IPV6_NIB_L2ADDR_MAX_LEN) ?
                    IPV6_ADDR_MAX_STR_LEN : CONFIG_GNRC_IPV6_NIB_L2ADDR_MAX_LEN];
 
@@ -205,4 +194,4 @@ void gnrc_ipv6_nib_nc_print(gnrc_ipv6_nib_nc_t *entry)
     puts("");
 }
 
-/** @} */
+/// @}

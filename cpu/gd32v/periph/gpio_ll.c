@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht <gunar@schorcht.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht <gunar@schorcht.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_gd32v
- * @ingroup     drivers_periph_gpio_ll
- * @{
- *
- * @file
- * @brief       GPIO Low-level API implementation for the GD32V GPIO peripheral
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_gd32v
+/// @ingroup     drivers_periph_gpio_ll
+/// @{
+///
+/// @file
+/// @brief       GPIO Low-level API implementation for the GD32V GPIO peripheral
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <errno.h>
 
@@ -28,16 +24,14 @@
 #  include "fmt.h"
 #else
 #  include <stdio.h>
-static inline void print_str(const char *str)
-{
+static inline void print_str(const char *str) {
     fputs(str, stdout);
 }
 #endif
 
 uint16_t pin_used[GPIO_PORT_NUMOF] = {};
 
-int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
-{
+int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf) {
     if ((conf.pull == GPIO_PULL_KEEP) ||
         (conf.state == GPIO_OUTPUT_OPEN_SOURCE) ||
         ((conf.state != GPIO_INPUT) && (conf.pull != GPIO_FLOATING))) {
@@ -53,7 +47,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
     volatile uint32_t *octl = &((GPIO_Type *)port)->OCTL;
     unsigned pos = ((pin % 8) * 4);
 
-    /* reset configuration CTLx[1:0], MDx[1:0] (analogue, input mode) */
+    // reset configuration CTLx[1:0], MDx[1:0] (analogue, input mode)
     *ctrl &= ~(0xf << pos);
 
     switch (conf.state) {
@@ -100,8 +94,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
     return 0;
 }
 
-gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
-{
+gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin) {
     gpio_conf_t result = { 0 };
 
     unsigned state = irq_disable();
@@ -158,8 +151,7 @@ gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
     return result;
 }
 
-void gpio_ll_print_conf(gpio_conf_t conf)
-{
+void gpio_ll_print_conf(gpio_conf_t conf) {
     static const char *slew_strs[] = {
         [GPIO_SLEW_SLOWEST] = "slowest",
         [GPIO_SLEW_SLOW] = "medium",

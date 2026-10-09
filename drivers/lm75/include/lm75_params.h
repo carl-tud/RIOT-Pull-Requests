@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_lm75
- *
- * @{
- * @file
- * @brief       Default configuration parameters for the lm75 sensors.
- *
- * @author      Vitor Batista <vitor.batista@ml-pa.com>
- */
+/// @ingroup     drivers_lm75
+///
+/// @{
+/// @file
+/// @brief       Default configuration parameters for the lm75 sensors.
+///
+/// @author      Vitor Batista <vitor.batista@ml-pa.com>
 
-#include "board.h" /* IWYU pragma: keep */
+#include "board.h" // IWYU pragma: keep
 #include "lm75.h"
 #include "lm75_regs.h"
 #include "modules.h"
@@ -25,20 +21,18 @@ extern "C" {
 #endif
 
 #ifndef LM75_PARAM_I2C
-#  define LM75_PARAM_I2C I2C_DEV(0) /**< I2C BUS used */
+#  define LM75_PARAM_I2C I2C_DEV(0) ///< I2C BUS used
 #endif
 
-/**
- * @brief   Default I2C address
- *
- * 7-bit I2C slave address: 1-0-0-1-A2-A1-A0, where the last three bits A2, A1,
- * A0 are defined by the voltage level on the ADDR pin
- */
+/// @brief   Default I2C address
+///
+/// 7-bit I2C slave address: 1-0-0-1-A2-A1-A0, where the last three bits A2, A1,
+/// A0 are defined by the voltage level on the ADDR pin
 #ifndef CONFIG_LM75_I2C_ADDR
 #  define CONFIG_LM75_I2C_ADDR (0x48)
 #endif
 
-/* Device operation mode configuration - normal or shutdown */
+// Device operation mode configuration - normal or shutdown
 #if IS_ACTIVE(CONFIG_NORMAL_MODE)
 #  define CONFIG_OPERATION_MODE NORMAL_MODE
 #elif IS_ACTIVE(CONFIG_SHUTDOWN_MODE)
@@ -46,10 +40,10 @@ extern "C" {
 #endif
 
 #ifndef CONFIG_OPERATION_MODE
-#  define CONFIG_OPERATION_MODE NORMAL_MODE /**< Normal Mode is the default */
+#  define CONFIG_OPERATION_MODE NORMAL_MODE ///< Normal Mode is the default
 #endif
 
-/* Device Overtemperature Shutdown operation mode configuration - comparator or interrupt */
+// Device Overtemperature Shutdown operation mode configuration - comparator or interrupt
 #if IS_ACTIVE(CONFIG_COMPARATOR_MODE)
 #  define CONFIG_THERMOSTAT_MODE COMPARATOR_MODE
 #elif IS_ACTIVE(CONFIG_INTERRUPT_MODE)
@@ -57,11 +51,11 @@ extern "C" {
 #endif
 
 #ifndef CONFIG_THERMOSTAT_MODE
-#  define CONFIG_THERMOSTAT_MODE COMPARATOR_MODE /**< Comparator Mode is the default */
+#  define CONFIG_THERMOSTAT_MODE COMPARATOR_MODE ///< Comparator Mode is the default
 
 #endif
 
-/* Device Overtemperature Shutdown polarity configuration - OS active low or high */
+// Device Overtemperature Shutdown polarity configuration - OS active low or high
 #if IS_ACTIVE(CONFIG_OS_ACTIVE_LOW)
 #  define CONFIG_OS_POLARITY OS_ACTIVE_LOW
 #elif IS_ACTIVE(CONFIG_OS_ACTIVE_HIGH)
@@ -69,7 +63,7 @@ extern "C" {
 #endif
 
 #ifndef CONFIG_OS_POLARITY
-#  define CONFIG_OS_POLARITY OS_ACTIVE_LOW /**< OS pin active on low is the default */
+#  define CONFIG_OS_POLARITY OS_ACTIVE_LOW ///< OS pin active on low is the default
 
 #endif
 
@@ -87,36 +81,34 @@ extern "C" {
 #  define CONFIG_FAULT_QUEUE FAULT_6
 #endif
 
-/**
- * @brief   Device Overtemperatue Shutdown fault queue configuration
- *
- * Number of faults that must occur consecutively until OS goes active
- *
- * Default: One
- */
+/// @brief   Device Overtemperatue Shutdown fault queue configuration
+///
+/// Number of faults that must occur consecutively until OS goes active
+///
+/// Default: One
 #ifndef CONFIG_FAULT_QUEUE
 #  define CONFIG_FAULT_QUEUE FAULT_1
 #endif
 
 #ifndef LM75_PARAM_INT
-#  define LM75_PARAM_INT GPIO_UNDEF /**< Pin used for Interrupts defined by the board */
+#  define LM75_PARAM_INT GPIO_UNDEF ///< Pin used for Interrupts defined by the board
 #endif
 
-#define LM75A_CONV_RATE    (100)  /**< Temperature register updated every 100ms */
+#define LM75A_CONV_RATE    (100)  ///< Temperature register updated every 100ms
 
-#define LM75A_OS_RES       (5)    /**< Resolution in 0.5ºC */
-#define LM75A_OS_MULT      (10)   /**< Must multiply by 10 to get temp in ºC */
-#define LM75A_OS_SHIFT     (7)    /**< Only the 9 most significant bits are needed */
-#define LM75A_TEMP_RES     (125)  /**< Resolution in 0.125ºC */
-#define LM75A_TEMP_MULT    (1000) /**< Must multiply by 1000 to get temp in ºC */
-#define LM75A_TEMP_SHIFT   (5)    /**< Only the 11 most significant bits are needed */
+#define LM75A_OS_RES       (5)    ///< Resolution in 0.5ºC
+#define LM75A_OS_MULT      (10)   ///< Must multiply by 10 to get temp in ºC
+#define LM75A_OS_SHIFT     (7)    ///< Only the 9 most significant bits are needed
+#define LM75A_TEMP_RES     (125)  ///< Resolution in 0.125ºC
+#define LM75A_TEMP_MULT    (1000) ///< Must multiply by 1000 to get temp in ºC
+#define LM75A_TEMP_SHIFT   (5)    ///< Only the 11 most significant bits are needed
 
-#define TMP1075_OS_RES     (625)   /**< Resolution in 0.0625ºC */
-#define TMP1075_OS_MULT    (10000) /**< Must multiply by 10000 to get temp in ºC */
-#define TMP1075_OS_SHIFT   (4)     /**< Only the 12 most significant bits are needed */
-#define TMP1075_TEMP_RES   (625)   /**< Resolution in 0.0625ºC */
-#define TMP1075_TEMP_MULT  (10000) /**< Must multiply by 10000 to get temp in ºC */
-#define TMP1075_TEMP_SHIFT (4)     /**< Only the 12 most significant bits are needed */
+#define TMP1075_OS_RES     (625)   ///< Resolution in 0.0625ºC
+#define TMP1075_OS_MULT    (10000) ///< Must multiply by 10000 to get temp in ºC
+#define TMP1075_OS_SHIFT   (4)     ///< Only the 12 most significant bits are needed
+#define TMP1075_TEMP_RES   (625)   ///< Resolution in 0.0625ºC
+#define TMP1075_TEMP_MULT  (10000) ///< Must multiply by 10000 to get temp in ºC
+#define TMP1075_TEMP_SHIFT (4)     ///< Only the 12 most significant bits are needed
 
 #if IS_ACTIVE(CONFIG_TMP1075_CONV_RATE_REG_27H)
 #  define CONFIG_TMP1075_CONV_RATE_REG TMP1075_CONV_RATE_REG_27H
@@ -133,20 +125,16 @@ extern "C" {
 #endif
 
 #ifndef CONFIG_TMP1075_CONV_RATE_REG
-/**
- * @brief   Device conversion rate register value
- *
- * Only available in TMP1075 devices!
- *
- * Default: 27.5ms
- */
+/// @brief   Device conversion rate register value
+///
+/// Only available in TMP1075 devices!
+///
+/// Default: 27.5ms
 #  define CONFIG_TMP1075_CONV_RATE_REG TMP1075_CONV_RATE_REG_27H
-/**
- * @brief   Device conversion rate in milliseconds
- *
- * Default is 27.5ms or about 28 ms. This is rounded up to 28ms to retain usage
-of integers and to keep all times in ms
- */
+/// @brief   Device conversion rate in milliseconds
+///
+/// Default is 27.5ms or about 28 ms. This is rounded up to 28ms to retain usage
+/// of integers and to keep all times in ms
 #  define TMP1075_CONV_RATE            (28)
 #endif
 
@@ -176,11 +164,9 @@ of integers and to keep all times in ms
                           .fault_q = CONFIG_FAULT_QUEUE,          \
                           .conv_rate_reg = CONFIG_TMP1075_CONV_RATE_REG }
 #  endif
-#endif /* LM75_PARAMS */
+#endif // LM75_PARAMS
 
-/**
- * @brief LM75 power-up configuration
- */
+/// @brief LM75 power-up configuration
 static const lm75_params_t lm75_params[] = {
     LM75_PARAMS
 };
@@ -189,4 +175,4 @@ static const lm75_params_t lm75_params[] = {
 }
 #endif
 
-/** @} */
+/// @}

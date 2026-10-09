@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- * @file
- * @brief       initializes stmpe811 display device
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+/// @file
+/// @brief       initializes stmpe811 display device
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include <stddef.h>
 
@@ -28,8 +24,7 @@
 stmpe811_t stmpe811_devs[STMPE811_NUMOF];
 static touch_dev_reg_t touch_dev_entries[STMPE811_NUMOF];
 
-void auto_init_stmpe811(void)
-{
+void auto_init_stmpe811(void) {
     assert(STMPE811_NUMOF == ARRAY_SIZE(stmpe811_screen_ids));
 
     for (size_t i = 0; i < STMPE811_NUMOF; i++) {
@@ -43,7 +38,7 @@ void auto_init_stmpe811(void)
         touch_dev_entries[i].screen_id = stmpe811_screen_ids[i];
         touch_dev_entries[i].dev->driver = &stmpe811_touch_dev_driver;
 
-        /* add to touch_dev registry */
+        // add to touch_dev registry
         touch_dev_reg_add(&(touch_dev_entries[i]));
     }
 }

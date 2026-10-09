@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Christian Amsüss <chrysn@fsfe.org>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Christian Amsüss <chrysn@fsfe.org>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_particle-mesh
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped PWM channels
- *
- * @author      Christian Amsüss <chrysn@fsfe.org>
- */
+/// @ingroup     boards_common_particle-mesh
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped PWM channels
+///
+/// @author      Christian Amsüss <chrysn@fsfe.org>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -40,4 +36,4 @@ static const saul_pwm_rgb_params_t saul_pwm_rgb_params[] =
 }
 #endif
 
-/** @} */
+/// @}

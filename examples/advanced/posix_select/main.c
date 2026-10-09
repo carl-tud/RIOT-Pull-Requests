@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Example application for demonstrating the RIOT's POSIX select()
- *              implementation
- *
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Example application for demonstrating the RIOT's POSIX select()
+///              implementation
+///
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdbool.h>
 #include <arpa/inet.h>
@@ -35,8 +31,7 @@
 static char server_buffer[SERVER_BUFFER_SIZE];
 static char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
-static int _run_server(void *local_addr)
-{
+static int _run_server(void *local_addr) {
     struct sockaddr_in6 server_addr = { .sin6_family = AF_INET6,
                                         .sin6_addr = IN6ADDR_ANY_INIT };
     static const uint16_t ports[SERVER_SOCKETS_NUM] = SERVER_PORTS;
@@ -44,7 +39,7 @@ static int _run_server(void *local_addr)
     int max_fd = -1;
     int ret = 0;
 
-    /* open SERVER_SOCKETS_NUM sockets with respective port */
+    // open SERVER_SOCKETS_NUM sockets with respective port
     for (unsigned i = 0; i < SERVER_SOCKETS_NUM; i++) {
         server_sockets[i] = socket(AF_INET6, SOCK_DGRAM, 0);
         if (server_sockets[i] < 0) {
@@ -71,24 +66,24 @@ static int _run_server(void *local_addr)
     while (true) {
         fd_set readfds;
 
-        /* add bound sockets to set of file descriptors to read */
+        // add bound sockets to set of file descriptors to read
         FD_ZERO(&readfds);
         for (unsigned i = 0; i < SERVER_SOCKETS_NUM; i++) {
             FD_SET(server_sockets[i], &readfds);
         }
-        /* wait for bound sockets to be notified for reading*/
+        // wait for bound sockets to be notified for reading
         if (select(max_fd + 1, &readfds, NULL, NULL, NULL) < 0) {
             puts("error on select");
             continue;
         }
         for (unsigned i = 0; i < SERVER_SOCKETS_NUM; i++) {
-            /* if socket is in set of file descriptors to check for reading */
+            // if socket is in set of file descriptors to check for reading
             if (FD_ISSET(server_sockets[i], &readfds)) {
                 int res;
                 struct sockaddr_in6 src;
                 socklen_t src_len = sizeof(struct sockaddr_in6);
 
-                /* receive data from socket */
+                // receive data from socket
                 if ((res = recvfrom(server_sockets[i], server_buffer,
                                     sizeof(server_buffer), 0,
                                     (struct sockaddr *)&src, &src_len)) < 0) {
@@ -103,7 +98,7 @@ static int _run_server(void *local_addr)
                                      addr_str, sizeof(addr_str)),
                            src.sin6_port);
                     res = ((unsigned)res < SERVER_BUFFER_SIZE) ? res : (res - 1);
-                    /* terminate string */
+                    // terminate string
                     server_buffer[res] = '\0';
                     printf("%s\n", server_buffer);
                 }
@@ -112,7 +107,7 @@ static int _run_server(void *local_addr)
     }
 
 end:
-    /* close all open sockets */
+    // close all open sockets
     for (unsigned i = 0; i < SERVER_SOCKETS_NUM; i++) {
         if (server_sockets[i] > 0) {
             close(server_sockets[i]);
@@ -121,15 +116,14 @@ end:
     return ret;
 }
 
-int main(void)
-{
-    /* TODO: use TBD POSIX API to get link-local address */
+int main(void) {
+    // TODO: use TBD POSIX API to get link-local address
     gnrc_netif_t *netif = gnrc_netif_iter(NULL);
     ipv6_addr_t addr;
 
     puts("RIOT select example application");
 
-    /* get first address on the interface */
+    // get first address on the interface
     if (gnrc_netif_ipv6_addrs_get(netif, &addr, sizeof(addr)) < 0) {
         puts("Unable to get first address of the interface");
         return 1;

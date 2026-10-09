@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       Implementation of the peripheral flashpage interface
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       Implementation of the peripheral flashpage interface
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <assert.h>
 
@@ -38,21 +34,20 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-#define ESP_PART_TABLE_ADDR         0x8000 /* TODO configurable as used in Makefile.include */
+#define ESP_PART_TABLE_ADDR         0x8000 // TODO configurable as used in Makefile.include
 #define ESP_PART_TABLE_SIZE         0xC00
 #define ESP_PART_ENTRY_SIZE         0x20
 #define ESP_PART_ENTRY_MAGIC        ESP_PARTITION_MAGIC
 
 extern uint8_t _fp_mmu_start;
 extern uint8_t _fp_mmu_end;
-extern uint8_t _fp_mem_start;      /* start address in CPU address space */
+extern uint8_t _fp_mem_start;      // start address in CPU address space
 extern uint8_t _fp_mem_end;
 extern uint8_t _end_fw;
 
-static uint32_t _fp_flash_start;    /* start address in flash */
+static uint32_t _fp_flash_start;    // start address in flash
 
-void IRAM_ATTR esp_sync_cache(uint32_t target_addr, size_t len)
-{
+void IRAM_ATTR esp_sync_cache(uint32_t target_addr, size_t len) {
     DEBUG("%s sync cache from @0x%08"PRIx32" for %u\n",
           __func__, target_addr, len);
 
@@ -67,9 +62,8 @@ void IRAM_ATTR esp_sync_cache(uint32_t target_addr, size_t len)
     }
 }
 
-void IRAM_ATTR esp_flashpage_init(void)
-{
-    /* CONFIG_ESP_FLASHPAGE_CAPACITY has to be a multiple of SPI_FLASH_MMU_PAGE_SIZE */
+void IRAM_ATTR esp_flashpage_init(void) {
+    // CONFIG_ESP_FLASHPAGE_CAPACITY has to be a multiple of SPI_FLASH_MMU_PAGE_SIZE
     assert((CONFIG_ESP_FLASHPAGE_CAPACITY % SPI_FLASH_MMU_PAGE_SIZE) == 0);
     assert((FLASHPAGE_ADDR_START % SPI_FLASH_MMU_PAGE_SIZE) == 0);
 
@@ -121,8 +115,7 @@ void IRAM_ATTR esp_flashpage_init(void)
     }
 }
 
-void IRAM_ATTR flashpage_erase(unsigned page)
-{
+void IRAM_ATTR flashpage_erase(unsigned page) {
     assert(page < FLASHPAGE_NUMOF);
 
     uint32_t flash_addr = _fp_flash_start + (page * FLASHPAGE_SIZE);
@@ -142,18 +135,17 @@ void IRAM_ATTR flashpage_erase(unsigned page)
     }
 }
 
-void IRAM_ATTR flashpage_write(void *target_addr, const void *data, size_t len)
-{
+void IRAM_ATTR flashpage_write(void *target_addr, const void *data, size_t len) {
     DEBUG("%s write %u byte from @%p to @%p\n",
           __func__, len, data, target_addr);
 
-    /* assert multiples of FLASHPAGE_WRITE_BLOCK_SIZE are written */
+    // assert multiples of FLASHPAGE_WRITE_BLOCK_SIZE are written
     assert(!(len % FLASHPAGE_WRITE_BLOCK_SIZE));
 
-    /* ensure writes to flash are aligned */
+    // ensure writes to flash are aligned
     assert(!((unsigned)target_addr % FLASHPAGE_WRITE_BLOCK_ALIGNMENT));
 
-    /* ensure the length doesn't exceed the actual flash size */
+    // ensure the length doesn't exceed the actual flash size
     assert(((unsigned)target_addr + len) <=
            (CPU_FLASH_BASE + (FLASHPAGE_SIZE * FLASHPAGE_NUMOF)));
 
@@ -176,13 +168,11 @@ void IRAM_ATTR flashpage_write(void *target_addr, const void *data, size_t len)
     }
 }
 
-unsigned IRAM_ATTR flashpage_first_free(void)
-{
-    /* _end_fw is page aligned */
+unsigned IRAM_ATTR flashpage_first_free(void) {
+    // _end_fw is page aligned
     return flashpage_page(&_end_fw);
 }
 
-unsigned IRAM_ATTR flashpage_last_free(void)
-{
+unsigned IRAM_ATTR flashpage_last_free(void) {
     return flashpage_page((void *)(CPU_FLASH_BASE + CONFIG_ESP_FLASHPAGE_CAPACITY)) - 1;
 }

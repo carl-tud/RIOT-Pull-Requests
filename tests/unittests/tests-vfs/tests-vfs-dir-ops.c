@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief Transparent-box unit tests of vfs functions stubs used when the file
- * system does not implement the requested function.
- */
+/// @{
+///
+/// @file
+/// @brief Transparent-box unit tests of vfs functions stubs used when the file
+/// system does not implement the requested function.
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -62,8 +58,7 @@ static vfs_mount_t _test_vfs_mount_null = {
 static int _test_vfs_dir_op_status = -1;
 static vfs_DIR _test_dir;
 
-static void setup(void)
-{
+static void setup(void) {
     int res = vfs_mount(&_test_vfs_mount_null);
     if (res < 0) {
         _test_vfs_dir_op_status = -1;
@@ -72,8 +67,7 @@ static void setup(void)
     _test_vfs_dir_op_status = vfs_opendir(&_test_dir, "/test/mydir");
 }
 
-static void teardown(void)
-{
+static void teardown(void) {
     if (_test_vfs_dir_op_status >= 0) {
         vfs_closedir(&_test_dir);
         _test_vfs_dir_op_status = -1;
@@ -81,15 +75,13 @@ static void teardown(void)
     vfs_umount(&_test_vfs_mount_null, false);
 }
 
-static void test_vfs_null_dir_ops_opendir(void)
-{
+static void test_vfs_null_dir_ops_opendir(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_dir_op_status);
     int res = vfs_opendir(NULL, "/test/mydir2");
     TEST_ASSERT_EQUAL_INT(-EINVAL, res);
 }
 
-static void test_vfs_null_dir_ops_closedir(void)
-{
+static void test_vfs_null_dir_ops_closedir(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_dir_op_status);
     int res = vfs_closedir(&_test_dir);
     TEST_ASSERT_EQUAL_INT(0, res);
@@ -97,16 +89,14 @@ static void test_vfs_null_dir_ops_closedir(void)
     TEST_ASSERT_EQUAL_INT(-EBADF, res);
 }
 
-static void test_vfs_null_dir_ops_readdir(void)
-{
+static void test_vfs_null_dir_ops_readdir(void) {
     TEST_ASSERT_EQUAL_INT(0, _test_vfs_dir_op_status);
     vfs_dirent_t buf;
     int res = vfs_readdir(&_test_dir, &buf);
     TEST_ASSERT_EQUAL_INT(-EINVAL, res);
 }
 
-Test *tests_vfs_null_dir_ops_tests(void)
-{
+Test *tests_vfs_null_dir_ops_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_vfs_null_dir_ops_opendir),
         new_TestFixture(test_vfs_null_dir_ops_closedir),
@@ -118,4 +108,4 @@ Test *tests_vfs_null_dir_ops_tests(void)
     return (Test *)&vfs_dir_op_tests;
 }
 
-/** @} */
+/// @}

@@ -1,32 +1,29 @@
-/*
- * LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
- * Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
- * Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
+// Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the
+// Free Software Foundation; version 2 of the License.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+// Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-/* If this code fails to build, please provide at least the following
- * information when requesting (free) technical support.
- *
- * 1: Complete copy of all messages during the build.
- * 2: Output of "gtk-config --version"
- * 3: Output of "gtk-config --libs"
- * 4: Output of "gtk-config --cflags"
- * 5: Output of "uname -a"
- * 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
- * 7: Other info... which linux distribution, version, other software
- */
+// If this code fails to build, please provide at least the following
+// information when requesting (free) technical support.
+//
+// 1: Complete copy of all messages during the build.
+// 2: Output of "gtk-config --version"
+// 3: Output of "gtk-config --libs"
+// 4: Output of "gtk-config --cflags"
+// 5: Output of "uname -a"
+// 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
+// 7: Other info... which linux distribution, version, other software
 
 #include <stdio.h>
 #include <string.h>
@@ -53,14 +50,13 @@ static int parse_hex_line(char *line);
 
 /****************************************************************/
 /*                              */
-/*            Read Intel Hex File           */
+// Read Intel Hex File
 /*                              */
 /****************************************************************/
 
 
 
-int read_intel_hex(const char *filename)
-{
+int read_intel_hex(const char *filename) {
     FILE *fp;
     int i, lineno = 0;
     char buf[1024];
@@ -109,17 +105,16 @@ int read_intel_hex(const char *filename)
 }
 
 
-/* from ihex.c, at http://www.pjrc.com/tech/8051/pm2_docs/intel-hex.html */
+// from ihex.c, at http://www.pjrc.com/tech/8051/pm2_docs/intel-hex.html
 
-/* parses a line of intel hex code, stores the data in bytes[] */
-/* and the beginning address in addr, and returns a 1 if the */
-/* line was valid, or a 0 if an error occurred.  The variable */
-/* num gets the number of bytes that were stored into bytes[] */
+// parses a line of intel hex code, stores the data in bytes[]
+// and the beginning address in addr, and returns a 1 if the
+// line was valid, or a 0 if an error occurred.  The variable
+// num gets the number of bytes that were stored into bytes[]
 
 
 int
-parse_hex_line(char *line)
-{
+parse_hex_line(char *line) {
     unsigned int addr, code, num;
     unsigned int sum, len, cksum, i;
     char *ptr;
@@ -152,7 +147,7 @@ parse_hex_line(char *line)
 
     ptr += 4;
 
-    /* printf("Line: length=%d Addr=%d\n", len, addr); */
+    // printf("Line: length=%d Addr=%d\n", len, addr);
     if (!sscanf(ptr, "%02x", &code)) {
         return 0;
     }
@@ -237,15 +232,14 @@ parse_hex_line(char *line)
     }
 
     if (((sum & 255) + (cksum & 255)) & 255) {
-        return 0;    /* checksum error */
+        return 0;    // checksum error
     }
 
     return 1;
 }
 
 
-int bytes_within_range(int begin, int end)
-{
+int bytes_within_range(int begin, int end) {
     int i;
 
     if (begin < 0 || begin >= MAX_MEMORY_SIZE ||
@@ -262,8 +256,7 @@ int bytes_within_range(int begin, int end)
     return 0;
 }
 
-void get_ihex_data(int addr, int len, unsigned char *bytes)
-{
+void get_ihex_data(int addr, int len, unsigned char *bytes) {
     int i;
 
     if (addr < 0 || len < 0 || addr + len >= MAX_MEMORY_SIZE) {
@@ -286,8 +279,7 @@ void get_ihex_data(int addr, int len, unsigned char *bytes)
     }
 }
 
-void put_ihex_data(int addr, int len, const unsigned char *bytes)
-{
+void put_ihex_data(int addr, int len, const unsigned char *bytes) {
     int i;
 
     if (addr < 0 || len < 0 || addr + len >= MAX_MEMORY_SIZE) {

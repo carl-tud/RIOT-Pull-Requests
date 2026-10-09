@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ina3221
- * @{
- *
- * @file
- * @brief       Driver configuration parameters for Texas Instruments INA3221
- *              three-channel, high-side current and bus voltage
- *              monitor
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- */
+/// @ingroup     drivers_ina3221
+/// @{
+///
+/// @file
+/// @brief       Driver configuration parameters for Texas Instruments INA3221
+///              three-channel, high-side current and bus voltage
+///              monitor
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
 
 #include "board.h"
 #include "ina3221.h"
@@ -26,43 +22,43 @@ extern "C" {
 #endif
 
 #ifndef INA3221_PARAM_I2C
-#define INA3221_PARAM_I2C               (I2C_DEV(0))        /**< I2C bus index */
+#define INA3221_PARAM_I2C               (I2C_DEV(0))        ///< I2C bus index
 #endif
 
 #ifndef INA3221_PARAM_ADDR
-#define INA3221_PARAM_ADDR              (INA3221_ADDR_00)   /**< I2C device address */
+#define INA3221_PARAM_ADDR              (INA3221_ADDR_00)   ///< I2C device address
 #endif
 
 #ifndef INA3221_PARAM_PIN_WRN
-#define INA3221_PARAM_PIN_WRN           (GPIO_UNDEF)        /**< Warning alert pin */
+#define INA3221_PARAM_PIN_WRN           (GPIO_UNDEF)        ///< Warning alert pin
 #endif
 
 #ifndef INA3221_PARAM_PIN_CRT
-#define INA3221_PARAM_PIN_CRT           (GPIO_UNDEF)        /**< Critical alert pin */
+#define INA3221_PARAM_PIN_CRT           (GPIO_UNDEF)        ///< Critical alert pin
 #endif
 
 #ifndef INA3221_PARAM_PIN_PV
-#define INA3221_PARAM_PIN_PV            (GPIO_UNDEF)        /**< Power valid alert pin */
+#define INA3221_PARAM_PIN_PV            (GPIO_UNDEF)        ///< Power valid alert pin
 #endif
 
 #ifndef INA3221_PARAM_PIN_TC
-#define INA3221_PARAM_PIN_TC            (GPIO_UNDEF)        /**< Timing control alert pin */
+#define INA3221_PARAM_PIN_TC            (GPIO_UNDEF)        ///< Timing control alert pin
 #endif
 
 #ifndef INA3221_PARAM_INT_PU_PIN_WRN
-#define INA3221_PARAM_INT_PU_PIN_WRN    (0)                 /**< Enable or disable internal pull up resistor for pin WRN */
+#define INA3221_PARAM_INT_PU_PIN_WRN    (0)                 ///< Enable or disable internal pull up resistor for pin WRN
 #endif
 
 #ifndef INA3221_PARAM_INT_PU_PIN_CRT
-#define INA3221_PARAM_INT_PU_PIN_CRT    (0)                 /**< Enable or disable internal pull up resistor for pin CRT */
+#define INA3221_PARAM_INT_PU_PIN_CRT    (0)                 ///< Enable or disable internal pull up resistor for pin CRT
 #endif
 
 #ifndef INA3221_PARAM_INT_PU_PIN_PV
-#define INA3221_PARAM_INT_PU_PIN_PV     (0)                 /**< Enable or disable internal pull up resistor for pin PV */
+#define INA3221_PARAM_INT_PU_PIN_PV     (0)                 ///< Enable or disable internal pull up resistor for pin PV
 #endif
 
 #ifndef INA3221_PARAM_INT_PU_PIN_TC
-#define INA3221_PARAM_INT_PU_PIN_TC     (0)                 /**< Enable or disable internal pull up resistor for pin TC */
+#define INA3221_PARAM_INT_PU_PIN_TC     (0)                 ///< Enable or disable internal pull up resistor for pin TC
 #endif
 
 #ifndef INA3221_PARAM_CONFIG
@@ -78,15 +74,15 @@ extern "C" {
 #endif
 
 #ifndef INA3221_PARAM_RSHUNT_MOHM_CH1
-#define INA3221_PARAM_RSHUNT_MOHM_CH1   (100)               /**< Channel 1 shunt resistance */
+#define INA3221_PARAM_RSHUNT_MOHM_CH1   (100)               ///< Channel 1 shunt resistance
 #endif
 
 #ifndef INA3221_PARAM_RSHUNT_MOHM_CH2
-#define INA3221_PARAM_RSHUNT_MOHM_CH2   (100)               /**< Channel 2 shunt resistance */
+#define INA3221_PARAM_RSHUNT_MOHM_CH2   (100)               ///< Channel 2 shunt resistance
 #endif
 
 #ifndef INA3221_PARAM_RSHUNT_MOHM_CH3
-#define INA3221_PARAM_RSHUNT_MOHM_CH3   (100)               /**< Channel 3 shunt resistance */
+#define INA3221_PARAM_RSHUNT_MOHM_CH3   (100)               ///< Channel 3 shunt resistance
 #endif
 
 #ifndef INA3221_PARAMS
@@ -119,16 +115,12 @@ extern "C" {
     { .name = "INA3221 shunt voltage sum" }                              /**< SAUL driver information */
 #endif
 
-/**
- * @brief INA3221 array of device configurations
- */
+/// @brief INA3221 array of device configurations
 static const ina3221_params_t ina3221_params[] = {
     INA3221_PARAMS
 };
 
-/**
- * @brief INA3221 array of SAUL driver information
- */
+/// @brief INA3221 array of SAUL driver information
 static const saul_reg_info_t ina3221_saul_info[] = {
     INA3221_SAUL_INFO
 };
@@ -136,4 +128,4 @@ static const saul_reg_info_t ina3221_saul_info[] = {
 }
 #endif
 
-/** @} */
+/// @}

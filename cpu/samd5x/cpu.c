@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_samd5x
- * @{
- *
- * @file        cpu.c
- * @brief       Implementation of the CPU initialization for Microchip SAMD5x/SAME5x MCUs
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup     cpu_samd5x
+/// @{
+///
+/// @file        cpu.c
+/// @brief       Implementation of the CPU initialization for Microchip SAMD5x/SAME5x MCUs
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include "busy_wait.h"
 #include <assert.h>
@@ -23,10 +19,8 @@
 #include "periph_conf.h"
 #include "periph/init.h"
 
-/*
- * An external inductor needs to be present on the board,
- * so the feature can only be enabled by the board configuration.
- */
+// An external inductor needs to be present on the board,
+// so the feature can only be enabled by the board configuration.
 #ifndef USE_VREG_BUCK
 #  define USE_VREG_BUCK (0)
 #endif
@@ -50,7 +44,7 @@
 #define GCLK_SOURCE_ACTIVE_XOSC \
     (XOSC0_FREQUENCY ? GCLK_SOURCE_XOSC0 : GCLK_SOURCE_XOSC1)
 
-#if USE_XOSC_ONLY /* don't use fast internal oscillators */
+#if USE_XOSC_ONLY // don't use fast internal oscillators
 
 #  if (XOSC0_FREQUENCY == 0) && (XOSC1_FREQUENCY == 0)
 #    error Configuration error: no external oscillator frequency defined
@@ -69,12 +63,12 @@ the CPU frequency can't exceed it's frequency.
 #    define GCLK_TIMER_HZ MHZ(4)
 #  endif
 
-#else /* !USE_XOSC_ONLY */
+#else // !USE_XOSC_ONLY
 
-/* Main clock > 48 MHz -> use DPLL, otherwise use DFLL */
+// Main clock > 48 MHz -> use DPLL, otherwise use DFLL
 #  define USE_DPLL (CLOCK_CORECLOCK > SAM0_DFLL_FREQ_HZ)
 #  define USE_DFLL 1
-/* if USE_XOSC is set 1 it is used as source for (FD)PLL and DFLL unless USE_XOSC_ONLY is set */
+// if USE_XOSC is set 1 it is used as source for (FD)PLL and DFLL unless USE_XOSC_ONLY is set
 #ifndef USE_XOSC
 #  define USE_XOSC 0
 #endif
@@ -83,53 +77,51 @@ the CPU frequency can't exceed it's frequency.
 #    define GCLK_TIMER_HZ MHZ(8)
 #  endif
 
-#endif /* USE_XOSC_ONLY */
+#endif // USE_XOSC_ONLY
 
 #if (CLOCK_CORECLOCK <= SAM0_DFLL_FREQ_HZ) && (SAM0_DFLL_FREQ_HZ % CLOCK_CORECLOCK)
 #  error For frequencies <= 48 MHz, CLOCK_CORECLOCK must be a divider of 48 MHz
 #endif
 
-/* If the CPU clock is lower than the minimal DPLL Freq
-   set fDPLL = 2 * CLOCK_CORECLOCK */
+// If the CPU clock is lower than the minimal DPLL Freq
+//    set fDPLL = 2 * CLOCK_CORECLOCK
 #if USE_DPLL && (CLOCK_CORECLOCK < SAM0_DPLL_FREQ_MIN_HZ)
 #  define DPLL_DIV 2
 #else
 #  define DPLL_DIV 1
 #endif
 
-static void xosc32k_init(void)
-{
+static void xosc32k_init(void) {
     if (!EXTERNAL_OSC32_SOURCE) {
         OSC32KCTRL->XOSC32K.reg = 0;
         return;
     }
 
-    /* Startup should be a valid value 0 - 6 (~63 ms to ~8000 ms) see manual 7 is reserved
-     * table 29-2 : time_for_startup_val[] = {63ms, 125ms, 500ms, 1sec, 2sec, 4sec, 8sec}
-     * this delay will happen only when the system is powered on or the XOSC32
-     * is re-enabled after being disabled for e.g.: standby*/
+    // Startup should be a valid value 0 - 6 (~63 ms to ~8000 ms) see manual 7 is reserved
+    // table 29-2 : time_for_startup_val[] = {63ms, 125ms, 500ms, 1sec, 2sec, 4sec, 8sec}
+    // this delay will happen only when the system is powered on or the XOSC32
+    // is re-enabled after being disabled for e.g.: standby
     OSC32KCTRL->XOSC32K.reg = OSC32KCTRL_XOSC32K_ENABLE
                             | OSC32KCTRL_XOSC32K_EN1K
                             | OSC32KCTRL_XOSC32K_EN32K
                             | OSC32KCTRL_XOSC32K_RUNSTDBY
                             | OSC32KCTRL_XOSC32K_XTALEN
-                            | OSC32KCTRL_XOSC32K_STARTUP(3); /* 3 ^= ~1sec see above or manual*/
+                            | OSC32KCTRL_XOSC32K_STARTUP(3); // 3 ^= ~1sec see above or manual
 
     while (!(OSC32KCTRL->STATUS.reg & OSC32KCTRL_STATUS_XOSC32KRDY)) {}
 }
 
-/* XOSC0 is run by an external oscillator 0 (default (crystal)) or 1 (external oscillator) */
+// XOSC0 is run by an external oscillator 0 (default (crystal)) or 1 (external oscillator)
 #ifndef XOSC0_EXT_OSC
 #  define XOSC0_EXT_OSC (0)
 #endif
 
-/* XOSC1 is run by an external oscillator 0 (default (crystal)) or 1 (external oscillator) */
+// XOSC1 is run by an external oscillator 0 (default (crystal)) or 1 (external oscillator)
 #ifndef XOSC1_EXT_OSC
 #  define XOSC1_EXT_OSC (0)
 #endif
 
-static void xosc_init(uint8_t idx)
-{
+static void xosc_init(uint8_t idx) {
     uint32_t freq;
     bool xtal;
 
@@ -161,29 +153,28 @@ static void xosc_init(uint8_t idx)
                  | OSCCTRL_XOSCCTRL_ENALC
                  | OSCCTRL_XOSCCTRL_ENABLE;
 
-    /* SAM D5x/E5x Manual 54.12.1 (Crystal oscillator characteristics) &
-     * 28.8.6 (External Multipurpose Crystal Oscillator Control)
-     */
+    // SAM D5x/E5x Manual 54.12.1 (Crystal oscillator characteristics) &
+    // 28.8.6 (External Multipurpose Crystal Oscillator Control)
     if (freq <= MHZ(8)) {
-        /* 72200 cycles @ 8MHz = 9025 µs */
+        // 72200 cycles @ 8MHz = 9025 µs
         reg |= OSCCTRL_XOSCCTRL_STARTUP(9)
             |  OSCCTRL_XOSCCTRL_IMULT(3)
             |  OSCCTRL_XOSCCTRL_IPTAT(2);
     }
     else if (freq <= MHZ(16)) {
-        /* 62000 cycles @ 16MHz = 3875 µs */
+        // 62000 cycles @ 16MHz = 3875 µs
         reg |= OSCCTRL_XOSCCTRL_STARTUP(7)
             |  OSCCTRL_XOSCCTRL_IMULT(4)
             |  OSCCTRL_XOSCCTRL_IPTAT(3);
     }
     else if (freq <= MHZ(24)) {
-        /* 68500 cycles @ 24MHz = 2854 µs */
+        // 68500 cycles @ 24MHz = 2854 µs
         reg |= OSCCTRL_XOSCCTRL_STARTUP(7)
             |  OSCCTRL_XOSCCTRL_IMULT(5)
             |  OSCCTRL_XOSCCTRL_IPTAT(3);
     }
     else {
-        /* 38500 cycles @ 48MHz = 802 µs */
+        // 38500 cycles @ 48MHz = 802 µs
         reg |= OSCCTRL_XOSCCTRL_STARTUP(5)
             |  OSCCTRL_XOSCCTRL_IMULT(6)
             |  OSCCTRL_XOSCCTRL_IPTAT(3);
@@ -193,28 +184,26 @@ static void xosc_init(uint8_t idx)
     while (!(OSCCTRL->STATUS.vec.XOSCRDY & (idx + 1))) {}
 }
 
-static void dfll_init(void)
-{
+static void dfll_init(void) {
     uint32_t reg = OSCCTRL_DFLLCTRLB_QLDIS
 #ifdef OSCCTRL_DFLLCTRLB_WAITLOCK
                  | OSCCTRL_DFLLCTRLB_WAITLOCK
 #endif
                  ;
 
-    /* workaround for Errata 2.8.3 DFLLVAL.FINE Value When DFLL48M Re-enabled */
-    OSCCTRL->DFLLMUL.reg   = 0;   /* Write new DFLLMULL configuration */
-    OSCCTRL->DFLLCTRLB.reg = 0;   /* Select Open loop configuration */
-    OSCCTRL->DFLLCTRLA.reg |= OSCCTRL_DFLLCTRLA_ENABLE; /* Enable DFLL */
-    OSCCTRL->DFLLVAL.reg   = OSCCTRL->DFLLVAL.reg; /* Reload DFLLVAL register */
-    OSCCTRL->DFLLCTRLB.reg = reg; /* Write final DFLL configuration */
+    // workaround for Errata 2.8.3 DFLLVAL.FINE Value When DFLL48M Re-enabled
+    OSCCTRL->DFLLMUL.reg   = 0;   // Write new DFLLMULL configuration
+    OSCCTRL->DFLLCTRLB.reg = 0;   // Select Open loop configuration
+    OSCCTRL->DFLLCTRLA.reg |= OSCCTRL_DFLLCTRLA_ENABLE; // Enable DFLL
+    OSCCTRL->DFLLVAL.reg   = OSCCTRL->DFLLVAL.reg; // Reload DFLLVAL register
+    OSCCTRL->DFLLCTRLB.reg = reg; // Write final DFLL configuration
 
     OSCCTRL->DFLLCTRLA.reg = OSCCTRL_DFLLCTRLA_ENABLE;
     while (!(OSCCTRL->STATUS.reg & OSCCTRL_STATUS_DFLLRDY)) {}
 }
 
-static void fdpll_init_nolock(uint8_t idx, uint32_t f_cpu, uint8_t flags)
-{
-    /* Trigger assertion if not using FDPLL0 or FDPLL1 */
+static void fdpll_init_nolock(uint8_t idx, uint32_t f_cpu, uint8_t flags) {
+    // Trigger assertion if not using FDPLL0 or FDPLL1
     assert(idx == 0 || idx == 1);
 
     if (!USE_DPLL) {
@@ -222,57 +211,57 @@ static void fdpll_init_nolock(uint8_t idx, uint32_t f_cpu, uint8_t flags)
         return;
     }
 
-    /* disable the DPLL before changing the configuration */
+    // disable the DPLL before changing the configuration
     OSCCTRL->Dpll[idx].DPLLCTRLA.reg = 0;
     while (OSCCTRL->Dpll[idx].DPLLSYNCBUSY.reg) {}
 
-     /* holds LDR 13 bit integer and 5 bit fractional part:
-      * - integer part: ldr13_5 >> 5
-      * - fractional part: ldr13_5 & 0x1f */
+     // holds LDR 13 bit integer and 5 bit fractional part:
+     // - integer part: ldr13_5 >> 5
+     // - fractional part: ldr13_5 & 0x1f
     uint32_t ldr13_5;
     uint32_t ctrlb = 0;
 
-    /* HW revision before F  (A and D) might false unlock -> LBYPASS and WUF */
+    // HW revision before F  (A and D) might false unlock -> LBYPASS and WUF
     unsigned rev = (DSU->DID.reg & DSU_DID_REVISION_Msk) >> DSU_DID_REVISION_Pos;
     if ('A' + rev < 'F') {
         ctrlb |= OSCCTRL_DPLLCTRLB_WUF | OSCCTRL_DPLLCTRLB_LBYPASS;
     }
 
-    /* Without LBYPASS, startup takes very long, see errata section 2.13.
-     * according to the documentation several milliseconds
-     * (critical for some application not so much for other)*/
+    // Without LBYPASS, startup takes very long, see errata section 2.13.
+    // according to the documentation several milliseconds
+    // (critical for some application not so much for other)
     if (EXTERNAL_OSC32_SOURCE) {
-        /* Source the DPLL from 32kHz XOSC32 ( equivalent to ((f_cpu << 5) / 32768) ) */
+        // Source the DPLL from 32kHz XOSC32 ( equivalent to ((f_cpu << 5) / 32768) )
         ldr13_5  = (f_cpu >> 10);
         ctrlb |= OSCCTRL_DPLLCTRLB_REFCLK_XOSC32;
     }
     else if (XOSC0_FREQUENCY) {
-        /* Source the DPLL from XOSC0 divide to 1 MHz then multiply to fcpu */
-        /* fDIV = fXOSC / 2 * ( DIV + 1) */
+        // Source the DPLL from XOSC0 divide to 1 MHz then multiply to fcpu
+        // fDIV = fXOSC / 2 * ( DIV + 1)
         const uint32_t div = (XOSC0_FREQUENCY / MHZ(1) / 2) -1;
         ldr13_5 = (f_cpu / MHZ(1)) << 5;
         ctrlb |= OSCCTRL_DPLLCTRLB_DIV(div) | OSCCTRL_DPLLCTRLB_REFCLK_XOSC0;
     }
     else if (XOSC1_FREQUENCY) {
-        /* Source the DPLL from XOSC1 divide to 1 MHz then multiply to fcpu */
-        /* fDIV = fXOSC / 2 * ( DIV + 1) */
+        // Source the DPLL from XOSC1 divide to 1 MHz then multiply to fcpu
+        // fDIV = fXOSC / 2 * ( DIV + 1)
         const uint32_t div = (XOSC1_FREQUENCY / MHZ(1) / 2) -1;
         ldr13_5 = (f_cpu / MHZ(1)) << 5;
         ctrlb |= OSCCTRL_DPLLCTRLB_DIV(div) | OSCCTRL_DPLLCTRLB_REFCLK_XOSC1;
     }
     else {
-        /* TODO find a better fallback source (eg 48MCLK routed though gclk divided down to 1MHz)
-         * until then the frequency might not be defined if source is low power internal 32kHz*/
-        /* set DPLL clock source */
+        // TODO find a better fallback source (eg 48MCLK routed though gclk divided down to 1MHz)
+        // until then the frequency might not be defined if source is low power internal 32kHz
+        // set DPLL clock source
         GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL0 + idx].reg = GCLK_PCHCTRL_GEN(1) | GCLK_PCHCTRL_CHEN;
         while (!(GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL0 + idx].reg & GCLK_PCHCTRL_CHEN)) {}
-        /* Source the DPLL from 32kHz GCLK1 ( equivalent to ((f_cpu << 5) / 32768) )
-         * avoid the routing through gclk when XOSC32 is the source */
+        // Source the DPLL from 32kHz GCLK1 ( equivalent to ((f_cpu << 5) / 32768) )
+        // avoid the routing through gclk when XOSC32 is the source
         ldr13_5 = (f_cpu >> 10);
         ctrlb |= OSCCTRL_DPLLCTRLB_REFCLK_GCLK;
     }
 
-    /* fCLK_DPLL = (fCKR) × (LDR + 1 + LDRFRAC/32) with fCKR = fclock reference / divider (ctrlb) */
+    // fCLK_DPLL = (fCKR) × (LDR + 1 + LDRFRAC/32) with fCKR = fclock reference / divider (ctrlb)
     OSCCTRL->Dpll[idx].DPLLRATIO.reg = OSCCTRL_DPLLRATIO_LDRFRAC(ldr13_5 & 0x1F)
                                      | OSCCTRL_DPLLRATIO_LDR((ldr13_5 >> 5) - 1);
 
@@ -282,22 +271,20 @@ static void fdpll_init_nolock(uint8_t idx, uint32_t f_cpu, uint8_t flags)
     while (OSCCTRL->Dpll[idx].DPLLSYNCBUSY.reg) {}
 }
 
-static void fdpll_lock(uint8_t idx)
-{
+static void fdpll_lock(uint8_t idx) {
     const uint32_t flags = (OSCCTRL_DPLLSTATUS_CLKRDY | OSCCTRL_DPLLSTATUS_LOCK);
     while (!((OSCCTRL->Dpll[idx].DPLLSTATUS.reg & flags) == flags)) {}
 
-    /* TODO make this configurable currently prefer correctness over time */
-    /* HW revision before F  (A and D) might false unlock -> LBYPASS and WUF
-     * doing that we need to ensure the PLL had enough time to lock(at least 10 ms) */
+    // TODO make this configurable currently prefer correctness over time
+    // HW revision before F  (A and D) might false unlock -> LBYPASS and WUF
+    // doing that we need to ensure the PLL had enough time to lock(at least 10 ms)
     unsigned rev = (DSU->DID.reg & DSU_DID_REVISION_Msk) >> DSU_DID_REVISION_Pos;
     if ('A' + rev < 'F') {
         busy_wait_us(10 * US_PER_MS);
     }
 }
 
-static void gclk_connect(uint8_t id, uint8_t src, uint32_t flags)
-{
+static void gclk_connect(uint8_t id, uint8_t src, uint32_t flags) {
     GCLK->GENCTRL[id].reg = GCLK_GENCTRL_SRC(src)
                           | GCLK_GENCTRL_GENEN
                           | flags
@@ -305,13 +292,12 @@ static void gclk_connect(uint8_t id, uint8_t src, uint32_t flags)
     while (GCLK->SYNCBUSY.reg & GCLK_SYNCBUSY_GENCTRL(id)) {}
 }
 
-void sam0_gclk_enable(uint8_t id)
-{
-    /* clocks 0 & 1 are always running */
+void sam0_gclk_enable(uint8_t id) {
+    // clocks 0 & 1 are always running
 
     switch (id) {
     case SAM0_GCLK_TIMER:
-        /* 8 MHz clock used by xtimer */
+        // 8 MHz clock used by xtimer
         if (USE_DPLL) {
             gclk_connect(SAM0_GCLK_TIMER,
                          GCLK_SOURCE_DPLL0,
@@ -344,8 +330,7 @@ void sam0_gclk_enable(uint8_t id)
     }
 }
 
-uint32_t sam0_gclk_freq(uint8_t id)
-{
+uint32_t sam0_gclk_freq(uint8_t id) {
     switch (id) {
     case SAM0_GCLK_MAIN:
         return CLOCK_CORECLOCK;
@@ -371,34 +356,29 @@ uint32_t sam0_gclk_freq(uint8_t id)
     }
 }
 
-void cpu_pm_cb_enter(int deep)
-{
+void cpu_pm_cb_enter(int deep) {
     (void)deep;
-    /* will be called before entering sleep */
+    // will be called before entering sleep
 }
 
-void cpu_pm_cb_leave(int deep)
-{
-    /* will be called after wake-up */
+void cpu_pm_cb_leave(int deep) {
+    // will be called after wake-up
 
     if (deep) {
-        /* DFLL needs to be re-initialized to work around errata 2.8.3 */
+        // DFLL needs to be re-initialized to work around errata 2.8.3
         dfll_init();
     }
 }
 
-/**
- * @brief Initialize the CPU, set IRQ priorities, clocks
- */
-void cpu_init(void)
-{
-    /* CPU starts with DFLL48 as clock source, so we must use the LDO */
+/// @brief Initialize the CPU, set IRQ priorities, clocks
+void cpu_init(void) {
+    // CPU starts with DFLL48 as clock source, so we must use the LDO
     sam0_set_voltage_regulator(SAM0_VREG_LDO);
 
-    /* initialize the Cortex-M core */
+    // initialize the Cortex-M core
     cortexm_init();
 
-    /* turn on only needed APB peripherals */
+    // turn on only needed APB peripherals
     MCLK->APBAMASK.reg = MCLK_APBAMASK_MCLK
                        | MCLK_APBAMASK_OSCCTRL
                        | MCLK_APBAMASK_OSC32KCTRL
@@ -428,10 +408,10 @@ void cpu_init(void)
     MCLK->APBCMASK.reg = 0;
     MCLK->APBDMASK.reg = 0;
 
-    /* enable the Cortex M Cache Controller */
+    // enable the Cortex M Cache Controller
     CMCC->CTRL.reg |= CMCC_CTRL_CEN;
 
-    /* make sure main clock is not sourced from DPLL */
+    // make sure main clock is not sourced from DPLL
     dfll_init();
     gclk_connect(SAM0_GCLK_MAIN, GCLK_SOURCE_DFLL, 0);
 
@@ -446,7 +426,7 @@ void cpu_init(void)
     xosc_init(0);
     xosc_init(1);
 
-    /* select the source of the main clock */
+    // select the source of the main clock
     if (USE_DPLL) {
         fdpll_init_nolock(0, CLOCK_CORECLOCK * DPLL_DIV, OSCCTRL_DPLLCTRLA_ONDEMAND);
         gclk_connect(SAM0_GCLK_MAIN, GCLK_SOURCE_DPLL0,
@@ -462,28 +442,28 @@ void cpu_init(void)
                      GCLK_GENCTRL_DIV(SAM0_XOSC_FREQ_HZ / CLOCK_CORECLOCK));
     }
 
-    /* make sure fast clocks are off */
+    // make sure fast clocks are off
     if (!USE_DFLL) {
         OSCCTRL->DFLLCTRLA.reg = 0;
     }
 
-    /* when fast internal oscillators are not used, we can turn on the buck converter */
+    // when fast internal oscillators are not used, we can turn on the buck converter
     if (!USE_DFLL && !USE_DPLL && USE_VREG_BUCK) {
         sam0_set_voltage_regulator(SAM0_VREG_BUCK);
     }
 
 #ifdef MODULE_PERIPH_DMA
-    /*  initialize DMA streams */
+    // initialize DMA streams
     dma_init();
 #endif
 
-    /* initialize stdio prior to periph_init() to allow use of DEBUG() there */
+    // initialize stdio prior to periph_init() to allow use of DEBUG() there
     early_init();
 
-    /* trigger static peripheral initialization */
+    // trigger static peripheral initialization
     periph_init();
 
-    /* set ONDEMAND bit after all clocks have been configured */
-    /* This is to avoid setting the source for the main clock to ONDEMAND before using it. */
+    // set ONDEMAND bit after all clocks have been configured
+    // This is to avoid setting the source for the main clock to ONDEMAND before using it.
     OSCCTRL->Dpll[0].DPLLCTRLA.reg |= OSCCTRL_DPLLCTRLA_ONDEMAND;
 }

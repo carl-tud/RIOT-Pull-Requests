@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 Inria
- * SPDX-FileCopyrightText: 2020-2022 Université Grenoble Alpes
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Inria
+// SPDX-FileCopyrightText: 2020-2022 Université Grenoble Alpes
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sx1280
- * @{
- * @file
- * @brief       Netdev adaptation for the LoRa SX1280 Driver driver
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @author      Aymeric Brochier <aymeric.brochier@univ-grenoble-alpes.fr>
- *
- * @}
- */
+/// @ingroup     drivers_sx1280
+/// @{
+/// @file
+/// @brief       Netdev adaptation for the LoRa SX1280 Driver driver
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @author      Aymeric Brochier <aymeric.brochier@univ-grenoble-alpes.fr>
+///
+/// @}
 
 #include <assert.h>
 #include <stddef.h>
@@ -39,8 +35,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static int _send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _send(netdev_t *netdev, const iolist_t *iolist) {
 
     sx1280_t *dev = (sx1280_t *)netdev;
     netopt_state_t state;
@@ -56,16 +51,16 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
 
     size_t pos = 0;
 
-    /* Write payload buffer */
+    // Write payload buffer
     for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
         if (iol->iol_len > 0) {
-            /* write data to payload buffer */
+            // write data to payload buffer
             sx1280_write_buffer(dev, pos, iol->iol_base, iol->iol_len);
             DEBUG("[sx1280] netdev: send: wrote data to payload buffer.\n");
             pos += iol->iol_len;
         }
     }
-    /* Ignore send if packet size is 0 */
+    // Ignore send if packet size is 0
     if (!pos) {
         return 0;
     }
@@ -80,14 +75,13 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
     return 0;
 }
 
-static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     DEBUG("[sx1280] netdev: read received data.\n");
 
     sx1280_t *dev = (sx1280_t *)netdev;
     uint8_t size = 0;
 
-    /* Get received packet info and size here */
+    // Get received packet info and size here
     netdev_lora_rx_info_t *packet_info = info;
 
     if (packet_info) {
@@ -111,16 +105,16 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
         return -ENOBUFS;
     }
 
-    /* Read the received packet content here and write it to buf */
+    // Read the received packet content here and write it to buf
     sx1280_read_buffer(dev, rx_buffer_status.buffer_start_pointer, buf, size);
 
-    /* RX SINGLE MODE */
+    // RX SINGLE MODE
     if (sx1280_hal_get_operating_mode(&dev) == SX1280_HAL_OP_MODE_RX) {
         DEBUG("[sx1280] netdev stop RX single mode" );
         netopt_state_t state = NETOPT_STATE_IDLE;
         dev->netdev.driver->set(&dev->netdev, NETOPT_STATE, &state, sizeof(state));
         return 0;
-        /* RX CONTINUOUS MODE */
+        // RX CONTINUOUS MODE
     }
     else if (sx1280_hal_get_operating_mode(&dev) == SX1280_HAL_OP_MODE_RX_C) {
         DEBUG("[sx1280] netdev keep RX continuous mode" );
@@ -134,11 +128,10 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
     }
 }
 
-static int _init(netdev_t *netdev)
-{
+static int _init(netdev_t *netdev) {
     sx1280_t *dev = (sx1280_t *)netdev;
 
-    /* Launch initialization of driver and device */
+    // Launch initialization of driver and device
     DEBUG("[sx1280] netdev: initializing driver...\n");
     if (sx1280_init(dev) != 0) {
         DEBUG("[sx1280] netdev: initialization failed\n");
@@ -147,14 +140,13 @@ static int _init(netdev_t *netdev)
 
     DEBUG("[sx1280] netdev: initialization successful\n");
 
-    /* signal link UP */
+    // signal link UP
     netdev->event_callback(netdev, NETDEV_EVENT_LINK_UP);
 
     return 0;
 }
 
-static void _isr(netdev_t *netdev)
-{
+static void _isr(netdev_t *netdev) {
     sx1280_t *dev = (sx1280_t *)netdev;
     sx1280_irq_mask_t irq_mask;
 
@@ -187,8 +179,7 @@ static void _isr(netdev_t *netdev)
     }
 }
 
-static int _get_state(sx1280_t *dev, void *val)
-{
+static int _get_state(sx1280_t *dev, void *val) {
     (void)dev;
     netopt_state_t state = NETOPT_STATE_OFF;
     sx1280_chip_status_t radio_status;
@@ -198,7 +189,7 @@ static int _get_state(sx1280_t *dev, void *val)
     switch (radio_status.chip_mode) {
 
     case SX1280_CHIP_MODE_STBY_RC:
-    /* Intentional fall-through */
+    // Intentional fall-through
     case SX1280_CHIP_MODE_STBY_XOSC:
         state = NETOPT_STATE_STANDBY;
         DEBUG("NETOPT_STATE_STANDBY ");
@@ -214,7 +205,7 @@ static int _get_state(sx1280_t *dev, void *val)
         break;
     case SX1280_CHIP_MODE_FS:
         DEBUG("SX1280_CHIP_MODE_FS");
-    /* Intentional fall-through */
+    // Intentional fall-through
     default:
         DEBUG("default");
         break;
@@ -223,9 +214,8 @@ static int _get_state(sx1280_t *dev, void *val)
     return sizeof(netopt_state_t);
 }
 
-static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
-{
-    (void)max_len; /* unused when compiled without debug, assert empty */
+static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len) {
+    (void)max_len; // unused when compiled without debug, assert empty
     sx1280_t *dev = (sx1280_t *)netdev;
 
     if (dev == NULL) {
@@ -288,8 +278,7 @@ static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
     return -ENOTSUP;
 }
 
-static int _set_state(sx1280_t *dev, netopt_state_t state)
-{
+static int _set_state(sx1280_t *dev, netopt_state_t state) {
     (void)dev;
     switch (state) {
     case NETOPT_STATE_STANDBY:
@@ -298,7 +287,7 @@ static int _set_state(sx1280_t *dev, netopt_state_t state)
         break;
 
     case NETOPT_STATE_IDLE:
-    /* intentional fall-throught */
+    // intentional fall-throught
     case NETOPT_STATE_RX:
         DEBUG("[sx1280] netdev: set NETOPT_STATE_RX state\n");
         sx1280_set_rx(dev->ral.context, SX1280_TICK_SIZE_1000_US, SX1280_RX_MODE );
@@ -321,9 +310,8 @@ static int _set_state(sx1280_t *dev, netopt_state_t state)
     return sizeof(netopt_state_t);
 }
 
-static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len)
-{
-    (void)len; /* unused when compiled without debug, assert empty */
+static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len) {
+    (void)len; // unused when compiled without debug, assert empty
     sx1280_t *dev = (sx1280_t *)netdev;
     int res = -ENOTSUP;
 
@@ -355,9 +343,9 @@ static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len)
         assert(len <= sizeof(uint16_t));
         uint16_t bw = *((const uint16_t *)val);
         switch (bw) {
-        case 200:   /* fall-through */
-        case 400:   /* fall-through */
-        case 800:   /* fall-through */
+        case 200:   // fall-through
+        case 400:   // fall-through
+        case 800:   // fall-through
         case 1600:
             sx1280_set_bandwidth(dev, bw);
             return sizeof(uint16_t);
@@ -367,7 +355,7 @@ static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len)
             break;
         }
 
-        break; /* outer switch*/
+        break; // outer switch
 
     case NETOPT_SPREADING_FACTOR:
         assert(len <= sizeof(uint8_t));

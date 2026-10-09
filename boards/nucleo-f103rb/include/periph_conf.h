@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2015 TriaGnoSys GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 TriaGnoSys GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f103rb
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-f103rb board
- *
- * @author      Víctor Ariño <victor.arino@triagnosys.com>
- */
+/// @ingroup     boards_nucleo-f103rb
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-f103rb board
+///
+/// @author      Víctor Ariño <victor.arino@triagnosys.com>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -32,10 +28,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -57,12 +51,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tim3
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -95,22 +87,18 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart3)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    Real time counter configuration
- * @{
- */
+/// @name    Real time counter configuration
+/// @{
 #ifndef RTT_FREQUENCY
-#define RTT_FREQUENCY       (16384)      /* in Hz */
+#define RTT_FREQUENCY       (16384)      // in Hz
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @note    This board may require external pullup resistors for i2c operation.
- * @{
- */
+/// @name    I2C configuration
+/// @note    This board may require external pullup resistors for i2c operation.
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -138,12 +126,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c2_ev
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -166,26 +152,24 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- * @{
- */
+/// @name   ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
-    { .pin = GPIO_PIN(PORT_A, 0), .dev = 0, .chan = 0 },  /* ADC12_IN0 */
-    { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan = 1 },  /* ADC12_IN1 */
-    { .pin = GPIO_PIN(PORT_A, 4), .dev = 0, .chan = 4 },  /* ADC12_IN4 */
-    { .pin = GPIO_PIN(PORT_B, 0), .dev = 0, .chan = 8 },  /* ADC12_IN8 */
-    { .pin = GPIO_PIN(PORT_C, 1), .dev = 0, .chan = 11 }, /* ADC12_IN11 */
-    { .pin = GPIO_PIN(PORT_C, 0), .dev = 0, .chan = 10 }, /* ADC12_IN10 */
+    { .pin = GPIO_PIN(PORT_A, 0), .dev = 0, .chan = 0 },  // ADC12_IN0
+    { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan = 1 },  // ADC12_IN1
+    { .pin = GPIO_PIN(PORT_A, 4), .dev = 0, .chan = 4 },  // ADC12_IN4
+    { .pin = GPIO_PIN(PORT_B, 0), .dev = 0, .chan = 8 },  // ADC12_IN8
+    { .pin = GPIO_PIN(PORT_C, 1), .dev = 0, .chan = 11 }, // ADC12_IN11
+    { .pin = GPIO_PIN(PORT_C, 0), .dev = 0, .chan = 10 }, // ADC12_IN10
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

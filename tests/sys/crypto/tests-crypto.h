@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014 Philipp Rosenkranz
- * SPDX-FileCopyrightText: 2014 Nico von Geyso
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Philipp Rosenkranz
+// SPDX-FileCopyrightText: 2014 Nico von Geyso
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @addtogroup  unittests
- * @{
- *
- * @file
- * @brief       Unittests for the ``crypto`` module
- *
- * @author      Philipp Rosenkranz <philipp.rosenkranz@fu-berlin.de>
- */
+/// @addtogroup  unittests
+/// @{
+///
+/// @file
+/// @brief       Unittests for the ``crypto`` module
+///
+/// @author      Philipp Rosenkranz <philipp.rosenkranz@fu-berlin.de>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -25,25 +21,20 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Generates tests for helper functions
- *
- * @return  embUnit tests
- */
+/// @brief   Generates tests for helper functions
+///
+/// @return  embUnit tests
 Test *tests_crypto_helper_tests(void);
-/**
- * @brief   Generates tests for crypto/chacha.h
- *
- * @return  embUnit tests if successful, NULL if not.
- */
+/// @brief   Generates tests for crypto/chacha.h
+///
+/// @return  embUnit tests if successful, NULL if not.
 Test *tests_crypto_chacha_tests(void);
 
 Test *tests_crypto_poly1305_tests(void);
 
 Test *tests_crypto_chacha20poly1305_tests(void);
 
-static inline int compare(const uint8_t *a, const uint8_t *b, uint8_t len)
-{
+static inline int compare(const uint8_t *a, const uint8_t *b, uint8_t len) {
     int result = 1;
 
     for (uint8_t i = 0; i < len; ++i) {
@@ -65,4 +56,4 @@ Test* tests_crypto_modes_ctr_tests(void);
 }
 #endif
 
-/** @} */
+/// @}

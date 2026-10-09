@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_hmc5883l
- * @brief       Device driver for the Honeywell HMC5883L 3-axis digital compass
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_hmc5883l
+/// @brief       Device driver for the Honeywell HMC5883L 3-axis digital compass
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include <assert.h>
 #include <string.h>
@@ -43,22 +39,21 @@
         return c; \
     }
 
-/** Forward declaration of functions for internal use */
+/// Forward declaration of functions for internal use
 
 static int _is_available(const hmc5883l_t *dev);
 
 static int _reg_read(const hmc5883l_t *dev, uint8_t reg, uint8_t *data, uint16_t len);
 static int _reg_write(const hmc5883l_t *dev, uint8_t reg, uint8_t data);
 
-int hmc5883l_init(hmc5883l_t *dev, const hmc5883l_params_t *params)
-{
+int hmc5883l_init(hmc5883l_t *dev, const hmc5883l_params_t *params) {
     int res = HMC5883L_OK;
 
     assert(dev != NULL);
     assert(params != NULL);
     DEBUG_DEV("params=%p", dev, params);
 
-    /* init sensor data structure */
+    // init sensor data structure
     dev->dev = params->dev;
 #if MODULE_HMC5883L_INT
     dev->int_pin = params->int_pin;
@@ -66,19 +61,19 @@ int hmc5883l_init(hmc5883l_t *dev, const hmc5883l_params_t *params)
     dev->op_mode = params->op_mode;
     dev->gain = params->gain;
 
-    /* check availability of the sensor */
+    // check availability of the sensor
     EXEC_RET(_is_available(dev), res)
 
-    /* set configuration register A and B */
+    // set configuration register A and B
     EXEC_RET(_reg_write(dev, HMC5883L_REG_CFG_A, params->meas_avg |
                                                  params->meas_mode |
                                                  params->dor), res);
     EXEC_RET(_reg_write(dev, HMC5883L_REG_CFG_B, params->gain), res);
 
-    /* set operation mode */
+    // set operation mode
     EXEC_RET(_reg_write(dev, HMC5883L_REG_MODE, params->op_mode), res);
 
-    /* to set the LOCK flag, read the first data sample that is not valid */
+    // to set the LOCK flag, read the first data sample that is not valid
     uint8_t data[6];
     EXEC_RET(_reg_read(dev, HMC5883L_REG_OUT_X_MSB, data, 6), res);
 
@@ -87,8 +82,7 @@ int hmc5883l_init(hmc5883l_t *dev, const hmc5883l_params_t *params)
 
 #ifdef MODULE_HMC5883L_INT
 
-int hmc5883l_init_int(hmc5883l_t *dev, hmc5883l_drdy_int_cb_t cb, void *arg)
-{
+int hmc5883l_init_int(hmc5883l_t *dev, hmc5883l_drdy_int_cb_t cb, void *arg) {
     assert(dev != NULL);
     assert(gpio_is_valid(dev->int_pin));
     DEBUG_DEV("", dev);
@@ -100,10 +94,9 @@ int hmc5883l_init_int(hmc5883l_t *dev, hmc5883l_drdy_int_cb_t cb, void *arg)
     return HMC5883L_OK;
 }
 
-#endif /* MODULE_HMC5883L_INT */
+#endif // MODULE_HMC5883L_INT
 
-int hmc5883l_data_ready(const hmc5883l_t *dev)
-{
+int hmc5883l_data_ready(const hmc5883l_t *dev) {
     assert(dev != NULL);
     DEBUG_DEV("", dev);
 
@@ -115,19 +108,17 @@ int hmc5883l_data_ready(const hmc5883l_t *dev)
     return (reg == HMC5883L_REG_STATUS_RDY) ? HMC5883L_OK : HMC5883L_ERROR_NO_DATA;
 }
 
-/*
- * Scale factors for conversion of raw sensor data to uGs for possible
- * sensitivities according to the datasheet.
- */
+// Scale factors for conversion of raw sensor data to uGs for possible
+// sensitivities according to the datasheet.
 static const uint16_t HMC5883L_RES[] = {
-     730,      /* uG/LSb for HMC5883L_GAIN_1370 with range +-0.88 Gs */
-     917,      /* uG/LSb for HMC5883L_GAIN_1090 with range +-1.3 Gs */
-    1220,      /* uG/LSb for HMC5883L_GAIN_820  with range +-1.9 Gs */
-    1515,      /* uG/LSb for HMC5883L_GAIN_660  with range +-2.5 Gs */
-    2273,      /* uG/LSb for HMC5883L_GAIN_440  with range +-4.0 Gs */
-    2564,      /* uG/LSb for HMC5883L_GAIN_390  with range +-4.7 Gs */
-    3030,      /* uG/LSb for HMC5883L_GAIN_330  with range +-5.6 Gs */
-    4348,      /* uG/LSb for HMC5883L_GAIN_230  with range +-8.1 Gs */
+     730,      // uG/LSb for HMC5883L_GAIN_1370 with range +-0.88 Gs
+     917,      // uG/LSb for HMC5883L_GAIN_1090 with range +-1.3 Gs
+    1220,      // uG/LSb for HMC5883L_GAIN_820  with range +-1.9 Gs
+    1515,      // uG/LSb for HMC5883L_GAIN_660  with range +-2.5 Gs
+    2273,      // uG/LSb for HMC5883L_GAIN_440  with range +-4.0 Gs
+    2564,      // uG/LSb for HMC5883L_GAIN_390  with range +-4.7 Gs
+    3030,      // uG/LSb for HMC5883L_GAIN_330  with range +-5.6 Gs
+    4348,      // uG/LSb for HMC5883L_GAIN_230  with range +-8.1 Gs
 };
 
 int hmc5883l_read(const hmc5883l_t *dev, hmc5883l_data_t *data)
@@ -143,10 +134,8 @@ int hmc5883l_read(const hmc5883l_t *dev, hmc5883l_data_t *data)
 
     EXEC_RET(hmc5883l_read_raw (dev, &raw), res);
 
-    /*
-     * The range of raw data is -2048 ... -2047. That is, raw data multiplied
-     * by scale fit into 32 bit integer.
-     */
+    // The range of raw data is -2048 ... -2047. That is, raw data multiplied
+    // by scale fit into 32 bit integer.
     data->x = ((int32_t)raw.x * HMC5883L_RES[dev->gain >> HMC5883L_REG_CFG_B_GN_S]) / 1000;
     data->y = ((int32_t)raw.y * HMC5883L_RES[dev->gain >> HMC5883L_REG_CFG_B_GN_S]) / 1000;
     data->z = ((int32_t)raw.z * HMC5883L_RES[dev->gain >> HMC5883L_REG_CFG_B_GN_S]) / 1000;
@@ -154,8 +143,7 @@ int hmc5883l_read(const hmc5883l_t *dev, hmc5883l_data_t *data)
     return res;
 }
 
-int hmc5883l_read_raw(const hmc5883l_t *dev, hmc5883l_raw_data_t *raw)
-{
+int hmc5883l_read_raw(const hmc5883l_t *dev, hmc5883l_raw_data_t *raw) {
     assert(dev != NULL);
     assert(raw != NULL);
     DEBUG_DEV("raw=%p", dev, raw);
@@ -164,11 +152,11 @@ int hmc5883l_read_raw(const hmc5883l_t *dev, hmc5883l_raw_data_t *raw)
 
     uint8_t data[6];
 
-    /* read raw data sample */
+    // read raw data sample
     EXEC_RET_CODE(_reg_read(dev, HMC5883L_REG_OUT_X_MSB, data, 6),
                   res, HMC5883L_ERROR_RAW_DATA);
 
-    /* data MSB @ lower address */
+    // data MSB @ lower address
     raw->x = (data[0] << 8) | data[1];
     raw->y = (data[4] << 8) | data[5];
     raw->z = (data[2] << 8) | data[3];
@@ -176,31 +164,26 @@ int hmc5883l_read_raw(const hmc5883l_t *dev, hmc5883l_raw_data_t *raw)
     return res;
 }
 
-int hmc5883l_power_down(hmc5883l_t *dev)
-{
+int hmc5883l_power_down(hmc5883l_t *dev) {
     assert(dev != NULL);
     DEBUG_DEV("", dev);
 
-    /* set operation mode to Idle mode with only 5 uA current */
+    // set operation mode to Idle mode with only 5 uA current
     return _reg_write(dev, HMC5883L_REG_MODE, HMC5883L_OP_MODE_IDLE);
 }
 
-int hmc5883l_power_up(hmc5883l_t *dev)
-{
+int hmc5883l_power_up(hmc5883l_t *dev) {
     assert(dev != NULL);
     DEBUG_DEV("", dev);
 
-    /* set operation mode to last operation mode */
+    // set operation mode to last operation mode
     return _reg_write(dev, HMC5883L_REG_MODE, dev->op_mode);
 }
 
-/** Functions for internal use only */
+/// Functions for internal use only
 
-/**
- * @brief   Check the chip ID to test whether sensor is available
- */
-static int _is_available(const hmc5883l_t *dev)
-{
+/// @brief   Check the chip ID to test whether sensor is available
+static int _is_available(const hmc5883l_t *dev) {
     DEBUG_DEV("", dev);
 
     int res = HMC5883L_OK;
@@ -208,7 +191,7 @@ static int _is_available(const hmc5883l_t *dev)
     uint8_t id_c[] = HMC5883L_ID;
     uint8_t id_r[HMC5883L_ID_LEN];
 
-    /* read the chip id from HMC5883L_REG_ID_X */
+    // read the chip id from HMC5883L_REG_ID_X
     EXEC_RET(_reg_read(dev, HMC5883L_REG_ID_A, id_r, HMC5883L_ID_LEN), res);
 
     if (memcmp(id_r, id_c, HMC5883L_ID_LEN)) {
@@ -221,8 +204,7 @@ static int _is_available(const hmc5883l_t *dev)
     return res;
 }
 
-static int _reg_read(const hmc5883l_t *dev, uint8_t reg, uint8_t *data, uint16_t len)
-{
+static int _reg_read(const hmc5883l_t *dev, uint8_t reg, uint8_t *data, uint16_t len) {
     assert(dev != NULL);
     assert(data != NULL);
     assert(len != 0);
@@ -254,8 +236,7 @@ static int _reg_read(const hmc5883l_t *dev, uint8_t reg, uint8_t *data, uint16_t
     return res;
 }
 
-static int _reg_write(const hmc5883l_t *dev, uint8_t reg, uint8_t data)
-{
+static int _reg_write(const hmc5883l_t *dev, uint8_t reg, uint8_t data) {
     assert(dev != NULL);
 
     DEBUG_DEV("write register 0x%02x", dev, reg);

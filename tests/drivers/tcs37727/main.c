@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 PHYTEC Messtechnik GmbH
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 PHYTEC Messtechnik GmbH
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the TCS37727 sensor driver.
- *
- * @author      Felix Siebel <f.siebel@phytec.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the TCS37727 sensor driver.
+///
+/// @author      Felix Siebel <f.siebel@phytec.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -25,8 +21,7 @@
 
 #define SLEEP_USEC  (1 * US_PER_SEC)
 
-int main(void)
-{
+int main(void) {
     tcs37727_t dev;
     tcs37727_data_t data;
 

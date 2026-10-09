@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the LTC4150 coulomb counter driver
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the LTC4150 coulomb counter driver
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 
@@ -60,23 +56,17 @@ static void *recorder_data[] = {
 
 #include "ltc4150_params.h"
 
-/**
- * @brief Callback function to reset/initialize the recorder data
- */
-static void reset_cb(ltc4150_dev_t *dev, uint64_t now_usec, void *_data)
-{
+/// @brief Callback function to reset/initialize the recorder data
+static void reset_cb(ltc4150_dev_t *dev, uint64_t now_usec, void *_data) {
     (void)dev;
     test_recorder_data_t *data = _data;
     data->last_usec = data->now_usec = now_usec;
     data->dir = LTC4150_DISCHARGE;
 }
 
-/**
- * @brief Callback function to record the current pulse
- */
+/// @brief Callback function to record the current pulse
 static void pulse_cb(ltc4150_dev_t *dev, ltc4150_dir_t dir, uint64_t now_usec,
-                     void *_data)
-{
+                     void *_data) {
     (void)dev;
     static msg_t m = { .content = { .value = 0} };
 
@@ -88,29 +78,23 @@ static void pulse_cb(ltc4150_dev_t *dev, ltc4150_dir_t dir, uint64_t now_usec,
     msg_send(&m, target_pid);
 }
 
-/**
- * @brief Busy waits for the given amount of seconds
- * @param seconds    Number of seconds to roast the CPU
- */
-static void spin(uint32_t seconds)
-{
+/// @brief Busy waits for the given amount of seconds
+/// @param seconds    Number of seconds to roast the CPU
+static void spin(uint32_t seconds) {
     ztimer_spin(ZTIMER_USEC, US_PER_SEC * seconds);
 }
 
-/**
- * @brief Thread that will put three levels of CPU load on the MCU
- */
-static void *busy_thread(void *arg)
-{
+/// @brief Thread that will put three levels of CPU load on the MCU
+static void *busy_thread(void *arg) {
     (void)arg;
     while (1) {
-        /* one minute of ~0% CPU usage */
+        // one minute of ~0% CPU usage
         LED0_OFF;
         LED1_OFF;
         ztimer_sleep(ZTIMER_USEC, 60 * US_PER_SEC);
         change_of_load_level = 1;
 
-        /* one minute of ~50% CPU usage */
+        // one minute of ~50% CPU usage
         for (unsigned i = 0; i < 30; i++) {
             LED0_OFF;
             LED1_OFF;
@@ -121,24 +105,21 @@ static void *busy_thread(void *arg)
         }
         change_of_load_level = 1;
 
-        /* one minute of 100% CPU usage */
+        // one minute of 100% CPU usage
         LED0_ON;
         LED1_ON;
         spin(60);
         change_of_load_level = 1;
     }
 
-    /* unreachable */
+    // unreachable
     return NULL;
 }
 
-/**
- * @brief Print a table column with the given current as E-01
- * @param current   Value to print in the column (as E-01)
- * @param width     Width of the column
- */
-static void print_current(int32_t current, size_t width)
-{
+/// @brief Print a table column with the given current as E-01
+/// @param current   Value to print in the column (as E-01)
+/// @param width     Width of the column
+static void print_current(int32_t current, size_t width) {
     char sbuf[2];
 
     print_col_s32_dec(current/10, width - 2);
@@ -147,8 +128,7 @@ static void print_current(int32_t current, size_t width)
     print(sbuf, 2);
 }
 
-int main(void)
-{
+int main(void) {
     target_pid = thread_getpid();
     uint32_t ten_uc_per_pulse;
     msg_t m;
@@ -156,7 +136,7 @@ int main(void)
 
     retval = ltc4150_init(&ltc4150, &ltc4150_params[0]);
 
-    /* Pre-compute the charge corresponding to one pulse */
+    // Pre-compute the charge corresponding to one pulse
     ltc4150_pulses2c(&ltc4150, &ten_uc_per_pulse, NULL, 10000, 0);
 
     if (retval) {
@@ -175,7 +155,7 @@ int main(void)
         return -1;
     }
 
-    /* Start the thread that will keep the MCU busy */
+    // Start the thread that will keep the MCU busy
     thread_create(busy_thread_stack, sizeof(busy_thread_stack),
                   THREAD_PRIORITY_MAIN + 1, 0,
                   busy_thread, NULL, "busy_thread");
@@ -215,7 +195,7 @@ int main(void)
         "+---------------+---------------+---------+-------------+-----------+\n");
 
     while (1) {
-        /* Wait for the next pulse of the LTC4150 */
+        // Wait for the next pulse of the LTC4150
         msg_receive(&m);
         uint32_t charged, discharged;
         int16_t avg_current;
@@ -226,7 +206,7 @@ int main(void)
             change_of_load_level = 0;
         }
 
-        /* Get & print total charge transferred */
+        // Get & print total charge transferred
         if (ltc4150_charge(&ltc4150, &charged, &discharged)) {
             print_str("ltc4150_charge() failed!\n");
             return -1;
@@ -237,7 +217,7 @@ int main(void)
         print_col_u32_dec(discharged, 13);
         print_str(" | ");
 
-        /* Get & print avg current */
+        // Get & print avg current
         if (ltc4150_avg_current(&ltc4150, &avg_current)) {
             print_str("ltc4150_avg_current() failed!\n");
             return -1;
@@ -245,7 +225,7 @@ int main(void)
         print_current(avg_current, 7);
         print_str(" | ");
 
-        /* Get & print last minute current */
+        // Get & print last minute current
         if (ltc4150_last_minute_charge(&ltc4150, &last_minute_data,
                                        &charged, &discharged)
             ) {
@@ -257,7 +237,7 @@ int main(void)
         print_col_s32_dec(current, 11);
         print_str(" | ");
 
-        /* Calculate & print the current between the last two pulses */
+        // Calculate & print the current between the last two pulses
         current = (int32_t)((test_data.now_usec - test_data.last_usec) / MS_PER_SEC);
         current = ten_uc_per_pulse / current;
         if (test_data.dir == LTC4150_CHARGE) {

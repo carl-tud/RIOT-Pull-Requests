@@ -1,22 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 JP Bonn
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 JP Bonn
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_fe310
- * @{
- *
- * @file        cpu_cycle.c
- * @brief       Read CPU cycle counter
- *
- * @author		JP Bonn
- * @}
- */
+/// @ingroup     cpu_fe310
+/// @{
+///
+/// @file        cpu_cycle.c
+/// @brief       Read CPU cycle counter
+///
+/// @author		JP Bonn
+/// @}
 #include "cpucycle.h"
 
-uint64_t get_cycle_count(void)
-{
+uint64_t get_cycle_count(void) {
     uint32_t lo, hi, hi2;
 
     __asm__ __volatile__ ("1:\n\t"             \

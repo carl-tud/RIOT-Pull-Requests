@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of QML5883L magnetic sensors
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization of QML5883L magnetic sensors
+//
+// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,33 +17,22 @@
 #include "qmc5883l.h"
 #include "qmc5883l_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define QMC5883L_NUM        ARRAY_SIZE(qmc5883l_params)
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define QMC5883L_INFO_NUM   ARRAY_SIZE(qmc5883l_saul_info)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static qmc5883l_t qmc5883l_devs[QMC5883L_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[QMC5883L_NUM];
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern saul_driver_t qmc5883l_saul_driver;
 
-void auto_init_qmc5883l(void)
-{
+void auto_init_qmc5883l(void) {
     assert(QMC5883L_NUM == QMC5883L_INFO_NUM);
 
     for (unsigned int i = 0; i < QMC5883L_NUM; i++) {

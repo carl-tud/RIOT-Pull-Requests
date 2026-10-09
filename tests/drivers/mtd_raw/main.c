@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Application for testing MTD implementations
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Application for testing MTD implementations
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -26,8 +22,7 @@
 #include "shell.h"
 #include "test_utils/expect.h"
 
-static mtd_dev_t *_get_dev(int argc, char **argv)
-{
+static mtd_dev_t *_get_dev(int argc, char **argv) {
     if (argc < 2) {
         printf("%s: please specify the MTD device\n", argv[0]);
         return NULL;
@@ -43,8 +38,7 @@ static mtd_dev_t *_get_dev(int argc, char **argv)
     return mtd_dev_get(idx);
 }
 
-static bool mem_is_all_set(const uint8_t *buf, uint8_t c, size_t n)
-{
+static bool mem_is_all_set(const uint8_t *buf, uint8_t c, size_t n) {
     for (const uint8_t *end = buf + n; buf != end; ++buf) {
         if (*buf != c) {
             return false;
@@ -54,8 +48,7 @@ static bool mem_is_all_set(const uint8_t *buf, uint8_t c, size_t n)
     return true;
 }
 
-static int cmd_test(int argc, char **argv)
-{
+static int cmd_test(int argc, char **argv) {
     mtd_dev_t *dev = _get_dev(argc, argv);
     uint32_t sector;
 
@@ -87,19 +80,19 @@ static int cmd_test(int argc, char **argv)
 
     puts("[START]");
 
-    /* write dummy data to sectors */
+    // write dummy data to sectors
     memset(buffer, 0x23, dev->page_size);
     expect(mtd_write_page_raw(dev, buffer, page_0, 0, page_size) == 0);
     expect(mtd_write_page_raw(dev, buffer, page_1, 0, page_size) == 0);
 
-    /* erase two sectors and check if they have been erased */
+    // erase two sectors and check if they have been erased
     expect(mtd_erase_sector(dev, sector, 2) == 0);
     expect(mtd_read_page(dev, buffer, page_0, 0, page_size) == 0);
     expect(mem_is_all_set(buffer, 0xFF, page_size) || mem_is_all_set(buffer, 0x00, page_size));
     expect(mtd_read_page(dev, buffer, page_1, 0, page_size) == 0);
     expect(mem_is_all_set(buffer, 0xFF, page_size) || mem_is_all_set(buffer, 0x00, page_size));
 
-    /* write test data & read it back */
+    // write test data & read it back
     const char test_str[] = "0123456789";
     uint32_t offset = 5;
 
@@ -107,27 +100,27 @@ static int cmd_test(int argc, char **argv)
     expect(mtd_read_page(dev, buffer, page_0, offset, sizeof(test_str)) == 0);
     expect(memcmp(test_str, buffer, sizeof(test_str)) == 0);
 
-    /* write across page boundary */
+    // write across page boundary
     offset = page_size - sizeof(test_str) / 2;
     expect(mtd_write_page_raw(dev, test_str, page_0, offset, sizeof(test_str)) == 0);
     expect(mtd_read_page(dev, buffer, page_0, offset, sizeof(test_str)) == 0);
     expect(memcmp(test_str, buffer, sizeof(test_str)) == 0);
 
-    /* write across sector boundary */
+    // write across sector boundary
     offset = page_size - sizeof(test_str) / 2
            + (dev->pages_per_sector - 1) * page_size;
     expect(mtd_write_page_raw(dev, test_str, page_0, offset, sizeof(test_str)) == 0);
     expect(mtd_read_page(dev, buffer, page_0, offset, sizeof(test_str)) == 0);
     expect(memcmp(test_str, buffer, sizeof(test_str)) == 0);
 
-    /* overwrite first test string, rely on MTD for read-modify-write */
+    // overwrite first test string, rely on MTD for read-modify-write
     const char test_str_2[] = "Hello World!";
     offset = 5;
     expect(mtd_write_page(dev, test_str_2, page_0, offset, sizeof(test_str_2)) == 0);
     expect(mtd_read_page(dev, buffer, page_0, offset, sizeof(test_str_2)) == 0);
     expect(memcmp(test_str_2, buffer, sizeof(test_str_2)) == 0);
 
-    /* test write_page across sectors */
+    // test write_page across sectors
     offset = dev->pages_per_sector * dev->page_size - 2;
     expect(mtd_write_page(dev, test_str, page_0, offset, sizeof(test_str)) == 0);
     expect(mtd_read_page(dev, buffer, page_0, offset, sizeof(test_str)) == 0);
@@ -142,8 +135,7 @@ static int cmd_test(int argc, char **argv)
 
 SHELL_COMMAND(test, "Erase & write test data to the last two sectors", cmd_test);
 
-int main(void)
-{
+int main(void) {
     puts("Manual MTD test");
 
     if (MTD_NUMOF == 0) {
@@ -163,7 +155,7 @@ int main(void)
         mtd_power(dev, MTD_POWER_UP);
     }
 
-    /* run the shell */
+    // run the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 

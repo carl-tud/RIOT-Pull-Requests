@@ -1,26 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp_common
- * @{
- *
- * @file
- * @brief       Implementation of some tools for ESP SoCs
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     cpu_esp_common
+/// @{
+///
+/// @file
+/// @brief       Implementation of some tools for ESP SoCs
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <stdio.h>
 #include "esp/common_macros.h"
 #include "tools.h"
 
-void esp_hexdump (const void* addr, uint32_t num, char width, uint8_t per_line)
-{
+void esp_hexdump (const void* addr, uint32_t num, char width, uint8_t per_line) {
     uint32_t count = 0;
     uint32_t size;
 

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the BMP180 pressure and temperature sensor
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the BMP180 pressure and temperature sensor
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,8 +21,7 @@
 #include "ztimer.h"
 #include "board.h"
 
-int main(void)
-{
+int main(void) {
     bmp180_t dev;
     int result;
 
@@ -60,16 +55,16 @@ int main(void)
     printf("MD: %i\n", dev.calibration.md);
     printf("\n+--------Starting Measurements--------+\n");
     while (1) {
-        /* Get temperature in deci degrees celsius */
+        // Get temperature in deci degrees celsius
         int16_t temperature = bmp180_read_temperature(&dev);
 
-        /* Get pressure in Pa */
+        // Get pressure in Pa
         uint32_t pressure = bmp180_read_pressure(&dev);
 
-        /* Get pressure at sealevel in Pa */
+        // Get pressure at sealevel in Pa
         uint32_t pressure_0 = bmp180_sealevel_pressure(&dev, (int16_t)TEST_ALTITUDE);
 
-        /* Get altitude in meters */
+        // Get altitude in meters
         int16_t altitude = bmp180_altitude(&dev, pressure_0);
 
         printf("Temperature [°C]: %i.%d\n"

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Mesotic SAS
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Mesotic SAS
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_bme680
- *
- * @{
- * @file
- * @brief       Default configuration for BME680 device driver
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     drivers_bme680
+///
+/// @{
+/// @file
+/// @brief       Default configuration for BME680 device driver
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "board.h"
 #include "bme680.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the BME680
- * @{
- */
+/// @name    Set default configuration parameters for the BME680
+/// @{
 
 #if MODULE_PERIPH_I2C || DOXYGEN
 #ifndef BME680_PARAM_I2C_DEV
@@ -38,7 +32,7 @@ extern "C" {
 #ifndef BME680_PARAM_I2C_ADDR
 #define BME680_PARAM_I2C_ADDR       (BME680_I2C_ADDR_2)
 #endif
-#endif /* MODULE_PERIPH_I2C */
+#endif // MODULE_PERIPH_I2C
 
 #if MODULE_PERIPH_SPI || DOXYGEN
 #ifndef BME680_PARAM_SPI_DEV
@@ -48,11 +42,9 @@ extern "C" {
 #ifndef BME680_PARAM_SPI_NSS_PIN
 #define BME680_PARAM_SPI_NSS_PIN    GPIO_PIN(0, 5)
 #endif
-#endif /* MODULE_PERIPH_SPI */
+#endif // MODULE_PERIPH_SPI
 
-/**
- * @brief   Defaults I2C parameters if none provided
- */
+/// @brief   Defaults I2C parameters if none provided
 #define BME680_PARAMS_I2C                               \
 {                                                       \
         .ifsel              = BME680_I2C_INTF,          \
@@ -72,9 +64,7 @@ extern "C" {
         .intf.i2c.addr  = BME680_PARAM_I2C_ADDR,        \
 }
 
-/**
- * @brief   Defaults SPI parameters if none provided
- */
+/// @brief   Defaults SPI parameters if none provided
 #define BME680_PARAMS_SPI                               \
 {                                                       \
         .ifsel              = BME680_SPI_INTF,          \
@@ -94,22 +84,18 @@ extern "C" {
         .intf.spi.nss_pin   = BME680_PARAM_SPI_NSS_PIN, \
 }
 
-/**
- * @brief   Default SAUL meta information
- */
+/// @brief   Default SAUL meta information
 #ifndef BME680_SAUL_INFO
 #if MODULE_BME680_I2C && MODULE_BME680_SPI
 #define BME680_SAUL_INFO    { .name = "bme680:0" }, \
                             { .name = "bme680:1" },
-#else /* MODULE_BME680_I2C && MODULE_BME680_SPI */
+#else // MODULE_BME680_I2C && MODULE_BME680_SPI
 #define BME680_SAUL_INFO    { .name = "bme680" }
-#endif /* MODULE_BME680_I2C && MODULE_BME680_SPI */
-#endif /* BME680_SAUL_INFO */
-/**@}*/
+#endif // MODULE_BME680_I2C && MODULE_BME680_SPI
+#endif // BME680_SAUL_INFO
+/// @}
 
-/**
- * @brief   Configure params for BME680
- */
+/// @brief   Configure params for BME680
 static const bme680_params_t bme680_params[] =
 {
 #if MODULE_BME680_I2C || DOXYGEN
@@ -120,21 +106,17 @@ static const bme680_params_t bme680_params[] =
 #endif
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t bme680_saul_info[] =
 {
     BME680_SAUL_INFO
 };
 
-/**
- * @brief   The number of configured sensors
- */
+/// @brief   The number of configured sensors
 #define BME680_NUMOF    ARRAY_SIZE(bme680_params)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

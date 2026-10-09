@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     sys_psa_crypto
- * @{
- *
- * @brief       Contexts for the RIOT hashes module
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- */
+/// @ingroup     sys_psa_crypto
+/// @{
+///
+/// @brief       Contexts for the RIOT hashes module
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
 
 #ifdef __cplusplus
 extern "C" {
@@ -85,4 +81,4 @@ typedef keccak_state_t psa_hashes_sha3_ctx_t;
 }
 #endif
 
-/** @} */
+/// @}

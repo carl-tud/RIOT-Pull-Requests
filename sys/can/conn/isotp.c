@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_can_conn
- * @{
- * @file
- * @brief       Implementation of isotp CAN connection
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @}
- */
+/// @ingroup     sys_can_conn
+/// @{
+/// @file
+/// @brief       Implementation of isotp CAN connection
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @}
 
 #ifdef MODULE_CAN_ISOTP
 #include <assert.h>
@@ -40,8 +36,7 @@
 #define CONN_CAN_ISOTP_TIMEOUT_TX_CONF_US   (10 * US_PER_SEC)
 #endif
 
-static inline int try_put_msg(conn_can_isotp_t *conn, msg_t *msg)
-{
+static inline int try_put_msg(conn_can_isotp_t *conn, msg_t *msg) {
 #ifdef MODULE_CONN_CAN_ISOTP_MULTI
     return mbox_try_put(&conn->master->mbox, msg);
 #else
@@ -49,8 +44,7 @@ static inline int try_put_msg(conn_can_isotp_t *conn, msg_t *msg)
 #endif
 }
 
-static inline void put_msg(conn_can_isotp_t *conn, msg_t *msg)
-{
+static inline void put_msg(conn_can_isotp_t *conn, msg_t *msg) {
 #ifdef MODULE_CONN_CAN_ISOTP_MULTI
     mbox_put(&conn->master->mbox, msg);
 #else
@@ -58,8 +52,7 @@ static inline void put_msg(conn_can_isotp_t *conn, msg_t *msg)
 #endif
 }
 
-static inline void get_msg(conn_can_isotp_t *conn, msg_t *msg)
-{
+static inline void get_msg(conn_can_isotp_t *conn, msg_t *msg) {
 #ifdef MODULE_CONN_CAN_ISOTP_MULTI
     mbox_get(&conn->master->mbox, msg);
 #else
@@ -67,8 +60,7 @@ static inline void get_msg(conn_can_isotp_t *conn, msg_t *msg)
 #endif
 }
 
-int conn_can_isotp_create(conn_can_isotp_t *conn, struct isotp_options *options, int ifnum)
-{
+int conn_can_isotp_create(conn_can_isotp_t *conn, struct isotp_options *options, int ifnum) {
     assert(conn != NULL);
     assert(options != NULL);
     assert(ifnum < CAN_DLL_NUMOF);
@@ -98,8 +90,7 @@ int conn_can_isotp_create(conn_can_isotp_t *conn, struct isotp_options *options,
     return 0;
 }
 
-int conn_can_isotp_bind(conn_can_isotp_t *conn, struct isotp_fc_options *fc_options)
-{
+int conn_can_isotp_bind(conn_can_isotp_t *conn, struct isotp_fc_options *fc_options) {
     assert(conn != NULL);
     assert(conn->isotp.opt.tx_id != 0 || conn->isotp.opt.rx_id != 0);
 
@@ -140,8 +131,7 @@ int conn_can_isotp_bind(conn_can_isotp_t *conn, struct isotp_fc_options *fc_opti
     return ret;
 }
 
-static void _tx_conf_timeout(void *arg)
-{
+static void _tx_conf_timeout(void *arg) {
     conn_can_isotp_t *conn = arg;
     msg_t msg;
 
@@ -151,8 +141,7 @@ static void _tx_conf_timeout(void *arg)
     try_put_msg(conn, &msg);
 }
 
-int conn_can_isotp_send(conn_can_isotp_t *conn, const void *buf, size_t size, int flags)
-{
+int conn_can_isotp_send(conn_can_isotp_t *conn, const void *buf, size_t size, int flags) {
     assert(conn != NULL);
     assert(buf != NULL || size == 0);
 
@@ -181,7 +170,7 @@ int conn_can_isotp_send(conn_can_isotp_t *conn, const void *buf, size_t size, in
                 if (msg.content.ptr == conn) {
                     ret = -EIO;
                 }
-                /* Fall through */
+                // Fall through
             case CAN_MSG_TX_CONFIRMATION:
 #ifdef MODULE_CONN_CAN_ISOTP_MULTI
                 if (msg.content.ptr != conn) {
@@ -204,8 +193,7 @@ int conn_can_isotp_send(conn_can_isotp_t *conn, const void *buf, size_t size, in
     return ret;
 }
 
-static void _rx_timeout(void *arg)
-{
+static void _rx_timeout(void *arg) {
     conn_can_isotp_t *conn = arg;
     msg_t msg;
 
@@ -215,8 +203,7 @@ static void _rx_timeout(void *arg)
     try_put_msg(conn, &msg);
 }
 
-int conn_can_isotp_recv(conn_can_isotp_t *conn, void *buf, size_t size, uint32_t timeout)
-{
+int conn_can_isotp_recv(conn_can_isotp_t *conn, void *buf, size_t size, uint32_t timeout) {
     assert(conn != NULL);
     assert(buf != NULL);
 
@@ -313,8 +300,7 @@ int conn_can_isotp_recv(conn_can_isotp_t *conn, void *buf, size_t size, uint32_t
     return ret;
 }
 
-int conn_can_isotp_close(conn_can_isotp_t *conn)
-{
+int conn_can_isotp_close(conn_can_isotp_t *conn) {
     assert(conn != NULL);
     msg_t msg;
 
@@ -373,8 +359,7 @@ int conn_can_isotp_close(conn_can_isotp_t *conn)
 }
 
 #ifdef MODULE_CONN_CAN_ISOTP_MULTI
-int conn_can_isotp_select(conn_can_isotp_slave_t **conn, conn_can_isotp_t *master, uint32_t timeout)
-{
+int conn_can_isotp_select(conn_can_isotp_slave_t **conn, conn_can_isotp_t *master, uint32_t timeout) {
     assert(master != NULL);
     assert(conn != NULL);
 
@@ -422,8 +407,8 @@ int conn_can_isotp_select(conn_can_isotp_slave_t **conn, conn_can_isotp_t *maste
 
     return ret;
 }
-#endif /* MODULE_CONN_CAN_ISOTP_MULTI */
+#endif // MODULE_CONN_CAN_ISOTP_MULTI
 
 #else
 typedef int dont_be_pedantic;
-#endif /* MODULE_CAN_ISOTP */
+#endif // MODULE_CAN_ISOTP

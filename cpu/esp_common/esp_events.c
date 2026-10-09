@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp_common
- * @{
- *
- * @file
- * @brief       ESP system event handler
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     cpu_esp_common
+/// @{
+///
+/// @file
+/// @brief       ESP system event handler
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include "kernel_defines.h"
 
@@ -42,46 +38,44 @@
 static system_event_cb_t _handler[MAX_HANDLER_NUM] = {};
 static void* _handler_arg[MAX_HANDLER_NUM] = {};
 
-esp_err_t esp_system_event_add_handler (system_event_cb_t handler, void *arg)
-{
+esp_err_t esp_system_event_add_handler (system_event_cb_t handler, void *arg) {
     int i;
 
-    /* determine next free handler entry */
+    // determine next free handler entry
     for (i = 0; i < MAX_HANDLER_NUM; i++) {
         if (_handler[i] == NULL) {
             break;
         }
     }
 
-    /* return if there is no free entry */
+    // return if there is no free entry
     if (i == MAX_HANDLER_NUM) {
         return ESP_FAIL;
     }
 
-    /* set the handler and argument entry */
+    // set the handler and argument entry
     _handler[i] = handler;
     _handler_arg[i] = arg;
 
     return ESP_OK;
 }
 
-esp_err_t esp_system_event_del_handler (system_event_cb_t handler)
-{
+esp_err_t esp_system_event_del_handler (system_event_cb_t handler) {
     int i;
 
-    /* determine the handler entry */
+    // determine the handler entry
     for (i = 0; i < MAX_HANDLER_NUM; i++) {
         if (_handler[i] == handler) {
             break;
         }
     }
 
-    /* return if entry was not found */
+    // return if entry was not found
     if (i == MAX_HANDLER_NUM) {
         return ESP_FAIL;
     }
 
-    /* clean handler and arg entry */
+    // clean handler and arg entry
     _handler[i] = NULL;
     _handler_arg[i] = NULL;
 
@@ -89,8 +83,7 @@ esp_err_t esp_system_event_del_handler (system_event_cb_t handler)
 }
 
 #ifdef CPU_ESP8266
-static esp_err_t esp_system_event_handler(void *ctx, system_event_t *event)
-{
+static esp_err_t esp_system_event_handler(void *ctx, system_event_t *event) {
     for (int i = 0; i < MAX_HANDLER_NUM; i++) {
         if (_handler[i] != NULL) {
             _handler[i](_handler_arg[i], event);
@@ -98,15 +91,14 @@ static esp_err_t esp_system_event_handler(void *ctx, system_event_t *event)
     }
     return ESP_OK;
 }
-#else /* CPU_ESP8266 */
-/* The event loop API of newer ESP-IDF versions split system events into
- * different event bases types. For code compatibility, we have to map
- * new event base types to the former system events */
+#else // CPU_ESP8266
+// The event loop API of newer ESP-IDF versions split system events into
+// different event bases types. For code compatibility, we have to map
+// new event base types to the former system events
 static void esp_system_event_handler(void* arg,
                                      esp_event_base_t event_base,
                                      int32_t event_id,
-                                     void* event_data)
-{
+                                     void* event_data) {
     system_event_t sys_event = { .event_id = SYSTEM_EVENT_MAX };
 
 #if IS_USED(MODULE_ESP_WIFI_ANY)
@@ -233,16 +225,15 @@ static void esp_system_event_handler(void* arg,
         }
     }
 }
-#endif /* CPU_ESP8266 */
-#endif /* IS_USED(MODULE_ESP_WIFI_ANY) || IS_USED(MODULE_ESP_ETH) */
+#endif // CPU_ESP8266
+#endif // IS_USED(MODULE_ESP_WIFI_ANY) || IS_USED(MODULE_ESP_ETH)
 
-void esp_event_handler_init(void)
-{
+void esp_event_handler_init(void) {
 #if IS_USED(MODULE_ESP_WIFI_ANY) || IS_USED(MODULE_ESP_ETH)
 #ifdef CPU_ESP8266
     esp_event_loop_init(esp_system_event_handler, NULL);
 #else
-    /* newer ESP-IDF versions use another event loop API that have to be used */
+    // newer ESP-IDF versions use another event loop API that have to be used
     esp_event_loop_create_default();
     if (IS_USED(MODULE_ESP_WIFI_ANY)) {
         esp_event_handler_instance_register(WIFI_EVENT,

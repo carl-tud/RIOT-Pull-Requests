@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_gd32v
- * @ingroup     drivers_periph_dac
- * @{
- *
- * @file
- * @brief       Low-level DAC driver implementation for GD32VF103
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     cpu_gd32v
+/// @ingroup     drivers_periph_dac
+/// @{
+///
+/// @file
+/// @brief       Low-level DAC driver implementation for GD32VF103
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include "assert.h"
 #include "cpu.h"
@@ -22,8 +18,7 @@
 
 #define DAC_CTL_DENX_MASK  (DAC_CTL_DEN0_Msk | DAC_CTL_DEN1_Msk)
 
-int8_t dac_init(dac_t line)
-{
+int8_t dac_init(dac_t line) {
     assert(line < DAC_NUMOF);
 
     gpio_init_analog(dac_config[line].pin);
@@ -34,12 +29,11 @@ int8_t dac_init(dac_t line)
     return DAC_OK;
 }
 
-void dac_set(dac_t line, uint16_t value)
-{
+void dac_set(dac_t line, uint16_t value) {
     assert(line < DAC_NUMOF);
     assert(dac_config[line].chan < DAC_CHANNEL_NUMOF);
 
-    /* set the upper 12 bit of the left aligned DAC data holding register */
+    // set the upper 12 bit of the left aligned DAC data holding register
     if (dac_config[line].chan) {
         DAC->DAC1_L12DH = value & 0xfff0;
     }
@@ -48,28 +42,26 @@ void dac_set(dac_t line, uint16_t value)
     }
 }
 
-void dac_poweron(dac_t line)
-{
+void dac_poweron(dac_t line) {
     assert(line < DAC_NUMOF);
     assert(dac_config[line].chan < DAC_CHANNEL_NUMOF);
 
-    /* enable the DAC clock */
+    // enable the DAC clock
     periph_clk_en(APB1, RCU_APB1EN_DACEN_Msk);
 
-    /* enable the DAC channel */
+    // enable the DAC channel
     DAC->CTL |= (dac_config[line].chan) ? DAC_CTL_DEN1_Msk : DAC_CTL_DEN0_Msk;
 }
 
-void dac_poweroff(dac_t line)
-{
+void dac_poweroff(dac_t line) {
     assert(line < DAC_NUMOF);
     assert(dac_config[line].chan < DAC_CHANNEL_NUMOF);
 
-    /* disable the DAC channel */
+    // disable the DAC channel
     DAC->CTL &= ~((dac_config[line].chan) ? DAC_CTL_DEN1_Msk : DAC_CTL_DEN0_Msk);
 
     if ((DAC->CTL & DAC_CTL_DENX_MASK) == 0) {
-        /* disable the DAC clock only if both channels are disabled */
+        // disable the DAC clock only if both channels are disabled
         periph_clk_dis(APB1, RCU_APB1EN_DACEN_Msk);
     }
 }

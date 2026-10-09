@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief       Auto initialization for XBee network interfaces
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief       Auto initialization for XBee network interfaces
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "log.h"
 #include "board.h"
@@ -22,29 +18,22 @@
 #include "xbee_params.h"
 #include "include/init_devs.h"
 
-/**
- * @brief   Calculate the number of configured XBee devices
- */
+/// @brief   Calculate the number of configured XBee devices
 #define XBEE_NUM        ARRAY_SIZE(xbee_params)
 
-/**
- * @brief   Define stack parameters for the MAC layer thread
- */
+/// @brief   Define stack parameters for the MAC layer thread
 #define XBEE_MAC_STACKSIZE           (GNRC_NETIF_STACKSIZE_DEFAULT)
 #ifndef XBEE_MAC_PRIO
 #define XBEE_MAC_PRIO                (GNRC_NETIF_PRIO)
 #endif
 
-/**
- * @brief   Allocate memory for device descriptors, stacks, and GNRC adaption
- */
+/// @brief   Allocate memory for device descriptors, stacks, and GNRC adaption
 static xbee_t xbee_devs[XBEE_NUM];
 static char stacks[XBEE_NUM][XBEE_MAC_STACKSIZE];
 
 static gnrc_netif_t _netif[XBEE_NUM];
 
-void auto_init_xbee(void)
-{
+void auto_init_xbee(void) {
     for (unsigned i = 0; i < XBEE_NUM; i++) {
         LOG_DEBUG("[auto_init_netif] initializing xbee #%u\n", i);
 
@@ -53,4 +42,4 @@ void auto_init_xbee(void)
                                "xbee", (netdev_t *)&xbee_devs[i]);
     }
 }
-/** @} */
+/// @}

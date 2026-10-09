@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for accessing auxiliary data using the UDP SOCK API
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for accessing auxiliary data using the UDP SOCK API
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -38,8 +34,7 @@ static const sock_aux_flags_t flags_rx = SOCK_AUX_GET_LOCAL
                                        | SOCK_AUX_GET_RSSI;
 static const sock_aux_flags_t flags_tx = SOCK_AUX_GET_TIMESTAMP;
 
-static void *server_thread(void *arg)
-{
+static void *server_thread(void *arg) {
     (void)arg;
     sock_udp_ep_t local = SOCK_IPV6_EP_ANY;
     sock_udp_t sock;
@@ -56,8 +51,7 @@ static void *server_thread(void *arg)
         sock_udp_aux_tx_t tx_aux = { .flags = flags_tx };
         char buf[128];
         if (0 <= (res = sock_udp_recv_aux(&sock, buf, sizeof(buf),
-                                          SOCK_NO_TIMEOUT, &remote, &rx_aux)))
-            {
+                                          SOCK_NO_TIMEOUT, &remote, &rx_aux))) {
             print_str("Received a message via: [");
             if (!(rx_aux.flags & SOCK_AUX_GET_LOCAL)) {
                 char tmp[IPV6_ADDR_MAX_STR_LEN + 1];
@@ -105,10 +99,9 @@ static void *server_thread(void *arg)
     return 0;
 }
 
-int main(void)
-{
-    /* we need a message queue for the thread running the shell in order to
-     * receive potentially fast incoming networking packets */
+int main(void) {
+    // we need a message queue for the thread running the shell in order to
+    // receive potentially fast incoming networking packets
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     thread_create(server_thread_stack, sizeof(server_thread_stack),

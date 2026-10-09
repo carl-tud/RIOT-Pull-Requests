@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Rakendra Thapa <rakendrathapa@gmail.com
- * SPDX-FileCopyrightText: 2015 Marc Poulhiès <dkm@kataplop.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Rakendra Thapa <rakendrathapa@gmail.com
+// SPDX-FileCopyrightText: 2015 Marc Poulhiès <dkm@kataplop.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_lm4f120
- * @ingroup     drivers_periph_timer
- * @{
- *
- * @file        timer.c
- * @brief       Implementation of the low-level timer driver for the LM4F120
- *
- * @author      Rakendra Thapa <rakendrathapa@gmail.com>
- *              Marc Poulhiès <dkm@kataplop.net>
- */
+/// @ingroup     cpu_lm4f120
+/// @ingroup     drivers_periph_timer
+/// @{
+///
+/// @file        timer.c
+/// @brief       Implementation of the low-level timer driver for the LM4F120
+///
+/// @author      Rakendra Thapa <rakendrathapa@gmail.com>
+///              Marc Poulhiès <dkm@kataplop.net>
 
 #include <stdint.h>
 
@@ -26,20 +22,18 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief Interrupt context for each configured timer
- * @{
- */
+/// @brief Interrupt context for each configured timer
+/// @{
 static timer_isr_ctx_t isr_ctx[TIMER_NUMOF];
 static uint32_t isr_divisor[TIMER_NUMOF];
-/**@}*/
+/// @}
 
 #include "hw_timer.h"
 
-/* enable timer interrupts */
+// enable timer interrupts
 static inline void _irq_enable(tim_t tim);
 
-/* Missing from driverlib */
+// Missing from driverlib
 static inline unsigned long
 PRIV_TimerPrescaleSnapshotGet(unsigned long ulbase, unsigned long ultimer) {
     return ((ultimer == TIMER_A) ? HWREG(ulbase + TIMER_O_TAPS) :
@@ -47,21 +41,18 @@ PRIV_TimerPrescaleSnapshotGet(unsigned long ulbase, unsigned long ultimer) {
 }
 
 static inline uint64_t _scaled_to_ll_value(uint32_t uncorrected,
-                                           uint32_t divisor)
-{
+                                           uint32_t divisor) {
     const uint64_t scaledv = (uint64_t) uncorrected * divisor;
     return scaledv;
 }
 
 static inline uint32_t _llvalue_to_scaled_value(uint64_t corrected,
-                                                uint32_t divisor)
-{
+                                                uint32_t divisor) {
     const uint64_t scaledv = corrected / divisor;
     return scaledv;
 }
 
-int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
-{
+int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg) {
     if (tim >= TIMER_NUMOF){
         return -1;
     }
@@ -95,8 +86,7 @@ int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
     return 0;
 }
 
-int timer_set_absolute(tim_t tim, int channel, unsigned int value)
-{
+int timer_set_absolute(tim_t tim, int channel, unsigned int value) {
     if (tim >= TIMER_NUMOF || channel >= timer_config[tim].channels) {
         return -1;
     }
@@ -122,8 +112,7 @@ int timer_set_absolute(tim_t tim, int channel, unsigned int value)
     return 0;
 }
 
-int timer_clear(tim_t tim, int channel)
-{
+int timer_clear(tim_t tim, int channel) {
     if (tim >= TIMER_NUMOF || channel >= timer_config[tim].channels) {
         return -1;
     }
@@ -131,8 +120,7 @@ int timer_clear(tim_t tim, int channel)
     return 0;
 }
 
-unsigned int timer_read(tim_t tim)
-{
+unsigned int timer_read(tim_t tim) {
     unsigned int timer_side = TIMER_A;
     unsigned long long high_bits, high_bits_dup;
     unsigned long long low_bits;
@@ -145,7 +133,7 @@ unsigned int timer_read(tim_t tim)
 
     const timer_conf_t *cfg = &timer_config[tim];
 
-    /* handle overflow happening between the 2 register reads */
+    // handle overflow happening between the 2 register reads
     do {
       high_bits = ((uint64_t)PRIV_TimerPrescaleSnapshotGet(cfg->dev,
                    timer_side)) << 32;
@@ -163,8 +151,7 @@ unsigned int timer_read(tim_t tim)
     return scaled_value;
 }
 
-void timer_start(tim_t tim)
-{
+void timer_start(tim_t tim) {
     if (tim >= TIMER_NUMOF){
         return;
     }
@@ -172,8 +159,7 @@ void timer_start(tim_t tim)
     ROM_TimerEnable(timer_config[tim].dev, TIMER_A);
 }
 
-void timer_stop(tim_t tim)
-{
+void timer_stop(tim_t tim) {
     if (tim >= TIMER_NUMOF){
         return;
     }
@@ -181,8 +167,7 @@ void timer_stop(tim_t tim)
     ROM_TimerDisable(timer_config[tim].dev, TIMER_A);
 }
 
-static inline void _irq_enable(tim_t tim)
-{
+static inline void _irq_enable(tim_t tim) {
     if (tim >= TIMER_NUMOF){
         return;
     }
@@ -191,9 +176,8 @@ static inline void _irq_enable(tim_t tim)
     ROM_IntEnable(timer_config[tim].intbase);
 }
 
-void _isr_timer(tim_t tim)
-{
-    /* Clears both IT */
+void _isr_timer(tim_t tim) {
+    // Clears both IT
     ROM_TimerIntClear(timer_config[tim].dev,
                       TIMER_TIMA_TIMEOUT | TIMER_TIMA_MATCH);
     isr_ctx[tim].cb(isr_ctx[tim].arg, 0);
@@ -201,16 +185,14 @@ void _isr_timer(tim_t tim)
 }
 
 #ifdef TIMER_0_ISR
-void TIMER_0_ISR(void)
-{
+void TIMER_0_ISR(void) {
     _isr_timer(0);
 }
-#endif /* TIMER_0_ISR */
+#endif // TIMER_0_ISR
 
 #ifdef TIMER_1_ISR
-void TIMER_1_ISR(void)
-{
+void TIMER_1_ISR(void) {
     _isr_timer(1);
 }
-#endif /* TIMER_1_ISR */
-/** @} */
+#endif // TIMER_1_ISR
+/// @}

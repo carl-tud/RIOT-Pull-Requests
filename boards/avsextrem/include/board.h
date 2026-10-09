@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2013 Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_avsextrem
- * @{
- *
- * @file
- * @brief       Boards specific drivers and configuration for the Avsextrem board
- *
- * @author      Heiko Will
- * @author      Zakaria Kasmi
- */
+/// @ingroup     boards_avsextrem
+/// @{
+///
+/// @file
+/// @brief       Boards specific drivers and configuration for the Avsextrem board
+///
+/// @author      Heiko Will
+/// @author      Zakaria Kasmi
 
 #include "lpc23xx.h"
 #include "bitarithm.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(2, 25)
 #define LED1_PIN            GPIO_PIN(2, 26)
 
@@ -40,10 +34,10 @@ extern "C" {
 #define LED1_OFF            (FIO3SET  = LED1_MASK)
 #define LED1_ON             (FIO3CLR  = LED1_MASK)
 #define LED1_TOGGLE         (FIO3PIN ^= LED1_MASK)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

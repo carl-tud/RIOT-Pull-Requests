@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_msbiot
- * @{
- *
- * @file
- * @name        Peripheral MCU configuration for the MSB-IoT board
- *
- * @author      Fabian Nack <nack@inf.fu-berlin.de>
- */
+/// @ingroup     boards_msbiot
+/// @{
+///
+/// @file
+/// @name        Peripheral MCU configuration for the MSB-IoT board
+///
+/// @author      Fabian Nack <nack@inf.fu-berlin.de>
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
 
-/* The HSE provides a 16MHz clock */
+// The HSE provides a 16MHz clock
 #ifndef CONFIG_CLOCK_HSE
 #define CONFIG_CLOCK_HSE               MHZ(16)
 #endif
@@ -32,25 +28,21 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 11 },   /* DMA2 Stream 3 - SPI1_TX */
-    { .stream = 10 },   /* DMA2 Stream 2 - SPI1_RX */
+    { .stream = 11 },   // DMA2 Stream 3 - SPI1_TX
+    { .stream = 10 },   // DMA2 Stream 2 - SPI1_RX
 };
 
 #define DMA_0_ISR           isr_dma2_stream3
 #define DMA_1_ISR           isr_dma2_stream2
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -72,12 +64,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tim5
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM11,
@@ -92,41 +82,35 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- *
- * We need to define the following fields:
- * PIN, device (ADCx), channel
- * @{
- */
+/// @name    ADC configuration
+///
+/// We need to define the following fields:
+/// PIN, device (ADCx), channel
+/// @{
 static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_B, 0), 0, 8},
     {GPIO_PIN(PORT_B, 1), 0, 9},
-    {GPIO_UNDEF, 0, 18}, /* VBAT */
+    {GPIO_UNDEF, 0, 18}, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(2) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(2) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name   DAC configuration
- * @{
- */
+/// @name   DAC configuration
+/// @{
 static const dac_conf_t dac_config[] = {
     { .pin = GPIO_PIN(PORT_A,  4), .chan = 0 },
     { .pin = GPIO_PIN(PORT_A,  5), .chan = 1 }
 };
 
 #define DAC_NUMOF           ARRAY_SIZE(dac_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -172,19 +156,17 @@ static const uart_conf_t uart_config[] = {
     },
 };
 
-/* assign ISR vector names */
+// assign ISR vector names
 #define UART_0_ISR          (isr_usart2)
 #define UART_1_ISR          (isr_usart1)
 #define UART_2_ISR          (isr_usart3)
 
-/* deduct number of defined UART interfaces */
+// deduct number of defined UART interfaces
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev            = SPI1,
@@ -208,12 +190,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -232,10 +212,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_0_ISR           isr_i2c1_ev
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief       Auto initialization for Semtech Loramac-node package
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief       Auto initialization for Semtech Loramac-node package
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "log.h"
 #include "kernel_defines.h"
@@ -40,8 +36,7 @@ static sx127x_t sx127x;
 static sx126x_t sx126x;
 #endif
 
-void auto_init_loramac(void)
-{
+void auto_init_loramac(void) {
 #if IS_USED(MODULE_SX127X)
     sx127x_setup(&sx127x, &sx127x_params[0], 0);
     loramac.netdev = &sx127x.netdev;
@@ -56,4 +51,4 @@ void auto_init_loramac(void)
 
     semtech_loramac_init(&loramac);
 }
-/** @} */
+/// @}

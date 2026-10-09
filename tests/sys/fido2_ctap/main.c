@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2022 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- * @file
- * @brief       FIDO2 CTAP test application that tests CTAP functionality
- *              without transport layer.
- *
- * @author      Nils Ollrogge <nils.ollrogge@mailbox.tu-dresden.de>
- * @}
- */
+/// @ingroup tests
+/// @{
+/// @file
+/// @brief       FIDO2 CTAP test application that tests CTAP functionality
+///              without transport layer.
+///
+/// @author      Nils Ollrogge <nils.ollrogge@mailbox.tu-dresden.de>
+/// @}
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,9 +16,7 @@
 
 #include "fido2/ctap.h"
 
-/**
- * To generate a new arrays simply run the gen_test_case.py script
- */
+/// To generate a new arrays simply run the gen_test_case.py script
 static uint8_t mc_data[] =
 { 0xa5, 0x1, 0x58, 0x20, 0xe0, 0xa1, 0xec, 0x5a, 0xa, 0x12, 0xa1, 0x4, 0xc8, 0xcb, 0x93, 0x54, 0x31,
   0xbf, 0x5c, 0x39, 0x7a, 0xee, 0x1b, 0x9f, 0xd0, 0x97, 0x97, 0x7d, 0x7b, 0xfb, 0x1, 0xa1, 0x20,
@@ -44,13 +38,12 @@ static uint8_t ga_data[] =
   0x39, 0xf5, 0xa7, 0xe9, 0x35, 0x41, 0xb0, 0x1c, 0x59, 0xfa, 0xc2, 0x35, 0x3a, 0xb0, 0xbc, 0xcc,
   0x70, };
 
-static void test_ctap(void)
-{
+static void test_ctap(void) {
     fido2_ctap_init();
     ctap_req_t req = { 0 };
     ctap_resp_t resp = { 0 };
 
-    /* reset authenticator */
+    // reset authenticator
     req.method = CTAP_RESET;
     req.buf = NULL;
     req.len = 0x0;
@@ -58,7 +51,7 @@ static void test_ctap(void)
 
     TEST_ASSERT(resp.status == CTAP2_OK);
 
-    /* create new credential */
+    // create new credential
     req.method = CTAP_MAKE_CREDENTIAL;
     req.buf = mc_data;
     req.len = sizeof(mc_data);
@@ -66,7 +59,7 @@ static void test_ctap(void)
 
     TEST_ASSERT(resp.status == CTAP2_OK);
 
-    /* create assertion using credential */
+    // create assertion using credential
     req.method = CTAP_GET_ASSERTION;
     req.buf = ga_data;
     req.len = sizeof(ga_data);
@@ -75,8 +68,7 @@ static void test_ctap(void)
     TEST_ASSERT(resp.status == CTAP2_OK);
 }
 
-Test *ctap_tests(void)
-{
+Test *ctap_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_ctap),
     };
@@ -86,12 +78,11 @@ Test *ctap_tests(void)
     return (Test *)&ctap_tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(ctap_tests());
     TESTS_END();
 
     return 0;
 }
-/** @} */
+/// @}

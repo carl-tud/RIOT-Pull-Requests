@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         boards_rpi_pico
- * @ingroup         boards_rpi_pico_w
- * @{
- *
- * @file
- * @brief           Configuration of CPU peripherals for the Raspberry Pi Pico
- * @author          Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- */
+/// @ingroup         boards_rpi_pico
+/// @ingroup         boards_rpi_pico_w
+/// @{
+///
+/// @file
+/// @brief           Configuration of CPU peripherals for the Raspberry Pi Pico
+/// @author          Marian Buschsieweke <marian.buschsieweke@ovgu.de>
 
 #include <stdint.h>
 
@@ -25,13 +21,10 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Silences the warning when an unsigned value is compared to 0
- *
- * This can be deleted when I2C is properly implemented.
- */
-static inline unsigned _periph_numof_is_unsigned_0(void)
-{
+/// @brief   Silences the warning when an unsigned value is compared to 0
+///
+/// This can be deleted when I2C is properly implemented.
+static inline unsigned _periph_numof_is_unsigned_0(void) {
     return 0;
 }
 
@@ -102,12 +95,10 @@ static const timer_conf_t timer_config[] = {
 
 #define TIMER_NUMOF     ARRAY_SIZE(timer_config)
 
-/**
- * @name   ADC configuration
- *
- * The configuration consists simply of a list of channels that should be used
- * @{
- */
+/// @name   ADC configuration
+///
+/// The configuration consists simply of a list of channels that should be used
+/// @{
 static const adc_conf_t adc_config[] = {
                                         { .pin = GPIO_PIN(0, 26), .chan = 0},
                                         { .pin = GPIO_PIN(0, 27), .chan = 1},
@@ -115,25 +106,17 @@ static const adc_conf_t adc_config[] = {
                                         };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
-/**
- *  @brief  Number of I2C interfaces
- */
+/// @name    I2C configuration
+/// @{
+///  @brief  Number of I2C interfaces
 #define I2C_NUMOF       _periph_numof_is_unsigned_0()
-/** @} */
+/// @}
 
-/**
- * @name    PIO configuration
- * @{
- */
-/**
- * @brief   Array of PIO configurations
- */
+/// @name    PIO configuration
+/// @{
+/// @brief   Array of PIO configurations
 static const pio_conf_t pio_config[] = {
     {
         .dev = PIO0,
@@ -147,51 +130,45 @@ static const pio_conf_t pio_config[] = {
     }
 };
 
-#define PIO_0_ISR0      isr_pio00   /**< ISR name of PIO 0 IRQ 0 */
-#define PIO_0_ISR1      isr_pio01   /**< ISR name of PIO 0 IRQ 1 */
-#define PIO_1_ISR0      isr_pio10   /**< ISR name of PIO 1 IRQ 0 */
-#define PIO_1_ISR1      isr_pio11   /**< ISR name of PIO 1 IRQ 1 */
+#define PIO_0_ISR0      isr_pio00   ///< ISR name of PIO 0 IRQ 0
+#define PIO_0_ISR1      isr_pio01   ///< ISR name of PIO 0 IRQ 1
+#define PIO_1_ISR0      isr_pio10   ///< ISR name of PIO 1 IRQ 0
+#define PIO_1_ISR1      isr_pio11   ///< ISR name of PIO 1 IRQ 1
 
-#define PIO_NUMOF       ARRAY_SIZE(pio_config)  /**< Number of PIOs */
+#define PIO_NUMOF       ARRAY_SIZE(pio_config)  ///< Number of PIOs
 
 #if defined(PIO_I2C_CONFIG) || defined(DOXYGEN)
-/**
- * @brief   PIO I2C configuration
- *
- * PIO_I2C_CONFIG should be defined during the build process to fit
- * the users pin selection.
- */
+/// @brief   PIO I2C configuration
+///
+/// PIO_I2C_CONFIG should be defined during the build process to fit
+/// the users pin selection.
 static const pio_i2c_conf_t pio_i2c_config[] = {
     PIO_I2C_CONFIG
 };
-/**
- * @brief   Number of PIO I2C configurations
- */
+/// @brief   Number of PIO I2C configurations
 #define PIO_I2C_NUMOF   ARRAY_SIZE(pio_i2c_config)
 #else
 #define pio_i2c_config  ((pio_i2c_conf_t *)NULL)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .pwm_slice   = 4,
         .chan    = {
-            { .pin = GPIO_PIN(0, 25), .cc_chan = 1 },   /* rpi-pico onboard LED */
+            { .pin = GPIO_PIN(0, 25), .cc_chan = 1 },   // rpi-pico onboard LED
             { .pin = GPIO_UNDEF,      .cc_chan = 0 },
         },
     },
 };
 
 #define PWM_NUMOF ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

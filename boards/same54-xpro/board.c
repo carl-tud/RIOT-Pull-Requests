@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_same54-xpro
- * @{
- *
- * @file
- * @brief       Board specific implementations for the Microchip SAM E54 Xplained
- *              Pro board
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup     boards_same54-xpro
+/// @{
+///
+/// @file
+/// @brief       Board specific implementations for the Microchip SAM E54 Xplained
+///              Pro board
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include "board.h"
 #include "periph/gpio.h"
@@ -24,7 +20,7 @@
 
 #ifdef MODULE_MTD_SPI_NOR
 #include "mtd_spi_nor.h"
-/* N25Q256A or SST26VF064B */
+// N25Q256A or SST26VF064B
 static const mtd_spi_nor_params_t _same54_nor_params = {
     .opcode = &mtd_spi_nor_opcode_default,
     .wait_chip_erase = 240 * US_PER_SEC,
@@ -53,7 +49,7 @@ MTD_XFA_ADD(same54_nor_dev, 0);
 #ifdef MODULE_VFS_DEFAULT
 VFS_AUTO_MOUNT(littlefs2, VFS_MTD(same54_nor_dev), VFS_DEFAULT_NVM(0), 0);
 #endif
-#endif /* MODULE_MTD_SPI_NOR */
+#endif // MODULE_MTD_SPI_NOR
 
 #ifdef MODULE_MTD_AT24CXXX
 #include "mtd_at24cxxx.h"
@@ -68,7 +64,7 @@ static mtd_at24cxxx_t at24mac_dev = {
 };
 MTD_XFA_ADD(at24mac_dev, 1);
 
-#endif /* MODULE_MTD_AT24CXXX */
+#endif // MODULE_MTD_AT24CXXX
 
 #ifdef MODULE_SAM0_SDHC
 #include "mtd_sam0_sdhc.h"
@@ -85,12 +81,12 @@ static mtd_sam0_sdhc_t sdhc_dev = {
 MTD_XFA_ADD(sdhc_dev, 2);
 
 #ifdef MODULE_VFS_DEFAULT
-/* default to FAT */
+// default to FAT
 #if defined(MODULE_FATFS_VFS)
 VFS_AUTO_MOUNT(fatfs, VFS_MTD(sdhc_dev), VFS_DEFAULT_SD(0), 1);
-/* but also support ext2/3/4 */
+// but also support ext2/3/4
 #elif defined(MODULE_LWEXT4)
 VFS_AUTO_MOUNT(lwext4, VFS_MTD(sdhc_dev), VFS_DEFAULT_SD(0), 1);
 #endif
-#endif /* MODULE_VFS_DEFAULT */
-#endif /* MODULE_SAM0_SDHC */
+#endif // MODULE_VFS_DEFAULT
+#endif // MODULE_SAM0_SDHC

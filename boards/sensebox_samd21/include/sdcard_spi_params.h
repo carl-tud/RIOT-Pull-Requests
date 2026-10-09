@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_sensebox_samd21
- * @{
- *
- * @file
- * @brief       SD card configuration for SenseBox MCU with SAMD21 board. This
- * configuration
- *              considers that SD is connected to the XBEE2 port.
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- */
+/// @ingroup     boards_sensebox_samd21
+/// @{
+///
+/// @file
+/// @brief       SD card configuration for SenseBox MCU with SAMD21 board. This
+/// configuration
+///              considers that SD is connected to the XBEE2 port.
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
 
 #include "board.h"
 
@@ -23,14 +19,10 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Card detect pin
- */
+/// @brief   Card detect pin
  #define CARD_DETECT_PIN              (XBEE2_INT_PIN)
 
-/**
- * @brief   sdcard_spi configuration
- */
+/// @brief   sdcard_spi configuration
 static const  sdcard_spi_params_t sdcard_spi_params[] = {
     {
         .spi_dev        = SPI_DEV(0),
@@ -47,4 +39,4 @@ static const  sdcard_spi_params_t sdcard_spi_params[] = {
 }
 #endif
 
-/** @} */
+/// @}

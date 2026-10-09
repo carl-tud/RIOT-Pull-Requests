@@ -1,34 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2018 Matthew Blue <matthew.blue.neuro@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Matthew Blue <matthew.blue.neuro@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_mega-xplained
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Mega Xplained pins
- *
- * You can use the defines in this file for simplified interaction with the
- * Mega Xplained specific pin numbers.
- *
- * @author      Matthew Blue <matthew.blue.neuro@gmail.com>
- */
+/// @ingroup     boards_mega-xplained
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Mega Xplained pins
+///
+/// You can use the defines in this file for simplified interaction with the
+/// Mega Xplained specific pin numbers.
+///
+/// @author      Matthew Blue <matthew.blue.neuro@gmail.com>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name   Mapping of MCU pins to Mega Xplained pins
- * @{
- */
-/*
- * DESCRIPTION Xplained API PIN          PORT   PIN
- */
+/// @name   Mapping of MCU pins to Mega Xplained pins
+/// @{
+// DESCRIPTION Xplained API PIN          PORT   PIN
 #define J1_PIN1                 GPIO_PIN(PORT_C, 1)
 #define J1_PIN2                 GPIO_PIN(PORT_C, 0)
 #define J1_PIN3                 GPIO_PIN(PORT_D, 0)
@@ -64,10 +56,10 @@ extern "C" {
 #define J4_PIN6                 GPIO_PIN(PORT_B, 5)
 #define J4_PIN7                 GPIO_PIN(PORT_B, 6)
 #define J4_PIN8                 GPIO_PIN(PORT_B, 7)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Low-level flash lock/unlock implementation
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Oleg Artamonov <oleg@unwds.com>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Low-level flash lock/unlock implementation
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Oleg Artamonov <oleg@unwds.com>
+///
+/// @}
 
 #include "cpu.h"
 
@@ -22,7 +18,7 @@
 #include "debug.h"
 
 #if defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1)
-/* Data EEPROM and control register unlock keys */
+// Data EEPROM and control register unlock keys
 #define FLASH_KEY1             ((uint32_t)0x89ABCDEF)
 #define FLASH_KEY2             ((uint32_t)0x02030405)
 #define CNTRL_REG              (FLASH->PECR)
@@ -69,8 +65,7 @@
 #define FLASH_SR_REG            (FLASH->SR)
 #endif
 
-void _unlock(void)
-{
+void _unlock(void) {
     if (CNTRL_REG & CNTRL_REG_LOCK) {
         DEBUG("[flash-common] unlocking the flash module\n");
         KEY_REG = FLASH_KEY1;
@@ -78,23 +73,21 @@ void _unlock(void)
     }
 }
 
-void _lock(void)
-{
+void _lock(void) {
     if (!(CNTRL_REG & CNTRL_REG_LOCK)) {
         DEBUG("[flash-common] locking the flash module\n");
         CNTRL_REG |= CNTRL_REG_LOCK;
     }
 }
 
-void _wait_for_pending_operations(void)
-{
+void _wait_for_pending_operations(void) {
     if (FLASH_SR_REG & FLASH_SR_BSY) {
         DEBUG("[flash-common] waiting for any pending operation to finish\n");
         while (FLASH_SR_REG & FLASH_SR_BSY) {}
     }
 
-    /* Clear 'end of operation' bit in status register, for other STM32 boards
-       this bit is set only if EOPIE is set, which is currently not done */
+    // Clear 'end of operation' bit in status register, for other STM32 boards
+    //    this bit is set only if EOPIE is set, which is currently not done
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3) || defined(CPU_FAM_STM32L0) || \
     defined(CPU_FAM_STM32L1)

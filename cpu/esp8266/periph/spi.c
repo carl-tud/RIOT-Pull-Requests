@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp8266
- * @ingroup     drivers_periph_spi
- * @{
- *
- * @file
- * @brief       Low-level SPI driver implementation for ESP8266
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     cpu_esp8266
+/// @ingroup     drivers_periph_spi
+/// @{
+///
+/// @file
+/// @brief       Low-level SPI driver implementation for ESP8266
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -39,14 +35,14 @@
 
 #define SPI_DOUTDIN (BIT(0))
 
-#define SPI_BLOCK_SIZE  64  /* number of bytes per SPI transfer */
+#define SPI_BLOCK_SIZE  64  // number of bytes per SPI transfer
 
-/** structure which describes all properties of one SPI bus */
+/// structure which describes all properties of one SPI bus
 struct _spi_bus_t {
-    spi_dev_t* regs;       /* pointer to register data struct of the SPI device */
-    mutex_t lock;          /* mutex for each possible SPI interface */
-    bool initialized;      /* interface already initialized */
-    bool pins_initialized; /* pins interface initialized */
+    spi_dev_t* regs;       // pointer to register data struct of the SPI device
+    mutex_t lock;          // mutex for each possible SPI interface
+    bool initialized;      // interface already initialized
+    bool pins_initialized; // pins interface initialized
 };
 
 static struct _spi_bus_t _spi[] = {
@@ -59,17 +55,14 @@ static struct _spi_bus_t _spi[] = {
 #endif
 };
 
-/*
- * GPIOs that were once initialized as SPI interface pins can not be used
- * afterwards for anything else. Therefore, SPI interfaces are not initialized
- * until they are used for the first time. The *spi_init* function is just a
- * dummy for source code compatibility. The initialization of an SPI interface
- * is performed by the *_spi_init_internal* function, which is called either by
- * the *spi_init_cs* function or the *spi_acquire* function when the interface
- * is used for the first time.
- */
-void IRAM_ATTR spi_init(spi_t bus)
-{
+// GPIOs that were once initialized as SPI interface pins can not be used
+// afterwards for anything else. Therefore, SPI interfaces are not initialized
+// until they are used for the first time. The *spi_init* function is just a
+// dummy for source code compatibility. The initialization of an SPI interface
+// is performed by the *_spi_init_internal* function, which is called either by
+// the *spi_init_cs* function or the *spi_acquire* function when the interface
+// is used for the first time.
+void IRAM_ATTR spi_init(spi_t bus) {
     assert(bus < SPI_NUMOF_MAX);
     assert(bus < SPI_NUMOF);
 
@@ -83,12 +76,11 @@ void IRAM_ATTR spi_init(spi_t bus)
     return;
 }
 
-/* Internal initialization function when the interface is used the first time */
-static void IRAM_ATTR _spi_init_internal(spi_t bus)
-{
+// Internal initialization function when the interface is used the first time
+static void IRAM_ATTR _spi_init_internal(spi_t bus) {
     assert(bus < SPI_NUMOF);
 
-    /* avoid multiple initializations */
+    // avoid multiple initializations
     if (_spi[bus].initialized) {
         return;
     }
@@ -96,11 +88,11 @@ static void IRAM_ATTR _spi_init_internal(spi_t bus)
 
     DEBUG("%s bus=%u\n", __func__, bus);
 
-    /* initialize pins */
+    // initialize pins
     spi_init_pins(bus);
 
-    /* check whether pins could be initialized, otherwise return, CS is not
-       initialized in spi_init_pins */
+    // check whether pins could be initialized, otherwise return, CS is not
+    //    initialized in spi_init_pins
     if (gpio_get_pin_usage(spi_config[bus].sck) != _SPI &&
         gpio_get_pin_usage(spi_config[bus].miso) != _SPI &&
         gpio_get_pin_usage(spi_config[bus].mosi) != _SPI &&
@@ -108,42 +100,41 @@ static void IRAM_ATTR _spi_init_internal(spi_t bus)
         return;
     }
 
-    /* bring the bus into a defined state */
+    // bring the bus into a defined state
     _spi[bus].regs->user.val = SPI_USR_MOSI | SPI_CK_I_EDGE | SPI_DOUTDIN |
                                SPI_CS_SETUP | SPI_CS_HOLD;
 
-    /* set byte order to little endian for read and write operations */
+    // set byte order to little endian for read and write operations
     _spi[bus].regs->user.wr_byte_order = 0;
     _spi[bus].regs->user.rd_byte_order = 0;
 
-    /* set bit order to most significant first for read and write operations */
+    // set bit order to most significant first for read and write operations
     _spi[bus].regs->ctrl.wr_bit_order = 0;
     _spi[bus].regs->ctrl.rd_bit_order = 0;
 
-    /* reset all DIO or QIO flags */
+    // reset all DIO or QIO flags
     _spi[bus].regs->ctrl.fread_qio = 0;
     _spi[bus].regs->ctrl.fread_dio = 0;
     _spi[bus].regs->ctrl.fread_quad = 0;
     _spi[bus].regs->ctrl.fread_dual = 0;
 
-    /* disable fast read mode and write protection */
+    // disable fast read mode and write protection
     _spi[bus].regs->ctrl.fastrd_mode = 0;
 
-    /* acquire and release to set default parameters */
+    // acquire and release to set default parameters
     spi_acquire(bus, GPIO_UNDEF, SPI_MODE_0, SPI_CLK_1MHZ);
     spi_release(bus);
 }
 
-void spi_init_pins(spi_t bus)
-{
+void spi_init_pins(spi_t bus) {
     assert(bus < SPI_NUMOF);
 
-    /* call initialization of the SPI interface if it is not initialized yet */
+    // call initialization of the SPI interface if it is not initialized yet
     if (!_spi[bus].initialized) {
         _spi_init_internal(bus);
     }
 
-    /* avoid multiple pin initializations */
+    // avoid multiple pin initializations
     if (_spi[bus].pins_initialized) {
         return;
     }
@@ -165,17 +156,15 @@ void spi_init_pins(spi_t bus)
         return;
     }
 
-    /* store the usage type in GPIO table */
+    // store the usage type in GPIO table
     gpio_set_pin_usage(spi_config[bus].sck, _SPI);
     gpio_set_pin_usage(spi_config[bus].mosi, _SPI);
     gpio_set_pin_usage(spi_config[bus].miso, _SPI);
 
-    /*
-     * CS is handled as normal GPIO output. Due to the small number of GPIOs
-     * we have, we do not initialize the default CS pin here. Either the app
-     * uses spi_init_cs to initialize the CS pin explicitly, or we initialize
-     * the default CS when spi_aquire is used first time.
-     */
+    // CS is handled as normal GPIO output. Due to the small number of GPIOs
+    // we have, we do not initialize the default CS pin here. Either the app
+    // uses spi_init_cs to initialize the CS pin explicitly, or we initialize
+    // the default CS when spi_aquire is used first time.
     uint32_t iomux_func = IOMUX_FUNC(2);
 
     IOMUX.PIN[_gpio_to_iomux[spi_config[bus].miso]] &= ~IOMUX_PIN_FUNC_MASK;
@@ -187,52 +176,50 @@ void spi_init_pins(spi_t bus)
     IOMUX.PIN[_gpio_to_iomux[spi_config[bus].sck]]  |= iomux_func;
 }
 
-int spi_init_cs(spi_t bus, spi_cs_t cs)
-{
+int spi_init_cs(spi_t bus, spi_cs_t cs) {
     DEBUG("%s bus=%u cs=%u\n", __func__, bus, cs);
 
     assert(bus < SPI_NUMOF);
 
-    /* call initialization of the SPI interface if it is not initialized yet */
+    // call initialization of the SPI interface if it is not initialized yet
     if (!_spi[bus].initialized) {
         _spi_init_internal(bus);
     }
 
-    /* return if pin is already initialized as SPI CS signal */
+    // return if pin is already initialized as SPI CS signal
     if (gpio_get_pin_usage(cs) == _SPI) {
         return SPI_OK;
     }
 
-    /* check whether CS pin is used otherwise */
+    // check whether CS pin is used otherwise
     if (gpio_get_pin_usage(cs) != _GPIO) {
         return SPI_NOCS;
     }
 
-    /* initialize the pin */
+    // initialize the pin
     gpio_init(cs, GPIO_OUT);
     gpio_set(cs);
 
-    /* pin cannot be used for anything else */
+    // pin cannot be used for anything else
     gpio_set_pin_usage(cs, _SPI);
 
     return SPI_OK;
 }
 
-void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
-{
+void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk) {
     DEBUG("%s bus=%u cs=%u mode=%u clk=%u\n", __func__, bus, cs, mode, clk);
 
     assert(bus < SPI_NUMOF);
 
-    /* call initialization of the SPI interface if it is not initialized yet */
+    // call initialization of the SPI interface if it is not initialized yet
     if (!_spi[bus].initialized) {
         _spi_init_internal(bus);
     }
 
-    /* if parameter cs is GPIO_UNDEF, the default CS pin is used */
+    // if parameter cs is GPIO_UNDEF, the default CS pin is used
     cs = (cs == GPIO_UNDEF) ? spi_config[bus].cs : cs;
 
-    /* if the CS pin used is not yet initialized, we do it now */
+    // if the CS pin used is not yet initialized, we do it now
     if (gpio_get_pin_usage(cs) != _SPI && spi_init_cs(bus, cs) != SPI_OK) {
         LOG_TAG_ERROR("spi",
                       "SPI_DEV(%d) CS signal could not be initialized\n",
@@ -240,13 +227,11 @@ void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t cl
         assert(0);
     }
 
-    /* lock the bus */
+    // lock the bus
     mutex_lock(&_spi[bus].lock);
 
-    /*
-     * set SPI mode
-     * see ESP32 Technical Reference, Table 27 and Section 7.4.1
-     */
+    // set SPI mode
+    // see ESP32 Technical Reference, Table 27 and Section 7.4.1
     _spi[bus].regs->pin.ck_idle_edge = (mode == SPI_MODE_2 || mode == SPI_MODE_3);
     _spi[bus].regs->user.ck_out_edge = (mode == SPI_MODE_1 || mode == SPI_MODE_2);
     _spi[bus].regs->ctrl2.miso_delay_mode = (mode == SPI_MODE_0 || mode == SPI_MODE_3) ? 2 : 1;
@@ -254,18 +239,17 @@ void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t cl
     _spi[bus].regs->ctrl2.mosi_delay_mode = 0;
     _spi[bus].regs->ctrl2.mosi_delay_num = 0;
 
-    /* set SPI clock
-     * see ESP8266 Technical Reference Appendix 2 - SPI registers
-     * https://www.espressif.com/sites/default/files/documentation/esp8266-technical_reference_en.pdf
-     */
+    // set SPI clock
+    // see ESP8266 Technical Reference Appendix 2 - SPI registers
+    // https://www.espressif.com/sites/default/files/documentation/esp8266-technical_reference_en.pdf
 
-    uint32_t spi_clkdiv_pre;    /* 13 bit */
-    uint32_t spi_clkcnt_N;      /*  6 bit */
+    uint32_t spi_clkdiv_pre;    // 13 bit
+    uint32_t spi_clkcnt_N;      // 6 bit
 
     spi_clkcnt_N = 2;
     spi_clkdiv_pre = (MHZ(80)/spi_clkcnt_N) / clk;
 
-    /* register values are set to deviders-1 */
+    // register values are set to deviders-1
     spi_clkdiv_pre--;
     spi_clkcnt_N--;
 
@@ -274,10 +258,10 @@ void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t cl
 
     IOMUX.CONF &= ~IOMUX_CONF_SPI1_CLOCK_EQU_SYS_CLOCK;
 
-    /* SPI clock is derived from APB clock by dividers */
+    // SPI clock is derived from APB clock by dividers
     _spi[bus].regs->clock.clk_equ_sysclk = 0;
 
-    /* set SPI clock dividers */
+    // set SPI clock dividers
     _spi[bus].regs->clock.clkdiv_pre = spi_clkdiv_pre;
     _spi[bus].regs->clock.clkcnt_n = spi_clkcnt_N;
     _spi[bus].regs->clock.clkcnt_h = (spi_clkcnt_N+1)/2-1;
@@ -287,20 +271,18 @@ void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t cl
           __func__, bus, _spi[bus].regs->clock.val);
 }
 
-void IRAM_ATTR spi_release(spi_t bus)
-{
+void IRAM_ATTR spi_release(spi_t bus) {
     DEBUG("%s bus=%u\n", __func__, bus);
 
     assert(bus < SPI_NUMOF);
 
-    /* release the bus */
+    // release the bus
     mutex_unlock(&_spi[bus].lock);
 }
 
 static const char* _spi_names[] = { "FSPI", "HSPI" };
 
-void spi_print_config(void)
-{
+void spi_print_config(void) {
     for (unsigned bus = 0; bus < SPI_NUMOF; bus++) {
         printf("\tSPI_DEV(%u)\t%s ", bus, _spi_names[spi_config[bus].ctrl]);
         printf("sck=%d ", spi_config[bus].sck);
@@ -310,37 +292,31 @@ void spi_print_config(void)
     }
 }
 
-/*
- * Following functions are from the hardware SPI driver of the esp-open-rtos
- * project.
- *
- * Copyright (c) Ruslan V. Uss, 2016
- * BSD Licensed as described in the file LICENSE
- * https://github.com/SuperHouse/esp-open-rtos/blob/master/LICENSE
- */
+// Following functions are from the hardware SPI driver of the esp-open-rtos
+// project.
+//
+// Copyright (c) Ruslan V. Uss, 2016
+// BSD Licensed as described in the file LICENSE
+// https://github.com/SuperHouse/esp-open-rtos/blob/master/LICENSE
 
-inline static void IRAM_ATTR _set_size(uint8_t bus, uint8_t bytes)
-{
+inline static void IRAM_ATTR _set_size(uint8_t bus, uint8_t bytes) {
     uint32_t bits = ((uint32_t)bytes << 3) - 1;
 
     _spi[bus].regs->user1.usr_mosi_bitlen = bits;
     _spi[bus].regs->user1.usr_miso_bitlen = bits;
 }
 
-inline static void IRAM_ATTR _wait(uint8_t bus)
-{
-    /* SPI_CMD_REG.SPI_USR is cleared when operation has been finished */
+inline static void IRAM_ATTR _wait(uint8_t bus) {
+    // SPI_CMD_REG.SPI_USR is cleared when operation has been finished
     while (_spi[bus].regs->cmd.usr) {}
 }
 
-inline static void IRAM_ATTR _start(uint8_t bus)
-{
-    /* set SPI_CMD_REG.SPI_USR to start an operation */
+inline static void IRAM_ATTR _start(uint8_t bus) {
+    // set SPI_CMD_REG.SPI_USR to start an operation
     _spi[bus].regs->cmd.usr = 1;
 }
 
-inline static void IRAM_ATTR _store_data(uint8_t bus, const void *data, size_t len)
-{
+inline static void IRAM_ATTR _store_data(uint8_t bus, const void *data, size_t len) {
     uint8_t words = len / 4;
     uint8_t tail = len % 4;
 
@@ -360,11 +336,10 @@ inline static void IRAM_ATTR _store_data(uint8_t bus, const void *data, size_t l
 
 static const uint8_t spi_empty_out[SPI_BLOCK_SIZE] = { 0 };
 
-static void IRAM_ATTR _spi_buf_transfer(uint8_t bus, const void *out, void *in, size_t len)
-{
+static void IRAM_ATTR _spi_buf_transfer(uint8_t bus, const void *out, void *in, size_t len) {
     DEBUG("%s bus=%u out=%p in=%p len=%u\n", __func__, bus, out, in, len);
 
-    /* transfer one block data */
+    // transfer one block data
     _wait(bus);
     _set_size(bus, len);
     _store_data(bus, out ? out : spi_empty_out, len);
@@ -376,8 +351,7 @@ static void IRAM_ATTR _spi_buf_transfer(uint8_t bus, const void *out, void *in, 
 }
 
 void IRAM_ATTR spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
-                                  const void *out, void *in, size_t len)
-{
+                                  const void *out, void *in, size_t len) {
     assert(bus < SPI_NUMOF);
 
     DEBUG("%s bus=%u cs=%u cont=%d out=%p in=%p len=%u\n",

@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_itg320x
- * @brief       Default configuration for InvenSense ITG320X 3-axis gyroscope
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_itg320x
+/// @brief       Default configuration for InvenSense ITG320X 3-axis gyroscope
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include "board.h"
 #include "itg320x.h"
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef ITG320X_PARAM_DEV
 #define ITG320X_PARAM_DEV          I2C_DEV(0)
 #endif
@@ -62,7 +56,7 @@ extern "C" {
                                      .int_level = ITG320X_PARAM_INT_LEVEL, \
                                      .int_drive = ITG320X_PARAM_INT_DRIVE, \
                                    }
-#else /* MODULE_ITG320X_INT */
+#else // MODULE_ITG320X_INT
 #define ITG320X_PARAMS             { \
                                      .dev  = ITG320X_PARAM_DEV,  \
                                      .addr = ITG320X_PARAM_ADDR, \
@@ -70,25 +64,21 @@ extern "C" {
                                      .isr_div = ITG320X_PARAM_ISR_DIV, \
                                      .clk_sel = ITG320X_PARAM_CLK_SEL, \
                                    }
-#endif /* MODULE_ITG320X_INT */
-#endif /* ITG320X_PARAMS */
+#endif // MODULE_ITG320X_INT
+#endif // ITG320X_PARAMS
 
 #ifndef ITG320X_SAUL_INFO
 #define ITG320X_SAUL_INFO          { .name = "itg320x" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const itg320x_params_t itg320x_params[] =
 {
     ITG320X_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t itg320x_saul_info[] =
 {
     ITG320X_SAUL_INFO
@@ -98,4 +88,4 @@ static const saul_reg_info_t itg320x_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

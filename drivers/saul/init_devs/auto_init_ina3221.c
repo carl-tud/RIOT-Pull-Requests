@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization for INA3221 devices
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization for INA3221 devices
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -32,8 +28,7 @@ static ina3221_t ina3221_devs[INA3221_NUM];
 
 static saul_reg_t saul_entries[INA3221_NUM * INA3221_SAUL_DRIVERS_NUM];
 
-void auto_init_ina3221(void)
-{
+void auto_init_ina3221(void) {
     assert(INA3221_SAUL_INFO_NUM == INA3221_SAUL_DRIVERS_NUM * INA3221_NUM);
 
     for (unsigned i = 0; i < INA3221_NUM; i++) {

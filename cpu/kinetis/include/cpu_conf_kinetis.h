@@ -1,28 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2017 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_kinetis
- * @{
- *
- * @file
- * @brief           CPU specific definitions common to all Kinetis CPUs
- *
- * @author          Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @ingroup         cpu_kinetis
+/// @{
+///
+/// @file
+/// @brief           CPU specific definitions common to all Kinetis CPUs
+///
+/// @author          Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #include "cpu_conf_common.h"
 
 #if (__CORTEX_M < 3)
-/*
- * Kinetis Cortex-M0+ devices have bit manipulation engine (BME) which provides
- * the same functionality (and some more) as the bitband aliased memory found in
- * Cortex-M3 and up
- */
+// Kinetis Cortex-M0+ devices have bit manipulation engine (BME) which provides
+// the same functionality (and some more) as the bitband aliased memory found in
+// Cortex-M3 and up
 #include "bme.h"
 #endif
 
@@ -31,40 +25,31 @@ extern "C"
 {
 #endif
 
-/**
- * @name   ARM Cortex-M specific CPU configuration
- * @{
- */
+/// @name   ARM Cortex-M specific CPU configuration
+/// @{
 #define CPU_DEFAULT_IRQ_PRIO    (1U)
 #define CPU_IRQ_NUMOF           (NUMBER_OF_INT_VECTORS)
 #define CPU_FLASH_BASE          (0x00000000)
-/** @} */
+/// @}
 
-/**
- * @name GPIO pin mux function numbers
- * @{
- */
+/// @name GPIO pin mux function numbers
+/// @{
 #define PIN_MUX_FUNCTION_ANALOG 0
 #define PIN_MUX_FUNCTION_GPIO   1
-/** @} */
+/// @}
 
-/**
- * @name GPIO interrupt flank settings
- * @{
- */
+/// @name GPIO interrupt flank settings
+/// @{
 #define PIN_INTERRUPT_RISING    0b1001
 #define PIN_INTERRUPT_FALLING   0b1010
 #define PIN_INTERRUPT_EDGE      0b1011
-/** @} */
+/// @}
 
-/**
- * @name Compatibility definitions between vendor headers
- * @{
- */
-/* Different versions of vendor headers use some variations of register names.
- * This section aims to eliminate these differences in the few places where it
- * matters for the RIOT driver implementations.
- */
+/// @name Compatibility definitions between vendor headers
+/// @{
+// Different versions of vendor headers use some variations of register names.
+// This section aims to eliminate these differences in the few places where it
+// matters for the RIOT driver implementations.
 #if !defined(MCG_C2_RANGE0) && defined(MCG_C2_RANGE)
 #define MCG_C2_RANGE0(x)        MCG_C2_RANGE(x)
 #endif
@@ -106,50 +91,44 @@ extern "C"
 #define GPIOF PTF
 #define GPIOG PTG
 #endif
-/** @} */
+/// @}
 
-/**
- * @name Timer hardware information
- * @{
- */
+/// @name Timer hardware information
+/// @{
 #ifdef SIM_SCGC5_LPTMR_SHIFT
-/** Enable LPTMR clock gate */
+/// Enable LPTMR clock gate
 #define LPTMR_CLKEN()  (bit_set32(&SIM->SCGC5, SIM_SCGC5_LPTMR_SHIFT))
 #endif
 #if defined(SIM_SCGC6_PIT_SHIFT)
-/** Enable PIT clock gate */
+/// Enable PIT clock gate
 #define PIT_CLKEN()    (bit_set32(&SIM->SCGC6, SIM_SCGC6_PIT_SHIFT))
 #elif defined(SIM_SCGC_PIT_SHIFT)
 #define PIT_CLKEN()    (bit_set32(&SIM->SCGC, SIM_SCGC_PIT_SHIFT))
 #endif
 #ifdef SIM_SCGC6_RTC_SHIFT
-/** Enable RTC clock gate */
+/// Enable RTC clock gate
 #define RTC_CLKEN()    (bit_set32(&SIM->SCGC6, SIM_SCGC6_RTC_SHIFT))
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    I2C hardware information
- * @{
- */
+/// @name    I2C hardware information
+/// @{
 #ifdef SIM_SCGC4_I2C0_SHIFT
-/** Enable I2C0 clock gate */
+/// Enable I2C0 clock gate
 #define I2C0_CLKEN()    (bit_set32(&SIM->SCGC4, SIM_SCGC4_I2C0_SHIFT))
 #endif
 #ifdef SIM_SCGC4_I2C1_SHIFT
-/** Enable I2C1 clock gate */
+/// Enable I2C1 clock gate
 #define I2C1_CLKEN()    (bit_set32(&SIM->SCGC4, SIM_SCGC4_I2C1_SHIFT))
 #endif
 #ifdef SIM_SCGC1_I2C2_SHIFT
-/** Enable I2C2 clock gate */
+/// Enable I2C2 clock gate
 #define I2C2_CLKEN()    (bit_set32(&SIM->SCGC1, SIM_SCGC1_I2C2_SHIFT))
 #endif
-/** @} */
+/// @}
 
-/**
- * @name Hardware random number generator module configuration
- * @{
- */
+/// @name Hardware random number generator module configuration
+/// @{
 #if !defined(HWRNG_CLK_REG) && !defined(HWRNG_CLK_REG_SHIFT)
 #if defined(SIM_SCGC3_RNGA_SHIFT)
 #define HWRNG_CLK_REG           SIM->SCGC3
@@ -163,24 +142,22 @@ extern "C"
 #define KINETIS_RNGA RNG
 #define HWRNG_CLKEN()       (bit_set32(&HWRNG_CLK_REG, HWRNG_CLK_REG_SHIFT))
 #define HWRNG_CLKDIS()      (bit_clear32(&HWRNG_CLK_REG, HWRNG_CLK_REG_SHIFT))
-#endif /* KINETIS_RNGA */
-/** @} */
+#endif // KINETIS_RNGA
+/// @}
 
-/**
- * @name MK20D7 Compatibility layer
- * @{
- */
+/// @name MK20D7 Compatibility layer
+/// @{
 #if defined(MK20D7_H_)
 #define LLWU_IRQn LLW_IRQn
 #define LPTMR0_IRQn LPTimer_IRQn
 #define PIT_TCTRL_CHN_MASK   (0x4u)
 #define PIT_TCTRL_CHN_SHIFT  (2)
 #define PORT_IRQS   { PORTA_IRQn, PORTB_IRQn, PORTC_IRQn, PORTD_IRQn, PORTE_IRQn }
-#endif /* MK20D7_H_ */
-/** @} */
+#endif // MK20D7_H_
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "net/ieee802154.h"
 #ifdef MODULE_GNRC_IPV6_NIB
 #include "net/ipv6/addr.h"
 #include "net/gnrc/ipv6/nib.h"
-#endif  /* MODULE_GNRC_IPV6_NIB */
+#endif  // MODULE_GNRC_IPV6_NIB
 #include "net/gnrc/netif.h"
 #include "xtimer.h"
 
 #include "net/gnrc/sixlowpan/frag/fb.h"
 #ifdef  MODULE_GNRC_SIXLOWPAN_FRAG_STATS
 #include "net/gnrc/sixlowpan/frag/stats.h"
-#endif  /* MODULE_GNRC_SIXLOWPAN_FRAG_STATS */
+#endif  // MODULE_GNRC_SIXLOWPAN_FRAG_STATS
 #include "net/gnrc/sixlowpan/frag/vrb.h"
 
 #define ENABLE_DEBUG 0
@@ -30,14 +26,13 @@
 static gnrc_sixlowpan_frag_vrb_t _vrb[CONFIG_GNRC_SIXLOWPAN_FRAG_VRB_SIZE];
 #ifdef MODULE_GNRC_IPV6_NIB
 static char addr_str[IPV6_ADDR_MAX_STR_LEN];
-#else   /* MODULE_GNRC_IPV6_NIB */
+#else   // MODULE_GNRC_IPV6_NIB
 static char addr_str[3 * IEEE802154_LONG_ADDRESS_LEN];
-#endif  /* MODULE_GNRC_IPV6_NIB */
+#endif  // MODULE_GNRC_IPV6_NIB
 
 static inline bool _equal_index(const gnrc_sixlowpan_frag_vrb_t *vrbe,
                                 const uint8_t *src, size_t src_len,
-                                unsigned tag)
-{
+                                unsigned tag) {
     return ((vrbe->super.tag == tag) &&
             (vrbe->super.src_len == src_len) &&
             (memcmp(vrbe->super.src, src, src_len) == 0));
@@ -45,8 +40,7 @@ static inline bool _equal_index(const gnrc_sixlowpan_frag_vrb_t *vrbe,
 
 gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_add(
         const gnrc_sixlowpan_frag_rb_base_t *base,
-        gnrc_netif_t *out_netif, const uint8_t *out_dst, size_t out_dst_len)
-{
+        gnrc_netif_t *out_netif, const uint8_t *out_dst, size_t out_dst_len) {
     gnrc_sixlowpan_frag_vrb_t *vrbe = NULL;
 
     assert(base != NULL);
@@ -80,16 +74,16 @@ gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_add(
                                              vrbe->super.dst_len,
                                              addr_str), vrbe->out_tag);
             }
-            /* _equal_index() => append intervals of `base`, so they don't get
-             * lost. We use append, so we don't need to change base! */
+            // _equal_index() => append intervals of `base`, so they don't get
+            // lost. We use append, so we don't need to change base!
             else if (base->ints != NULL) {
                 gnrc_sixlowpan_frag_rb_int_t *tmp = vrbe->super.ints;
 
                 if (tmp != base->ints) {
-                    /* base->ints is not already vrbe->super.ints */
+                    // base->ints is not already vrbe->super.ints
                     if (tmp != NULL) {
-                        /* iterate before appending and check if `base->ints` is
-                         * not already part of list */
+                        // iterate before appending and check if `base->ints` is
+                        // not already part of list
                         while (tmp->next != NULL) {
                             if (tmp == base->ints) {
                                 tmp = NULL;
@@ -119,8 +113,7 @@ gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_add(
 
 gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_from_route(
             const gnrc_sixlowpan_frag_rb_base_t *base,
-            gnrc_netif_t *netif, const gnrc_pktsnip_t *hdr)
-{
+            gnrc_netif_t *netif, const gnrc_pktsnip_t *hdr) {
     gnrc_sixlowpan_frag_vrb_t *res = NULL;
 
     assert(base != NULL);
@@ -151,7 +144,7 @@ gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_from_route(
             }
             break;
         }
-#endif  /* MODULE_GNRC_IPV6_NIB */
+#endif  // MODULE_GNRC_IPV6_NIB
         default:
             (void)base;
             (void)netif;
@@ -162,8 +155,7 @@ gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_from_route(
 }
 
 gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_get(
-        const uint8_t *src, size_t src_len, unsigned src_tag)
-{
+        const uint8_t *src, size_t src_len, unsigned src_tag) {
     DEBUG("6lo vrb: trying to get entry for (%s, %u)\n",
           gnrc_netif_addr_to_str(src, src_len, addr_str), src_tag);
     assert(src_len != 0);
@@ -184,8 +176,7 @@ gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_get(
 
 gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_reverse(
         const gnrc_netif_t *netif, const uint8_t *src, size_t src_len,
-        unsigned tag)
-{
+        unsigned tag) {
     DEBUG("6lo vrb: trying to get entry for reverse label switching (%s, %u)\n",
           gnrc_netif_addr_to_str(src, src_len, addr_str), tag);
     assert(src_len != 0);
@@ -206,8 +197,7 @@ gnrc_sixlowpan_frag_vrb_t *gnrc_sixlowpan_frag_vrb_reverse(
 
 }
 
-void gnrc_sixlowpan_frag_vrb_gc(void)
-{
+void gnrc_sixlowpan_frag_vrb_gc(void) {
     uint32_t now_usec = xtimer_now_usec();
 
     for (unsigned i = 0; i < CONFIG_GNRC_SIXLOWPAN_FRAG_VRB_SIZE; i++) {
@@ -228,10 +218,9 @@ void gnrc_sixlowpan_frag_vrb_gc(void)
 }
 
 #ifdef TEST_SUITES
-void gnrc_sixlowpan_frag_vrb_reset(void)
-{
+void gnrc_sixlowpan_frag_vrb_reset(void) {
     memset(_vrb, 0, sizeof(_vrb));
 }
 #endif
 
-/** @} */
+/// @}

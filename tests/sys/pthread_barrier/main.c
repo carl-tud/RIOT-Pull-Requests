@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief pthread_barrier test
- *
- * @author René Kijewski <rene.kijewski@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief pthread_barrier test
+///
+/// @author René Kijewski <rene.kijewski@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -29,8 +25,7 @@
 
 static pthread_barrier_t barrier;
 
-static void *run(void *id_)
-{
+static void *run(void *id_) {
     int id = (intptr_t) id_ + 1;
     printf("Start %i\n", id);
 
@@ -49,8 +44,7 @@ static void *run(void *id_)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     random_init(RAND_SEED);
 
     printf("NUM_CHILDREN: %d, NUM_ITERATIONS: %d\n", NUM_CHILDREN,

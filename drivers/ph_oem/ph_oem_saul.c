@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 University of Applied Sciences Emden / Leer
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 University of Applied Sciences Emden / Leer
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ph_oem
- * @{
- *
- * @file
- * @brief       pH OEM adaption to the sensor/actuator abstraction layer
- *
- * @author      Igor Knippenberg <igor.knippenberg@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_ph_oem
+/// @{
+///
+/// @file
+/// @brief       pH OEM adaption to the sensor/actuator abstraction layer
+///
+/// @author      Igor Knippenberg <igor.knippenberg@gmail.com>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -22,8 +18,7 @@
 #include "ph_oem.h"
 #include "ph_oem_regs.h"
 
-static int read_ph(const void *dev, phydat_t *res)
-{
+static int read_ph(const void *dev, phydat_t *res) {
     const ph_oem_t *mydev = dev;
     uint16_t ph_reading;
 
@@ -36,7 +31,7 @@ static int read_ph(const void *dev, phydat_t *res)
         return -ECANCELED;
     }
 
-    /* Read raw pH value */
+    // Read raw pH value
     if (ph_oem_read_ph(mydev, &ph_reading) < 0) {
         return -ECANCELED;
     }
@@ -47,10 +42,9 @@ static int read_ph(const void *dev, phydat_t *res)
     return 1;
 }
 
-/* Sets the temperature compensation for taking accurate pH readings.
- * Valid temperature range is 1 - 20000 (0.01 °C  to  200.0 °C) */
-static int set_temp_compensation(const void *dev, const phydat_t *res)
-{
+// Sets the temperature compensation for taking accurate pH readings.
+// Valid temperature range is 1 - 20000 (0.01 °C  to  200.0 °C)
+static int set_temp_compensation(const void *dev, const phydat_t *res) {
     const ph_oem_t *mydev = dev;
 
     if (!(res->val[0] >= 1 && res->val[0] <= 20000)) {

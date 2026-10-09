@@ -1,22 +1,20 @@
-/**
- * Print thread information.
- *
- * Copyright (C) 2013, INRIA.
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- *
- * @ingroup sys_ps
- * @{
- * @file
- * @brief   UNIX like ps command
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @note    The entry 'runtime_usec' in 'MODULE_SCHEDSTATISTICS' is limited
- *          to 2**32 microseconds. So the entry gets reset after ~1.2 hours.
- * @}
- */
+/// Print thread information.
+///
+/// Copyright (C) 2013, INRIA.
+///
+/// This file is subject to the terms and conditions of the GNU Lesser
+/// General Public License v2.1. See the file LICENSE in the top level
+/// directory for more details.
+///
+/// @ingroup sys_ps
+/// @{
+/// @file
+/// @brief   UNIX like ps command
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @note    The entry 'runtime_usec' in 'MODULE_SCHEDSTATISTICS' is limited
+///          to 2**32 microseconds. So the entry gets reset after ~1.2 hours.
+/// @}
 
 #include <stdio.h>
 #include <assert.h>
@@ -35,11 +33,8 @@
 #include "tlsf-malloc.h"
 #endif
 
-/**
- * @brief Prints a list of running threads including stack usage to stdout.
- */
-void ps(void)
-{
+/// @brief Prints a list of running threads including stack usage to stdout.
+void ps(void) {
 #ifdef DEVELHELP
     int overall_stacksz = 0, overall_used = 0;
 #endif
@@ -86,24 +81,24 @@ void ps(void)
             rt_sum += sched_pidlist[i].runtime_us;
         }
     }
-#endif /* MODULE_SCHEDSTATISTICS */
+#endif // MODULE_SCHEDSTATISTICS
 
     for (kernel_pid_t i = KERNEL_PID_FIRST; i <= KERNEL_PID_LAST; i++) {
         thread_t *p = thread_get(i);
 
         if (p != NULL) {
-            thread_status_t state = thread_get_status(p);                   /* copy state */
-            const char *sname = thread_state_to_string(state);              /* get state name */
-            const char *queued = thread_is_active(p) ? "Q" : "_";           /* get queued flag */
+            thread_status_t state = thread_get_status(p);                   // copy state
+            const char *sname = thread_state_to_string(state);              // get state name
+            const char *queued = thread_is_active(p) ? "Q" : "_";           // get queued flag
 #ifdef DEVELHELP
-            int stacksz = thread_get_stacksize(p);                          /* get stack size */
+            int stacksz = thread_get_stacksize(p);                          // get stack size
             overall_stacksz += stacksz;
             int stack_free = thread_measure_stack_free(p);
             stacksz -= stack_free;
             overall_used += stacksz;
 #endif
 #ifdef MODULE_SCHEDSTATISTICS
-            /* multiply with 100 for percentage and to avoid floats/doubles */
+            // multiply with 100 for percentage and to avoid floats/doubles
             uint64_t runtime_us = sched_pidlist[i].runtime_us * 100;
             uint32_t ztimer_us = {sched_pidlist[i].runtime_us};
             unsigned runtime_major = runtime_us / rt_sum;

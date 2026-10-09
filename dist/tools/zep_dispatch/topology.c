@@ -1,9 +1,7 @@
-/*
- * Copyright (C) 2021 Benjamin Valentin
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- */
+// Copyright (C) 2021 Benjamin Valentin
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
 
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -41,8 +39,7 @@ struct edge {
 
 size_t l2util_addr_from_str(const char *str, uint8_t *out);
 
-static char *_fmt_addr(char *out, size_t out_len, const uint8_t *addr, uint8_t addr_len)
-{
+static char *_fmt_addr(char *out, size_t out_len, const uint8_t *addr, uint8_t addr_len) {
     char *start = out;
 
     if (out_len < 3 * addr_len) {
@@ -57,8 +54,7 @@ static char *_fmt_addr(char *out, size_t out_len, const uint8_t *addr, uint8_t a
     return start;
 }
 
-static struct node *_find_node_by_name(const list_node_t *nodes, const char *name)
-{
+static struct node *_find_node_by_name(const list_node_t *nodes, const char *name) {
     for (list_node_t *node = nodes->next; node; node = node->next) {
         struct node *super = container_of(node, struct node, next);
         if (strncmp(super->name, name, sizeof(super->name)) == 0) {
@@ -69,8 +65,7 @@ static struct node *_find_node_by_name(const list_node_t *nodes, const char *nam
     return NULL;
 }
 
-static struct node *_find_or_create_node(list_node_t *nodes, const char *name)
-{
+static struct node *_find_or_create_node(list_node_t *nodes, const char *name) {
     struct node *node = _find_node_by_name(nodes, name);
 
     if (node == NULL) {
@@ -82,8 +77,7 @@ static struct node *_find_or_create_node(list_node_t *nodes, const char *name)
     return node;
 }
 
-static bool _parse_line(char *line, list_node_t *nodes, list_node_t *edges)
-{
+static bool _parse_line(char *line, list_node_t *nodes, list_node_t *edges) {
     struct edge *e;
 
     if (*line == '#') {
@@ -104,7 +98,7 @@ static bool _parse_line(char *line, list_node_t *nodes, list_node_t *edges)
         return true;
     }
 
-    /* add node with a defined MAC address */
+    // add node with a defined MAC address
     if (strcmp(b, ":=") == 0) {
         struct node *n = _find_or_create_node(nodes, a);
         if (n == NULL) {
@@ -135,8 +129,7 @@ static bool _parse_line(char *line, list_node_t *nodes, list_node_t *edges)
     return true;
 }
 
-int topology_print(const char *file, const topology_t *t)
-{
+int topology_print(const char *file, const topology_t *t) {
     FILE *out;
     char addr_str[3 * HW_ADDR_MAX_LEN];
 
@@ -189,8 +182,7 @@ int topology_print(const char *file, const topology_t *t)
     return 0;
 }
 
-void topology_print_stats(const topology_t *t, bool reset)
-{
+void topology_print_stats(const topology_t *t, bool reset) {
     uint32_t tx_total = 0;
 
     puts("{ nodes: [");
@@ -209,8 +201,7 @@ void topology_print_stats(const topology_t *t, bool reset)
     printf("], tx_total: %u }\n", tx_total);
 }
 
-int topology_parse(const char *file, topology_t *out)
-{
+int topology_parse(const char *file, topology_t *out) {
     FILE *in;
 
     memset(out, 0, sizeof(*out));
@@ -242,8 +233,7 @@ int topology_parse(const char *file, topology_t *out)
 
 void topology_send(const topology_t *t, int sock,
                    const struct sockaddr_in6 *src_addr,
-                   void *buffer, size_t len)
-{
+                   void *buffer, size_t len) {
     struct node *sender = NULL;
 
     if (t->has_sniffer) {
@@ -264,7 +254,7 @@ void topology_send(const topology_t *t, int sock,
                 sender->num_tx++;
             }
 
-            /* packet loss */
+            // packet loss
             if (random() > super->weight_a_b * RAND_MAX) {
                 continue;
             }
@@ -280,7 +270,7 @@ void topology_send(const topology_t *t, int sock,
                 sender->num_tx++;
             }
 
-            /* packet loss */
+            // packet loss
             if (random() > super->weight_b_a * RAND_MAX) {
                 continue;
             }
@@ -294,8 +284,7 @@ void topology_send(const topology_t *t, int sock,
 }
 
 bool topology_add(topology_t *t, const uint8_t *mac, uint8_t mac_len,
-                  struct sockaddr_in6 *addr)
-{
+                  struct sockaddr_in6 *addr) {
     struct node *empty = NULL;
     char addr_str[3 * HW_ADDR_MAX_LEN];
 
@@ -307,7 +296,7 @@ bool topology_add(topology_t *t, const uint8_t *mac, uint8_t mac_len,
     for (list_node_t *node = t->nodes.next; node; node = node->next) {
         struct node *super = container_of(node, struct node, next);
 
-        /* store free node */
+        // store free node
         if (!super->mac_len) {
             empty = super;
             continue;
@@ -317,20 +306,20 @@ bool topology_add(topology_t *t, const uint8_t *mac, uint8_t mac_len,
             continue;
         }
 
-        /* node is already in the list - either it is connected or MAC was pinned */
+        // node is already in the list - either it is connected or MAC was pinned
         if (memcmp(super->mac, mac, mac_len) == 0) {
             if (super->addr.sin6_port == addr->sin6_port) {
-                /* abort if node is already connected */
+                // abort if node is already connected
                 return true;
             } else {
-                /* use pre-allocated node */
+                // use pre-allocated node
                 empty = super;
                 break;
             }
         }
     }
 
-    /* topology full - can't add node */
+    // topology full - can't add node
     if (empty == NULL) {
         fprintf(stderr, "can't add %s - topology full\n",
                 _fmt_addr(addr_str, sizeof(addr_str), mac, mac_len));
@@ -341,7 +330,7 @@ bool topology_add(topology_t *t, const uint8_t *mac, uint8_t mac_len,
             _fmt_addr(addr_str, sizeof(addr_str), mac, mac_len),
             (char *)empty->name);
 
-    /* add new node to empty spot */
+    // add new node to empty spot
     memcpy(empty->mac, mac, sizeof(empty->mac));
     memcpy(&empty->addr, addr, sizeof(empty->addr));
     empty->mac_len = mac_len;
@@ -349,8 +338,7 @@ bool topology_add(topology_t *t, const uint8_t *mac, uint8_t mac_len,
     return true;
 }
 
-void topology_set_sniffer(topology_t *t, struct sockaddr_in6 *addr)
-{
+void topology_set_sniffer(topology_t *t, struct sockaddr_in6 *addr) {
     char addr_str[INET6_ADDRSTRLEN];
     getnameinfo((struct sockaddr*)addr, sizeof(*addr),
                 addr_str, sizeof(addr_str), 0, 0, NI_NUMERICHOST);

@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <stdint.h>
 
@@ -31,8 +27,7 @@ static const congure_snd_driver_t _driver = {
     .report_ecn_ce = _snd_report_ecn_ce,
 };
 
-static void _snd_report_ecn_ce(congure_snd_t *cong, ztimer_now_t time)
-{
+static void _snd_report_ecn_ce(congure_snd_t *cong, ztimer_now_t time) {
     congure_abe_snd_t *c = (congure_abe_snd_t *)cong;
     const congure_abe_snd_consts_t *consts =
         container_of(c->consts, congure_abe_snd_consts_t, reno);
@@ -45,10 +40,9 @@ static void _snd_report_ecn_ce(congure_snd_t *cong, ztimer_now_t time)
 }
 
 void congure_abe_snd_setup(congure_abe_snd_t *c,
-                           const congure_abe_snd_consts_t *consts)
-{
+                           const congure_abe_snd_consts_t *consts) {
     c->super.driver = &_driver;
     c->consts = &consts->reno;
 }
 
-/** @} */
+/// @}

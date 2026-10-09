@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-FileCopyrightText: 2017 HAW-Hamburg
- * SPDX-FileCopyrightText: 2018 Fundacion Inria Chile
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-FileCopyrightText: 2017 HAW-Hamburg
+// SPDX-FileCopyrightText: 2018 Fundacion Inria Chile
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-l452re
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-l452re board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * @author      Francisco Molina <francisco.molina@inria.cl>
- */
+/// @ingroup     boards_nucleo-l452re
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-l452re board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+/// @author      Francisco Molina <francisco.molina@inria.cl>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -36,10 +32,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -51,7 +45,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART2_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
     {
         .dev        = USART3,
@@ -63,7 +57,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART3_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     }
 };
 
@@ -71,12 +65,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart3)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM3,
@@ -91,12 +83,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -114,61 +104,55 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @brief ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32L452RE order. Instead, we
- * just define 6 ADC channels, for the Nucleo
- * Arduino header pins A0-A5 and the internal VBAT channel.
- *
- * To find appropriate device and channel find in the
- * board manual, table showing pin assignments and
- * information about ADC - a text similar to ADC[X]_IN[Y],
- * where:
- * [X] - describes used device - indexed from 0,
- * for example ADC1_IN10 is device 0,
- * [Y] - describes used channel - indexed from 1,
- * for example ADC1_IN10 is channel 10
- *
- * For Nucleo-L452RE this information is in board manual,
- * Table 22, page 51, or STM32L452RE MCU datasheet,
- * Table 16, page 63.
- *
- * VBAT is connected ADC1_IN18 or ADC3_IN18 and a voltage divider
- * is used, so that only 1/3 of the actual VBAT is measured. This
- * allows for a supply voltage higher than the reference voltage.
- *
- * For STM32L452RE more information is provided in MCU datasheet,
- * in section 3.15.3 - Vbat battery voltage monitoring, page 40.
- * @{
- */
+/// @brief ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32L452RE order. Instead, we
+/// just define 6 ADC channels, for the Nucleo
+/// Arduino header pins A0-A5 and the internal VBAT channel.
+///
+/// To find appropriate device and channel find in the
+/// board manual, table showing pin assignments and
+/// information about ADC - a text similar to ADC[X]_IN[Y],
+/// where:
+/// [X] - describes used device - indexed from 0,
+/// for example ADC1_IN10 is device 0,
+/// [Y] - describes used channel - indexed from 1,
+/// for example ADC1_IN10 is channel 10
+///
+/// For Nucleo-L452RE this information is in board manual,
+/// Table 22, page 51, or STM32L452RE MCU datasheet,
+/// Table 16, page 63.
+///
+/// VBAT is connected ADC1_IN18 or ADC3_IN18 and a voltage divider
+/// is used, so that only 1/3 of the actual VBAT is measured. This
+/// allows for a supply voltage higher than the reference voltage.
+///
+/// For STM32L452RE more information is provided in MCU datasheet,
+/// in section 3.15.3 - Vbat battery voltage monitoring, page 40.
+/// @{
 static const adc_conf_t adc_config[] = {
-    { .pin = GPIO_PIN(PORT_A, 0), .dev = 0, .chan =  5 }, /* A0  ADC1_IN5  */
-    { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan =  6 }, /* A1  ADC1_IN6  */
-    { .pin = GPIO_PIN(PORT_A, 4), .dev = 0, .chan =  9 }, /* A2  ADC1_IN9  */
-    { .pin = GPIO_PIN(PORT_B, 0), .dev = 0, .chan = 15 }, /* A3 ADC1_IN15  */
-    { .pin = GPIO_PIN(PORT_C, 1), .dev = 0, .chan =  2 }, /* A4  ADC1_IN2  */
-    { .pin = GPIO_PIN(PORT_C, 0), .dev = 0, .chan =  1 }, /* A5  ADC1_IN1  */
+    { .pin = GPIO_PIN(PORT_A, 0), .dev = 0, .chan =  5 }, // A0  ADC1_IN5
+    { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan =  6 }, // A1  ADC1_IN6
+    { .pin = GPIO_PIN(PORT_A, 4), .dev = 0, .chan =  9 }, // A2  ADC1_IN9
+    { .pin = GPIO_PIN(PORT_B, 0), .dev = 0, .chan = 15 }, // A3 ADC1_IN15
+    { .pin = GPIO_PIN(PORT_C, 1), .dev = 0, .chan =  2 }, // A4  ADC1_IN2
+    { .pin = GPIO_PIN(PORT_C, 0), .dev = 0, .chan =  1 }, // A5  ADC1_IN1
     { .pin = GPIO_UNDEF, .dev = 0, .chan = 18 },
 };
 
-/**
- * @brief Number of ADC devices
- */
+/// @brief Number of ADC devices
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
 
-/**
- * @brief VBAT ADC line
- */
+/// @brief VBAT ADC line
 #define VBAT_ADC            ADC_LINE(6)
 
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

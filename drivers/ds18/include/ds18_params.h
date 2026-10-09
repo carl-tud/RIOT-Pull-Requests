@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Frits Kuipers
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Frits Kuipers
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ds18
- *
- * @{
- * @file
- * @brief       Default configuration for DS1822 and DS18B20 temperature sensors
- *
- * @author      Frits Kuipers <frits.kuipers@gmail.com>
- */
+/// @ingroup     drivers_ds18
+///
+/// @{
+/// @file
+/// @brief       Default configuration for DS1822 and DS18B20 temperature sensors
+///
+/// @author      Frits Kuipers <frits.kuipers@gmail.com>
 
 #include "board.h"
 #include "ds18.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Set default configuration parameters for the ds18
- * @{
- */
+/// @brief   Set default configuration parameters for the ds18
+/// @{
 #ifndef DS18_PARAM_PIN
 #define DS18_PARAM_PIN             (GPIO_PIN(0, 0))
 #endif
@@ -36,11 +30,9 @@ extern "C" {
 
 #define DS18_PARAMS_DEFAULT        { .pin     = DS18_PARAM_PIN, \
                                      .out_mode = DS18_PARAM_PULL }
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure ds18
- */
+/// @brief   Configure ds18
 static const ds18_params_t ds18_params[] =
 {
 #ifdef DS18_PARAMS_BOARD
@@ -50,9 +42,7 @@ static const ds18_params_t ds18_params[] =
 #endif
 };
 
-/**
- * @brief   Configure SAUL registry entries
- */
+/// @brief   Configure SAUL registry entries
 static const saul_reg_info_t ds18_saul_reg_info[] =
 {
     { .name = "ds18" }
@@ -62,4 +52,4 @@ static const saul_reg_info_t ds18_saul_reg_info[] =
 }
 #endif
 
-/** @} */
+/// @}

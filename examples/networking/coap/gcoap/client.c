@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Ken Bannister
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Ken Bannister
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       gcoap CLI support
- *
- * @author      Ken Bannister <kb2ma@runbox.com>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
- * @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       gcoap CLI support
+///
+/// @author      Ken Bannister <kb2ma@runbox.com>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
+/// @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
+///
+/// @}
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -47,18 +43,18 @@
 static sock_udp_ep_t _proxy_remote;
 static char _proxy_uri[CONFIG_URI_MAX];
 
-/* Retain request URI to re-request if response includes block. User must not
- * start a new request (with a new path) until any blockwise transfer
- * completes or times out. */
+// Retain request URI to re-request if response includes block. User must not
+// start a new request (with a new path) until any blockwise transfer
+// completes or times out.
 static char _last_req_uri[CONFIG_URI_MAX];
 
-/* Last remote endpoint where an Observe request has been sent to */
+// Last remote endpoint where an Observe request has been sent to
 static sock_udp_ep_t obs_remote;
 
-/* the token used for observing a remote resource */
+// the token used for observing a remote resource
 static uint8_t obs_req_token[GCOAP_TOKENLEN_MAX];
 
-/* actual length of above token */
+// actual length of above token
 static size_t obs_req_tkl = 0;
 
 uint16_t req_count = 0;
@@ -67,23 +63,20 @@ static gcoap_socket_type_t _get_tl(const char *uri);
 static ssize_t _send(uint8_t *buf, size_t len, const sock_udp_ep_t *remote,
                      void *ctx, gcoap_socket_type_t tl);
 
-/*
- * Response callback.
- */
+// Response callback.
 static void _resp_handler(const gcoap_request_memo_t *memo, coap_pkt_t* pdu,
-                          const sock_udp_ep_t *remote)
-{
-    (void)remote;       /* not interested in the source currently */
+                          const sock_udp_ep_t *remote) {
+    (void)remote;       // not interested in the source currently
 
     if (memo->state == GCOAP_MEMO_TIMEOUT) {
         printf("gcoap: timeout for msg ID %02u\n", coap_get_id(pdu));
         return;
     }
     else if (memo->state == GCOAP_MEMO_RESP_TRUNC) {
-        /* The right thing to do here would be to look into whether at least
-         * the options are complete, then to mentally trim the payload to the
-         * next block boundary and pretend it was sent as a Block2 of that
-         * size. */
+        // The right thing to do here would be to look into whether at least
+        // the options are complete, then to mentally trim the payload to the
+        // next block boundary and pretend it was sent as a Block2 of that
+        // size.
         printf("gcoap: warning, incomplete response; continuing with the truncated payload\n");
     }
     else if (memo->state != GCOAP_MEMO_RESP) {
@@ -107,7 +100,7 @@ static void _resp_handler(const gcoap_request_memo_t *memo, coap_pkt_t* pdu,
                 || content_type == COAP_FORMAT_LINK
                 || coap_get_code_class(pdu) == COAP_CLASS_CLIENT_FAILURE
                 || coap_get_code_class(pdu) == COAP_CLASS_SERVER_FAILURE) {
-            /* Expecting diagnostic payload in failure cases */
+            // Expecting diagnostic payload in failure cases
             printf(", %u bytes\n%.*s\n", pdu->payload_len, pdu->payload_len,
                                                           (char *)pdu->payload);
         }
@@ -120,7 +113,7 @@ static void _resp_handler(const gcoap_request_memo_t *memo, coap_pkt_t* pdu,
         printf(", empty payload\n");
     }
 
-    /* ask for next block if present */
+    // ask for next block if present
     if (coap_get_block2(pdu, &block)) {
         if (block.more) {
             unsigned msg_type = coap_get_type(pdu);
@@ -159,8 +152,7 @@ static void _resp_handler(const gcoap_request_memo_t *memo, coap_pkt_t* pdu,
     }
 }
 
-static gcoap_socket_type_t _get_tl(const char *uri)
-{
+static gcoap_socket_type_t _get_tl(const char *uri) {
     if (!strncmp(uri, "coaps", 5)) {
         return GCOAP_SOCKET_TYPE_DTLS;
     }
@@ -171,8 +163,7 @@ static gcoap_socket_type_t _get_tl(const char *uri)
 }
 
 static ssize_t _send(uint8_t *buf, size_t len, const sock_udp_ep_t *remote,
-                     void *ctx, gcoap_socket_type_t tl)
-{
+                     void *ctx, gcoap_socket_type_t tl) {
     ssize_t bytes_sent = gcoap_req_send(buf, len, remote, NULL, _resp_handler, ctx, tl);
     if (bytes_sent > 0) {
         req_count++;
@@ -180,8 +171,7 @@ static ssize_t _send(uint8_t *buf, size_t len, const sock_udp_ep_t *remote,
     return bytes_sent;
 }
 
-static int _print_usage(char **argv)
-{
+static int _print_usage(char **argv) {
     printf("usage: %s <get [-o|-d]|post|put> [-c] <URI> [data]\n", argv[0]);
     printf("       %s ping <scheme>://<host>[:port]\n", argv[0]);
     printf("       %s info\n", argv[0]);
@@ -195,8 +185,7 @@ static int _print_usage(char **argv)
 }
 
 static int _uristr2remote(const char *uri, sock_udp_ep_t *remote, const char **path,
-                          char *buf, size_t buf_len)
-{
+                          char *buf, size_t buf_len) {
     if (strlen(uri) >= buf_len) {
         DEBUG_PUTS("URI too long");
         return 1;
@@ -227,9 +216,8 @@ static int _uristr2remote(const char *uri, sock_udp_ep_t *remote, const char **p
     return 0;
 }
 
-static int _cli_cmd(int argc, char **argv)
-{
-    /* Ordered like the RFC method code numbers, but off by 1. GET is code 0. */
+static int _cli_cmd(int argc, char **argv) {
+    // Ordered like the RFC method code numbers, but off by 1. GET is code 0.
     char *method_codes[] = {"ping", "get", "post", "put"};
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
@@ -282,7 +270,7 @@ static int _cli_cmd(int argc, char **argv)
         goto help;
     }
 
-    /* if not 'info' and 'proxy', must be a method code or ping */
+    // if not 'info' and 'proxy', must be a method code or ping
     int code_pos = -1;
     for (size_t i = 0; i < ARRAY_SIZE(method_codes) && code_pos == -1; i++) {
         if (strcmp(argv[1], method_codes[i]) == 0) {
@@ -293,11 +281,11 @@ static int _cli_cmd(int argc, char **argv)
         goto help;
     }
 
-    /* parse options */
-    int apos = 2;       /* position of address argument */
+    // parse options
+    int apos = 2;       // position of address argument
 
-    /* For GET requests additional switches allow for registering and
-     * deregistering an observe. This example only supports one observe. */
+    // For GET requests additional switches allow for registering and
+    // deregistering an observe. This example only supports one observe.
     if (code_pos == COAP_METHOD_GET) {
         if (argc > apos) {
             if (strcmp(argv[apos], "-o") == 0) {
@@ -312,7 +300,7 @@ static int _cli_cmd(int argc, char **argv)
         }
     }
 
-    /* ping must be confirmable */
+    // ping must be confirmable
     unsigned msg_type = (!code_pos ? COAP_TYPE_CON : COAP_TYPE_NON);
     if (argc > apos && strcmp(argv[apos], "-c") == 0) {
         msg_type = COAP_TYPE_CON;
@@ -331,8 +319,8 @@ static int _cli_cmd(int argc, char **argv)
         }
 
         if (!*_proxy_uri) {
-            /* If the request is not a ping, add uri path option separately
-             * (options must be added in order) */
+            // If the request is not a ping, add uri path option separately
+            // (options must be added in order)
             if (path) {
                 coap_opt_add_uri_path(&pdu, path);
             }
@@ -378,16 +366,16 @@ static int _cli_cmd(int argc, char **argv)
         }
         else {
             if (observe) {
-                /* forget last Observe token, as only one can be stored in this example */
+                // forget last Observe token, as only one can be stored in this example
                 gcoap_obs_req_forget(&obs_remote, obs_req_token, obs_req_tkl);
                 if (obs_value == COAP_OBS_REGISTER) {
                     obs_req_tkl = coap_get_token_len(&pdu);
-                    /* backup the token of the initial observe registration */
+                    // backup the token of the initial observe registration
                     memcpy(obs_req_token, coap_get_token(&pdu), obs_req_tkl);
                     obs_remote = remote;
                 }
             }
-            /* send Observe notification for /cli/stats */
+            // send Observe notification for /cli/stats
             notify_observers();
         }
         return 0;

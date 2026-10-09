@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_cst816s
- * @{
- *
- * @file
- * @brief       Device driver implementation for cst816s touch screen
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     drivers_cst816s
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for cst816s touch screen
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include "log.h"
 #include "periph/gpio.h"
@@ -37,8 +33,7 @@ const char *cst816s_gesture_str[] = {
     [CST816S_GESTURE_LONG_PRESS] = "long press",
 };
 
-static void _gpio_irq(void *arg)
-{
+static void _gpio_irq(void *arg) {
     cst816s_t *dev = arg;
 
     assert(dev);
@@ -48,19 +43,17 @@ static void _gpio_irq(void *arg)
     }
 }
 
-static void _cst816s_reset(const cst816s_t *dev)
-{
-    /* Reset, sleep durations based on
-     * https://github.com/lupyuen/hynitron_i2c_cst0xxse/blob/master/cst0xx_core.c#L1078-L1085 */
+static void _cst816s_reset(const cst816s_t *dev) {
+    // Reset, sleep durations based on
+    // https://github.com/lupyuen/hynitron_i2c_cst0xxse/blob/master/cst0xx_core.c#L1078-L1085
     gpio_clear(dev->params->reset);
     ztimer_sleep(ZTIMER_MSEC, CST816S_RESET_DURATION_LOW_MS);
     gpio_set(dev->params->reset);
     ztimer_sleep(ZTIMER_MSEC, CST816S_RESET_DURATION_HIGH_MS);
 }
 
-int cst816s_read(const cst816s_t *dev, cst816s_touch_data_t *data)
-{
-    uint8_t buf[9]; /* 3 bytes "header" and 6 bytes touch info */
+int cst816s_read(const cst816s_t *dev, cst816s_touch_data_t *data) {
+    uint8_t buf[9]; // 3 bytes "header" and 6 bytes touch info
 
     i2c_acquire(dev->params->i2c_dev);
     int res = i2c_read_regs(dev->params->i2c_dev, dev->params->i2c_addr,
@@ -71,18 +64,17 @@ int cst816s_read(const cst816s_t *dev, cst816s_touch_data_t *data)
         return res;
     }
 
-    data->gesture = buf[1];                         /* Gesture ID */
-    data->valid = buf[2] > 0;                       /* Number of touch points */
-    data->action = buf[3] >> 6;                     /* Current touch event */
-    data->x = ((buf[3] & 0x0f) << 8) | buf[4];      /* X coordinate */
-    data->y = ((buf[5] & 0x0f) << 8) | buf[6];      /* Y coordinate */
+    data->gesture = buf[1];                         // Gesture ID
+    data->valid = buf[2] > 0;                       // Number of touch points
+    data->action = buf[3] >> 6;                     // Current touch event
+    data->x = ((buf[3] & 0x0f) << 8) | buf[4];      // X coordinate
+    data->y = ((buf[5] & 0x0f) << 8) | buf[6];      // Y coordinate
 
     return 0;
 }
 
 int cst816s_init(cst816s_t *dev, const cst816s_params_t *params,
-                 cst816s_irq_cb_t cb, void *arg)
-{
+                 cst816s_irq_cb_t cb, void *arg) {
     assert(dev && params);
     dev->params = params;
     dev->cb = cb;
@@ -101,5 +93,5 @@ int cst816s_init(cst816s_t *dev, const cst816s_params_t *params,
         }
     }
     return CST816S_OK;
-    /* The device will not respond until the first touch event */
+    // The device will not respond until the first touch event
 }

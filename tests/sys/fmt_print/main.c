@@ -1,28 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       fmt print test application
- *
- * This test is supposed to check for "compilabilty" of the fmt print_* instructions.
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       fmt print test application
+///
+/// This test is supposed to check for "compilabilty" of the fmt print_* instructions.
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 
 #include "fmt.h"
 
-int main(void)
-{
+int main(void) {
     print_str("If you can read this:\n");
     print_u32_dec(0xFFFFFFFF);
     print_str("\n");
@@ -44,10 +39,10 @@ int main(void)
     print_str("\n");
     print_bytes_hex("0123456789", 10);
     print_str("\n");
-    /* test mixing of printf() and fmt's print() works fine */
+    // test mixing of printf() and fmt's print() works fine
     printf("%s", "Test");
-    /* test fmt's print indeed only honors the length parameter and doesn't
-     * print until the terminated zero byte */
+    // test fmt's print indeed only honors the length parameter and doesn't
+    // print until the terminated zero byte
     print(" not ", 1);
     print_str("successful.");
     puts("");

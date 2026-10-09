@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Peripheral PTP clock test application
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Peripheral PTP clock test application
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdatomic.h>
@@ -43,15 +39,13 @@
 static mutex_t sync_mutex = MUTEX_INIT_LOCKED;
 static atomic_uint_least64_t timestamp;
 
-static void speed_adj_cb(void *arg, int chan)
-{
+static void speed_adj_cb(void *arg, int chan) {
     (void)arg;
     (void)chan;
     mutex_unlock(&sync_mutex);
 }
 
-static int test_speed_adjustment(const int32_t speed)
-{
+static int test_speed_adjustment(const int32_t speed) {
 
     uint32_t expected_ns = TEST_TIME_US * 1000;
     expected_ns += ((int64_t)expected_ns * speed) >> 32;
@@ -64,7 +58,7 @@ static int test_speed_adjustment(const int32_t speed)
     print_str(" (~");
     {
         int64_t tmp = speed * 100000ULL;
-        /* trusting compiler to use arithmetic right shift, when available instead of division */
+        // trusting compiler to use arithmetic right shift, when available instead of division
         tmp /= 1LL << 32;
         tmp += 100000ULL;
         char output[16];
@@ -77,7 +71,7 @@ static int test_speed_adjustment(const int32_t speed)
         return 1;
     }
 
-    /* be double sure mutex is indeed locked */
+    // be double sure mutex is indeed locked
     mutex_trylock(&sync_mutex);
 
     timer_stop(TIM);
@@ -128,8 +122,7 @@ static int test_speed_adjustment(const int32_t speed)
     return failed;
 }
 
-static void clock_adj_cb(void *arg, int chan)
-{
+static void clock_adj_cb(void *arg, int chan) {
     int32_t offset = (uintptr_t)arg;
     (void)chan;
     uint64_t now = ptp_clock_read_u64();
@@ -138,9 +131,8 @@ static void clock_adj_cb(void *arg, int chan)
     mutex_unlock(&sync_mutex);
 }
 
-static int test_clock_adjustment(int32_t offset)
-{
-    /* Record one extra sample, to throw away the first measurement */
+static int test_clock_adjustment(int32_t offset) {
+    // Record one extra sample, to throw away the first measurement
     static int64_t diffs[TEST_ROUNDS + 1];
     int64_t period_ns = PERIOD_US * 1000ULL + offset;
     uint64_t last_ns;
@@ -149,7 +141,7 @@ static int test_clock_adjustment(int32_t offset)
     print_s32_dec(offset);
     print_str(": ");
 
-    /* be double sure mutex is indeed locked */
+    // be double sure mutex is indeed locked
     mutex_trylock(&sync_mutex);
 
     if (timer_init(TIM, TIM_FREQ, clock_adj_cb, (void *)offset) ||
@@ -158,12 +150,12 @@ static int test_clock_adjustment(int32_t offset)
         return 1;
     }
 
-    /* wait for periodic timer IRQ */
+    // wait for periodic timer IRQ
     mutex_lock(&sync_mutex);
     last_ns = atomic_load(&timestamp);
 
     for (unsigned i = 0; i < TEST_ROUNDS + 1; i++) {
-        /* wait for periodic timer IRQ */
+        // wait for periodic timer IRQ
         mutex_lock(&sync_mutex);
         uint64_t now_ns = atomic_load(&timestamp);
         diffs[i] = (int64_t)(now_ns - last_ns) - period_ns;
@@ -215,10 +207,9 @@ static int test_clock_adjustment(int32_t offset)
     return failed;
 }
 
-int main(void)
-{
+int main(void) {
     static const int32_t speeds[] = {
-        /* 0%, +50%, -50%, +1%, -1%, +0.1%, -0.1%, +42/(2^32), -42/(2^32) */
+        // 0%, +50%, -50%, +1%, -1%, +0.1%, -0.1%, +42/(2^32), -42/(2^32)
         0, INT32_MAX, INT32_MIN, 42949673, -42949673, 4294967, -4294967, 42, -42
     };
     static const int32_t offsets[] = {
@@ -231,7 +222,7 @@ int main(void)
             failed |= test_speed_adjustment(speeds[i]);
         }
 
-        /* Restore nominal clock speed */
+        // Restore nominal clock speed
         ptp_clock_adjust_speed(0);
     }
 

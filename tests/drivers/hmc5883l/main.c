@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 /**
  * @ingroup     tests
@@ -46,10 +44,8 @@
 #include "hmc5883l.h"
 #include "hmc5883l_params.h"
 
-/*
- * Magnetic declination in radians according to the real geo location, see:
- * http://www.magnetic-declination.com/
- */
+// Magnetic declination in radians according to the real geo location, see:
+// http://www.magnetic-declination.com/
 #ifndef HMC5883L_MAG_DECL
 #define HMC5883L_MAG_DECL   (0.0573F)
 #endif
@@ -63,17 +59,15 @@
 kernel_pid_t p_main;
 
 #if MODULE_HMC5883L_INT
-static void hmc5883l_isr_data_ready (void *arg)
-{
+static void hmc5883l_isr_data_ready (void *arg) {
     (void)arg;
-    /* send a message to trigger main thread to handle the interrupt */
+    // send a message to trigger main thread to handle the interrupt
     msg_t msg;
     msg_send(&msg, p_main);
 }
 #endif
 
-int main(void)
-{
+int main(void) {
     hmc5883l_t dev;
 
     p_main = thread_getpid();
@@ -81,7 +75,7 @@ int main(void)
     puts("HMC5883L magnetometer driver test application\n");
     puts("Initializing HMC5883L sensor");
 
-    /* initialize the sensor with default configuration parameters */
+    // initialize the sensor with default configuration parameters
     if (hmc5883l_init(&dev, &hmc5883l_params[0]) == HMC5883L_OK) {
         puts("[OK]\n");
     }
@@ -91,28 +85,28 @@ int main(void)
     }
 
     #if MODULE_HMC5883L_INT
-    /* init INT2/DRDY signal pin and enable the interrupt */
+    // init INT2/DRDY signal pin and enable the interrupt
     hmc5883l_init_int(&dev, hmc5883l_isr_data_ready, 0);
-    #endif /* MODULE_HMC5883L_INT */
+    #endif // MODULE_HMC5883L_INT
 
     while (1) {
         #if MODULE_HMC5883L_INT
-        /* wait for data ready interrupt */
+        // wait for data ready interrupt
         msg_t msg;
         msg_receive(&msg);
         #else
-        /* wait longer than period of HMC5883L DOR */
+        // wait longer than period of HMC5883L DOR
         xtimer_usleep(HMC5883L_SLEEP);
         #endif
 
-        /* read data in any case */
+        // read data in any case
         hmc5883l_data_t data;
         if (hmc5883l_read(&dev, &data) == HMC5883L_OK) {
-            /* print xyz data */
+            // print xyz data
             printf("magn [mGs] x = %" PRIi16 ", y = %" PRIi16 ", z = %" PRIi16 "\n",
                     data.x, data.y, data.z);
 
-            /* compute and print heading for the given magnetic declination in rad */
+            // compute and print heading for the given magnetic declination in rad
             float head = atan2(data.y, data.x) + HMC5883L_MAG_DECL;
             if (head < 0) {
                 head += 2 * M_PI;

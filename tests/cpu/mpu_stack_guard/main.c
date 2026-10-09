@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Loci Controls Inc.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Loci Controls Inc.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Test application for the mpu_stack_guard pseudo-module
- *
- * @author Ian Martin <ian@locicontrols.com>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Test application for the mpu_stack_guard pseudo-module
+///
+/// @author Ian Martin <ian@locicontrols.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -21,9 +17,8 @@
 #include "thread.h"
 #include "mpu.h"
 
-/* RIOT's MPU headers gracefully fail when no MPU is present.
- * Use this to catch if RIOT's features are correctly gating MPU use.
- */
+// RIOT's MPU headers gracefully fail when no MPU is present.
+// Use this to catch if RIOT's features are correctly gating MPU use.
 #if !__MPU_PRESENT
 #error "(!__MPU_PRESENT)"
 #endif
@@ -35,18 +30,16 @@ static struct {
     char stack[THREAD_STACKSIZE_MAIN];
 } buf;
 
-/* Tell modern GCC (12.x) to not complain that this infinite recursion is
- * bound to overflow the stack - this is exactly what this test wants to do :)
- *
- * Also, tell older versions of GCC that do not know about -Winfinit-recursion
- * that it is safe to ignore `GCC diagnostics ignored "-Winfinit-recursion"`.
- * They behave as intended in this case :)
- */
+// Tell modern GCC (12.x) to not complain that this infinite recursion is
+// bound to overflow the stack - this is exactly what this test wants to do :)
+//
+// Also, tell older versions of GCC that do not know about -Winfinit-recursion
+// that it is safe to ignore `GCC diagnostics ignored "-Winfinit-recursion"`.
+// They behave as intended in this case :)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Winfinite-recursion"
-static int recurse(int counter)
-{
+static int recurse(int counter) {
     printf("counter =%4d, SP = 0x%08x, canary = 0x%08x\n", counter, (unsigned int)__get_PSP(), buf.canary);
 
     if (buf.canary != CANARY_VALUE) {
@@ -59,13 +52,12 @@ static int recurse(int counter)
 
     counter++;
 
-    /* Recursing twice here prevents the compiler from optimizing-out the recursion. */
+    // Recursing twice here prevents the compiler from optimizing-out the recursion.
     return recurse(counter) + recurse(counter);
 }
 #pragma GCC diagnostic pop
 
-static void *thread(void *arg)
-{
+static void *thread(void *arg) {
     (void) arg;
 
     recurse(0);
@@ -73,8 +65,7 @@ static void *thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("\nMPU Stack Guard Test\n");
 
     puts("If the test fails, the canary value will change unexpectedly");

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the Si114x UV, IR, visible and proximity
- *              sensor.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *              Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the Si114x UV, IR, visible and proximity
+///              sensor.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///              Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -28,8 +24,7 @@
 
 static si114x_t dev;
 
-int main(void)
-{
+int main(void) {
     puts("Si1145 test application\n"
          "+------------Initializing------------+\n");
 
@@ -60,7 +55,7 @@ int main(void)
                si114x_read_distance(&dev),
                si114x_read_response(&dev));
 
-        /* 2 seconds delay between measures */
+        // 2 seconds delay between measures
         ztimer_sleep(ZTIMER_MSEC, 2 * MS_PER_SEC);
     }
 

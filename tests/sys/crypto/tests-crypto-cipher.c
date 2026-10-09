@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2015 Nico von Geyso
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Nico von Geyso
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <limits.h>
 #include <string.h>
@@ -25,8 +23,7 @@ static uint8_t TEST_ENC_AES[] = {
     0x46, 0x22, 0x70, 0x42, 0xee, 0x24, 0x83, 0xf6
 };
 
-static void test_crypto_cipher_aes_encrypt(void)
-{
+static void test_crypto_cipher_aes_encrypt(void) {
     cipher_t cipher;
     int err, cmp;
     uint8_t data[16] = { 0 };
@@ -41,8 +38,7 @@ static void test_crypto_cipher_aes_encrypt(void)
     TEST_ASSERT_MESSAGE(1 == cmp, "wrong ciphertext");
 }
 
-static void test_crypto_cipher_aes_decrypt(void)
-{
+static void test_crypto_cipher_aes_decrypt(void) {
     cipher_t cipher;
     int err, cmp;
     uint8_t data[16];
@@ -57,12 +53,11 @@ static void test_crypto_cipher_aes_decrypt(void)
     TEST_ASSERT_MESSAGE(1 == cmp, "wrong plaintext");
 }
 
-static void test_crypto_cipher_init_aes_key_length(void)
-{
+static void test_crypto_cipher_init_aes_key_length(void) {
     cipher_t cipher;
     int err;
 
-    /* A keylength of 64 bit is not supported by AES */
+    // A keylength of 64 bit is not supported by AES
     uint8_t unsupported_key_1[8];
     memset(unsupported_key_1, 0, sizeof(unsupported_key_1));
 
@@ -72,8 +67,7 @@ static void test_crypto_cipher_init_aes_key_length(void)
     TEST_ASSERT_EQUAL_INT(CIPHER_ERR_INVALID_KEY_SIZE, err);
 }
 
-Test *tests_crypto_cipher_tests(void)
-{
+Test *tests_crypto_cipher_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_crypto_cipher_aes_encrypt),
         new_TestFixture(test_crypto_cipher_aes_decrypt),

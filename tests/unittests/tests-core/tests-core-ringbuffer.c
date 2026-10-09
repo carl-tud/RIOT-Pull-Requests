@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "thread.h"
 #include "ringbuffer.h"
@@ -9,7 +7,7 @@
 
 #include "tests-core.h"
 
-/* (ITERATIONS * (BUF_SIZE + 1)) needs to be <= 127! Otherwise `char` overflows. */
+// (ITERATIONS * (BUF_SIZE + 1)) needs to be <= 127! Otherwise `char` overflows.
 #define ITERATIONS 15
 #define BUF_SIZE 7
 
@@ -20,25 +18,21 @@ static ringbuffer_t rb = RINGBUFFER_INIT(rb_buf);
 static mutex_t mutex;
 static kernel_pid_t pid_add, pid_get;
 
-static void assert_avail(unsigned assumed)
-{
+static void assert_avail(unsigned assumed) {
     TEST_ASSERT_EQUAL_INT(assumed, rb.avail);
 }
 
-static void assert_add_one(char to_add, int assumed_result)
-{
+static void assert_add_one(char to_add, int assumed_result) {
     int actual_result = ringbuffer_add_one(&rb, to_add);
     TEST_ASSERT_EQUAL_INT(assumed_result, actual_result);
 }
 
-static void assert_get_one(int assumed_result)
-{
+static void assert_get_one(int assumed_result) {
     int actual_result = ringbuffer_get_one(&rb);
     TEST_ASSERT_EQUAL_INT(assumed_result, actual_result);
 }
 
-static void run_add(void)
-{
+static void run_add(void) {
     char next = 0;
     for (unsigned iteration = 0; iteration < ITERATIONS; ++iteration) {
         mutex_lock(&mutex);
@@ -50,7 +44,7 @@ static void run_add(void)
             ++next;
         }
 
-        /* Overwrite oldest element. It should be returned to us. */
+        // Overwrite oldest element. It should be returned to us.
         assert_avail(BUF_SIZE);
         assert_add_one(next, next - BUF_SIZE);
         assert_avail(BUF_SIZE);
@@ -63,13 +57,12 @@ static void run_add(void)
     thread_wakeup(pid_get);
 }
 
-static void *run_get(void *arg)
-{
+static void *run_get(void *arg) {
     (void) arg;
 
     char next = 0;
     for (unsigned iteration = 0; iteration < ITERATIONS; ++iteration) {
-        ++next; /* the first element of a stride is always overwritten */
+        ++next; // the first element of a stride is always overwritten
 
         mutex_lock(&mutex);
 
@@ -91,8 +84,7 @@ static void *run_get(void *arg)
     return NULL;
 }
 
-static void tests_core_ringbuffer(void)
-{
+static void tests_core_ringbuffer(void) {
     pid_add = thread_getpid();
     pid_get = thread_create(stack_get, sizeof (stack_get),
                             THREAD_PRIORITY_MAIN,
@@ -101,8 +93,7 @@ static void tests_core_ringbuffer(void)
     run_add();
 }
 
-static void tests_core_ringbuffer_remove(void)
-{
+static void tests_core_ringbuffer_remove(void) {
     char mem[3];
     ringbuffer_t buf;
     ringbuffer_init(&buf, mem, sizeof(mem));
@@ -118,8 +109,7 @@ static void tests_core_ringbuffer_remove(void)
 
 }
 
-static void tests_core_ringbuffer_remove_underflow(void)
-{
+static void tests_core_ringbuffer_remove_underflow(void) {
     char mem[3];
     ringbuffer_t buf;
     ringbuffer_init(&buf, mem, sizeof(mem));
@@ -139,8 +129,7 @@ static void tests_core_ringbuffer_remove_underflow(void)
     TEST_ASSERT_EQUAL_INT(1, ringbuffer_empty(&buf));
 }
 
-Test *tests_core_ringbuffer_tests(void)
-{
+Test *tests_core_ringbuffer_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(tests_core_ringbuffer),
         new_TestFixture(tests_core_ringbuffer_remove),

@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2025 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @brief       Tests the PSA aead configurations
- *
- * @author      Lukas Luger <lukas.luger@mailbox.tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @brief       Tests the PSA aead configurations
+///
+/// @author      Lukas Luger <lukas.luger@mailbox.tu-dresden.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -25,8 +21,8 @@ static const uint8_t KEY_128[] = {
     0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
     0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f
 };
-/* certain PSA backends require the data to be in RAM rather than ROM
- * so these values cannot be `const` */
+// certain PSA backends require the data to be in RAM rather than ROM
+// so these values cannot be `const`
 static uint8_t NONCE[] = {
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
 };
@@ -43,14 +39,11 @@ static uint8_t CIPHERTEXT[] = {
     0x71, 0x62, 0x01, 0x5b, 0x4d, 0xac, 0x25, 0x5d
 };
 
-/**
- * @brief   Example function to perform an AES-128 CCM encryption and decryption
- *          with the PSA Crypto API.
- *
- * @return  psa_status_t
- */
-psa_status_t example_aead_aes_128_ccm(void)
-{
+/// @brief   Example function to perform an AES-128 CCM encryption and decryption
+///          with the PSA Crypto API.
+///
+/// @return  psa_status_t
+psa_status_t example_aead_aes_128_ccm(void) {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     psa_key_id_t key_id = 0;
     psa_key_attributes_t attr = psa_key_attributes_init();

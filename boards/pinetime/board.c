@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_pinetime
- * @{
- *
- * @file
- * @brief       Board initialization for the PineTime
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     boards_pinetime
+/// @{
+///
+/// @file
+/// @brief       Board initialization for the PineTime
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include "cpu.h"
 #include "board.h"
@@ -53,11 +49,10 @@ static mtd_spi_nor_t pinetime_nor_dev = {
 };
 
 MTD_XFA_ADD(pinetime_nor_dev, 0);
-#endif /* MODULE_MTD */
+#endif // MODULE_MTD
 
-void board_init(void)
-{
-    /* initialize pins */
+void board_init(void) {
+    // initialize pins
     gpio_init(VCC33, GPIO_OUT);
     gpio_init(BUTTON0_ENABLE, GPIO_OUT);
     gpio_init(BUTTON0, GPIO_IN);

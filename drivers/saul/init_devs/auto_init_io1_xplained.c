@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of IO1 Xplained extension driver.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of IO1 Xplained extension driver.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,37 +17,26 @@
 #include "io1_xplained.h"
 #include "io1_xplained_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define IO1_XPLAINED_NUM    ARRAY_SIZE(io1_xplained_params)
 
-/**
- * @brief   Allocation of memory for device descriptors
- */
+/// @brief   Allocation of memory for device descriptors
 static io1_xplained_t io1_xplained_devs[IO1_XPLAINED_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[IO1_XPLAINED_NUM * 4];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define IO1_XPLAINED_INFO_NUM    ARRAY_SIZE(io1_xplained_saul_info)
 
-/**
- * @name    Reference the driver structs.
- * @{
- */
+/// @name    Reference the driver structs.
+/// @{
 extern const saul_driver_t gpio_out_saul_driver;
 extern const saul_driver_t io1_xplained_temperature_saul_driver;
-/** @} */
+/// @}
 
-void auto_init_io1_xplained(void)
-{
-    /* There are 4 saul reg info for each configured device */
+void auto_init_io1_xplained(void) {
+    // There are 4 saul reg info for each configured device
     assert(IO1_XPLAINED_NUM == IO1_XPLAINED_INFO_NUM);
 
     for (unsigned i = 0; i < IO1_XPLAINED_NUM; i++) {
@@ -61,13 +46,13 @@ void auto_init_io1_xplained(void)
             continue;
         }
 
-        /* Temperature */
+        // Temperature
         saul_entries[i * 4].dev = &(io1_xplained_devs[i]);
         saul_entries[i * 4].name = io1_xplained_saul_info[i][0].name;
         saul_entries[i * 4].driver = &io1_xplained_temperature_saul_driver;
         saul_reg_add(&(saul_entries[i * 4]));
 
-        /* GPIOs */
+        // GPIOs
         for (unsigned j = 0;
              j < ARRAY_SIZE(io1_xplained_saul_gpios);
              j++) {

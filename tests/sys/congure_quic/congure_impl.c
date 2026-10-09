@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <stdbool.h>
 #include "kernel_defines.h"
@@ -49,8 +45,7 @@ static const congure_quic_snd_consts_t _consts[] = {
     },
 };
 
-int congure_test_snd_setup(congure_test_snd_t *c, unsigned id)
-{
+int congure_test_snd_setup(congure_test_snd_t *c, unsigned id) {
     if (id >= ARRAY_SIZE(_consts)) {
         return -1;
     }
@@ -60,20 +55,17 @@ int congure_test_snd_setup(congure_test_snd_t *c, unsigned id)
     return 0;
 }
 
-unsigned congure_quic_test_get_event_cb_calls(void)
-{
+unsigned congure_quic_test_get_event_cb_calls(void) {
     return _event_cb_calls;
 }
 
-void *congure_quic_test_get_event_cb_arg(void)
-{
+void *congure_quic_test_get_event_cb_arg(void) {
     return _event_cb_arg;
 }
 
-static void _event_cb(void *ctx)
-{
+static void _event_cb(void *ctx) {
     _event_cb_calls++;
     _event_cb_arg = ctx;
 }
 
-/** @} */
+/// @}

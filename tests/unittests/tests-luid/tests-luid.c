@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdint.h>
 #include <string.h>
@@ -9,8 +7,7 @@
 
 #include "tests-luid.h"
 
-static void test_luid_uniqe_eui64(void)
-{
+static void test_luid_uniqe_eui64(void) {
     eui64_t mac[3];
 
     luid_get_eui64(&mac[0]);
@@ -20,8 +17,7 @@ static void test_luid_uniqe_eui64(void)
     TEST_ASSERT_EQUAL_INT(0, !memcmp(&mac[1], &mac[2], sizeof(mac[1])));
 }
 
-static void test_luid_uniqe_eui48(void)
-{
+static void test_luid_uniqe_eui48(void) {
     eui48_t mac[3];
 
     luid_get_eui48(&mac[0]);
@@ -31,8 +27,7 @@ static void test_luid_uniqe_eui48(void)
     TEST_ASSERT_EQUAL_INT(0, !memcmp(&mac[1], &mac[2], sizeof(mac[1])));
 }
 
-static void test_luid_custom(void)
-{
+static void test_luid_custom(void) {
     uint8_t a[2][8];
     uint8_t b[2][8];
 
@@ -47,8 +42,7 @@ static void test_luid_custom(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(b[1], b[1], sizeof(b[0])));
 }
 
-Test *tests_luid_tests(void)
-{
+Test *tests_luid_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_luid_uniqe_eui48),
         new_TestFixture(test_luid_uniqe_eui64),
@@ -60,7 +54,6 @@ Test *tests_luid_tests(void)
     return (Test *)&luid_tests;
 }
 
-void tests_luid(void)
-{
+void tests_luid(void) {
     TESTS_RUN(tests_luid_tests());
 }

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_sock_util
- * @{
- *
- * @file
- * @brief       sock utility functions implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @}
- */
+/// @ingroup     net_sock_util
+/// @{
+///
+/// @file
+/// @brief       sock utility functions implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @}
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -45,11 +41,9 @@
 #define PORT_STR_LEN    (5)
 #define NETIF_STR_LEN   (5)
 
-static char* _find_hoststart(const char *url)
-{
-    /* Increment CONFIG_SOCK_SCHEME_MAXLEN due to comparison with the colon after the
-     * scheme part
-     */
+static char* _find_hoststart(const char *url) {
+    // Increment CONFIG_SOCK_SCHEME_MAXLEN due to comparison with the colon after the
+    // scheme part
     size_t remaining = CONFIG_SOCK_SCHEME_MAXLEN + 1;
     char *urlpos = (char*)url;
     while (*urlpos && remaining) {
@@ -64,8 +58,7 @@ static char* _find_hoststart(const char *url)
     return NULL;
 }
 
-static char* _find_pathstart(const char *url)
-{
+static char* _find_pathstart(const char *url) {
     size_t remaining = CONFIG_SOCK_HOSTPORT_MAXLEN;
     char *urlpos = (char*)url;
     while (*urlpos && remaining) {
@@ -78,8 +71,7 @@ static char* _find_pathstart(const char *url)
     return urlpos;
 }
 
-int sock_urlsplit(const char *url, char *hostport, char *urlpath)
-{
+int sock_urlsplit(const char *url, char *hostport, char *urlpath) {
     assert(url);
     char *hoststart = _find_hoststart(url);
     if (!hoststart) {
@@ -90,8 +82,8 @@ int sock_urlsplit(const char *url, char *hostport, char *urlpath)
 
     if (hostport) {
         size_t hostlen = pathstart - hoststart;
-        /* hostlen must be smaller CONFIG_SOCK_HOSTPORT_MAXLEN to have space for the null
-        * terminator */
+        // hostlen must be smaller CONFIG_SOCK_HOSTPORT_MAXLEN to have space for the null
+        // terminator
         if (hostlen > CONFIG_SOCK_HOSTPORT_MAXLEN - 1) {
             return -EOVERFLOW;
         }
@@ -110,8 +102,7 @@ int sock_urlsplit(const char *url, char *hostport, char *urlpath)
     return 0;
 }
 
-const char *sock_urlpath(const char *url)
-{
+const char *sock_urlpath(const char *url) {
     assert(url);
     char *hoststart = _find_hoststart(url);
     if (!hoststart) {
@@ -123,8 +114,7 @@ const char *sock_urlpath(const char *url)
 
 #if HAVE_SOCK_TL_EP
 int sock_tl_ep_fmt(const struct _sock_tl_ep *endpoint,
-                   char *addr_str, uint16_t *port)
-{
+                   char *addr_str, uint16_t *port) {
     const void *addr_ptr;
     *addr_str = '\0';
 
@@ -165,12 +155,11 @@ int sock_tl_ep_fmt(const struct _sock_tl_ep *endpoint,
     return strlen(addr_str);
 }
 
-int _parse_port(sock_udp_ep_t *ep_out, const char *portstart)
-{
+int _parse_port(sock_udp_ep_t *ep_out, const char *portstart) {
     int port_len = strlen(portstart);
 
-    /* Checks here verify that the supplied port number is up to 5 (random)
-     * chars in size and result is smaller or equal to UINT16_MAX. */
+    // Checks here verify that the supplied port number is up to 5 (random)
+    // chars in size and result is smaller or equal to UINT16_MAX.
     if (port_len > PORT_STR_LEN) {
         return -EINVAL;
     }
@@ -182,8 +171,7 @@ int _parse_port(sock_udp_ep_t *ep_out, const char *portstart)
     return port_len;
 }
 
-int _parse_netif(sock_udp_ep_t *ep_out, char *netifstart)
-{
+int _parse_netif(sock_udp_ep_t *ep_out, char *netifstart) {
     char *netifend;
     size_t netiflen;
     char netifbuf[NETIF_STR_LEN + 1] = {0};
@@ -192,7 +180,7 @@ int _parse_netif(sock_udp_ep_t *ep_out, char *netifstart)
          netifend++) {}
     netiflen = netifend - netifstart;
     if (!*netifend || (netiflen >= NETIF_STR_LEN) || (netiflen == 0)) {
-        /* no netif found, bail out */
+        // no netif found, bail out
         return -EINVAL;
     }
     strncpy(netifbuf, netifstart, netiflen);
@@ -204,8 +192,7 @@ int _parse_netif(sock_udp_ep_t *ep_out, char *netifstart)
     return (netifend - netifstart);
 }
 
-int sock_tl_str2ep(struct _sock_tl_ep *ep_out, const char *str)
-{
+int sock_tl_str2ep(struct _sock_tl_ep *ep_out, const char *str) {
     unsigned brackets_flag;
     char *hoststart = (char*)str;
     char *hostend;
@@ -220,7 +207,7 @@ int sock_tl_str2ep(struct _sock_tl_ep *ep_out, const char *str)
              *hostend && *hostend != ']' && *hostend != '%';
              hostend++) {}
         if (! *hostend || ((size_t)(hostend - hoststart) >= sizeof(hostbuf))) {
-            /* none found, bail out */
+            // none found, bail out
             return -EINVAL;
         }
     }
@@ -274,8 +261,7 @@ int sock_tl_str2ep(struct _sock_tl_ep *ep_out, const char *str)
     return -EINVAL;
 }
 
-int sock_tl_name2ep(struct _sock_tl_ep *ep_out, const char *str)
-{
+int sock_tl_name2ep(struct _sock_tl_ep *ep_out, const char *str) {
     int res = sock_tl_str2ep(ep_out, str);
     if (res == 0) {
         return 0;
@@ -328,16 +314,15 @@ int sock_tl_name2ep(struct _sock_tl_ep *ep_out, const char *str)
 }
 
 bool sock_tl_ep_equal(const struct _sock_tl_ep *a,
-                      const struct _sock_tl_ep *b)
-{
+                      const struct _sock_tl_ep *b) {
     assert(a && b);
 
-    /* compare family and port */
+    // compare family and port
     if ((a->family != b->family) || (a->port != b->port)) {
         return false;
     }
 
-    /* compare addresses */
+    // compare addresses
     switch (a->family) {
 #  ifdef SOCK_HAS_IPV4
     case AF_INET:
@@ -357,8 +342,7 @@ bool sock_tl_ep_equal(const struct _sock_tl_ep *a,
 int sock_dtls_establish_session(sock_udp_t *sock_udp, sock_dtls_t *sock_dtls,
                                 sock_dtls_session_t *session, credman_tag_t tag,
                                 sock_udp_ep_t *local, const sock_udp_ep_t *remote,
-                                void *work_buf, size_t work_buf_len)
-{
+                                void *work_buf, size_t work_buf_len) {
     int res;
     uint32_t timeout_ms = CONFIG_SOCK_DTLS_TIMEOUT_MS;
     uint8_t retries = CONFIG_SOCK_DTLS_RETRIES;
@@ -366,11 +350,11 @@ int sock_dtls_establish_session(sock_udp_t *sock_udp, sock_dtls_t *sock_dtls,
     bool auto_port = local->port == 0;
     do {
         if (auto_port) {
-            /* choose random ephemeral port, since DTLS requires a local port */
+            // choose random ephemeral port, since DTLS requires a local port
             local->port = random_uint32_range(IANA_DYNAMIC_PORTRANGE_MIN,
                                               IANA_DYNAMIC_PORTRANGE_MAX);
         }
-        /* connect UDP socket */
+        // connect UDP socket
         res = sock_udp_create(sock_udp, local, remote, 0);
     } while (auto_port && (res == -EADDRINUSE));
 
@@ -378,7 +362,7 @@ int sock_dtls_establish_session(sock_udp_t *sock_udp, sock_dtls_t *sock_dtls,
         return res;
     }
 
-    /* create DTLS socket on to of UDP socket */
+    // create DTLS socket on to of UDP socket
     res = sock_dtls_create(sock_dtls, sock_udp, tag,
                            SOCK_DTLS_1_2, SOCK_DTLS_CLIENT);
     if (res < 0) {
@@ -391,13 +375,13 @@ int sock_dtls_establish_session(sock_udp_t *sock_udp, sock_dtls_t *sock_dtls,
         mutex_t lock = MUTEX_INIT_LOCKED;
         ztimer_t timeout;
 
-        /* unlock lock after timeout */
+        // unlock lock after timeout
         ztimer_mutex_unlock(ZTIMER_MSEC, &timeout, timeout_ms, &lock);
 
-        /* create DTLS session */
+        // create DTLS session
         res = sock_dtls_session_init(sock_dtls, remote, session);
         if (res >= 0) {
-            /* handle handshake */
+            // handle handshake
             res = sock_dtls_recv(sock_dtls, session, work_buf,
                                  work_buf_len, timeout_ms * US_PER_MS);
             if (res == -SOCK_DTLS_HANDSHAKE) {
@@ -414,14 +398,14 @@ int sock_dtls_establish_session(sock_udp_t *sock_udp, sock_dtls_t *sock_dtls,
         sock_dtls_session_destroy(sock_dtls, session);
 
         if (retries--) {
-            /* wait for timeout to expire */
+            // wait for timeout to expire
             mutex_lock(&lock);
         } else {
             ztimer_remove(ZTIMER_MSEC, &timeout);
             break;
         }
 
-        /* see https://datatracker.ietf.org/doc/html/rfc6347#section-4.2.4.1 */
+        // see https://datatracker.ietf.org/doc/html/rfc6347#section-4.2.4.1
         timeout_ms *= 2U;
     }
 

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_TESTCALLER_H
 #define EMBUNIT_TESTCALLER_H
 
@@ -10,7 +8,7 @@ extern "C" {
 #endif
 
 typedef struct __TestFixture    TestFixture;
-typedef struct __TestFixture*   TestFixtureRef;/*downward compatible*/
+typedef struct __TestFixture*   TestFixtureRef;// downward compatible
 
 struct __TestFixture {
     const char *name;
@@ -20,7 +18,7 @@ struct __TestFixture {
 #define new_TestFixture(test) { #test, test }
 
 typedef struct __TestCaller     TestCaller;
-typedef struct __TestCaller*    TestCallerRef;/*downward compatible*/
+typedef struct __TestCaller*    TestCallerRef;// downward compatible
 
 struct __TestCaller {
     TestImplement* isa;
@@ -47,4 +45,4 @@ extern const TestImplement TestCallerImplement;
 }
 #endif
 
-#endif /* EMBUNIT_TESTCALLER_H */
+#endif // EMBUNIT_TESTCALLER_H

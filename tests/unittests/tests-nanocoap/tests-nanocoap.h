@@ -1,22 +1,18 @@
-/*
- * Copyright (c) 2018 Ken Bannister. All rights reserved.
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (c) 2018 Ken Bannister. All rights reserved.
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #pragma once
 
-/**
- * @addtogroup  unittests
- * @{
- *
- * @file
- * @brief       Unit tests for the nanocoap module
- *
- * @author      Ken Bannister <kb2ma@runbox.com>
- */
+/// @addtogroup  unittests
+/// @{
+///
+/// @file
+/// @brief       Unit tests for the nanocoap module
+///
+/// @author      Ken Bannister <kb2ma@runbox.com>
 
 #include "embUnit.h"
 
@@ -24,13 +20,11 @@
 extern "C" {
 #endif
 
-/**
- * @brief   The entry point of this test suite.
- */
+/// @brief   The entry point of this test suite.
 void tests_nanocoap(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

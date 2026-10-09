@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_si70xx
- *
- * @{
- * @file
- * @brief       Default configuration for Si7006/13/20/21
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_si70xx
+///
+/// @{
+/// @file
+/// @brief       Default configuration for Si7006/13/20/21
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "si70xx.h"
@@ -26,10 +22,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the Si7006/13/20/21 sensor
- * @{
- */
+/// @name    Set default configuration parameters for the Si7006/13/20/21 sensor
+/// @{
 #ifndef SI70XX_PARAM_I2C_DEV
 #define SI70XX_PARAM_I2C_DEV         I2C_DEV(0)
 #endif
@@ -44,19 +38,15 @@ extern "C" {
 #ifndef SI70XX_SAUL_INFO
 #define SI70XX_SAUL_INFO             { .name = "si70xx" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure Si7006/13/20/21
- */
+/// @brief   Configure Si7006/13/20/21
 static const si70xx_params_t si70xx_params[] =
 {
     SI70XX_PARAMS
 };
 
-/**
- * @brief   Configure SAUL registry entries
- */
+/// @brief   Configure SAUL registry entries
 static const saul_reg_info_t si70xx_saul_info[] =
 {
     SI70XX_SAUL_INFO
@@ -66,4 +56,4 @@ static const saul_reg_info_t si70xx_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

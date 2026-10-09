@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @brief   Native CPU syscall managing
- * @{
- *
- * Wrap system calls and system call invoking library calls to make
- * sure no context switches happen during a system call.
- *
- * @}
- */
+/// @file
+/// @ingroup cpu_native
+/// @brief   Native CPU syscall managing
+/// @{
+///
+/// Wrap system calls and system call invoking library calls to make
+/// sure no context switches happen during a system call.
+///
+/// @}
 
 #include <dlfcn.h>
 #include <err.h>
@@ -40,7 +36,7 @@
 #include "stdio_base.h"
 
 #include "kernel_defines.h"
-/* This header defines the system call function pointers */
+// This header defines the system call function pointers
 #define NATIVE_SYSCALLS_DEFINITION 1
 #include "native_internal.h"
 #include "malloc_monitor_internal.h"
@@ -54,8 +50,7 @@
 #define _SYSCALL_ENTER_MESSAGE _DEBUG_PREFIX "> _native_pending_syscalls\n"
 #define _SYSCALL_LEAVE_MESSAGE _DEBUG_PREFIX "< _native_pending_syscalls\n"
 
-void _native_syscall_enter(void)
-{
+void _native_syscall_enter(void) {
     _native_pending_syscalls_up();
 
     if (IS_ACTIVE(ENABLE_DEBUG)) {
@@ -63,8 +58,7 @@ void _native_syscall_enter(void)
     }
 }
 
-void _native_syscall_leave(void)
-{
+void _native_syscall_leave(void) {
     if (IS_ACTIVE(ENABLE_DEBUG)) {
         real_write(STDERR_FILENO, _SYSCALL_LEAVE_MESSAGE, sizeof(_SYSCALL_LEAVE_MESSAGE) - 1);
     }
@@ -76,8 +70,7 @@ void _native_syscall_leave(void)
             && (_native_pending_syscalls == 0)
             && (_native_interrupts_enabled)
             && (thread_get_active() != NULL)
-       )
-    {
+       ) {
         _native_in_isr = 1;
         _native_interrupts_enabled = false;
 
@@ -88,20 +81,19 @@ void _native_syscall_leave(void)
     }
 }
 
-/* make use of TLSF if it is included, except when building with valgrind
- * support, where one probably wants to make use of valgrind's memory leak
- * detection abilities*/
+// make use of TLSF if it is included, except when building with valgrind
+// support, where one probably wants to make use of valgrind's memory leak
+// detection abilities
 #if (!(defined MODULE_TLSF) && !(defined NATIVE_MEMORY)) || (defined(HAVE_VALGRIND))
 int _native_in_malloc = 0;
-void *malloc(size_t size)
-{
-    /* dynamically load malloc when it's needed - this is necessary to
-     * support g++ 5.2.0 as it uses malloc before startup runs */
+void *malloc(size_t size) {
+    // dynamically load malloc when it's needed - this is necessary to
+    // support g++ 5.2.0 as it uses malloc before startup runs
     if (!real_malloc) {
         if (_native_in_malloc) {
-            /* XXX: This is a dirty hack for behaviour that came along
-             * with g++ 5.2.0.
-             * Throw it out when whatever made it necessary it is fixed. */
+            // XXX: This is a dirty hack for behaviour that came along
+            // with g++ 5.2.0.
+            // Throw it out when whatever made it necessary it is fixed.
             return NULL;
         }
         else {
@@ -121,8 +113,7 @@ void *malloc(size_t size)
     return r;
 }
 
-void free(void *ptr)
-{
+void free(void *ptr) {
     _native_syscall_enter();
     real_free(ptr);
     _native_syscall_leave();
@@ -132,14 +123,13 @@ void free(void *ptr)
 }
 
 int _native_in_calloc = 0;
-void *calloc(size_t nmemb, size_t size)
-{
-    /* dynamically load calloc when it's needed - this is necessary to
-     * support profiling as it uses calloc before startup runs */
+void *calloc(size_t nmemb, size_t size) {
+    // dynamically load calloc when it's needed - this is necessary to
+    // support profiling as it uses calloc before startup runs
     if (!real_calloc) {
         if (_native_in_calloc) {
-            /* XXX: This is a dirty hack to enable old dlsym versions to run.
-             * Throw it out when Ubuntu 12.04 support runs out (in 2017-04)! */
+            // XXX: This is a dirty hack to enable old dlsym versions to run.
+            // Throw it out when Ubuntu 12.04 support runs out (in 2017-04)!
             return NULL;
         }
         else {
@@ -159,8 +149,7 @@ void *calloc(size_t nmemb, size_t size)
     return r;
 }
 
-void *realloc(void *ptr, size_t size)
-{
+void *realloc(void *ptr, size_t size) {
     void *r;
     _native_syscall_enter();
     r = real_realloc(ptr, size);
@@ -170,10 +159,9 @@ void *realloc(void *ptr, size_t size)
     }
     return r;
 }
-#endif /* !(defined MODULE_TLSF) || (defined(HAVE_VALGRIND)) */
+#endif // !(defined MODULE_TLSF) || (defined(HAVE_VALGRIND))
 
-ssize_t _native_read(int fd, void *buf, size_t count)
-{
+ssize_t _native_read(int fd, void *buf, size_t count) {
     ssize_t r;
 
     if (fd == STDIN_FILENO && IS_USED(MODULE_STDIN)) {
@@ -187,8 +175,7 @@ ssize_t _native_read(int fd, void *buf, size_t count)
     return r;
 }
 
-ssize_t _native_write(int fd, const void *buf, size_t count)
-{
+ssize_t _native_write(int fd, const void *buf, size_t count) {
     ssize_t r;
 
     if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
@@ -202,8 +189,7 @@ ssize_t _native_write(int fd, const void *buf, size_t count)
     return r;
 }
 
-ssize_t _native_writev(int fd, const struct iovec *iov, int iovcnt)
-{
+ssize_t _native_writev(int fd, const struct iovec *iov, int iovcnt) {
     ssize_t r = 0;
 
     if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
@@ -237,32 +223,27 @@ ssize_t _native_writev(int fd, const struct iovec *iov, int iovcnt)
 #undef putchar
 #endif
 #ifndef MODULE_STDIO_NULL
-int putchar(int c)
-{
+int putchar(int c) {
     char tmp = c;
     return _native_write(STDOUT_FILENO, &tmp, sizeof(tmp));
 }
 
-int fputc(int c, FILE *fp)
-{
+int fputc(int c, FILE *fp) {
     char tmp = c;
     return _native_write(fileno(fp), &tmp, sizeof(tmp));
 }
 
-int puts(const char *s)
-{
+int puts(const char *s) {
     int r;
     r = _native_write(STDOUT_FILENO, s, strlen(s));
     putchar('\n');
     return r;
 }
-int fputs(const char *s, FILE *fp)
-{
+int fputs(const char *s, FILE *fp) {
     return _native_write(fileno(fp), s, strlen(s));
 }
 
-size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *fp)
-{
+size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *fp) {
     ssize_t r = _native_write(fileno(fp), ptr, size * nmemb);
 
     if (r < 0 || size == 0) {
@@ -272,14 +253,12 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *fp)
 }
 #endif
 
-int putc(int c, FILE *fp)
-{
+int putc(int c, FILE *fp) {
     char tmp = c;
     return _native_write(fileno(fp), &tmp, sizeof(tmp));
 }
 
-int fgetc(FILE *fp)
-{
+int fgetc(FILE *fp) {
     return getc(fp);
 }
 
@@ -287,8 +266,7 @@ int getchar(void) {
     return getc(stdin);
 }
 
-int getc(FILE *fp)
-{
+int getc(FILE *fp) {
     char c;
 
     if (_native_read(fileno(fp), &c, sizeof(c)) <= 0) {
@@ -298,11 +276,10 @@ int getc(FILE *fp)
     return c;
 }
 
-/* Solve 'format string is not a string literal' as it is validly used in this
- * function */
+// Solve 'format string is not a string literal' as it is validly used in this
+// function
 __attribute__((__format__ (__printf__, 1, 0)))
-char *make_message(const char *format, va_list argp)
-{
+char *make_message(const char *format, va_list argp) {
     int size = 128;
     char *message, *temp;
 
@@ -310,7 +287,7 @@ char *make_message(const char *format, va_list argp)
         return NULL;
     }
 
-    /* argp is undefined after calling vsnprintf, so we copy the list first */
+    // argp is undefined after calling vsnprintf, so we copy the list first
     va_list argp_copy;
     va_copy(argp_copy, argp);
 
@@ -333,7 +310,7 @@ char *make_message(const char *format, va_list argp)
         }
         else {
             message = temp;
-            /* copy the list back and try again */
+            // copy the list back and try again
             va_end(argp);
             va_copy(argp, argp_copy);
         }
@@ -341,8 +318,7 @@ char *make_message(const char *format, va_list argp)
 }
 
 #ifndef MODULE_STDIO_NULL
-int printf(const char *format, ...)
-{
+int printf(const char *format, ...) {
     int r;
     va_list argp;
 
@@ -353,14 +329,12 @@ int printf(const char *format, ...)
     return r;
 }
 
-int vprintf(const char *format, va_list argp)
-{
+int vprintf(const char *format, va_list argp) {
     return vfprintf(stdout, format, argp);
 }
 #endif
 
-int fprintf(FILE *fp, const char *format, ...)
-{
+int fprintf(FILE *fp, const char *format, ...) {
     int r;
     va_list argp;
 
@@ -371,8 +345,7 @@ int fprintf(FILE *fp, const char *format, ...)
     return r;
 }
 
-int vfprintf(FILE *fp, const char *format, va_list argp)
-{
+int vfprintf(FILE *fp, const char *format, va_list argp) {
     int r;
     char *m;
 
@@ -385,8 +358,7 @@ int vfprintf(FILE *fp, const char *format, va_list argp)
     return r;
 }
 
-void vwarn(const char *fmt, va_list args)
-{
+void vwarn(const char *fmt, va_list args) {
     char *m, *e;
 
     e = strerror(errno);
@@ -404,8 +376,7 @@ void vwarn(const char *fmt, va_list args)
     free(m);
 }
 
-void vwarnx(const char *fmt, va_list args)
-{
+void vwarnx(const char *fmt, va_list args) {
     char *m;
 
     if ((m = make_message(fmt, args)) == NULL) {
@@ -419,58 +390,50 @@ void vwarnx(const char *fmt, va_list args)
     free(m);
 }
 
-void verr(int eval, const char *fmt, va_list args)
-{
+void verr(int eval, const char *fmt, va_list args) {
     vwarn(fmt, args);
     real_exit(eval);
 }
 
-void verrx(int eval, const char *fmt, va_list args)
-{
+void verrx(int eval, const char *fmt, va_list args) {
     vwarnx(fmt, args);
     real_exit(eval);
 }
 
-void warn(const char *fmt, ...)
-{
+void warn(const char *fmt, ...) {
     va_list argp;
     va_start(argp, fmt);
     vwarn(fmt, argp);
     va_end(argp);
 }
 
-void warnx(const char *fmt, ...)
-{
+void warnx(const char *fmt, ...) {
     va_list argp;
     va_start(argp, fmt);
     vwarnx(fmt, argp);
     va_end(argp);
 }
 
-void err(int eval, const char *fmt, ...)
-{
+void err(int eval, const char *fmt, ...) {
     va_list argp;
     va_start(argp, fmt);
     verr(eval, fmt, argp);
     va_end(argp);
 }
 
-void errx(int eval, const char *fmt, ...)
-{
+void errx(int eval, const char *fmt, ...) {
     va_list argp;
     va_start(argp, fmt);
     verrx(eval, fmt, argp);
     va_end(argp);
 }
 
-int getpid(void)
-{
+int getpid(void) {
     return real_getpid();
 }
 
 #if (IS_USED(MODULE_LIBC_GETTIMEOFDAY))
-int _gettimeofday(struct timeval *tp, void *restrict tzp)
-{
+int _gettimeofday(struct timeval *tp, void *restrict tzp) {
     (void)tzp;
     uint64_t now = ztimer64_now(ZTIMER64_USEC);
     tp->tv_sec  = now / US_PER_SEC;
@@ -479,8 +442,7 @@ int _gettimeofday(struct timeval *tp, void *restrict tzp)
 }
 #endif
 
-void _native_init_syscalls(void)
-{
+void _native_init_syscalls(void) {
     *(void **)(&real_read) = dlsym(RTLD_NEXT, "read");
     *(void **)(&real_write) = dlsym(RTLD_NEXT, "write");
     *(void **)(&real_malloc) = dlsym(RTLD_NEXT, "malloc");

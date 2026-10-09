@@ -1,31 +1,27 @@
-/*
- * Copyright (C) 2020 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 HAW Hamburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands for the cryptoauthlib module
- *
- *              Currently supported devices:
- *              - ATECC508A
- *              - ATECC608
- *
- *              This relies on a config header file being present in
- *              pkg/cryptoauthlib/include.
- *              The present example configuration can be exchanged or
- *              modified if needed.
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands for the cryptoauthlib module
+///
+///              Currently supported devices:
+///              - ATECC508A
+///              - ATECC608
+///
+///              This relies on a config header file being present in
+///              pkg/cryptoauthlib/include.
+///              The present example configuration can be exchanged or
+///              modified if needed.
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -71,28 +67,22 @@ uint8_t config_backup[ATCA_NUMOF][ATCA_ECC_CONFIG_SIZE];
 
 int device_index = 0;
 
-/**
- * @brief   Convert one byte into a binary number
- *
- * @param[out] result   Will contain binary number as a string
- * @param[in]  byte     Byte to convert
- */
-void get_bin(char *result, uint8_t byte)
-{
+/// @brief   Convert one byte into a binary number
+///
+/// @param[out] result   Will contain binary number as a string
+/// @param[in]  byte     Byte to convert
+void get_bin(char *result, uint8_t byte) {
     for (int i = 0; i < 8; i++) {
         result[i] = (((byte << i) & 0x80) ? '1' : '0');
     }
     result[8] = '\0';
 }
 
-/**
- * @brief   Converts an ATCA device type into a string
- *
- * @param   devtype     ATCADeviceType
- * @return  char*       Device type as string
- */
-static char* _convert_atca_devtype(ATCADeviceType devtype)
-{
+/// @brief   Converts an ATCA device type into a string
+///
+/// @param   devtype     ATCADeviceType
+/// @return  char*       Device type as string
+static char* _convert_atca_devtype(ATCADeviceType devtype) {
     switch(devtype) {
         case ATECC508A:
             return "ATECC508A";
@@ -103,16 +93,13 @@ static char* _convert_atca_devtype(ATCADeviceType devtype)
     }
 }
 
-/**
- * @brief   Print read-only section of the configuration zone.
- *
- *          Reserved bytes that don't mean anything are omitted.
- *
- * @param[in]   data           Pointer to buffer with input data
- * @param       devtype        Type of the device currently used
- */
-static void _print_dev_info_ro(uint8_t* data, ATCADeviceType devtype)
-{
+/// @brief   Print read-only section of the configuration zone.
+///
+///          Reserved bytes that don't mean anything are omitted.
+///
+/// @param[in]   data           Pointer to buffer with input data
+/// @param       devtype        Type of the device currently used
+static void _print_dev_info_ro(uint8_t* data, ATCADeviceType devtype) {
     printf("Serial No (Pt. 1) | ");
     for (int i = 0; i < 4; i++) {
         printf("0x%02x ", data[SERIAL_NO_START_01+i]);
@@ -150,33 +137,27 @@ static void _print_dev_info_ro(uint8_t* data, ATCADeviceType devtype)
     }
 }
 
-/**
- * @brief   Get authorization mode
- *
- * @param   data    Byte of data to interpret
- * @return  char*   Data interpretation as string
- */
-static char* _get_authorization_mode(uint8_t data)
-{
+/// @brief   Get authorization mode
+///
+/// @param   data    Byte of data to interpret
+/// @return  char*   Data interpretation as string
+static char* _get_authorization_mode(uint8_t data) {
     uint8_t auth_mode = data & 0x08;
     return auth_mode ? "Authorization Output Mode" : "Intrustion Detection Mode";
 }
 
-/**
- * @brief   Prints the I2C address when I2C is enabled or the
- *          GPIO mode when Single Wire communication is enabled
- *
- * @param   data            Byte of data to interpret
- * @param   communications  Device communications mode (0 = Single Wire, 1 = I2C)
- */
-static void _print_i2c_addr_or_gpio_mode(uint8_t data, uint8_t communications)
-{
+/// @brief   Prints the I2C address when I2C is enabled or the
+///          GPIO mode when Single Wire communication is enabled
+///
+/// @param   data            Byte of data to interpret
+/// @param   communications  Device communications mode (0 = Single Wire, 1 = I2C)
+static void _print_i2c_addr_or_gpio_mode(uint8_t data, uint8_t communications) {
     if (communications) {
-        /* I2C enabled */
+        // I2C enabled
         printf("I2C Address       | 0x%02x\n", data);
     }
     else {
-        /* Single Wire enabled */
+        // Single Wire enabled
         uint8_t gpio_mode = data & 0x03;
         printf("GPIO Mode         | ");
         switch(gpio_mode) {
@@ -210,13 +191,10 @@ static void _print_i2c_addr_or_gpio_mode(uint8_t data, uint8_t communications)
     }
 }
 
-/**
- * @brief   Prints the OTP mode or CountMatch, depending on device type.
- *
- * @param   data Byte of data to interpret
- */
-static void _print_countmatch_or_otp_mode(uint8_t data, ATCADeviceType devtype)
-{
+/// @brief   Prints the OTP mode or CountMatch, depending on device type.
+///
+/// @param   data Byte of data to interpret
+static void _print_countmatch_or_otp_mode(uint8_t data, ATCADeviceType devtype) {
     if (devtype == ATECC608) {
         if (data & 0x01) {
             puts("Counter Match     | Enabled");
@@ -240,13 +218,10 @@ static void _print_countmatch_or_otp_mode(uint8_t data, ATCADeviceType devtype)
     }
 }
 
-/**
- * @brief   Prints the chip mode
- *
- * @param   data Byte of data to interpret
- */
-static void _print_chip_mode(uint8_t data, ATCADeviceType devtype)
-{
+/// @brief   Prints the chip mode
+///
+/// @param   data Byte of data to interpret
+static void _print_chip_mode(uint8_t data, ATCADeviceType devtype) {
     puts("ChipMode:");
     if (devtype == ATECC608) {
         if (data & 0x01) {
@@ -284,13 +259,10 @@ static void _print_chip_mode(uint8_t data, ATCADeviceType devtype)
     }
 }
 
-/**
- * @brief   Print Key Slot Configurations in hexadecimal and binary format
- *
- * @param[in]   data        Pointer to buffer with input data
- */
-static void _print_slot_config(uint8_t* data)
-{
+/// @brief   Print Key Slot Configurations in hexadecimal and binary format
+///
+/// @param[in]   data        Pointer to buffer with input data
+static void _print_slot_config(uint8_t* data) {
     char binary[9];
 
     puts("Slot Config");
@@ -316,13 +288,10 @@ static void _print_slot_config(uint8_t* data)
     puts("");
 }
 
-/**
- * @brief       Print lock status of key slots
- *
- * @param[in]   data        Pointer to buffer with input data
- */
-static void _print_slot_lock(uint8_t* data)
-{
+/// @brief       Print lock status of key slots
+///
+/// @param[in]   data        Pointer to buffer with input data
+static void _print_slot_lock(uint8_t* data) {
     puts("\nSlotLocked (X = locked, - = unlocked):");
     puts("Slot   |  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15");
     printf("Locked | ");
@@ -339,8 +308,7 @@ static void _print_slot_lock(uint8_t* data)
     puts("");
 }
 
-static void _print_chip_options(uint8_t* data)
-{
+static void _print_chip_options(uint8_t* data) {
     puts("Chip Options:");
     if (data[CHIP_OPTIONS_START] & 0x01) {
         puts("Power On Self Test| Enabled");
@@ -396,13 +364,10 @@ static void _print_chip_options(uint8_t* data)
     printf("IO Protection Key stored in slot %d\n", data[CHIP_OPTIONS_START+1] & 0xF0);
 }
 
-/**
- * @brief   Print X509 format restrictions
- *
- * @param[in]   data        Pointer to buffer with input data
- */
-static void _print_x509_format(uint8_t* data)
-{
+/// @brief   Print X509 format restrictions
+///
+/// @param[in]   data        Pointer to buffer with input data
+static void _print_x509_format(uint8_t* data) {
     puts("\nX509 Format:");
     for (int i = 0; i < 4; i++) {
         if (data[X509_FORMAT_START+i] == 0x00) {
@@ -416,13 +381,10 @@ static void _print_x509_format(uint8_t* data)
     }
 }
 
-/**
- * @brief   Print key configurations
- *
- * @param[in]   data        Pointer to buffer with input data
- */
-static void _print_key_config(uint8_t* data)
-{
+/// @brief   Print key configurations
+///
+/// @param[in]   data        Pointer to buffer with input data
+static void _print_key_config(uint8_t* data) {
     size_t atca_key_config_bytes = ATCA_KEY_SLOT_COUNT*2;
 
     char binary[9];
@@ -449,8 +411,7 @@ static void _print_key_config(uint8_t* data)
     puts("");
 }
 
-static void _print_secure_boot(uint8_t* data)
-{
+static void _print_secure_boot(uint8_t* data) {
     uint8_t secure_boot_mode = data[SECURE_BOOT_START] & 0x03;
     switch(secure_boot_mode) {
         case 0x01:
@@ -484,8 +445,7 @@ static void _print_secure_boot(uint8_t* data)
     printf("Secure Boot Public Key stored in slot %d\n", data[SECURE_BOOT_START+1] & 0xF0);
 }
 
-static int _read_config(ATCADevice dev)
-{
+static int _read_config(ATCADevice dev) {
     uint8_t data[ATCA_ECC_CONFIG_SIZE];
 
     memset(data, 0, ATCA_ECC_CONFIG_SIZE);
@@ -589,8 +549,7 @@ static int _read_config(ATCADevice dev)
     return 0;
 }
 
-static int _read_config_bin(ATCADevice dev)
-{
+static int _read_config_bin(ATCADevice dev) {
     uint8_t data[ATCA_ECC_CONFIG_SIZE];
     int data_count = 0;
     char binary[9];
@@ -733,8 +692,7 @@ static int _read_config_bin(ATCADevice dev)
     return 0;
 }
 
-static int _check_lock_config(ATCADevice dev)
-{
+static int _check_lock_config(ATCADevice dev) {
     bool is_locked_config = false;
     calib_is_locked(dev, LOCK_ZONE_CONFIG, &is_locked_config);
 
@@ -748,8 +706,7 @@ static int _check_lock_config(ATCADevice dev)
     return 0;
 }
 
-static int _check_lock_data(ATCADevice dev)
-{
+static int _check_lock_data(ATCADevice dev) {
     bool is_locked_data = false;
     calib_is_locked(dev, LOCK_ZONE_DATA, &is_locked_data);
 
@@ -763,8 +720,7 @@ static int _check_lock_data(ATCADevice dev)
     return 0;
 }
 
-static int _lock_config(ATCADevice dev)
-{
+static int _lock_config(ATCADevice dev) {
     bool is_locked_config = false;
     calib_is_locked(dev, LOCK_ZONE_CONFIG, &is_locked_config);
 
@@ -782,8 +738,7 @@ static int _lock_config(ATCADevice dev)
     return 0;
 }
 
-static int _lock_data(ATCADevice dev)
-{
+static int _lock_data(ATCADevice dev) {
     bool is_locked_data = false;
     calib_is_locked(dev, LOCK_ZONE_DATA, &is_locked_data);
 
@@ -801,8 +756,7 @@ static int _lock_data(ATCADevice dev)
     return 0;
 }
 
-static int _set_dev(char* id)
-{
+static int _set_dev(char* id) {
     int index = atoi(id);
     if (index > (int)ATCA_NUMOF-1) {
         printf("Invalid ID, can be 0 - %d\n", ATCA_NUMOF-1);
@@ -812,8 +766,7 @@ static int _set_dev(char* id)
     return 0;
 }
 
-static int _show_dev(void)
-{
+static int _show_dev(void) {
     puts("Set | ID | DevType   | I2C Addr");
     puts("----|----|-----------|---------");
     for (size_t i = 0; i < ATCA_NUMOF; i++) {
@@ -828,8 +781,7 @@ static int _show_dev(void)
     return 0;
 }
 
-static int _write_config(ATCADevice dev)
-{
+static int _write_config(ATCADevice dev) {
     ATCA_STATUS status = calib_read_config_zone(dev, config_backup[device_index]);
     if (status != ATCA_SUCCESS) {
         printf("Error reading config zone\n");
@@ -844,8 +796,7 @@ static int _write_config(ATCADevice dev)
     return 0;
 }
 
-static int _restore_config(ATCADevice dev)
-{
+static int _restore_config(ATCADevice dev) {
     ATCA_STATUS status = calib_write_config_zone(dev, config_backup[device_index]);
     if (status != ATCA_SUCCESS) {
         printf("Restoring config zone failed: 0x%02x\n", status);
@@ -854,8 +805,7 @@ static int _restore_config(ATCADevice dev)
     return 0;
 }
 
-static int _atca(int argc, char **argv)
-{
+static int _atca(int argc, char **argv) {
     if (argc > 1) {
         if ((strcmp(argv[1], "show_dev") == 0)) {
             return _show_dev();

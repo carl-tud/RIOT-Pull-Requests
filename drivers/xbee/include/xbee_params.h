@@ -1,30 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_xbee
- * @{
- *
- * @file
- * @brief       Default configuration for XBee devices
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_xbee
+/// @{
+///
+/// @file
+/// @brief       Default configuration for XBee devices
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the XBee driver
- * @{
- */
+/// @name    Set default configuration parameters for the XBee driver
+/// @{
 #ifndef XBEE_PARAM_UART
 #define XBEE_PARAM_UART         (UART_DEV(1))
 #endif
@@ -44,11 +38,9 @@ extern "C" {
                                   .pin_sleep = XBEE_PARAM_PIN_SLEEP, \
                                   .pin_reset = XBEE_PARAM_PIN_RESET }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   XBee configuration
- */
+/// @brief   XBee configuration
 static const xbee_params_t xbee_params[] =
 {
     XBEE_PARAMS
@@ -58,4 +50,4 @@ static const xbee_params_t xbee_params[] =
 }
 #endif
 
-/** @} */
+/// @}

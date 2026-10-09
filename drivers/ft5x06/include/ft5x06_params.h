@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ft5x06
- *
- * @{
- * @file
- * @brief       Default configuration
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_ft5x06
+///
+/// @{
+/// @file
+/// @brief       Default configuration
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include <stdint.h>
 
@@ -25,11 +21,9 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
-/* I2C configuration */
+/// @name    Set default configuration parameters
+/// @{
+// I2C configuration
 #ifndef FT5X06_PARAM_I2C_DEV
 #define FT5X06_PARAM_I2C_DEV            I2C_DEV(0)
 #endif
@@ -61,26 +55,20 @@ extern "C" {
     .xyconv = FT5X06_PARAM_XYCONV,      \
     .type = FT5X06_PARAM_TYPE           \
 }
-/**@}*/
+/// @}
 
-/**
- * @brief   Configuration struct
- */
+/// @brief   Configuration struct
 static const ft5x06_params_t ft5x06_params[] =
 {
     FT5X06_PARAMS
 };
 
-/**
- * @brief   Default screen identifiers
- */
+/// @brief   Default screen identifiers
 #ifndef FT5X06_PARAM_SCREEN_IDS
 #define FT5X06_PARAM_SCREEN_IDS         0
 #endif
 
-/**
- * @brief   Configure screen identifiers
- */
+/// @brief   Configure screen identifiers
 static const uint8_t ft5x06_screen_ids[] =
 {
     FT5X06_PARAM_SCREEN_IDS,
@@ -90,4 +78,4 @@ static const uint8_t ft5x06_screen_ids[] =
 }
 #endif
 
-/** @} */
+/// @}

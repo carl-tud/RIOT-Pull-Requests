@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2018 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup  sys_ztimer_convert_shift conversion using shifts
- * @ingroup   sys_ztimer_convert
- * @brief     Translates between clock tick rates
- *
- * Translates the ticks of an underlying clock into virtual ticks at a different
- * frequency, by using bit shifts. Thus it works only for fractions that are
- * powers of 2.
- *
- * @{
- * @file
- * @brief   ztimer_convert_shift interface definitions
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @defgroup  sys_ztimer_convert_shift conversion using shifts
+/// @ingroup   sys_ztimer_convert
+/// @brief     Translates between clock tick rates
+///
+/// Translates the ticks of an underlying clock into virtual ticks at a different
+/// frequency, by using bit shifts. Thus it works only for fractions that are
+/// powers of 2.
+///
+/// @{
+/// @file
+/// @brief   ztimer_convert_shift interface definitions
+///
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
 
 #include <stdint.h>
 
@@ -30,33 +26,25 @@
 extern "C" {
 #endif
 
-/**
- * @brief   ztimer_convert_shift frequency conversion layer class
- */
+/// @brief   ztimer_convert_shift frequency conversion layer class
 typedef struct {
-    /**
-     * @brief   Superclass instance
-     */
+    /// @brief   Superclass instance
     ztimer_convert_t super;
-    /**
-     * @brief   Frequency conversion scaling constant from lower to self
-     *
-     * This value is saved as positive integer. The functions within the "ops"
-     * struct decides whether to left or right shift.
-     */
+    /// @brief   Frequency conversion scaling constant from lower to self
+    ///
+    /// This value is saved as positive integer. The functions within the "ops"
+    /// struct decides whether to left or right shift.
     unsigned shift;
 } ztimer_convert_shift_t;
 
-/**
- * @brief   ztimer_convert_shift init() for (fake) increasing timer frequency
- *
- * Will cause every lower now() to be left-shifted and every set() to be
- * right-shifted.
- *
- * @param[in]   clock       pointer to instance being initialized
- * @param[in]   lower       pointer to underlying clock
- * @param[in]   shift       shift value to use
- */
+/// @brief   ztimer_convert_shift init() for (fake) increasing timer frequency
+///
+/// Will cause every lower now() to be left-shifted and every set() to be
+/// right-shifted.
+///
+/// @param[in]   clock       pointer to instance being initialized
+/// @param[in]   lower       pointer to underlying clock
+/// @param[in]   shift       shift value to use
 void ztimer_convert_shift_up_init(ztimer_convert_shift_t *clock,
                                   ztimer_clock_t *lower, unsigned shift);
 
@@ -64,4 +52,4 @@ void ztimer_convert_shift_up_init(ztimer_convert_shift_t *clock,
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_adafruit-grand-central-m4-express
- * @{
- *
- * @file
- * @brief       Board specific implementations for the Adafruit Grand Central M4 Express
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     boards_adafruit-grand-central-m4-express
+/// @{
+///
+/// @file
+/// @brief       Board specific implementations for the Adafruit Grand Central M4 Express
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include "board.h"
 #include "periph/gpio.h"
@@ -27,7 +23,7 @@
 
 #include "mtd_spi_nor.h"
 
-/* GD25Q64 */
+// GD25Q64
 static const mtd_spi_nor_params_t _samd51_nor_params = {
     .opcode = &mtd_spi_nor_opcode_default,
     .wait_chip_erase = 25 * US_PER_SEC,
@@ -62,4 +58,4 @@ MTD_XFA_ADD(samd51_nor_dev, 0);
 VFS_AUTO_MOUNT(littlefs2, VFS_MTD(samd51_nor_dev), VFS_DEFAULT_NVM(0), 0);
 #endif
 
-#endif /* MODULE_MTD_SPI_NOR */
+#endif // MODULE_MTD_SPI_NOR

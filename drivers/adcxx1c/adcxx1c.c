@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_adcxx1c
- * @{
- *
- * @file
- * @brief       ADCXX1C ADC device driver
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @}
- */
+/// @ingroup     drivers_adcxx1c
+/// @{
+///
+/// @file
+/// @brief       ADCXX1C ADC device driver
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @}
 
 #include <assert.h>
 
@@ -29,12 +25,11 @@
 #define DEV (dev->params.i2c)
 #define ADDR (dev->params.addr)
 
-/* Configuration register test value
- * value 0x20: cycle time = Tconvert x 64 */
+// Configuration register test value
+// value 0x20: cycle time = Tconvert x 64
 #define CONF_TEST_VALUE (0x20)
 
-int adcxx1c_init(adcxx1c_t *dev, const adcxx1c_params_t *params)
-{
+int adcxx1c_init(adcxx1c_t *dev, const adcxx1c_params_t *params) {
     assert(dev && params);
     int status;
 
@@ -44,7 +39,7 @@ int adcxx1c_init(adcxx1c_t *dev, const adcxx1c_params_t *params)
     i2c_acquire(DEV);
     uint8_t reg = 0;
 
-    /* Test communication write and read configuration register */
+    // Test communication write and read configuration register
     status = i2c_write_reg(DEV, ADDR, ADCXX1C_CONF_ADDR, CONF_TEST_VALUE, 0);
     status += i2c_read_reg(DEV, ADDR, ADCXX1C_CONF_ADDR, &reg, 0);
 
@@ -69,8 +64,7 @@ int adcxx1c_init(adcxx1c_t *dev, const adcxx1c_params_t *params)
                                         dev->params.hysteresis);
 }
 
-int adcxx1c_read_raw(const adcxx1c_t *dev, int16_t *raw)
-{
+int adcxx1c_read_raw(const adcxx1c_t *dev, int16_t *raw) {
     uint8_t buf[2];
     int status;
 
@@ -86,8 +80,7 @@ int adcxx1c_read_raw(const adcxx1c_t *dev, int16_t *raw)
     return ADCXX1C_OK;
 }
 
-static void _alert_cb(void *arg)
-{
+static void _alert_cb(void *arg) {
     adcxx1c_t *dev = arg;
 
     if (dev->cb) {
@@ -95,8 +88,7 @@ static void _alert_cb(void *arg)
     }
 }
 
-int adcxx1c_enable_alert(adcxx1c_t *dev, adcxx1c_cb_t cb, void *arg)
-{
+int adcxx1c_enable_alert(adcxx1c_t *dev, adcxx1c_cb_t cb, void *arg) {
     uint8_t reg;
     int status;
 
@@ -115,7 +107,7 @@ int adcxx1c_enable_alert(adcxx1c_t *dev, adcxx1c_cb_t cb, void *arg)
     if (gpio_is_valid(dev->params.alert_pin)) {
         dev->cb = cb;
         dev->arg = arg;
-        /* alert active low */
+        // alert active low
         gpio_init_int(dev->params.alert_pin, GPIO_IN, GPIO_FALLING, _alert_cb, dev);
     }
 
@@ -123,8 +115,7 @@ int adcxx1c_enable_alert(adcxx1c_t *dev, adcxx1c_cb_t cb, void *arg)
 }
 
 int adcxx1c_set_alert_parameters(const adcxx1c_t *dev, int16_t low_limit,
-                                 int16_t high_limit, int16_t hysteresis)
-{
+                                 int16_t high_limit, int16_t hysteresis) {
     uint8_t buf[2];
     int status;
 
@@ -168,8 +159,7 @@ int adcxx1c_set_alert_parameters(const adcxx1c_t *dev, int16_t low_limit,
     return ADCXX1C_OK;
 }
 
-int adcxx1c_get_and_clear_alert(const adcxx1c_t *dev)
-{
+int adcxx1c_get_and_clear_alert(const adcxx1c_t *dev) {
     int status;
     uint8_t alert;
 

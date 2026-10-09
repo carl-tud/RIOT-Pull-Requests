@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Javier FILEIV <javier.fileiv@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Javier FILEIV <javier.fileiv@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file        main.c
- * @brief       Example using MQTT Paho package from RIOT
- *
- * @author      Javier FILEIV <javier.fileiv@gmail.com>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file        main.c
+/// @brief       Example using MQTT Paho package from RIOT
+///
+/// @author      Javier FILEIV <javier.fileiv@gmail.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -30,7 +26,7 @@
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 #define BUF_SIZE                        1024
-#define MQTT_VERSION_v311               4       /* MQTT v3.1.1 version is 4 */
+#define MQTT_VERSION_v311               4       // MQTT v3.1.1 version is 4
 #define COMMAND_TIMEOUT_MS              4000
 
 #ifndef DEFAULT_MQTT_CLIENT_ID
@@ -45,14 +41,10 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 #define DEFAULT_MQTT_PWD                ""
 #endif
 
-/**
- * @brief Default MQTT port
- */
+/// @brief Default MQTT port
 #define DEFAULT_MQTT_PORT               1883
 
-/**
- * @brief Keepalive timeout in seconds
- */
+/// @brief Keepalive timeout in seconds
 #define DEFAULT_KEEPALIVE_SEC           10
 
 #ifndef MAX_LEN_TOPIC
@@ -71,8 +63,7 @@ static Network network;
 static int topic_cnt = 0;
 static char _topic_to_subscribe[MAX_TOPICS][MAX_LEN_TOPIC];
 
-static unsigned get_qos(const char *str)
-{
+static unsigned get_qos(const char *str) {
     int qos = atoi(str);
 
     switch (qos) {
@@ -82,8 +73,7 @@ static unsigned get_qos(const char *str)
     }
 }
 
-static void _on_msg_received(MessageData *data)
-{
+static void _on_msg_received(MessageData *data) {
     printf("paho_mqtt_example: message received on topic"
            " %.*s: %.*s\n",
            (int)data->topicName->lenstring.len,
@@ -91,8 +81,7 @@ static void _on_msg_received(MessageData *data)
            (char *)data->message->payload);
 }
 
-static int _cmd_discon(int argc, char **argv)
-{
+static int _cmd_discon(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -111,8 +100,7 @@ static int _cmd_discon(int argc, char **argv)
 
 SHELL_COMMAND(discon, "disconnect from the current broker", _cmd_discon);
 
-static int _cmd_con(int argc, char **argv)
-{
+static int _cmd_con(int argc, char **argv) {
     if (argc < 2) {
         printf(
             "usage: %s <brokerip addr> [port] [clientID] [user] [password] "
@@ -125,7 +113,7 @@ static int _cmd_con(int argc, char **argv)
 
     int ret = -1;
 
-    /* ensure client isn't connected in case of a new connection */
+    // ensure client isn't connected in case of a new connection
     if (client.isconnected) {
         printf("mqtt_example: client already connected, disconnecting it\n");
         MQTTDisconnect(&client);
@@ -190,8 +178,7 @@ static int _cmd_con(int argc, char **argv)
 
 SHELL_COMMAND(con, "connect to MQTT broker", _cmd_con);
 
-static int _cmd_pub(int argc, char **argv)
-{
+static int _cmd_pub(int argc, char **argv) {
     enum QoS qos = QOS0;
 
     if (argc < 3) {
@@ -223,8 +210,7 @@ static int _cmd_pub(int argc, char **argv)
 
 SHELL_COMMAND(pub, "publish something", _cmd_pub);
 
-static int _cmd_sub(int argc, char **argv)
-{
+static int _cmd_sub(int argc, char **argv) {
     enum QoS qos = QOS0;
 
     if (argc < 2) {
@@ -266,8 +252,7 @@ static int _cmd_sub(int argc, char **argv)
 
 SHELL_COMMAND(sub, "subscribe topic", _cmd_sub);
 
-static int _cmd_unsub(int argc, char **argv)
-{
+static int _cmd_unsub(int argc, char **argv) {
     if (argc < 2) {
         printf("usage %s <topic name>\n", argv[0]);
         return 1;
@@ -291,13 +276,12 @@ SHELL_COMMAND(unsub, "unsubscribe from topic", _cmd_unsub);
 static unsigned char buf[BUF_SIZE];
 static unsigned char readbuf[BUF_SIZE];
 
-int main(void)
-{
+int main(void) {
     if (IS_USED(MODULE_GNRC_ICMPV6_ECHO)) {
         msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
     }
 #ifdef MODULE_LWIP
-    /* let LWIP initialize */
+    // let LWIP initialize
     ztimer_sleep(ZTIMER_MSEC, 1 * MS_PER_SEC);
 #endif
 

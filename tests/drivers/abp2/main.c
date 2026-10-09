@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 CNRS, France
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 CNRS, France
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the Honeywell ABP2 series
- *              pressure and temperature sensor driver.
- *
- * @author      David Picard <david.picard@clermont.in2p3.fr>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the Honeywell ABP2 series
+///              pressure and temperature sensor driver.
+///
+/// @author      David Picard <david.picard@clermont.in2p3.fr>
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -30,7 +26,7 @@
 #define MAX_LOOPS_STATUS        (10)
 #define MAX_LOOPS_MEAS          (3)
 
-/* supported acquisition modes */
+// supported acquisition modes
 enum {
     ABP2_NON_BLOCKING,
     ABP2_BLOCKING,
@@ -39,8 +35,7 @@ enum {
 
 static abp2_t dev;
 
-int main(void)
-{
+int main(void) {
     int32_t press = 0;
     int32_t temp = 0;
     abp2_params_t prms;
@@ -58,8 +53,7 @@ int main(void)
     }
 
     ptr = memcpy(&prms, &abp2_params, sizeof(abp2_params));
-    if (!ptr)
-    {
+    if (!ptr) {
        puts("main() >> ERROR: memcpy() failed");
        return 1;
     }
@@ -69,8 +63,7 @@ int main(void)
 
     printf("Initializing ABP2 at SPI_DEV(%i)... ", prms.spi);
 
-    if (abp2_init(&dev, &prms) == 0)
-    {
+    if (abp2_init(&dev, &prms) == 0) {
         puts("[OK]");
     }
     else {
@@ -91,16 +84,14 @@ int main(void)
         switch (acqmode) {
             case ABP2_NON_BLOCKING:
                 res = abp2_read_nb(&dev, &press, &temp);
-                if (res)
-                {
+                if (res) {
                     printf("abp2_read_nb() >> ERROR errno = %d", res);
                     continue;
                 }
                 break;
             case ABP2_BLOCKING:
                 res = abp2_read(&dev, &press, &temp);
-                if (res)
-                {
+                if (res) {
                     printf("abp2_read() >> ERROR errno = %d", res);
                     continue;
                 }
@@ -114,26 +105,26 @@ int main(void)
                     phydat_dump(&saulData, dim);
                     saulDev = saulDev->next;
                 }
-                saulDev = saul_reg; /* reset pointer for next read */
+                saulDev = saul_reg; // reset pointer for next read
                 break;
             default:
                 acqmode = 0;
         }
 
-        /* display data retrieved in blocking and non-blocking modes: */
+        // display data retrieved in blocking and non-blocking modes:
         if (acqmode != ABP2_SAUL) {
-            phyPress.val[0] = press / 100;  /* let int32_t fit into int16_t */
-            phyPress.scale = -4;            /* and set the exponent accordingly */
-            phyPress.unit = UNIT_BAR;       /* set the unit */
-            phydat_dump(&phyPress, 1);      /* print the value in a pretty format */
+            phyPress.val[0] = press / 100;  // let int32_t fit into int16_t
+            phyPress.scale = -4;            // and set the exponent accordingly
+            phyPress.unit = UNIT_BAR;       // set the unit
+            phydat_dump(&phyPress, 1);      // print the value in a pretty format
 
-            phyTemp.val[0] = temp;          /* temp is already in mdeg C */
-            phyTemp.scale = -3;             /* 1 mdegC = 1e-03 degC */
-            phyTemp.unit = UNIT_TEMP_C;     /* set the unit */
-            phydat_dump(&phyTemp, 1);       /* print the value in a pretty format */
+            phyTemp.val[0] = temp;          // temp is already in mdeg C
+            phyTemp.scale = -3;             // 1 mdegC = 1e-03 degC
+            phyTemp.unit = UNIT_TEMP_C;     // set the unit
+            phydat_dump(&phyTemp, 1);       // print the value in a pretty format
         }
 
-        /* Switch modes periodically: */
+        // Switch modes periodically:
         cntMeas++;
         if (cntMeas == MAX_LOOPS_MEAS) {
             cntMeas = 0;

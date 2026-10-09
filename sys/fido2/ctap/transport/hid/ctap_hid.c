@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup fido2_ctap_transport_hid
- * @{
- * @file
- *
- * @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
- * @}
- */
+/// @ingroup fido2_ctap_transport_hid
+/// @{
+/// @file
+///
+/// @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
+/// @}
 
 #include <string.h>
 
@@ -26,11 +22,9 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief CTAP HID report descriptor
- *
- * CTAP specification (version 20190130) section 8.1.8.2
- */
+/// @brief CTAP HID report descriptor
+///
+/// CTAP specification (version 20190130) section 8.1.8.2
 const uint8_t _hid_report_desc[] = {
     USB_HID_USAGE_PAGE16(USB_HID_USAGE_FIDO),
     USB_HID_USAGE(USB_HID_USAGE_FIDO_U2F_AUTHENTICATOR_DEVICE),
@@ -50,159 +44,108 @@ const uint8_t _hid_report_desc[] = {
     USB_HID_END_COLLECTION,
 };
 
-/**
- * @brief CTAP_HID buffer struct
- *
- */
+/// @brief CTAP_HID buffer struct
+///
 typedef struct {
-    uint32_t cid;                           /**< channel identifier */
-    uint8_t cmd;                            /**< CTAP_HID command */
-    uint8_t buffer[CTAP_HID_BUFFER_SIZE];   /**< data buffer */
-    uint16_t offset;                        /**< current offset into data buffer */
-    int16_t seq;                            /**< current sequence number */
-    uint16_t bcnt;                          /**< expected amount of bytes to be received */
-    uint8_t err;                            /**< error type if error  */
-    bool is_locked;                         /**< buffer is locked by transaction */
-    bool should_cancel;                     /**< flag if current transaction should be cancelled */
+    uint32_t cid;                           ///< channel identifier
+    uint8_t cmd;                            ///< CTAP_HID command
+    uint8_t buffer[CTAP_HID_BUFFER_SIZE];   ///< data buffer
+    uint16_t offset;                        ///< current offset into data buffer
+    int16_t seq;                            ///< current sequence number
+    uint16_t bcnt;                          ///< expected amount of bytes to be received
+    uint8_t err;                            ///< error type if error
+    bool is_locked;                         ///< buffer is locked by transaction
+    bool should_cancel;                     ///< flag if current transaction should be cancelled
 } ctap_hid_state_t;
 
-/**
- * @brief Serialize data and transmit it via USB HID layer
- */
+/// @brief Serialize data and transmit it via USB HID layer
 static void _ctap_hid_write(uint8_t cmd, uint32_t cid, const void *_data, size_t size);
 
-/**
- * @brief CTAPHID_CBOR command
- *
- * CTAP specification (version 20190130) section 8.1.9.1.2
- */
+/// @brief CTAPHID_CBOR command
+///
+/// CTAP specification (version 20190130) section 8.1.9.1.2
 static void _handle_cbor_packet(uint8_t cmd, uint32_t cid, uint8_t *buf, uint16_t bcnt);
 
-/**
- * @brief CTAPHID_INIT command
- *
- * CTAP specification (version 20190130) section 8.1.9.1.3
- */
+/// @brief CTAPHID_INIT command
+///
+/// CTAP specification (version 20190130) section 8.1.9.1.3
 static uint32_t _handle_init_packet(uint32_t cid, uint16_t bcnt,
                                     const uint8_t *nonce);
 
-/**
- * @brief CTAPHID_WINK command
- *
- * CTAP specification (version 20190130) section 8.1.9.2.1
- */
+/// @brief CTAPHID_WINK command
+///
+/// CTAP specification (version 20190130) section 8.1.9.2.1
 static void _wink(uint32_t cid, uint8_t cmd);
 
-/**
- * @brief Encode response to CTAPHID_INIT command
- */
+/// @brief Encode response to CTAPHID_INIT command
 static void _send_init_response(uint32_t cid_old, uint32_t cid_new,
                                 const uint8_t *nonce);
 
-/**
- * @brief Clear the CTAP packet buffer
- */
+/// @brief Clear the CTAP packet buffer
 static void _clear_ctap_buffer(void);
 
-/**
- * @brief Buffer packet belonging to currently processed transaction
- */
+/// @brief Buffer packet belonging to currently processed transaction
 static uint8_t _buffer_pkt(const ctap_hid_pkt_t *pkt);
 
-/**
- * @brief Send error code to cid
- */
+/// @brief Send error code to cid
 static void _send_error_response(uint32_t cid, uint8_t err);
 
-/**
- * @brief Refresh the last_used timestamp for this cid
- */
+/// @brief Refresh the last_used timestamp for this cid
 static int8_t _refresh_cid(uint32_t cid);
 
-/**
- * @brief Allocate a new logical channel
- */
+/// @brief Allocate a new logical channel
 static int8_t _add_cid(uint32_t cid);
 
-/**
- * @brief Delete logical channel
- */
+/// @brief Delete logical channel
 static int8_t _delete_cid(uint32_t cid);
 
-/**
- * @brief Check if a logical channel with cid exists
- */
+/// @brief Check if a logical channel with cid exists
 static bool _cid_exists(uint32_t cid);
 
-/**
- * @brief Parse packet length from pkt
- */
+/// @brief Parse packet length from pkt
 static inline uint16_t _get_packet_len(const ctap_hid_pkt_t *pkt);
 
-/**
- * @brief Process CTAPHID transaction
- */
+/// @brief Process CTAPHID transaction
 static void _process_transaction(event_t *arg);
 
-/**
- * @brief Check if packet is an initialization packet
- */
+/// @brief Check if packet is an initialization packet
 static inline bool _is_init_type_pkt(const ctap_hid_pkt_t *pkt);
 
-/* usbus functionality */
+// usbus functionality
 
-/**
- * @brief USB stack
- */
+/// @brief USB stack
 static char _usb_stack[USBUS_STACKSIZE];
 
-/**
- * @brief USBUS context
- */
+/// @brief USBUS context
 static usbus_t _usbus;
 
-/**
- * @brief Indicate if authenticator is busy processing a transactions
- *
- * Transactions are atomic, therefore only 1 transaction can be processed at
- * once
- */
+/// @brief Indicate if authenticator is busy processing a transactions
+///
+/// Transactions are atomic, therefore only 1 transaction can be processed at
+/// once
 static bool _is_busy = false;
 
-/**
- * @brief State for handling transactions
- */
+/// @brief State for handling transactions
 static ctap_hid_state_t _state;
 
-/**
- * @brief Logical CTAPHID channels
- */
+/// @brief Logical CTAPHID channels
 static ctap_hid_cid_t g_cids[CTAP_HID_CIDS_MAX];
 
-/**
- * @brief Incremental channel ids
- *
- * channel id 0 is reserved
- */
+/// @brief Incremental channel ids
+///
+/// channel id 0 is reserved
 static uint32_t _cid = 1;
 
-/**
- * @brief CTAP transport layer event queue
- */
+/// @brief CTAP transport layer event queue
 static event_queue_t *_queue;
 
-/**
- * @brief CTAPHID event
- */
+/// @brief CTAPHID event
 static event_t _ctap_hid_event = { .handler = _process_transaction };
 
-/**
- * @brief USBUS context
- */
+/// @brief USBUS context
 static usbus_t _usbus;
 
-static void _usb_cb(void *arg)
-{
+static void _usb_cb(void *arg) {
     (void)arg;
 
     uint8_t buffer[CONFIG_USBUS_HID_INTERRUPT_EP_SIZE];
@@ -215,8 +158,7 @@ static void _usb_cb(void *arg)
     }
 }
 
-void fido2_ctap_transport_hid_init(event_queue_t *queue)
-{
+void fido2_ctap_transport_hid_init(event_queue_t *queue) {
     _queue = queue;
     usbdev_t *usbdev = usbdev_get_ctx(0);
 
@@ -227,23 +169,22 @@ void fido2_ctap_transport_hid_init(event_queue_t *queue)
     usbus_create(_usb_stack, sizeof(_usb_stack), USBUS_PRIO, USBUS_TNAME, &_usbus);
 }
 
-void fido2_ctap_transport_hid_handle_packet(void *pkt_raw)
-{
+void fido2_ctap_transport_hid_handle_packet(void *pkt_raw) {
     ctap_hid_pkt_t *pkt = (ctap_hid_pkt_t *)pkt_raw;
     uint32_t cid = pkt->cid;
     uint8_t status = CTAP_HID_BUFFER_STATUS_BUFFERING;
 
     if (cid == 0x00) {
-        /* cid = 0x00 always invalid */
+        // cid = 0x00 always invalid
         _send_error_response(cid, CTAP_HID_ERR_INVALID_CHANNEL);
         return;
     }
     else if (_is_busy) {
         if (_state.cid == cid) {
-            /* CTAP specification (version 20190130) section 8.1.5.3 */
+            // CTAP specification (version 20190130) section 8.1.5.3
             if (_is_init_type_pkt(pkt)) {
                 if (pkt->init.cmd == CTAP_HID_COMMAND_INIT) {
-                    /* abort */
+                    // abort
                     _clear_ctap_buffer();
                     status = _buffer_pkt(pkt);
                 }
@@ -251,35 +192,35 @@ void fido2_ctap_transport_hid_handle_packet(void *pkt_raw)
                          CTAP_HID_COMMAND_CANCEL) {
                     _state.should_cancel = true;
                 }
-                /* random init type pkt. invalid sequence of pkts */
+                // random init type pkt. invalid sequence of pkts
                 else {
                     _send_error_response(cid, CTAP_HID_ERR_INVALID_SEQ);
                     return;
                 }
             }
-            /* packet for this cid is currently being worked */
+            // packet for this cid is currently being worked
             else if (_state.is_locked) {
                 _send_error_response(cid, CTAP_HID_ERR_CHANNEL_BUSY);
                 return;
             }
             else {
-                /* buffer cont packets */
+                // buffer cont packets
                 status = _buffer_pkt(pkt);
             }
         }
-        /* transactions are atomic. Deny all other cids if busy with one cid */
+        // transactions are atomic. Deny all other cids if busy with one cid
         else {
             _send_error_response(cid, CTAP_HID_ERR_CHANNEL_BUSY);
             return;
         }
     }
     else {
-        /* first init packet received starts a transaction */
+        // first init packet received starts a transaction
         if (_is_init_type_pkt(pkt)) {
             _is_busy = true;
             status = _buffer_pkt(pkt);
         }
-        /* ignore rest */
+        // ignore rest
     }
 
     if (status == CTAP_HID_BUFFER_STATUS_ERROR) {
@@ -290,33 +231,28 @@ void fido2_ctap_transport_hid_handle_packet(void *pkt_raw)
         return;
     }
 
-    /* pkt->init.bcnt bytes have been received. Transaction can now be processed */
+    // pkt->init.bcnt bytes have been received. Transaction can now be processed
     if (status == CTAP_HID_BUFFER_STATUS_DONE) {
         _state.is_locked = 1;
         event_post(_queue, &_ctap_hid_event);
         _is_busy = false;
     }
     else {
-        /* refresh timestamp of cid that is being buffered */
+        // refresh timestamp of cid that is being buffered
         _refresh_cid(_state.cid);
     }
 }
 
-static uint8_t _buffer_pkt(const ctap_hid_pkt_t *pkt)
-{
+static uint8_t _buffer_pkt(const ctap_hid_pkt_t *pkt) {
     if (_is_init_type_pkt(pkt)) {
-        /**
-         * broadcast cid only allowed for CTAP_HID_COMMAND_INIT
-         */
+        /// broadcast cid only allowed for CTAP_HID_COMMAND_INIT
         if (pkt->cid == CTAP_HID_BROADCAST_CID &&
             pkt->init.cmd != CTAP_HID_COMMAND_INIT) {
             _send_error_response(pkt->cid, CTAP_HID_ERR_INVALID_CHANNEL);
         }
 
-        /**
-         * received CTAP_HID_COMMAND_CANCEL while buffering packet.
-         * Cancel request.
-         */
+        /// received CTAP_HID_COMMAND_CANCEL while buffering packet.
+        /// Cancel request.
         if (pkt->init.cmd == CTAP_HID_COMMAND_CANCEL && !_state.is_locked &&
             pkt->cid == _state.cid) {
 
@@ -326,14 +262,14 @@ static uint8_t _buffer_pkt(const ctap_hid_pkt_t *pkt)
 
         _state.bcnt = _get_packet_len(pkt);
 
-        /* check for init transaction size described in CTAP specification
-           (version 20190130) section 8.1.9.1.3 */
+        // check for init transaction size described in CTAP specification
+        //    (version 20190130) section 8.1.9.1.3
         if (pkt->init.cmd == CTAP_HID_COMMAND_INIT && _state.bcnt != 8) {
             _state.err = CTAP_HID_ERR_INVALID_LEN;
             return CTAP_HID_BUFFER_STATUS_ERROR;
         }
 
-        /* don't allow transactions bigger than max buffer size */
+        // don't allow transactions bigger than max buffer size
         if (_state.bcnt > CTAP_HID_BUFFER_SIZE) {
             _state.err = CTAP_HID_ERR_INVALID_LEN;
             return CTAP_HID_BUFFER_STATUS_ERROR;
@@ -352,13 +288,13 @@ static uint8_t _buffer_pkt(const ctap_hid_pkt_t *pkt)
         int diff = left - CTAP_HID_CONT_PAYLOAD_SIZE;
         _state.seq++;
 
-        /* seqs have to increase sequentially */
+        // seqs have to increase sequentially
         if (pkt->cont.seq != _state.seq) {
             _state.err = CTAP_HID_ERR_INVALID_SEQ;
             return CTAP_HID_BUFFER_STATUS_ERROR;
         }
 
-        /* check for potential buffer overflow */
+        // check for potential buffer overflow
         if (_state.offset + CTAP_HID_CONT_PAYLOAD_SIZE > CTAP_HID_BUFFER_SIZE) {
             _state.err = CTAP_HID_ERR_INVALID_LEN;
             return CTAP_HID_BUFFER_STATUS_ERROR;
@@ -379,8 +315,7 @@ static uint8_t _buffer_pkt(const ctap_hid_pkt_t *pkt)
            CTAP_HID_BUFFER_STATUS_DONE : CTAP_HID_BUFFER_STATUS_BUFFERING;
 }
 
-static void _process_transaction(event_t *arg)
-{
+static void _process_transaction(event_t *arg) {
     (void)arg;
     uint8_t *buf = (uint8_t *)&_state.buffer;
     uint32_t cid = _state.cid;
@@ -391,14 +326,14 @@ static void _process_transaction(event_t *arg)
         _handle_init_packet(cid, bcnt, buf);
     }
     else {
-        /* re-adding deleted cid */
+        // re-adding deleted cid
         if (!_cid_exists(cid) && _add_cid(cid) == -1) {
             _send_error_response(cid, CTAP_HID_ERR_CHANNEL_BUSY);
         }
         else {
             switch (cmd) {
             case CTAP_HID_COMMAND_MSG:
-                /* not implemented as of now */
+                // not implemented as of now
                 DEBUG("CTAP_HID: MSG COMMAND \n");
                 _send_error_response(cid, CTAP_HID_ERR_INVALID_CMD);
                 break;
@@ -415,10 +350,8 @@ static void _process_transaction(event_t *arg)
                 _ctap_hid_write(cmd, cid, buf, bcnt);
                 break;
             case CTAP_HID_COMMAND_CANCEL:
-                /*
-                 * no transaction is currently being processed,
-                 * no reason to send cancel
-                 */
+                // no transaction is currently being processed,
+                // no reason to send cancel
                 break;
             default:
                 _send_error_response(cid, CTAP_HID_ERR_INVALID_CMD);
@@ -427,26 +360,25 @@ static void _process_transaction(event_t *arg)
         }
     }
 
-    /* transaction done, cleanup */
+    // transaction done, cleanup
     _clear_ctap_buffer();
 }
 
 static uint32_t _handle_init_packet(uint32_t cid, uint16_t bcnt,
-                                    const uint8_t *nonce)
-{
+                                    const uint8_t *nonce) {
     uint32_t cid_new = 0;
 
-    /* cid 0 is reserved */
+    // cid 0 is reserved
     if (cid == 0) {
         _send_error_response(cid, CTAP_HID_ERR_INVALID_CHANNEL);
         return 0;
     }
-    /* check for len described in standard */
+    // check for len described in standard
     if (bcnt != 8) {
         _send_error_response(cid, CTAP_HID_ERR_INVALID_LEN);
         return 0;
     }
-    /* create new channel */
+    // create new channel
     if (cid == CTAP_HID_BROADCAST_CID) {
         cid_new = _cid++;
 
@@ -456,12 +388,12 @@ static uint32_t _handle_init_packet(uint32_t cid, uint16_t bcnt,
         }
         _send_init_response(cid, cid_new, nonce);
     }
-    /* synchronize channel */
+    // synchronize channel
     else {
         cid_new = cid;
         if (!_cid_exists(cid)) {
             if (_add_cid(cid) == -1) {
-                /* reached cid limit */
+                // reached cid limit
                 _send_error_response(cid, CTAP_HID_ERR_CHANNEL_BUSY);
                 return 0;
             }
@@ -472,8 +404,7 @@ static uint32_t _handle_init_packet(uint32_t cid, uint16_t bcnt,
     return cid_new;
 }
 
-static void _handle_cbor_packet(uint8_t cmd, uint32_t cid, uint8_t *buf, uint16_t bcnt)
-{
+static void _handle_cbor_packet(uint8_t cmd, uint32_t cid, uint8_t *buf, uint16_t bcnt) {
     ctap_resp_t resp = {0x0};
     uint8_t err;
 
@@ -492,40 +423,36 @@ static void _handle_cbor_packet(uint8_t cmd, uint32_t cid, uint8_t *buf, uint16_
 
     ctap_status_code_t status = fido2_ctap_handle_request(&req, &resp);
 
-    /* transaction done, clear should_cancel flag */
+    // transaction done, clear should_cancel flag
     _state.should_cancel = false;
 
     if (status == CTAP2_OK && resp.len > 0) {
-        /* status + data */
+        // status + data
         _ctap_hid_write(cmd, cid, &resp, resp.len + sizeof(resp.status));
     }
     else {
-        /* status only */
+        // status only
         _ctap_hid_write(cmd, cid, &resp.status, sizeof(status));
     }
 }
 
-static inline bool _is_init_type_pkt(const ctap_hid_pkt_t *pkt)
-{
+static inline bool _is_init_type_pkt(const ctap_hid_pkt_t *pkt) {
     return ((pkt->init.cmd & CTAP_HID_INIT_PACKET) == CTAP_HID_INIT_PACKET);
 }
 
-static void _clear_ctap_buffer(void)
-{
+static void _clear_ctap_buffer(void) {
     memset(&_state, 0, sizeof(_state));
 }
 
-bool fido2_ctap_transport_hid_should_cancel(void)
-{
+bool fido2_ctap_transport_hid_should_cancel(void) {
     return _state.should_cancel;
 }
 
-void fido2_ctap_transport_hid_check_timeouts(void)
-{
+void fido2_ctap_transport_hid_check_timeouts(void) {
     uint32_t now = ztimer_now(ZTIMER_MSEC);
 
     for (uint8_t i = 0; i < CTAP_HID_CIDS_MAX; i++) {
-        /* transaction timed out because cont packets didn't arrive in time */
+        // transaction timed out because cont packets didn't arrive in time
         if (_is_busy && g_cids[i].taken &&
             (now - g_cids[i].last_used) >= CTAP_HID_TRANSACTION_TIMEOUT_MS &&
             _state.cid == g_cids[i].cid && !_state.is_locked) {
@@ -539,8 +466,7 @@ void fido2_ctap_transport_hid_check_timeouts(void)
     }
 }
 
-static int8_t _add_cid(uint32_t cid)
-{
+static int8_t _add_cid(uint32_t cid) {
     uint32_t oldest = ztimer_now(ZTIMER_MSEC);
     int8_t index_oldest = -1;
 
@@ -559,7 +485,7 @@ static int8_t _add_cid(uint32_t cid)
         }
     }
 
-    /* remove oldest cid to make place for a new one */
+    // remove oldest cid to make place for a new one
     if (index_oldest > -1) {
         g_cids[index_oldest].taken = true;
         g_cids[index_oldest].cid = cid;
@@ -570,8 +496,7 @@ static int8_t _add_cid(uint32_t cid)
     return CTAP_HID_ERR_OTHER;
 }
 
-static int8_t _refresh_cid(uint32_t cid)
-{
+static int8_t _refresh_cid(uint32_t cid) {
     for (int i = 0; i < CTAP_HID_CIDS_MAX; i++) {
         if (g_cids[i].cid == cid) {
             g_cids[i].last_used = ztimer_now(ZTIMER_MSEC);
@@ -581,8 +506,7 @@ static int8_t _refresh_cid(uint32_t cid)
     return CTAP_HID_ERR_OTHER;
 }
 
-static int8_t _delete_cid(uint32_t cid)
-{
+static int8_t _delete_cid(uint32_t cid) {
     for (int i = 0; i < CTAP_HID_CIDS_MAX; i++) {
         if (g_cids[i].cid == cid) {
             g_cids[i].taken = false;
@@ -594,8 +518,7 @@ static int8_t _delete_cid(uint32_t cid)
     return CTAP_HID_ERR_OTHER;
 }
 
-static bool _cid_exists(uint32_t cid)
-{
+static bool _cid_exists(uint32_t cid) {
     for (int i = 0; i < CTAP_HID_CIDS_MAX; i++) {
         if (g_cids[i].cid == cid) {
             return true;
@@ -604,13 +527,11 @@ static bool _cid_exists(uint32_t cid)
     return false;
 }
 
-static inline uint16_t _get_packet_len(const ctap_hid_pkt_t *pkt)
-{
+static inline uint16_t _get_packet_len(const ctap_hid_pkt_t *pkt) {
     return (uint16_t)((pkt->init.bcnth << 8) | pkt->init.bcntl);
 }
 
-static void _wink(uint32_t cid, uint8_t cmd)
-{
+static void _wink(uint32_t cid, uint8_t cmd) {
 #if !IS_ACTIVE(CONFIG_FIDO2_CTAP_DISABLE_LED)
     uint32_t delay = CTAP_HID_WINK_DELAY;
     for (int i = 1; i <= 8; i++) {
@@ -632,20 +553,18 @@ static void _wink(uint32_t cid, uint8_t cmd)
 #endif
         delay /= 2;
     }
-#endif /* CONFIG_FIDO2_CTAP_DISABLE_LED  */
+#endif // CONFIG_FIDO2_CTAP_DISABLE_LED
 
     _ctap_hid_write(cmd, cid, NULL, 0);
 }
 
-static void _send_error_response(uint32_t cid, uint8_t err)
-{
+static void _send_error_response(uint32_t cid, uint8_t err) {
     DEBUG("ctap_trans_hid err resp: %02x \n", err);
     _ctap_hid_write(CTAP_HID_COMMAND_ERROR, cid, &err, sizeof(err));
 }
 
 static void _send_init_response(uint32_t cid_old, uint32_t cid_new,
-                                const uint8_t *nonce)
-{
+                                const uint8_t *nonce) {
     ctap_hid_init_resp_t resp;
 
     memset(&resp, 0, sizeof(ctap_hid_init_resp_t));
@@ -665,8 +584,7 @@ static void _send_init_response(uint32_t cid_old, uint32_t cid_new,
     _ctap_hid_write(cmd, cid_old, &resp, sizeof(ctap_hid_init_resp_t));
 }
 
-void _ctap_hid_write(uint8_t cmd, uint32_t cid, const void *_data, size_t len)
-{
+void _ctap_hid_write(uint8_t cmd, uint32_t cid, const void *_data, size_t len) {
     const uint8_t *data = (uint8_t *)_data;
     uint8_t buf[CONFIG_USBUS_HID_INTERRUPT_EP_SIZE] = { 0 };
     uint16_t bytes_written = 0;
@@ -676,7 +594,7 @@ void _ctap_hid_write(uint8_t cmd, uint32_t cid, const void *_data, size_t len)
     memcpy(buf, &cid, sizeof(cid));
     offset += sizeof(cid);
     buf[offset++] = cmd;
-    /* high part of payload length first */
+    // high part of payload length first
     buf[offset++] = (len & 0xff00) >> 8;
     buf[offset++] = (len & 0xff) >> 0;
 
@@ -690,13 +608,13 @@ void _ctap_hid_write(uint8_t cmd, uint32_t cid, const void *_data, size_t len)
             memcpy(buf, &cid, sizeof(cid));
             offset += sizeof(cid);
 
-            /* initialization packet */
+            // initialization packet
             if (bytes_written == 0) {
                 buf[offset++] = cmd;
                 buf[offset++] = (len & 0xff00) >> 8;
                 buf[offset++] = (len & 0xff) >> 0;
             }
-            /* continuation packet */
+            // continuation packet
             else {
                 buf[offset++] = seq++;
             }

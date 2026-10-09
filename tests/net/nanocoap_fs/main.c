@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       nanoCoAP fs test app
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       nanoCoAP fs test app
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdio.h>
 #include "msg.h"
@@ -25,8 +21,7 @@
 #define MAIN_QUEUE_SIZE (4)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
-static int _cmd_mount(int argc, char **argv)
-{
+static int _cmd_mount(int argc, char **argv) {
     static char url[64];
     static char mp[64];
     int res;
@@ -71,16 +66,15 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
-    /* for the thread running the shell */
+int main(void) {
+    // for the thread running the shell
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
-    /* start shell */
+    // start shell
     puts("All up, running the shell now");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should never be reached */
+    // should never be reached
     return 0;
 }

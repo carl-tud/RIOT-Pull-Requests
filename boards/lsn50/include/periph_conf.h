@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_lsn50
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the LSN50 board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_lsn50
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the LSN50 board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -29,33 +25,27 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 1  }, /* channel 2 */
-    { .stream = 2  }, /* channel 3 */
-    { .stream = 3  }, /* channel 4 */
-    { .stream = 4  }, /* channel 5 */
-    { .stream = 5  }, /* channel 6 */
+    { .stream = 1  }, // channel 2
+    { .stream = 2  }, // channel 3
+    { .stream = 3  }, // channel 4
+    { .stream = 4  }, // channel 5
+    { .stream = 5  }, // channel 6
 };
 
 #define DMA_SHARED_ISR_0            isr_dma1_channel2_3
-#define DMA_SHARED_ISR_0_STREAMS    { 0, 1 } /* Indexes 0 and 1 of dma_config share the same isr */
+#define DMA_SHARED_ISR_0_STREAMS    { 0, 1 } // Indexes 0 and 1 of dma_config share the same isr
 #define DMA_SHARED_ISR_1            isr_dma1_channel4_5_6_7
-/*
- * @brief Indexes 2, 3 and 4 of dma_config share the same isr
- */
+// @brief Indexes 2, 3 and 4 of dma_config share the same isr
 #define DMA_SHARED_ISR_1_STREAMS    { 2, 3, 4 }
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -67,7 +57,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
 #ifdef MODULE_PERIPH_DMA
         .dma        = 0,
         .dma_chan   = 3,
@@ -83,7 +73,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART2_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
 #ifdef MODULE_PERIPH_DMA
         .dma        = 2,
         .dma_chan   = 4,
@@ -95,15 +85,13 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
-        .dev      = SPI1, /* connected to SX1276 */
+        .dev      = SPI1, // connected to SX1276
         .mosi_pin = GPIO_PIN(PORT_A, 7),
         .miso_pin = GPIO_PIN(PORT_A, 6),
         .sclk_pin = GPIO_PIN(PORT_A, 5),
@@ -124,12 +112,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -147,10 +133,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_0_ISR           isr_i2c1
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

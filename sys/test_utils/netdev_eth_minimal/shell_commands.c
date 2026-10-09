@@ -1,20 +1,16 @@
-/*
- * Copyright (C) 2022 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for
- * more details.
- */
+// Copyright (C) 2022 HAW Hamburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for
+// more details.
 
-/**
- * @ingroup     test_utils_netdev_eth_minimal
- * @{
- *
- * @file
- * @brief       Shell commands for netdev Eth minimal test utility module
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- */
+/// @ingroup     test_utils_netdev_eth_minimal
+/// @{
+///
+/// @file
+/// @brief       Shell commands for netdev Eth minimal test utility module
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
 
 #include <stdio.h>
 #include <string.h>
@@ -33,8 +29,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-int ifconfig_list(int idx)
-{
+int ifconfig_list(int idx) {
     int res;
     netdev_t *dev = _devices[idx].dev;
     uint8_t addr[ETHERNET_ADDR_LEN];
@@ -43,15 +38,14 @@ int ifconfig_list(int idx)
     printf("Iface %3d  HWaddr: ", idx);
     res = dev->driver->get(dev, NETOPT_ADDRESS, addr, sizeof(addr));
     assert(res > 0);
-    (void)res;  /* fix compilation problems with NDEBUG */
+    (void)res;  // fix compilation problems with NDEBUG
     l2util_addr_to_str(addr, ETHERNET_ADDR_LEN, addr_str);
     printf("%s\n", addr_str);
 
     return 0;
 }
 
-int cmd_ifconfig(int argc, char **argv)
-{
+int cmd_ifconfig(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -66,8 +60,7 @@ static int _print_txtsnd_usage(char *cmd) {
     return 1;
 }
 
-static int cmd_txtsnd(int argc, char **argv)
-{
+static int cmd_txtsnd(int argc, char **argv) {
     ethernet_hdr_t header;
     size_t addr_len;
 
@@ -81,7 +74,7 @@ static int cmd_txtsnd(int argc, char **argv)
         return _print_txtsnd_usage(argv[0]);
     }
 
-    /* build Ethernet header */
+    // build Ethernet header
     addr_len = l2util_addr_from_str_sized(argv[2], header.dst, sizeof(header.dst));
     if (addr_len != sizeof(header.dst)) {
         printf("\"%s\" is not a valid Ethernet address\n", argv[2]);
@@ -96,7 +89,7 @@ static int cmd_txtsnd(int argc, char **argv)
     dev->driver->get(dev, NETOPT_ADDRESS, header.src, ETHERNET_ADDR_LEN);
     header.type = byteorder_htons(ETHERTYPE_UNKNOWN);
 
-    /* prepare iolists to send */
+    // prepare iolists to send
     iolist_t io_data = { 0 };
     io_data.iol_base = argv[3];
     io_data.iol_len = strlen(argv[3]);
@@ -106,7 +99,7 @@ static int cmd_txtsnd(int argc, char **argv)
     io_header.iol_len = sizeof(ethernet_hdr_t);
     io_header.iol_next = &io_data;
 
-    /* send */
+    // send
     int res = dev->driver->send(dev, &io_header);
     if (res < 0) {
         puts("txtsnd: Could not send");

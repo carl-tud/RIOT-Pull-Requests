@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017-2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017-2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_nrf5x_nrfble
- *
- * @note        This driver is not thread safe and should only be used by a
- *              single thread at once!
- * @{
- *
- * @file
- * @brief       Bluetooth low energy radio driver for nRF5x SoCs
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_nrf5x_nrfble
+///
+/// @note        This driver is not thread safe and should only be used by a
+///              single thread at once!
+/// @{
+///
+/// @file
+/// @brief       Bluetooth low energy radio driver for nRF5x SoCs
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <errno.h>
 
@@ -30,7 +26,7 @@
 #define ENABLE_DEBUG            0
 #include "debug.h"
 
-/* driver specific device configuration */
+// driver specific device configuration
 #define CONF_MODE               RADIO_MODE_MODE_Ble_1Mbit
 #define CONF_LEN                (8U)
 #define CONF_S0                 (1U)
@@ -43,37 +39,37 @@
 #define CONF_CRC_LEN            (0X3 | RADIO_CRCCNF_SKIPADDR_Msk)
 #define CONF_CRC_POLY           (0x00065b)
 
-/* used shortcuts */
+// used shortcuts
 #define SHORTS_BASE             (RADIO_SHORTS_READY_START_Msk | \
                                  RADIO_SHORTS_END_DISABLE_Msk)
 #define SHORTS_RX               (SHORTS_BASE | RADIO_SHORTS_DISABLED_TXEN_Msk)
 #define SHORTS_TX               (SHORTS_BASE | RADIO_SHORTS_DISABLED_RXEN_Msk)
 
-/* interrupt masks */
+// interrupt masks
 #define INT_DIS                 (RADIO_INTENCLR_DISABLED_Msk | \
                                  RADIO_INTENCLR_ADDRESS_Msk)
 #define INT_EN                  (RADIO_INTENSET_DISABLED_Msk | \
                                  RADIO_INTENSET_ADDRESS_Msk)
 
-/* driver internal radio states */
+// driver internal radio states
 #define STATE_IDLE              (0x00)
 #define STATE_RX                (0x01)
 #define STATE_TX                (0x02)
 #define STATE_BUSY              (0x80)
 
-/* forward declaration of the netdev driver struct */
+// forward declaration of the netdev driver struct
 static const netdev_driver_t netdev_driver;
 
-/* current radio state */
+// current radio state
 static volatile uint8_t _state = STATE_IDLE;
 
-/* active radio context */
+// active radio context
 static netdev_ble_ctx_t *_ctx = NULL;
 
-/* allocate the netdev device descriptor */
+// allocate the netdev device descriptor
 netdev_t _nrfble_dev;
 
-/* map logical BLE channel values to actual radio frequencies */
+// map logical BLE channel values to actual radio frequencies
 static const uint8_t _ble_chan_map[40] = {
     [ 0] = 4,
     [ 1] = 6,
@@ -117,21 +113,15 @@ static const uint8_t _ble_chan_map[40] = {
     [39] = 80,
 };
 
-/**
- * @brief   Enable the radio
- */
-static void _enable(void)
-{
+/// @brief   Enable the radio
+static void _enable(void) {
     clock_hfxo_request();
     NRF_RADIO->EVENTS_DISABLED = 0;
     NRF_RADIO->INTENSET = INT_EN;
 }
 
-/**
- * @brief   Set radio into idle (DISABLED) state
- */
-static void _go_idle(void)
-{
+/// @brief   Set radio into idle (DISABLED) state
+static void _go_idle(void) {
     if (!(_state & STATE_BUSY)) {
         NRF_RADIO->INTENCLR = INT_DIS;
         NRF_RADIO->SHORTS = 0;
@@ -143,11 +133,8 @@ static void _go_idle(void)
     }
 }
 
-/**
- * @brief   Set radio context (channel, CRC, whitening, and access address)
- */
-static void _set_context(netdev_ble_ctx_t *ctx)
-{
+/// @brief   Set radio context (channel, CRC, whitening, and access address)
+static void _set_context(netdev_ble_ctx_t *ctx) {
     if (ctx) {
         assert(ctx->chan <= NRFBLE_CHAN_MAX);
 
@@ -165,8 +152,7 @@ static void _set_context(netdev_ble_ctx_t *ctx)
     }
 }
 
-static int16_t _nrfble_get_txpower(void)
-{
+static int16_t _nrfble_get_txpower(void) {
     int8_t p = (int8_t)NRF_RADIO->TXPOWER;
     if (p < 0) {
         return (int16_t)(0xff00 | p);
@@ -174,8 +160,7 @@ static int16_t _nrfble_get_txpower(void)
     return (int16_t)p;
 }
 
-static void _nrfble_set_txpower(int16_t power)
-{
+static void _nrfble_set_txpower(int16_t power) {
     if (power > 2) {
         NRF_RADIO->TXPOWER = RADIO_TXPOWER_TXPOWER_Pos4dBm;
     }
@@ -202,11 +187,8 @@ static void _nrfble_set_txpower(int16_t power)
     }
 }
 
-/**
- * @brief   Radio interrupt routine
- */
-void isr_radio(void)
-{
+/// @brief   Radio interrupt routine
+void isr_radio(void) {
     if (NRF_RADIO->EVENTS_ADDRESS) {
         NRF_RADIO->EVENTS_ADDRESS = 0;
         _state |= STATE_BUSY;
@@ -225,7 +207,7 @@ void isr_radio(void)
             }
             _nrfble_dev.event_callback(&_nrfble_dev, NETDEV_EVENT_RX_COMPLETE);
         }
-        else {  /* on TX done */
+        else {  // on TX done
             _state = STATE_RX;
             _nrfble_dev.event_callback(&_nrfble_dev, NETDEV_EVENT_TX_COMPLETE);
         }
@@ -234,30 +216,28 @@ void isr_radio(void)
     cortexm_isr_end();
 }
 
-netdev_t *nrfble_setup(void)
-{
+netdev_t *nrfble_setup(void) {
     _nrfble_dev.driver = &netdev_driver;
     _nrfble_dev.event_callback = NULL;
     _nrfble_dev.context = NULL;
     return &_nrfble_dev;
 }
 
-static int _nrfble_init(netdev_t *dev)
-{
+static int _nrfble_init(netdev_t *dev) {
     (void)dev;
     assert(_nrfble_dev.driver && _nrfble_dev.event_callback);
 
-    /* power cycle the radio to reset it */
+    // power cycle the radio to reset it
     NRF_RADIO->POWER = 0;
     NRF_RADIO->POWER = 1;
-    /* configure variable parameters to default values */
+    // configure variable parameters to default values
     NRF_RADIO->TXPOWER = NRFBLE_TXPOWER_DEFAULT;
-    /* always send from and listen to logical address 0 */
+    // always send from and listen to logical address 0
     NRF_RADIO->TXADDRESS = 0x00UL;
     NRF_RADIO->RXADDRESSES = 0x01UL;
-    /* load driver specific configuration */
+    // load driver specific configuration
     NRF_RADIO->MODE = CONF_MODE;
-    /* configure data fields and packet length whitening and endianness */
+    // configure data fields and packet length whitening and endianness
     NRF_RADIO->PCNF0 = ((CONF_S1 << RADIO_PCNF0_S1LEN_Pos) |
                         (CONF_S0 << RADIO_PCNF0_S0LEN_Pos) |
                         (CONF_LEN << RADIO_PCNF0_LFLEN_Pos));
@@ -266,32 +246,31 @@ static int _nrfble_init(netdev_t *dev)
                         (CONF_BASE_ADDR_LEN << RADIO_PCNF1_BALEN_Pos) |
                         (CONF_STATLEN << RADIO_PCNF1_STATLEN_Pos) |
                         (NETDEV_BLE_PDU_MAXLEN << RADIO_PCNF1_MAXLEN_Pos));
-    /* set inter frame spacing to 150us */
+    // set inter frame spacing to 150us
     NRF_RADIO->TIFS = CONF_TIFS;
-    /* configure CRC length and polynomial */
+    // configure CRC length and polynomial
     NRF_RADIO->CRCCNF = CONF_CRC_LEN;
     NRF_RADIO->CRCPOLY = CONF_CRC_POLY;
-    /* enable global interrupts, but mask all local interrupts for now */
+    // enable global interrupts, but mask all local interrupts for now
     NRF_RADIO->INTENCLR = 0xffffffff;
     NVIC_EnableIRQ(RADIO_IRQn);
 
     DEBUG("[nrfble] initialization successful\n");
 
-    /* signal link UP */
+    // signal link UP
     dev->event_callback(dev, NETDEV_EVENT_LINK_UP);
 
     return 0;
 }
 
-static int _nrfble_send(netdev_t *dev, const iolist_t *data)
-{
+static int _nrfble_send(netdev_t *dev, const iolist_t *data) {
     (void)dev;
     assert(data);
 
     NRF_RADIO->PACKETPTR = (uint32_t)data->iol_base;
     NRF_RADIO->SHORTS = SHORTS_TX;
 
-    /* in case no trx sequence is active, we start a new one now */
+    // in case no trx sequence is active, we start a new one now
     if (_state == STATE_IDLE) {
         _state = STATE_TX;
         _enable();
@@ -301,8 +280,7 @@ static int _nrfble_send(netdev_t *dev, const iolist_t *data)
     return 0;
 }
 
-static int _nrfble_recv(netdev_t *dev, void *buf, size_t len, void *info)
-{
+static int _nrfble_recv(netdev_t *dev, void *buf, size_t len, void *info) {
     (void)dev;
     (void)len;
     (void)info;
@@ -311,7 +289,7 @@ static int _nrfble_recv(netdev_t *dev, void *buf, size_t len, void *info)
     NRF_RADIO->PACKETPTR = (uint32_t)buf;
     NRF_RADIO->SHORTS = SHORTS_RX;
 
-    /* in case no trx sequence is active, we start a new one now */
+    // in case no trx sequence is active, we start a new one now
     if (_state == STATE_IDLE) {
         _state = STATE_RX;
         _enable();
@@ -321,8 +299,7 @@ static int _nrfble_recv(netdev_t *dev, void *buf, size_t len, void *info)
     return 0;
 }
 
-static int _nrfble_get(netdev_t *dev, netopt_t opt, void *val, size_t max_len)
-{
+static int _nrfble_get(netdev_t *dev, netopt_t opt, void *val, size_t max_len) {
     (void)dev;
     (void)max_len;
 
@@ -340,8 +317,7 @@ static int _nrfble_get(netdev_t *dev, netopt_t opt, void *val, size_t max_len)
     }
 }
 
-static int _nrfble_set(netdev_t *dev, netopt_t opt, const void *val, size_t len)
-{
+static int _nrfble_set(netdev_t *dev, netopt_t opt, const void *val, size_t len) {
     (void)dev;
     (void)len;
 
@@ -358,7 +334,7 @@ static int _nrfble_set(netdev_t *dev, netopt_t opt, const void *val, size_t len)
     }
 }
 
-/* export of the netdev interface */
+// export of the netdev interface
 static const netdev_driver_t netdev_driver = {
     .send = _nrfble_send,
     .recv = _nrfble_recv,

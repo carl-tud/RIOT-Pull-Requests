@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief ps schedstatistics test app
- *
- * @author Vincent Dupont <vincent@otakeys.com>
- * @author Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief ps schedstatistics test app
+///
+/// @author Vincent Dupont <vincent@otakeys.com>
+/// @author Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -31,8 +27,7 @@
 static char stacks[NB_THREADS][THREAD_STACKSIZE_DEFAULT];
 static kernel_pid_t pids[NB_THREADS];
 
-static void *_thread_fn(void *arg)
-{
+static void *_thread_fn(void *arg) {
     int next = ((uintptr_t)arg + 1) % NB_THREADS;
 
     printf("Creating thread #%" PRIuPTR ", next=%d\n", (uintptr_t)arg, next);
@@ -40,20 +35,19 @@ static void *_thread_fn(void *arg)
     while (1) {
         msg_t m1, m2;
         msg_receive(&m1);
-        /* generate different loads per thead */
+        // generate different loads per thead
         for (int i = 0; i < (100 * (next + 1)); ++i) {
             volatile uint32_t now = ztimer_now(ZTIMER_USEC);
             (void)now;
         }
-        ztimer_sleep(ZTIMER_USEC, 1000); /* Sleep for a bit */
+        ztimer_sleep(ZTIMER_USEC, 1000); // Sleep for a bit
         msg_send(&m2, pids[next]);
     }
 
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     test_utils_interactive_sync();
 
     for (uintptr_t i = 0; i < NB_THREADS; ++i) {
@@ -62,7 +56,7 @@ int main(void)
                                 0,
                                 _thread_fn, (void *)i, "thread");
     }
-    /* sleep for a second, so that `ps` shows some % on idle at the beginning */
+    // sleep for a second, so that `ps` shows some % on idle at the beginning
     ztimer_sleep(ZTIMER_SEC, 1);
 
     msg_t msg;

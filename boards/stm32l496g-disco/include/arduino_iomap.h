@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_stm32l496g-disco
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Arduino pins for the STM32L496G-DISCO board
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     boards_stm32l496g-disco
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Arduino pins for the STM32L496G-DISCO board
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "periph/gpio.h"
 #include "periph/adc.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Mapping of MCU pins to Arduino pins
- * @{
- */
+/// @name    Mapping of MCU pins to Arduino pins
+/// @{
 #define ARDUINO_PIN_0           GPIO_PIN(PORT_G, 8)
 #define ARDUINO_PIN_1           GPIO_PIN(PORT_G, 7)
 #define ARDUINO_PIN_2           GPIO_PIN(PORT_G, 13)
@@ -43,7 +37,7 @@ extern "C" {
 #define ARDUINO_PIN_14          GPIO_PIN(PORT_B, 7)
 #define ARDUINO_PIN_15          GPIO_PIN(PORT_B, 8)
 
-/* analog pins as digital pin */
+// analog pins as digital pin
 #define ARDUINO_PIN_16          GPIO_PIN(PORT_C, 4)
 #define ARDUINO_PIN_17          GPIO_PIN(PORT_C, 1)
 #define ARDUINO_PIN_18          GPIO_PIN(PORT_C, 3)
@@ -52,24 +46,20 @@ extern "C" {
 #define ARDUINO_PIN_21          GPIO_PIN(PORT_C, 0)
 
 #define ARDUINO_PIN_LAST    19
-/** @} */
+/// @}
 
-/**
- * @name    Aliases for analog pins
- * @{
- */
+/// @name    Aliases for analog pins
+/// @{
 #define ARDUINO_PIN_A0      ARDUINO_PIN_16
 #define ARDUINO_PIN_A1      ARDUINO_PIN_17
 #define ARDUINO_PIN_A2      ARDUINO_PIN_18
 #define ARDUINO_PIN_A3      ARDUINO_PIN_19
 #define ARDUINO_PIN_A4      ARDUINO_PIN_20
 #define ARDUINO_PIN_A5      ARDUINO_PIN_21
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino analog pins to RIOT ADC lines
- * @{
- */
+/// @name    Mapping of Arduino analog pins to RIOT ADC lines
+/// @{
 #define ARDUINO_A0              ADC_LINE(0)
 #define ARDUINO_A1              ADC_LINE(1)
 #define ARDUINO_A2              ADC_LINE(2)
@@ -78,10 +68,10 @@ extern "C" {
 #define ARDUINO_A5              ADC_LINE(5)
 
 #define ARDUINO_ANALOG_PIN_LAST 5
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

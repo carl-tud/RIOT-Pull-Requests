@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2015 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>,
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2015 Ell-i open source co-operative
- * SPDX-FileCopyrightText: 2015 Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>,
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2015 Ell-i open source co-operative
+// SPDX-FileCopyrightText: 2015 Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief   Multiple asynchronous read on file descriptors
- * @ingroup cpu_native
- * @author  Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
- */
+/// @file
+/// @brief   Multiple asynchronous read on file descriptors
+/// @ingroup cpu_native
+/// @author  Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
 
 #include <err.h>
 #include <signal.h>
@@ -33,7 +29,7 @@ static void _sigio_child(int fd);
 static void _async_io_isr(void) {
     if (real_poll(_fds, _next_index, 0) > 0) {
         for (int i = 0; i < _next_index; i++) {
-            /* handle if one of the events has happened */
+            // handle if one of the events has happened
             if (_fds[i].revents & _fds[i].events) {
                 pollers[i].cb(_fds[i].fd, pollers[i].arg);
             }
@@ -49,7 +45,7 @@ void native_async_read_cleanup(void) {
     native_unregister_interrupt(SIGIO);
 
     for (int i = 0; i < _next_index; i++) {
-        /* don't close stdin */
+        // don't close stdin
         if (_fds[i].fd != STDIN_FILENO) {
             real_close(_fds[i].fd);
         }
@@ -85,11 +81,11 @@ void native_async_read_add_handler(int fd, void *arg, native_async_read_callback
 
     _add_handler(fd, arg, handler);
 
-    /* configure fds to send signals on io */
+    // configure fds to send signals on io
     if (real_fcntl(fd, F_SETOWN, _native_pid) == -1) {
         err(EXIT_FAILURE, "native_async_read_add_handler(): fcntl(F_SETOWN)");
     }
-    /* set file access mode to non-blocking */
+    // set file access mode to non-blocking
     if (real_fcntl(fd, F_SETFL, O_NONBLOCK | O_ASYNC) == -1) {
         err(EXIT_FAILURE, "native_async_read_add_handler(): fcntl(F_SETFL)");
     }
@@ -97,8 +93,7 @@ void native_async_read_add_handler(int fd, void *arg, native_async_read_callback
     _next_index++;
 }
 
-void native_async_read_remove_handler(int fd)
-{
+void native_async_read_remove_handler(int fd) {
     int res = real_fcntl(fd, F_GETFL);
     if (res < 0) {
         err(EXIT_FAILURE, "native_async_read_remove_handler(): fcntl(F_GETFL)");
@@ -136,8 +131,7 @@ void native_async_read_add_int_handler(int fd, void *arg, native_async_read_call
     _next_index++;
 }
 
-static void _sigio_child(int index)
-{
+static void _sigio_child(int index) {
     struct pollfd fds = _fds[index];
     async_read_t *poll = &pollers[_next_index];
     pid_t parent = _native_pid;
@@ -148,7 +142,7 @@ static void _sigio_child(int index)
     if (child > 0) {
         poll->child_pid = child;
 
-        /* return in parent process */
+        // return in parent process
         return;
     }
 
@@ -158,8 +152,8 @@ static void _sigio_child(int index)
     sigaddset(&sigmask, SIGCONT);
     sigprocmask(SIG_BLOCK, &sigmask, NULL);
 
-    /* watch tap interface and signal parent process if data is
-     * available */
+    // watch tap interface and signal parent process if data is
+    // available
     while (1) {
         if (real_poll(&fds, 1, -1) == 1) {
             kill(parent, SIGIO);
@@ -169,8 +163,8 @@ static void _sigio_child(int index)
             err(EXIT_FAILURE, "osx_sigio_child: select");
         }
 
-        /* If SIGCONT is sent before calling pause(), the process stops
-         * forever, so using sigwait instead. */
+        // If SIGCONT is sent before calling pause(), the process stops
+        // forever, so using sigwait instead.
 
         int sig;
 

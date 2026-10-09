@@ -1,24 +1,20 @@
-/*
- * Copyright (C) 2019 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys
- * @{
- *
- * @file
- * @brief       STDIO over NimBLE implementation
- *
- *
- * @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup     sys
+/// @{
+///
+/// @file
+/// @brief       STDIO over NimBLE implementation
+///
+///
+/// @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <errno.h>
 #include <stdlib.h>
@@ -37,14 +33,14 @@
 #include <stdarg.h>
 #include "stdio_uart.h"
 #include "periph/uart.h"
-#endif /* IS_USED(MODULE_STDIO_NIMBLE_DEBUG) */
+#endif // IS_USED(MODULE_STDIO_NIMBLE_DEBUG)
 
 #include "stdio_base.h"
 #include "stdio_nimble.h"
 
 #define NIMBLE_MAX_PAYLOAD  MYNEWT_VAL(BLE_LL_MAX_PKT_SIZE)
 
-/* Nimble uses ZTIMER_MSEC => 1 tick equals 1 ms */
+// Nimble uses ZTIMER_MSEC => 1 tick equals 1 ms
 #define CALLOUT_TICKS_MS    1
 
 enum {
@@ -54,21 +50,21 @@ enum {
     STDIO_NIMBLE_SENDING,
 };
 
-/* tsrb for stdout */
+// tsrb for stdout
 static uint8_t _tsrb_stdout_mem[CONFIG_STDIO_NIMBLE_STDOUT_BUFSIZE];
 static tsrb_t _tsrb_stdout = TSRB_INIT(_tsrb_stdout_mem);
 
-/* intermediate buffer to transfer data between tsrb and nimble functions,
- * which are all based on os_mbuf implementation */
+// intermediate buffer to transfer data between tsrb and nimble functions,
+// which are all based on os_mbuf implementation
 static uint8_t _stdin_read_buf[NIMBLE_MAX_PAYLOAD];
 static uint8_t _stdout_write_buf[NIMBLE_MAX_PAYLOAD];
 
-/* information about bluetooth connection */
+// information about bluetooth connection
 static uint16_t _conn_handle;
 static uint16_t _val_handle_stdout;
 static volatile uint8_t _status = STDIO_NIMBLE_DISCONNECTED;
 
-/* nimble related structs */
+// nimble related structs
 static struct ble_npl_callout _send_stdout_callout;
 static struct ble_gap_event_listener _gap_event_listener;
 
@@ -78,7 +74,7 @@ static struct ble_gap_event_listener _gap_event_listener;
 #define PREFIX_STDOUT   "STDOUT: "
 
 static char _debug_printf_buf[DEBUG_PRINTF_BUFSIZE];
-#endif /* IS_USED(MODULE_STDIO_NIMBLE_DEBUG) */
+#endif // IS_USED(MODULE_STDIO_NIMBLE_DEBUG)
 
 #if IS_USED(MODULE_STDIO_NIMBLE_DEBUG)
 #define _debug_printf(...) \
@@ -92,41 +88,30 @@ static char _debug_printf_buf[DEBUG_PRINTF_BUFSIZE];
 #define _debug_printf(...) (void)0
 #endif
 
-/**
- * @brief UUID for stdio service (value: e6d54866-0292-4779-b8f8-c52bbec91e71)
- */
+/// @brief UUID for stdio service (value: e6d54866-0292-4779-b8f8-c52bbec91e71)
 static const ble_uuid128_t gatt_svr_svc_stdio_uuid
     = BLE_UUID128_INIT(0x71, 0x1e, 0xc9, 0xbe, 0x2b, 0xc5, 0xf8, 0xb8,
                        0x79, 0x47, 0x92, 0x02, 0x66, 0x48, 0xd5, 0xe6);
 
-/**
- * @brief UUID for stdout characteristic (value: 35f28386-3070-4f3b-ba38-27507e991762)
- */
+/// @brief UUID for stdout characteristic (value: 35f28386-3070-4f3b-ba38-27507e991762)
 static const ble_uuid128_t gatt_svr_chr_stdout_uuid
     = BLE_UUID128_INIT(0x62, 0x17, 0x99, 0x7e, 0x50, 0x27, 0x38, 0xba,
                        0x3b, 0x4f, 0x70, 0x30, 0x86, 0x83, 0xf2, 0x35);
 
-/**
- * @brief UUID for stdin characteristic (value: ccdd113f-40d5-4d68-86ac-a728dd82f4aa)
- */
+/// @brief UUID for stdin characteristic (value: ccdd113f-40d5-4d68-86ac-a728dd82f4aa)
 static const ble_uuid128_t gatt_svr_chr_stdin_uuid
     = BLE_UUID128_INIT(0xaa, 0xf4, 0x82, 0xdd, 0x28, 0xa7, 0xac, 0x86,
                        0x68, 0x4d, 0xd5, 0x40, 0x3f, 0x11, 0xdd, 0xcc);
 
-/**
- * @brief Nimble access callback for stdin characteristic
- */
+/// @brief Nimble access callback for stdin characteristic
 static int gatt_svr_chr_access_stdin(
     uint16_t conn_handle, uint16_t attr_handle,
     struct ble_gatt_access_ctxt *ctxt, void *arg);
 
-/**
- * @brief Dummy access callback, because nimble requires one
- */
+/// @brief Dummy access callback, because nimble requires one
 static int gatt_svr_chr_access_noop(
     uint16_t conn_handle, uint16_t attr_handle,
-    struct ble_gatt_access_ctxt *ctxt, void *arg)
-{
+    struct ble_gatt_access_ctxt *ctxt, void *arg) {
 
     (void)conn_handle;
     (void)attr_handle;
@@ -136,56 +121,50 @@ static int gatt_svr_chr_access_noop(
     return 0;
 }
 
-/**
- * @brief Struct to define the stdio bluetooth service with its characteristics
- */
+/// @brief Struct to define the stdio bluetooth service with its characteristics
 static const struct ble_gatt_svc_def _gatt_svr_svcs[] =
 {
-    /*
-     * access_cb defines a callback for read and write access events on
-     * given characteristics
-     */
+    // access_cb defines a callback for read and write access events on
+    // given characteristics
     {
-        /* Service: stdio */
+        // Service: stdio
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
         .uuid = (ble_uuid_t *)&gatt_svr_svc_stdio_uuid.u,
         .characteristics = (struct ble_gatt_chr_def[]) { {
-            /* Characteristic: stdout */
+            // Characteristic: stdout
             .uuid = (ble_uuid_t *)&gatt_svr_chr_stdout_uuid.u,
             .access_cb = gatt_svr_chr_access_noop,
             .val_handle = &_val_handle_stdout,
             .flags = BLE_GATT_CHR_F_INDICATE,
         }, {
-            /* Characteristic: stdin */
+            // Characteristic: stdin
             .uuid = (ble_uuid_t *)&gatt_svr_chr_stdin_uuid.u,
             .access_cb = gatt_svr_chr_access_stdin,
             .flags = BLE_GATT_CHR_F_WRITE,
         }, {
-            0, /* No more characteristics in this service */
+            0, // No more characteristics in this service
         }, }
     },
     {
-        0, /* No more services */
+        0, // No more services
     },
 };
 
-static void _purge_buffer(void)
-{
+static void _purge_buffer(void) {
     stdio_clear_stdin();
 
 #if IS_USED(MODULE_SHELL)
-    /* send Ctrl-C to the shell to reset the input */
+    // send Ctrl-C to the shell to reset the input
     stdio_rx_write_one('\x03');
 #endif
 
     tsrb_clear(&_tsrb_stdout);
 }
 
-static void _send_stdout(struct ble_npl_event *ev)
-{
+static void _send_stdout(struct ble_npl_event *ev) {
     (void)ev;
 
-    /* rearm callout */
+    // rearm callout
     ble_npl_callout_reset(&_send_stdout_callout, CALLOUT_TICKS_MS);
 
     if (_status == STDIO_NIMBLE_SUBSCRIBED) {
@@ -197,7 +176,7 @@ static void _send_stdout(struct ble_npl_event *ev)
             if (om != NULL) {
                 int rc = ble_gattc_indicate_custom(_conn_handle, _val_handle_stdout, om);
                 if (rc == 0) {
-                    /* bytes were successfully sent, so drop them from the buffer */
+                    // bytes were successfully sent, so drop them from the buffer
                     tsrb_drop(&_tsrb_stdout, to_send);
                     _debug_printf("%d bytes sent successfully\n", to_send);
                 }
@@ -215,8 +194,7 @@ static void _send_stdout(struct ble_npl_event *ev)
     }
 }
 
-static int _gap_event_cb(struct ble_gap_event *event, void *arg)
-{
+static int _gap_event_cb(struct ble_gap_event *event, void *arg) {
     (void)arg;
 
     switch (event->type) {
@@ -279,15 +257,14 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
 
 static int gatt_svr_chr_access_stdin(
     uint16_t conn_handle, uint16_t attr_handle,
-    struct ble_gatt_access_ctxt *ctxt, void *arg)
-{
+    struct ble_gatt_access_ctxt *ctxt, void *arg) {
     (void)conn_handle;
     (void)attr_handle;
     (void)arg;
 
     uint16_t om_len = OS_MBUF_PKTLEN(ctxt->om);
 
-    /* read sent data */
+    // read sent data
     int rc = ble_hs_mbuf_to_flat(ctxt->om, _stdin_read_buf, sizeof(_stdin_read_buf), &om_len);
 
     stdio_rx_write(_stdin_read_buf, om_len);
@@ -295,8 +272,7 @@ static int gatt_svr_chr_access_stdin(
     return rc;
 }
 
-static void _init(void)
-{
+static void _init(void) {
 #if IS_USED(MODULE_STDIO_NIMBLE_DEBUG)
     uart_init(STDIO_UART_DEV, STDIO_UART_BAUDRATE, NULL, NULL);
 #endif
@@ -305,8 +281,7 @@ static void _init(void)
                          _send_stdout, NULL);
 }
 
-static ssize_t _write(const void *buffer, size_t len)
-{
+static ssize_t _write(const void *buffer, size_t len) {
     unsigned state = irq_disable();
 
 #if IS_USED(MODULE_STDIO_NIMBLE_DEBUG)
@@ -321,7 +296,7 @@ static ssize_t _write(const void *buffer, size_t len)
 
     if (_status == STDIO_NIMBLE_SUBSCRIBED || _status == STDIO_NIMBLE_SENDING) {
         if (!ble_npl_callout_is_active(&_send_stdout_callout)) {
-            /* bootstrap callout */
+            // bootstrap callout
             ble_npl_callout_reset(&_send_stdout_callout, CALLOUT_TICKS_MS);
         }
     }
@@ -329,25 +304,24 @@ static ssize_t _write(const void *buffer, size_t len)
     return consumed;
 }
 
-/* is going to be called by auto_init */
-void stdio_nimble_init(void)
-{
+// is going to be called by auto_init
+void stdio_nimble_init(void) {
     int rc = 0;
 
-    /* verify and add our custom services */
+    // verify and add our custom services
     rc = ble_gatts_count_cfg(_gatt_svr_svcs);
     assert(rc == 0);
     rc = ble_gatts_add_svcs(_gatt_svr_svcs);
     assert(rc == 0);
 
-    /* reload the GATT server to link our added services */
+    // reload the GATT server to link our added services
     ble_gatts_start();
 
-    /* register gap event listener */
+    // register gap event listener
     rc = ble_gap_event_listener_register(&_gap_event_listener, _gap_event_cb, NULL);
     assert(rc == 0);
 
-    /* fix compilation error when using DEVELHELP=0 */
+    // fix compilation error when using DEVELHELP=0
     (void)rc;
 }
 

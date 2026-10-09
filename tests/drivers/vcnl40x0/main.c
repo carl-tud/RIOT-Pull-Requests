@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the VNCL40X0 proximity and ambient light sensor.
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the VNCL40X0 proximity and ambient light sensor.
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -22,10 +18,9 @@
 #include "xtimer.h"
 #include "board.h"
 
-#define SLEEP_2S   (2U) /* 2 seconds delay between printf */
+#define SLEEP_2S   (2U) // 2 seconds delay between printf
 
-int main(void)
-{
+int main(void) {
     vcnl40x0_t dev;
     int result;
 

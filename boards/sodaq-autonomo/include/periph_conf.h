@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_sodaq-autonomo
- * @{
- *
- * @file
- * @brief       Configuration of CPU peripherals for the SODAQ Autonomo board
- *
- * @author      Kees Bakker <kees@sodaq.com>
- */
+/// @ingroup     boards_sodaq-autonomo
+/// @{
+///
+/// @file
+/// @brief       Configuration of CPU peripherals for the SODAQ Autonomo board
+///
+/// @author      Kees Bakker <kees@sodaq.com>
 
 #include <stdint.h>
 
@@ -30,11 +26,9 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- * See Table 6.1 of the SAM D21 Datasheet
- */
+/// @name    UART configuration
+/// @{
+/// See Table 6.1 of the SAM D21 Datasheet
 static const uart_conf_t uart_config[] = {
     {
         .dev      = &SERCOM0->USART,
@@ -94,21 +88,19 @@ static const uart_conf_t uart_config[] = {
     },
 };
 
-/* interrupt function name mapping */
+// interrupt function name mapping
 #define UART_0_ISR          isr_sercom0
 #define UART_1_ISR          isr_sercom5
 #define UART_2_ISR          isr_sercom4
 #define UART_3_ISR          isr_sercom1
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name ADC configuration
- * @{
- */
+/// @name ADC configuration
+/// @{
 
-/* ADC Default values */
+// ADC Default values
 #define ADC_PRESCALER                      ADC_CTRLB_PRESCALER_DIV512
 
 #define ADC_NEG_INPUT                      ADC_INPUTCTRL_MUXNEG_GND
@@ -116,55 +108,53 @@ static const uart_conf_t uart_config[] = {
 #define ADC_REF_DEFAULT                    ADC_REFCTRL_REFSEL_INTVCC1
 
 static const adc_conf_chan_t adc_channels[] = {
-    /* port, muxpos/pin */
-    /* Use the Arduino pin number order */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA02 },     /* ADC/AIN[0], A0 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA06 },     /* ADC/AIN[6], A1 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA05 },     /* ADC/AIN[5], A2 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA04 },     /* ADC/AIN[4], A3 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB09 },     /* ADC/AIN[3], A4 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB08 },     /* ADC/AIN[2], A5 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB07 },    /* ADC/AIN[15], A6 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB06 },    /* ADC/AIN[14], A7 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB05 },    /* ADC/AIN[13], A8 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB04 },    /* ADC/AIN[12], A9 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA07 },     /* ADC/AIN[7], A10 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB03 },    /* ADC/AIN[11], A11 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB02 },    /* ADC/AIN[10], A12 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB01 },     /* ADC/AIN[9], A13 (pin also used for DTR) */
+    // port, muxpos/pin
+    // Use the Arduino pin number order
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA02 },     // ADC/AIN[0], A0
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA06 },     // ADC/AIN[6], A1
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA05 },     // ADC/AIN[5], A2
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA04 },     // ADC/AIN[4], A3
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB09 },     // ADC/AIN[3], A4
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB08 },     // ADC/AIN[2], A5
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB07 },    // ADC/AIN[15], A6
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB06 },    // ADC/AIN[14], A7
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB05 },    // ADC/AIN[13], A8
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB04 },    // ADC/AIN[12], A9
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA07 },     // ADC/AIN[7], A10
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB03 },    // ADC/AIN[11], A11
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB02 },    // ADC/AIN[10], A12
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB01 },     // ADC/AIN[9], A13 (pin also used for DTR)
 
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB00 },     /* ADC/AIN[8], BATVOLT */
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB00 },     // ADC/AIN[8], BATVOLT
 };
 
 #define ADC_NUMOF                          ARRAY_SIZE(adc_channels)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 #define PWM_0_EN            1
 #define PWM_1_EN            1
 
 #if PWM_0_EN
-/* PWM0 channels */
+// PWM0 channels
 static const pwm_conf_chan_t pwm_chan0_config[] = {
-    /* GPIO pin, MUX value, TCC channel */
+    // GPIO pin, MUX value, TCC channel
     { GPIO_PIN(PA, 6), GPIO_MUX_E, 0 },
     { GPIO_PIN(PA, 7), GPIO_MUX_E, 1 },
 };
 #endif
 #if PWM_1_EN
-/* PWM1 channels */
+// PWM1 channels
 static const pwm_conf_chan_t pwm_chan1_config[] = {
-    /* GPIO pin, MUX value, TCC channel */
+    // GPIO pin, MUX value, TCC channel
     { GPIO_PIN(PA, 16), GPIO_MUX_F, 0 },
     { GPIO_PIN(PA, 18), GPIO_MUX_F, 2 },
     { GPIO_PIN(PA, 19), GPIO_MUX_F, 3 }
 };
 #endif
 
-/* PWM device configuration */
+// PWM device configuration
 static const pwm_conf_t pwm_config[] = {
 #if PWM_0_EN
     {TCC_CONFIG(TCC1), pwm_chan0_config, ARRAY_SIZE(pwm_chan0_config), SAM0_GCLK_MAIN},
@@ -174,14 +164,12 @@ static const pwm_conf_t pwm_config[] = {
 #endif
 };
 
-/* number of devices that are actually defined */
+// number of devices that are actually defined
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev      = &(SERCOM2->I2CM),
@@ -194,10 +182,10 @@ static const i2c_conf_t i2c_config[] = {
      }
 };
 #define I2C_NUMOF          ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

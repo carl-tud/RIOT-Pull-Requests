@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 RWTH Aachen, Josua Arndt, Steffen Robertz
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 RWTH Aachen, Josua Arndt, Steffen Robertz
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the tps6274x Step-Down converter
- *
- * @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
- * @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the tps6274x Step-Down converter
+///
+/// @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
+/// @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
+///
+/// @}
 #include <stdio.h>
 
 #include "board.h"
@@ -22,8 +18,7 @@
 #include "tps6274x.h"
 #include "tps6274x_params.h"
 
-int main(void)
-{
+int main(void) {
     tps6274x_t dev;
 
     puts("This application will test the tps6274x step down converter by switching through all voltages.");

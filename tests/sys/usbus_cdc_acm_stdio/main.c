@@ -1,26 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2019 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       Basic test for USB CDC ACM functionality. When plugged into a
- *              USB port, the peripheral should show up as a serial modem USB
- *              peripheral (/dev/ttyACMx on Linux) and should present the RIOT
- *              shell over this serial device.
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- */
+/// @file
+/// @brief       Basic test for USB CDC ACM functionality. When plugged into a
+///              USB port, the peripheral should show up as a serial modem USB
+///              peripheral (/dev/ttyACMx on Linux) and should present the RIOT
+///              shell over this serial device.
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "shell.h"
 
-static int cmd_text(int argc, char **argv)
-{
+static int cmd_text(int argc, char **argv) {
     char *usage = "text [length]\n";
     if (argc != 2) {
         puts(usage);
@@ -43,8 +38,7 @@ static int cmd_text(int argc, char **argv)
 
 SHELL_COMMAND(text, "Generates long text for testing stdio buffer", cmd_text);
 
-int main(void)
-{
+int main(void) {
     (void) puts("RIOT USB CDC ACM shell test");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

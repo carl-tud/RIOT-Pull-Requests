@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -30,13 +26,12 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }

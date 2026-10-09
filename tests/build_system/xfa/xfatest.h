@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -9,7 +7,7 @@
 extern "C" {
 #endif
 
-#ifndef DOXYGEN /* just a test header, please ignore */
+#ifndef DOXYGEN // just a test header, please ignore
 
 typedef struct {
     unsigned val;
@@ -17,7 +15,7 @@ typedef struct {
     char letter;
 } xfatest_t;
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN
 
 #ifdef __cplusplus
 }

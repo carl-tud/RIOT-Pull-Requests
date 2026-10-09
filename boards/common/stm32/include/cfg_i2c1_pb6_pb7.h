@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_stm32
- * @{
- *
- * @file
- * @brief       Common configuration for STM32 I2C
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_common_stm32
+/// @{
+///
+/// @file
+/// @brief       Common configuration for STM32 I2C
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "periph_cpu.h"
 
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -34,16 +28,16 @@ static const i2c_conf_t i2c_config[] = {
 #if CPU_FAM_STM32L4
         .scl_af         = GPIO_AF4,
         .sda_af         = GPIO_AF4,
-#else /* CPU_FAM_STM32L0 */
+#else // CPU_FAM_STM32L0
         .scl_af         = GPIO_AF1,
         .sda_af         = GPIO_AF1,
 #endif
         .bus            = APB1,
 #if CPU_FAM_STM32L4
         .rcc_mask       = RCC_APB1ENR1_I2C1EN,
-        .rcc_sw_mask    = RCC_CCIPR_I2C1SEL_1,          /* HSI (16 MHz) */
+        .rcc_sw_mask    = RCC_CCIPR_I2C1SEL_1,          // HSI (16 MHz)
         .irqn           = I2C1_ER_IRQn,
-#else /* CPU_FAM_STM32L0 */
+#else // CPU_FAM_STM32L0
         .rcc_mask       = RCC_APB1ENR_I2C1EN,
         .irqn           = I2C1_IRQn
 #endif
@@ -52,14 +46,14 @@ static const i2c_conf_t i2c_config[] = {
 
 #if CPU_FAM_STM32L4
 #define I2C_0_ISR           isr_i2c1_er
-#else /* CPU_FAM_STM32L0 */
+#else // CPU_FAM_STM32L0
 #define I2C_0_ISR           isr_i2c1
 #endif
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_isl29020
- *
- * @{
- * @file
- * @brief       Default configuration for ISL29020 devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_isl29020
+///
+/// @{
+/// @file
+/// @brief       Default configuration for ISL29020 devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "isl29020.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Set default configuration parameters
- * @{
- */
+/// @brief   Set default configuration parameters
+/// @{
 #ifndef ISL29020_PARAM_I2C
 #define ISL29020_PARAM_I2C              I2C_DEV(0)
 #endif
@@ -49,19 +43,15 @@ extern "C" {
 #ifndef ISL29020_SAUL_INFO
 #define ISL29020_SAUL_INFO              { .name = "isl29020" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const isl29020_params_t isl29020_params[] =
 {
     ISL29020_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t isl29020_saul_info[] =
 {
     ISL29020_SAUL_INFO
@@ -71,4 +61,4 @@ static const saul_reg_info_t isl29020_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

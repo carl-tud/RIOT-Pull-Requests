@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2015 INRIA
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2015 INRIA
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    test_utils_expect expect() utility function
- * @ingroup     sys
- *
- * @{
- * @file
- * @brief       test "expect condition" utility function
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @author      René Kijewski <rene.kijewski@fu-berlin.de>
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @defgroup    test_utils_expect expect() utility function
+/// @ingroup     sys
+///
+/// @{
+/// @file
+/// @brief       test "expect condition" utility function
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @author      René Kijewski <rene.kijewski@fu-berlin.de>
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
 
 #include <stdio.h>
 #include "compiler_hints.h"
@@ -29,54 +25,49 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Function to handle failed expectation
- *
- * @note    This function was introduced for memory size optimization
- *
- * @warning this function **NEVER** returns!
- *
- * @param[in] file  The file name of the file the expectation failed in
- * @param[in] line  The code line of @p file the expectation failed in
- */
-NORETURN static inline void _expect_failure(const char *file, unsigned line)
-{
+/// @brief   Function to handle failed expectation
+///
+/// @note    This function was introduced for memory size optimization
+///
+/// @warning this function **NEVER** returns!
+///
+/// @param[in] file  The file name of the file the expectation failed in
+/// @param[in] line  The code line of @p file the expectation failed in
+NORETURN static inline void _expect_failure(const char *file, unsigned line) {
     printf("%s:%u => failed condition\n", file, line);
     core_panic(PANIC_EXPECT_FAIL, "CONDITION FAILED.");
 }
 
-/**
- * @brief    abort the program if condition is false
- *
- * This is similar to assert(), but will not be excluded from a build even if
- * NDEBUG is set. Use e.g., in test application to "assert" conditions, in
- * order to prevent a different compilation mode (a release build?) from making
- * the test non-functional.
- *
- * Otherwise, the macro expect() prints an error message to standard error and
- * terminates the application by calling core_panic().
- *
- * The purpose of this macro is to help programmers find bugs in their
- * programs.
- *
- * A failed condition generates output similar to:
- *
- *     0x89abcdef
- *     *** RIOT kernel panic:
- *     FAILED CONDITION.
- *
- *     ...
- *
- * Where 0x89abcdef is an address. This address can be used with tools like
- * `addr2line` (or e.g. `arm-none-eabi-addr2line` for ARM-based code), `objdump`,
- * or `gdb` (with the command `info line *(0x89abcdef)`) to identify the line
- * the condition failed in.
- *
- */
+/// @brief    abort the program if condition is false
+///
+/// This is similar to assert(), but will not be excluded from a build even if
+/// NDEBUG is set. Use e.g., in test application to "assert" conditions, in
+/// order to prevent a different compilation mode (a release build?) from making
+/// the test non-functional.
+///
+/// Otherwise, the macro expect() prints an error message to standard error and
+/// terminates the application by calling core_panic().
+///
+/// The purpose of this macro is to help programmers find bugs in their
+/// programs.
+///
+/// A failed condition generates output similar to:
+///
+///     0x89abcdef
+///     *** RIOT kernel panic:
+///     FAILED CONDITION.
+///
+///     ...
+///
+/// Where 0x89abcdef is an address. This address can be used with tools like
+/// `addr2line` (or e.g. `arm-none-eabi-addr2line` for ARM-based code), `objdump`,
+/// or `gdb` (with the command `info line *(0x89abcdef)`) to identify the line
+/// the condition failed in.
+///
 #define expect(cond) (likely(cond) ? (void)0 :  _expect_failure(__FILE__, __LINE__))
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

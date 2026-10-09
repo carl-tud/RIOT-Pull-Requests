@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021-2023 Gerson Fernando Budke <nandojve@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021-2023 Gerson Fernando Budke <nandojve@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_atxmega
- * @ingroup     cpu_atxmega_periph
- * @{
- *
- * @file
- * @brief       Low-level I2C driver implementation
- *
- * @author      Gerson Fernando Budke <nandojve@gmail.com>
- *
- * @}
- */
+/// @ingroup     cpu_atxmega
+/// @ingroup     cpu_atxmega_periph
+/// @{
+///
+/// @file
+/// @brief       Low-level I2C driver implementation
+///
+/// @author      Gerson Fernando Budke <nandojve@gmail.com>
+///
+/// @}
 #include <assert.h>
 #include <errno.h>
 
@@ -28,9 +24,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief   Device Context allocation
- */
+/// @brief   Device Context allocation
 static struct {
     mutex_t locks;
     mutex_t xfer;
@@ -41,20 +35,16 @@ static struct {
     int8_t status;
 } i2c_ctx[I2C_NUMOF];
 
-/**
- * @brief   Get the pointer to the base register of the given I2C device
- *
- * @param[in] dev       I2C device identifier
- *
- * @return              base register address
- */
-static inline TWI_t* dev(i2c_t dev)
-{
+/// @brief   Get the pointer to the base register of the given I2C device
+///
+/// @param[in] dev       I2C device identifier
+///
+/// @return              base register address
+static inline TWI_t* dev(i2c_t dev) {
     return ((TWI_t*) (i2c_config[dev].dev));
 }
 
-static inline uint8_t _i2c_calc_baud(i2c_t i2c)
-{
+static inline uint8_t _i2c_calc_baud(i2c_t i2c) {
     uint16_t ftwi = (((CLOCK_CORECLOCK / (2*i2c_config[i2c].speed))-5)+1);
 
     if (ftwi > 255) {
@@ -69,8 +59,7 @@ static inline uint8_t _i2c_calc_baud(i2c_t i2c)
     return ftwi & 0xff;
 }
 
-void i2c_init(i2c_t i2c)
-{
+void i2c_init(i2c_t i2c) {
     uint8_t baudrate;
 
     assert((unsigned)i2c < I2C_NUMOF);
@@ -91,18 +80,16 @@ void i2c_init(i2c_t i2c)
     pm_periph_disable(i2c_config[i2c].pwr);
 }
 
-void i2c_init_pins(i2c_t i2c)
-{
+void i2c_init_pins(i2c_t i2c) {
     assert((unsigned)i2c < I2C_NUMOF);
     gpio_init(i2c_config[i2c].sda_pin, GPIO_OPC_WRD_AND_PULL);
     gpio_init(i2c_config[i2c].scl_pin, GPIO_OPC_WRD_AND_PULL);
 }
 
-void i2c_acquire(i2c_t i2c)
-{
+void i2c_acquire(i2c_t i2c) {
     assert((unsigned)i2c < I2C_NUMOF);
     DEBUG("acquire\n");
-    pm_block(4); /* Require clkPer */
+    pm_block(4); // Require clkPer
     mutex_lock(&i2c_ctx[i2c].locks);
     pm_periph_enable(i2c_config[i2c].pwr);
 
@@ -113,8 +100,7 @@ void i2c_acquire(i2c_t i2c)
     dev(i2c)->MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
 }
 
-void i2c_release(i2c_t i2c)
-{
+void i2c_release(i2c_t i2c) {
     assert((unsigned)i2c < I2C_NUMOF);
     dev(i2c)->MASTER.CTRLA = 0;
     pm_periph_disable(i2c_config[i2c].pwr);
@@ -124,8 +110,7 @@ void i2c_release(i2c_t i2c)
 }
 
 static int _i2c_transaction(i2c_t i2c, uint16_t addr, const void *data,
-                            size_t len, uint8_t flags, bool is_read)
-{
+                            size_t len, uint8_t flags, bool is_read) {
     assert((unsigned)i2c < I2C_NUMOF);
 
     if (flags & I2C_ADDR10) {
@@ -152,32 +137,27 @@ static int _i2c_transaction(i2c_t i2c, uint16_t addr, const void *data,
 }
 
 int i2c_write_bytes(i2c_t i2c, uint16_t addr, const void *data, size_t len,
-                    uint8_t flags)
-{
+                    uint8_t flags) {
     return _i2c_transaction(i2c, addr, data, len, flags, false);
 }
 
 int i2c_read_bytes(i2c_t i2c, uint16_t addr, void *data, size_t len,
-                   uint8_t flags)
-{
+                   uint8_t flags) {
     return _i2c_transaction(i2c, addr, data, len, flags, true);
 }
 
-/**
- * @internal
- *
- * @brief TWI master write interrupt handler.
- *
- *  Handles TWI transactions (master write) and responses to (N)ACK.
- */
-static inline void _i2c_write_handler(int i2c)
-{
+/// @internal
+///
+/// @brief TWI master write interrupt handler.
+///
+///  Handles TWI transactions (master write) and responses to (N)ACK.
+static inline void _i2c_write_handler(int i2c) {
     if (i2c_ctx[i2c].pos < i2c_ctx[i2c].len) {
         const uint8_t* const data = i2c_ctx[i2c].buffer;
         dev(i2c)->MASTER.DATA = data[i2c_ctx[i2c].pos++];
     }
     else {
-        /* Send STOP condition to complete the transaction. */
+        // Send STOP condition to complete the transaction.
         if (!(i2c_ctx[i2c].flags & I2C_NOSTOP)) {
             dev(i2c)->MASTER.CTRLC = TWI_MASTER_CMD_STOP_gc;
         }
@@ -187,23 +167,19 @@ static inline void _i2c_write_handler(int i2c)
     }
 }
 
-/**
- * @internal
- *
- * @brief TWI master read interrupt handler.
- *
- * This is the master read interrupt handler that takes care of reading bytes
- * from the TWI slave device.
- */
-static inline void _i2c_read_handler(int i2c)
-{
+/// @internal
+///
+/// @brief TWI master read interrupt handler.
+///
+/// This is the master read interrupt handler that takes care of reading bytes
+/// from the TWI slave device.
+static inline void _i2c_read_handler(int i2c) {
     if (i2c_ctx[i2c].pos < i2c_ctx[i2c].len) {
         uint8_t* const data = i2c_ctx[i2c].buffer;
         data[i2c_ctx[i2c].pos++] = dev(i2c)->MASTER.DATA;
 
-        /* If there is more to read, issue ACK and start a byte read.
-         * Otherwise, issue NACK and STOP to complete the transaction.
-         */
+        // If there is more to read, issue ACK and start a byte read.
+        // Otherwise, issue NACK and STOP to complete the transaction.
         if (i2c_ctx[i2c].pos < i2c_ctx[i2c].len) {
             dev(i2c)->MASTER.CTRLC = TWI_MASTER_CMD_RECVTRANS_gc;
         }
@@ -220,7 +196,7 @@ static inline void _i2c_read_handler(int i2c)
             mutex_unlock(&i2c_ctx[i2c].xfer);
         }
     } else {
-        /* Issue STOP and buffer overflow condition. */
+        // Issue STOP and buffer overflow condition.
         dev(i2c)->MASTER.CTRLC = TWI_MASTER_CMD_STOP_gc;
 
         i2c_ctx[i2c].status = -ENOMEM;
@@ -228,15 +204,12 @@ static inline void _i2c_read_handler(int i2c)
     }
 }
 
-/**
- * @internal
- *
- * @brief Common TWI master interrupt service routine.
- *
- *  Check current status and calls the appropriate handler.
- */
-static inline void isr_handler(int i2c)
-{
+/// @internal
+///
+/// @brief Common TWI master interrupt service routine.
+///
+///  Check current status and calls the appropriate handler.
+static inline void isr_handler(int i2c) {
     assert((unsigned)i2c < I2C_NUMOF);
 
     int8_t const m_status = dev(i2c)->MASTER.STATUS;
@@ -270,16 +243,16 @@ static inline void isr_handler(int i2c)
 
 #ifdef I2C_0_ISR
 AVR8_ISR(I2C_0_ISR, isr_handler, 0);
-#endif /* I2C_0_ISR */
+#endif // I2C_0_ISR
 
 #ifdef I2C_1_ISR
 AVR8_ISR(I2C_1_ISR, isr_handler, 1);
-#endif /* I2C_1_ISR */
+#endif // I2C_1_ISR
 
 #ifdef I2C_2_ISR
 AVR8_ISR(I2C_2_ISR, isr_handler, 2);
-#endif /* I2C_2_ISR */
+#endif // I2C_2_ISR
 
 #ifdef I2C_3_ISR
 AVR8_ISR(I2C_3_ISR, isr_handler, 3);
-#endif /* I2C_3_ISR */
+#endif // I2C_3_ISR

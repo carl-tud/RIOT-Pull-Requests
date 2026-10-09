@@ -1,30 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-FileCopyrightText: 2013 INRIA
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-FileCopyrightText: 2013 INRIA
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief    bench_xtimer_load test application
- *
- * This is based on tests/xtimer_drift. It removes the lengthy printout of the
- * worker thread and adds some stats keeping.
- *
- * @author   Kaspar Schleiser <kaspar@schleiser.de>
- * @author   Oliver Hahm <oliver.hahm@inria.fr>
- * @author   Christian Mehlis <mehlis@inf.fu-berlin.de>
- * @author   Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author   Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief    bench_xtimer_load test application
+///
+/// This is based on tests/xtimer_drift. It removes the lengthy printout of the
+/// worker thread and adds some stats keeping.
+///
+/// @author   Kaspar Schleiser <kaspar@schleiser.de>
+/// @author   Oliver Hahm <oliver.hahm@inria.fr>
+/// @author   Christian Mehlis <mehlis@inf.fu-berlin.de>
+/// @author   Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author   Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,14 +31,13 @@
 #include "msg.h"
 #include "log.h"
 
-/* We generate some context switching and IPC traffic by using multiple threads
- * and generate some xtimer load by scheduling several messages to be called at
- * different times. TEST_HZ is the frequency of messages being sent from the
- * main thread to the worker, all other message frequencies are derived from
- * TEST_HZ.
- * TEST_MSG_RX_USLEEP is a tiny sleep inside the message reception thread to
- * cause extra context switches.
- */
+// We generate some context switching and IPC traffic by using multiple threads
+// and generate some xtimer load by scheduling several messages to be called at
+// different times. TEST_HZ is the frequency of messages being sent from the
+// main thread to the worker, all other message frequencies are derived from
+// TEST_HZ.
+// TEST_MSG_RX_USLEEP is a tiny sleep inside the message reception thread to
+// cause extra context switches.
 #ifndef TEST_HZ
 #define TEST_HZ             (16LU)
 #endif
@@ -66,14 +61,13 @@ static struct timer_msg msg_b = { .interval = (TEST_INTERVAL / 3) };
 static struct timer_msg msg_c = { .interval = (TEST_INTERVAL * 5) };
 static struct timer_msg msg_d = { .interval = (TEST_INTERVAL * 2) };
 
-/* This thread is only here to give the kernel some extra load */
-static void *slacker_thread(void *arg)
-{
+// This thread is only here to give the kernel some extra load
+static void *slacker_thread(void *arg) {
     (void)arg;
 
     LOG_DEBUG("run thread %" PRIkernel_pid "\n", thread_getpid());
 
-    /* we need a queue if a 2nd message arrives while the first is processed */
+    // we need a queue if a 2nd message arrives while the first is processed
     msg_t msgq[TEST_MSG_QUEUE_SIZE];
     msg_init_queue(msgq, TEST_MSG_QUEUE_SIZE);
 
@@ -96,14 +90,13 @@ static volatile int32_t _min_drift, _max_drift, _min_jitter, _max_jitter;
 static volatile int32_t _final_drift;
 static volatile uint32_t _total_jitter, _samples;
 
-/* This thread will print the drift to stdout once per second */
-void *worker_thread(void *arg)
-{
+// This thread will print the drift to stdout once per second
+void *worker_thread(void *arg) {
     (void)arg;
 
-    /* Calculate interval based on possible precision when 'XTIMER_SHIFT > 0',
-     * to apply precision loss to expected interval length.
-     * test_interval != TEST_INTERVAL */
+    // Calculate interval based on possible precision when 'XTIMER_SHIFT > 0',
+    // to apply precision loss to expected interval length.
+    // test_interval != TEST_INTERVAL
     uint32_t test_interval =
         xtimer_usec_from_ticks(xtimer_ticks_from_usec(TEST_INTERVAL));
     uint32_t start = 0;
@@ -150,11 +143,10 @@ void *worker_thread(void *arg)
     }
 }
 
-int main(void)
-{
+int main(void) {
     LOG_DEBUG("[INIT]\n");
     msg_t m;
-    /* create and trigger first background thread */
+    // create and trigger first background thread
     kernel_pid_t pid1 = thread_create(slacker_stack1, sizeof(slacker_stack1),
                                       THREAD_PRIORITY_MAIN - 1,
                                       0,
@@ -168,7 +160,7 @@ int main(void)
     m.content.ptr = &msg_b;
     msg_try_send(&m, pid1);
 
-    /* create and trigger second background thread */
+    // create and trigger second background thread
     kernel_pid_t pid2 = thread_create(slacker_stack2, sizeof(slacker_stack2),
                                       THREAD_PRIORITY_MAIN - 1,
                                       0,
@@ -182,7 +174,7 @@ int main(void)
     m.content.ptr = &msg_d;
     msg_try_send(&m, pid2);
 
-    /* create and trigger worker thread */
+    // create and trigger worker thread
     kernel_pid_t pid3 = thread_create(worker_stack, sizeof(worker_stack),
                                       THREAD_PRIORITY_MAIN - 2,
                                       0,

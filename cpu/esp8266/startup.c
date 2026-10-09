@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp8266
- * @{
- *
- * @file
- * @brief       Implementation of the CPU initialization
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp8266
+/// @{
+///
+/// @file
+/// @brief       Implementation of the CPU initialization
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -44,31 +40,30 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* external esp function declarations */
+// external esp function declarations
 extern uint32_t hwrand (void);
 
-void esp_riot_init(void)
-{
-    /* clear RTC bss data */
+void esp_riot_init(void) {
+    // clear RTC bss data
     extern uint8_t _rtc_bss_start, _rtc_bss_end;
     esp_reset_reason_t reset_reason = esp_reset_reason();
     if (reset_reason != ESP_RST_DEEPSLEEP && reset_reason != ESP_RST_SW) {
-        /* cppcheck-suppress comparePointers */
+        // cppcheck-suppress comparePointers
         memset(&_rtc_bss_start, 0, (&_rtc_bss_end - &_rtc_bss_start));
     }
 
-    /* enable cached read from flash */
+    // enable cached read from flash
     Cache_Read_Enable_New();
 
-    /* initialize the ISR stack for usage measurements */
+    // initialize the ISR stack for usage measurements
     thread_isr_stack_init();
 
 #ifndef CPU_ESP8266
-    /* initialize newlib system calls */
+    // initialize newlib system calls
     syscalls_init ();
 #endif
 
-    /* set system frequency if not 80 MHz */
+    // set system frequency if not 80 MHz
     if (ESP8266_CPU_FREQUENCY != 80) {
         system_update_cpu_freq(ESP8266_CPU_FREQUENCY);
     }
@@ -82,49 +77,49 @@ void esp_riot_init(void)
     heap_stats();
 #endif
 
-    /* set exception handlers */
+    // set exception handlers
     init_exceptions ();
 
-    /* systemwide UART initialization */
+    // systemwide UART initialization
     extern void uart_system_init (void);
     uart_system_init();
 
-    /* init watchdogs */
+    // init watchdogs
     system_wdt_init();
 
-    /* init random number generator */
+    // init random number generator
     srand(hwrand());
 
 #if MODULE_MTD
-    /* init flash drive */
+    // init flash drive
     extern void spi_flash_drive_init (void);
     spi_flash_drive_init();
 #endif
 
-    /* initialize stdio*/
+    // initialize stdio
     extern int stdio_is_initialized;
     early_init();
     stdio_is_initialized = 1;
 
-    /* trigger static peripheral initialization */
+    // trigger static peripheral initialization
     periph_init();
 
-    /* trigger board initialization */
+    // trigger board initialization
     board_init();
 
 #ifdef MODULE_ESP_LOG_STARTUP
-    /* print the board config */
+    // print the board config
     board_print_config();
 #else
-    /* to have an empty line after the unreadable characters from ROM loader */
+    // to have an empty line after the unreadable characters from ROM loader
     puts("");
 #endif
 
-    /* initialize ESP system event loop */
+    // initialize ESP system event loop
     extern void esp_event_handler_init(void);
     esp_event_handler_init();
 
-    /* activate software interrupt based context switch */
+    // activate software interrupt based context switch
     extern void IRAM thread_yield_isr(void* arg);
     ets_isr_attach(ETS_SOFT_INUM, thread_yield_isr, NULL);
     ets_isr_unmask(BIT(ETS_SOFT_INUM));
@@ -134,29 +129,25 @@ void esp_riot_init(void)
 #endif
 }
 
-void esp_riot_start(void)
-{
-    /* does not return */
+void esp_riot_start(void) {
+    // does not return
     kernel_init();
 }
 
-void __wrap_pp_attach(void)
-{
+void __wrap_pp_attach(void) {
 #ifdef MODULE_ESP_WIFI_ANY
     extern void __real_pp_attach(void);
     __real_pp_attach();
 #endif
 }
 
-void __wrap_pm_attach(void)
-{
+void __wrap_pm_attach(void) {
 #ifdef MODULE_ESP_WIFI_ANY
     extern void __real_pm_attach(void);
     __real_pm_attach();
 #endif
 }
 
-bool cpu_woke_from_backup(void)
-{
+bool cpu_woke_from_backup(void) {
     return esp_reset_reason() == ESP_RST_DEEPSLEEP;
 }

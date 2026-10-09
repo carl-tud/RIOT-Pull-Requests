@@ -1,27 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_riscv_common
- * @{
- *
- * @file
- * @brief           RISC-V CPU configuration options
- *
- * @author          Koen Zandberg
- */
+/// @ingroup         cpu_riscv_common
+/// @{
+///
+/// @file
+/// @brief           RISC-V CPU configuration options
+///
+/// @author          Koen Zandberg
 
 #include "vendor/riscv_csr.h"
 #include "cpu_conf_common.h"
 
-/**
- * @name Configuration of default stack sizes
- * @{
- */
+/// @name Configuration of default stack sizes
+/// @{
 #if __riscv_xlen == 64
 #  ifndef THREAD_EXTRA_STACKSIZE_PRINTF
 #    define THREAD_EXTRA_STACKSIZE_PRINTF   (512)
@@ -43,21 +37,15 @@
 #    define THREAD_STACKSIZE_IDLE           (256)
 #  endif
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   Attribute for memory sections required by SRAM PUF
- */
+/// @brief   Attribute for memory sections required by SRAM PUF
 #define PUF_SRAM_ATTRIBUTES __attribute__((used, section(".noinit")))
 
-/**
- * @brief   Declare the heap_stats function as available
- */
+/// @brief   Declare the heap_stats function as available
 #define HAVE_HEAP_STATS
 
-/**
- * @brief   This arch uses the inlined irq API.
- */
+/// @brief   This arch uses the inlined irq API.
 #define IRQ_API_INLINED     (1)
 
 #ifdef __cplusplus
@@ -68,4 +56,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

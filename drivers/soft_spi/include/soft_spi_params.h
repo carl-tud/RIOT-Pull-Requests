@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_soft_spi
- * @{
- *
- * @file
- * @brief       Software SPI configuration
- *
- * @author      Markus Blechschmidt <Markus.Blechschmidt@haw-hamburg.de>
- */
+/// @ingroup     drivers_soft_spi
+/// @{
+///
+/// @file
+/// @brief       Software SPI configuration
+///
+/// @author      Markus Blechschmidt <Markus.Blechschmidt@haw-hamburg.de>
 
 #include "soft_spi.h"
 
@@ -37,20 +33,16 @@ extern "C" {
                               .clk_pin  = SOFT_SPI_PARAM_CLK }
 #endif
 
-/**
- * @brief   Software SPI port descriptor array
- */
+/// @brief   Software SPI port descriptor array
 static soft_spi_conf_t soft_spi_config[] = {
     SOFT_SPI_PARAMS,
 };
 
-/**
- * @brief   Number of software SPI buses
- */
+/// @brief   Number of software SPI buses
 #define SOFT_SPI_NUMOF             ARRAY_SIZE(soft_spi_config)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

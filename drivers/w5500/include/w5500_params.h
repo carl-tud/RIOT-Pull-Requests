@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Stefan Schmidt
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Stefan Schmidt
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_w5500
- * @{
- *
- * @file
- * @brief       Default parameters for W5500 Ethernet devices
- *
- * @author      Stefan Schmidt <stemschmidt@gmail.com>
- */
+/// @ingroup     drivers_w5500
+/// @{
+///
+/// @file
+/// @brief       Default parameters for W5500 Ethernet devices
+///
+/// @author      Stefan Schmidt <stemschmidt@gmail.com>
 
 #include "board.h"
 
@@ -21,30 +17,26 @@
 extern "C" {
 #endif
 
-/**
- * @name    Default configuration parameters for the W5500 driver
- * @{
- */
+/// @name    Default configuration parameters for the W5500 driver
+/// @{
 #ifndef W5500_PARAM_SPI
-#define W5500_PARAM_SPI         (SPI_DEV(0))       /**< Default SPI device */
+#define W5500_PARAM_SPI         (SPI_DEV(0))       ///< Default SPI device
 #endif
 #ifndef W5500_PARAM_SPI_CLK
-#define W5500_PARAM_SPI_CLK     (SPI_CLK_10MHZ)     /**< Default SPI speed */
+#define W5500_PARAM_SPI_CLK     (SPI_CLK_10MHZ)     ///< Default SPI speed
 #endif
 #ifndef W5500_PARAM_CS
-#define W5500_PARAM_CS          (GPIO_PIN(0, 27))   /**< Default SPI chip select pin */
+#define W5500_PARAM_CS          (GPIO_PIN(0, 27))   ///< Default SPI chip select pin
 #endif
 #ifndef W5500_PARAM_INT
-#define W5500_PARAM_INT         GPIO_UNDEF          /**< set to invalid */
+#define W5500_PARAM_INT         GPIO_UNDEF          ///< set to invalid
 #endif
 #ifndef CONFIG_W5500_POLLING_INTERVAL
-#define CONFIG_W5500_POLLING_INTERVAL 100u          /**< default polling interval 100 ms */
+#define CONFIG_W5500_POLLING_INTERVAL 100u          ///< default polling interval 100 ms
 #endif
 
 #ifndef W5500_PARAMS
-/**
- * @brief   W5500 initialization parameters
- */
+/// @brief   W5500 initialization parameters
 
 #define W5500_PARAMS   { .spi = W5500_PARAM_SPI,     \
                          .clk = W5500_PARAM_SPI_CLK, \
@@ -52,11 +44,9 @@ extern "C" {
                          .irq = W5500_PARAM_INT,     \
                          .polling_interval_ms = CONFIG_W5500_POLLING_INTERVAL }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   W5500 configuration
- */
+/// @brief   W5500 configuration
 static const w5500_params_t w5500_params[] = {
     W5500_PARAMS
 };
@@ -65,4 +55,4 @@ static const w5500_params_t w5500_params[] = {
 }
 #endif
 
-/** @} */
+/// @}

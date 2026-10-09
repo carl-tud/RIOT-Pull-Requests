@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2012 William Swanson
- * SPDX-License-Identifier: MIT
- */
+// SPDX-FileCopyrightText: 2012 William Swanson
+// SPDX-License-Identifier: MIT
 
 #pragma once
 

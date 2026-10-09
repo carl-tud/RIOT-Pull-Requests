@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 #include <stdlib.h>
 
@@ -32,8 +28,7 @@
         } \
     }
 
-static void test_gnrc_ipv6_hdr_build__src_NULL(void)
-{
+static void test_gnrc_ipv6_hdr_build__src_NULL(void) {
     ipv6_addr_t dst = DEFAULT_TEST_DST;
     gnrc_pktsnip_t *pkt;
     ipv6_hdr_t *hdr;
@@ -51,8 +46,7 @@ static void test_gnrc_ipv6_hdr_build__src_NULL(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-static void test_gnrc_ipv6_hdr_build__dst_NULL(void)
-{
+static void test_gnrc_ipv6_hdr_build__dst_NULL(void) {
     ipv6_addr_t src = DEFAULT_TEST_SRC;
     gnrc_pktsnip_t *pkt;
     ipv6_hdr_t *hdr;
@@ -70,8 +64,7 @@ static void test_gnrc_ipv6_hdr_build__dst_NULL(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-static void test_gnrc_ipv6_hdr_build__complete(void)
-{
+static void test_gnrc_ipv6_hdr_build__complete(void) {
     ipv6_addr_t src = DEFAULT_TEST_SRC;
     ipv6_addr_t dst = DEFAULT_TEST_DST;
     gnrc_pktsnip_t *pkt;
@@ -91,8 +84,7 @@ static void test_gnrc_ipv6_hdr_build__complete(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-Test *tests_gnrc_ipv6_hdr_tests(void)
-{
+Test *tests_gnrc_ipv6_hdr_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_gnrc_ipv6_hdr_build__src_NULL),
         new_TestFixture(test_gnrc_ipv6_hdr_build__dst_NULL),
@@ -104,8 +96,7 @@ Test *tests_gnrc_ipv6_hdr_tests(void)
     return (Test *)&ipv6_hdr_tests;
 }
 
-void tests_gnrc_ipv6_hdr(void)
-{
+void tests_gnrc_ipv6_hdr(void) {
     TESTS_RUN(tests_gnrc_ipv6_hdr_tests());
 }
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2013 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Bloom filter test application
- *
- * @author Christian Mehlis <mehlis@inf.fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Bloom filter test application
+///
+/// @author Christian Mehlis <mehlis@inf.fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -35,7 +31,7 @@
 #define MAGIC_A 0xafafafaf
 #define MAGIC_B 0x0c0c0c0c
 
-#define myseed 0x83d385c0 /* random number */
+#define myseed 0x83d385c0 // random number
 
 #define BUF_SIZE 50
 static uint32_t buf[BUF_SIZE];
@@ -47,15 +43,13 @@ hashfp_t hashes[BLOOM_HASHF] = {
     (hashfp_t) rotating_hash, (hashfp_t) one_at_a_time_hash,
 };
 
-static void buf_fill(uint32_t *buf, int len)
-{
+static void buf_fill(uint32_t *buf, int len) {
     for (int k = 0; k < len; k++) {
         buf[k] = random_uint32();
     }
 }
 
-int main(void)
-{
+int main(void) {
     bloom_init(&bloom, BLOOM_BITS, bf, hashes, BLOOM_HASHF);
 
     printf("Testing Bloom filter.\n\n");
@@ -104,8 +98,8 @@ int main(void)
     printf("%d elements probably in the filter.\n", in);
     printf("%d elements not in the filter.\n", not_in);
     unsigned false_positive_rate = (1000UL * in) /  lenA;
-    /* Use 'fmt/print_float' to work on all platforms (atmega)
-     * Stdout should be flushed before to prevent garbled output. */
+    // Use 'fmt/print_float' to work on all platforms (atmega)
+    // Stdout should be flushed before to prevent garbled output.
 #if defined(MODULE_NEWLIB) || defined(MODULE_PICOLIBC)
     fflush(stdout);
 #endif

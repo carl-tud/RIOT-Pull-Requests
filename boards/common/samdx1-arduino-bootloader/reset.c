@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-FileCopyrightText: 2019 Kees Bakker, SODAQ
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-FileCopyrightText: 2019 Kees Bakker, SODAQ
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_common
- * @{
- * @file
- * @brief       Board common implementations for managing an Arduino bootloader
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Kees Bakker <kees@sodaq.com>
- *
- * @}
- */
+/// @ingroup     boards_common
+/// @{
+/// @file
+/// @brief       Board common implementations for managing an Arduino bootloader
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Kees Bakker <kees@sodaq.com>
+///
+/// @}
 
 #ifdef MODULE_USB_BOARD_RESET
 
@@ -38,15 +34,14 @@
 #  define SAMD21_DOUBLE_TAP_MAGIC_NUMBER    (0x07738135UL)
 #endif
 
-void usb_board_reset_in_bootloader(void)
-{
-    /* The Arduino bootloader checks for a magic number in SRAM to remain in
-       bootloader mode.
-       See
-       https://github.com/arduino/ArduinoCore-samd/blob/master/bootloaders/zero/board_definitions_arduino_mkr1000.h#L38
-       and
-       https://github.com/arduino/ArduinoCore-samd/blob/master/bootloaders/zero/main.c#L94
-       for implementation details. */
+void usb_board_reset_in_bootloader(void) {
+    // The Arduino bootloader checks for a magic number in SRAM to remain in
+    //    bootloader mode.
+    //    See
+    //    https://github.com/arduino/ArduinoCore-samd/blob/master/bootloaders/zero/board_definitions_arduino_mkr1000.h#L38
+    //    and
+    //    https://github.com/arduino/ArduinoCore-samd/blob/master/bootloaders/zero/main.c#L94
+    //    for implementation details.
     uint32_t *reset_addr = (uint32_t *)SAMD21_DOUBLE_TAP_ADDR;
     *reset_addr = (uint32_t)SAMD21_DOUBLE_TAP_MAGIC_NUMBER;
 
@@ -54,4 +49,4 @@ void usb_board_reset_in_bootloader(void)
 }
 #else
 typedef int dont_be_pedantic;
-#endif /* MODULE_USB_BOARD_RESET */
+#endif // MODULE_USB_BOARD_RESET

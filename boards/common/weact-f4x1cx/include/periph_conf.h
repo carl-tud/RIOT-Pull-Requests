@@ -1,34 +1,30 @@
-/*
- * SPDX-FileCopyrightText: 2019 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_weact-f4x1cx
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the WeAct-F4X1CX Board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      José Ignacio Alamos <jialamos@uc.cl>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- */
+/// @ingroup     boards_common_weact-f4x1cx
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the WeAct-F4X1CX Board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      José Ignacio Alamos <jialamos@uc.cl>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
 
-/* The HSE provides a 25MHz clock */
+// The HSE provides a 25MHz clock
 #ifndef CONFIG_CLOCK_HSE
 #define CONFIG_CLOCK_HSE               MHZ(25)
 #endif
@@ -42,10 +38,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -77,17 +71,16 @@ static const uart_conf_t uart_config[] = {
     },
 };
 
-/* assign ISR vector names */
+// assign ISR vector names
 #define UART_0_ISR          isr_usart2
 #define UART_1_ISR          isr_usart1
 
-/* deduct number of defined UART interfaces */
+// deduct number of defined UART interfaces
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/** @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM2,
@@ -112,14 +105,12 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
-    {   /* U3 - SPI flash */
+    {   // U3 - SPI flash
         .dev      = SPI1,
         .mosi_pin = GPIO_PIN(PORT_A, 7),
         .miso_pin = GPIO_PIN(PORT_A, 6),
@@ -161,31 +152,29 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32F4x1 order.
- * Feel free to add more if needed.
- *
- * @{
- */
+/// @name   ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32F4x1 order.
+/// Feel free to add more if needed.
+///
+/// @{
 static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_A, 0), 0, 0},
     {GPIO_PIN(PORT_A, 1), 0, 1},
     {GPIO_PIN(PORT_A, 4), 0, 4},
     {GPIO_PIN(PORT_B, 0), 0, 8},
-    {GPIO_UNDEF, 0, 18} /* VBAT */
+    {GPIO_UNDEF, 0, 18} // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(4) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(4) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

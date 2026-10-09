@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief   Native CPU irq.h implementation
- * @ingroup cpu_native
- * @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- */
+/// @file
+/// @brief   Native CPU irq.h implementation
+/// @ingroup cpu_native
+/// @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
 
 #include <err.h>
 #include <signal.h>
@@ -47,24 +43,20 @@ int _signal_pipe_fd[2];
 
 static _native_callback_t _native_irq_handlers[255];
 
-static inline void _set_sigmask(ucontext_t *ctx)
-{
+static inline void _set_sigmask(ucontext_t *ctx) {
     ctx->uc_sigmask = _native_sig_set_dint;
     _native_interrupts_enabled = false;
 }
 
-void *thread_isr_stack_pointer(void)
-{
+void *thread_isr_stack_pointer(void) {
     return _native_isr_context->uc_stack.ss_sp;
 }
 
-void *thread_isr_stack_start(void)
-{
+void *thread_isr_stack_start(void) {
     return _isr_stack;
 }
 
-void print_thread_sigmask(ucontext_t *cp)
-{
+void print_thread_sigmask(ucontext_t *cp) {
     sigset_t *p = &cp->uc_sigmask;
 
     if (sigemptyset(p) == -1) {
@@ -86,15 +78,14 @@ void print_thread_sigmask(ucontext_t *cp)
 }
 
 #ifdef DEVELHELP
-void print_sigmasks(void)
-{
+void print_sigmasks(void) {
     for (int i = 0; i < MAXTHREADS; i++) {
         if (sched_threads[i] != NULL) {
             ucontext_t *p;
             printf("%s:\n", sched_threads[i]->name);
             //print_thread_sigmask(sched_threads[i]->sp);
-            /* Use intermediate cast to uintptr_t to silence -Wcast-align.
-             * stacks are manually word aligned in thread_static_init() */
+            // Use intermediate cast to uintptr_t to silence -Wcast-align.
+            // stacks are manually word aligned in thread_static_init()
             p = (ucontext_t *)(uintptr_t)(sched_threads[i]->stack_start);
             print_thread_sigmask(p);
             puts("");
@@ -103,8 +94,7 @@ void print_sigmasks(void)
 }
 #endif
 
-void native_print_signals(void)
-{
+void native_print_signals(void) {
     sigset_t p, q;
     puts("native signals:\n");
 
@@ -138,11 +128,8 @@ void native_print_signals(void)
     }
 }
 
-/**
- * block signals
- */
-unsigned irq_disable(void)
-{
+/// block signals
+unsigned irq_disable(void) {
     unsigned int prev_state;
 
     _native_syscall_enter();
@@ -165,11 +152,8 @@ unsigned irq_disable(void)
     return prev_state;
 }
 
-/**
- * unblock signals
- */
-unsigned irq_enable(void)
-{
+/// unblock signals
+unsigned irq_enable(void) {
     unsigned int prev_state;
 
     if (_native_in_isr == 1) {
@@ -183,9 +167,8 @@ unsigned irq_enable(void)
     _native_syscall_enter();
     DEBUG_IRQ("irq_enable()\n");
 
-    /* Mark the IRQ as enabled first since sigprocmask could call the handler
-     * before returning to userspace.
-     */
+    // Mark the IRQ as enabled first since sigprocmask could call the handler
+    // before returning to userspace.
 
     prev_state = _native_interrupts_enabled;
     _native_interrupts_enabled = true;
@@ -206,8 +189,7 @@ unsigned irq_enable(void)
     return prev_state;
 }
 
-void irq_restore(unsigned state)
-{
+void irq_restore(unsigned state) {
     DEBUG_IRQ("irq_restore()\n");
 
     if (state == 1) {
@@ -220,19 +202,16 @@ void irq_restore(unsigned state)
     return;
 }
 
-bool irq_is_enabled(void)
-{
+bool irq_is_enabled(void) {
     return _native_interrupts_enabled;
 }
 
-bool irq_is_in(void)
-{
+bool irq_is_in(void) {
     DEBUG_IRQ("irq_is_in: %i\n", _native_in_isr);
     return _native_in_isr;
 }
 
-static int _native_pop_sig(void)
-{
+static int _native_pop_sig(void) {
     int nread, nleft, i;
     int sig = 0;
 
@@ -251,8 +230,7 @@ static int _native_pop_sig(void)
     return sig;
 }
 
-void _native_call_sig_handlers_and_switch(void)
-{
+void _native_call_sig_handlers_and_switch(void) {
     DEBUG_IRQ("\n\n\t\tcall sig handlers + switch\n\n");
 
     while (_native_pending_signals > 0) {
@@ -273,15 +251,14 @@ void _native_call_sig_handlers_and_switch(void)
 
     DEBUG_IRQ("call sig handlers + switch: return\n");
 
-    /* Leave ISR context */
+    // Leave ISR context
     cpu_switch_context_exit();
 }
 
-void native_signal_action(int sig, siginfo_t *info, void *context)
-{
-    (void) info; /* unused at the moment */
+void native_signal_action(int sig, siginfo_t *info, void *context) {
+    (void) info; // unused at the moment
 
-    /* save the signal */
+    // save the signal
     if (real_write(_signal_pipe_fd[1], &sig, sizeof(int)) == -1) {
         err(EXIT_FAILURE, "native_signal_action: real_write()");
     }
@@ -297,8 +274,8 @@ void native_signal_action(int sig, siginfo_t *info, void *context)
         return;
     }
 
-    /* XXX: Workaround safety check - whenever this happens it really
-     * indicates a bug in irq_disable */
+    // XXX: Workaround safety check - whenever this happens it really
+    // indicates a bug in irq_disable
     if (!_native_interrupts_enabled) {
         return;
     }
@@ -311,30 +288,29 @@ void native_signal_action(int sig, siginfo_t *info, void *context)
         return;
     }
 
-    /* We will switch to the ISR context with ISR stack */
+    // We will switch to the ISR context with ISR stack
     _native_isr_context_make(_native_call_sig_handlers_and_switch);
 
-    /* Current user thread context */
+    // Current user thread context
     _native_current_context = _native_user_context();
 
     DEBUG_IRQ("\n\n\t\tnative_signal_action: return to _native_sig_leave_tramp\n\n");
-    /* disable interrupts in context */
+    // disable interrupts in context
     _set_sigmask((ucontext_t *)context);
     _native_in_isr = 1;
 
-    /* Get PC/LR. This is where we will resume execution on the userspace thread. */
+    // Get PC/LR. This is where we will resume execution on the userspace thread.
     _native_user_fptr = (uintptr_t)_context_get_fptr((ucontext_t *)context);
 
-    /* Now we want to go to _native_sig_leave_tramp before resuming execution at _native_user_fptr. */
+    // Now we want to go to _native_sig_leave_tramp before resuming execution at _native_user_fptr.
     _context_set_fptr(context, (uintptr_t)_native_sig_leave_tramp);
 }
 
-static void _set_signal_handler(int sig, bool add)
-{
+static void _set_signal_handler(int sig, bool add) {
     struct sigaction sa;
     int ret;
 
-    /* update the signal mask so irq_enable()/irq_disable() will be aware */
+    // update the signal mask so irq_enable()/irq_disable() will be aware
     if (add) {
         _native_syscall_enter();
         ret = sigdelset(&_native_sig_set, sig);
@@ -351,14 +327,14 @@ static void _set_signal_handler(int sig, bool add)
 
     memset(&sa, 0, sizeof(sa));
 
-    /* Disable other signal during execution of the handler for this signal. */
+    // Disable other signal during execution of the handler for this signal.
     memcpy(&sa.sa_mask,  &_native_sig_set_dint, sizeof(sa.sa_mask));
 
-    /* restart interrupted systems call and custom signal stack */
+    // restart interrupted systems call and custom signal stack
     sa.sa_flags = SA_RESTART | SA_ONSTACK;
 
     if (add) {
-        sa.sa_flags |= SA_SIGINFO; /* sa.sa_sigaction is used */
+        sa.sa_flags |= SA_SIGINFO; // sa.sa_sigaction is used
         sa.sa_sigaction = native_signal_action;
     } else
     {
@@ -372,9 +348,8 @@ static void _set_signal_handler(int sig, bool add)
     _native_syscall_leave();
 }
 
-/* TODO: use appropriate data structure for signal handlers. */
-int native_register_interrupt(int sig, _native_callback_t handler)
-{
+// TODO: use appropriate data structure for signal handlers.
+int native_register_interrupt(int sig, _native_callback_t handler) {
     DEBUG_IRQ("native_register_interrupt\n");
 
     unsigned state = irq_disable();
@@ -387,9 +362,8 @@ int native_register_interrupt(int sig, _native_callback_t handler)
     return 0;
 }
 
-int native_unregister_interrupt(int sig)
-{
-    /* empty signal mask */
+int native_unregister_interrupt(int sig) {
+    // empty signal mask
     DEBUG_IRQ("native_unregister_interrupt\n");
 
     unsigned state = irq_disable();
@@ -402,8 +376,7 @@ int native_unregister_interrupt(int sig)
     return 0;
 }
 
-static void native_shutdown(int sig, siginfo_t *info, void *context)
-{
+static void native_shutdown(int sig, siginfo_t *info, void *context) {
     (void)sig;
     (void)info;
     (void)context;
@@ -411,10 +384,9 @@ static void native_shutdown(int sig, siginfo_t *info, void *context)
     pm_off();
 }
 
-void native_interrupt_init(void)
-{
-    /* register internal signal handler, initialize local variables
-     * TODO: see native_register_interrupt */
+void native_interrupt_init(void) {
+    // register internal signal handler, initialize local variables
+    // TODO: see native_register_interrupt
     struct sigaction sa;
     DEBUG_IRQ("native_interrupt_init\n");
 
@@ -433,18 +405,18 @@ void native_interrupt_init(void)
 
     sa.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK;
 
-    /* We want to white list authorized signals */
+    // We want to white list authorized signals
     if (sigfillset(&_native_sig_set) == -1) {
         err(EXIT_FAILURE, "native_interrupt_init: sigprocmask");
     }
-    /* we need to disable all signals during our signal handler as it
-     * can not cope with interrupted signals ... */
+    // we need to disable all signals during our signal handler as it
+    // can not cope with interrupted signals ...
     if (sigfillset(&_native_sig_set_dint) == -1) {
         err(EXIT_FAILURE, "native_interrupt_init: sigfillset");
     }
 
-    /* SIGUSR1 is intended for debugging purposes and shall always be
-     * enabled */
+    // SIGUSR1 is intended for debugging purposes and shall always be
+    // enabled
     if (sigdelset(&_native_sig_set, SIGUSR1) == -1) {
         err(EXIT_FAILURE, "native_interrupt_init: sigdelset");
     }
@@ -452,7 +424,7 @@ void native_interrupt_init(void)
         err(EXIT_FAILURE, "native_interrupt_init: sigdelset");
     }
 
-    /* SIGUSR1 is handled like a regular interrupt */
+    // SIGUSR1 is handled like a regular interrupt
     if (sigaction(SIGUSR1, &sa, NULL)) {
         err(EXIT_FAILURE, "native_interrupt_init: sigaction");
     }
@@ -479,7 +451,7 @@ void native_interrupt_init(void)
         err(EXIT_FAILURE, "native_interrupt_init: pipe");
     }
 
-    /* allow for ctrl+c to shut down gracefully always */
+    // allow for ctrl+c to shut down gracefully always
     //native_register_interrupt(SIGINT, native_shutdown);
     sa.sa_sigaction = native_shutdown;
     if (sigdelset(&_native_sig_set, SIGINT) == -1) {

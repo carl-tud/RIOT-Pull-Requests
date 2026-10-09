@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2005-2008 by Thomas Hillebrandt and Heiko Will
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2005-2008 by Thomas Hillebrandt and Heiko Will
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_arm7_common
- * @{
- *
- * @file
- * @brief           Implementation of the kernels irq interface
- *
- * @author          Heiko Will <hwill@inf.fu-berlin.de>
- */
+/// @ingroup         cpu_arm7_common
+/// @{
+///
+/// @file
+/// @brief           Implementation of the kernels irq interface
+///
+/// @author          Heiko Will <hwill@inf.fu-berlin.de>
 
 #include "VIC.h"
 #include <stdbool.h>
@@ -24,27 +20,23 @@ extern "C" {
 
 #define IRQ_MASK 0x00000080
 
-static inline unsigned __get_cpsr(void)
-{
+static inline unsigned __get_cpsr(void) {
     unsigned long retval;
     __asm__ volatile(" mrs  %0, cpsr" : "=r"(retval) : /* no inputs */ : "memory");
     return retval;
 }
 
-static inline void __set_cpsr(unsigned val)
-{
+static inline void __set_cpsr(unsigned val) {
     __asm__ volatile(" msr  cpsr, %0" : /* no outputs */ : "r"(val) : "memory");
 }
 
-static inline bool irq_is_in(void)
-{
+static inline bool irq_is_in(void) {
     int retval;
     __asm__ volatile(" mrs  %0, cpsr" : "=r"(retval) : /* no inputs */ : "memory");
     return (retval & INTMode) == 18;
 }
 
-static inline __attribute__((always_inline)) unsigned irq_disable(void)
-{
+static inline __attribute__((always_inline)) unsigned irq_disable(void) {
     unsigned _cpsr;
 
     _cpsr = __get_cpsr();
@@ -52,13 +44,11 @@ static inline __attribute__((always_inline)) unsigned irq_disable(void)
     return _cpsr;
 }
 
-static inline __attribute__((always_inline)) void irq_restore(unsigned oldCPSR)
-{
+static inline __attribute__((always_inline)) void irq_restore(unsigned oldCPSR) {
     __set_cpsr(oldCPSR);
 }
 
-static inline __attribute__((always_inline)) unsigned irq_enable(void)
-{
+static inline __attribute__((always_inline)) unsigned irq_enable(void) {
     unsigned _cpsr;
 
     _cpsr = __get_cpsr();
@@ -66,8 +56,7 @@ static inline __attribute__((always_inline)) unsigned irq_enable(void)
     return _cpsr;
 }
 
-static inline __attribute__((always_inline)) bool irq_is_enabled(void)
-{
+static inline __attribute__((always_inline)) bool irq_is_enabled(void) {
     return !(__get_cpsr() & IRQ_MASK);
 }
 
@@ -75,4 +64,4 @@ static inline __attribute__((always_inline)) bool irq_is_enabled(void)
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,28 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Engineering-Spirit
- * SPDX-FileCopyrightText: 2017-2019 OTA keys S.A.
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Engineering-Spirit
+// SPDX-FileCopyrightText: 2017-2019 OTA keys S.A.
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @ingroup     drivers_periph_pm
- * @{
- *
- * @file
- * @brief       Implementation of the kernels power management interface
- *
- * @author      Nick v. IJzendoorn <nijzndoorn@engineering-spirit.nl>
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Fabian Nack <nack@inf.fu-berlin.de>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @ingroup     drivers_periph_pm
+/// @{
+///
+/// @file
+/// @brief       Implementation of the kernels power management interface
+///
+/// @author      Nick v. IJzendoorn <nijzndoorn@engineering-spirit.nl>
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Fabian Nack <nack@inf.fu-berlin.de>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "irq.h"
 #include "periph/pm.h"
@@ -33,16 +29,14 @@
 #include "debug.h"
 
 #ifndef PM_STOP_CONFIG
-/**
- * @brief Define config flags for stop mode
- *
- * Available values can be found in reference manual, PWR section, register CR.
- */
+/// @brief Define config flags for stop mode
+///
+/// Available values can be found in reference manual, PWR section, register CR.
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F3) || \
     defined(CPU_FAM_STM32F1)
 #define PM_STOP_CONFIG  (PWR_CR_LPDS)
 #elif defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1)
-/* Enable ultra low-power and clear wakeup flags */
+// Enable ultra low-power and clear wakeup flags
 #define PM_STOP_CONFIG  (PWR_CR_LPSDSR | PWR_CR_ULP | PWR_CR_CWUF)
 #elif defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32G4) || \
       defined(CPU_FAM_STM32L5)
@@ -59,7 +53,7 @@
 #elif defined(CPU_FAM_STM32U5)
 #define PM_STOP_CONFIG  (0)
 #elif defined(CPU_FAM_STM32H7)
-/* Low power deep sleep with SVOS5 Scale 5 and flash in low power mode if in DSTOP */
+// Low power deep sleep with SVOS5 Scale 5 and flash in low power mode if in DSTOP
 #define PM_STOP_CONFIG  (PWR_CR1_LPDS | PWR_CR1_FLPS | PWR_CR1_SVOS_0)
 #else
 #define PM_STOP_CONFIG  (PWR_CR_LPDS | PWR_CR_FPDS)
@@ -67,11 +61,9 @@
 #endif
 
 #ifndef PM_STANDBY_CONFIG
-/**
- * @brief Define config flags for standby mode
- *
- * Available values can be found in reference manual, PWR section, register CR.
- */
+/// @brief Define config flags for standby mode
+///
+/// Available values can be found in reference manual, PWR section, register CR.
 #if defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1)
 #define PM_STANDBY_CONFIG   (PWR_CR_PDDS | PWR_CR_CWUF | PWR_CR_CSBF | PWR_CR_ULP)
 #elif defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32G4) || \
@@ -87,7 +79,7 @@
 #elif defined(CPU_FAM_STM32U3) || defined(CPU_FAM_STM32U5)
 #define PM_STANDBY_CONFIG   (0)
 #elif defined(CPU_FAM_STM32H7)
-    /* Set D1 and D2 domains to enter DStandby */
+    // Set D1 and D2 domains to enter DStandby
 #  define PM_STANDBY_CONFIG   (PWR_CPUCR_PDDS_D1 | PWR_CPUCR_PDDS_D2 | PWR_CPUCR_PDDS_D3)
 #else
 #define PM_STANDBY_CONFIG   (PWR_CR_PDDS | PWR_CR_CWUF | PWR_CR_CSBF)
@@ -101,9 +93,9 @@
     defined(CPU_FAM_STM32C0)
 #define PWR_CR_REG     PWR->CR1
 #define PWR_WUP_REG    PWR->CR3
-/* Allow overridable SRAM2 retention mode using CFLAGS */
+// Allow overridable SRAM2 retention mode using CFLAGS
 #ifndef STM32L4_SRAM2_RETENTION
-/* Disable SRAM2 retention by default for maximum power saving */
+// Disable SRAM2 retention by default for maximum power saving
 #define STM32L4_SRAM2_RETENTION  (0)
 #endif
 #elif defined(CPU_FAM_STM32F7)
@@ -121,35 +113,34 @@
 #define PWR_WUP_REG    PWR->CSR
 #endif
 
-void pm_set(unsigned mode)
-{
+void pm_set(unsigned mode) {
     int deep;
 
     switch (mode) {
 #if !defined(CPU_FAM_STM32MP1)
         case STM32_PM_STANDBY:
 #if defined(CPU_FAM_STM32H7)
-           /* 1. D3 follows CPU subsystem modes */
+           // 1. D3 follows CPU subsystem modes
             PWR_CPUCR_REG &= ~PWR_CPUCR_RUN_D3;
 
-            /* 2. Select Standby for all domains */
+            // 2. Select Standby for all domains
             PWR_CPUCR_REG |= PM_STANDBY_CONFIG;
 
-            /*3. Clear CSSF flag */
+            // 3. Clear CSSF flag
             PWR_CPUCR_REG |= PWR_CPUCR_CSSF;
 
-            /* 3. Disable WKUP4 first */
+            // 3. Disable WKUP4 first
             PWR_WUP_REG &= ~PWR_WKUPEPR_WKUPEN4;
 
-            /* 4. Clear wakeup flag */
+            // 4. Clear wakeup flag
             PWR->WKUPCR = PWR_WKUPCR_WKUPC4;
 
-            /* 5. Configure pull-down */
+            // 5. Configure pull-down
             PWR_WUP_REG =
                 (PWR_WUP_REG & ~PWR_WKUPEPR_WKUPPUPD4_Msk) |
                 (0x2UL << PWR_WKUPEPR_WKUPPUPD4_Pos);
 
-            /* 6. Rising edge / high-level */
+            // 6. Rising edge / high-level
             PWR_WUP_REG &= ~PWR_WKUPEPR_WKUPP4;
 
 #else
@@ -168,34 +159,34 @@ void pm_set(unsigned mode)
 #endif
 #if defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32G4) || \
     defined(CPU_FAM_STM32L5)
-            /* Clear flags */
+            // Clear flags
             PWR->SCR |= PWR_SCR_CSBF;
 #endif
-            /* Enable WKUP pins to use for wakeup from standby mode */
+            // Enable WKUP pins to use for wakeup from standby mode
             PWR_WUP_REG |= PM_EWUP_CONFIG;
-            /* Set SLEEPDEEP bit of system control block */
+            // Set SLEEPDEEP bit of system control block
             deep = 1;
             pm_backup_regulator_on();
             break;
 #endif
         case STM32_PM_STOP:
 #if defined(CPU_FAM_STM32H7)
-            /* 1. D3 follows CPU subsystem modes */
+            // 1. D3 follows CPU subsystem modes
             PWR_CPUCR_REG &= ~PWR_CPUCR_RUN_D3;
 
-            /* 2. D1, D2 and D3 Stop mode */
+            // 2. D1, D2 and D3 Stop mode
             PWR_CPUCR_REG &= ~(PM_STANDBY_CONFIG);
 
-            /*3. Clear CSSF flag */
+            // 3. Clear CSSF flag
             PWR_CPUCR_REG |= PWR_CPUCR_CSSF;
 
-            /* Reset CR register */
+            // Reset CR register
             PWR_CR_REG &= ~(PM_STOP_CONFIG | PWR_CR1_SVOS_Msk);
 #else
             PWR_CR_REG &= ~(PM_STOP_CONFIG | PM_STANDBY_CONFIG);
 #endif
             PWR_CR_REG |= PM_STOP_CONFIG;
-            /* Set SLEEPDEEP bit of system control block */
+            // Set SLEEPDEEP bit of system control block
             deep = 1;
             break;
         default:
@@ -206,18 +197,16 @@ void pm_set(unsigned mode)
     cortexm_sleep(deep);
 
     if (deep) {
-        /* Re-init clock after STOP */
+        // Re-init clock after STOP
 #if !defined(CPU_FAM_STM32MP1) || IS_USED(MODULE_STM32MP1_ENG_MODE)
         stmclk_init_sysclk();
 #endif
     }
 }
 
-/**
- * @name   Registers and related configuration bits to retain
- *         the backup domain registers, using the backup regulator
- * @{
- */
+/// @name   Registers and related configuration bits to retain
+///         the backup domain registers, using the backup regulator
+/// @{
 #if defined(PWR_CSR1_BRE)
 #define PWR_BACKUP_REGULATOR_REG    PWR->CSR1
 #define BKPREG_CONFIG               (PWR_CSR1_BRE | PWR_CSR1_EIWUP)
@@ -231,10 +220,9 @@ void pm_set(unsigned mode)
 #define BKPREG_CONFIG               (PWR_CR2_BREN)
 #define BKPREG_READY                (PWR_CR2_BRRDY)
 #endif
-/** @} */
+/// @}
 
-bool pm_backup_regulator_is_on(void)
-{
+bool pm_backup_regulator_is_on(void) {
 #if defined(PWR_BACKUP_REGULATOR_REG)
     return (PWR_BACKUP_REGULATOR_REG & BKPREG_READY) == BKPREG_READY;
 #else
@@ -242,8 +230,7 @@ bool pm_backup_regulator_is_on(void)
 #endif
 }
 
-void pm_backup_regulator_on(void)
-{
+void pm_backup_regulator_on(void) {
 #if defined(PWR_BACKUP_REGULATOR_REG)
     bool locked = stmclk_dbp_is_locked();
     if (locked) {
@@ -257,8 +244,7 @@ void pm_backup_regulator_on(void)
 #endif
 }
 
-void pm_backup_regulator_off(void)
-{
+void pm_backup_regulator_off(void) {
 #if defined(PWR_BACKUP_REGULATOR_REG)
     bool locked = stmclk_dbp_is_locked();
     if (locked) {

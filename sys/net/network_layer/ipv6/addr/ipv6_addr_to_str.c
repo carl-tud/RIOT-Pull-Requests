@@ -1,30 +1,26 @@
-/*
- * Copyright (c) 1996 by Internet Software Consortium.
- * Copyright (c) 2015 by Martine Lenders <mlenders@inf.fu-berlin.de>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM DISCLAIMS
- * ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET SOFTWARE
- * CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
- * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
- * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
- * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- * SOFTWARE.
- */
+// Copyright (c) 1996 by Internet Software Consortium.
+// Copyright (c) 2015 by Martine Lenders <mlenders@inf.fu-berlin.de>
+//
+// Permission to use, copy, modify, and distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+//
+// THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM DISCLAIMS
+// ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
+// OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET SOFTWARE
+// CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+// DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+// PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+// ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+// SOFTWARE.
 
-/**
- * @ingroup     net_ipv6_addr
- * @{
- *
- * @file
- *
- * @author      Paul Vixie
- * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @ingroup     net_ipv6_addr
+/// @{
+///
+/// @file
+///
+/// @author      Paul Vixie
+/// @author      Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <inttypes.h>
 #include <string.h>
@@ -33,14 +29,13 @@
 #include "net/ipv4/addr.h"
 #include "net/ipv6/addr.h"
 
-/* Length of an IPv6 address in 16-bit words */
+// Length of an IPv6 address in 16-bit words
 #define IPV6_ADDR_WORD_LEN  (sizeof(ipv6_addr_t) / sizeof(uint16_t))
 
 #define HEX_L "0123456789abcdef"
 
-/* based on inet_ntop6() by Paul Vixie */
-char *ipv6_addr_to_str(char *result, const ipv6_addr_t *addr, uint8_t result_len)
-{
+// based on inet_ntop6() by Paul Vixie
+char *ipv6_addr_to_str(char *result, const ipv6_addr_t *addr, uint8_t result_len) {
     char tmp[IPV6_ADDR_MAX_STR_LEN], *tp;
     struct {
         int16_t base, len;
@@ -50,10 +45,8 @@ char *ipv6_addr_to_str(char *result, const ipv6_addr_t *addr, uint8_t result_len
         return NULL;
     }
 
-    /*
-     * Preprocess:
-     *  Find the longest run of 0x0000's in address for :: shorthanding.
-     */
+    // Preprocess:
+    //  Find the longest run of 0x0000's in address for :: shorthanding.
     for (uint8_t i = 0; i < IPV6_ADDR_WORD_LEN; i++) {
         if (addr->u16[i].u16 == 0) {
             if (cur.base == -1) {
@@ -85,26 +78,24 @@ char *ipv6_addr_to_str(char *result, const ipv6_addr_t *addr, uint8_t result_len
         best.base = -1;
     }
 
-    /*
-     * Format the result.
-     */
+    // Format the result.
     tp = tmp;
 
     for (int i = 0; i < ((int)IPV6_ADDR_WORD_LEN);) {
-        /* Are we inside the best run of 0x00's? */
+        // Are we inside the best run of 0x00's?
         if (i == best.base) {
             *tp++ = ':';
             i += best.len;
             continue;
         }
 
-        /* Are we following an initial run of 0x00s or any real hex? */
+        // Are we following an initial run of 0x00s or any real hex?
         if (i != 0) {
             *tp++ = ':';
         }
 
 #ifdef MODULE_IPV4_ADDR
-        /* Is this address an encapsulated IPv4? */
+        // Is this address an encapsulated IPv4?
         if (i == 6 && best.base == 0 &&
             (best.len == 6 || (best.len == 5 && addr->u16[5].u16 == 0xffff))) {
             if (!ipv4_addr_to_str(tp, (const ipv4_addr_t *)&addr->u32[3],
@@ -135,16 +126,14 @@ char *ipv6_addr_to_str(char *result, const ipv6_addr_t *addr, uint8_t result_len
         i++;
     }
 
-    /* Was it a trailing run of 0x00's? */
+    // Was it a trailing run of 0x00's?
     if (best.base != -1 && (best.base + best.len) == IPV6_ADDR_WORD_LEN) {
         *tp++ = ':';
     }
 
     *tp++ = '\0';
 
-    /*
-     * Check for overflow, copy, and we're done.
-     */
+    // Check for overflow, copy, and we're done.
     if ((size_t)(tp - tmp) > result_len) {
         return NULL;
     }
@@ -153,6 +142,4 @@ char *ipv6_addr_to_str(char *result, const ipv6_addr_t *addr, uint8_t result_len
     return result;
 }
 
-/**
- * @}
- */
+/// @}

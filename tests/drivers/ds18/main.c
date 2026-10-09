@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the DS18B20 1-Wire temperature sensor.
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the DS18B20 1-Wire temperature sensor.
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -25,8 +21,7 @@
 
 #define SAMPLING_PERIOD     2
 
-int main(void)
-{
+int main(void) {
     ds18_t dev;
     int result;
 
@@ -43,7 +38,7 @@ int main(void)
     while (1) {
         int16_t temperature;
 
-        /* Get temperature in centidegrees celsius */
+        // Get temperature in centidegrees celsius
         if (ds18_get_temperature(&dev, &temperature) == DS18_OK) {
             bool negative = (temperature < 0);
             if (negative) {

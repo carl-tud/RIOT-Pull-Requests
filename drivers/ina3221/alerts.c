@@ -1,28 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ina3221
- * @{
- *
- * @file
- * @brief       Functions to enable/disable GPIO alerts
- *              for INA3221
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_ina3221
+/// @{
+///
+/// @file
+/// @brief       Functions to enable/disable GPIO alerts
+///              for INA3221
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 #include "periph/gpio.h"
 #include "ina3221.h"
 
 int ina3221_enable_alert(ina3221_t *dev, ina3221_alert_t alert,
-                         ina3221_alert_cb_t cb, void *arg)
-{
+                         ina3221_alert_cb_t cb, void *arg) {
     if (alert >= INA3221_NUM_ALERTS) {
         return -ERANGE;
     }
@@ -41,8 +36,7 @@ int ina3221_enable_alert(ina3221_t *dev, ina3221_alert_t alert,
     return check ? check : 0;
 }
 
-int ina3221_disable_alert(ina3221_t *dev, ina3221_alert_t alert)
-{
+int ina3221_disable_alert(ina3221_t *dev, ina3221_alert_t alert) {
     if (alert >= INA3221_NUM_ALERTS) {
         return -ERANGE;
     }

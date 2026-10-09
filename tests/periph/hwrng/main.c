@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Low-level random number generator driver test
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Low-level random number generator driver test
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -23,8 +19,7 @@
 
 #define NUM_BYTES   (20U)
 
-int main(void)
-{
+int main(void) {
     uint8_t buf[NUM_BYTES];
 
     puts("\nHWRNG peripheral driver test\n");
@@ -32,10 +27,10 @@ int main(void)
            "second\n\n", NUM_BYTES);
 
     while (1) {
-        /* zero out buffer */
+        // zero out buffer
         memset(buf, 0, sizeof(buf));
 
-        /* create random numbers */
+        // create random numbers
         for (unsigned i = 1; i <= NUM_BYTES; i++) {
             printf("generating %u random byte(s)\n", i);
             hwrng_read(buf, i);

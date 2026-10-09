@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kees Bakker, SODAQ
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kees Bakker, SODAQ
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_sodaq-one
- * @{
- *
- * @file
- * @brief       Board specific definitions for the SODAQ ONE board
- *
- * @author      Kees Bakker <kees@sodaq.com>
- */
+/// @ingroup     boards_sodaq-one
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the SODAQ ONE board
+///
+/// @author      Kees Bakker <kees@sodaq.com>
 
 #include "cpu.h"
 #include "board_common.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(PA, 15)
 
 #define LED0_PORT           PORT->Group[PA]
@@ -53,28 +47,22 @@ extern "C" {
 #define LED2_OFF            (LED2_PORT.OUTSET.reg = LED2_MASK)
 #define LED2_ON             (LED2_PORT.OUTCLR.reg = LED2_MASK)
 #define LED2_TOGGLE         (LED2_PORT.OUTTGL.reg = LED2_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    User button
- * @{
- */
+/// @name    User button
+/// @{
 #define BTN0_PIN            GPIO_PIN(PA, 16)
 #define BTN0_MODE           GPIO_IN
-/** @} */
+/// @}
 
-/**
- * @name    GPS Time Pulse
- * @{
- */
+/// @name    GPS Time Pulse
+/// @{
 #define GPS_TIMEPULSE_PIN   GPIO_PIN(PA, 14)
 #define GPS_TIMEPULSE_MODE  GPIO_IN
-/** @} */
+/// @}
 
-/**
- * @name    GPS Enable
- * @{
- */
+/// @name    GPS Enable
+/// @{
 #define GPS_ENABLE_PIN      GPIO_PIN(PA, 18)
 
 #define GPS_ENABLE_PORT     PORT->Group[PA]
@@ -82,12 +70,10 @@ extern "C" {
 
 #define GPS_ENABLE_ON       (GPS_ENABLE_PORT.OUTSET.reg = GPS_ENABLE_MASK)
 #define GPS_ENABLE_OFF      (GPS_ENABLE_PORT.OUTCLR.reg = GPS_ENABLE_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    LORA Reset
- * @{
- */
+/// @name    LORA Reset
+/// @{
 #define LORA_RESET_PIN      GPIO_PIN(PA, 4)
 
 #define LORA_RESET_PORT     PORT->Group[PA]
@@ -96,10 +82,10 @@ extern "C" {
 #define LORA_RESET_OFF      (LORA_RESET_PORT.OUTSET.reg = LORA_RESET_MASK)
 #define LORA_RESET_ON       (LORA_RESET_PORT.OUTCLR.reg = LORA_RESET_MASK)
 #define LORA_RESET_TOGGLE   (LORA_RESET_PORT.OUTTGL.reg = LORA_RESET_MASK)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

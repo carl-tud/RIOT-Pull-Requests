@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_nrf52
- * @{
- *
- * @file
- * @brief       Default I2C config for nRF52 based boards
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- */
+/// @ingroup     boards_common_nrf52
+/// @{
+///
+/// @file
+/// @brief       Default I2C config for nRF52 based boards
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
 
 #include "periph_cpu.h"
 
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = NRF_TWIM1,
@@ -43,10 +37,10 @@ static const i2c_conf_t i2c_config[] = {
 #endif
 };
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

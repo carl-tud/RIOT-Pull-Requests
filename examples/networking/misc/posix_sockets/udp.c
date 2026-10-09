@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Demonstrating the sending and receiving of UDP data over POSIX sockets.
- *
- * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Demonstrating the sending and receiving of UDP data over POSIX sockets.
+///
+/// @author      Martine Lenders <mlenders@inf.fu-berlin.de>
+///
+/// @}
 
-/* needed for posix usleep */
+// needed for posix usleep
 #ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 600
 #endif
@@ -31,9 +27,9 @@
 #include <unistd.h>
 
 #ifdef SOCK_HAS_IPV6
-#include "net/ipv6/addr.h"     /* for interface parsing */
-#include "net/netif.h"         /* for resolving ipv6 scope */
-#endif /* SOCK_HAS_IPV6 */
+#include "net/ipv6/addr.h"     // for interface parsing
+#include "net/netif.h"         // for resolving ipv6 scope
+#endif // SOCK_HAS_IPV6
 
 #include "shell.h"
 #include "thread.h"
@@ -46,13 +42,12 @@ static char server_buffer[SERVER_BUFFER_SIZE];
 static char server_stack[THREAD_STACKSIZE_DEFAULT];
 static msg_t server_msg_queue[SERVER_MSG_QUEUE_SIZE];
 
-static void *_server_thread(void *args)
-{
+static void *_server_thread(void *args) {
     struct sockaddr_in6 server_addr;
     uint16_t port;
     msg_init_queue(server_msg_queue, SERVER_MSG_QUEUE_SIZE);
     server_socket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
-    /* parse port */
+    // parse port
     port = atoi((char *)args);
     if (port == 0) {
         puts("Error: invalid port specified");
@@ -92,8 +87,7 @@ static void *_server_thread(void *args)
 }
 
 static int udp_send(char *addr_str, char *port_str, char *data, unsigned int num,
-                    unsigned int delay)
-{
+                    unsigned int delay) {
     struct sockaddr_in6 src, dst;
     size_t data_len = strlen(data);
     uint16_t port;
@@ -101,10 +95,10 @@ static int udp_send(char *addr_str, char *port_str, char *data, unsigned int num
     src.sin6_family = AF_INET6;
     dst.sin6_family = AF_INET6;
     memset(&src.sin6_addr, 0, sizeof(src.sin6_addr));
-    /* parse interface id */
+    // parse interface id
 #ifdef SOCK_HAS_IPV6
     char *iface;
-    iface = ipv6_addr_split_iface(addr_str); /* also removes interface id */
+    iface = ipv6_addr_split_iface(addr_str); // also removes interface id
     if (iface) {
         netif_t *netif = netif_get_by_name(iface);
         if (netif) {
@@ -114,13 +108,13 @@ static int udp_send(char *addr_str, char *port_str, char *data, unsigned int num
             printf("unknown network interface %s\n", iface);
         }
     }
-#endif /* SOCK_HAS_IPV6 */
-    /* parse destination address */
+#endif // SOCK_HAS_IPV6
+    // parse destination address
     if (inet_pton(AF_INET6, addr_str, &dst.sin6_addr) != 1) {
         puts("Error: unable to parse destination address");
         return 1;
     }
-    /* parse port */
+    // parse port
     port = atoi(port_str);
     dst.sin6_port = htons(port);
     src.sin6_port = htons(port);
@@ -143,14 +137,13 @@ static int udp_send(char *addr_str, char *port_str, char *data, unsigned int num
     return 0;
 }
 
-static int udp_start_server(char *port_str)
-{
-    /* check if server is already running */
+static int udp_start_server(char *port_str) {
+    // check if server is already running
     if (server_socket >= 0) {
         puts("Error: server already running");
         return 1;
     }
-    /* start server (which means registering pktdump for the chosen port) */
+    // start server (which means registering pktdump for the chosen port)
     if (thread_create(server_stack, sizeof(server_stack), THREAD_PRIORITY_MAIN - 1,
                       0,
                       _server_thread, port_str, "UDP server") <= KERNEL_PID_UNDEF) {
@@ -161,8 +154,7 @@ static int udp_start_server(char *port_str)
     return 0;
 }
 
-static int _udp_cmd(int argc, char **argv)
-{
+static int _udp_cmd(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s [send|server]\n", argv[0]);
         return 1;
@@ -209,4 +201,4 @@ static int _udp_cmd(int argc, char **argv)
 
 SHELL_COMMAND(udp_posix, "send data over UDP and listen on UDP ports", _udp_cmd);
 
-/** @} */
+/// @}

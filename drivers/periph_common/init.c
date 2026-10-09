@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_periph_init
- * @{
- *
- * @file
- * @brief       Common static peripheral driver initialization implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     drivers_periph_init
+/// @{
+///
+/// @file
+/// @brief       Common static peripheral driver initialization implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #define USB_H_USER_IS_RIOT_INTERNAL
 
@@ -57,10 +53,9 @@
 #ifdef MODULE_PERIPH_INIT_SDMMC
 #include "sdmmc/sdmmc.h"
 #endif
-#endif /* MODULE_PERIPH_INIT */
+#endif // MODULE_PERIPH_INIT
 
-void periph_init(void)
-{
+void periph_init(void) {
 #if defined(MODULE_PERIPH_INIT_WDT)
     if (WDT_HAS_INIT) {
         wdt_init();
@@ -73,36 +68,36 @@ void periph_init(void)
 #endif
 
 #ifdef MODULE_PERIPH_INIT
-    /* initialize buttonss */
+    // initialize buttonss
     if (IS_USED(MODULE_PERIPH_INIT_BUTTONS)) {
         extern void button_init(void);
         button_init();
     }
-    /* initialize configured I2C devices */
+    // initialize configured I2C devices
 #ifdef MODULE_PERIPH_INIT_I2C
     for (unsigned i = 0; i < I2C_NUMOF; i++) {
         i2c_init(I2C_DEV(i));
     }
 #endif
 
-    /* initialize configured SPI devices */
+    // initialize configured SPI devices
 #ifdef MODULE_PERIPH_INIT_SPI
     for (unsigned i = 0; i < SPI_NUMOF; i++) {
         spi_init(SPI_DEV(i));
     }
 #endif
 
-    /* Initialize RTT before RTC to allow for RTT based RTC implementations */
+    // Initialize RTT before RTC to allow for RTT based RTC implementations
 #ifdef MODULE_PERIPH_INIT_RTT
     rtt_init();
 #endif
 
-    /* Initialize RTC */
+    // Initialize RTC
 #ifdef MODULE_PERIPH_INIT_RTC
     rtc_init();
 #endif
 
-    /* Initialize Tamper Detection */
+    // Initialize Tamper Detection
 #ifdef MODULE_PERIPH_INIT_GPIO_TAMPER_WAKE
     rtc_tamper_init();
 #endif
@@ -146,5 +141,5 @@ void periph_init(void)
     }
 #endif
 
-#endif /* MODULE_PERIPH_INIT */
+#endif // MODULE_PERIPH_INIT
 }

@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -40,13 +36,11 @@
         } \
     }
 
-static void tear_down(void)
-{
+static void tear_down(void) {
     gnrc_sixlowpan_ctx_reset();
 }
 
-static void test_sixlowpan_ctx_update__success(void)
-{
+static void test_sixlowpan_ctx_update__success(void) {
     ipv6_addr_t addr = DEFAULT_TEST_PREFIX;
 
     TEST_ASSERT_NOT_NULL(gnrc_sixlowpan_ctx_update(DEFAULT_TEST_ID, &addr,
@@ -55,8 +49,7 @@ static void test_sixlowpan_ctx_update__success(void)
     TEST_ASSERT_NOT_NULL(gnrc_sixlowpan_ctx_lookup_id(DEFAULT_TEST_ID));
 }
 
-static void test_sixlowpan_ctx_update__ltime0(void)
-{
+static void test_sixlowpan_ctx_update__ltime0(void) {
     ipv6_addr_t addr = DEFAULT_TEST_PREFIX;
 
     TEST_ASSERT_NOT_NULL(gnrc_sixlowpan_ctx_update(DEFAULT_TEST_ID, &addr,
@@ -66,14 +59,13 @@ static void test_sixlowpan_ctx_update__ltime0(void)
     TEST_ASSERT_EQUAL_INT(DEFAULT_TEST_ID, gnrc_sixlowpan_ctx_lookup_id(DEFAULT_TEST_ID)->flags_id);
 }
 
-static void test_sixlowpan_ctx_update__wrong_id1(void)
-{
+static void test_sixlowpan_ctx_update__wrong_id1(void) {
     ipv6_addr_t addr = DEFAULT_TEST_PREFIX;
 
-    /* add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID */
+    // add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID
     test_sixlowpan_ctx_update__success();
-    /* GNRC_SIXLOWPAN_CTX_SIZE out of bound so neither context update nor lookup
-     * should not be possible */
+    // GNRC_SIXLOWPAN_CTX_SIZE out of bound so neither context update nor lookup
+    // should not be possible
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_update(GNRC_SIXLOWPAN_CTX_SIZE, &addr,
                                                DEFAULT_TEST_PREFIX_LEN, TEST_UINT16, true));
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_lookup_id(GNRC_SIXLOWPAN_CTX_SIZE));
@@ -83,14 +75,13 @@ static void test_sixlowpan_ctx_update__wrong_id1(void)
     TEST_ASSERT_NOT_NULL(gnrc_sixlowpan_ctx_lookup_id(DEFAULT_TEST_ID));
 }
 
-static void test_sixlowpan_ctx_update__wrong_id2(void)
-{
+static void test_sixlowpan_ctx_update__wrong_id2(void) {
     ipv6_addr_t addr = DEFAULT_TEST_PREFIX;
 
-    /* add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID */
+    // add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID
     test_sixlowpan_ctx_update__success();
-    /* UINT8_MAX out of bound so neither context update nor lookup should not
-     * be possible */
+    // UINT8_MAX out of bound so neither context update nor lookup should not
+    // be possible
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_update(UINT8_MAX, &addr, DEFAULT_TEST_PREFIX_LEN,
                                                TEST_UINT16, true));
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_lookup_id(UINT8_MAX));
@@ -100,27 +91,24 @@ static void test_sixlowpan_ctx_update__wrong_id2(void)
     TEST_ASSERT_NOT_NULL(gnrc_sixlowpan_ctx_lookup_id(DEFAULT_TEST_ID));
 }
 
-static void test_sixlowpan_ctx_update__wrong_prefix_len(void)
-{
+static void test_sixlowpan_ctx_update__wrong_prefix_len(void) {
     ipv6_addr_t addr = DEFAULT_TEST_PREFIX;
 
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_update(DEFAULT_TEST_ID, &addr, 0, TEST_UINT16, true));
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_lookup_id(DEFAULT_TEST_ID));
 }
 
-static void test_sixlowpan_ctx_lookup_addr__empty(void)
-{
+static void test_sixlowpan_ctx_lookup_addr__empty(void) {
     ipv6_addr_t addr = DEFAULT_TEST_PREFIX;
 
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_lookup_addr(&addr));
 }
 
-static void test_sixlowpan_ctx_lookup_addr__same_addr(void)
-{
+static void test_sixlowpan_ctx_lookup_addr__same_addr(void) {
     ipv6_addr_t addr = DEFAULT_TEST_PREFIX;
     gnrc_sixlowpan_ctx_t *ctx;
 
-    /* add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID */
+    // add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID
     test_sixlowpan_ctx_update__success();
     TEST_ASSERT_NOT_NULL((ctx = gnrc_sixlowpan_ctx_lookup_addr(&addr)));
     TEST_ASSERT_EQUAL_INT(GNRC_SIXLOWPAN_CTX_FLAGS_COMP | DEFAULT_TEST_ID, ctx->flags_id);
@@ -129,13 +117,12 @@ static void test_sixlowpan_ctx_lookup_addr__same_addr(void)
     TEST_ASSERT(DEFAULT_TEST_PREFIX_LEN <= ipv6_addr_match_prefix(&addr, &ctx->prefix));
 }
 
-static void test_sixlowpan_ctx_lookup_addr__other_addr_same_prefix(void)
-{
+static void test_sixlowpan_ctx_lookup_addr__other_addr_same_prefix(void) {
     ipv6_addr_t addr1 = DEFAULT_TEST_PREFIX;
     ipv6_addr_t addr2 = OTHER_TEST_PREFIX;
     gnrc_sixlowpan_ctx_t *ctx;
 
-    /* add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID */
+    // add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID
     test_sixlowpan_ctx_update__success();
     TEST_ASSERT_NOT_NULL((ctx = gnrc_sixlowpan_ctx_lookup_addr(&addr2)));
     TEST_ASSERT_EQUAL_INT(GNRC_SIXLOWPAN_CTX_FLAGS_COMP | DEFAULT_TEST_ID, ctx->flags_id);
@@ -144,33 +131,29 @@ static void test_sixlowpan_ctx_lookup_addr__other_addr_same_prefix(void)
     TEST_ASSERT(DEFAULT_TEST_PREFIX_LEN <= ipv6_addr_match_prefix(&addr1, &ctx->prefix));
 }
 
-static void test_sixlowpan_ctx_lookup_addr__other_addr_other_prefix(void)
-{
+static void test_sixlowpan_ctx_lookup_addr__other_addr_other_prefix(void) {
     ipv6_addr_t addr = WRONG_TEST_PREFIX;
 
-    /* add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID */
+    // add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID
     test_sixlowpan_ctx_update__success();
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_lookup_addr(&addr));
 }
 
-static void test_sixlowpan_ctx_lookup_id__empty(void)
-{
+static void test_sixlowpan_ctx_lookup_id__empty(void) {
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_lookup_id(DEFAULT_TEST_ID));
 }
 
-static void test_sixlowpan_ctx_lookup_id__wrong_id(void)
-{
-    /* add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID */
+static void test_sixlowpan_ctx_lookup_id__wrong_id(void) {
+    // add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID
     test_sixlowpan_ctx_update__success();
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_lookup_id(OTHER_TEST_ID));
 }
 
-static void test_sixlowpan_ctx_lookup_id__success(void)
-{
+static void test_sixlowpan_ctx_lookup_id__success(void) {
     ipv6_addr_t addr = DEFAULT_TEST_PREFIX;
     gnrc_sixlowpan_ctx_t *ctx;
 
-    /* add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID */
+    // add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID
     test_sixlowpan_ctx_update__success();
     TEST_ASSERT_NOT_NULL((ctx = gnrc_sixlowpan_ctx_lookup_id(DEFAULT_TEST_ID)));
     TEST_ASSERT_EQUAL_INT(GNRC_SIXLOWPAN_CTX_FLAGS_COMP | DEFAULT_TEST_ID, ctx->flags_id);
@@ -179,11 +162,10 @@ static void test_sixlowpan_ctx_lookup_id__success(void)
     TEST_ASSERT(DEFAULT_TEST_PREFIX_LEN <= ipv6_addr_match_prefix(&addr, &ctx->prefix));
 }
 
-static void test_sixlowpan_ctx_remove(void)
-{
+static void test_sixlowpan_ctx_remove(void) {
     ipv6_addr_t addr = DEFAULT_TEST_PREFIX;
 
-    /* add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID */
+    // add context DEFAULT_TEST_PREFIX to DEFAULT_TEST_ID
     test_sixlowpan_ctx_update__success();
     TEST_ASSERT_NOT_NULL(gnrc_sixlowpan_ctx_lookup_id(DEFAULT_TEST_ID));
     TEST_ASSERT_NOT_NULL(gnrc_sixlowpan_ctx_lookup_addr(&addr));
@@ -192,8 +174,7 @@ static void test_sixlowpan_ctx_remove(void)
     TEST_ASSERT_NULL(gnrc_sixlowpan_ctx_lookup_addr(&addr));
 }
 
-Test *tests_sixlowpan_ctx_tests(void)
-{
+Test *tests_sixlowpan_ctx_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_sixlowpan_ctx_update__wrong_id1),
         new_TestFixture(test_sixlowpan_ctx_update__wrong_id2),
@@ -215,8 +196,7 @@ Test *tests_sixlowpan_ctx_tests(void)
     return (Test *)&sixlowpan_ctx_tests;
 }
 
-void tests_sixlowpan_ctx(void)
-{
+void tests_sixlowpan_ctx(void) {
     TESTS_RUN(tests_sixlowpan_ctx_tests());
 }
-/** @} */
+/// @}

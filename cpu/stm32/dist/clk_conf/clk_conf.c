@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @brief       Compute clock constants for STM32F[2|4|7] CPUs
- *
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- *
- * @}
- */
+/// @brief       Compute clock constants for STM32F[2|4|7] CPUs
+///
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -27,22 +23,19 @@
 #define DEBUG(...)
 #endif
 
-/**
- * @brief Check if N/P pair is valid
- *
- * Check if N/P (alternatively N/Q or N/R) pair is valid with given @p vco_in and
- * @p pll_out
- *
- * @param[in] n
- * @param[in] p
- * @param[in] vco_in
- * @param[in] pll_out
- *
- * @return 1 if pair is valid, 0 otherwise
- */
+/// @brief Check if N/P pair is valid
+///
+/// Check if N/P (alternatively N/Q or N/R) pair is valid with given @p vco_in and
+/// @p pll_out
+///
+/// @param[in] n
+/// @param[in] p
+/// @param[in] vco_in
+/// @param[in] pll_out
+///
+/// @return 1 if pair is valid, 0 otherwise
 static int is_n_ok(const pll_cfg_t *cfg, unsigned n, unsigned p,
-                   unsigned vco_in, unsigned pll_out)
-{
+                   unsigned vco_in, unsigned pll_out) {
     if (n >= cfg->min_n && n <= cfg->max_n &&
             vco_in * n >= cfg->min_vco_output && vco_in * n <= cfg->max_vco_output &&
             vco_in * n / p == pll_out) {
@@ -53,30 +46,27 @@ static int is_n_ok(const pll_cfg_t *cfg, unsigned n, unsigned p,
     }
 }
 
-/**
- * @brief Compute PLL factors
- *
- * @param[in] pll_in      PLL input frequency
- * @param[in] pll_p_out   PLL P output frequency (0 if P is not needed)
- * @param[in] pll_q_out   PLL Q output frequency (0 if Q is not needed)
- * @param[in] pll_r_out   PLL R output frequency (0 if R is not needed)
- * @param[in,out] m       M factor, can be preset (0, if it has to be calculated)
- * @param[out] n          N factor
- * @param[out] p          P factor
- * @param[out] q          Q factor
- * @param[out] r          R factor
- *
- * @return -1 if no P,N pair can be computed with given @p pll_in and @p pll_p_out
- * @return 1 if no Q can be computed, M, N and P are valid
- * @return 2 if no R can be computed, M, M and P are valid
- * @return 3 if no Q nor R can be computed, M, M and P are valid
- * @return 0 if M, N, P, Q, R are valid
- */
+/// @brief Compute PLL factors
+///
+/// @param[in] pll_in      PLL input frequency
+/// @param[in] pll_p_out   PLL P output frequency (0 if P is not needed)
+/// @param[in] pll_q_out   PLL Q output frequency (0 if Q is not needed)
+/// @param[in] pll_r_out   PLL R output frequency (0 if R is not needed)
+/// @param[in,out] m       M factor, can be preset (0, if it has to be calculated)
+/// @param[out] n          N factor
+/// @param[out] p          P factor
+/// @param[out] q          Q factor
+/// @param[out] r          R factor
+///
+/// @return -1 if no P,N pair can be computed with given @p pll_in and @p pll_p_out
+/// @return 1 if no Q can be computed, M, N and P are valid
+/// @return 2 if no R can be computed, M, M and P are valid
+/// @return 3 if no Q nor R can be computed, M, M and P are valid
+/// @return 0 if M, N, P, Q, R are valid
 static int compute_pll(const pll_cfg_t *cfg, unsigned pll_in,
                        unsigned pll_p_out, unsigned pll_q_out, unsigned pll_r_out,
                        unsigned *m, unsigned *n,
-                       unsigned *p, unsigned *q, unsigned *r)
-{
+                       unsigned *p, unsigned *q, unsigned *r) {
     (void)pll_r_out;
     (void)r;
 
@@ -169,13 +159,12 @@ static int compute_pll(const pll_cfg_t *cfg, unsigned pll_in,
         }
     }
 
-    /* todo, compute r */
+    // todo, compute r
 
     return res;
 }
 
-static void usage(char **argv)
-{
+static void usage(char **argv) {
     fprintf(stderr, "usage: %s <cpu_model> <coreclock> <hse_freq> <lse> [pll_i2s_src] "
                     "[pll_i2s_q_out] [pll_sai_q_out]\n", argv[0]);
 }
@@ -183,8 +172,7 @@ static void usage(char **argv)
 #define HSI 0
 #define HSE 1
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     int char_offset = 0;
     const unsigned int* stm32_model_p = stm32_f_model;
     const clk_cfg_t* stm32_clk_cfg_p = stm32_f_clk_cfg;
@@ -231,7 +219,7 @@ int main(int argc, char **argv)
 
     const clk_cfg_t *cfg = &stm32_clk_cfg_p[i];
 
-    /* print help for given cpu */
+    // print help for given cpu
     if (argc < 5) {
         usage(argv);
         fprintf(stderr, "Max values for stm32f%03d:\n", model);
@@ -256,7 +244,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    /* parse command line arguments */
+    // parse command line arguments
     unsigned coreclock = atoi(argv[2]);
     unsigned pll_in = atoi(argv[3]);
     int pll_src;
@@ -318,16 +306,16 @@ int main(int argc, char **argv)
         m = cfg->hsi_prediv;
     }
 
-    /* main PLL */
-    /* try to match coreclock with P output and 48MHz for Q output (USB) */
+    // main PLL
+    // try to match coreclock with P output and 48MHz for Q output (USB)
     switch (compute_pll(&cfg->pll, pll_in, coreclock, clock_48MHz, 0,
                         &m, &n, &p, &q, &r)) {
     case -1:
-        /* no config available */
+        // no config available
         fprintf(stderr, "Unable to compute main PLL factors\n");
         return 1;
     case 1:
-        /* Q not OK */
+        // Q not OK
         fprintf(stderr, "Need to use an alternate 48MHz src...");
         if (cfg->has_pll_i2s && (cfg->has_alt_48MHz & ALT_48MHZ_I2S) == ALT_48MHZ_I2S) {
             puts("PLL I2S");
@@ -369,7 +357,7 @@ int main(int argc, char **argv)
         break;
     }
 
-    /* PLL I2S */
+    // PLL I2S
     if (pll_i2s_p_out || pll_i2s_q_out) {
         unsigned *_m;
         unsigned _in;
@@ -392,7 +380,7 @@ int main(int argc, char **argv)
         }
     }
 
-    /* PLL SAI */
+    // PLL SAI
     if (pll_sai_p_out || pll_sai_q_out) {
         if (compute_pll(&cfg->pll, pll_in, pll_sai_p_out, pll_sai_q_out, 0,
                         &m_sai, &n_sai, &p_sai, &q_sai, &r_sai) != 0) {
@@ -410,7 +398,7 @@ int main(int argc, char **argv)
         }
     }
 
-    /* APB prescalers */
+    // APB prescalers
     unsigned apb1_pre;
     unsigned apb2_pre;
     unsigned apb3_pre;
@@ -435,7 +423,7 @@ int main(int argc, char **argv)
         }
     }
 
-    /* Print constants */
+    // Print constants
     fprintf(stderr, "==============================================================\n");
     fprintf(stderr, "Please copy the following code into your board's periph_conf.h\n\n");
 
@@ -470,7 +458,7 @@ int main(int argc, char **argv)
         printf("#define CLOCK_APB2          (CLOCK_APB1)\n");
     }
     else if (cfg->family == STM32MP1) {
-        /* TODO: Set to 1 by default, conf_clk is not able to handle this parameter */
+        // TODO: Set to 1 by default, conf_clk is not able to handle this parameter
         printf("#define CLOCK_MCU_DIV       RCC_MCUDIVR_MCUDIV_1     /* max %uMHz */\n"
                "#define CLOCK_MCU           (CLOCK_CORECLOCK / 1)\n",
                cfg->max_coreclock / 1000000U);

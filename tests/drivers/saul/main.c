@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- *
- * @file
- * @brief       Test the SAUL interface of devices by periodically reading from
- *              them
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- */
+/// @ingroup     tests
+///
+/// @file
+/// @brief       Test the SAUL interface of devices by periodically reading from
+///              them
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
 
 #include <stdio.h>
 
@@ -20,13 +16,10 @@
 #include "saul_reg.h"
 #include "xtimer.h"
 
-/**
- * @brief   Read th sensors every second
- */
+/// @brief   Read th sensors every second
 #define INTERVAL            (1LU * US_PER_SEC)
 
-int main(void)
-{
+int main(void) {
     phydat_t res;
     xtimer_ticks32_t last_wakeup = xtimer_now();
 

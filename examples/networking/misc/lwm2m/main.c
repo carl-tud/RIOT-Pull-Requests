@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2018 Beduino Master Projekt - University of Bremen
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Beduino Master Projekt - University of Bremen
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Example application for Eclipse Wakaama LwM2M Client
- *
- * @author      Christian Manal <manal@uni-bremen.de>
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Example application for Eclipse Wakaama LwM2M Client
+///
+/// @author      Christian Manal <manal@uni-bremen.de>
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -29,9 +25,8 @@ static msg_t _shell_queue[SHELL_QUEUE_SIZE];
 
 extern void lwm2m_cli_init(void);
 
-int main(void)
-{
-    /* initiates LwM2M client */
+int main(void) {
+    // initiates LwM2M client
     lwm2m_cli_init();
 
     msg_init_queue(_shell_queue, SHELL_QUEUE_SIZE);

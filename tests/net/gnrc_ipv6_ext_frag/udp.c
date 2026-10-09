@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- *
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+///
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -31,8 +27,7 @@ static gnrc_netreg_entry_t server = GNRC_NETREG_ENTRY_INIT_PID(0, KERNEL_PID_UND
 static uint8_t send_count = 0;
 
 static void send(char *addr_str, char *port_str, char *data_len_str, unsigned int num,
-                 unsigned int delay)
-{
+                 unsigned int delay) {
     int iface;
     char *iface_spec;
     char *conversion_end;
@@ -40,19 +35,19 @@ static void send(char *addr_str, char *port_str, char *data_len_str, unsigned in
     ipv6_addr_t addr;
     size_t data_len;
 
-    /* get interface, if available */
+    // get interface, if available
     iface_spec = ipv6_addr_split_iface(addr_str);
     iface = iface_spec ? atoi(iface_spec) : -1;
 
     if ((iface < 0) && (gnrc_netif_numof() == 1)) {
         iface = gnrc_netif_iter(NULL)->pid;
     }
-    /* parse destination address */
+    // parse destination address
     if (ipv6_addr_from_str(&addr, addr_str) == NULL) {
         puts("Error: unable to parse destination address");
         return;
     }
-    /* parse port */
+    // parse port
     port = atoi(port_str);
     if (port == 0) {
         puts("Error: unable to parse destination port");
@@ -67,28 +62,28 @@ static void send(char *addr_str, char *port_str, char *data_len_str, unsigned in
 
     for (unsigned int i = 0; i < num; i++) {
         gnrc_pktsnip_t *payload, *udp, *ip;
-        /* allocate payload */
+        // allocate payload
         payload = gnrc_pktbuf_add(NULL, NULL, data_len, GNRC_NETTYPE_UNDEF);
         if (payload == NULL) {
             puts("Error: unable to copy data to packet buffer");
             return;
         }
         memset(payload->data, send_count++, data_len);
-        /* allocate UDP header, set source port := destination port */
+        // allocate UDP header, set source port := destination port
         udp = gnrc_udp_hdr_build(payload, port, port);
         if (udp == NULL) {
             puts("Error: unable to allocate UDP header");
             gnrc_pktbuf_release(payload);
             return;
         }
-        /* allocate IPv6 header */
+        // allocate IPv6 header
         ip = gnrc_ipv6_hdr_build(udp, NULL, &addr);
         if (ip == NULL) {
             puts("Error: unable to allocate IPv6 header");
             gnrc_pktbuf_release(udp);
             return;
         }
-        /* add netif header, if interface was given */
+        // add netif header, if interface was given
         if (iface > 0) {
             gnrc_pktsnip_t *netif = gnrc_netif_hdr_build(NULL, 0, NULL, 0);
 
@@ -101,57 +96,54 @@ static void send(char *addr_str, char *port_str, char *data_len_str, unsigned in
             ((gnrc_netif_hdr_t *)netif->data)->if_pid = (kernel_pid_t)iface;
             ip = gnrc_pkt_prepend(ip, netif);
         }
-        /* send packet */
+        // send packet
         if (!gnrc_netapi_dispatch_send(GNRC_NETTYPE_UDP, GNRC_NETREG_DEMUX_CTX_ALL, ip)) {
             puts("Error: unable to locate UDP thread");
             gnrc_pktbuf_release(ip);
             return;
         }
-        /* access to `payload` was implicitly given up with the send operation above
-         * => use original variable for output */
+        // access to `payload` was implicitly given up with the send operation above
+        // => use original variable for output
         printf("Success: send %" PRIuSIZE " byte to [%s]:%u\n", data_len, addr_str,
                port);
         xtimer_usleep(delay);
     }
 }
 
-static void start_server(char *port_str)
-{
+static void start_server(char *port_str) {
     uint16_t port;
 
-    /* check if server is already running */
+    // check if server is already running
     if (server.target.pid != KERNEL_PID_UNDEF) {
         printf("Error: server already running on port %" PRIu32 "\n",
                server.demux_ctx);
         return;
     }
-    /* parse port */
+    // parse port
     port = atoi(port_str);
     if (port == 0) {
         puts("Error: invalid port specified");
         return;
     }
-    /* register server to receive messages from given port */
+    // register server to receive messages from given port
     gnrc_netreg_entry_init_pid(&server, port, gnrc_pktdump_pid);
     gnrc_netreg_register(GNRC_NETTYPE_UDP, &server);
     printf("Success: started UDP server on port %" PRIu16 "\n", port);
 }
 
-static void stop_server(void)
-{
-    /* check if server is running at all */
+static void stop_server(void) {
+    // check if server is running at all
     if (server.target.pid == KERNEL_PID_UNDEF) {
         printf("Error: server was not running\n");
         return;
     }
-    /* stop server */
+    // stop server
     gnrc_netreg_unregister(GNRC_NETTYPE_UDP, &server);
     gnrc_netreg_entry_init_pid(&server, 0, KERNEL_PID_UNDEF);
     puts("Success: stopped UDP server");
 }
 
-int udp_cmd(int argc, char **argv)
-{
+int udp_cmd(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s [send|server]\n", argv[0]);
         return 1;

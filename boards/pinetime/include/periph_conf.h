@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_pinetime
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the PineTime
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- */
+/// @ingroup     boards_pinetime
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the PineTime
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
 
 #include "periph_cpu.h"
 #include "cfg_clock_32_1.h"
@@ -27,10 +23,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPIM0,
@@ -42,12 +36,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = NRF_TWIM1,
@@ -58,10 +50,10 @@ static const i2c_conf_t i2c_config[] = {
 };
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Periodic timer test application
- *
- * @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Periodic timer test application
+///
+/// @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -27,9 +23,9 @@
 #include "periph/timer.h"
 #include "test_utils/expect.h"
 
-/* recreate logic to obtain valid XTIMER_DEV used in xtimer.h, but don't include
- * xtimer.h, as this leads to issues on some boards when the xtimer module is
- * not used */
+// recreate logic to obtain valid XTIMER_DEV used in xtimer.h, but don't include
+// xtimer.h, as this leads to issues on some boards when the xtimer module is
+// not used
 #ifndef XTIMER_DEV
 #define XTIMER_DEV  TIMER_DEV(0)
 #endif
@@ -37,15 +33,14 @@
 #define XTIMER_HZ   MHZ(1)
 #endif
 
-/* We use the timer used for xtimer with the frequency used by xtimer here
- * to make sure we have a known valid timer configuration.
- *
- * DO NOT USE any low-level timer functions demonstrated here when xtimer
- * is used with that timer!
- * Configure a separate timer, XTIMER_DEV is usually 'owned' by xtimer, but
- * as xtimer is not used in this test, we can use it and the fact that every board
- * provides a configuration for it.
- */
+// We use the timer used for xtimer with the frequency used by xtimer here
+// to make sure we have a known valid timer configuration.
+//
+// DO NOT USE any low-level timer functions demonstrated here when xtimer
+// is used with that timer!
+// Configure a separate timer, XTIMER_DEV is usually 'owned' by xtimer, but
+// as xtimer is not used in this test, we can use it and the fact that every board
+// provides a configuration for it.
 #define TIMER_CYCL      (XTIMER_DEV)
 #define CYCLE_MS        (25UL)
 #define CYCLES_MAX      (10)
@@ -61,8 +56,7 @@
 
 static unsigned count[MAX_CHANNELS];
 
-static void cb(void *arg, int chan)
-{
+static void cb(void *arg, int chan) {
     unsigned c = count[chan]++;
 
     print_str("[");
@@ -75,8 +69,7 @@ static void cb(void *arg, int chan)
     }
 }
 
-static const char* _print_ok(int chan, bool *succeeded)
-{
+static const char* _print_ok(int chan, bool *succeeded) {
     if (chan == 0) {
         if (count[chan] > 0) {
             return "OK";
@@ -90,8 +83,7 @@ static const char* _print_ok(int chan, bool *succeeded)
     return "ERROR";
 }
 
-static void _cb_set_stopped(void *arg, int chan)
-{
+static void _cb_set_stopped(void *arg, int chan) {
     (void)chan;
 
     bool *succeeded = arg;
@@ -102,8 +94,7 @@ static void _cb_set_stopped(void *arg, int chan)
     timer_stop(TIMER_CYCL);
 }
 
-int main(void)
-{
+int main(void) {
     mutex_t lock = MUTEX_INIT;
     const unsigned long timer_hz = XTIMER_HZ;
     const unsigned steps = (CYCLE_MS * timer_hz) / 1000;
@@ -123,23 +114,22 @@ int main(void)
         lock = (mutex_t)MUTEX_INIT_LOCKED;
         memset(count, 0x00, sizeof(count));
 
-        /* Only the first channel should trigger and reset the counter */
-        /* If subsequent channels trigger this is an error. */
+        // Only the first channel should trigger and reset the counter
+        // If subsequent channels trigger this is an error.
         for (unsigned chan = 1; chan < MAX_CHANNELS; chan++) {
             if (!timer_set_periodic(TIMER_CYCL, chan, (1 + chan) * steps,
-                                    TIM_FLAG_RESET_ON_SET))
-                {
+                                    TIM_FLAG_RESET_ON_SET)) {
                 channel_numof = chan;
                 break;
             }
         }
 
         if (iter == 0) {
-            /* configure timer on first iterations */
+            // configure timer on first iterations
             timer_set_periodic(TIMER_CYCL, 0, steps, TIM_FLAG_RESET_ON_MATCH);
         }
         else {
-            /* resume timer on subsequent iterations */
+            // resume timer on subsequent iterations
             timer_start(TIMER_CYCL);
         }
 
@@ -156,7 +146,7 @@ int main(void)
     expect(timer_init(TIMER_CYCL, timer_hz, _cb_set_stopped, &succeeded) == 0);
     timer_set_periodic(TIMER_CYCL, 0, 25, TIM_FLAG_RESET_ON_SET | TIM_FLAG_SET_STOPPED);
 
-    /* busy wait */
+    // busy wait
     for (volatile uint32_t i = 0; i < CLOCK_CORECLOCK / 10; ++i) {}
 
     if (succeeded) {

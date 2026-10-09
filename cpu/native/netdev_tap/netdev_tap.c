@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2015 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>,
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2015 Ell-i open source co-operative
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>,
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2015 Ell-i open source co-operative
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup drivers_netdev
- * @brief   Low-level ethernet driver for tap interfaces
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @file
+/// @ingroup drivers_netdev
+/// @brief   Low-level ethernet driver for tap interfaces
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
 
 #include <assert.h>
 #include <err.h>
@@ -27,7 +23,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-/* needs to be included before native's declarations of ntohl etc. */
+// needs to be included before native's declarations of ntohl etc.
 #include "byteorder.h"
 
 #if defined(__FreeBSD__)
@@ -57,44 +53,38 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* netdev interface */
+// netdev interface
 static int _init(netdev_t *netdev);
 static int _send(netdev_t *netdev, const iolist_t *iolist);
 static int _recv(netdev_t *netdev, void *buf, size_t n, void *info);
 
-static inline void _get_mac_addr(netdev_t *netdev, uint8_t *dst)
-{
+static inline void _get_mac_addr(netdev_t *netdev, uint8_t *dst) {
     netdev_tap_t *dev = container_of(netdev, netdev_tap_t, netdev);
     memcpy(dst, dev->addr, ETHERNET_ADDR_LEN);
 }
 
-static inline void _set_mac_addr(netdev_t *netdev, const uint8_t *src)
-{
+static inline void _set_mac_addr(netdev_t *netdev, const uint8_t *src) {
     netdev_tap_t *dev = container_of(netdev, netdev_tap_t, netdev);
     memcpy(dev->addr, src, ETHERNET_ADDR_LEN);
 }
 
-static inline int _get_promiscuous(netdev_t *netdev)
-{
+static inline int _get_promiscuous(netdev_t *netdev) {
     netdev_tap_t *dev = container_of(netdev, netdev_tap_t, netdev);
     return dev->promiscuous;
 }
 
-static inline int _set_promiscuous(netdev_t *netdev, int value)
-{
+static inline int _set_promiscuous(netdev_t *netdev, int value) {
     netdev_tap_t *dev = container_of(netdev, netdev_tap_t, netdev);
     dev->promiscuous = value;
     return value;
 }
 
-static inline int _get_wired(netdev_t *netdev)
-{
+static inline int _get_wired(netdev_t *netdev) {
     netdev_tap_t *dev = container_of(netdev, netdev_tap_t, netdev);
     return dev->wired;
 }
 
-static inline void _isr(netdev_t *netdev)
-{
+static inline void _isr(netdev_t *netdev) {
     if (netdev->event_callback) {
         netdev->event_callback(netdev, NETDEV_EVENT_RX_COMPLETE);
     }
@@ -105,8 +95,7 @@ static inline void _isr(netdev_t *netdev)
 #endif
 }
 
-static int _get(netdev_t *dev, netopt_t opt, void *value, size_t max_len)
-{
+static int _get(netdev_t *dev, netopt_t opt, void *value, size_t max_len) {
     int res = 0;
 
     switch (opt) {
@@ -141,8 +130,7 @@ static int _get(netdev_t *dev, netopt_t opt, void *value, size_t max_len)
     return res;
 }
 
-static int _set(netdev_t *dev, netopt_t opt, const void *value, size_t value_len)
-{
+static int _set(netdev_t *dev, netopt_t opt, const void *value, size_t value_len) {
     (void)value_len;
     int res = 0;
 
@@ -164,12 +152,11 @@ static int _set(netdev_t *dev, netopt_t opt, const void *value, size_t value_len
     return res;
 }
 
-static int _confirm_send(netdev_t *netdev, void *info)
-{
+static int _confirm_send(netdev_t *netdev, void *info) {
     (void)netdev;
     (void)info;
 
-    /* confirm_send should not be called with synchronos send */
+    // confirm_send should not be called with synchronos send
     assert(0);
 
     return -EOPNOTSUPP;
@@ -185,29 +172,26 @@ static const netdev_driver_t netdev_driver_tap = {
     .confirm_send = _confirm_send,
 };
 
-/* driver implementation */
-static inline bool _is_addr_broadcast(uint8_t *addr)
-{
+// driver implementation
+static inline bool _is_addr_broadcast(uint8_t *addr) {
     return ((addr[0] == 0xff) && (addr[1] == 0xff) && (addr[2] == 0xff) &&
             (addr[3] == 0xff) && (addr[4] == 0xff) && (addr[5] == 0xff));
 }
 
-static inline bool _is_addr_multicast(uint8_t *addr)
-{
-    /* source: http://ieee802.org/secmail/pdfocSP2xXA6d.pdf */
+static inline bool _is_addr_multicast(uint8_t *addr) {
+    // source: http://ieee802.org/secmail/pdfocSP2xXA6d.pdf
     return (addr[0] & 0x01);
 }
 
-static void _continue_reading(netdev_tap_t *dev)
-{
-    /* work around lost signals */
+static void _continue_reading(netdev_tap_t *dev) {
+    // work around lost signals
     fd_set rfds;
     struct timeval t;
     memset(&t, 0, sizeof(t));
     FD_ZERO(&rfds);
     FD_SET(dev->tap_fd, &rfds);
 
-    _native_pending_syscalls_up(); /* no switching here */
+    _native_pending_syscalls_up(); // no switching here
 
     if (real_select(dev->tap_fd + 1, &rfds, NULL, NULL, &t) == 1) {
         int sig = SIGIO;
@@ -225,23 +209,20 @@ static void _continue_reading(netdev_tap_t *dev)
     _native_pending_syscalls_down();
 }
 
-static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     netdev_tap_t *dev = container_of(netdev, netdev_tap_t, netdev);
     (void)info;
 
     if (!buf) {
         if (len > 0) {
-            /* no memory available in pktbuf, discarding the frame */
+            // no memory available in pktbuf, discarding the frame
             DEBUG("netdev_tap: discarding the frame\n");
 
-            /* repeating `real_read` for small size on tap device results in
-             * freeze for some reason. Using a large buffer for now. */
-            /*
-            uint8_t buf[4];
-            while (real_read(dev->tap_fd, buf, sizeof(buf)) > 0) {
-            }
-            */
+            // repeating `real_read` for small size on tap device results in
+            // freeze for some reason. Using a large buffer for now.
+            // uint8_t buf[4];
+            // while (real_read(dev->tap_fd, buf, sizeof(buf)) > 0) {
+            // }
 
             static uint8_t nullbuf[ETHERNET_FRAME_LEN];
 
@@ -250,8 +231,8 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
             _continue_reading(dev);
         }
 
-        /* no way of figuring out packet size without racey buffering,
-         * so we return the maximum possible size */
+        // no way of figuring out packet size without racey buffering,
+        // so we return the maximum possible size
         return ETHERNET_FRAME_LEN;
     }
 
@@ -294,8 +275,7 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
     return -1;
 }
 
-static int _send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _send(netdev_t *netdev, const iolist_t *iolist) {
     netdev_tap_t *dev = container_of(netdev, netdev_tap_t, netdev);
 
     struct iovec iov[iolist_count(iolist)];
@@ -328,32 +308,31 @@ static void _tap_isr(int fd, void *arg) {
     }
 }
 
-static int _init(netdev_t *netdev)
-{
+static int _init(netdev_t *netdev) {
     DEBUG("%s:%s:%u\n", __FILE__, __func__, __LINE__);
 
     netdev_tap_t *dev = container_of(netdev, netdev_tap_t, netdev);
 
-    /* check device parameters */
+    // check device parameters
     if (dev == NULL) {
         return -ENODEV;
     }
 
     char *name = dev->tap_name;
 # ifdef __FreeBSD__
-    char clonedev[255] = "/dev/"; /* XXX bad size */
+    char clonedev[255] = "/dev/"; // XXX bad size
     strncpy(clonedev + 5, name, 250);
-# else /* Linux */
+# else // Linux
     struct ifreq ifr;
     const char *clonedev = "/dev/net/tun";
 # endif
-    /* initialize device descriptor */
+    // initialize device descriptor
     dev->promiscuous = 0;
-    /* implicitly create the tap interface */
+    // implicitly create the tap interface
     if ((dev->tap_fd = real_open(clonedev, O_RDWR | O_NONBLOCK)) == -1) {
         err(EXIT_FAILURE, "open(%s)", clonedev);
     }
-# if __FreeBSD__ /* FreeBSD */
+# if __FreeBSD__ // FreeBSD
     struct ifaddrs *iflist;
     if (real_getifaddrs(&iflist) == 0) {
         for (struct ifaddrs *cur = iflist; cur; cur = cur->ifa_next) {
@@ -365,7 +344,7 @@ static int _init(netdev_t *netdev)
         }
         real_freeifaddrs(iflist);
     }
-# else /* Linux */
+# else // Linux
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_flags = IFF_TAP | IFF_NO_PI;
     strncpy(ifr.ifr_name, name, IFNAMSIZ);
@@ -376,7 +355,7 @@ static int _init(netdev_t *netdev)
         real_exit(EXIT_FAILURE);
     }
 
-    /* get MAC address */
+    // get MAC address
     memset(&ifr, 0, sizeof(ifr));
     snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
     if (real_ioctl(dev->tap_fd, SIOCGIFHWADDR, &ifr) == -1) {
@@ -389,20 +368,20 @@ static int _init(netdev_t *netdev)
     }
     memcpy(dev->addr, ifr.ifr_hwaddr.sa_data, ETHERNET_ADDR_LEN);
 
-    /* change mac addr so it differs from what the host is using */
+    // change mac addr so it differs from what the host is using
     dev->addr[5]++;
 # endif
     DEBUG("gnrc_tapnet_init(): dev->addr = %02x:%02x:%02x:%02x:%02x:%02x\n",
             dev->addr[0], dev->addr[1], dev->addr[2],
             dev->addr[3], dev->addr[4], dev->addr[5]);
 
-    /* configure signal handler for fds */
+    // configure signal handler for fds
     native_async_read_setup();
     native_async_read_add_handler(dev->tap_fd, netdev, _tap_isr);
 
     DEBUG("gnrc_tapnet: initialized.\n");
 
-    /* signal link UP */
+    // signal link UP
     netdev->event_callback(netdev, NETDEV_EVENT_LINK_UP);
 
     return 0;

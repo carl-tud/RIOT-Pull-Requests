@@ -1,28 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Jan Wagner <mail@jwagner.eu>
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-FileCopyrightText: 2020 Philipp-Alexander Blum <philipp-blum@jakiku.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Jan Wagner <mail@jwagner.eu>
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-FileCopyrightText: 2020 Philipp-Alexander Blum <philipp-blum@jakiku.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf5x_common
- * @ingroup     drivers_periph_uart
- * @{
- *
- * @file
- * @brief       Implementation of the peripheral UART interface
- *
- * @author      Christian Kühling <kuehling@zedat.fu-berlin.de>
- * @author      Timo Ziegler <timo.ziegler@fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Jan Wagner <mail@jwagner.eu>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Philipp-Alexander Blum <philipp-blum@jakiku.de>
- *
- * @}
- */
+/// @ingroup     cpu_nrf5x_common
+/// @ingroup     drivers_periph_uart
+/// @{
+///
+/// @file
+/// @brief       Implementation of the peripheral UART interface
+///
+/// @author      Christian Kühling <kuehling@zedat.fu-berlin.de>
+/// @author      Timo Ziegler <timo.ziegler@fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Jan Wagner <mail@jwagner.eu>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Philipp-Alexander Blum <philipp-blum@jakiku.de>
+///
+/// @}
 
 #include <assert.h>
 #include <stdint.h>
@@ -53,16 +49,12 @@
 
 #define RAM_MASK        (0x20000000)
 
-/**
- * @brief Chunk size used for transferring data from ROM [in bytes]
- */
+/// @brief Chunk size used for transferring data from ROM [in bytes]
 #ifndef NRF_UARTE_CHUNK_SIZE
 #  define NRF_UARTE_CHUNK_SIZE  (32U)
 #endif
 
-/**
- * @brief Allocate memory for the interrupt context
- */
+/// @brief Allocate memory for the interrupt context
 static uart_isr_ctx_t isr_ctx[UART_NUMOF];
 #ifdef UARTE_PRESENT
 static uint8_t rx_buf[UART_NUMOF];
@@ -71,21 +63,17 @@ static uint8_t rx_buf[UART_NUMOF];
 #ifdef MODULE_PERIPH_UART_NONBLOCKING
 
 #  include "tsrb.h"
-/**
- * @brief   Allocate for tx ring buffers
- */
+/// @brief   Allocate for tx ring buffers
 static uint8_t tx_buf[UART_NUMOF];
 static tsrb_t uart_tx_rb[UART_NUMOF];
 static uint8_t uart_tx_rb_buf[UART_NUMOF][UART_TXBUF_SIZE];
 #endif
 
-/**
- * @brief Shared IRQ Callback for UART on nRF53/nRF9160
-*/
+/// @brief Shared IRQ Callback for UART on nRF53/nRF9160
 void uart_isr_handler(void *arg);
 
-/* use an enum to count the number of UART ISR macro names defined by the
- * board */
+// use an enum to count the number of UART ISR macro names defined by the
+// board
 enum {
 #ifdef UART_0_ISR
     UART_0_ISR_NUM,
@@ -96,8 +84,7 @@ enum {
     UART_ISR_NUMOF,
 };
 
-static inline void set_power(uart_t uart, bool value)
-{
+static inline void set_power(uart_t uart, bool value) {
     UART_TYPE *dev = uart_config[uart].dev;
 
     if (value) {
@@ -113,15 +100,13 @@ static inline void set_power(uart_t uart, bool value)
 }
 
 MAYBE_UNUSED
-static inline bool get_power(uart_t uart)
-{
+static inline bool get_power(uart_t uart) {
     UART_TYPE *dev = uart_config[uart].dev;
     return dev->ENABLE != ENABLE_OFF;
 }
 
-int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
-{
-/* ensure the ISR names have been defined as needed */
+int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg) {
+// ensure the ISR names have been defined as needed
 #if !defined(CPU_NRF53) && !defined(CPU_NRF9160)
     static_assert(UART_NUMOF == UART_ISR_NUMOF, "Define(s) of UART ISR name(s) missing");
 #endif
@@ -131,14 +116,14 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
 
     UART_TYPE *dev = uart_config[uart].dev;
 
-    /* remember callback addresses and argument */
+    // remember callback addresses and argument
     isr_ctx[uart].rx_cb = rx_cb;
     isr_ctx[uart].arg = arg;
 
-    /* reset configuration registers */
+    // reset configuration registers
     dev->CONFIG = 0;
 
-    /* configure RX pin */
+    // configure RX pin
     if (rx_cb) {
         if (gpio_is_valid(uart_config[uart].rx_pin)) {
             gpio_init(uart_config[uart].rx_pin, GPIO_IN);
@@ -149,7 +134,7 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
         }
     }
 
-    /* configure TX pin */
+    // configure TX pin
     if (gpio_is_valid(uart_config[uart].tx_pin)) {
         gpio_init(uart_config[uart].tx_pin, GPIO_OUT);
         dev->PSEL_TXD = uart_config[uart].tx_pin;
@@ -158,25 +143,25 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
         dev->PSEL_TXD = 0xFFFFFFFF;
     }
 
-    /* enable HW-flow control if defined */
+    // enable HW-flow control if defined
 #ifdef MODULE_PERIPH_UART_HW_FC
-    /* set pin mode for RTS and CTS pins */
+    // set pin mode for RTS and CTS pins
     if (gpio_is_valid(uart_config[uart].rts_pin) && gpio_is_valid(uart_config[uart].cts_pin)) {
         gpio_init(uart_config[uart].rts_pin, GPIO_OUT);
         gpio_init(uart_config[uart].cts_pin, GPIO_IN);
-        /* configure RTS and CTS pins to use */
+        // configure RTS and CTS pins to use
         dev->PSEL_RTS = uart_config[uart].rts_pin;
         dev->PSEL_CTS = uart_config[uart].cts_pin;
-        dev->CONFIG |= UART_CONFIG_HWFC_Msk; /* enable HW flow control */
+        dev->CONFIG |= UART_CONFIG_HWFC_Msk; // enable HW flow control
     }
     else
 #endif
     {
-        dev->PSEL_RTS = 0xffffffff;   /* pin disconnected */
-        dev->PSEL_CTS = 0xffffffff;   /* pin disconnected */
+        dev->PSEL_RTS = 0xffffffff;   // pin disconnected
+        dev->PSEL_CTS = 0xffffffff;   // pin disconnected
     }
 
-    /* select baudrate */
+    // select baudrate
     switch (baudrate) {
     case 1200:
         dev->BAUDRATE = UART_BAUDRATE_BAUDRATE_Baud1200;
@@ -230,11 +215,11 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
         return UART_NOBAUD;
     }
 
-    /* enable the UART device */
+    // enable the UART device
     set_power(uart, true);
 
 #ifdef MODULE_PERIPH_UART_NONBLOCKING
-    /* set up the TX buffer */
+    // set up the TX buffer
     tsrb_init(&uart_tx_rb[uart], uart_tx_rb_buf[uart], UART_TXBUF_SIZE);
 #endif
 
@@ -261,8 +246,7 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
     return UART_OK;
 }
 
-void uart_poweron(uart_t uart)
-{
+void uart_poweron(uart_t uart) {
     assume((unsigned)uart < UART_NUMOF);
 
     set_power(uart, true);
@@ -271,15 +255,14 @@ void uart_poweron(uart_t uart)
     }
 }
 
-void uart_poweroff(uart_t uart)
-{
+void uart_poweroff(uart_t uart) {
     assume((unsigned)uart < UART_NUMOF);
 
     uart_config[uart].dev->TASKS_STOPRX = 1;
     set_power(uart, false);
 }
 
-/* Unify macro names across nRF51 (UART) and nRF52 and newer (UARTE) */
+// Unify macro names across nRF51 (UART) and nRF52 and newer (UARTE)
 #if defined(UARTE_CONFIG_HWFC_Msk)
 #  define CONFIG_HWFC_Msk UARTE_CONFIG_HWFC_Msk
 #elif defined(UART_CONFIG_HWFC_Msk)
@@ -299,11 +282,10 @@ void uart_poweroff(uart_t uart)
 #endif
 
 int uart_mode(uart_t uart, uart_data_bits_t data_bits, uart_parity_t parity,
-              uart_stop_bits_t stop_bits)
-{
+              uart_stop_bits_t stop_bits) {
     assume((unsigned)uart < UART_NUMOF);
-    /* Not all nRF5x MCUs support 2 stop bits, but the vendor header files
-     * reflect the feature set. */
+    // Not all nRF5x MCUs support 2 stop bits, but the vendor header files
+    // reflect the feature set.
     switch (stop_bits) {
     case UART_STOP_BITS_1:
 #ifdef CONFIG_STOP_Msk
@@ -322,7 +304,7 @@ int uart_mode(uart_t uart, uart_data_bits_t data_bits, uart_parity_t parity,
         return UART_NOMODE;
     }
 
-    /* Do not modify hardware flow control */
+    // Do not modify hardware flow control
     uint32_t conf = uart_config[uart].dev->CONFIG & CONFIG_HWFC_Msk;
 
 #ifdef CONFIG_STOP_Msk
@@ -339,52 +321,50 @@ int uart_mode(uart_t uart, uart_data_bits_t data_bits, uart_parity_t parity,
     return UART_OK;
 }
 
-/* UART with EasyDMA */
+// UART with EasyDMA
 #ifdef UARTE_PRESENT
-static void _write_buf(uart_t uart, const uint8_t *data, size_t len)
-{
+static void _write_buf(uart_t uart, const uint8_t *data, size_t len) {
     uart_config[uart].dev->EVENTS_ENDTX = 0;
     if (IS_USED(MODULE_PERIPH_UART_NONBLOCKING)) {
         uart_config[uart].dev->INTENSET = UARTE_INTENSET_ENDTX_Msk;
     }
-    /* set data to transfer to DMA TX pointer */
+    // set data to transfer to DMA TX pointer
     uart_config[uart].dev->TXD.PTR = (uint32_t)data;
     uart_config[uart].dev->TXD.MAXCNT = len;
-    /* start transmission */
+    // start transmission
     uart_config[uart].dev->TASKS_STARTTX = 1;
-    /* wait for the end of transmission */
+    // wait for the end of transmission
     if (!IS_USED(MODULE_PERIPH_UART_NONBLOCKING)) {
         while (uart_config[uart].dev->EVENTS_ENDTX == 0) {}
         uart_config[uart].dev->TASKS_STOPTX = 1;
     }
 }
 
-void uart_write(uart_t uart, const uint8_t *data, size_t len)
-{
+void uart_write(uart_t uart, const uint8_t *data, size_t len) {
     assume((unsigned)uart < UART_NUMOF);
     if (!get_power(uart)) {
-        /* Device is powered down. Writing anyway would deadlock */
+        // Device is powered down. Writing anyway would deadlock
         return;
     }
 #  ifdef MODULE_PERIPH_UART_NONBLOCKING
     for (size_t i = 0; i < len; i++) {
-        /* in IRQ or interrupts disabled */
+        // in IRQ or interrupts disabled
         if (irq_is_in() || __get_PRIMASK()) {
             if (tsrb_full(&uart_tx_rb[uart])) {
-                /* wait for end of ongoing transmission */
+                // wait for end of ongoing transmission
                 if (uart_config[uart].dev->EVENTS_TXSTARTED) {
                     while (uart_config[uart].dev->EVENTS_ENDTX == 0) {}
                     uart_config[uart].dev->EVENTS_TXSTARTED = 0;
                 }
-                /* free one spot in buffer */
+                // free one spot in buffer
                 tx_buf[uart] = tsrb_get_one(&uart_tx_rb[uart]);
                 _write_buf(uart, &tx_buf[uart], 1);
             }
             tsrb_add_one(&uart_tx_rb[uart], data[i]);
         }
         else {
-            /* if no transmission is ongoing and ring buffer is full
-               free up a spot in the buffer by sending one byte */
+            // if no transmission is ongoing and ring buffer is full
+            //    free up a spot in the buffer by sending one byte
             if (!uart_config[uart].dev->EVENTS_TXSTARTED && tsrb_full(&uart_tx_rb[uart])) {
                 tx_buf[uart] = tsrb_get_one(&uart_tx_rb[uart]);
                 _write_buf(uart, &tx_buf[uart], 1);
@@ -392,8 +372,8 @@ void uart_write(uart_t uart, const uint8_t *data, size_t len)
             while (tsrb_add_one(&uart_tx_rb[uart], data[i]) < 0) {}
         }
     }
-    /* if no transmission is ongoing bootstrap the transmission process
-       by setting a single byte to be written */
+    // if no transmission is ongoing bootstrap the transmission process
+    //    by setting a single byte to be written
     if (!uart_config[uart].dev->EVENTS_TXSTARTED) {
         if (!tsrb_empty(&uart_tx_rb[uart])) {
             tx_buf[uart] = tsrb_get_one(&uart_tx_rb[uart]);
@@ -401,10 +381,10 @@ void uart_write(uart_t uart, const uint8_t *data, size_t len)
         }
     }
 #  else
-    /* EasyDMA can only transfer data from RAM (see ref. manual, sec. 6.34.1).
-     * So if the given `data` buffer resides in ROM, we need to copy it to RAM
-     * before being able to transfer it. To make sure the stack does not
-     * overflow, we do this chunk-wise. */
+    // EasyDMA can only transfer data from RAM (see ref. manual, sec. 6.34.1).
+    // So if the given `data` buffer resides in ROM, we need to copy it to RAM
+    // before being able to transfer it. To make sure the stack does not
+    // overflow, we do this chunk-wise.
     if (!((uint32_t)data & RAM_MASK)) {
         size_t pos = 0;
         while (pos < len) {
@@ -422,21 +402,20 @@ void uart_write(uart_t uart, const uint8_t *data, size_t len)
 #  endif
 }
 
-static void irq_handler(uart_t uart)
-{
+static void irq_handler(uart_t uart) {
     if (uart_config[uart].dev->EVENTS_ENDRX) {
         uart_config[uart].dev->EVENTS_ENDRX = 0;
 
-        /* make sure we actually received new data */
+        // make sure we actually received new data
         if (uart_config[uart].dev->RXD.AMOUNT != 0) {
-            /* Process received byte */
+            // Process received byte
             isr_ctx[uart].rx_cb(isr_ctx[uart].arg, rx_buf[uart]);
         }
     }
 
 #  ifdef MODULE_PERIPH_UART_NONBLOCKING
     if (uart_config[uart].dev->EVENTS_ENDTX) {
-        /* reset flags and disable ISR on EVENTS_ENDTX */
+        // reset flags and disable ISR on EVENTS_ENDTX
         uart_config[uart].dev->EVENTS_ENDTX = 0;
         uart_config[uart].dev->EVENTS_TXSTARTED = 0;
         uart_config[uart].dev->INTENCLR = UARTE_INTENSET_ENDTX_Msk;
@@ -453,37 +432,34 @@ static void irq_handler(uart_t uart)
     cortexm_isr_end();
 }
 
-#else /* UART without EasyDMA*/
+#else // UART without EasyDMA
 
-void uart_write(uart_t uart, const uint8_t *data, size_t len)
-{
+void uart_write(uart_t uart, const uint8_t *data, size_t len) {
     assume((unsigned)uart < UART_NUMOF);
 
     uart_config[uart].dev->TASKS_STARTTX = 1;
 
     for (size_t i = 0; i < len; i++) {
-        /* This section of the function is not thread safe:
-            - another thread may mess up with the uart at the same time.
-           In order to avoid an infinite loop in the interrupted thread,
-           the TXRDY flag must be cleared before writing the data to be
-           sent and not after. This way, the higher priority thread will
-           exit this function with the TXRDY flag set, then the interrupted
-           thread may have not transmitted his data but will still exit the
-           while loop.
-        */
-        /* reset ready flag */
+        // This section of the function is not thread safe:
+        //     - another thread may mess up with the uart at the same time.
+        //    In order to avoid an infinite loop in the interrupted thread,
+        //    the TXRDY flag must be cleared before writing the data to be
+        //    sent and not after. This way, the higher priority thread will
+        //    exit this function with the TXRDY flag set, then the interrupted
+        //    thread may have not transmitted his data but will still exit the
+        //    while loop.
+        // reset ready flag
         uart_config[uart].dev->EVENTS_TXDRDY = 0;
-        /* write data into transmit register */
+        // write data into transmit register
         uart_config[uart].dev->TXD = data[i];
-        /* wait for any transmission to be done */
+        // wait for any transmission to be done
         while (uart_config[uart].dev->EVENTS_TXDRDY == 0) {}
     }
 
     uart_config[uart].dev->TASKS_STOPTX = 1;
 }
 
-static void irq_handler(uart_t uart)
-{
+static void irq_handler(uart_t uart) {
     if (uart_config[uart].dev->EVENTS_RXDRDY == 1) {
         uart_config[uart].dev->EVENTS_RXDRDY = 0;
         uint8_t byte = (uint8_t)(uart_config[uart].dev->RXD & 0xff);
@@ -496,25 +472,22 @@ static void irq_handler(uart_t uart)
 #endif
 
 #if defined(CPU_NRF53) || defined(CPU_NRF9160)
-void uart_isr_handler(void *arg)
-{
+void uart_isr_handler(void *arg) {
     uart_t uart = (uart_t)(uintptr_t)arg;
 
     irq_handler(uart);
 }
 #else
 #  ifdef UART_0_ISR
-void UART_0_ISR(void)
-{
+void UART_0_ISR(void) {
     irq_handler(UART_DEV(0));
 }
 #  endif
 
 #  ifdef UART_1_ISR
-void UART_1_ISR(void)
-{
+void UART_1_ISR(void) {
     irq_handler(UART_DEV(1));
 }
 #  endif
 
-#endif /* def CPU_NRF53 || CPU_NRF9160 */
+#endif // def CPU_NRF53 || CPU_NRF9160

@@ -1,16 +1,12 @@
-/*
- * Copyright (c) 2016 Inria
- *               2017 Kaspar Schleiser <kaspar@schleiser.de>
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- *
- */
+// Copyright (c) 2016 Inria
+//               2017 Kaspar Schleiser <kaspar@schleiser.de>
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
+//
 
-/**
- * @author      Francisco Acosta <francisco.acosta@inria.fr>
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @author      Francisco Acosta <francisco.acosta@inria.fr>
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
 
 #include <errno.h>
 #include <limits.h>
@@ -23,43 +19,39 @@
 #include "riotboot/hdr.h"
 #include "common.h"
 
-/**
- *  @brief Alignment required to set VTOR in Cortex-M0+/3/4/7
- */
+///  @brief Alignment required to set VTOR in Cortex-M0+/3/4/7
 #define HDR_ALIGN              (256)
 
-static void populate_hdr(riotboot_hdr_t *hdr, uint32_t ver, uint32_t addr)
-{
-    /* ensure the buffer and header have 0's */
+static void populate_hdr(riotboot_hdr_t *hdr, uint32_t ver, uint32_t addr) {
+    // ensure the buffer and header have 0's
     memset(hdr, '\0', sizeof(riotboot_hdr_t));
 
-    /* Generate image header */
+    // Generate image header
     hdr->magic_number = RIOTBOOT_MAGIC;
     hdr->version = ver;
     hdr->start_addr = addr;
 
-    /* calculate header checksum */
+    // calculate header checksum
     hdr->chksum = riotboot_hdr_checksum(hdr);
 }
 
-int genhdr(int argc, char *argv[])
-{
+int genhdr(int argc, char *argv[]) {
     const char generate_usage[] = "<IMG_BIN> <APP_VER> <START_ADDR> <HDR_LEN> <outfile|->";
 
-    /* riotboot_hdr buffer */
+    // riotboot_hdr buffer
     uint8_t *hdr_buf;
 
-    /* arguments storage variables */
+    // arguments storage variables
     unsigned long app_ver_arg = 0;
     unsigned long start_addr_arg = 0;
     unsigned long hdr_len_arg = 0;
 
-    /* header variables */
+    // header variables
     size_t hdr_len = 0;
     uint32_t app_ver = 0;
     uint32_t start_addr = 0;
 
-    /* helpers */
+    // helpers
     errno = 0;
     char *p;
 
@@ -93,7 +85,7 @@ int genhdr(int argc, char *argv[])
         hdr_len = hdr_len_arg;
     }
 
-    /* prepare a 0 initialised buffer for riotboot_hdr_t */
+    // prepare a 0 initialised buffer for riotboot_hdr_t
     hdr_buf = calloc(1, hdr_len);
     if (hdr_buf == NULL) {
         fprintf(stderr, "Error: not enough memory!\n");
@@ -102,7 +94,7 @@ int genhdr(int argc, char *argv[])
 
     populate_hdr((riotboot_hdr_t*)hdr_buf, app_ver, start_addr);
 
-    /* Write the header */
+    // Write the header
     if (!to_file(argv[5], hdr_buf, hdr_len)) {
         fprintf(stderr, "Error: cannot write output\n");
         free(hdr_buf);
@@ -114,8 +106,7 @@ int genhdr(int argc, char *argv[])
     return 0;
 }
 
-int updatehdr(int argc, char *argv[])
-{
+int updatehdr(int argc, char *argv[]) {
     if (argc < 3) {
         fprintf(stderr, "usage: genhdr update <file> <new_version>\n");
         return -1;
@@ -141,15 +132,13 @@ int updatehdr(int argc, char *argv[])
     return 0;
 }
 
-static void print_hdr(const riotboot_hdr_t *hdr)
-{
+static void print_hdr(const riotboot_hdr_t *hdr) {
     printf("version: %u\n", hdr->version);
     printf("address: 0x%x\n", hdr->start_addr);
     printf("checksum: %svalid\n", riotboot_hdr_validate(hdr) ? "in" : "");
 }
 
-static void print_hdr_json(const riotboot_hdr_t *hdr)
-{
+static void print_hdr_json(const riotboot_hdr_t *hdr) {
     printf("{\n");
     printf("\t\"version\": %u,\n", hdr->version);
     printf("\t\"address\": %u,\n", hdr->start_addr);
@@ -157,8 +146,7 @@ static void print_hdr_json(const riotboot_hdr_t *hdr)
     printf("}\n");
 }
 
-int readhdr(const char *file, bool json)
-{
+int readhdr(const char *file, bool json) {
     riotboot_hdr_t hdr = { 0 };
     int res = from_file(file, &hdr, sizeof(hdr));
     if (res < (int)sizeof(hdr)) {

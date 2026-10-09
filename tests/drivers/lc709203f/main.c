@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2017 RWTH Aachen, Josua Arndt, Steffen Robertz
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 RWTH Aachen, Josua Arndt, Steffen Robertz
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- * @file
- * @brief       test application for the LC709203F Battery fuel gauge by on semiconductors
- *
- * @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
- * @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+/// @file
+/// @brief       test application for the LC709203F Battery fuel gauge by on semiconductors
+///
+/// @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
+/// @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
+/// @}
 
 #include <stdio.h>
 #include "board.h"
@@ -21,14 +17,12 @@
 #include "xtimer.h"
 #include "lc709203f_params.h"
 
-static void _gauge_cb(void *arg)
-{
+static void _gauge_cb(void *arg) {
     (void)arg;
     printf("\n ALARM: Low RSOC \n");
 }
 
-int main(void)
-{
+int main(void) {
     puts("LC709203F Fuel Gauge test application");
     lc709203f_t dev;
     dev.cb = _gauge_cb;

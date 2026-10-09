@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the Peripheral GPIO Low-Level API
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the Peripheral GPIO Low-Level API
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -43,8 +39,7 @@
 static gpio_port_t port_out = PORT_OUT;
 
 static void print_summary_compensated(uint_fast16_t loops, uint32_t duration,
-                                      uint32_t duration_uncompensated)
-{
+                                      uint32_t duration_uncompensated) {
     printf("%" PRIuFAST16 " iterations took %" PRIu32 " us "
            "(%" PRIu32 " us uncompensated)\n",
            loops, duration, duration_uncompensated);
@@ -78,8 +73,7 @@ static void print_summary_compensated(uint_fast16_t loops, uint32_t duration,
 #endif
 }
 
-static void print_summary_uncompensated(uint_fast16_t loops, uint32_t duration)
-{
+static void print_summary_uncompensated(uint_fast16_t loops, uint32_t duration) {
     printf("%" PRIuFAST16 " iterations took %" PRIu32 " us\n",
            loops, duration);
     printf("Two square waves pins at %12" PRIu32 " Hz\n",
@@ -106,8 +100,7 @@ static void print_summary_uncompensated(uint_fast16_t loops, uint32_t duration)
 #endif
 }
 
-int main(void)
-{
+int main(void) {
     static const uint_fast16_t loops = 50000;
     uint32_t loop_overhead = 0;
 

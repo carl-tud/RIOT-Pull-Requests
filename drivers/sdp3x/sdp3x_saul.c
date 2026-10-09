@@ -1,43 +1,37 @@
-/*
- * SPDX-FileCopyrightText: 2019 Jan Schlichter
- * SPDX-FileCopyrightText: 2020 Nishchay Agrawal
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Jan Schlichter
+// SPDX-FileCopyrightText: 2020 Nishchay Agrawal
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sdp3x
- * @{
- * @file
- * @brief       SAUL adaption for Sensirion SDP3x devices
- *
- * @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
- * @author      Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
- *
- * @}
- */
+/// @ingroup     drivers_sdp3x
+/// @{
+/// @file
+/// @brief       SAUL adaption for Sensirion SDP3x devices
+///
+/// @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
+/// @author      Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
+///
+/// @}
 
 #include "saul.h"
 
 #include "sdp3x.h"
 
-static int read_temperature(const void *dev, phydat_t *res)
-{
+static int read_temperature(const void *dev, phydat_t *res) {
     int32_t temp = sdp3x_read_single_temperature((sdp3x_t *)dev,
                                                 SDP3X_FLAG_DIFF_PRESS);
 
-    /* Fit 32 bit data into 16 bit fields of phydat_t */
+    // Fit 32 bit data into 16 bit fields of phydat_t
     phydat_fit(res, &temp, 1);
     res->unit = UNIT_TEMP_C;
     res->scale = -2;
     return 1;
 }
 
-static int read_differential_pressure(const void *dev, phydat_t *res)
-{
+static int read_differential_pressure(const void *dev, phydat_t *res) {
     int32_t pres = sdp3x_read_single_differential_pressure((sdp3x_t *)dev,
                                                         SDP3X_FLAG_DIFF_PRESS);
 
-    /* Fit 32 bit data into 16 bit fields of phydat_t */
+    // Fit 32 bit data into 16 bit fields of phydat_t
     phydat_fit(res, &pres, 1);
     res->unit = UNIT_PA;
     res->scale = -2;

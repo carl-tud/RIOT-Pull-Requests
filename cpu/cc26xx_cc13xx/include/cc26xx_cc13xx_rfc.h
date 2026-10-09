@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Locha Inc
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Locha Inc
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_cc26xx_cc13xx_definitions
- * @{
- *
- * @file
- * @brief           CC26xx/CC13xx MCU I/O register definitions
- *
- * @author          Jean Pierre Dudey <jeandudey@hotmail.com>
- */
+/// @ingroup         cpu_cc26xx_cc13xx_definitions
+/// @{
+///
+/// @file
+/// @brief           CC26xx/CC13xx MCU I/O register definitions
+///
+/// @author          Jean Pierre Dudey <jeandudey@hotmail.com>
 
 #include "cc26xx_cc13xx.h"
 
@@ -21,32 +17,26 @@
 extern "C" {
 #endif
 
-/**
- * @brief   RFC_DBELL registers
- */
+/// @brief   RFC_DBELL registers
 typedef struct {
-    reg32_t CMDR; /**< Doorbell Command Register */
-    reg32_t CMDSTA; /**< Doorbell Command Status Register */
-    reg32_t RFHWIFG; /**< Interrupt Flags From RF Hardware Modules */
-    reg32_t RFHWIEN; /**< Interrupt Enable For RF Hardware Modules */
+    reg32_t CMDR; ///< Doorbell Command Register
+    reg32_t CMDSTA; ///< Doorbell Command Status Register
+    reg32_t RFHWIFG; ///< Interrupt Flags From RF Hardware Modules
+    reg32_t RFHWIEN; ///< Interrupt Enable For RF Hardware Modules
     reg32_t RFCPEIFG; /**< Interrupt Flags For Command and Packet Engine
                            Generated Interrupts */
     reg32_t RFCPEIEN; /**< Interrupt Enable For Command and Packet Engine
                            Generated Interrupts */
     reg32_t RFCPEISL; /**< Interrupt Vector Selection For Command and Packet
                           Engine Generated Interrupts */
-    reg32_t RFACKIFG; /**< Doorbell Command Acknowledgement Interrupt Flag */
-    reg32_t SYSGPOCTL; /**< RF Core General Purpose Output Control */
+    reg32_t RFACKIFG; ///< Doorbell Command Acknowledgement Interrupt Flag
+    reg32_t SYSGPOCTL; ///< RF Core General Purpose Output Control
 } rfc_dbell_regs_t;
 
-/**
- * @brief   RFC_DBELL definitions
- * @{
- */
+/// @brief   RFC_DBELL definitions
+/// @{
 
-/**
- * @brief   RFCHWIFG/RFCHWIEN interrupt flags
- */
+/// @brief   RFCHWIFG/RFCHWIEN interrupt flags
 typedef enum {
     HW_IRQ_FSCA     = (1 << 1),
     HW_IRQ_MDMDONE  = (1 << 2),
@@ -68,9 +58,7 @@ typedef enum {
     HW_IRQ_RATCH7   = (1 << 19)
 } rf_hw_irq_t;
 
-/**
- * @brief   RFCPEIEN/RFCPEIFG/RFCPEISL interrupt flags
- */
+/// @brief   RFCPEIEN/RFCPEIFG/RFCPEISL interrupt flags
 typedef enum {
     CPE_IRQ_COMMAND_DONE         = (1 << 0),
     CPE_IRQ_LAST_COMMAND_DONE    = (1 << 1),
@@ -112,30 +100,24 @@ typedef enum {
 } rf_cpe_irq_t;
 
 #define RFACKIFG_ACKFLAG 0x1
-/** @} */
+/// @}
 
-/**
- * @ingroup cpu_specific_peripheral_memory_map
- * @{
- */
-#define RFC_DBELL_BASE (PERIPH_BASE + 0x41000) /**< RFC_DBELL base address */
-#define RFC_DBELL_BASE_NONBUF (PERIPH_BASE_NONBUF + 0x41000) /**< RFC_DBELL base address */
-/** @} */
+/// @ingroup cpu_specific_peripheral_memory_map
+/// @{
+#define RFC_DBELL_BASE (PERIPH_BASE + 0x41000) ///< RFC_DBELL base address
+#define RFC_DBELL_BASE_NONBUF (PERIPH_BASE_NONBUF + 0x41000) ///< RFC_DBELL base address
+/// @}
 
-#define RFC_DBELL ((rfc_dbell_regs_t *) (RFC_DBELL_BASE)) /**< RFC_DBELL register bank */
-#define RFC_DBELL_NONBUF ((rfc_dbell_regs_t *) (RFC_DBELL_BASE_NONBUF)) /**< RFC_DBELL register bank */
+#define RFC_DBELL ((rfc_dbell_regs_t *) (RFC_DBELL_BASE)) ///< RFC_DBELL register bank
+#define RFC_DBELL_NONBUF ((rfc_dbell_regs_t *) (RFC_DBELL_BASE_NONBUF)) ///< RFC_DBELL register bank
 
-/**
- * @brief   RFC_PWR registers
- */
+/// @brief   RFC_PWR registers
 typedef struct {
-    reg32_t PWMCLKEN; /**< RF Core Power Management and Clock Enable */
+    reg32_t PWMCLKEN; ///< RF Core Power Management and Clock Enable
 } rfc_pwr_regs_t;
 
-/**
- * @brief   RFC_PWR definitions
- * @{
- */
+/// @brief   RFC_PWR definitions
+/// @{
 #define PWMCLKEN_RFCTRC 0x400
 #define PWMCLKEN_FSCA   0x200
 #define PWMCLKEN_PHA    0x100
@@ -146,21 +128,19 @@ typedef struct {
 #define PWMCLKEN_CPERAM 0x4
 #define PWMCLKEN_CPE    0x2
 #define PWMCLKEN_RFC    0x1
-/** @} */
+/// @}
 
-/**
- * @ingroup cpu_specific_peripheral_memory_map
- * @{
- */
-#define RFC_PWR_BASE (PERIPH_BASE + 0x40000) /**< RFC_PWR base address */
-#define RFC_PWR_BASE_NONBUF (PERIPH_BASE_NONBUF + 0x40000) /**< RFC_PWR base address */
-/** @} */
+/// @ingroup cpu_specific_peripheral_memory_map
+/// @{
+#define RFC_PWR_BASE (PERIPH_BASE + 0x40000) ///< RFC_PWR base address
+#define RFC_PWR_BASE_NONBUF (PERIPH_BASE_NONBUF + 0x40000) ///< RFC_PWR base address
+/// @}
 
-#define RFC_PWR ((rfc_pwr_regs_t *) (RFC_PWR_BASE)) /**< RFC_PWR register bank */
-#define RFC_PWR_NONBUF ((rfc_pwr_regs_t *) (RFC_PWR_BASE_NONBUF)) /**< RFC_PWR register bank */
+#define RFC_PWR ((rfc_pwr_regs_t *) (RFC_PWR_BASE)) ///< RFC_PWR register bank
+#define RFC_PWR_NONBUF ((rfc_pwr_regs_t *) (RFC_PWR_BASE_NONBUF)) ///< RFC_PWR register bank
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

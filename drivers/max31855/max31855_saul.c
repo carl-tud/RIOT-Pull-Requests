@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_max31855
- * @{
- *
- * @file
- * @brief       SAUL adaption for MAX31855 devices
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_max31855
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption for MAX31855 devices
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -21,8 +17,7 @@
 #include "phydat.h"
 #include "max31855.h"
 
-static int read_temp(const void *dev, phydat_t *res, bool thermocouple)
-{
+static int read_temp(const void *dev, phydat_t *res, bool thermocouple) {
     max31855_data_t data;
     max31855_read((max31855_t *)dev, &data);
 
@@ -43,13 +38,11 @@ static int read_temp(const void *dev, phydat_t *res, bool thermocouple)
     return 1;
 }
 
-static int read_thermo_temp(const void *dev, phydat_t *res)
-{
+static int read_thermo_temp(const void *dev, phydat_t *res) {
     return read_temp(dev, res, true);
 }
 
-static int read_internal_temp(const void *dev, phydat_t *res)
-{
+static int read_internal_temp(const void *dev, phydat_t *res) {
     return read_temp(dev, res, false);
 }
 

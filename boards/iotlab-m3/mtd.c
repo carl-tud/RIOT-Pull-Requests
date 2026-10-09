@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_iotlab-m3
- * @{
- *
- * @file
- * @brief       MTD configuration for the iotlab-m3 board
- *
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- *
- * @}
- */
+/// @ingroup     boards_iotlab-m3
+/// @{
+///
+/// @file
+/// @brief       MTD configuration for the iotlab-m3 board
+///
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
+///
+/// @}
 
 #include "board.h"
 #include "cpu.h"
@@ -23,7 +19,7 @@
 #include "timex.h"
 
 #ifdef MODULE_MTD
-/* N25Q128A13E1240F */
+// N25Q128A13E1240F
 static const mtd_spi_nor_params_t _mtd_nor_params = {
     .opcode = &mtd_spi_nor_opcode_default,
     .wait_chip_erase   = 240 * US_PER_SEC,
@@ -54,4 +50,4 @@ MTD_XFA_ADD(mtd_nor_dev, 0);
 #include "vfs_default.h"
 VFS_AUTO_MOUNT(littlefs2, VFS_MTD(mtd_nor_dev), VFS_DEFAULT_NVM(0), 0);
 #endif
-#endif /* MODULE_MTD */
+#endif // MODULE_MTD

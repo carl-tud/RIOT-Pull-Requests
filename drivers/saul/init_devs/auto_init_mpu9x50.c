@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of MPU9X50 (MPU9150 and MPU9250) accelerometer/magnetometer
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization of MPU9X50 (MPU9150 and MPU9250) accelerometer/magnetometer
+//
+// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,38 +17,27 @@
 #include "mpu9x50.h"
 #include "mpu9x50_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define MPU9X50_NUM         ARRAY_SIZE(mpu9x50_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static mpu9x50_t mpu9x50_devs[MPU9X50_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[MPU9X50_NUM * 3];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define MPU9X50_INFO_NUM    ARRAY_SIZE(mpu9x50_saul_info)
 
-/**
- * @name    Reference the driver structs
- * @{
- */
+/// @name    Reference the driver structs
+/// @{
 extern saul_driver_t mpu9x50_saul_acc_driver;
 extern saul_driver_t mpu9x50_saul_gyro_driver;
 extern saul_driver_t mpu9x50_saul_mag_driver;
 
-/** @} */
+/// @}
 
-void auto_init_mpu9x50(void)
-{
+void auto_init_mpu9x50(void) {
     assert(MPU9X50_NUM == MPU9X50_INFO_NUM);
 
     for (unsigned int i = 0; i < MPU9X50_NUM; i++) {

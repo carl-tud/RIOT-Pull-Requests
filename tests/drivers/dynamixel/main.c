@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inira
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inira
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "dynamixel.h"
 #include "shell.h"
@@ -66,20 +64,17 @@ static uint8_t dynamixel_buffer[128];
 static uart_half_duplex_t stream;
 
 #ifdef DXL_DIR_PIN
-static void dir_init(uart_t uart)
-{
+static void dir_init(uart_t uart) {
     (void)uart;
     gpio_init(DXL_DIR_PIN, GPIO_OUT);
 }
 
-static void dir_enable_tx(uart_t uart)
-{
+static void dir_enable_tx(uart_t uart) {
     (void)uart;
     gpio_set(DXL_DIR_PIN);
 }
 
-static void dir_disable_tx(uart_t uart)
-{
+static void dir_disable_tx(uart_t uart) {
     (void)uart;
     gpio_clear(DXL_DIR_PIN);
 }
@@ -89,8 +84,7 @@ static void dir_disable_tx(uart_t uart)
 #define dir_disable_tx NULL
 #endif
 
-static int parse_uart(char *arg)
-{
+static int parse_uart(char *arg) {
     unsigned uart = atoi(arg);
     if (uart >= UART_NUMOF) {
         printf("Error: Invalid UART_DEV device specified (%u).\n", uart);
@@ -103,8 +97,7 @@ static int parse_uart(char *arg)
     return uart;
 }
 
-static int32_t parse_baud(char *arg)
-{
+static int32_t parse_baud(char *arg) {
     int32_t baud = atoi(arg);
 
     for (size_t i = 0 ; i < ARRAY_SIZE(baudrates); i++) {
@@ -117,8 +110,7 @@ static int32_t parse_baud(char *arg)
     return -1;
 }
 
-static int parse_dev(char *arg)
-{
+static int parse_dev(char *arg) {
     int dev = atoi(arg);
     if (dev < 0 || 254 < dev) {
         printf("Error: Invalid device id (%s)\n", arg);
@@ -127,8 +119,7 @@ static int parse_dev(char *arg)
     return dev;
 }
 
-static void parse_reg(char *arg, int *reg8, int *reg16)
-{
+static void parse_reg(char *arg, int *reg8, int *reg16) {
     *reg8 = -1;
     *reg16 = -1;
 
@@ -149,8 +140,7 @@ static void parse_reg(char *arg, int *reg8, int *reg16)
     printf("Error: Invalid register (%s)\n", arg);
 }
 
-void print_registers(void)
-{
+void print_registers(void) {
     puts("available 8bits registers :");
     for (size_t i = 0 ; i < ARRAY_SIZE(regs8); i++) {
         printf("\t%s\n", regs8[i].name);
@@ -162,8 +152,7 @@ void print_registers(void)
     }
 }
 
-static int cmd_init(int argc, char **argv)
-{
+static int cmd_init(int argc, char **argv) {
     int uart = -1;
     int baud = -1;
     uint32_t timeout = -1;
@@ -176,7 +165,7 @@ static int cmd_init(int argc, char **argv)
         }
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     uart = parse_uart(argv[1]);
     if (uart < 0) {
         return -1;
@@ -195,7 +184,7 @@ static int cmd_init(int argc, char **argv)
         }
     }
 
-    /* init */
+    // init
     uart_half_duplex_params_t params = {
         .uart = uart,
         .baudrate = baud,
@@ -234,21 +223,20 @@ static int cmd_init(int argc, char **argv)
     return 0;
 }
 
-static int cmd_ping(int argc, char **argv)
-{
+static int cmd_ping(int argc, char **argv) {
     int id = -1;
 
     if (argc != 2) {
         printf("usage; %s <dev_id>\n", argv[0]);
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     id = parse_dev(argv[1]);
     if (id < 0) {
         return -1;
     }
 
-    /* ping */
+    // ping
     if (dynamixel_ping(&stream, id) == DYNAMIXEL_OK) {
         printf("Device %i responded\n", id);
     }
@@ -258,8 +246,7 @@ static int cmd_ping(int argc, char **argv)
     return 0;
 }
 
-static int cmd_scan(int argc, char **argv)
-{
+static int cmd_scan(int argc, char **argv) {
     int min = -1;
     int max = -1;
 
@@ -285,7 +272,7 @@ static int cmd_scan(int argc, char **argv)
         return 1;
     }
 
-    /* ping */
+    // ping
     puts("Scanning...");
     for (int id = min ; id < max ; id++) {
         if (dynamixel_ping(&stream, id) == DYNAMIXEL_OK) {
@@ -296,8 +283,7 @@ static int cmd_scan(int argc, char **argv)
     return 0;
 }
 
-static int cmd_read(int argc, char **argv)
-{
+static int cmd_read(int argc, char **argv) {
     int id = -1;
     int reg8 = -1;
     int reg16 = -1;
@@ -307,7 +293,7 @@ static int cmd_read(int argc, char **argv)
         print_registers();
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     id = parse_dev(argv[1]);
     if (id < 0) {
         return -1;
@@ -318,7 +304,7 @@ static int cmd_read(int argc, char **argv)
         return -1;
     }
 
-    /* read */
+    // read
     dynamixel_t dev;
     dynamixel_init(&dev, &stream, id);
     if (reg8 >= 0) {
@@ -342,8 +328,7 @@ static int cmd_read(int argc, char **argv)
     return 0;
 }
 
-static int cmd_write(int argc, char **argv)
-{
+static int cmd_write(int argc, char **argv) {
     int id = -1;
     int reg8 = -1;
     int reg16 = -1;
@@ -353,7 +338,7 @@ static int cmd_write(int argc, char **argv)
         print_registers();
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     id = parse_dev(argv[1]);
     if (id < 0) {
         return -1;
@@ -369,7 +354,7 @@ static int cmd_write(int argc, char **argv)
         return -1;
     }
 
-    /* read */
+    // read
     dynamixel_t dev;
     dynamixel_init(&dev, &stream, id);
     if (reg8 >= 0) {
@@ -400,8 +385,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("\nManual Dynamixel device driver test");
     puts("===================================");
     puts("This application is intended for testing Dynamixel TTL bus\n");

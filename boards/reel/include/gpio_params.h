@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_reel
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_reel
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   LED and button mapping
- */
+/// @brief   LED and button mapping
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -63,4 +57,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

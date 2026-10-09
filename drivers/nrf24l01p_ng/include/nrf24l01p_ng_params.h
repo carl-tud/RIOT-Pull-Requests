@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup drivers_nrf24l01p_ng
- * @{
- *
- * @file
- * @brief   Board specific configuration for all NRF24L01+ (NG) devices
- *
- * @author  Fabian Hüßler <fabian.huessler@ovgu.de>
- */
+/// @ingroup drivers_nrf24l01p_ng
+/// @{
+///
+/// @file
+/// @brief   Board specific configuration for all NRF24L01+ (NG) devices
+///
+/// @author  Fabian Hüßler <fabian.huessler@ovgu.de>
 
 #include "board.h"
 #include "periph/gpio.h"
@@ -27,90 +23,66 @@ extern "C" {
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_SPI
-/**
- * @brief   SPI bus
- */
+/// @brief   SPI bus
 #define NRF24L01P_NG_PARAM_SPI              SPI_DEV(0)
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_SPI_CLK
-/**
- * @brief   SPI clock speed
- */
+/// @brief   SPI clock speed
 #define NRF24L01P_NG_PARAM_SPI_CLK          SPI_CLK_5MHZ
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_CS
-/**
- * @brief   SPI CS gpio pin
- */
+/// @brief   SPI CS gpio pin
 #define NRF24L01P_NG_PARAM_CS               GPIO_UNDEF
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_CE
-/**
- * @brief   NRF24L01+ chip enable gpio pin
- */
+/// @brief   NRF24L01+ chip enable gpio pin
 #define NRF24L01P_NG_PARAM_CE               GPIO_UNDEF
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_IRQ
-/**
- * @brief   NRF24L01+ interrupt gpio pin
- */
+/// @brief   NRF24L01+ interrupt gpio pin
 #define NRF24L01P_NG_PARAM_IRQ              GPIO_UNDEF
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_CRC_LEN
-/**
- * @brief   Default CRC length
- *          @see nrf24l01p_ng_crc_t
- */
+/// @brief   Default CRC length
+///          @see nrf24l01p_ng_crc_t
 #define NRF24L01P_NG_PARAM_CRC_LEN          (NRF24L01P_NG_CRC_2BYTE)
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_TX_POWER
-/**
- * @brief   Default TX power
- *          @see nrf24l01p_ng_tx_power_t
- */
+/// @brief   Default TX power
+///          @see nrf24l01p_ng_tx_power_t
 #define NRF24L01P_NG_PARAM_TX_POWER         (NRF24L01P_NG_TX_POWER_0DBM)
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_DATA_RATE_LVL
-/**
- * @brief   Default data rate
- *          @see nrf24l01p_ng_rfdr_t
- */
+/// @brief   Default data rate
+///          @see nrf24l01p_ng_rfdr_t
 #define NRF24L01P_NG_PARAM_DATA_RATE        (NRF24L01P_NG_RF_DR_2MBPS)
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_CHANNEL
-/**
- * @brief   Default channel in [0; 124]
- */
+/// @brief   Default channel in [0; 124]
 #define NRF24L01P_NG_PARAM_CHANNEL          (4)
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_MAX_RETRANSM
-/**
- * @brief   Default number of retransmissions
- */
+/// @brief   Default number of retransmissions
 #define NRF24L01P_NG_PARAM_MAX_RETRANSM     (5)
 #endif
 
 #ifndef NRF24L01P_NG_PARAM_RETRANSM_DELAY
-/**
- * @brief   Default retransmission delay
- *          @see nrf24l01p_ng_ard_t
- */
+/// @brief   Default retransmission delay
+///          @see nrf24l01p_ng_ard_t
 #define NRF24L01P_NG_PARAM_RETRANSM_DELAY   (NRF24L01P_NG_ARD_2750US)
 #endif
 
 #ifndef NRF24L01P_NG_PARAMS
-/**
- * @brief Default NRF24L01+ device parameters
- */
+/// @brief Default NRF24L01+ device parameters
 #define NRF24L01P_NG_PARAMS    {                                               \
         .spi = NRF24L01P_NG_PARAM_SPI,                                         \
         .spi_clk = NRF24L01P_NG_PARAM_SPI_CLK,                                 \
@@ -128,20 +100,16 @@ extern "C" {
 }
 #endif
 
-/**
- * @brief   Static array that holds NRF24L01+ device configurations
- */
+/// @brief   Static array that holds NRF24L01+ device configurations
 static const nrf24l01p_ng_params_t nrf24l01p_ng_params[] = {
     NRF24L01P_NG_PARAMS
 };
 
-/**
- * @brief   Number of NRF24L01+ device configurations
- */
+/// @brief   Number of NRF24L01+ device configurations
 #define NRF24L01P_NG_NUM                    ARRAY_SIZE(nrf24l01p_ng_params)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_xg23-pk6068a
- * @{
- *
- * @file
- * @brief       Configuration of CPU peripherals for xG23-PK6068A board
- *
- * @author      Juergen Fitschen <me@jue.yt>
- */
+/// @ingroup     boards_xg23-pk6068a
+/// @{
+///
+/// @file
+/// @brief       Configuration of CPU peripherals for xG23-PK6068A board
+///
+/// @author      Juergen Fitschen <me@jue.yt>
 
 #include <stdint.h>
 
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Clock configuration
- * @{
- */
+/// @name    Clock configuration
+/// @{
 #define CMU_HFXOINIT        CMU_HFXOINIT_DEFAULT
 #define CMU_LFXOINIT        CMU_LFXOINIT_DEFAULT
 
@@ -46,12 +40,10 @@ static const clk_div_t clk_div_config[] = {
     { .clk = cmuClock_LSPCLK, .div = 2 },
 };
 #define CLK_DIV_NUMOF         ARRAY_SIZE(clk_div_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     {
         .dev = IADC0,
@@ -78,12 +70,10 @@ static const adc_chan_conf_t adc_channel_config[] = {
 
 #define ADC_DEV_NUMOF       ARRAY_SIZE(adc_config)
 #define ADC_NUMOF           ARRAY_SIZE(adc_channel_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = I2C0,
@@ -98,12 +88,10 @@ static const i2c_conf_t i2c_config[] = {
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
 #define I2C_0_ISR           isr_i2c0
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_dev_t spi_config[] = {
     {
         .dev = USART0,
@@ -116,15 +104,13 @@ static const spi_dev_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    Timer configuration
- *
- * The implementation can use one low-energy timer
- * or two regular timers in cascade mode.
- * @{
- */
+/// @name    Timer configuration
+///
+/// The implementation can use one low-energy timer
+/// or two regular timers in cascade mode.
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev = TIMER0,
@@ -145,12 +131,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_MAX_VALUE   LETIMER_MAX_VALUE
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev = EUSART1,
@@ -163,10 +147,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR_RX       isr_eusart1_rx
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

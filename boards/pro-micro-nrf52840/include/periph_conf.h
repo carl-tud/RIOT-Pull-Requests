@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_pro-micro-nrf52840
- * @{
- *
- * @file
- * @brief       Peripheral configuration for Pro Micro nRF52840-compatible
- *              development boards
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- */
+/// @ingroup     boards_pro-micro-nrf52840
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for Pro Micro nRF52840-compatible
+///              development boards
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
 
 #include "periph_cpu.h"
 #include "cfg_clock_32_1.h"
@@ -26,10 +22,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = NRF_UARTE0,
@@ -46,12 +40,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          (isr_uart0)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPIM0,
@@ -62,12 +54,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = NRF_TWIM0,
@@ -78,10 +68,10 @@ static const i2c_conf_t i2c_config[] = {
 };
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

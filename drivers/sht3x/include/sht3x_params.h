@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_sht3x
- * @brief       Default configuration for Sensirion SHT30/SHT31/SHT35 devices
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_sht3x
+/// @brief       Default configuration for Sensirion SHT30/SHT31/SHT35 devices
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include "board.h"
 #include "sht3x.h"
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    SHT3x default configuration parameters
- * @{
- */
+/// @name    SHT3x default configuration parameters
+/// @{
 #ifndef SHT3X_PARAM_I2C_DEV
 #define SHT3X_PARAM_I2C_DEV     (I2C_DEV(0))
 #endif
@@ -49,19 +43,15 @@ extern "C" {
 #ifndef SHT3X_SAUL_INFO
 #define SHT3X_SAUL_INFO { .name = "sht3x1" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   SHT3x configuration
- */
+/// @brief   SHT3x configuration
 static const sht3x_params_t sht3x_params[] =
 {
     SHT3X_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t sht3x_saul_info[] =
 {
     SHT3X_SAUL_INFO
@@ -71,4 +61,4 @@ static const saul_reg_info_t sht3x_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_TESTRUNNER_H
 #define EMBUNIT_TESTRUNNER_H
 
@@ -19,4 +17,4 @@ extern int TestRunnerHadErrors;
 }
 #endif
 
-#endif /* EMBUNIT_TESTRUNNER_H */
+#endif // EMBUNIT_TESTRUNNER_H

@@ -1,32 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2013 INRIA
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2013 INRIA
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init
- * @{
- * @file
- * @brief   Network devices auto initialization
- *
- * initializes any used network interface that has a trivial init function
- *
- * @author  Oliver Hahm <oliver.hahm@inria.fr>
- * @author  Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- * @author  Martine S. Lenders <m.lenders@fu-berlin.de>
- * @}
- */
+/// @ingroup sys_auto_init
+/// @{
+/// @file
+/// @brief   Network devices auto initialization
+///
+/// initializes any used network interface that has a trivial init function
+///
+/// @author  Oliver Hahm <oliver.hahm@inria.fr>
+/// @author  Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+/// @author  Martine S. Lenders <m.lenders@fu-berlin.de>
+/// @}
 
 #include "kernel_defines.h"
 
-/**
- * @brief   Initializes network devices
- */
-void gnrc_netif_init_devs(void)
-{
+/// @brief   Initializes network devices
+void gnrc_netif_init_devs(void) {
     if (IS_USED(MODULE_STM32_ETH)) {
         extern void auto_init_stm32_eth(void);
         auto_init_stm32_eth();
@@ -92,13 +85,13 @@ void gnrc_netif_init_devs(void)
         auto_init_greth();
     }
 
-    /* don't change the order of auto_init_esp_now and auto_init_esp_wifi */
+    // don't change the order of auto_init_esp_now and auto_init_esp_wifi
     if (IS_USED(MODULE_ESP_NOW)) {
         extern void auto_init_esp_now(void);
         auto_init_esp_now();
     }
 
-    /* don't change the order of auto_init_esp_now and auto_init_esp_wifi */
+    // don't change the order of auto_init_esp_now and auto_init_esp_wifi
     if (IS_USED(MODULE_ESP_WIFI)) {
         extern void auto_init_esp_wifi(void);
         auto_init_esp_wifi();

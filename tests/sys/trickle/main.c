@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Trickle test application
- *
- * @author Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Trickle test application
+///
+/// @author Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -40,15 +36,14 @@ static void callback(void *args);
 static trickle_t trickle = { .callback = { .func = &callback,
                                            .args = NULL } };
 
-static void callback(void *args)
-{
+static void callback(void *args) {
     (void) args;
     uint32_t now = ztimer_now(ZTIMER_MSEC);
     printf("now = %" PRIu32 ", t = %" PRIu32 "\n", now, trickle.t);
 
-    /* previous `t` is chosen from a smaller interval [I/2, I).
-     * Current `t` is chosen from interval [I, 2*I).
-     * Hence, `old_t` must be smaller than current `t` */
+    // previous `t` is chosen from a smaller interval [I/2, I).
+    // Current `t` is chosen from interval [I, 2*I).
+    // Hence, `old_t` must be smaller than current `t`
     if (old_t >= trickle.t) {
         error = true;
     }
@@ -58,8 +53,7 @@ static void callback(void *args)
     return;
 }
 
-int main(void)
-{
+int main(void) {
     msg_t msg;
     unsigned counter = 0;
 

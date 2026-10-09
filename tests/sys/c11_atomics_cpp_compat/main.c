@@ -1,29 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Compile test to verify values in c11_atomics_compat_cpu.hpp
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Compile test to verify values in c11_atomics_compat_cpu.hpp
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+/// @}
 
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-/* This file contains only #defines, so it is fully compatible with C */
+// This file contains only #defines, so it is fully compatible with C
 #include "c11_atomics_compat_cpu.hpp"
 
-int main(void)
-{
+int main(void) {
     _Static_assert(ATOMIC_BOOL_SIZE == sizeof(_Atomic(bool)), "Size of type must match define");
     _Static_assert(ATOMIC_CHAR_SIZE == sizeof(_Atomic(char)), "Size of type must match define");
     _Static_assert(ATOMIC_SCHAR_SIZE == sizeof(_Atomic(signed char)), "Size of type must match define");

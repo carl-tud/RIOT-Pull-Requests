@@ -1,23 +1,19 @@
-/*
- * Copyright (C) 2020 Koen Zandberg
- *               2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Koen Zandberg
+//               2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_suit_storage
- * @{
- *
- * @file
- * @brief       SUIT flashwrite storage module implementation
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     sys_suit_storage
+/// @{
+///
+/// @file
+/// @brief       SUIT flashwrite storage module implementation
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 #include <string.h>
 
 #include "architecture.h"
@@ -33,13 +29,11 @@
 
 XFA_USE(suit_storage_t, suit_storage_reg);
 
-static inline suit_storage_flashwrite_t *_get_fw(suit_storage_t *storage)
-{
+static inline suit_storage_flashwrite_t *_get_fw(suit_storage_t *storage) {
     return container_of(storage, suit_storage_flashwrite_t, storage);
 }
 
-static int _flashwrite_init(suit_storage_t *storage)
-{
+static int _flashwrite_init(suit_storage_t *storage) {
     (void)storage;
 
     LOG_DEBUG("Storage size %" PRIuSIZE "\n", sizeof(suit_storage_flashwrite_t));
@@ -49,8 +43,7 @@ static int _flashwrite_init(suit_storage_t *storage)
 
 static int _flashwrite_start(suit_storage_t *storage,
                              const suit_manifest_t *manifest,
-                             size_t len)
-{
+                             size_t len) {
     (void)manifest;
     (void)len;
     suit_storage_flashwrite_t *fw = _get_fw(storage);
@@ -61,8 +54,7 @@ static int _flashwrite_start(suit_storage_t *storage,
 
 static int _flashwrite_write(suit_storage_t *storage,
                              const suit_manifest_t *manifest,
-                             const uint8_t *buf, size_t offset, size_t len)
-{
+                             const uint8_t *buf, size_t offset, size_t len) {
     (void)manifest;
     suit_storage_flashwrite_t *fw = _get_fw(storage);
 
@@ -86,8 +78,7 @@ static int _flashwrite_write(suit_storage_t *storage,
 }
 
 static int _flashwrite_finish(suit_storage_t *storage,
-                              const suit_manifest_t *manifest)
-{
+                              const suit_manifest_t *manifest) {
     (void)manifest;
     suit_storage_flashwrite_t *fw = _get_fw(storage);
 
@@ -96,8 +87,7 @@ static int _flashwrite_finish(suit_storage_t *storage,
 }
 
 static int _flashwrite_install(suit_storage_t *storage,
-                               const suit_manifest_t *manifest)
-{
+                               const suit_manifest_t *manifest) {
     (void)manifest;
     suit_storage_flashwrite_t *fw = _get_fw(storage);
 
@@ -105,8 +95,7 @@ static int _flashwrite_install(suit_storage_t *storage,
 }
 
 static int _flashwrite_read(suit_storage_t *storage, uint8_t *buf,
-                            size_t offset, size_t len)
-{
+                            size_t offset, size_t len) {
     suit_storage_flashwrite_t *fw = _get_fw(storage);
 
     static const char _prefix[] = "RIOT";
@@ -114,7 +103,7 @@ static int _flashwrite_read(suit_storage_t *storage, uint8_t *buf,
     int target_slot = riotboot_slot_other();
     size_t slot_size = riotboot_slot_size(target_slot);
 
-    /* Insert the "RIOT" magic number */
+    // Insert the "RIOT" magic number
     if (offset < (_prefix_len)) {
         size_t prefix_to_copy = _prefix_len - offset;
         memcpy(buf, _prefix + offset, prefix_to_copy);
@@ -125,16 +114,16 @@ static int _flashwrite_read(suit_storage_t *storage, uint8_t *buf,
     }
 
 #if CONFIG_RIOTBOOT_FLASHWRITE_RAW
-    /* Insert the first chunk from the separate buffer here, there are cases
-     * where the chunk size is 4 bytes and we can skip this because it only
-     * contains the magic number already copied above. */
+    // Insert the first chunk from the separate buffer here, there are cases
+    // where the chunk size is 4 bytes and we can skip this because it only
+    // contains the magic number already copied above.
     if (offset < RIOTBOOT_FLASHPAGE_BUFFER_SIZE) {
         const size_t chunk_remaining =
             RIOTBOOT_FLASHPAGE_BUFFER_SIZE - _prefix_len;
-        /* How much of the first page must be copied */
+        // How much of the first page must be copied
         size_t firstpage_to_copy = len > chunk_remaining ?
             (chunk_remaining) : len;
-        /* Copy the first buffer */
+        // Copy the first buffer
         memcpy(buf, fw->writer.firstblock_buf + offset, firstpage_to_copy);
 
         offset += firstpage_to_copy;
@@ -143,7 +132,7 @@ static int _flashwrite_read(suit_storage_t *storage, uint8_t *buf,
     }
 #else
     (void)fw;
-#endif /* CONFIG_RIOTBOOT_FLASHWRITE_RAW */
+#endif // CONFIG_RIOTBOOT_FLASHWRITE_RAW
 
     if (offset + len > slot_size) {
         return -1;
@@ -156,25 +145,22 @@ static int _flashwrite_read(suit_storage_t *storage, uint8_t *buf,
 }
 
 static bool _flashwrite_has_location(const suit_storage_t *storage,
-                                     const char *location)
-{
+                                     const char *location) {
     (void)storage;
 
-    /* Firmware matches at zero length string */
+    // Firmware matches at zero length string
     return (location[0] == '\0');
 }
 
 static int _flashwrite_set_active_location(suit_storage_t *storage,
-                                           const char *location)
-{
+                                           const char *location) {
     (void)storage;
     (void)location;
     return 0;
 }
 
 static bool _flashwrite_match_offset(const suit_storage_t *storage,
-                                     size_t offset)
-{
+                                     size_t offset) {
     (void)storage;
 
     int target_slot = riotboot_slot_other();
@@ -184,8 +170,7 @@ static bool _flashwrite_match_offset(const suit_storage_t *storage,
 }
 
 static int _flashwrite_get_seq_no(const suit_storage_t *storage,
-                                  uint32_t *seq_no)
-{
+                                  uint32_t *seq_no) {
     (void)storage;
     uint32_t max_seq_no = 0;
     bool valid = false;
@@ -193,7 +178,7 @@ static int _flashwrite_get_seq_no(const suit_storage_t *storage,
     for (unsigned i = 0; i < riotboot_slot_numof; i++) {
         const riotboot_hdr_t *riot_hdr = riotboot_slot_get_hdr(i);
         if (riotboot_slot_validate(i)) {
-            /* skip slot if metadata broken */
+            // skip slot if metadata broken
             continue;
         }
         if (!valid || riot_hdr->version > max_seq_no) {
@@ -210,8 +195,7 @@ static int _flashwrite_get_seq_no(const suit_storage_t *storage,
 }
 
 static int _flashwrite_set_seq_no(suit_storage_t *storage,
-                                  uint32_t seq_no)
-{
+                                  uint32_t seq_no) {
     (void)storage;
     int target_slot = riotboot_slot_other();
     const riotboot_hdr_t *hdr = riotboot_slot_get_hdr(target_slot);

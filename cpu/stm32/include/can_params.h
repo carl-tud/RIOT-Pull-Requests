@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     candev_stm32
- * @{
- *
- * @file
- * @brief       STM32 CAN controller driver (bxCAN) default parameters
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @}
- */
+/// @ingroup     candev_stm32
+/// @{
+///
+/// @file
+/// @brief       STM32 CAN controller driver (bxCAN) default parameters
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @}
 
 #include "can/device.h"
 #include "periph/can.h"
@@ -23,7 +19,7 @@
 extern "C" {
 #endif
 
-/** Default STM32 CAN devices config */
+/// Default STM32 CAN devices config
 static const can_conf_t candev_conf[] = {
     {
 #if defined(CPU_FAM_STM32G4)
@@ -138,7 +134,7 @@ static const can_conf_t candev_conf[] = {
 #endif
 };
 
-/** Default STM32 CAN devices parameters */
+/// Default STM32 CAN devices parameters
 static const candev_params_t candev_params[] = {
     {
         .name = "can_stm32_0",

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_ASSERTIMPL_H
 #define EMBUNIT_ASSERTIMPL_H
 
@@ -9,7 +7,7 @@
 extern "C" {
 #endif
 
-void addFailure(const char *msg, long line, const char *file);  /*TestCase.c*/
+void addFailure(const char *msg, long line, const char *file);  // TestCase.c
 
 void assertImplementationLongLong(long long expected,long long actual, long line, const char *file);
 void assertImplementationCStr(const char *expected,const char *actual, long line, const char *file);
@@ -70,4 +68,4 @@ void assertImplementationCStr(const char *expected,const char *actual, long line
 }
 #endif
 
-#endif /* EMBUNIT_ASSERTIMPL_H */
+#endif // EMBUNIT_ASSERTIMPL_H

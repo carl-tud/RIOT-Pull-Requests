@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2015 Martin Landsmann <Martin.Landsmann@HAW-Hamburg.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2015 Martin Landsmann <Martin.Landsmann@HAW-Hamburg.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Provides shell commands to manage and show FIB Entries
- *
- * @author      2015 Martin Landsmann <Martin.Landsmann@HAW-Hamburg.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Provides shell commands to manage and show FIB Entries
+///
+/// @author      2015 Martin Landsmann <Martin.Landsmann@HAW-Hamburg.de>
+///
+/// @}
 
 #include <arpa/inet.h>
 #include <stdint.h>
@@ -41,13 +37,12 @@
 #define INFO5_TXT "fibroute del <destination>\n" \
                   "       <destination> - the destination address of the entry to be deleted\n"
 
-static unsigned char tmp_ipv4_dst[INADDRSZ];  /**< buffer for ipv4 address conversion */
-static unsigned char tmp_ipv4_nxt[INADDRSZ];  /**< buffer for ipv4 address conversion */
-static unsigned char tmp_ipv6_dst[IN6ADDRSZ]; /**< buffer for ipv6 address conversion */
-static unsigned char tmp_ipv6_nxt[IN6ADDRSZ]; /**< buffer for ipv6 address conversion */
+static unsigned char tmp_ipv4_dst[INADDRSZ];  ///< buffer for ipv4 address conversion
+static unsigned char tmp_ipv4_nxt[INADDRSZ];  ///< buffer for ipv4 address conversion
+static unsigned char tmp_ipv6_dst[IN6ADDRSZ]; ///< buffer for ipv6 address conversion
+static unsigned char tmp_ipv6_nxt[IN6ADDRSZ]; ///< buffer for ipv6 address conversion
 
-static void _fib_usage(int info)
-{
+static void _fib_usage(int info) {
     switch (info) {
         case 0: {
             puts("\nsee <fibroute [add|del]> for more information\n"
@@ -77,10 +72,9 @@ static void _fib_usage(int info)
     };
 }
 
-static void _fib_add(const char *dest, const char *next, kernel_pid_t pid, uint32_t lifetime)
-{
+static void _fib_add(const char *dest, const char *next, kernel_pid_t pid, uint32_t lifetime) {
     uint32_t prefix = 0;
-    /* Get the prefix length */
+    // Get the prefix length
     size_t i = 0;
     for (i = strlen(dest); i > 0; --i) {
         if (dest[i] == '/') {
@@ -104,7 +98,7 @@ static void _fib_add(const char *dest, const char *next, kernel_pid_t pid, uint3
     size_t nxt_size = (strlen(next));
     uint32_t nxt_flags = 0;
 
-    /* determine destination address */
+    // determine destination address
     if (inet_pton(AF_INET6, (char*)dst, tmp_ipv6_dst)) {
         dst = tmp_ipv6_dst;
         dst_size = IN6ADDRSZ;
@@ -114,7 +108,7 @@ static void _fib_add(const char *dest, const char *next, kernel_pid_t pid, uint3
         dst_size = INADDRSZ;
     }
 
-    /* determine next-hop address */
+    // determine next-hop address
     if (inet_pton(AF_INET6, next, tmp_ipv6_nxt)) {
         nxt = tmp_ipv6_nxt;
         nxt_size = IN6ADDRSZ;
@@ -129,15 +123,14 @@ static void _fib_add(const char *dest, const char *next, kernel_pid_t pid, uint3
                   nxt_size, nxt_flags, lifetime);
 }
 
-static int _fib_route_handler(int argc, char **argv)
-{
-    /* e.g. fibroute right now don't care about the address/protocol family */
+static int _fib_route_handler(int argc, char **argv) {
+    // e.g. fibroute right now don't care about the address/protocol family
     if (argc == 1) {
         fib_print_routes(&gnrc_ipv6_fib_table);
         return 0;
     }
 
-    /* e.g. firoute [add|del] */
+    // e.g. firoute [add|del]
     if (argc == 2) {
         if ((strcmp("add", argv[1]) == 0)) {
             _fib_usage(2);
@@ -163,7 +156,7 @@ static int _fib_route_handler(int argc, char **argv)
         return 1;
     }
 
-    /* e.g. fibroute del <destination> */
+    // e.g. fibroute del <destination>
     if (argc == 3) {
         if ((strcmp("flush", argv[1]) == 0)) {
             kernel_pid_t iface = atoi(argv[2]);
@@ -189,7 +182,7 @@ static int _fib_route_handler(int argc, char **argv)
         return 0;
     }
 
-    /* e.g. fibroute add <destination> via <next hop> */
+    // e.g. fibroute add <destination> via <next hop>
     if ((argc == 5) && (strcmp("add", argv[1]) == 0) && (strcmp("via", argv[3]) == 0)) {
         size_t ifnum = gnrc_netif_numof();
         if (ifnum == 1) {
@@ -205,7 +198,7 @@ static int _fib_route_handler(int argc, char **argv)
         return 0;
     }
 
-    /* e.g. fibroute add <destination> via <next hop> lifetime <lifetime> */
+    // e.g. fibroute add <destination> via <next hop> lifetime <lifetime>
     if ((argc == 7) && (strcmp("add", argv[1]) == 0) && (strcmp("via", argv[3]) == 0)
             && (strcmp("lifetime", argv[5]) == 0)) {
         size_t ifnum = gnrc_netif_numof();
@@ -222,7 +215,7 @@ static int _fib_route_handler(int argc, char **argv)
         return 0;
     }
 
-    /* e.g. fibroute add <destination> via <next hop> dev <device> */
+    // e.g. fibroute add <destination> via <next hop> dev <device>
     if (argc == 7) {
         if ((strcmp("add", argv[1]) == 0) && (strcmp("via", argv[3]) == 0)
             && (strcmp("dev", argv[5]) == 0)) {
@@ -236,7 +229,7 @@ static int _fib_route_handler(int argc, char **argv)
         return 0;
     }
 
-    /* e.g. fibroute add <destination> via <next hop> dev <device> lifetime <lifetime> */
+    // e.g. fibroute add <destination> via <next hop> dev <device> lifetime <lifetime>
     if (argc == 9) {
         if ((strcmp("add", argv[1]) == 0) && (strcmp("via", argv[3]) == 0)
             && (strcmp("dev", argv[5]) == 0)

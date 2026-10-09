@@ -1,37 +1,35 @@
-/*
- * Copyright (c) 2001, Adam Dunkels.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior
- *    written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * This file is part of the uIP TCP/IP stack.
- *
- *
- */
+// Copyright (c) 2001, Adam Dunkels.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+// 3. The name of the author may not be used to endorse or promote
+//    products derived from this software without specific prior
+//    written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+// OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+// GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// This file is part of the uIP TCP/IP stack.
+//
+//
 
-/* for cfmakeraw on Linux */
+// for cfmakeraw on Linux
 #define _BSD_SOURCE 1
 #define _DEFAULT_SOURCE 1
 
@@ -62,26 +60,26 @@ void write_to_serial(int outfd, void *inbuf, int len);
 #define PROGRESS(s) do { } while (0)
 
 struct ip {
-    u_int8_t ip_vhl;		/* version and header length */
+    u_int8_t ip_vhl;		// version and header length
 #define IP_V4 0x40
 #define IP_V  0xf0
 #define IP_HL 0x0f
-    u_int8_t ip_tos;                    /* type of service */
-    u_int16_t ip_len;                     /* total length */
-    u_int16_t ip_id;                      /* identification */
-    u_int16_t ip_off;                     /* fragment offset field */
-#define IP_RF 0x8000                    /* reserved fragment flag */
-#define IP_DF 0x4000                    /* don't fragment flag */
-#define IP_MF 0x2000                    /* more fragments flag */
-#define IP_OFFMASK 0x1fff               /* mask for fragmenting bits */
-    u_int8_t ip_ttl;                    /* time to live */
-    u_int8_t ip_p;                      /* protocol */
-    u_int16_t ip_sum;                     /* checksum */
-    u_int32_t ip_src, ip_dst;      /* source and dest address */
-    u_int16_t uh_sport;		/* source port */
-    u_int16_t uh_dport;		/* destination port */
-    u_int16_t uh_ulen;		/* udp length */
-    u_int16_t uh_sum;		/* udp checksum */
+    u_int8_t ip_tos;                    // type of service
+    u_int16_t ip_len;                     // total length
+    u_int16_t ip_id;                      // identification
+    u_int16_t ip_off;                     // fragment offset field
+#define IP_RF 0x8000                    // reserved fragment flag
+#define IP_DF 0x4000                    // don't fragment flag
+#define IP_MF 0x2000                    // more fragments flag
+#define IP_OFFMASK 0x1fff               // mask for fragmenting bits
+    u_int8_t ip_ttl;                    // time to live
+    u_int8_t ip_p;                      // protocol
+    u_int16_t ip_sum;                     // checksum
+    u_int32_t ip_src, ip_dst;      // source and dest address
+    u_int16_t uh_sport;		// source port
+    u_int16_t uh_dport;		// destination port
+    u_int16_t uh_ulen;		// udp length
+    u_int16_t uh_sum;		// udp checksum
 };
 
 int check_ip(const struct ip *ip, unsigned ip_len);
@@ -129,7 +127,7 @@ struct dhcp_light_msg {
 #define DHCP_OPTION_SUBNET_SELECTION 118
 #define DHCP_OPTION_END         255
 
-/* DHCP_OPTION_AGENT, Relay Agent Information option subtypes: */
+// DHCP_OPTION_AGENT, Relay Agent Information option subtypes:
 #define RAI_CIRCUIT_ID  1
 #define RAI_REMOTE_ID   2
 #define RAI_AGENT_ID    3
@@ -161,14 +159,13 @@ struct sockaddr_in dhaddr;
 int dhsock = -1;
 
 void
-relay_dhcp_to_server(struct ip *ip, int len)
-{
+relay_dhcp_to_server(struct ip *ip, int len) {
     struct dhcp_light_msg *inm;
     struct dhcp_msg m;
     int n;
     u_int8_t *optptr;
 
-    inm = (void *)(((u_int8_t *)ip) + 20 + 8); /* Skip over IP&UDP headers. */
+    inm = (void *)(((u_int8_t *)ip) + 20 + 8); // Skip over IP&UDP headers.
 
     if (inm->op != BOOTREQUEST) {
         return;
@@ -179,33 +176,31 @@ relay_dhcp_to_server(struct ip *ip, int len)
     memcpy(&m, inm, DHCP_BASE_LEN);
     memset(&m.sname, 0x0, DHCP_HOLE_LEN);
     memcpy(&m.options, &inm->options, len - 20 - 8 - DHCP_BASE_LEN);
-    n = (len - 20 - 8) + DHCP_HOLE_LEN; /* +HOLE -IP&UDP headers. */
+    n = (len - 20 - 8) + DHCP_HOLE_LEN; // +HOLE -IP&UDP headers.
 
-    /*
-     * Ideally we would like to use the Relay Agent information option
-     * (RFC3046) together with the Link Selection sub-option (RFC3527)
-     * to ensure that addresses are allocated for this
-     * subnet. Unfortunately ISC-DHCPD does not currently implement
-     * RFC3527 and some other mechanism must be used. For this reason
-     * this implementation in addition uses the DHCP option for subnet
-     * selection (RFC3011) which is really not intended to be used by
-     * relays.
-     *
-     * Find DHCP_OPTION_END and add the new option here.
-     */
+    // Ideally we would like to use the Relay Agent information option
+    // (RFC3046) together with the Link Selection sub-option (RFC3527)
+    // to ensure that addresses are allocated for this
+    // subnet. Unfortunately ISC-DHCPD does not currently implement
+    // RFC3527 and some other mechanism must be used. For this reason
+    // this implementation in addition uses the DHCP option for subnet
+    // selection (RFC3011) which is really not intended to be used by
+    // relays.
+    //
+    // Find DHCP_OPTION_END and add the new option here.
     optptr = &m.options[n - DHCP_BASE_LEN - DHCP_HOLE_LEN - 1];
     {
-        *optptr++ = DHCP_OPTION_SUBNET_SELECTION; /* RFC3011 */
+        *optptr++ = DHCP_OPTION_SUBNET_SELECTION; // RFC3011
         *optptr++ = 4;
         memcpy(optptr, &netaddr, 4);
         optptr += 4;
         n += 4 + 2;
     }
     {
-        *optptr++ = DHCP_OPTION_AGENT; /* RFC3046 */
-        *optptr++ = 18; /* Sum of all suboptions below! */
+        *optptr++ = DHCP_OPTION_AGENT; // RFC3046
+        *optptr++ = 18; // Sum of all suboptions below!
 
-        *optptr++ = RAI_SUBNET_SELECTION; /* RFC3527 */
+        *optptr++ = RAI_SUBNET_SELECTION; // RFC3527
         *optptr++ = 4;
         memcpy(optptr, &netaddr, 4);
         optptr += 4;
@@ -217,9 +212,9 @@ relay_dhcp_to_server(struct ip *ip, int len)
         *optptr++ = 4;
         memcpy(optptr, &giaddr, 4);
         optptr += 4;
-        n += 18 + 2;			/* Sum of all suboptions + 2! */
+        n += 18 + 2;			// Sum of all suboptions + 2!
     }
-    /* And finally put back the END. */
+    // And finally put back the END.
     *optptr++ = DHCP_OPTION_END;
 
     m.hops++;
@@ -234,8 +229,7 @@ relay_dhcp_to_server(struct ip *ip, int len)
 static u_int16_t ip_id;
 
 void
-relay_dhcp_to_client(int slipfd)
-{
+relay_dhcp_to_client(int slipfd) {
     struct dhcp_msg inm;
     struct {
         struct ip ip;
@@ -260,14 +254,12 @@ relay_dhcp_to_client(int slipfd)
     pkt.m.hops++;
     memset(pkt.m.giaddr, 0x0, sizeof(pkt.m.giaddr));
 
-    /*
-     * Copy options we would like to send to client.
-     */
-    memcpy(pkt.m.options, inm.options, 4); /* Magic cookie */
+    // Copy options we would like to send to client.
+    memcpy(pkt.m.options, inm.options, 4); // Magic cookie
 
     end = &inm.op + n;
-    p = inm.options + 4;		/* Magic cookie */
-    t = pkt.m.options + 4;	/* Magic cookie */
+    p = inm.options + 4;		// Magic cookie
+    t = pkt.m.options + 4;	// Magic cookie
 
     while (p < end) {
         op = p[0];
@@ -278,17 +270,17 @@ relay_dhcp_to_client(int slipfd)
 
             case DHCP_OPTION_MSG_TYPE:
                 msg_type = p[2];
-                /* deliberate fall-through */
+                // deliberate fall-through
             case DHCP_OPTION_SUBNET_MASK:
             case DHCP_OPTION_ROUTER:
             case DHCP_OPTION_LEASE_TIME:
-            case DHCP_OPTION_SERVER_ID:	/* Copy these options */
+            case DHCP_OPTION_SERVER_ID:	// Copy these options
                 memcpy(t, p, p[1] + 2);
                 t += p[1] + 2;
                 p += p[1] + 2;
                 break;
 
-            case DHCP_OPTION_DNS_SERVER: /* Only copy first server */
+            case DHCP_OPTION_DNS_SERVER: // Only copy first server
                 *t++ = p[0];
                 *t++ = 4;
                 memcpy(t, p + 2, 4);
@@ -296,8 +288,8 @@ relay_dhcp_to_client(int slipfd)
                 p += p[1] + 2;
                 break;
 
-            default:			/* Ignore these options */
-                /* printf("option type %d len %d\n", op, p[1]); */
+            default:			// Ignore these options
+                // printf("option type %d len %d\n", op, p[1]);
                 p += p[1] + 2;
                 continue;
         }
@@ -314,18 +306,18 @@ done:
     ip_len = 20 + 8 + DHCP_BASE_LEN + optlen;
     udp_len = 8 + DHCP_BASE_LEN + optlen;
 
-    pkt.ip.ip_vhl = 0x45;		/* IPv4 and hdrlen=5*4 */
+    pkt.ip.ip_vhl = 0x45;		// IPv4 and hdrlen=5*4
     pkt.ip.ip_tos = 0;
     pkt.ip.ip_len = htons(ip_len);
     pkt.ip.ip_id = htons(ip_id++);
     pkt.ip.ip_off = 0;
     pkt.ip.ip_ttl = 64;
-    pkt.ip.ip_p = 17;		/* proto UDP */
+    pkt.ip.ip_p = 17;		// proto UDP
     pkt.ip.ip_sum = 0;
     pkt.ip.ip_src = giaddr;
 
-    if (inm.flags & htons(BOOTP_BROADCAST)) { /* check bcast bit */
-        pkt.ip.ip_dst = 0xffffffff;    /* 255.255.255.255 */
+    if (inm.flags & htons(BOOTP_BROADCAST)) { // check bcast bit
+        pkt.ip.ip_dst = 0xffffffff;    // 255.255.255.255
     }
     else {
         pkt.ip.ip_dst = yiaddr.s_addr;
@@ -355,16 +347,13 @@ done:
                pkt.m.chaddr[0], pkt.m.chaddr[1], pkt.m.chaddr[2], pkt.m.chaddr[3],
                pkt.m.chaddr[4], pkt.m.chaddr[5], pkt.m.chaddr[6], pkt.m.chaddr[7],
                inet_ntoa(yiaddr));
-        /* ssystem("arp -s %s auto pub only", inet_ntoa(yiaddr)); */
+        // ssystem("arp -s %s auto pub only", inet_ntoa(yiaddr));
     }
 }
 
-/*
- * Internet checksum in host byte order.
- */
+// Internet checksum in host byte order.
 u_int16_t
-ip4sum(u_int16_t sum, const void *_p, u_int16_t len)
-{
+ip4sum(u_int16_t sum, const void *_p, u_int16_t len) {
     u_int16_t t;
     const u_int8_t *p = _p;
     const u_int8_t *end = p + len;
@@ -393,11 +382,10 @@ ip4sum(u_int16_t sum, const void *_p, u_int16_t len)
 }
 
 int
-check_ip(const struct ip *ip, unsigned ip_len)
-{
+check_ip(const struct ip *ip, unsigned ip_len) {
     u_int16_t sum, ip_hl;
 
-    /* Check IP version and length. */
+    // Check IP version and length.
     if ((ip->ip_vhl & IP_V) != IP_V4) {
         return -1;
     }
@@ -410,7 +398,7 @@ check_ip(const struct ip *ip, unsigned ip_len)
         return -3;
     }
 
-    /* Check IP header. */
+    // Check IP header.
     ip_hl = 4 * (ip->ip_vhl & IP_HL);
     sum = ip4sum(0, ip, ip_hl);
 
@@ -418,30 +406,30 @@ check_ip(const struct ip *ip, unsigned ip_len)
         return -4;
     }
 
-    if (ip->ip_p == 6 || ip->ip_p == 17) {	/* Check TCP or UDP header. */
+    if (ip->ip_p == 6 || ip->ip_p == 17) {	// Check TCP or UDP header.
         u_int16_t tcp_len = ip_len - ip_hl;
 
-        /* Sum pseudoheader. */
-        sum = ip->ip_p + tcp_len; /* proto and len, no carry */
-        sum = ip4sum(sum, &ip->ip_src, 8); /* src and dst */
+        // Sum pseudoheader.
+        sum = ip->ip_p + tcp_len; // proto and len, no carry
+        sum = ip4sum(sum, &ip->ip_src, 8); // src and dst
 
-        /* Sum TCP/UDP header and data. */
+        // Sum TCP/UDP header and data.
         sum = ip4sum(sum, (u_int8_t *)ip + ip_hl, tcp_len);
 
-        /* Failed checksum test? */
+        // Failed checksum test?
         if (sum != 0xffff && sum != 0x0) {
-            if (ip->ip_p == 6) {	/* TCP == 6 */
+            if (ip->ip_p == 6) {	// TCP == 6
                 return -5;
             }
-            else {			/* UDP */
-                /* Deal with disabled UDP checksums. */
+            else {			// UDP
+                // Deal with disabled UDP checksums.
                 if (ip->uh_sum != 0) {
                     return -6;
                 }
             }
         }
     }
-    else if (ip->ip_p == 1) {	/* ICMP */
+    else if (ip->ip_p == 1) {	// ICMP
         u_int16_t icmp_len = ip_len - ip_hl;
 
         sum = ip4sum(0, (u_int8_t *)ip + ip_hl, icmp_len);
@@ -455,8 +443,7 @@ check_ip(const struct ip *ip, unsigned ip_len)
 }
 
 int
-is_sensible_string(const unsigned char *s, int len)
-{
+is_sensible_string(const unsigned char *s, int len) {
     int i;
 
     for (i = 1; i < len; i++) {
@@ -475,8 +462,7 @@ int
 ssystem(const char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
 int
-ssystem(const char *fmt, ...)
-{
+ssystem(const char *fmt, ...) {
     char cmd[128];
     va_list ap;
     va_start(ap, fmt);
@@ -492,13 +478,10 @@ ssystem(const char *fmt, ...)
 #define SLIP_ESC_END 0334
 #define SLIP_ESC_ESC 0335
 
-/*
- * Read from serial, when we have a packet write it to tun. No output
- * buffering, input buffered by stdio.
- */
+// Read from serial, when we have a packet write it to tun. No output
+// buffering, input buffered by stdio.
 void
-serial_to_tun(FILE *inslip, int outfd)
-{
+serial_to_tun(FILE *inslip, int outfd) {
     static union {
         unsigned char inbuf[2000];
         struct ip iphdr;
@@ -539,13 +522,11 @@ after_fread:
         exit(1);
     }
 
-    /*  fprintf(stderr, ".");*/
+    // fprintf(stderr, ".");
     switch (c) {
         case SLIP_END:
             if (inbufptr > 0) {
-                /*
-                 * Sanity checks.
-                 */
+                // Sanity checks.
 #define DEBUG_LINE_MARKER '\r'
                 int ecode;
                 ecode = check_ip(&uip.iphdr, inbufptr);
@@ -559,7 +540,7 @@ after_fread:
                         break;
                     }
 
-                    /* New address. */
+                    // New address.
                     if (ipa.s_addr != 0) {
 #ifdef __linux__
                         ssystem("route delete -net %s netmask %s dev %s",
@@ -585,9 +566,7 @@ after_fread:
                     break;
                 }
                 else if (ecode < 0) {
-                    /*
-                     * If sensible ASCII string, print it as debug info!
-                     */
+                    // If sensible ASCII string, print it as debug info!
                     if (uip.inbuf[0] == DEBUG_LINE_MARKER) {
                         fwrite(uip.inbuf + 1, inbufptr - 1, 1, stderr);
                     }
@@ -609,7 +588,7 @@ after_fread:
                 if (dhsock != -1) {
                     struct ip *ip = (void *)uip.inbuf;
 
-                    if (ip->ip_p == 17 && ip->ip_dst == 0xffffffff /* UDP and broadcast */
+                    if (ip->ip_p == 17 && ip->ip_dst == 0xffffffff // UDP and broadcast
                         && ip->uh_sport == ntohs(BOOTPC) && ip->uh_dport == ntohs(BOOTPS)) {
                         relay_dhcp_to_server(ip, inbufptr);
                         inbufptr = 0;
@@ -628,7 +607,7 @@ after_fread:
         case SLIP_ESC:
             if (fread(&c, 1, 1, inslip) != 1) {
                 clearerr(inslip);
-                /* Put ESC back and give up! */
+                // Put ESC back and give up!
                 ungetc(SLIP_ESC, inslip);
                 return;
             }
@@ -643,7 +622,7 @@ after_fread:
                     break;
             }
 
-            /* FALLTHROUGH */
+            // FALLTHROUGH
         default:
             uip.inbuf[inbufptr++] = c;
             break;
@@ -656,8 +635,7 @@ unsigned char slip_buf[2000];
 int slip_end, slip_begin;
 
 void
-slip_send(int fd, unsigned char c)
-{
+slip_send(int fd, unsigned char c) {
     if (slip_end >= sizeof(slip_buf)) {
         err(1, "slip_send overflow");
     }
@@ -667,14 +645,12 @@ slip_send(int fd, unsigned char c)
 }
 
 int
-slip_empty()
-{
+slip_empty() {
     return slip_end == 0;
 }
 
 void
-slip_flushbuf(int fd)
-{
+slip_flushbuf(int fd) {
     int n;
 
     if (slip_empty()) {
@@ -687,7 +663,7 @@ slip_flushbuf(int fd)
         err(1, "slip_flushbuf write failed");
     }
     else if (n == -1) {
-        PROGRESS("Q");		/* Outqueueis full! */
+        PROGRESS("Q");		// Outqueueis full!
     }
     else {
         slip_begin += n;
@@ -699,15 +675,12 @@ slip_flushbuf(int fd)
 }
 
 void
-write_to_serial(int outfd, void *inbuf, int len)
-{
+write_to_serial(int outfd, void *inbuf, int len) {
     u_int8_t *p = inbuf;
     int i, ecode;
     struct ip *iphdr = inbuf;
 
-    /*
-     * Sanity checks.
-     */
+    // Sanity checks.
     ecode = check_ip(inbuf, len);
 
     if (ecode < 0) {
@@ -718,10 +691,10 @@ write_to_serial(int outfd, void *inbuf, int len)
     if (iphdr->ip_id == 0 && iphdr->ip_off & IP_DF) {
         uint16_t nid = htons(ip_id++);
         iphdr->ip_id = nid;
-        nid = ~nid;			/* negate */
-        iphdr->ip_sum += nid;	/* add */
+        nid = ~nid;			// negate
+        iphdr->ip_sum += nid;	// add
 
-        if (iphdr->ip_sum < nid) {	/* 1-complement overflow? */
+        if (iphdr->ip_sum < nid) {	// 1-complement overflow?
             iphdr->ip_sum++;
         }
 
@@ -733,10 +706,9 @@ write_to_serial(int outfd, void *inbuf, int len)
         }
     }
 
-    /* It would be ``nice'' to send a SLIP_END here but it's not
-     * really necessary.
-     */
-    /* slip_send(outfd, SLIP_END); */
+    // It would be ``nice'' to send a SLIP_END here but it's not
+    // really necessary.
+    // slip_send(outfd, SLIP_END);
 
     for (i = 0; i < len; i++) {
         switch (p[i]) {
@@ -761,12 +733,9 @@ write_to_serial(int outfd, void *inbuf, int len)
     PROGRESS("t");
 }
 
-/*
- * Read from tun, write to slip.
- */
+// Read from tun, write to slip.
 void
-tun_to_serial(int infd, int outfd)
-{
+tun_to_serial(int infd, int outfd) {
     static union {
         unsigned char inbuf[2000];
         struct ip iphdr;
@@ -786,8 +755,7 @@ tun_to_serial(int infd, int outfd)
 speed_t b_rate = BAUDRATE;
 
 void
-stty_telos(int fd)
-{
+stty_telos(int fd) {
     struct termios tty;
     speed_t speed = b_rate;
     int i;
@@ -802,7 +770,7 @@ stty_telos(int fd)
 
     cfmakeraw(&tty);
 
-    /* Nonblocking read. */
+    // Nonblocking read.
     tty.c_cc[VTIME] = 0;
     tty.c_cc[VMIN] = 0;
     tty.c_cflag &= ~CRTSCTS;
@@ -817,8 +785,8 @@ stty_telos(int fd)
     }
 
 #if 1
-    /* Nonblocking read and write. */
-    /* if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) err(1, "fcntl"); */
+    // Nonblocking read and write.
+    // if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) err(1, "fcntl");
 
     tty.c_cflag |= CLOCAL;
 
@@ -834,21 +802,20 @@ stty_telos(int fd)
 
 #endif
 
-    usleep(10 * 1000);		/* Wait for hardware 10ms. */
+    usleep(10 * 1000);		// Wait for hardware 10ms.
 
-    /* Flush input and output buffers. */
+    // Flush input and output buffers.
     if (tcflush(fd, TCIOFLUSH) == -1) {
         err(1, "tcflush");
     }
 }
 
 int
-devopen(const char *dev, int flags)
-{
+devopen(const char *dev, int flags) {
     char t[1024];
     int written_len = snprintf(t, sizeof(t), "/dev/%s", dev);
     if (written_len >= sizeof(t)) {
-        /* we got truncated */
+        // we got truncated
         return -1;
     }
     return open(t, flags);
@@ -859,8 +826,7 @@ devopen(const char *dev, int flags)
 #include <linux/if_tun.h>
 
 int
-tun_alloc(char *dev)
-{
+tun_alloc(char *dev) {
     struct ifreq ifr;
     int fd, err;
 
@@ -870,11 +836,10 @@ tun_alloc(char *dev)
 
     memset(&ifr, 0, sizeof(ifr));
 
-    /* Flags: IFF_TUN   - TUN device (no Ethernet headers)
-     *        IFF_TAP   - TAP device
-     *
-     *        IFF_NO_PI - Do not provide packet information
-     */
+    // Flags: IFF_TUN   - TUN device (no Ethernet headers)
+    //        IFF_TAP   - TAP device
+    //
+    //        IFF_NO_PI - Do not provide packet information
     ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
 
     if (*dev != 0) {
@@ -891,8 +856,7 @@ tun_alloc(char *dev)
 }
 #else
 int
-tun_alloc(char *dev)
-{
+tun_alloc(char *dev) {
     return devopen(dev, O_RDWR);
 }
 #endif
@@ -901,13 +865,12 @@ const char *ipaddr;
 const char *netmask;
 
 void
-cleanup(void)
-{
+cleanup(void) {
     ssystem("ifconfig %s down", tundev);
 #ifndef __linux__
     ssystem("sysctl -w net.inet.ip.forwarding=0");
 #endif
-    /* ssystem("arp -d %s", ipaddr); */
+    // ssystem("arp -d %s", ipaddr);
     ssystem("netstat -nr"
             " | awk '{ if ($2 == \"%s\") print \"route delete -net \"$1; }'"
             " | sh",
@@ -915,24 +878,21 @@ cleanup(void)
 }
 
 void
-sigcleanup(int signo)
-{
+sigcleanup(int signo) {
     fprintf(stderr, "signal %d\n", signo);
-    exit(0);			/* exit(0) will call cleanup() */
+    exit(0);			// exit(0) will call cleanup()
 }
 
 static int got_sigalarm;
 
 void
-sigalarm(int signo)
-{
+sigalarm(int signo) {
     got_sigalarm = 1;
     return;
 }
 
 void
-sigalarm_reset()
-{
+sigalarm_reset() {
 #ifdef __linux__
 #define TIMEOUT (997*1000)
 #else
@@ -943,8 +903,7 @@ sigalarm_reset()
 }
 
 void
-ifconf(const char *tundev, const char *ipaddr, const char *netmask)
-{
+ifconf(const char *tundev, const char *ipaddr, const char *netmask) {
     struct in_addr netname;
     netname.s_addr = inet_addr(ipaddr) & inet_addr(netmask);
 
@@ -965,14 +924,13 @@ ifconf(const char *tundev, const char *ipaddr, const char *netmask)
     }
 
     ssystem("sysctl -w net.inet.ip.forwarding=1");
-#endif /* !linux */
+#endif // !linux
 
     ssystem("ifconfig %s\n", tundev);
 }
 
 int
-main(int argc, char **argv)
-{
+main(int argc, char **argv) {
     int c;
     int tunfd, slipfd;
     fd_set rset, wset;
@@ -984,7 +942,7 @@ main(int argc, char **argv)
 
     ip_id = getpid() * time(NULL);
 
-    setvbuf(stdout, NULL, _IOLBF, 0); /* Line buffered output. */
+    setvbuf(stdout, NULL, _IOLBF, 0); // Line buffered output.
 
     while ((c = getopt(argc, argv, "B:D:hs:t:")) != -1) {
         switch (c) {
@@ -1038,7 +996,7 @@ main(int argc, char **argv)
 
     switch (baudrate) {
         case -2:
-            break;			/* Use default. */
+            break;			// Use default.
 
         case 9600:
             b_rate = B9600;
@@ -1065,10 +1023,8 @@ main(int argc, char **argv)
             break;
     }
 
-    /*
-     * Set up DHCP relay agent socket and find the address of this relay
-     * agent.
-     */
+    // Set up DHCP relay agent socket and find the address of this relay
+    // agent.
     if (argc == 4) {
         dhcp_server = argv[3];
     }
@@ -1127,9 +1083,7 @@ main(int argc, char **argv)
 
         giaddr = myaddr.sin_addr.s_addr;
 
-        /*
-         * Don't want connected socket.
-         */
+        // Don't want connected socket.
         close(dhsock);
         dhsock = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -1157,7 +1111,7 @@ main(int argc, char **argv)
     }
     else {
         static const char *siodevs[] = {
-            "ttyUSB0", "cuaU0", "ucom0" /* linux, fbsd6, fbsd5 */
+            "ttyUSB0", "cuaU0", "ucom0" // linux, fbsd6, fbsd5
         };
         int i;
 
@@ -1205,7 +1159,7 @@ main(int argc, char **argv)
         FD_ZERO(&wset);
 
         if (got_sigalarm) {
-            /* Send "?IPA". */
+            // Send "?IPA".
             slip_send(slipfd, '?');
             slip_send(slipfd, 'I');
             slip_send(slipfd, 'P');
@@ -1214,17 +1168,17 @@ main(int argc, char **argv)
             got_sigalarm = 0;
         }
 
-        if (!slip_empty()) {		/* Anything to flush? */
+        if (!slip_empty()) {		// Anything to flush?
             FD_SET(slipfd, &wset);
         }
 
-        FD_SET(slipfd, &rset);	/* Read from slip ASAP! */
+        FD_SET(slipfd, &rset);	// Read from slip ASAP!
 
         if (slipfd > maxfd) {
             maxfd = slipfd;
         }
 
-        /* We only have one packet at a time queued for slip output. */
+        // We only have one packet at a time queued for slip output.
         if (slip_empty()) {
             FD_SET(tunfd, &rset);
 

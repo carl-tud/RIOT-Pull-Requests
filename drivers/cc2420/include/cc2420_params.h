@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_cc2420
- *
- * @{
- * @file
- * @brief       Default configuration for the CC2420 driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_cc2420
+///
+/// @{
+/// @file
+/// @brief       Default configuration for the CC2420 driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "cc2420.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the CC2420 driver
- * @{
- */
+/// @name    Set default configuration parameters for the CC2420 driver
+/// @{
 #ifndef CC2420_PARAM_SPI
 #define CC2420_PARAM_SPI        (SPI_DEV(0))
 #endif
@@ -65,11 +59,9 @@ extern "C" {
                                   .pin_vrefen = CC2420_PARAM_VREFEN,  \
                                   .pin_reset  = CC2420_PARAM_RESET }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   CC2420 configuration
- */
+/// @brief   CC2420 configuration
 static const cc2420_params_t cc2420_params[] =
 {
     CC2420_PARAMS
@@ -79,4 +71,4 @@ static const cc2420_params_t cc2420_params[] =
 }
 #endif
 
-/** @} */
+/// @}

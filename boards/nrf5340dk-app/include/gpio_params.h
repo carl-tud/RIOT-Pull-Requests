@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2026 Christian Amsüss <chrysn@fsfe.org>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Christian Amsüss <chrysn@fsfe.org>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup    boards_nrf5340dk-app
- * @{
- *
- * @file
- * @brief      Configuration of SAUL mapped GPIO pins
- *
- * @author     Christian Amsüss <chrysn@fsfe.org>
- */
+/// @ingroup    boards_nrf5340dk-app
+/// @{
+///
+/// @file
+/// @brief      Configuration of SAUL mapped GPIO pins
+///
+/// @author     Christian Amsüss <chrysn@fsfe.org>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    LED configuration
- */
+/// @brief    LED configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -81,4 +75,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,148 +1,103 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup fido2_ctap_cbor
- * @{
- * @file
- *
- * @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
- * @}
- */
+/// @ingroup fido2_ctap_cbor
+/// @{
+/// @file
+///
+/// @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
+/// @}
 
 #include "fido2/ctap/ctap_cbor.h"
 
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief CTAP CBOR entity types
- */
+/// @brief CTAP CBOR entity types
 typedef enum {
     USER,
     RP
 } entity_type_t;
 
-/**
- * @brief Parse CBOR encoded PublicKeyCredentialRpEntity or PublicKeyCredentialUserEntity
- *        data structure into @ref ctap_rp_ent_t or @ref ctap_user_ent_t struct
- *        respectively.
- */
+/// @brief Parse CBOR encoded PublicKeyCredentialRpEntity or PublicKeyCredentialUserEntity
+///        data structure into @ref ctap_rp_ent_t or @ref ctap_user_ent_t struct
+///        respectively.
 static ctap_status_code_t _parse_entity(CborValue *it, void *entity, entity_type_t type);
 
-/**
- * @brief Parse CBOR encoded sequence of PublicKeyCredentialDescriptors into
- *        @ref ctap_cred_desc_alt_t struct
- */
+/// @brief Parse CBOR encoded sequence of PublicKeyCredentialDescriptors into
+///        @ref ctap_cred_desc_alt_t struct
 static ctap_status_code_t _parse_exclude_list(CborValue *it, ctap_cred_desc_alt_t *exclude_list,
                                size_t *exclude_list_len);
 
-/**
- * @brief Parse CBOR encoded sequence of PublicKeyCredentialDescriptors into
- *        @ref ctap_cred_desc_alt_t struct
- */
+/// @brief Parse CBOR encoded sequence of PublicKeyCredentialDescriptors into
+///        @ref ctap_cred_desc_alt_t struct
 static ctap_status_code_t _parse_allow_list(CborValue *it, ctap_cred_desc_alt_t *allow_list,
                              uint8_t *allow_list_len);
 
-/**
- * @brief Parse CBOR encoded sequence of PublicKeyCredentialType and cryptographic
- *        algorithm type pairs and check if the combination is supported
- */
+/// @brief Parse CBOR encoded sequence of PublicKeyCredentialType and cryptographic
+///        algorithm type pairs and check if the combination is supported
 static ctap_status_code_t _parse_pub_key_cred_params(CborValue *it,
                                       ctap_make_credential_req_t *req);
 
-/**
- * @brief Parse CBOR encoded PublicKeyCredentialType and cryptographic
- *        algorithm type
- */
+/// @brief Parse CBOR encoded PublicKeyCredentialType and cryptographic
+///        algorithm type
 static ctap_status_code_t _parse_pub_key_cred_param(CborValue *it, uint8_t *cred_type,
                                      int32_t *alg_type);
 
-/**
- * @brief Parse CBOR encoded map of authenticator options into @ref ctap_options_t
- *        struct
- */
+/// @brief Parse CBOR encoded map of authenticator options into @ref ctap_options_t
+///        struct
 static ctap_status_code_t _parse_options(CborValue *it, ctap_options_t *options);
 
-/**
- * @brief Parse public key in COSE_KEY format into ctap_public_key_cose_t struct
- */
+/// @brief Parse public key in COSE_KEY format into ctap_public_key_cose_t struct
 static ctap_status_code_t _parse_public_key_cose(CborValue *it, ctap_public_key_cose_t *cose_key);
 
-/**
- * @brief Parse CBOR encoded fixed length array into dst
- */
+/// @brief Parse CBOR encoded fixed length array into dst
 static ctap_status_code_t _parse_fixed_len_byte_array(CborValue *map, uint8_t *dst,
                                        size_t *len);
 
-/**
- * @brief Parse CBOR encoded unknown length array into dst
- */
+/// @brief Parse CBOR encoded unknown length array into dst
 static ctap_status_code_t _parse_byte_array(CborValue *it, uint8_t *dst, size_t *len);
 
-/**
- * @brief Parse CBOR encoded unknown length array into dst
- */
+/// @brief Parse CBOR encoded unknown length array into dst
 static ctap_status_code_t _parse_byte_array_u8len(CborValue *it, uint8_t *dst, uint8_t *len);
 
-/**
- * @brief Parse CBOR encoded string into dst
- */
+/// @brief Parse CBOR encoded string into dst
 static ctap_status_code_t _parse_text_string(CborValue *it, char *dst, size_t *len);
-/**
- * @brief Parse CBOR encoded string into dst
- */
+/// @brief Parse CBOR encoded string into dst
 static ctap_status_code_t _parse_text_string_u8len(CborValue *it, char *dst, uint8_t *len);
 
-/**
- * @brief Parse CBOR encoded int into num
- */
+/// @brief Parse CBOR encoded int into num
 static ctap_status_code_t _parse_int(CborValue *it, int *num);
 
-/**
- * @brief Parse credential description
- */
+/// @brief Parse credential description
 static ctap_status_code_t _fido2_ctap_cbor_parse_cred_desc(CborValue *arr,
                                                            ctap_cred_desc_alt_t *cred);
 
-/**
- * @brief Encode public key into COSE_KEY format
- *
- * See https://tools.ietf.org/html/rfc8152#page-34 Section 13.1.1 for details.
- */
+/// @brief Encode public key into COSE_KEY format
+///
+/// See https://tools.ietf.org/html/rfc8152#page-34 Section 13.1.1 for details.
 static ctap_status_code_t _encode_public_key_cose(CborEncoder *cose_key,
                                                   const ctap_public_key_cose_t *key);
 
-/**
- * @brief Encode PublicKeyCredentialDescriptor into CBOR format
- */
+/// @brief Encode PublicKeyCredentialDescriptor into CBOR format
 static ctap_status_code_t _encode_credential(CborEncoder *encoder, const void *cred_ptr,
                               bool rk);
 
-/**
- * @brief Encode PublicKeyCredentialUserEntity into CBOR format
- */
+/// @brief Encode PublicKeyCredentialUserEntity into CBOR format
 static ctap_status_code_t _encode_user_entity(CborEncoder *it, const ctap_resident_key_t *rk);
 
-/**
- * @brief CBOR encoder
- */
+/// @brief CBOR encoder
 CborEncoder _encoder;
 
-size_t fido2_ctap_cbor_get_buffer_size(const uint8_t *buf)
-{
+size_t fido2_ctap_cbor_get_buffer_size(const uint8_t *buf) {
     return cbor_encoder_get_buffer_size(&_encoder, buf);
 }
 
-void fido2_ctap_cbor_init_encoder(uint8_t *buf, size_t len)
-{
+void fido2_ctap_cbor_init_encoder(uint8_t *buf, size_t len) {
     cbor_encoder_init(&_encoder, buf, len, 0);
 }
 
-ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info)
-{
+ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info) {
     int ret;
     size_t sz = 0;
     CborEncoder map;
@@ -150,7 +105,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info)
     CborEncoder array;
     CborEncoder array2;
 
-    /* CTAP_CBOR_INFO_MAP_SZ - 1 due to no extensions being supported atm */
+    // CTAP_CBOR_INFO_MAP_SZ - 1 due to no extensions being supported atm
     ret = cbor_encoder_create_map(&_encoder, &map, CTAP_CBOR_INFO_MAP_SZ - 1);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -163,7 +118,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info)
         sz++;
     }
 
-    /* encode versions */
+    // encode versions
     ret = cbor_encode_uint(&map, CTAP_CBOR_GET_INFO_RESP_VERSIONS);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -190,9 +145,9 @@ ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info)
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* todo: encode supported extensions once implemented */
+    // todo: encode supported extensions once implemented
 
-    /* encode aaguid */
+    // encode aaguid
     ret = cbor_encode_uint(&map, CTAP_CBOR_GET_INFO_RESP_AAGUID);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -217,8 +172,8 @@ ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info)
         sz++;
     }
 
-    /* encode options */
-    /* order of the items is important. needs to be canonical CBOR */
+    // encode options
+    // order of the items is important. needs to be canonical CBOR
     ret = cbor_encode_uint(&map, CTAP_CBOR_GET_INFO_RESP_OPTIONS);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -252,7 +207,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info)
             return CTAP2_ERR_CBOR_PARSING;
         }
     }
-    /* default for up is true so need to set false explicitly if not supported */
+    // default for up is true so need to set false explicitly if not supported
     else {
         ret =
             cbor_encode_text_string(&map2, CTAP_GET_INFO_RESP_OPTIONS_ID_UP,
@@ -302,7 +257,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info)
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* encode maxMsgSize */
+    // encode maxMsgSize
     ret = cbor_encode_uint(&map, CTAP_CBOR_GET_INFO_RESP_MAX_MSG_SIZE);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -312,7 +267,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info)
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* encode pinProtocols */
+    // encode pinProtocols
     ret = cbor_encode_uint(&map, CTAP_CBOR_GET_INFO_RESP_PIN_PROTOCOLS);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -341,8 +296,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_info(const ctap_info_t *info)
 ctap_status_code_t fido2_ctap_cbor_encode_assertion_object(const ctap_auth_data_header_t *auth_data,
                                             const uint8_t *client_data_hash,
                                             ctap_resident_key_t *rk,
-                                            uint8_t valid_cred_count)
-{
+                                            uint8_t valid_cred_count) {
     int ret;
     CborEncoder map;
     uint8_t sig_buf[CTAP_CRYPTO_ES256_DER_MAX_SIZE];
@@ -351,7 +305,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_assertion_object(const ctap_auth_data_
     ctap_cred_desc_t *cred_desc = &rk->cred_desc;
     bool is_resident = !cred_desc->has_nonce;
 
-    /* map contains at least credential descriptor, authData and signature */
+    // map contains at least credential descriptor, authData and signature
     uint8_t map_len = 3;
 
     if (valid_cred_count > 1) {
@@ -372,10 +326,8 @@ ctap_status_code_t fido2_ctap_cbor_encode_assertion_object(const ctap_auth_data_
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /**
-     * encode credential
-     * if not a resident key encrypt key and store it in credential id
-     */
+    /// encode credential
+    /// if not a resident key encrypt key and store it in credential id
     if (!is_resident) {
         ret = fido2_ctap_encrypt_rk(rk, rk->cred_desc.nonce,
                                     sizeof(rk->cred_desc.nonce), &id);
@@ -394,7 +346,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_assertion_object(const ctap_auth_data_
         return ret;
     }
 
-    /* encode auth data */
+    // encode auth data
     ret = cbor_encode_int(&map, CTAP_CBOR_GA_RESP_AUTH_DATA);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -405,7 +357,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_assertion_object(const ctap_auth_data_
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* get signature for assertion */
+    // get signature for assertion
     ret = fido2_ctap_get_sig((uint8_t *)auth_data, sizeof(*auth_data),
                              client_data_hash, rk, sig_buf,
                              &sig_buf_len);
@@ -414,7 +366,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_assertion_object(const ctap_auth_data_
         return ret;
     }
 
-    /* encode signature */
+    // encode signature
     ret = cbor_encode_int(&map, CTAP_CBOR_GA_RESP_SIGNATURE);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -424,7 +376,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_assertion_object(const ctap_auth_data_
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* user_id mandatory if resident credential */
+    // user_id mandatory if resident credential
     if (is_resident) {
         ret = cbor_encode_int(&map, CTAP_CBOR_GA_RESP_USER);
         if (ret != CborNoError) {
@@ -436,7 +388,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_assertion_object(const ctap_auth_data_
         }
     }
 
-    /* if more than 1 valid credential found, encode amount of eligible creds found */
+    // if more than 1 valid credential found, encode amount of eligible creds found
     if (valid_cred_count > 1) {
         ret = cbor_encode_int(&map, CTAP_CBOR_GA_RESP_NUMBER_OF_CREDENTIALS);
         if (ret != CborNoError) {
@@ -458,8 +410,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_assertion_object(const ctap_auth_data_
 
 ctap_status_code_t fido2_ctap_cbor_encode_attestation_object(const ctap_auth_data_t *auth_data,
                                               const uint8_t *client_data_hash,
-                                              ctap_resident_key_t *rk)
-{
+                                              ctap_resident_key_t *rk) {
     int ret;
     uint16_t cred_id_sz;
     uint16_t cred_header_sz;
@@ -476,7 +427,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_attestation_object(const ctap_auth_dat
     cred_header = &auth_data->attested_cred_data.header;
     cred_id_sz = (cred_header->cred_len_h << 8) | cred_header->cred_len_l;
 
-    /* size varies depending on if cred_id is the encrypted rk or 16 rand bytes */
+    // size varies depending on if cred_id is the encrypted rk or 16 rand bytes
     cred_header_sz = cred_id_sz + sizeof(cred_header->aaguid) + \
                      sizeof(cred_header->cred_len_h) + \
                      sizeof(cred_header->cred_len_h);
@@ -486,7 +437,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_attestation_object(const ctap_auth_dat
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* packed attestation format (webauthn specification (version 20190304) section 8.2) */
+    // packed attestation format (webauthn specification (version 20190304) section 8.2)
     ret = cbor_encode_int(&map, CTAP_CBOR_MC_RESP_FMT);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -496,12 +447,12 @@ ctap_status_code_t fido2_ctap_cbor_encode_attestation_object(const ctap_auth_dat
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* move rp id hash, flash and counter into authenticator data buffer */
+    // move rp id hash, flash and counter into authenticator data buffer
     memcpy(auth_data_buf, (void *)&auth_data->header,
            sizeof(ctap_auth_data_header_t));
     offset += sizeof(ctap_auth_data_header_t);
 
-    /* move attested credential data header into authenticator data buffer  */
+    // move attested credential data header into authenticator data buffer
     memcpy(auth_data_buf + offset, (void *)cred_header, cred_header_sz);
     offset += cred_header_sz;
 
@@ -510,14 +461,14 @@ ctap_status_code_t fido2_ctap_cbor_encode_attestation_object(const ctap_auth_dat
     cbor_encoder_init(&cose_key, cose_key_buf, sizeof(auth_data_buf) - offset,
                       0);
 
-    /* encode credential public key into COSE format */
+    // encode credential public key into COSE format
     ret = _encode_public_key_cose(&cose_key, &auth_data->attested_cred_data.key);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
     }
     offset += cbor_encoder_get_buffer_size(&cose_key, cose_key_buf);
 
-    /* encode the authenticator data */
+    // encode the authenticator data
     ret = cbor_encode_int(&map, CTAP_CBOR_MC_RESP_AUTH_DATA);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -527,7 +478,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_attestation_object(const ctap_auth_dat
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* sign authenticator data */
+    // sign authenticator data
     ret = fido2_ctap_get_sig(auth_data_buf, offset, client_data_hash, rk,
                              sig_buf, &sig_buf_len);
 
@@ -535,7 +486,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_attestation_object(const ctap_auth_dat
         return ret;
     }
 
-    /* encode attestation statement */
+    // encode attestation statement
     ret = cbor_encode_int(&map, CTAP_CBOR_MC_RESP_ATT_STMT);
     if (ret != CborNoError) {
         return CTAP2_ERR_CBOR_PARSING;
@@ -574,14 +525,13 @@ ctap_status_code_t fido2_ctap_cbor_encode_attestation_object(const ctap_auth_dat
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* todo: extensions once implemented */
+    // todo: extensions once implemented
 
     return CTAP2_OK;
 }
 
 static ctap_status_code_t _encode_credential(CborEncoder *encoder, const void *cred_ptr,
-                              bool rk)
-{
+                              bool rk) {
     CborEncoder desc;
     int ret;
 
@@ -629,8 +579,7 @@ static ctap_status_code_t _encode_credential(CborEncoder *encoder, const void *c
     return CTAP2_OK;
 }
 
-ctap_status_code_t fido2_ctap_cbor_encode_key_agreement(const ctap_public_key_cose_t *key)
-{
+ctap_status_code_t fido2_ctap_cbor_encode_key_agreement(const ctap_public_key_cose_t *key) {
     int ret;
     CborEncoder map;
 
@@ -658,8 +607,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_key_agreement(const ctap_public_key_co
     return CTAP2_OK;
 }
 
-ctap_status_code_t fido2_ctap_cbor_encode_retries(uint8_t tries_left)
-{
+ctap_status_code_t fido2_ctap_cbor_encode_retries(uint8_t tries_left) {
     int ret;
     CborEncoder map;
 
@@ -686,8 +634,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_retries(uint8_t tries_left)
     return CTAP2_OK;
 }
 
-ctap_status_code_t fido2_ctap_cbor_encode_pin_token(uint8_t *token, size_t len)
-{
+ctap_status_code_t fido2_ctap_cbor_encode_pin_token(uint8_t *token, size_t len) {
     int ret;
     CborEncoder map;
 
@@ -715,8 +662,7 @@ ctap_status_code_t fido2_ctap_cbor_encode_pin_token(uint8_t *token, size_t len)
 }
 
 static ctap_status_code_t _encode_user_entity(CborEncoder *encoder,
-                               const ctap_resident_key_t *rk)
-{
+                               const ctap_resident_key_t *rk) {
     int ret;
     CborEncoder map;
 
@@ -743,8 +689,7 @@ static ctap_status_code_t _encode_user_entity(CborEncoder *encoder,
 }
 
 static ctap_status_code_t _encode_public_key_cose(CborEncoder *cose_key,
-                                                  const ctap_public_key_cose_t *key)
-{
+                                                  const ctap_public_key_cose_t *key) {
     int ret;
     CborEncoder map;
 
@@ -807,8 +752,7 @@ static ctap_status_code_t _encode_public_key_cose(CborEncoder *cose_key,
 }
 
 ctap_status_code_t fido2_ctap_cbor_parse_get_assertion_req(ctap_get_assertion_req_t *req,
-                                            const uint8_t *req_raw, size_t len)
-{
+                                            const uint8_t *req_raw, size_t len) {
     uint8_t required_parsed = 0;
     int ret;
     int key;
@@ -844,7 +788,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_get_assertion_req(ctap_get_assertion_re
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* loop over CBOR GetAssertion map */
+    // loop over CBOR GetAssertion map
     for (size_t i = 0; i < map_len; i++) {
         type = cbor_value_get_type(&map);
         if (type != CborIntegerType) {
@@ -882,7 +826,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_get_assertion_req(ctap_get_assertion_re
                                     &req->allow_list_len);
             break;
         case CTAP_CBOR_GA_REQ_EXTENSIONS:
-            /* todo: implement once extensions are supported */
+            // todo: implement once extensions are supported
             DEBUG("ctap_cbor: parse extensions \n");
             break;
         case CTAP_CBOR_GA_REQ_OPTIONS:
@@ -893,7 +837,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_get_assertion_req(ctap_get_assertion_re
             DEBUG("ctap_cbor: parse pin_auth \n");
             len = 16;
             ret = _parse_fixed_len_byte_array(&map, req->pin_auth, &len);
-            /* CTAP specification (version 20190130) section 5.5.8.1 */
+            // CTAP specification (version 20190130) section 5.5.8.1
             if (ret == CTAP1_ERR_INVALID_LENGTH && len == 0) {
                 ret = CTAP2_OK;
             }
@@ -920,7 +864,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_get_assertion_req(ctap_get_assertion_re
         }
     }
 
-    /* rpId and clientDataHash are required */
+    // rpId and clientDataHash are required
     if (required_parsed != 2) {
         return CTAP2_ERR_MISSING_PARAMETER;
     }
@@ -929,8 +873,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_get_assertion_req(ctap_get_assertion_re
 }
 
 ctap_status_code_t fido2_ctap_cbor_parse_client_pin_req(ctap_client_pin_req_t *req,
-                                         const uint8_t *req_raw, size_t len)
-{
+                                         const uint8_t *req_raw, size_t len) {
     uint8_t required_parsed = 0;
     int ret;
     int key;
@@ -966,7 +909,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_client_pin_req(ctap_client_pin_req_t *r
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* loop over CBOR ClientPIN map */
+    // loop over CBOR ClientPIN map
     for (size_t i = 0; i < map_len; i++) {
         cbor_type = cbor_value_get_type(&map);
         if (cbor_type != CborIntegerType) {
@@ -1033,7 +976,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_client_pin_req(ctap_client_pin_req_t *r
         }
     }
 
-    /* pinProtocol and subCommand are required */
+    // pinProtocol and subCommand are required
     if (required_parsed != 2) {
         return CTAP2_ERR_MISSING_PARAMETER;
     }
@@ -1043,8 +986,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_client_pin_req(ctap_client_pin_req_t *r
 
 ctap_status_code_t fido2_ctap_cbor_parse_make_credential_req(ctap_make_credential_req_t *req,
                                               const uint8_t *buf,
-                                              size_t size)
-{
+                                              size_t size) {
     uint8_t required_parsed = 0;
     int ret;
     int key;
@@ -1137,7 +1079,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_make_credential_req(ctap_make_credentia
             DEBUG("ctap_cbor: parse pin_auth \n");
             len = 16;
             ret = _parse_fixed_len_byte_array(&map, req->pin_auth, &len);
-            /* CTAP specification (version 20190130) section 5.5.8.1 (pinAuth) */
+            // CTAP specification (version 20190130) section 5.5.8.1 (pinAuth)
             if (ret == CTAP1_ERR_INVALID_LENGTH && len == 0) {
                 ret = CTAP2_OK;
             }
@@ -1164,7 +1106,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_make_credential_req(ctap_make_credentia
         }
     }
 
-    /* clientDataHash, rp, user and pubKeyCredParams are required */
+    // clientDataHash, rp, user and pubKeyCredParams are required
     if (required_parsed != 4) {
         return CTAP2_ERR_MISSING_PARAMETER;
     }
@@ -1172,8 +1114,7 @@ ctap_status_code_t fido2_ctap_cbor_parse_make_credential_req(ctap_make_credentia
     return CTAP2_OK;
 }
 
-static ctap_status_code_t _parse_public_key_cose(CborValue *it, ctap_public_key_cose_t *cose_key)
-{
+static ctap_status_code_t _parse_public_key_cose(CborValue *it, ctap_public_key_cose_t *cose_key) {
     int ret;
     int type;
     int key;
@@ -1256,8 +1197,7 @@ static ctap_status_code_t _parse_public_key_cose(CborValue *it, ctap_public_key_
     return CTAP2_OK;
 }
 
-static ctap_status_code_t _parse_entity(CborValue *it, void *entity, entity_type_t type)
-{
+static ctap_status_code_t _parse_entity(CborValue *it, void *entity, entity_type_t type) {
     int ret;
     int cbor_type;
     size_t map_len;
@@ -1378,7 +1318,7 @@ static ctap_status_code_t _parse_entity(CborValue *it, void *entity, entity_type
         }
     }
 
-    /* userId / rpId is required */
+    // userId / rpId is required
     if (required_parsed != 1) {
         return CTAP2_ERR_MISSING_PARAMETER;
     }
@@ -1387,8 +1327,7 @@ static ctap_status_code_t _parse_entity(CborValue *it, void *entity, entity_type
 }
 
 static ctap_status_code_t _parse_pub_key_cred_params(CborValue *it,
-                                      ctap_make_credential_req_t *req)
-{
+                                      ctap_make_credential_req_t *req) {
     int type;
     int ret;
     CborValue arr;
@@ -1411,14 +1350,14 @@ static ctap_status_code_t _parse_pub_key_cred_params(CborValue *it,
         return CTAP2_ERR_CBOR_PARSING;
     }
 
-    /* params ordered from most preferred (by the RP) to least */
+    // params ordered from most preferred (by the RP) to least
     for (size_t i = 0; i < arr_len; i++) {
         ret = _parse_pub_key_cred_param(&arr, &cred_type, &alg_type);
         if (ret != CTAP2_OK) {
             return ret;
         }
 
-        /* check if algorithm is supported */
+        // check if algorithm is supported
         if (fido2_ctap_cred_params_supported(cred_type, alg_type)) {
             req->cred_type = cred_type;
             req->alg_type = alg_type;
@@ -1435,8 +1374,7 @@ static ctap_status_code_t _parse_pub_key_cred_params(CborValue *it,
 }
 
 static ctap_status_code_t _parse_pub_key_cred_param(CborValue *it, uint8_t *cred_type,
-                                     int32_t *alg_type)
-{
+                                     int32_t *alg_type) {
     int ret;
     int cbor_type;
     char cred_type_str[CTAP_CBOR_MAX_CREDENTIAL_TYPE_LEN];
@@ -1490,8 +1428,7 @@ static ctap_status_code_t _parse_pub_key_cred_param(CborValue *it, uint8_t *cred
     return CTAP2_OK;
 }
 
-static ctap_status_code_t _parse_options(CborValue *it, ctap_options_t *options)
-{
+static ctap_status_code_t _parse_options(CborValue *it, ctap_options_t *options) {
     int ret;
     int cbor_type;
     char key[CTAP_CBOR_MAP_MAX_KEY_LEN];
@@ -1538,7 +1475,7 @@ static ctap_status_code_t _parse_options(CborValue *it, ctap_options_t *options)
             return CTAP2_ERR_INVALID_CBOR_TYPE;
         }
 
-        /* get boolean value of options parameter */
+        // get boolean value of options parameter
         ret = cbor_value_get_boolean(&map, &option_value);
         if (ret != CborNoError) {
             return CTAP2_ERR_CBOR_PARSING;
@@ -1556,7 +1493,7 @@ static ctap_status_code_t _parse_options(CborValue *it, ctap_options_t *options)
             options->up = option_value;
         }
         else {
-            /* ignore unknown options */
+            // ignore unknown options
             DEBUG("Ctap parse options, unknown option: %s \n", key);
         }
 
@@ -1570,8 +1507,7 @@ static ctap_status_code_t _parse_options(CborValue *it, ctap_options_t *options)
 }
 
 static ctap_status_code_t _parse_allow_list(CborValue *it, ctap_cred_desc_alt_t *allow_list,
-                             uint8_t *allow_list_len)
-{
+                             uint8_t *allow_list_len) {
     size_t len2 = *allow_list_len;
     int retval = _parse_exclude_list(it, allow_list, &len2);
 
@@ -1580,8 +1516,7 @@ static ctap_status_code_t _parse_allow_list(CborValue *it, ctap_cred_desc_alt_t 
 }
 
 static ctap_status_code_t _parse_exclude_list(CborValue *it, ctap_cred_desc_alt_t *exclude_list,
-                               size_t *exclude_list_len)
-{
+                               size_t *exclude_list_len) {
     int ret;
     int type;
     CborValue arr;
@@ -1606,10 +1541,8 @@ static ctap_status_code_t _parse_exclude_list(CborValue *it, ctap_cred_desc_alt_
     }
 
     for (uint8_t i = 0; i < *exclude_list_len; i++) {
-        /**
-         * parse the CBOR encoded PublicKeyCredentialDescriptors of the
-         * exclude list sent by the host.
-         */
+        /// parse the CBOR encoded PublicKeyCredentialDescriptors of the
+        /// exclude list sent by the host.
         ret = _fido2_ctap_cbor_parse_cred_desc(&arr, &exclude_list[i]);
 
         if (ret != CTAP2_OK) {
@@ -1621,8 +1554,7 @@ static ctap_status_code_t _parse_exclude_list(CborValue *it, ctap_cred_desc_alt_
 }
 
 static ctap_status_code_t _fido2_ctap_cbor_parse_cred_desc(CborValue *arr,
-                                                           ctap_cred_desc_alt_t *cred)
-{
+                                                           ctap_cred_desc_alt_t *cred) {
     int ret;
     int type;
     CborValue val;
@@ -1648,7 +1580,7 @@ static ctap_status_code_t _fido2_ctap_cbor_parse_cred_desc(CborValue *arr,
 
     ret = cbor_value_copy_text_string(&val, type_str, &buf_len, NULL);
 
-    /* CborErrorOutOfMemory == unknown type */
+    // CborErrorOutOfMemory == unknown type
     if (ret != CborNoError && ret != CborErrorOutOfMemory) {
         return CTAP2_ERR_CBOR_PARSING;
     }
@@ -1686,8 +1618,7 @@ static ctap_status_code_t _fido2_ctap_cbor_parse_cred_desc(CborValue *arr,
     return CTAP2_OK;
 }
 
-static ctap_status_code_t _parse_fixed_len_byte_array(CborValue *it, uint8_t *dst, size_t *len)
-{
+static ctap_status_code_t _parse_fixed_len_byte_array(CborValue *it, uint8_t *dst, size_t *len) {
     int ret;
     int type;
     size_t temp_len = *len;
@@ -1709,8 +1640,7 @@ static ctap_status_code_t _parse_fixed_len_byte_array(CborValue *it, uint8_t *ds
     return CTAP2_OK;
 }
 
-static ctap_status_code_t _parse_byte_array(CborValue *it, uint8_t *dst, size_t *len)
-{
+static ctap_status_code_t _parse_byte_array(CborValue *it, uint8_t *dst, size_t *len) {
     int type;
     int ret;
 
@@ -1727,8 +1657,7 @@ static ctap_status_code_t _parse_byte_array(CborValue *it, uint8_t *dst, size_t 
     return CTAP2_OK;
 }
 
-static ctap_status_code_t _parse_byte_array_u8len(CborValue *it, uint8_t *dst, uint8_t *len)
-{
+static ctap_status_code_t _parse_byte_array_u8len(CborValue *it, uint8_t *dst, uint8_t *len) {
     size_t len2 = *len;
     int retval = _parse_byte_array(it, dst, &len2);
 
@@ -1736,8 +1665,7 @@ static ctap_status_code_t _parse_byte_array_u8len(CborValue *it, uint8_t *dst, u
     return retval;
 }
 
-static ctap_status_code_t _parse_text_string(CborValue *it, char *dst, size_t *len)
-{
+static ctap_status_code_t _parse_text_string(CborValue *it, char *dst, size_t *len) {
     int type;
     int ret;
 
@@ -1756,8 +1684,7 @@ static ctap_status_code_t _parse_text_string(CborValue *it, char *dst, size_t *l
     return CTAP2_OK;
 }
 
-static ctap_status_code_t _parse_text_string_u8len(CborValue *it, char *dst, uint8_t *len)
-{
+static ctap_status_code_t _parse_text_string_u8len(CborValue *it, char *dst, uint8_t *len) {
     size_t len2 = *len;
     int retval = _parse_text_string(it, dst, &len2);
 
@@ -1765,8 +1692,7 @@ static ctap_status_code_t _parse_text_string_u8len(CborValue *it, char *dst, uin
     return retval;
 }
 
-static ctap_status_code_t _parse_int(CborValue *it, int *num)
-{
+static ctap_status_code_t _parse_int(CborValue *it, int *num) {
     int type;
     int ret;
 

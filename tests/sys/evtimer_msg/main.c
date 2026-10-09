@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief    evtimer_msg test application
- *
- * @author   Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief    evtimer_msg test application
+///
+/// @author   Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -25,11 +21,9 @@
 static char worker_stack[THREAD_STACKSIZE_MAIN];
 static evtimer_t evtimer;
 #define NEVENTS (unsigned)(4)
-/*
- * The events (.offset) are modified by evtimer_add.
- * This list of offsets is used to populate the events
- * before adding (or re-adding).
- */
+// The events (.offset) are modified by evtimer_add.
+// This list of offsets is used to populate the events
+// before adding (or re-adding).
 static uint32_t offsets[NEVENTS] = {
         1000,
         1500,
@@ -39,9 +33,8 @@ static uint32_t offsets[NEVENTS] = {
 static evtimer_msg_event_t events[NEVENTS];
 static char texts[NEVENTS][40];
 
-/* This thread will print the drift to stdout once per second */
-void *worker_thread(void *arg)
-{
+// This thread will print the drift to stdout once per second
+void *worker_thread(void *arg) {
     int count = 0;
     (void) arg;
 
@@ -57,13 +50,12 @@ void *worker_thread(void *arg)
     }
 }
 
-int main(void)
-{
+int main(void) {
     uint32_t now;
 
     evtimer_init_msg(&evtimer);
 
-    /* create worker thread */
+    // create worker thread
     kernel_pid_t pid = thread_create(worker_stack, sizeof(worker_stack),
                                      THREAD_PRIORITY_MAIN - 1,
                                      0,
@@ -71,7 +63,7 @@ int main(void)
 
     printf("Testing generic evtimer\n");
 
-    /* Add all the events */
+    // Add all the events
     for (unsigned i = 0; i < NEVENTS; i++) {
         events[i].event.offset = offsets[i];
         now = evtimer_now_msec();
@@ -80,20 +72,20 @@ int main(void)
         evtimer_add_msg(&evtimer, &events[i], pid);
     }
 
-    /* Delete all the events */
-    /* First we delete the last, to test deleting the last */
-    /* Then we delete the first, to test deleting the first */
+    // Delete all the events
+    // First we delete the last, to test deleting the last
+    // Then we delete the first, to test deleting the first
     evtimer_del(&evtimer, &events[3].event);
     evtimer_del(&evtimer, &events[2].event);
     printf("This should list %u items\n", NEVENTS - 2);
     evtimer_print(&evtimer);
 
-    /* Delete the remaining entries */
+    // Delete the remaining entries
     for (unsigned i = 0; i < NEVENTS; i++) {
         evtimer_del(&evtimer, &events[i].event);
     }
 
-    /* Add all the events, again */
+    // Add all the events, again
     for (unsigned i = 0; i < NEVENTS; i++) {
         events[i].event.offset = offsets[i];
         now = evtimer_now_msec();
@@ -107,7 +99,7 @@ int main(void)
     printf("Are the reception times of all %u msgs close to the supposed values?\n",
            NEVENTS);
 
-    /* The last offset is the largest, wait for it and a tiny bit more */
+    // The last offset is the largest, wait for it and a tiny bit more
     ztimer_sleep(ZTIMER_MSEC, (offsets[3] + 10));
     puts("By now all msgs should have been received");
     puts("If yes, the tests were successful");

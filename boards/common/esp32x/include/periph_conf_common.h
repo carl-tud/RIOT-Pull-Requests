@@ -1,24 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_esp32x
- * @brief       Peripheral configurations that are common for all ESP32x boards
- *
- * This file contains the peripheral configurations that are valid for all
- * ESP32x boards.
- *
- * For detailed information about the peripheral configuration for ESP32x
- * boards, see section \ref esp32_peripherals "Common Peripherals".
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     boards_common_esp32x
+/// @brief       Peripheral configurations that are common for all ESP32x boards
+///
+/// This file contains the peripheral configurations that are valid for all
+/// ESP32x boards.
+///
+/// For detailed information about the peripheral configuration for ESP32x
+/// boards, see section \ref esp32_peripherals "Common Peripherals".
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #if defined(CPU_FAM_ESP32)
 #  include "periph_conf_common_esp32.h"
@@ -36,7 +32,7 @@
 #  error "ESP32x SoC family not supported"
 #endif
 
-/* include periph_cpu.h to make it visible in any case */
+// include periph_cpu.h to make it visible in any case
 #include "periph_cpu.h"
 #include "kernel_defines.h"
 
@@ -44,98 +40,78 @@
 extern "C" {
 #endif
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 
-/**
- * @brief   Declaration of GPIOs that can be used as ADC channels
- *
- * ADC_GPIOS is defined in board-specific peripheral configuration. Since
- * ADC_GPIOS must be defined even if there are no ADC channels, an empty
- * list definition is done here as fallback configuration.
- */
+/// @brief   Declaration of GPIOs that can be used as ADC channels
+///
+/// ADC_GPIOS is defined in board-specific peripheral configuration. Since
+/// ADC_GPIOS must be defined even if there are no ADC channels, an empty
+/// list definition is done here as fallback configuration.
 #ifndef ADC_GPIOS
 #define ADC_GPIOS   { }
 #endif
 
-/**
- * @brief   Static array with declared ADC channels
- */
+/// @brief   Static array with declared ADC channels
 static const gpio_t adc_channels[] = ADC_GPIOS;
 
-/**
- * @brief Number of GPIOs declared as ADC channels
- *
- * The number of GPIOs that are declared as ADC channels is determined from
- * the ADC_GPIOS definition.
- *
- * @note ADC_NUMOF definition must not be changed.
- */
+/// @brief Number of GPIOs declared as ADC channels
+///
+/// The number of GPIOs that are declared as ADC channels is determined from
+/// the ADC_GPIOS definition.
+///
+/// @note ADC_NUMOF definition must not be changed.
 #define ADC_NUMOF   ARRAY_SIZE(adc_channels)
-/** @} */
+/// @}
 
-/**
- * @name    DAC configuration
- * @{
- */
+/// @name    DAC configuration
+/// @{
 
-/**
- * @brief   Declaration of GPIOs that can be used as DAC channels
- *
- * DAC_GPIOS is defined in board-specific peripheral configuration. Since
- * DAC_GPIOS must be defined even if there are no DAC channels, an empty
- * list definition is done here as fallback configuration.
- */
+/// @brief   Declaration of GPIOs that can be used as DAC channels
+///
+/// DAC_GPIOS is defined in board-specific peripheral configuration. Since
+/// DAC_GPIOS must be defined even if there are no DAC channels, an empty
+/// list definition is done here as fallback configuration.
 #ifndef DAC_GPIOS
 #define DAC_GPIOS   { }
 #endif
 
-/**
- * @brief   Static array with declared DAC channels
- */
+/// @brief   Static array with declared DAC channels
 static const gpio_t dac_channels[] = DAC_GPIOS;
 
-/**
- * @brief Number of GPIOs declared as DAC channels
- *
- * The number of GPIOs that are declared as DAC channels is determined from
- * the DAC_GPIOS definition.
- *
- * @note DAC_NUMOF definition must not be changed.
- */
+/// @brief Number of GPIOs declared as DAC channels
+///
+/// The number of GPIOs that are declared as DAC channels is determined from
+/// the DAC_GPIOS definition.
+///
+/// @note DAC_NUMOF definition must not be changed.
 #define DAC_NUMOF   ARRAY_SIZE(dac_channels)
-/** @} */
+/// @}
 
-/**
- * @name   I2C configuration
- * @{
- */
+/// @name   I2C configuration
+/// @{
 
 #if defined(I2C0_SCL) && !defined(I2C0_SCL_PULLUP)
-/** Define SCL pullup enabled by default */
+/// Define SCL pullup enabled by default
 #define I2C0_SCL_PULLUP true
 #endif
 
 #if defined(I2C0_SDA) && !defined(I2C0_SDA_PULLUP)
-/** Define SDA pullup enabled by default */
+/// Define SDA pullup enabled by default
 #define I2C0_SDA_PULLUP true
 #endif
 
 #if (SOC_I2C_NUM > 1) && defined(I2C1_SCL) && !defined(I2C1_SCL_PULLUP)
-/** Define SCL pullup enabled by default */
+/// Define SCL pullup enabled by default
 #define I2C1_SCL_PULLUP true
 #endif
 
 #if (SOC_I2C_NUM > 1) && defined(I2C1_SDA) && !defined(I2C1_SDA_PULLUP)
-/** Define SDA pullup enabled by default */
+/// Define SDA pullup enabled by default
 #define I2C1_SDA_PULLUP true
 #endif
 
-/**
- * @brief   Static array with configuration for declared I2C devices
- */
+/// @brief   Static array with configuration for declared I2C devices
 static const i2c_conf_t i2c_config[] = {
 #if defined(I2C0_SCL) && defined(I2C0_SDA) && defined(I2C0_SPEED)
     {
@@ -159,54 +135,40 @@ static const i2c_conf_t i2c_config[] = {
 #endif
 };
 
-/**
- * @brief Number of I2C interfaces
- *
- * The number of I2C interfaces is determined from board-specific peripheral
- * definitions of I2Cn_SPEED, I2Cn_SCK, and I2Cn_SDA.
- *
- * @note I2C_NUMOF definition must not be changed.
- */
+/// @brief Number of I2C interfaces
+///
+/// The number of I2C interfaces is determined from board-specific peripheral
+/// definitions of I2Cn_SPEED, I2Cn_SCK, and I2Cn_SDA.
+///
+/// @note I2C_NUMOF definition must not be changed.
 #define I2C_NUMOF   ARRAY_SIZE(i2c_config)
 
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 
-/**
- * @brief   GPIOs used as channels for the according PWM device
- */
+/// @brief   GPIOs used as channels for the according PWM device
 #ifdef PWM0_GPIOS
 static const gpio_t pwm0_gpios[] = PWM0_GPIOS;
 #endif
 
-/**
- * @brief   GPIOs used as channels for the according PWM device
- */
+/// @brief   GPIOs used as channels for the according PWM device
 #ifdef PWM1_GPIOS
 static const gpio_t pwm1_gpios[] = PWM1_GPIOS;
 #endif
 
-/**
- * @brief   GPIOs used as channels for the according PWM device
- */
+/// @brief   GPIOs used as channels for the according PWM device
 #ifdef PWM2_GPIOS
 static const gpio_t pwm2_gpios[] = PWM2_GPIOS;
 #endif
 
-/**
- * @brief   GPIOs used as channels for the according PWM device
- */
+/// @brief   GPIOs used as channels for the according PWM device
 #ifdef PWM3_GPIOS
 static const gpio_t pwm3_gpios[] = PWM3_GPIOS;
 #endif
 
-/**
- * @brief   PWM device configuration based on defined PWM channel GPIOs
- */
+/// @brief   PWM device configuration based on defined PWM channel GPIOs
 static const pwm_config_t pwm_config[] =
 {
 #ifdef PWM0_GPIOS
@@ -255,59 +217,47 @@ static const pwm_config_t pwm_config[] =
 #endif
 };
 
-/**
- * @brief   Number of PWM devices
- *
- * The number of PWM devices is determined from the PWM device configuration.
- *
- * @note PWM_NUMOF definition must not be changed.
- */
+/// @brief   Number of PWM devices
+///
+/// The number of PWM devices is determined from the PWM device configuration.
+///
+/// @note PWM_NUMOF definition must not be changed.
 #define PWM_NUMOF   ARRAY_SIZE(pwm_config)
 
-/** @} */
+/// @}
 
-/**
- * @name    RMT configuration
- * @{
- */
+/// @name    RMT configuration
+/// @{
 
-/**
- * @brief   RMT channel configuration
- *
- * For the moment, the only RMT channel configuration used is for the WS2812
- * driver. To override this default configuration by a board definition, add
- * ```
- * #define HAVE_RMT_CHANNEL_CONFIG
- * ```
- * before including this file and define an according `rmt_channel_config`
- * after including this file.
- */
+/// @brief   RMT channel configuration
+///
+/// For the moment, the only RMT channel configuration used is for the WS2812
+/// driver. To override this default configuration by a board definition, add
+/// ```
+/// #define HAVE_RMT_CHANNEL_CONFIG
+/// ```
+/// before including this file and define an according `rmt_channel_config`
+/// after including this file.
 #ifndef HAVE_RMT_CHANNEL_CONFIG
 static const rmt_channel_config_t rmt_channel_config[] = {
 #ifdef WS281X_PARAM_PIN
     { 0, WS281X_PARAM_PIN },
 #else
-    /* default for boards that don't define WS281X_PARAM_PIN */
+    // default for boards that don't define WS281X_PARAM_PIN
     { 0, GPIO0 },
 #endif
 };
 #endif
 
-/**
- * @brief   Number of RMT channels
- */
+/// @brief   Number of RMT channels
 #define RMT_CH_NUMOF    ARRAY_SIZE(rmt_channel_config)
 
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 
-/**
- * @brief   Static array with configuration for declared SPI devices
- */
+/// @brief   Static array with configuration for declared SPI devices
 static const spi_conf_t spi_config[] = {
 #if defined(SPI0_CTRL)
     {
@@ -329,29 +279,23 @@ static const spi_conf_t spi_config[] = {
 #endif
 };
 
-/**
- * @brief Number of SPI interfaces
- *
- * The number of SPI interfaces is determined from board-specific peripheral
- * definitions of SPIn_*.
- *
- * @note SPI_NUMOF definition must not be changed.
- */
+/// @brief Number of SPI interfaces
+///
+/// The number of SPI interfaces is determined from board-specific peripheral
+/// definitions of SPIn_*.
+///
+/// @note SPI_NUMOF definition must not be changed.
 #define SPI_NUMOF   ARRAY_SIZE(spi_config)
 
 #if IS_USED(MODULE_PERIPH_SPI)
 static_assert(SPI_NUMOF != 0, "No SPI devices defined");
 #endif
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 
-/**
- * @brief   Static array with configuration for declared UART devices
- */
+/// @brief   Static array with configuration for declared UART devices
 static const uart_conf_t uart_config[] = {
     {
         .txd = UART0_TXD,
@@ -371,28 +315,22 @@ static const uart_conf_t uart_config[] = {
 #endif
 };
 
-/**
- * @brief Number of UART interfaces
- *
- * The number of UART interfaces is determined from board-specific peripheral
- * definitions of UARTn_*.
- *
- * @note UART_NUMOF definition must not be changed.
- */
+/// @brief Number of UART interfaces
+///
+/// The number of UART interfaces is determined from board-specific peripheral
+/// definitions of UARTn_*.
+///
+/// @note UART_NUMOF definition must not be changed.
 #define UART_NUMOF  ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef SOC_USB_OTG_SUPPORTED
-/**
- * @name   USB device configuration
- * @{
- */
+/// @name   USB device configuration
+/// @{
 
 #include "usbdev_esp32.h"
 
-/**
- * @brief   Static array with USB OTG FS configuration
- */
+/// @brief   Static array with USB OTG FS configuration
 static const dwc2_usb_otg_fshs_config_t dwc2_usb_otg_fshs_config[] = {
     {
         .periph = USB_OTG_FS_PERIPH_BASE,
@@ -401,16 +339,14 @@ static const dwc2_usb_otg_fshs_config_t dwc2_usb_otg_fshs_config[] = {
     }
 };
 
-/**
- * @brief Number of USB OTG FS interfaces
- */
+/// @brief Number of USB OTG FS interfaces
 #define USBDEV_NUMOF    ARRAY_SIZE(dwc2_usb_otg_fshs_config)
 
-/** @} */
-#endif /* SOC_USB_OTG_SUPPORTED */
+/// @}
+#endif // SOC_USB_OTG_SUPPORTED
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

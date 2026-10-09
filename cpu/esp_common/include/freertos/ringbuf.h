@@ -1,11 +1,7 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * FreeRTOS to RIOT-OS adaption module for source code compatibility
- */
+// FreeRTOS to RIOT-OS adaption module for source code compatibility
 
 #pragma once
 
@@ -47,4 +43,4 @@ void vRingbufferReturnItemFromISR(RingbufHandle_t xRingbuffer, void *pvItem,
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

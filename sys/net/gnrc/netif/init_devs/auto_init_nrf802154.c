@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief   Auto initialization the nRF52840 radio in IEEE802.15.4 mode
- *
- * @author  Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief   Auto initialization the nRF52840 radio in IEEE802.15.4 mode
+///
+/// @author  Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "log.h"
 #include "board.h"
@@ -24,10 +20,8 @@
 #include "opendsme/opendsme.h"
 #endif
 
-/**
- * @brief   Define stack parameters for the MAC layer thread
- * @{
- */
+/// @brief   Define stack parameters for the MAC layer thread
+/// @{
 #ifndef NRF802154_MAC_STACKSIZE
 #define NRF802154_MAC_STACKSIZE     (IEEE802154_STACKSIZE_DEFAULT)
 #endif
@@ -35,15 +29,14 @@
 #ifndef NRF802154_MAC_PRIO
 #define NRF802154_MAC_PRIO          (GNRC_NETIF_PRIO)
 #endif
-/** @} */
+/// @}
 
 static char _stack[NRF802154_MAC_STACKSIZE];
 static gnrc_netif_t _netif;
 
 static netdev_ieee802154_submac_t nrf802154_netdev;
 
-void auto_init_nrf802154(void)
-{
+void auto_init_nrf802154(void) {
     LOG_DEBUG("[auto_init_netif] initializing nrf802154\n");
 
     netdev_register(&nrf802154_netdev.dev.netdev, NETDEV_NRF802154, 0);
@@ -51,9 +44,8 @@ void auto_init_nrf802154(void)
     nrf802154_init();
 #if IS_USED(MODULE_OPENDSME)
         nrf802154_hal_setup(&nrf802154_netdev.submac.dev);
-        /* NOTE: This casts a Radio HAL descriptor to a netdev and should be
-         * addressed as soon as the GNRC<->netdev dependency is removed.
-         */
+        // NOTE: This casts a Radio HAL descriptor to a netdev and should be
+        // addressed as soon as the GNRC<->netdev dependency is removed.
         gnrc_netif_opendsme_create(&_netif, _stack,
                                  NRF802154_MAC_STACKSIZE,
                                  NRF802154_MAC_PRIO, "nrf802154",
@@ -67,4 +59,4 @@ void auto_init_nrf802154(void)
                                  &nrf802154_netdev.dev.netdev);
 #endif
 }
-/** @} */
+/// @}

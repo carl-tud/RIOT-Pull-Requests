@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Technische Universität Braunschweig
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Technische Universität Braunschweig
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sen5x
- * @{
- *
- * @file
- * @brief       sen5x example application
- *
- * @author      Daniel Prigoshij <prigoshi@ibr.cs.tu-bs.de>
- *
- * @}
- */
+/// @ingroup     drivers_sen5x
+/// @{
+///
+/// @file
+/// @brief       sen5x example application
+///
+/// @author      Daniel Prigoshij <prigoshi@ibr.cs.tu-bs.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "sen5x.h"
@@ -27,8 +23,7 @@ sen5x_t device;
 sen5x_params_t para = SEN5X_PARAMS;
 sen5x_measurement_t values;
 
-int main(void)
-{
+int main(void) {
     int ret = sen5x_init(&device, &para);
     if (ret > 0) {
         printf("[ERROR] Initialization of SEN5X sensor failed!\n");

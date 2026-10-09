@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test for srf04 ultra sonic range finder driver
- *
- * @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test for srf04 ultra sonic range finder driver
+///
+/// @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +18,7 @@
 #include "srf04_params.h"
 #include "srf04.h"
 
-int main(void)
-{
+int main(void) {
     puts("SRF04 range finder example");
 
     srf04_t dev;

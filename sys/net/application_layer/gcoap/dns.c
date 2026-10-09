@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -30,63 +26,49 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief   Context for a DNS query-response-pair.
- */
+/// @brief   Context for a DNS query-response-pair.
 typedef struct {
-    /**
-     * @brief   Synchronization mutex to wait for response
-     */
+    /// @brief   Synchronization mutex to wait for response
     mutex_t resp_wait;
-    /**
-     * @brief The CoAP request packet
-     *
-     * Only needs to have coap_pkt_t::payload and coap_pkt_t::payload_len
-     * initialized.
-     */
+    /// @brief The CoAP request packet
+    ///
+    /// Only needs to have coap_pkt_t::payload and coap_pkt_t::payload_len
+    /// initialized.
     coap_pkt_t *pkt;
 #if IS_USED(MODULE_DNS_CACHE) || defined(DOXYGEN)
-    /**
-     * @brief   The queried hostname
-     *
-     * Only required for DNS caching and thus only available with module @ref net_dns_cache
-     */
+    /// @brief   The queried hostname
+    ///
+    /// Only required for DNS caching and thus only available with module @ref net_dns_cache
     const char *domain_name;
 #endif
-    void *dns_buf;          /**< The buffer for the DNS message exchange */
-    void *addr_out;         /**< Pointer to the resulting address */
-    /**
-     * @brief   Status for the DNS message exchange
-     *
-     * - length of _req_ctx_t::addr_out in bytes on success
-     * - -EBADMSG, when receiving erroneous response or response containing
-     * - -EDESTADDRREQ, if CoAP response was received from an unexpected remote.
-     * - -EINVAL, when block-wise transfer can not be completed.
-     * - -ENOBUFS, if length of received CoAP body is greater than
-     *   @ref CONFIG_DNS_MSG_LEN.
-     * - -ENOMSG, if CoAP response did not contain a DNS response.
-     * - -ETIMEDOUT, if CoAP request timed out.
-     */
+    void *dns_buf;          ///< The buffer for the DNS message exchange
+    void *addr_out;         ///< Pointer to the resulting address
+    /// @brief   Status for the DNS message exchange
+    ///
+    /// - length of _req_ctx_t::addr_out in bytes on success
+    /// - -EBADMSG, when receiving erroneous response or response containing
+    /// - -EDESTADDRREQ, if CoAP response was received from an unexpected remote.
+    /// - -EINVAL, when block-wise transfer can not be completed.
+    /// - -ENOBUFS, if length of received CoAP body is greater than
+    ///   @ref CONFIG_DNS_MSG_LEN.
+    /// - -ENOMSG, if CoAP response did not contain a DNS response.
+    /// - -ETIMEDOUT, if CoAP request timed out.
     int res;
-    uint8_t dns_buf_len;    /**< Length of _req_ctx_t::dns_buf */
-    int8_t family;          /**< Address family to resolve */
-    /**
-     * @brief The current block number for block-wise transfer
-     *
-     * Leave unset on function call.
-     */
+    uint8_t dns_buf_len;    ///< Length of _req_ctx_t::dns_buf
+    int8_t family;          ///< Address family to resolve
+    /// @brief The current block number for block-wise transfer
+    ///
+    /// Leave unset on function call.
     uint8_t cur_blk_num;
 #if IS_USED(MODULE_GCOAP_DTLS) || defined(DOXYGEN)
-    /**
-     * @brief   Request tag to rule out potential request reordering attacks
-     */
+    /// @brief   Request tag to rule out potential request reordering attacks
     uint16_t req_tag;
 #endif
 } _req_ctx_t;
 
 typedef struct {
-    credman_type_t type;    /**< Type of the credential */
-    credman_tag_t tag;      /**< Tag of the credential */
+    credman_type_t type;    ///< Type of the credential
+    credman_tag_t tag;      ///< Tag of the credential
 } _cred_t;
 
 static mutex_t _client_mutex = MUTEX_INIT;
@@ -112,8 +94,7 @@ static int _dns_query(const char *domain_name, _req_ctx_t *req_ctx);
 static ssize_t _send(const void *buf, size_t len, const sock_udp_ep_t *remote,
                      bool lock_resp_wait, _req_ctx_t *context, gcoap_socket_type_t tl_type);
 
-int gcoap_dns_query(const char *domain_name, void *addr_out, int family)
-{
+int gcoap_dns_query(const char *domain_name, void *addr_out, int family) {
     int res;
 
     if ((res = dns_cache_query(domain_name, addr_out, family)) > 0) {
@@ -135,7 +116,7 @@ int gcoap_dns_query(const char *domain_name, void *addr_out, int family)
     pdu.payload_len = sizeof(coap_buf);
     res = _dns_query(domain_name, &req_ctx);
     if (res > 0) {
-        /* wait for req_ctx.addr_out to be set */
+        // wait for req_ctx.addr_out to be set
         mutex_lock(&req_ctx.resp_wait);
         res = req_ctx.res;
     }
@@ -143,8 +124,7 @@ int gcoap_dns_query(const char *domain_name, void *addr_out, int family)
     return res;
 }
 
-int gcoap_dns_server_uri_set(const char *uri)
-{
+int gcoap_dns_server_uri_set(const char *uri) {
     int res;
 
     if (!uri) {
@@ -154,11 +134,11 @@ int gcoap_dns_server_uri_set(const char *uri)
         return 0;
     }
     if (IS_USED(MODULE_GCOAP_DTLS)) {
-        /* reinitialize request tag */
+        // reinitialize request tag
         _req_tag = (uint16_t)random_uint32();
     }
     if ((strncmp(uri, "coap:", sizeof("coap:") - 1) != 0) &&
-        /* if gcoap_dtls is used, URIs not starting with coaps: are also invalid */
+        // if gcoap_dtls is used, URIs not starting with coaps: are also invalid
         (!IS_USED(MODULE_GCOAP_DTLS) || (strncmp(uri, "coaps:", sizeof("coaps:") - 1) != 0))) {
         return -EINVAL;
     }
@@ -176,22 +156,20 @@ int gcoap_dns_server_uri_set(const char *uri)
     return res;
 }
 
-bool gcoap_dns_server_uri_is_set(void)
-{
+bool gcoap_dns_server_uri_is_set(void) {
     mutex_lock(&_client_mutex);
     bool res = _dns_server_uri_isset();
     mutex_unlock(&_client_mutex);
     return res;
 }
 
-ssize_t gcoap_dns_server_uri_get(char *uri, size_t uri_len)
-{
+ssize_t gcoap_dns_server_uri_get(char *uri, size_t uri_len) {
     ssize_t res = 0;
     mutex_lock(&_client_mutex);
     if (_dns_server_uri_isset()) {
         res = strlen(_uri);
         if ((size_t)(res + 1) > uri_len) {
-            /* account for trailing \0 */
+            // account for trailing \0
             res = -ENOBUFS;
         }
         else {
@@ -202,8 +180,7 @@ ssize_t gcoap_dns_server_uri_get(char *uri, size_t uri_len)
     return res;
 }
 
-void gcoap_dns_cred_reset(void)
-{
+void gcoap_dns_cred_reset(void) {
 #if IS_USED(MODULE_GCOAP_DTLS)
     sock_dtls_t *sock = gcoap_get_sock_dtls();
     for (unsigned i = 0; i < ARRAY_SIZE(_creds); i++) {
@@ -214,8 +191,7 @@ void gcoap_dns_cred_reset(void)
 #endif
 }
 
-int gcoap_dns_cred_add(credman_credential_t *creds)
-{
+int gcoap_dns_cred_add(credman_credential_t *creds) {
     _cred_t *c = NULL;
 
     if (!IS_USED(MODULE_GCOAP_DTLS)) {
@@ -238,14 +214,14 @@ int gcoap_dns_cred_add(credman_credential_t *creds)
     }
     int res = credman_add(creds);
     if ((res < 0) && (res != CREDMAN_EXIST)) {
-        /* ignore duplicate credentials */
+        // ignore duplicate credentials
         DEBUG("gcoap_dns: cannot add credential to system: %d\n", res);
         return -EBADF;
     }
     if (res == CREDMAN_OK) {
 #if IS_USED(MODULE_GCOAP_DTLS)
-        /* functions used in here are only available with module gcoap_dtls, so guard this
-         * section */
+        // functions used in here are only available with module gcoap_dtls, so guard this
+        // section
         sock_dtls_t *gcoap_sock_dtls = gcoap_get_sock_dtls();
 
         res = sock_dtls_add_credential(gcoap_sock_dtls, creds->tag);
@@ -260,8 +236,7 @@ int gcoap_dns_cred_add(credman_credential_t *creds)
     return 0;
 }
 
-void gcoap_dns_cred_remove(credman_tag_t tag, credman_type_t type)
-{
+void gcoap_dns_cred_remove(credman_tag_t tag, credman_type_t type) {
 #if IS_USED(MODULE_GCOAP_DTLS)
     sock_dtls_t *sock = gcoap_get_sock_dtls();
     for (unsigned i = 0; i < ARRAY_SIZE(_creds); i++) {
@@ -276,8 +251,7 @@ void gcoap_dns_cred_remove(credman_tag_t tag, credman_type_t type)
 #endif
 }
 
-void gcoap_dns_server_proxy_reset(void)
-{
+void gcoap_dns_server_proxy_reset(void) {
     if (IS_USED(MODULE_GCOAP_DNS_PROXIED)) {
         mutex_lock(&_client_mutex);
         _proxy[0] = '\0';
@@ -285,8 +259,7 @@ void gcoap_dns_server_proxy_reset(void)
     }
 }
 
-int gcoap_dns_server_proxy_set(const char *proxy)
-{
+int gcoap_dns_server_proxy_set(const char *proxy) {
     int res;
 
     if (!IS_USED(MODULE_GCOAP_DNS_PROXIED)) {
@@ -303,8 +276,7 @@ int gcoap_dns_server_proxy_set(const char *proxy)
     return res;
 }
 
-ssize_t gcoap_dns_server_proxy_get(char *proxy, size_t proxy_len)
-{
+ssize_t gcoap_dns_server_proxy_get(char *proxy, size_t proxy_len) {
     ssize_t res = 0;
     mutex_lock(&_client_mutex);
     if (_dns_server_uri_isset()) {
@@ -321,14 +293,12 @@ ssize_t gcoap_dns_server_proxy_get(char *proxy, size_t proxy_len)
     return res;
 }
 
-static inline bool _dns_server_uri_isset(void)
-{
+static inline bool _dns_server_uri_isset(void) {
     return _uri[0] != '\0';
 }
 
 #if IS_USED(MODULE_GCOAP_DTLS)
-static void _remove_cred(sock_dtls_t *sock, _cred_t *cred)
-{
+static void _remove_cred(sock_dtls_t *sock, _cred_t *cred) {
     sock_dtls_remove_credential(sock, cred->tag);
     credman_delete(cred->tag, cred->type);
     cred->type = CREDMAN_TYPE_EMPTY;
@@ -336,18 +306,16 @@ static void _remove_cred(sock_dtls_t *sock, _cred_t *cred)
 }
 #endif
 
-static inline bool _is_proxied(void)
-{
+static inline bool _is_proxied(void) {
     return IS_USED(MODULE_GCOAP_DNS_PROXIED) && _proxy[0] != '\0';
 }
 
-static int _add_init_block2_opt(coap_pkt_t *pdu)
-{
+static int _add_init_block2_opt(coap_pkt_t *pdu) {
     if (CONFIG_GCOAP_DNS_PDU_BUF_SIZE < CONFIG_DNS_MSG_LEN) {
-        /* If our largest DNS message fits in the DNS PDU BUF, there is no point in sending Block2
-         * in the initial message---a huge response might still overwhelm our PDU buffer, but if
-         * that happens we could not have processed it as a DNS message if it came in in fragments
-         * either. */
+        // If our largest DNS message fits in the DNS PDU BUF, there is no point in sending Block2
+        // in the initial message---a huge response might still overwhelm our PDU buffer, but if
+        // that happens we could not have processed it as a DNS message if it came in in fragments
+        // either.
         coap_block1_t block;
 
         coap_block_object_init(&block, 0, CONFIG_GCOAP_DNS_BLOCK_SIZE, 0);
@@ -356,16 +324,14 @@ static int _add_init_block2_opt(coap_pkt_t *pdu)
     return 0;
 }
 
-static int _add_proxy_uri_opt(coap_pkt_t *pdu, const char *proxy_uri)
-{
+static int _add_proxy_uri_opt(coap_pkt_t *pdu, const char *proxy_uri) {
     if (_is_proxied()) {
         return coap_opt_add_proxy_uri(pdu, proxy_uri);
     }
     return 0;
 }
 
-static int _add_req_tag_opt(coap_pkt_t *pdu, _req_ctx_t *context)
-{
+static int _add_req_tag_opt(coap_pkt_t *pdu, _req_ctx_t *context) {
 #if IS_USED(MODULE_GCOAP_DTLS)
     if (CONFIG_GCOAP_DNS_PDU_BUF_SIZE < CONFIG_DNS_MSG_LEN) {
         return coap_opt_add_opaque(pdu, 292, (uint8_t *)&context->req_tag,
@@ -378,13 +344,12 @@ static int _add_req_tag_opt(coap_pkt_t *pdu, _req_ctx_t *context)
     return 0;
 }
 
-static int _add_remaining_options(coap_pkt_t *pdu, const char *proxy_uri, _req_ctx_t *context)
-{
+static int _add_remaining_options(coap_pkt_t *pdu, const char *proxy_uri, _req_ctx_t *context) {
     if (_add_proxy_uri_opt(pdu, proxy_uri) < 0) {
         DEBUG("gcoap_dns: unable to add Proxy-URI option to request\n");
         return -ENOBUFS;
     }
-    /* add request tag to distinguish multiple blockwise requests on-the-air */
+    // add request tag to distinguish multiple blockwise requests on-the-air
     if (_add_req_tag_opt(pdu, context) < 0) {
         DEBUG("gcoap_dns: unable to add Request-Tag option to request");
         return -ENOBUFS;
@@ -393,8 +358,7 @@ static int _add_remaining_options(coap_pkt_t *pdu, const char *proxy_uri, _req_c
 }
 
 static size_t _dns_msg_compose(void *dns_buf, const char *domain_name,
-                               int family)
-{
+                               int family) {
     return dns_msg_compose_query(dns_buf, domain_name, 0, family);
 }
 
@@ -472,8 +436,7 @@ static int _set_remote(const uri_parser_result_t *uri_comp,
     return 0;
 }
 
-static int _gen_uri(uri_parser_result_t *uri_comp)
-{
+static int _gen_uri(uri_parser_result_t *uri_comp) {
     const char *uri = (_is_proxied()) ? _proxy : _uri;
     int res = uri_parser_process_string(uri_comp, uri);
 
@@ -483,8 +446,7 @@ static int _gen_uri(uri_parser_result_t *uri_comp)
     return strlen(uri);
 }
 
-static ssize_t _req_init(coap_pkt_t *pdu, uri_parser_result_t *uri_comp, bool con)
-{
+static ssize_t _req_init(coap_pkt_t *pdu, uri_parser_result_t *uri_comp, bool con) {
     gcoap_req_init_path_buffer(pdu, pdu->payload, pdu->payload_len, COAP_METHOD_FETCH,
                                uri_comp->path, uri_comp->path_len);
     if (con) {
@@ -506,8 +468,7 @@ static ssize_t _req_init(coap_pkt_t *pdu, uri_parser_result_t *uri_comp, bool co
 }
 
 static int _do_block(coap_pkt_t *pdu, const sock_udp_ep_t *remote,
-                                _req_ctx_t *context)
-{
+                                _req_ctx_t *context) {
     gcoap_socket_type_t tl_type;
     ssize_t len;
     bool more;
@@ -555,8 +516,7 @@ static int _do_block(coap_pkt_t *pdu, const sock_udp_ep_t *remote,
     return (int)len;
 }
 
-static ssize_t _req(_req_ctx_t *context)
-{
+static ssize_t _req(_req_ctx_t *context) {
     coap_pkt_t *pdu = context->pkt;
     ssize_t len;
 
@@ -590,8 +550,7 @@ static ssize_t _req(_req_ctx_t *context)
     }
 }
 
-static int _dns_query(const char *domain_name, _req_ctx_t *req_ctx)
-{
+static int _dns_query(const char *domain_name, _req_ctx_t *req_ctx) {
     int res;
 
     assert(domain_name != NULL);
@@ -620,8 +579,7 @@ static int _dns_query(const char *domain_name, _req_ctx_t *req_ctx)
     return res;
 }
 
-static const char *_domain_name_from_ctx(_req_ctx_t *context)
-{
+static const char *_domain_name_from_ctx(_req_ctx_t *context) {
 #if IS_USED(MODULE_DNS_CACHE)
     return context->domain_name;
 #else
@@ -631,8 +589,7 @@ static const char *_domain_name_from_ctx(_req_ctx_t *context)
 }
 
 static void _resp_handler(const gcoap_request_memo_t *memo, coap_pkt_t *pdu,
-                          const sock_udp_ep_t *remote)
-{
+                          const sock_udp_ep_t *remote) {
     coap_block1_t block;
     _req_ctx_t *context = memo->context;
     void *data;
@@ -760,11 +717,10 @@ unlock:
 }
 
 static ssize_t _send(const void *buf, size_t len, const sock_udp_ep_t *remote,
-                     bool lock_resp_wait, _req_ctx_t *context, gcoap_socket_type_t tl_type)
-{
+                     bool lock_resp_wait, _req_ctx_t *context, gcoap_socket_type_t tl_type) {
     if (lock_resp_wait) {
         mutex_lock(&context->resp_wait);
     }
     return gcoap_req_send(buf, len, remote, NULL, _resp_handler, context, tl_type);
 }
-/** @} */
+/// @}

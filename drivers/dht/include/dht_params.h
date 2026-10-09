@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_dht
- *
- * @{
- * @file
- * @brief       Default configuration for DHT devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_dht
+///
+/// @{
+/// @file
+/// @brief       Default configuration for DHT devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "dht.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the DHT devices
- * @{
- */
+/// @name    Set default configuration parameters for the DHT devices
+/// @{
 #ifndef DHT_PARAM_PIN
 #define DHT_PARAM_PIN               (GPIO_PIN(0, 0))
 #endif
@@ -44,19 +38,15 @@ extern "C" {
 #ifndef DHT_SAULINFO
 #define DHT_SAULINFO                { .name = "dht" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure DHT devices
- */
+/// @brief   Configure DHT devices
 static const dht_params_t dht_params[] =
 {
     DHT_PARAMS
 };
 
-/**
- * @brief   Allocate and configure entries to the SAUL registry
- */
+/// @brief   Allocate and configure entries to the SAUL registry
 static const saul_reg_info_t dht_saul_info[] =
 {
     DHT_SAULINFO
@@ -66,4 +56,4 @@ static const saul_reg_info_t dht_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

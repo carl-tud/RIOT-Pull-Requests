@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_OUTPUTTER_H
 #define EMBUNIT_OUTPUTTER_H
 
@@ -48,4 +46,4 @@ struct __Outputter {
 }
 #endif
 
-#endif /* EMBUNIT_OUTPUTTER_H */
+#endif // EMBUNIT_OUTPUTTER_H

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "map.h"
 
@@ -19,22 +17,21 @@
         tests_##TEST_SUITE(); \
     } while (0);
 
-int main(void)
-{
+int main(void) {
     test_utils_interactive_sync();
 
 #if MODULE_ZTIMER_USEC || MODULE_ZTIMER_MSEC || MODULE_ZTIMER_SEC
-    /* auto_init is disabled, but some modules depends on this module being initialized */
+    // auto_init is disabled, but some modules depends on this module being initialized
     ztimer_init();
 #endif
 
 #if MODULE_ZTIMER64_USEC || MODULE_ZTIMER64_MSEC || MODULE_ZTIMER64_SEC
-    /* auto_init is disabled, but some modules depends on this module being initialized */
+    // auto_init is disabled, but some modules depends on this module being initialized
     ztimer64_init();
 #endif
 
 #if IS_USED(MODULE_XTIMER) && !IS_USED(MODULE_ZTIMER_XTIMER_COMPAT)
-    /* auto_init is disabled, but some modules depends on this module being initialized */
+    // auto_init is disabled, but some modules depends on this module being initialized
     xtimer_init();
 #endif
 

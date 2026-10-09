@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2026 Baptiste Le Duc <baptiste.leduc@etik.com>
- * SPDX-FileCopyrightText: 2026 Léandre Le Duc <leandre.leduc38@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Baptiste Le Duc <baptiste.leduc@etik.com>
+// SPDX-FileCopyrightText: 2026 Léandre Le Duc <leandre.leduc38@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the QMA6100P accelerometer driver
- *
- * @author      Baptiste Le Duc <baptiste.leduc@etik.com>
- * @author      Léandre Le Duc <leandre.leduc38@gmail.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the QMA6100P accelerometer driver
+///
+/// @author      Baptiste Le Duc <baptiste.leduc@etik.com>
+/// @author      Léandre Le Duc <leandre.leduc38@gmail.com>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -37,35 +33,32 @@ static const qma6100p_odr_t rates[] = {
 };
 static const unsigned expect_hz[] = { 12, 25, 100, 200, 400, 800, 1600 };
 
-/* waited on by the reader thread, posted by the data-ready ISR to wake it */
+// waited on by the reader thread, posted by the data-ready ISR to wake it
 static sema_t data_ready = SEMA_CREATE_LOCKED();
 
-/* incremented in ISR context on every data-ready interrupt */
+// incremented in ISR context on every data-ready interrupt
 static volatile unsigned irq_count;
 
 static char reader_stack[THREAD_STACKSIZE_MAIN];
 
 static qma6100p_t dev;
 
-static void callback_stream(void *args)
-{
+static void callback_stream(void *args) {
     (void)args;
     irq_count++;
-    /* cap at 1 to make the semaphore binary */
+    // cap at 1 to make the semaphore binary
     if (sema_get_value(&data_ready) == 0) {
         sema_post(&data_ready);
     }
 }
 
-static void callback(void *args)
-{
+static void callback(void *args) {
     (void)args;
     irq_count++;
 }
 
-/* Wakes on each data-ready signal and reads the sample over I2C. */
-static void *reader_thread(void *arg)
-{
+// Wakes on each data-ready signal and reads the sample over I2C.
+static void *reader_thread(void *arg) {
     (void)arg;
     qma6100p_data_t data;
 
@@ -73,7 +66,7 @@ static void *reader_thread(void *arg)
         sema_wait(&data_ready);
 
         int res = qma6100p_read(&dev, &data);
-        /* interrupt-driven: a wake must always carry fresh data */
+        // interrupt-driven: a wake must always carry fresh data
         assert(res != QMA6100P_NO_NEW_DATA);
 
         if (res == QMA6100P_DATA_READY) {
@@ -87,21 +80,19 @@ static void *reader_thread(void *arg)
     return NULL;
 }
 
-/* Window over which the average data-ready frequency is observed */
+// Window over which the average data-ready frequency is observed
 #define MEASURE_WINDOW_SEC 4
 
-static inline unsigned int _measure_irq_hz(void)
-{
+static inline unsigned int _measure_irq_hz(void) {
     unsigned before = irq_count;
     ztimer_sleep(ZTIMER_SEC, MEASURE_WINDOW_SEC);
     return (irq_count - before + (MEASURE_WINDOW_SEC / 2)) / MEASURE_WINDOW_SEC;
 }
 
-/* (Re)initialize the device at @p rate and enable the data-ready interrupt on
- * INT1. Each test calls this so it does not depend on any prior test state. */
-static int _setup(qma6100p_odr_t rate, qma6100p_int_cb_t cb)
-{
-    qma6100p_params_t p = *qma6100p_params; /* mutable copy */
+// (Re)initialize the device at @p rate and enable the data-ready interrupt on
+// INT1. Each test calls this so it does not depend on any prior test state.
+static int _setup(qma6100p_odr_t rate, qma6100p_int_cb_t cb) {
+    qma6100p_params_t p = *qma6100p_params; // mutable copy
     p.rate = rate;
 
     int res = qma6100p_init(&dev, &p);
@@ -116,8 +107,7 @@ static int _setup(qma6100p_odr_t rate, qma6100p_int_cb_t cb)
     return qma6100p_set_data_ready_int(&dev, QMA6100P_INT1, cb, NULL);
 }
 
-static int test_init(void)
-{
+static int test_init(void) {
     int res;
     printf("[init] I2C_DEV(%d) addr 0x%02x ... ",
            (int)qma6100p_params[0].i2c, qma6100p_params[0].addr);
@@ -134,8 +124,7 @@ static int test_init(void)
     return res;
 }
 
-static int test_data_ready(void)
-{
+static int test_data_ready(void) {
     int res;
 
     puts("\n--- data-ready interrupt rate sweep ---");
@@ -154,7 +143,7 @@ static int test_data_ready(void)
         res = -1;
         for (unsigned int try = 0; try < 3; try++) {
             unsigned hz = _measure_irq_hz();
-            /* 5% tolerance (observed ODR drift + 1 count), floored at 1 Hz */
+            // 5% tolerance (observed ODR drift + 1 count), floored at 1 Hz
             unsigned tol = expect_hz[i] / 20;
             if (tol < 1) {
                 tol = 1;
@@ -180,8 +169,7 @@ static int test_data_ready(void)
     return res;
 }
 
-static int test_ulps(void)
-{
+static int test_ulps(void) {
     const qma6100p_odr_t rate = QMA6100P_ODR_100HZ;
     const unsigned expect_hz = 100;
 
@@ -193,7 +181,7 @@ static int test_ulps(void)
         return res;
     }
 
-    /* enter ULPS: IRQs must stop */
+    // enter ULPS: IRQs must stop
     res = qma6100p_set_low_power(&dev);
     if (res < 0) {
         printf("[ULPS] FAILED to enter ULPS (res=%d)\n", res);
@@ -209,7 +197,7 @@ static int test_ulps(void)
         return -1;
     }
 
-    /* wake up: ULPS disables all interrupts, so re-enable data-ready */
+    // wake up: ULPS disables all interrupts, so re-enable data-ready
     res = qma6100p_set_active_mode(&dev);
     if (res < 0) {
         printf("[ULPS] FAILED to exit ULPS (res=%d)\n", res);
@@ -221,12 +209,12 @@ static int test_ulps(void)
         return res;
     }
 
-    /* exiting ULPS does a full reset + re-init: confirm the ODR is restored
-     * and the interrupt fires again */
+    // exiting ULPS does a full reset + re-init: confirm the ODR is restored
+    // and the interrupt fires again
     irq_count = 0;
     unsigned hz_after = _measure_irq_hz();
 
-    unsigned tol = expect_hz / 20; /* 5% tolerance */
+    unsigned tol = expect_hz / 20; // 5% tolerance
     int pass_wake = (hz_after + tol >= expect_hz && hz_after <= expect_hz + tol);
     printf("[ULPS] after wake: %u IRQs/s (expect ~%u) -> %s\n",
            hz_after, expect_hz, pass_wake ? "PASS" : "FAIL");
@@ -237,8 +225,7 @@ static int test_ulps(void)
     return res;
 }
 
-static int test_streaming(void)
-{
+static int test_streaming(void) {
     puts("\n--- interrupt-driven streaming ---");
 
     int res = _setup(QMA6100P_ODR_12HZ5, callback_stream);
@@ -258,8 +245,7 @@ static int test_streaming(void)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     int res;
 
     ztimer_sleep(ZTIMER_SEC, 5);
@@ -279,7 +265,7 @@ int main(void)
         goto out;
     }
 
-    /* run last: the reader thread it spawns runs forever */
+    // run last: the reader thread it spawns runs forever
     res = test_streaming();
     if (res < 0) {
         goto out;

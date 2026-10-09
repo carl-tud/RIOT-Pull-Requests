@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_dfplayer
- * @{
- *
- * @file
- * @brief       Implementation DFPlayer Mini Device Driver
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_dfplayer
+/// @{
+///
+/// @file
+/// @brief       Implementation DFPlayer Mini Device Driver
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 #include <inttypes.h>
@@ -30,8 +26,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-int dfplayer_init(dfplayer_t *dev, const dfplayer_params_t *params)
-{
+int dfplayer_init(dfplayer_t *dev, const dfplayer_params_t *params) {
     if (!dev || !params) {
         return -EINVAL;
     }
@@ -69,8 +64,7 @@ int dfplayer_init(dfplayer_t *dev, const dfplayer_params_t *params)
     return dfplayer_set_volume(dev, params->volume);
 }
 
-dfplayer_source_set_t dfplayer_get_sources(dfplayer_t *dev)
-{
+dfplayer_source_set_t dfplayer_get_sources(dfplayer_t *dev) {
     unsigned state = irq_disable();
     dfplayer_source_set_t result = dev->srcs;
     irq_restore(state);
@@ -78,8 +72,7 @@ dfplayer_source_set_t dfplayer_get_sources(dfplayer_t *dev)
 }
 
 int dfplayer_set_callbacks(dfplayer_t *dev, dfplayer_cb_done_t cb_done,
-                           dfplayer_cb_src_t cb_src)
-{
+                           dfplayer_cb_src_t cb_src) {
     if (!dev) {
         return -EINVAL;
     }
@@ -91,8 +84,7 @@ int dfplayer_set_callbacks(dfplayer_t *dev, dfplayer_cb_done_t cb_done,
     return 0;
 }
 
-int dfplayer_get_state(dfplayer_t *dev, dfplayer_state_t *state)
-{
+int dfplayer_get_state(dfplayer_t *dev, dfplayer_state_t *state) {
     if (!dev || !state) {
         return -EINVAL;
     }
@@ -107,7 +99,7 @@ int dfplayer_get_state(dfplayer_t *dev, dfplayer_state_t *state)
     uint16_t status;
     int retval = dfplayer_query(dev, &status, DFPLAYER_CMD_GET_STATUS);
     if (retval) {
-        /* pass error through */
+        // pass error through
         return retval;
     }
 
@@ -125,8 +117,7 @@ int dfplayer_get_state(dfplayer_t *dev, dfplayer_state_t *state)
     return 0;
 }
 
-int dfplayer_play_file(dfplayer_t *dev, uint8_t folder, uint8_t file)
-{
+int dfplayer_play_file(dfplayer_t *dev, uint8_t folder, uint8_t file) {
     int retval;
     if (!folder || !file || (folder > DFPLAYER_MAX_FOLDER)) {
         return -EINVAL;
@@ -146,8 +137,7 @@ int dfplayer_play_file(dfplayer_t *dev, uint8_t folder, uint8_t file)
     return 0;
 }
 
-int dfplayer_play_from_mp3(dfplayer_t *dev, uint16_t number)
-{
+int dfplayer_play_from_mp3(dfplayer_t *dev, uint16_t number) {
     int retval;
     if (!dev || !number || (number > DFPLAYER_MAX_MP3_FILE)) {
         return -EINVAL;
@@ -167,8 +157,7 @@ int dfplayer_play_from_mp3(dfplayer_t *dev, uint16_t number)
     return 0;
 }
 
-int dfplayer_play_from_advert(dfplayer_t *dev, uint16_t number)
-{
+int dfplayer_play_from_advert(dfplayer_t *dev, uint16_t number) {
     int retval;
     if (!dev || !number || (number > DFPLAYER_MAX_ADVERT_FILE)) {
         return -EINVAL;
@@ -181,8 +170,7 @@ int dfplayer_play_from_advert(dfplayer_t *dev, uint16_t number)
     return retval;
 }
 
-int dfplayer_step(dfplayer_t *dev, int step)
-{
+int dfplayer_step(dfplayer_t *dev, int step) {
     int retval;
     if (!dev) {
         return -EINVAL;
@@ -191,10 +179,9 @@ int dfplayer_step(dfplayer_t *dev, int step)
     mutex_lock(&dev->mutex);
     uint8_t cmd, p1, p2;
     if (dev->file.scheme == DFPLAYER_SCHEME_FOLDER_FILE) {
-        /* Currently using naming scheme <FOLDERNUM>/<FILENUM>.mp3 */
+        // Currently using naming scheme <FOLDERNUM>/<FILENUM>.mp3
         if ((dev->file.file + step < 1) ||
-            (dev->file.file + step > (int)UINT8_MAX))
-        {
+            (dev->file.file + step > (int)UINT8_MAX)) {
             mutex_unlock(&dev->mutex);
             return -ERANGE;
         }
@@ -203,10 +190,9 @@ int dfplayer_step(dfplayer_t *dev, int step)
         p2 = (uint8_t)(dev->file.file + step);
     }
     else {
-        /* Currently using naming scheme MP3/<FILENUM>.mp3 */
+        // Currently using naming scheme MP3/<FILENUM>.mp3
         if ((dev->file.number + step < 1) ||
-            (dev->file.number + step > DFPLAYER_MAX_MP3_FILE))
-        {
+            (dev->file.number + step > DFPLAYER_MAX_MP3_FILE)) {
             mutex_unlock(&dev->mutex);
             return -ERANGE;
         }
@@ -222,11 +208,11 @@ int dfplayer_step(dfplayer_t *dev, int step)
     }
 
     if (dev->file.scheme == DFPLAYER_SCHEME_FOLDER_FILE) {
-        /* Currently using naming scheme <FOLDERNUM>/<FILENUM>.mp3 */
+        // Currently using naming scheme <FOLDERNUM>/<FILENUM>.mp3
         dev->file.file = (uint8_t)(dev->file.file + step);
     }
     else {
-        /* Currently using naming scheme MP3/<FILENUM>.mp3 */
+        // Currently using naming scheme MP3/<FILENUM>.mp3
         dev->file.number = (uint16_t)(dev->file.number + step);
     }
 

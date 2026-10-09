@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "embUnit.h"
 #include "tests-analog_util.h"
@@ -19,8 +17,8 @@ typedef struct {
     adc_res_t res;
 } test_values_t;
 
-/* Arbitrarily chosen test vectors */
-/* TODO: Choose test vectors in a more qualified manner to catch any edge cases */
+// Arbitrarily chosen test vectors
+// TODO: Choose test vectors in a more qualified manner to catch any edge cases
 static test_values_t test_data[] = {
     {     0L,     0,          0L,      10000L, ADC_RES_16BIT},
     {  1000L,     0,       1000L,          0L, ADC_RES_16BIT},
@@ -43,8 +41,7 @@ static test_values_t test_data[] = {
 
 #define TEST_DATA_NUMOF ARRAY_SIZE(test_data)
 
-static void test_adc_util_map(void)
-{
+static void test_adc_util_map(void) {
     for (unsigned int k = 0; k < TEST_DATA_NUMOF; ++k) {
         test_values_t *testp = &test_data[k];
         int32_t res = adc_util_map(testp->sample, testp->res, testp->min, testp->max);
@@ -52,8 +49,7 @@ static void test_adc_util_map(void)
     }
 }
 
-Test *tests_adc_util_tests(void)
-{
+Test *tests_adc_util_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_adc_util_map),
     };
@@ -63,7 +59,6 @@ Test *tests_adc_util_tests(void)
     return (Test *)&adc_util_tests;
 }
 
-void tests_analog_util(void)
-{
+void tests_analog_util(void) {
     TESTS_RUN(tests_adc_util_tests());
 }

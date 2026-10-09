@@ -1,9 +1,7 @@
-/*
- * Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- */
+// Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
 
 #include <errno.h>
 #include <stdio.h>
@@ -41,17 +39,15 @@
 #define TCP_DEV "tcp:"
 #define IOTLAB_TCP_PORT "20000"
 
-/* Size of serial write buffer */
+// Size of serial write buffer
 #define SERIAL_BUFFER_SIZE 64
 
-static void usage(void)
-{
+static void usage(void) {
     fprintf(stderr, "Usage: ethos <tap> <serial> [baudrate]\n");
     fprintf(stderr, "       ethos <tap> tcp:<host> [port]\n");
 }
 
-static void checked_write(int handle, void *buffer, int nbyte)
-{
+static void checked_write(int handle, void *buffer, int nbyte) {
     while (nbyte > 0) {
         ssize_t res = write(handle, buffer, nbyte);
         if (res <= 0) {
@@ -62,12 +58,10 @@ static void checked_write(int handle, void *buffer, int nbyte)
     }
 }
 
-int set_serial_attribs(int fd, int speed, int parity)
-{
+int set_serial_attribs(int fd, int speed, int parity) {
     struct termios tty;
     memset (&tty, 0, sizeof tty);
-    if (tcgetattr (fd, &tty) != 0)
-    {
+    if (tcgetattr (fd, &tty) != 0) {
         perror ("error in tcgetattr");
         return -1;
     }
@@ -75,66 +69,61 @@ int set_serial_attribs(int fd, int speed, int parity)
     cfsetospeed (&tty, speed);
     cfsetispeed (&tty, speed);
 
-    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; /* 8-bit chars*/
-                                        /* disable IGNBRK for mismatched speed
-                                         * tests; otherwise receive break*/
-                                        /* as \000 chars*/
-    tty.c_iflag &= ~IGNBRK;             /* disable break processing*/
-    tty.c_lflag = 0;                    /* no signaling chars, no echo,*/
-                                        /* no canonical processing*/
-    tty.c_oflag = 0;                    /* no remapping, no delays*/
-    tty.c_cc[VMIN]  = 0;                /* read doesn't block*/
-    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; /* 0.5 seconds read timeout*/
-                                            /* in tenths of a second*/
+    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; // 8-bit chars
+                                        // disable IGNBRK for mismatched speed
+                                        // tests; otherwise receive break
+                                        // as \000 chars
+    tty.c_iflag &= ~IGNBRK;             // disable break processing
+    tty.c_lflag = 0;                    // no signaling chars, no echo,
+                                        // no canonical processing
+    tty.c_oflag = 0;                    // no remapping, no delays
+    tty.c_cc[VMIN]  = 0;                // read doesn't block
+    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; // 0.5 seconds read timeout
+                                            // in tenths of a second
 
-    tty.c_iflag &= ~(IXON | IXOFF | IXANY); /* shut off xon/xoff ctrl*/
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
 
-    tty.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls,*/
-                                        /* enable reading*/
-    tty.c_cflag &= ~(PARENB | PARODD);  /* shut off parity*/
+    tty.c_cflag |= (CLOCAL | CREAD);    // ignore modem controls,
+                                        // enable reading
+    tty.c_cflag &= ~(PARENB | PARODD);  // shut off parity
     tty.c_cflag |= parity;
     tty.c_cflag &= ~CSTOPB;
     tty.c_cflag &= ~CRTSCTS;
     cfmakeraw(&tty);
 
-    if (tcsetattr (fd, TCSANOW, &tty) != 0)
-    {
+    if (tcsetattr (fd, TCSANOW, &tty) != 0) {
         perror("error from tcsetattr");
         return -1;
     }
     return 0;
 }
 
-void set_blocking(int fd, int should_block)
-{
+void set_blocking(int fd, int should_block) {
     struct termios tty;
     memset (&tty, 0, sizeof tty);
-    if (tcgetattr (fd, &tty) != 0)
-    {
+    if (tcgetattr (fd, &tty) != 0) {
         perror("error from tggetattr");
         return;
     }
 
     tty.c_cc[VMIN]  = should_block ? 1 : 0;
-    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; /* 0.5 seconds read timeout*/
-                                            /* in tenths of a second*/
+    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; // 0.5 seconds read timeout
+                                            // in tenths of a second
 
     if (tcsetattr (fd, TCSANOW, &tty) != 0) {
         perror("error setting term attributes");
     }
 }
 
-/**
- * @brief Escape char definitions
- * @{
- */
+/// @brief Escape char definitions
+/// @{
 #define LINE_FRAME_DELIMITER        (0x7E)
 #define LINE_ESC_CHAR               (0x7D)
 #define LINE_FRAME_TYPE_DATA        (0x00)
 #define LINE_FRAME_TYPE_TEXT        (0x01)
 #define LINE_FRAME_TYPE_HELLO       (0x02)
 #define LINE_FRAME_TYPE_HELLO_REPLY (0x03)
-/** @} */
+/// @}
 
 typedef enum {
     WAIT_FRAMESTART,
@@ -183,16 +172,14 @@ int tun_alloc(char *dev, int flags) {
     return fd;
 }
 
-static void _handle_char(serial_t *serial, char c)
-{
+static void _handle_char(serial_t *serial, char c) {
     if (serial->framebytes < sizeof(serial->frame)) {
         serial->frame[serial->framebytes] = c;
         serial->framebytes++;
     }
 }
 
-static int _serial_handle_byte(serial_t *serial, char c)
-{
+static int _serial_handle_byte(serial_t *serial, char c) {
     switch (serial->state) {
         case WAIT_FRAMESTART:
             if (c == LINE_FRAME_DELIMITER) {
@@ -249,19 +236,16 @@ static int _serial_handle_byte(serial_t *serial, char c)
     return 0;
 }
 
-static void _write_escaped(int fd, char* buf, ssize_t n)
-{
-    /*
-     * Certain USB-to-UART adapters/drivers will immediately send a USB packet
-     * with a single byte instead of buffering internally when the application
-     * does writes one byte at a time. Since USB Full Speed can only send 1
-     * packet per 1 ms, this causes huge latencies for the network, because each
-     * byte of data will then add at least 1 ms on the latency.
-     * Observed on NXP OpenSDAv2 (Kinetis FRDM boards), both CMSIS/mbed DAPlink
-     * and Segger Jlink firmware are affected.
-     */
-    /* Our workaround is to prepare the data to send in a local buffer and then
-     * call write() on the buffer instead of one char at a time */
+static void _write_escaped(int fd, char* buf, ssize_t n) {
+    // Certain USB-to-UART adapters/drivers will immediately send a USB packet
+    // with a single byte instead of buffering internally when the application
+    // does writes one byte at a time. Since USB Full Speed can only send 1
+    // packet per 1 ms, this causes huge latencies for the network, because each
+    // byte of data will then add at least 1 ms on the latency.
+    // Observed on NXP OpenSDAv2 (Kinetis FRDM boards), both CMSIS/mbed DAPlink
+    // and Segger Jlink firmware are affected.
+    // Our workaround is to prepare the data to send in a local buffer and then
+    // call write() on the buffer instead of one char at a time
     uint8_t out[SERIAL_BUFFER_SIZE];
     size_t buffered = 0;
 
@@ -286,8 +270,7 @@ static void _write_escaped(int fd, char* buf, ssize_t n)
     }
 }
 
-static void _send_hello(int serial_fd, serial_t *serial, unsigned type)
-{
+static void _send_hello(int serial_fd, serial_t *serial, unsigned type) {
     char delim = LINE_FRAME_DELIMITER;
     char head[] = { LINE_FRAME_DELIMITER, LINE_ESC_CHAR, (type ^ 0x20) };
     checked_write(serial_fd, head, sizeof(head));
@@ -295,8 +278,7 @@ static void _send_hello(int serial_fd, serial_t *serial, unsigned type)
     checked_write(serial_fd, &delim, 1);
 }
 
-static void _clear_neighbor_cache(const char *ifname)
-{
+static void _clear_neighbor_cache(const char *ifname) {
     char tmp[20 + IFNAMSIZ];
     snprintf(tmp, sizeof(tmp), "ip neigh flush dev %s", ifname);
     if (system(tmp) < 0) {
@@ -304,8 +286,7 @@ static void _clear_neighbor_cache(const char *ifname)
     }
 }
 
-static int _parse_baudrate(const char *arg, unsigned *baudrate)
-{
+static int _parse_baudrate(const char *arg, unsigned *baudrate) {
     if (arg == NULL) {
         *baudrate = BAUDRATE_DEFAULT;
         return 0;
@@ -327,7 +308,7 @@ static int _parse_baudrate(const char *arg, unsigned *baudrate)
     case 115200:
         *baudrate = B115200;
         break;
-    /* the following baudrates might not be available on all platforms */
+    // the following baudrates might not be available on all platforms
     #ifdef B230400
         case_baudrate(230400);
     #endif
@@ -374,12 +355,11 @@ static int _parse_baudrate(const char *arg, unsigned *baudrate)
     return 0;
 }
 
-int _parse_tcp_arg(char *name, char *port_arg, char **host, char **port)
-{
-    /* Remove 'tcp:' */
+int _parse_tcp_arg(char *name, char *port_arg, char **host, char **port) {
+    // Remove 'tcp:'
     name = &name[sizeof(TCP_DEV) - 1];
 
-    /* Set default if NULL */
+    // Set default if NULL
     if (!port_arg) {
         port_arg = IOTLAB_TCP_PORT;
     }
@@ -390,9 +370,8 @@ int _parse_tcp_arg(char *name, char *port_arg, char **host, char **port)
     return 0;
 }
 
-/* Adapted from 'getaddrinfo' manpage example */
-int _tcp_connect(char *host, char *port)
-{
+// Adapted from 'getaddrinfo' manpage example
+int _tcp_connect(char *host, char *port) {
     int sfd = -1;
     struct addrinfo hints, *result, *rp;
 
@@ -406,10 +385,10 @@ int _tcp_connect(char *host, char *port)
         return -1;
     }
 
-    /* getaddrinfo() returns a list of address structures.
-       Try each address until we successfully connect(2).
-       If socket(2) (or connect(2)) fails, we (close the socket
-       and) try the next address. */
+    // getaddrinfo() returns a list of address structures.
+    //    Try each address until we successfully connect(2).
+    //    If socket(2) (or connect(2)) fails, we (close the socket
+    //    and) try the next address.
     for (rp = result; rp != NULL; rp = rp->ai_next) {
         sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
         if (sfd == -1) {
@@ -433,8 +412,7 @@ int _tcp_connect(char *host, char *port)
     return sfd;
 }
 
-int _set_socket_timeout(int sfd)
-{
+int _set_socket_timeout(int sfd) {
     struct timeval timeout = {
         .tv_sec = 0,
         .tv_usec = TTY_TIMEOUT_MS * 1000,
@@ -454,8 +432,7 @@ int _set_socket_timeout(int sfd)
     return 0;
 }
 
-int _open_tcp_connection(char *name, char *port_arg)
-{
+int _open_tcp_connection(char *name, char *port_arg) {
     char *host;
     char *port;
 
@@ -473,8 +450,7 @@ int _open_tcp_connection(char *name, char *port_arg)
     return sfd;
 }
 
-int _open_serial_connection(char *name, char *baudrate_arg)
-{
+int _open_serial_connection(char *name, char *baudrate_arg) {
     unsigned baudrate = 0;
     if (_parse_baudrate(baudrate_arg, &baudrate) == -1) {
         fprintf(stderr, "Invalid baudrate specified: %s\n", baudrate_arg);
@@ -494,8 +470,7 @@ int _open_serial_connection(char *name, char *baudrate_arg)
     return serial_fd;
 }
 
-int _open_connection(char *name, char* option)
-{
+int _open_connection(char *name, char* option) {
     if (strncmp(name, TCP_DEV, strlen(TCP_DEV)) == 0) {
         return _open_tcp_connection(name, option);
     } else {
@@ -503,8 +478,7 @@ int _open_connection(char *name, char* option)
     }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     char inbuf[MTU];
     char *serial_option = NULL;
 
@@ -611,12 +585,12 @@ int main(int argc, char *argv[])
             if (res == 0) {
                 fprintf(stderr, "EOF from stdin\n");
                 if (isatty(STDIN_FILENO)) {
-                    /* EOF from the terminal means good bye! */
+                    // EOF from the terminal means good bye!
                     fprintf(stderr, "Bye!\n");
                     break;
                 }
                 else {
-                    /* Ignore EOF when stdin is not a terminal */
+                    // Ignore EOF when stdin is not a terminal
                     close(STDIN_FILENO);
                     stdin_open = 0;
                 }

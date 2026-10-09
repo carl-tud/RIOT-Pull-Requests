@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 #include <inttypes.h>
@@ -21,8 +17,7 @@
 #define RIGHTMOST_BIT_SET(value)    ((value) & 0x0001U)
 
 uint16_t ucrc16_calc_be(const uint8_t *buf, size_t len, uint16_t poly,
-                        uint16_t seed)
-{
+                        uint16_t seed) {
     assert(buf != NULL);
     for (size_t c = 0; c < len; c++, buf++) {
         uint32_t tmp = seed ^ (*buf << (UINT16_BIT_SIZE - UINT8_BIT_SIZE));
@@ -35,8 +30,7 @@ uint16_t ucrc16_calc_be(const uint8_t *buf, size_t len, uint16_t poly,
 }
 
 uint16_t ucrc16_calc_le(const uint8_t *buf, size_t len, uint16_t poly,
-                        uint16_t seed)
-{
+                        uint16_t seed) {
     assert(buf != NULL);
     for (size_t c = 0; c < len; c++, buf++) {
         seed ^= (*buf);
@@ -47,4 +41,4 @@ uint16_t ucrc16_calc_le(const uint8_t *buf, size_t len, uint16_t poly,
     return seed;
 }
 
-/** @} */
+/// @}

@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_stm32
- * @brief       Common LED macros
- * @{
- *
- * @file
- * @brief       Common LED macros
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * The idea is that STM32 boards only define the pin number, port number and
- * port of LEDs and this header provides the rest of the defines
- */
+/// @ingroup     boards_common_stm32
+/// @brief       Common LED macros
+/// @{
+///
+/// @file
+/// @brief       Common LED macros
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// The idea is that STM32 boards only define the pin number, port number and
+/// port of LEDs and this header provides the rest of the defines
 
-/* Using gpio_ll_arch for GPIO access. On STM32, accessing the GPIO output
- * buffer via GPIO LL even works when the GPIO LL feature/module is not in
- * use */
+// Using gpio_ll_arch for GPIO access. On STM32, accessing the GPIO output
+// buffer via GPIO LL even works when the GPIO LL feature/module is not in
+// use
 #include "periph/gpio_ll.h"
 #include "kernel_defines.h"
 
@@ -29,10 +25,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Common LED pin definitions for STM32 boards
- * @{
- */
+/// @name    Common LED pin definitions for STM32 boards
+/// @{
 #if defined(LED0_PORT_NUM) && defined (LED0_PIN_NUM)
 #  define LED0_PIN              GPIO_PIN(LED0_PORT_NUM, LED0_PIN_NUM)
 #  define LED0_MASK             (1 << LED0_PIN_NUM)
@@ -137,10 +131,10 @@ extern "C" {
 #  define LED7_TOGGLE           gpio_ll_toggle(LED7_PORT, LED7_MASK)
 #endif
 
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

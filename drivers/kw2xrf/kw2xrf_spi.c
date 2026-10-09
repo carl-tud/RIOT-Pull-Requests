@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 PHYTEC Messtechnik GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 PHYTEC Messtechnik GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_kw2xrf
- * @{
- * @file
- * @brief       Implementation of SPI-functions for the kw2xrf driver
- *
- * @author      Johann Fischer <j.fischer@phytec.de>
- * @author      Jonas Remmert <j.remmert@phytec.de>
- * @author      Sebastian Meiling <s@mlng.net>
- * @}
- */
+/// @ingroup     drivers_kw2xrf
+/// @{
+/// @file
+/// @brief       Implementation of SPI-functions for the kw2xrf driver
+///
+/// @author      Johann Fischer <j.fischer@phytec.de>
+/// @author      Jonas Remmert <j.remmert@phytec.de>
+/// @author      Sebastian Meiling <s@mlng.net>
+/// @}
 
 #include "log.h"
 #include "kw2xrf.h"
@@ -36,24 +32,21 @@
 
 static uint8_t ibuf[KW2XRF_IBUF_LENGTH];
 
-void kw2xrf_spi_transfer_head(kw2xrf_t *dev)
-{
+void kw2xrf_spi_transfer_head(kw2xrf_t *dev) {
     spi_acquire(SPIDEV, CSPIN, SPIMODE, SPICLK);
 #if KW2XRF_SHARED_SPI
     gpio_clear(CSPIN);
 #endif
 }
 
-void kw2xrf_spi_transfer_tail(kw2xrf_t *dev)
-{
+void kw2xrf_spi_transfer_tail(kw2xrf_t *dev) {
 #if KW2XRF_SHARED_SPI
     gpio_set(CSPIN);
 #endif
     spi_release(SPIDEV);
 }
 
-int kw2xrf_spi_init(kw2xrf_t *dev)
-{
+int kw2xrf_spi_init(kw2xrf_t *dev) {
     DEBUG("[kw2xrf_spi] kw2xrf_spi_init\n");
     int res;
 #if KW2XRF_SHARED_SPI
@@ -71,7 +64,7 @@ int kw2xrf_spi_init(kw2xrf_t *dev)
                   (unsigned)SPIDEV, res);
         return 1;
     }
-    /* verify SPI params, if assertions are on */
+    // verify SPI params, if assertions are on
     if (!IS_ACTIVE(NDEBUG)) {
         spi_acquire(SPIDEV, CSPIN, SPIMODE, SPICLK);
         spi_release(SPIDEV);
@@ -82,8 +75,7 @@ int kw2xrf_spi_init(kw2xrf_t *dev)
     return 0;
 }
 
-void kw2xrf_write_dreg(kw2xrf_t *dev, uint8_t addr, uint8_t value)
-{
+void kw2xrf_write_dreg(kw2xrf_t *dev, uint8_t addr, uint8_t value) {
     DEBUG("[kw2xrf_spi] kw2xrf_write_dreg, addr %u, value %u\n", addr, value);
     kw2xrf_spi_transfer_head(dev);
     spi_transfer_reg(SPIDEV, CSPIN, addr, value);
@@ -91,8 +83,7 @@ void kw2xrf_write_dreg(kw2xrf_t *dev, uint8_t addr, uint8_t value)
     return;
 }
 
-uint8_t kw2xrf_read_dreg(kw2xrf_t *dev, uint8_t addr)
-{
+uint8_t kw2xrf_read_dreg(kw2xrf_t *dev, uint8_t addr) {
     uint8_t value;
     kw2xrf_spi_transfer_head(dev);
     value = spi_transfer_reg(SPIDEV, CSPIN, (addr | MKW2XDRF_REG_READ), 0x0);
@@ -101,24 +92,21 @@ uint8_t kw2xrf_read_dreg(kw2xrf_t *dev, uint8_t addr)
     return value;
 }
 
-void kw2xrf_write_dregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t length)
-{
+void kw2xrf_write_dregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t length) {
     DEBUG("[kw2xrf_spi] kw2xrf_write_dregs, addr %u, length %u\n", addr, length);
     kw2xrf_spi_transfer_head(dev);
     spi_transfer_regs(SPIDEV, CSPIN, addr, buf, NULL, length);
     kw2xrf_spi_transfer_tail(dev);
 }
 
-void kw2xrf_read_dregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t length)
-{
+void kw2xrf_read_dregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t length) {
     kw2xrf_spi_transfer_head(dev);
     spi_transfer_regs(SPIDEV, CSPIN, (addr | MKW2XDRF_REG_READ), NULL, buf, length);
     DEBUG("[kw2xrf_spi] kw2xrf_read_dregs, addr %u, length %u\n", addr, length);
     kw2xrf_spi_transfer_tail(dev);
 }
 
-void kw2xrf_write_iregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t length)
-{
+void kw2xrf_write_iregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t length) {
     if (length > (KW2XRF_IBUF_LENGTH - 1)) {
         length = KW2XRF_IBUF_LENGTH - 1;
     }
@@ -136,8 +124,7 @@ void kw2xrf_write_iregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t lengt
     return;
 }
 
-void kw2xrf_read_iregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t length)
-{
+void kw2xrf_read_iregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t length) {
     if (length > (KW2XRF_IBUF_LENGTH - 1)) {
         length = KW2XRF_IBUF_LENGTH - 1;
     }
@@ -156,15 +143,13 @@ void kw2xrf_read_iregs(kw2xrf_t *dev, uint8_t addr, uint8_t *buf, uint8_t length
     return;
 }
 
-void kw2xrf_write_fifo(kw2xrf_t *dev, uint8_t *data, uint8_t length)
-{
+void kw2xrf_write_fifo(kw2xrf_t *dev, uint8_t *data, uint8_t length) {
     kw2xrf_spi_transfer_head(dev);
     spi_transfer_regs(SPIDEV, CSPIN, MKW2XDRF_BUF_WRITE, data, NULL, length);
     kw2xrf_spi_transfer_tail(dev);
 }
 
-void kw2xrf_read_fifo(kw2xrf_t *dev, uint8_t *data, uint8_t length)
-{
+void kw2xrf_read_fifo(kw2xrf_t *dev, uint8_t *data, uint8_t length) {
     kw2xrf_spi_transfer_head(dev);
     spi_transfer_regs(SPIDEV, CSPIN, MKW2XDRF_BUF_READ, NULL, data, length);
     kw2xrf_spi_transfer_tail(dev);

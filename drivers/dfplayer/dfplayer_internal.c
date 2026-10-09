@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_dfplayer
- * @{
- *
- * @file
- * @brief       Implementation DFPlayer Mini Device Driver
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_dfplayer
+/// @{
+///
+/// @file
+/// @brief       Implementation DFPlayer Mini Device Driver
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -30,21 +26,16 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief   Initial value of the frame check sequence
- */
+/// @brief   Initial value of the frame check sequence
 static const uint16_t fcs_init = -(DFPLAYER_VERSION + DFPLAYER_LEN);
 
-/**
- * @brief   Identify the source from an insert/eject event
- *
- * @param   dev     DFPlayer device descriptor
- *
- * @return  The source that was inserted / ejected
- * @retval  DFPLAYER_SOURCE_NUMOF   Unknown source
- */
-static dfplayer_source_t _get_inserted_ejected_source(dfplayer_t *dev)
-{
+/// @brief   Identify the source from an insert/eject event
+///
+/// @param   dev     DFPlayer device descriptor
+///
+/// @return  The source that was inserted / ejected
+/// @retval  DFPLAYER_SOURCE_NUMOF   Unknown source
+static dfplayer_source_t _get_inserted_ejected_source(dfplayer_t *dev) {
     switch (dev->buf[3]) {
         case DFPLAYER_DEVICE_USB:
             DEBUG("[dfplayer] Inserted/ejected USB storage device\n");
@@ -58,26 +49,22 @@ static dfplayer_source_t _get_inserted_ejected_source(dfplayer_t *dev)
     return DFPLAYER_SOURCE_NUMOF;
 }
 
-/**
- * @brief   Handle a playback completed event
- *
- * @param   dev     DFPlayer device descriptor
- * @param   src     Medium the track was played from
- */
-static void _handle_playback_completed(dfplayer_t *dev, dfplayer_source_t src)
-{
+/// @brief   Handle a playback completed event
+///
+/// @param   dev     DFPlayer device descriptor
+/// @param   src     Medium the track was played from
+static void _handle_playback_completed(dfplayer_t *dev, dfplayer_source_t src) {
     uint16_t track = (((uint16_t)dev->buf[2]) << 8) | dev->buf[3];
     DEBUG("[dfplayer] Playback of track %" PRIu16 " on medium %u completed\n",
           track, (unsigned)src);
 
     dev->flags |= DFPLAYER_FLAG_NO_ACK_BUG;
 
-    /* Note: At least some revisions report playback completed more than once,
-     * maybe to increase probability of the message reaching the MCU. This
-     * de-duplicates the message by ignoring follow up messages for 100ms.
-     * Filtering by track number and medium wouldn't work here, as the same
-     * song might be played in repeat mode.
-     */
+    // Note: At least some revisions report playback completed more than once,
+    // maybe to increase probability of the message reaching the MCU. This
+    // de-duplicates the message by ignoring follow up messages for 100ms.
+    // Filtering by track number and medium wouldn't work here, as the same
+    // song might be played in repeat mode.
     uint32_t now_us = xtimer_now_usec();
     if (dev->cb_done && (now_us - dev->last_event_us > DFPLAYER_TIMEOUT_MS * US_PER_MS)) {
         dev->cb_done(dev, src, track);
@@ -85,13 +72,10 @@ static void _handle_playback_completed(dfplayer_t *dev, dfplayer_source_t src)
     dev->last_event_us = now_us;
 }
 
-/**
- * @brief   Parse the bootup completed frame and init available sources
- *
- * @param   dev     DFPlayer device descriptor
- */
-static void _handle_bootup_completed(dfplayer_t *dev)
-{
+/// @brief   Parse the bootup completed frame and init available sources
+///
+/// @param   dev     DFPlayer device descriptor
+static void _handle_bootup_completed(dfplayer_t *dev) {
     if (dev->buf[3] & DFPLAYER_MASK_USB) {
         dev->srcs |= 0x01 << DFPLAYER_SOURCE_USB;
     }
@@ -104,15 +88,12 @@ static void _handle_bootup_completed(dfplayer_t *dev)
         dev->srcs |= 0x01 << DFPLAYER_SOURCE_FLASH;
     }
 
-    /* Unblock caller of dfplayer_reset() */
+    // Unblock caller of dfplayer_reset()
     mutex_unlock(&dev->sync);
 }
 
-/**
- * @brief   Handle a notification message
- */
-static void _handle_event_notification(dfplayer_t *dev)
-{
+/// @brief   Handle a notification message
+static void _handle_event_notification(dfplayer_t *dev) {
     switch (dev->buf[0]) {
         case DFPLAYER_NOTIFY_INSERT:
             DEBUG("[dfplayer] Insert event\n");
@@ -155,22 +136,19 @@ static void _handle_event_notification(dfplayer_t *dev)
     }
 }
 
-/**
- * @brief   Parse the frame received from the DFPlayer Mini
- *
- * @param   dev     Device descriptor of the DFPlayer the frame received from
- *
- * The frame is stored in the buffer of the device descriptor
- */
-static void _parse_frame(dfplayer_t *dev)
-{
+/// @brief   Parse the frame received from the DFPlayer Mini
+///
+/// @param   dev     Device descriptor of the DFPlayer the frame received from
+///
+/// The frame is stored in the buffer of the device descriptor
+static void _parse_frame(dfplayer_t *dev) {
     assert(dev->len == DFPLAYER_LEN);
     switch (dev->buf[0] & DFPLAYER_CLASS_MASK) {
         case DFPLAYER_CLASS_NOTIFY:
             _handle_event_notification(dev);
             return;
         case DFPLAYER_CLASS_RESPONSE:
-            /* Unblock thread waiting for response */
+            // Unblock thread waiting for response
             mutex_unlock(&dev->sync);
             return;
     }
@@ -178,14 +156,11 @@ static void _parse_frame(dfplayer_t *dev)
     DEBUG("[dfplayer] Got frame of unknown class\n");
 }
 
-/**
- * @brief   Function called when a byte was received over UART (ISR-context)
- *
- * @param   _dev    The corresponding device descriptor
- * @param   data    The received byte of data
- */
-void dfplayer_uart_rx_cb(void *_dev, uint8_t data)
-{
+/// @brief   Function called when a byte was received over UART (ISR-context)
+///
+/// @param   _dev    The corresponding device descriptor
+/// @param   data    The received byte of data
+void dfplayer_uart_rx_cb(void *_dev, uint8_t data) {
     dfplayer_t *dev = _dev;
     switch (dev->state) {
         case DFPLAYER_RX_STATE_START:
@@ -212,15 +187,14 @@ void dfplayer_uart_rx_cb(void *_dev, uint8_t data)
             }
             break;
         case DFPLAYER_RX_STATE_DATA:
-            /* We are a bit more liberal here and allow the end symbol to
-             * appear in the payload of the frame, as the data sheet does not
-             * mention any sort of escaping to prevent it from appearing in the
-             * frame's payload. If bytes get lost and an and of frame symbol
-             * is mistaken for a payload byte, this will be almost certainly
-             * detected, as additionally a second end of frame symbol would
-             * need to appear at the right position *and* the frame check
-             * sequence need to match
-             */
+            // We are a bit more liberal here and allow the end symbol to
+            // appear in the payload of the frame, as the data sheet does not
+            // mention any sort of escaping to prevent it from appearing in the
+            // frame's payload. If bytes get lost and an and of frame symbol
+            // is mistaken for a payload byte, this will be almost certainly
+            // detected, as additionally a second end of frame symbol would
+            // need to appear at the right position *and* the frame check
+            // sequence need to match
             if ((data == DFPLAYER_END) && (dev->len == DFPLAYER_LEN)) {
                 uint16_t fcs_exp = fcs_init;
                 fcs_exp -= dev->buf[0] + dev->buf[1] + dev->buf[2] + dev->buf[3];
@@ -251,22 +225,20 @@ void dfplayer_uart_rx_cb(void *_dev, uint8_t data)
 }
 
 static int _send(dfplayer_t *dev, uint8_t cmd, uint8_t p1, uint8_t p2,
-                  uint32_t timeout_us)
-{
+                  uint32_t timeout_us) {
     int retval;
     if (dev->flags & DFPLAYER_FLAG_NO_ACK_BUG) {
-        /* Hardware bug: The next command will not be ack'ed, unless it is
-         * a query command. We can clear the flag, as we issue now a fake query,
-         * if needed.
-         */
+        // Hardware bug: The next command will not be ack'ed, unless it is
+        // a query command. We can clear the flag, as we issue now a fake query,
+        // if needed.
         dev->flags &= ~(DFPLAYER_FLAG_NO_ACK_BUG);
         if (cmd < DFPLAYER_LOWEST_QUERY) {
-            /* Command is a control command, we query the volume and ignore the
-             * result as work around */
+            // Command is a control command, we query the volume and ignore the
+            // result as work around
             retval = _send(dev, DFPLAYER_CMD_GET_VOLUME, 0, 0,
                            DFPLAYER_TIMEOUT_MS * US_PER_MS);
             if (retval) {
-                /* pass through error */
+                // pass through error
                 return retval;
             }
         }
@@ -281,8 +253,8 @@ static int _send(dfplayer_t *dev, uint8_t cmd, uint8_t p1, uint8_t p2,
     for (unsigned i = 0; i < DFPLAYER_RETRIES; i++) {
         retval = 0;
         DEBUG("[dfplayer] About to exchange frame\n");
-        /* Enforce that mutex is locked, so that xtimer_mutex_lock_timeout()
-         * will not return immediately. */
+        // Enforce that mutex is locked, so that xtimer_mutex_lock_timeout()
+        // will not return immediately.
         mutex_trylock(&dev->sync);
         uart_write(dev->uart, frame, sizeof(frame));
 
@@ -310,14 +282,14 @@ static int _send(dfplayer_t *dev, uint8_t cmd, uint8_t p1, uint8_t p2,
                         break;
                     default:
                         DEBUG("[dfplayer] Unknown error!\n");
-                        /* This should never be reached according the datasheet */
+                        // This should never be reached according the datasheet
                         retval = -EIO;
                         break;
                 }
             }
         }
 
-        /* wait to work around HW bug */
+        // wait to work around HW bug
         xtimer_msleep(DFPLAYER_SEND_DELAY_MS);
 
         if (!retval) {
@@ -329,8 +301,7 @@ static int _send(dfplayer_t *dev, uint8_t cmd, uint8_t p1, uint8_t p2,
 }
 
 int dfplayer_transceive(dfplayer_t *dev, uint16_t *resp,
-                        uint8_t cmd, uint8_t p1, uint8_t p2)
-{
+                        uint8_t cmd, uint8_t p1, uint8_t p2) {
     if (!dev) {
         return -EINVAL;
     }
@@ -351,8 +322,7 @@ int dfplayer_transceive(dfplayer_t *dev, uint16_t *resp,
     return 0;
 }
 
-int dfplayer_reset(dfplayer_t *dev)
-{
+int dfplayer_reset(dfplayer_t *dev) {
     if (!dev) {
         return -EINVAL;
     }
@@ -367,8 +337,8 @@ int dfplayer_reset(dfplayer_t *dev)
         return retval;
     }
 
-    /* Enforce that mutex is locked, so that xtimer_mutex_lock_timeout()
-     * will not return immediately. */
+    // Enforce that mutex is locked, so that xtimer_mutex_lock_timeout()
+    // will not return immediately.
     mutex_trylock(&dev->sync);
 
     const uint32_t bootup_timeout = DFPLAYER_BOOTUP_TIME_MS * US_PER_MS;
@@ -389,39 +359,37 @@ int dfplayer_reset(dfplayer_t *dev)
     return 0;
 }
 
-int dfplayer_file_cmd(dfplayer_t *dev, uint8_t cmd, uint8_t p1, uint8_t p2)
-{
+int dfplayer_file_cmd(dfplayer_t *dev, uint8_t cmd, uint8_t p1, uint8_t p2) {
     int retval = _send(dev, cmd, p1, p2, DFPLAYER_TIMEOUT_MS * US_PER_MS);
     if (retval) {
         return retval;
     }
 
-    /* Enforce that mutex is locked, so that xtimer_mutex_lock_timeout()
-     * will not return immediately. */
+    // Enforce that mutex is locked, so that xtimer_mutex_lock_timeout()
+    // will not return immediately.
     mutex_trylock(&dev->sync);
 
     const uint32_t timeout_us = DFPLAYER_TIMEOUT_MS * US_PER_MS;
     if (xtimer_mutex_lock_timeout(&dev->sync, timeout_us)) {
-        /* For commands DFPLAYER_CMD_PLAY_FROM_MP3 (0x12) and
-         * DFPLAYER_CMD_PLAY_ADVERT (0x13) a second reply is only generated on
-         * failure. A timeout could be either:
-         *   a) Success. DFPlayer is playing the selected file
-         * or
-         *   b) Failure, but the reply got lost (or was rejected due to mismatch
-         *      of the frame check sequence)
-         *
-         * We just check if the DFPlayer is actually playing
-         */
+        // For commands DFPLAYER_CMD_PLAY_FROM_MP3 (0x12) and
+        // DFPLAYER_CMD_PLAY_ADVERT (0x13) a second reply is only generated on
+        // failure. A timeout could be either:
+        //   a) Success. DFPlayer is playing the selected file
+        // or
+        //   b) Failure, but the reply got lost (or was rejected due to mismatch
+        //      of the frame check sequence)
+        //
+        // We just check if the DFPlayer is actually playing
         if (gpio_is_valid(dev->busy_pin)) {
             retval = 0;
-            /* Using BUSY pin to check if device is playing */
+            // Using BUSY pin to check if device is playing
             if (gpio_read(dev->busy_pin)) {
-                /* Device not playing, file does not exist */
+                // Device not playing, file does not exist
                 retval = -ENOENT;
             }
         }
         else {
-            /* BUSY pin not connected, query status instead */
+            // BUSY pin not connected, query status instead
             retval = _send(dev, DFPLAYER_CMD_GET_STATUS, 0, 0, timeout_us);
 
             if (!retval) {
@@ -438,9 +406,9 @@ int dfplayer_file_cmd(dfplayer_t *dev, uint8_t cmd, uint8_t p1, uint8_t p2)
     }
 
     if (code == DFPLAYER_RESPONSE_ERROR) {
-        /* The DFPlayer already acknowledged successful reception of the
-         * command, so we expect that the only cause for an error is that the
-         * file was not found. But better check anyway, the device is strange */
+        // The DFPlayer already acknowledged successful reception of the
+        // command, so we expect that the only cause for an error is that the
+        // file was not found. But better check anyway, the device is strange
         if (error == DFPLAYER_ERROR_NO_SUCH_FILE) {
             return -ENOENT;
         }

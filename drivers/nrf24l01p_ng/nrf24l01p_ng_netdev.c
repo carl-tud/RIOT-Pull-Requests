@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup drivers_nrf24l01p_ng
- * @{
- *
- * @file
- * @brief   Implementation of RIOT's netdev_driver API
- *          for the NRF24L01+ (NG) transceiver
- *
- * @author Fabian Hüßler <fabian.huessler@ovgu.de>
- * @}
- */
+/// @ingroup drivers_nrf24l01p_ng
+/// @{
+///
+/// @file
+/// @brief   Implementation of RIOT's netdev_driver API
+///          for the NRF24L01+ (NG) transceiver
+///
+/// @author Fabian Hüßler <fabian.huessler@ovgu.de>
+/// @}
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
@@ -57,22 +53,19 @@ const netdev_driver_t nrf24l01p_ng_driver = {
 };
 
 static inline
-void _trigger_send(const nrf24l01p_ng_t *dev)
-{
+void _trigger_send(const nrf24l01p_ng_t *dev) {
     gpio_set(dev->params.pin_ce);
     xtimer_usleep(NRF24L01P_NG_DELAY_US_CE_HIGH_PULSE);
     gpio_clear(dev->params.pin_ce);
     xtimer_usleep(NRF24L01P_NG_DELAY_US_TX_SETTLING);
 }
 
-static int _assert_awake(const nrf24l01p_ng_t *dev)
-{
+static int _assert_awake(const nrf24l01p_ng_t *dev) {
     return nrf24l01p_ng_reg8_read(dev, NRF24L01P_NG_REG_CONFIG) &
            NRF24L01P_NG_FLG_PWR_UP;
 }
 
-static netopt_state_t _state_to_netif(nrf24l01p_ng_state_t state)
-{
+static netopt_state_t _state_to_netif(nrf24l01p_ng_state_t state) {
     if (state == NRF24L01P_NG_STATE_POWER_DOWN) {
         return NETOPT_STATE_SLEEP;
     }
@@ -88,11 +81,10 @@ static netopt_state_t _state_to_netif(nrf24l01p_ng_state_t state)
     if (state == NRF24L01P_NG_STATE_RX_MODE) {
         return NETOPT_STATE_RX;
     }
-    return NETOPT_STATE_OFF; /* error */
+    return NETOPT_STATE_OFF; // error
 }
 
-nrf24l01p_ng_state_t _state_from_netif(netopt_state_t state)
-{
+nrf24l01p_ng_state_t _state_from_netif(netopt_state_t state) {
     if (state == NETOPT_STATE_SLEEP) {
         return NRF24L01P_NG_STATE_POWER_DOWN;
     }
@@ -108,18 +100,16 @@ nrf24l01p_ng_state_t _state_from_netif(netopt_state_t state)
     return NRF24L01P_NG_STATE_UNDEFINED;
 }
 
-static void _nrf24l01p_ng_irq_handler(void *_dev)
-{
+static void _nrf24l01p_ng_irq_handler(void *_dev) {
     nrf24l01p_ng_t *dev = _dev;
-    /* Once the IRQ pin has triggered,
-       do not congest the thread´s
-       message queue with IRQ events */
+    // Once the IRQ pin has triggered,
+    //    do not congest the thread´s
+    //    message queue with IRQ events
     gpio_irq_disable(dev->params.pin_irq);
     netdev_trigger_event_isr(&dev->netdev);
 }
 
-static void _isr_max_rt(nrf24l01p_ng_t *dev)
-{
+static void _isr_max_rt(nrf24l01p_ng_t *dev) {
     assert(dev->state == NRF24L01P_NG_STATE_STANDBY_1 ||
            dev->state == NRF24L01P_NG_STATE_STANDBY_2 ||
            dev->state == NRF24L01P_NG_STATE_RX_MODE   ||
@@ -131,14 +121,13 @@ static void _isr_max_rt(nrf24l01p_ng_t *dev)
     dev->netdev.event_callback(&dev->netdev, NETDEV_EVENT_TX_NOACK);
 }
 
-static void _isr_rx_dr(nrf24l01p_ng_t *dev)
-{
+static void _isr_rx_dr(nrf24l01p_ng_t *dev) {
     assert(dev->state == NRF24L01P_NG_STATE_STANDBY_1 ||
            dev->state == NRF24L01P_NG_STATE_STANDBY_2 ||
            dev->state == NRF24L01P_NG_STATE_RX_MODE   ||
            dev->state == NRF24L01P_NG_STATE_TX_MODE);
     DEBUG_PUTS("[nrf24l01p_ng] IRS RX_DR");
-    /* read all RX data */
+    // read all RX data
     nrf24l01p_ng_acquire(dev);
     while (!(nrf24l01p_ng_reg8_read(dev, NRF24L01P_NG_REG_FIFO_STATUS) &
            NRF24L01P_NG_FLG_RX_EMPTY)) {
@@ -148,8 +137,7 @@ static void _isr_rx_dr(nrf24l01p_ng_t *dev)
     nrf24l01p_ng_release(dev);
 }
 
-static void _isr_tx_ds(nrf24l01p_ng_t *dev)
-{
+static void _isr_tx_ds(nrf24l01p_ng_t *dev) {
     assert(dev->state == NRF24L01P_NG_STATE_STANDBY_1 ||
            dev->state == NRF24L01P_NG_STATE_STANDBY_2 ||
            dev->state == NRF24L01P_NG_STATE_RX_MODE   ||
@@ -158,8 +146,7 @@ static void _isr_tx_ds(nrf24l01p_ng_t *dev)
     dev->netdev.event_callback(&dev->netdev, NETDEV_EVENT_TX_COMPLETE);
 }
 
-static int _init(netdev_t *netdev)
-{
+static int _init(netdev_t *netdev) {
     nrf24l01p_ng_t *dev = container_of(netdev, nrf24l01p_ng_t, netdev);
     if (dev->params.config.cfg_data_rate >= NRF24L01P_NG_RF_DR_NUM_OF ||
         dev->params.config.cfg_crc == NRF24L01P_NG_CRC_0BYTE ||
@@ -179,121 +166,118 @@ static int _init(netdev_t *netdev)
     if (dev->state != NRF24L01P_NG_STATE_POWER_DOWN) {
         nrf24l01p_ng_transition_to_power_down(dev);
     }
-    /* flush internal Tx and Rx FIFO */
+    // flush internal Tx and Rx FIFO
     nrf24l01p_ng_flush_tx(dev);
     nrf24l01p_ng_flush_rx(dev);
     uint8_t aw = NRF24L01P_NG_ADDR_WIDTH;
     const uint8_t bc[] = NRF24L01P_NG_BROADCAST_ADDR;
     memcpy(NRF24L01P_NG_ADDR_P0(dev), bc, aw);
-    /* assign to pipe 0 the broadcast address*/
+    // assign to pipe 0 the broadcast address
     nrf24l01p_ng_write_reg(dev, NRF24L01P_NG_REG_RX_ADDR_P0,
                            NRF24L01P_NG_ADDR_P0(dev), aw);
-    /* "The LSByte must be unique for all six pipes" [datasheet p.38] */
+    // "The LSByte must be unique for all six pipes" [datasheet p.38]
     nrf24l01p_ng_eui_get(&dev->netdev, NRF24L01P_NG_ADDR_P1(dev));
     assert(NRF24L01P_NG_ADDR_P1(dev)[aw - 1] != NRF24L01P_NG_ADDR_P0(dev)[aw - 1]);
-    /* assign to pipe 1 the "main" listening address */
+    // assign to pipe 1 the "main" listening address
     nrf24l01p_ng_write_reg(dev, NRF24L01P_NG_REG_RX_ADDR_P1,
                            NRF24L01P_NG_ADDR_P1(dev), aw);
-    /* set the address width */
+    // set the address width
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_SETUP_AW,
                     NRF24L01P_NG_FLG_AW(nrf24l01p_ng_valtoe_aw(aw)));
-    /* set Tx power and Tx data rate */
+    // set Tx power and Tx data rate
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_RF_SETUP,
                     NRF24L01P_NG_FLG_RF_DR(dev->params.config.cfg_data_rate) |
                     NRF24L01P_NG_FLG_RF_PWR(dev->params.config.cfg_tx_power));
-    /* set retransmission delay and the maximum number of retransmisisons */
+    // set retransmission delay and the maximum number of retransmisisons
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_SETUP_RETR,
                     NRF24L01P_NG_FLG_ARD(dev->params.config.cfg_retr_delay) |
                     NRF24L01P_NG_FLG_ARC(dev->params.config.cfg_max_retr));
-    /* set the radio channel */
+    // set the radio channel
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_RF_CH,
                     NRF24L01P_NG_FLG_RF_CH(dev->params.config.cfg_channel));
-    /* enable pipe 0 and pipe 1 */
+    // enable pipe 0 and pipe 1
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_EN_RXADDR,
                             NRF24L01P_NG_FLG_ERX_P0 |
                             NRF24L01P_NG_FLG_ERX_P1);
-    /* set CRC length */
+    // set CRC length
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_CONFIG,
                     NRF24L01P_NG_FLG_CRCO(dev->params.config.cfg_crc));
-    /* enable NRF24L01+ features:
-       automatic acknowledgements,
-       dynamic payload lengths,
-       piggyback acknowledgements */
+    // enable NRF24L01+ features:
+    //    automatic acknowledgements,
+    //    dynamic payload lengths,
+    //    piggyback acknowledgements
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_FEATURES,
                             NRF24L01P_NG_FLG_EN_DYN_ACK |
                             NRF24L01P_NG_FLG_EN_DPL |
                             NRF24L01P_NG_FLG_EN_ACK_PAY);
-    /* enable automatic acknowledgements for pipe 0 and pipe 1 */
+    // enable automatic acknowledgements for pipe 0 and pipe 1
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_EN_AA,
                             NRF24L01P_NG_FLG_ENAA_P0 |
                             NRF24L01P_NG_FLG_ENAA_P1);
-    /* enable dynamic payload lengths for pipe 0 and pipe 1 */
+    // enable dynamic payload lengths for pipe 0 and pipe 1
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_DYNPD,
                             NRF24L01P_NG_FLG_DPL_P0 |
                             NRF24L01P_NG_FLG_DPL_P1);
-    /* clear interrupts */
+    // clear interrupts
     nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_STATUS, NRF24L01P_NG_FLG_IRQ);
-    /* go to standby */
+    // go to standby
     nrf24l01p_ng_transition_to_standby_1(dev);
 #if IS_USED(MODULE_NRF24L01P_NG_DIAGNOSTICS) && ENABLE_DEBUG
     nrf24l01p_ng_diagnostics_print_all_regs(dev);
     nrf24l01p_ng_diagnostics_print_dev_info(dev);
 #endif
-    /* check if the transceiver responds */
+    // check if the transceiver responds
     if (!_assert_awake(dev)) {
         nrf24l01p_ng_release(dev);
         return -ENODEV;
     }
-    /* go to listening state */
+    // go to listening state
     nrf24l01p_ng_transition_to_rx_mode(dev);
     nrf24l01p_ng_release(dev);
-    /* enable interrupt pins */
+    // enable interrupt pins
     if (gpio_init_int(dev->params.pin_irq, GPIO_IN, GPIO_FALLING,
                       _nrf24l01p_ng_irq_handler, dev) < 0) {
         DEBUG_PUTS("[nrf24l01p_ng] _init(): gpio_init_int() failed");
         return -EIO;
     }
 
-    /* signal link UP */
+    // signal link UP
     netdev->event_callback(netdev, NETDEV_EVENT_LINK_UP);
 
     return 0;
 }
 
-/**
- * @brief   NRF24L01+ @ref netdev_driver_t::recv routine
- *
- * @pre @ref nrf24l01p_ng_acquire must have been called before.
- * @pre Interrupts should be disabled
- *
- * The SPI bus is not acquired in this function because it is called from
- * @ref netdev_driver_t::isr, possibly for multiple times. If another
- * device acquired the SPI bus within the ISR, the ISR would block
- * until that device releases the bus.
- *
- * @param[in]   netdev      Abstract network device handle
- * @param[out]  buf         Rx buffer
- * @param[in]   len         Size of Rx buffer
- * @param[out]  info        LQI and RSSI information (unused)
- *
- * @return                  Size of received frame in @p buf
- * @return                  Upper estimation of the frame width,
- *                          if @p buf == NULL and len == 0
- * @return                  Actual frame width,
- *                          if @p buf == NULL and @p len != 0
- *                          (frame is NOT dropped)
- * @retval -ENOBUFS         @p buf != NULL and @p len < actual frame width
- *                          (frame is dropped)
- * @retval -EINVAL          @p buf == NULL
- *                          (and none of the above cases are true)
- * @retval -ENOTSUP         Malformed header
- * @retval 0                No data to read from Rx FIFO
- */
-static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
-    (void)info; /* nrf24l01+ supports neither lqi nor rssi */
+/// @brief   NRF24L01+ @ref netdev_driver_t::recv routine
+///
+/// @pre @ref nrf24l01p_ng_acquire must have been called before.
+/// @pre Interrupts should be disabled
+///
+/// The SPI bus is not acquired in this function because it is called from
+/// @ref netdev_driver_t::isr, possibly for multiple times. If another
+/// device acquired the SPI bus within the ISR, the ISR would block
+/// until that device releases the bus.
+///
+/// @param[in]   netdev      Abstract network device handle
+/// @param[out]  buf         Rx buffer
+/// @param[in]   len         Size of Rx buffer
+/// @param[out]  info        LQI and RSSI information (unused)
+///
+/// @return                  Size of received frame in @p buf
+/// @return                  Upper estimation of the frame width,
+///                          if @p buf == NULL and len == 0
+/// @return                  Actual frame width,
+///                          if @p buf == NULL and @p len != 0
+///                          (frame is NOT dropped)
+/// @retval -ENOBUFS         @p buf != NULL and @p len < actual frame width
+///                          (frame is dropped)
+/// @retval -EINVAL          @p buf == NULL
+///                          (and none of the above cases are true)
+/// @retval -ENOTSUP         Malformed header
+/// @retval 0                No data to read from Rx FIFO
+static int _recv(netdev_t *netdev, void *buf, size_t len, void *info) {
+    (void)info; // nrf24l01+ supports neither lqi nor rssi
 
-    /* return upper estaimation bound of frame size */
+    // return upper estaimation bound of frame size
     if (!buf && !len) {
         DEBUG_PUTS("[nrf24l01p_ng] Return upper frame estimation");
         return NRF24L01P_NG_ADDR_WIDTH + NRF24L01P_NG_MAX_PAYLOAD_WIDTH;
@@ -306,20 +290,20 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
         pl_width > NRF24L01P_NG_MAX_PAYLOAD_WIDTH ||
         pno >= NRF24L01P_NG_PX_NUM_OF) {
         DEBUG_PUTS("[nrf24l01p_ng] RX error, flush RX FIFO");
-/* In some rare cases the RX payload width (R_RX_PL_WID) exceeds
-   the maximum of 32 bytes. In that case it must be flushed.
-   See https://devzone.nordicsemi.com/f/nordic-q-a/26489/nrf24l01-the-length-of-received-data-exceed-32
-   and https://www.mikrocontroller.net/articles/NRF24L01_Tutorial */
+// In some rare cases the RX payload width (R_RX_PL_WID) exceeds
+//    the maximum of 32 bytes. In that case it must be flushed.
+//    See https://devzone.nordicsemi.com/f/nordic-q-a/26489/nrf24l01-the-length-of-received-data-exceed-32
+//    and https://www.mikrocontroller.net/articles/NRF24L01_Tutorial
         nrf24l01p_ng_flush_rx(dev);
         return 0;
     }
     uint8_t frame_len = NRF24L01P_NG_ADDR_WIDTH + pl_width;
-    /* do NOT drop frame and return exact frame size */
+    // do NOT drop frame and return exact frame size
     if (!buf) {
         DEBUG_PUTS("[nrf24l01p_ng] Return exact frame length");
         return frame_len;
     }
-    /* drop frame, content in buf becomes invalid and return -ENOBUFS */
+    // drop frame, content in buf becomes invalid and return -ENOBUFS
     if (len < frame_len) {
         DEBUG("[nrf24l01p_ng] Buffer too small: %" PRIuSIZE " < %u, dropping frame\n",
               len, frame_len);
@@ -327,7 +311,7 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
         nrf24l01p_ng_read_rx_payload(dev, garbage, pl_width);
         return -ENOBUFS;
     }
-    /* get received frame */
+    // get received frame
     uint8_t dst_addr[NRF24L01P_NG_ADDR_WIDTH];
     if (pno == NRF24L01P_NG_P0) {
         memcpy(dst_addr, NRF24L01P_NG_ADDR_P0(dev), sizeof(dst_addr));
@@ -351,22 +335,19 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
     return (int)frame_len;
 }
 
-/**
- * @brief   NRF24L01+ @ref netdev_driver_t::send routine
- *
- * @param[in] netdev        Abstract network device handle
- * @param[in] iolist        Linked list of data to be sent, where
- *                          the base must be the destination address
- *
- * @return                  Size of sent payload
- * @retval -ENOTSUP         @p iolist had no base and no next link,
- *                          or address was too big, or too short
- * @retval -EAGAIN          Pending interrupts have been handled first
- * @retval -EBUSY           The internal Tx FIFO is full
- * @retval -E2BIG           Resulting frame from iolist was too big to be sent
- */
-static int _send(netdev_t *netdev, const iolist_t *iolist)
-{
+/// @brief   NRF24L01+ @ref netdev_driver_t::send routine
+///
+/// @param[in] netdev        Abstract network device handle
+/// @param[in] iolist        Linked list of data to be sent, where
+///                          the base must be the destination address
+///
+/// @return                  Size of sent payload
+/// @retval -ENOTSUP         @p iolist had no base and no next link,
+///                          or address was too big, or too short
+/// @retval -EAGAIN          Pending interrupts have been handled first
+/// @retval -EBUSY           The internal Tx FIFO is full
+/// @retval -E2BIG           Resulting frame from iolist was too big to be sent
+static int _send(netdev_t *netdev, const iolist_t *iolist) {
     assert(netdev && iolist);
     if (!(iolist->iol_base) || !(iolist->iol_next)) {
         DEBUG_PUTS("[nrf24l01p_ng] No Tx address or no payload");
@@ -388,17 +369,17 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
         return -EAGAIN;
     }
     if (fifo_status & NRF24L01P_NG_FLG_TX_FULL_) {
-        /* If the TX FIFO is full, but no ACK has arrived yet,
-           so no TX_DS / MAX_RT interrupt has triggered so far that
-           could clean the TX FIFO. So we need to wait until an interrupt
-           occurs, before we can send a new frame. This is done
-           while this _send() function is called in a loop and the
-           interrupt status is polled.
-           If you flush the FIFO here, pending content will
-           be lost. */
+        // If the TX FIFO is full, but no ACK has arrived yet,
+        //    so no TX_DS / MAX_RT interrupt has triggered so far that
+        //    could clean the TX FIFO. So we need to wait until an interrupt
+        //    occurs, before we can send a new frame. This is done
+        //    while this _send() function is called in a loop and the
+        //    interrupt status is polled.
+        //    If you flush the FIFO here, pending content will
+        //    be lost.
         DEBUG_PUTS("[nrf24l01p_ng] TX FIFO full");
         nrf24l01p_ng_release(dev);
-        return -EBUSY; /* for gnrc_netif_pktq */
+        return -EBUSY; // for gnrc_netif_pktq
     }
     uint8_t *dst_addr = iolist->iol_base;
     uint8_t dst_addr_len = iolist->iol_len;
@@ -421,15 +402,15 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
     nrf24l01p_ng_write_reg(dev, NRF24L01P_NG_REG_TX_ADDR,
                            dst_addr, dst_addr_len);
     if (!memcmp(dst_addr, bcast_addr, dst_addr_len)) {
-        /* do not expect ACK for broadcast */
+        // do not expect ACK for broadcast
         nrf24l01p_ng_write_tx_pl_no_ack(dev, payload, pl_width);
     }
     else {
         nrf24l01p_ng_write_tx_payload(dev, payload, pl_width);
-        /* A PTX node must change pipe 0 Rx address to Tx address
-         * in order to receive ACKs.
-         * If node switches back to Rx mode, pipe 0 Rx address
-         * must be restored from params. */
+        // A PTX node must change pipe 0 Rx address to Tx address
+        // in order to receive ACKs.
+        // If node switches back to Rx mode, pipe 0 Rx address
+        // must be restored from params.
         nrf24l01p_ng_write_reg(dev, NRF24L01P_NG_REG_RX_ADDR_P0,
                                dst_addr, dst_addr_len);
         nrf24l01p_ng_reg8_write(dev, NRF24L01P_NG_REG_SETUP_AW,
@@ -449,19 +430,16 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
     return (int)pl_width;
 }
 
-/**
- * @brief   NRF24L01+ @ref netdev_driver_t::isr
- *
- * @param[in] netdev        Abstract network device
- */
-static void _isr(netdev_t *netdev)
-{
+/// @brief   NRF24L01+ @ref netdev_driver_t::isr
+///
+/// @param[in] netdev        Abstract network device
+static void _isr(netdev_t *netdev) {
     nrf24l01p_ng_t *dev = container_of(netdev, nrf24l01p_ng_t, netdev);
 
     nrf24l01p_ng_acquire(dev);
     gpio_irq_enable(dev->params.pin_irq);
     uint8_t status = nrf24l01p_ng_get_status(dev);
-    /* clear interrupt flags */
+    // clear interrupt flags
     nrf24l01p_ng_write_reg(dev, NRF24L01P_NG_REG_STATUS, &status, 1);
     nrf24l01p_ng_release(dev);
 
@@ -478,7 +456,7 @@ static void _isr(netdev_t *netdev)
     nrf24l01p_ng_acquire(dev);
     if (dev->state == NRF24L01P_NG_STATE_TX_MODE ||
         dev->state == NRF24L01P_NG_STATE_STANDBY_2) {
-        /* frame in FIFO is not an ACK */
+        // frame in FIFO is not an ACK
         if (!(nrf24l01p_ng_reg8_read(dev, NRF24L01P_NG_REG_FIFO_STATUS) &
             NRF24L01P_NG_FLG_TX_EMPTY)) {
             nrf24l01p_ng_release(dev);
@@ -486,11 +464,11 @@ static void _isr(netdev_t *netdev)
             return;
         }
     }
-    /* no more data to transmit */
+    // no more data to transmit
     if (dev->state != NRF24L01P_NG_STATE_STANDBY_1) {
         nrf24l01p_ng_transition_to_standby_1(dev);
     }
-    /* go to idle state */
+    // go to idle state
     if (dev->idle_state != NRF24L01P_NG_STATE_STANDBY_1) {
         if (dev->idle_state == NRF24L01P_NG_STATE_POWER_DOWN) {
             nrf24l01p_ng_transition_to_power_down(dev);
@@ -503,22 +481,19 @@ static void _isr(netdev_t *netdev)
     nrf24l01p_ng_release(dev);
 }
 
-/**
- * @brief   @ref netdev_driver_t::get
- *
- * @param[in] netdev        Abstract network device
- * @param[in] opt           netdev option type
- * @param[out] val          Option value
- * @param[in] max_len       Maximum option length
- *
- * @return                  Size of written option value
- * @retval -ENOTSUP         Unsupported netdev option @p opt
- */
-static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
-{
+/// @brief   @ref netdev_driver_t::get
+///
+/// @param[in] netdev        Abstract network device
+/// @param[in] opt           netdev option type
+/// @param[out] val          Option value
+/// @param[in] max_len       Maximum option length
+///
+/// @return                  Size of written option value
+/// @retval -ENOTSUP         Unsupported netdev option @p opt
+static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len) {
     nrf24l01p_ng_t *dev = container_of(netdev, nrf24l01p_ng_t, netdev);
 
-    (void)max_len; /* only used in assert() */
+    (void)max_len; // only used in assert()
     switch (opt) {
         case NETOPT_ADDR_LEN:
         case NETOPT_SRC_LEN: {
@@ -533,7 +508,7 @@ static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
         } break;
         case NETOPT_AUTOACK: {
             assert(max_len == sizeof(netopt_enable_t));
-            /* mandatory for Enhanced ShockBurst */
+            // mandatory for Enhanced ShockBurst
             *((netopt_enable_t *)val) = NETOPT_ENABLE;
             return sizeof(netopt_enable_t);
         } break;
@@ -545,7 +520,7 @@ static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
         case NETOPT_CHECKSUM:
         case NETOPT_INTEGRITY_CHECK: {
             assert(max_len == sizeof(netopt_enable_t));
-            /* mandatory for Enhanced ShockBurst */
+            // mandatory for Enhanced ShockBurst
             *((netopt_enable_t *)val) = NETOPT_ENABLE;
             return sizeof(netopt_enable_t);
         } break;
@@ -593,25 +568,22 @@ static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
     }
 }
 
-/**
- * @brief   @ref netdev_driver_t::set
- *
- * @param[in] netdev            Abstract network device handle
- * @param[in] opt               netdev option type
- * @param[in] val               Option value
- * @param[in] len               Size of option value
- *
- * @return                      Size of written option value
- * @return                      negative number, on failure
- * @retval -ENOTSUP             Unsupported netdev option @p opt
- */
-static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len)
-{
+/// @brief   @ref netdev_driver_t::set
+///
+/// @param[in] netdev            Abstract network device handle
+/// @param[in] opt               netdev option type
+/// @param[in] val               Option value
+/// @param[in] len               Size of option value
+///
+/// @return                      Size of written option value
+/// @return                      negative number, on failure
+/// @retval -ENOTSUP             Unsupported netdev option @p opt
+static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len) {
     nrf24l01p_ng_t *dev = container_of(netdev, nrf24l01p_ng_t, netdev);
 
     switch (opt) {
         case NETOPT_ADDRESS: {
-            /* common address length for all pipes */
+            // common address length for all pipes
             assert(len == NRF24L01P_NG_ADDR_WIDTH);
             int ret = nrf24l01p_ng_set_rx_address(dev, val, NRF24L01P_NG_P1);
             return ret ? ret : (int)len;

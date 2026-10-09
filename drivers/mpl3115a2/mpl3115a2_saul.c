@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mpl3115a2
- * @{
- *
- * @file
- * @brief       MPL3115A2 adaption to the RIOT actuator/sensor interface
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     drivers_mpl3115a2
+/// @{
+///
+/// @file
+/// @brief       MPL3115A2 adaption to the RIOT actuator/sensor interface
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -22,8 +18,7 @@
 #include "saul.h"
 #include "mpl3115a2.h"
 
-static int read_pressure(const void *dev, phydat_t *res)
-{
+static int read_pressure(const void *dev, phydat_t *res) {
     uint8_t state;
     uint32_t pressure;
     if (mpl3115a2_read_pressure((const mpl3115a2_t *)dev,
@@ -31,7 +26,7 @@ static int read_pressure(const void *dev, phydat_t *res)
         LOG_ERROR("[SAUL] mpl3115a2_read_pressure failed!\n");
         return -1;
     }
-    /* pressure values > 100000, so /100 for int16_t which matches unit hPA */
+    // pressure values > 100000, so /100 for int16_t which matches unit hPA
     res->val[0] = (int16_t)(pressure/100);
     res->unit = UNIT_PA;
     res->scale = 2;
@@ -39,8 +34,7 @@ static int read_pressure(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int read_temperature(const void *dev, phydat_t *res)
-{
+static int read_temperature(const void *dev, phydat_t *res) {
     int16_t temperature;
     if (mpl3115a2_read_temp((const mpl3115a2_t *)dev, &temperature) != MPL3115A2_OK) {
         LOG_ERROR("[SAUL] mpl3115a2_read_temp failed!\n");

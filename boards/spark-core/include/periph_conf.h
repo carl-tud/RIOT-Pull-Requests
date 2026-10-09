@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_spark-core
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the spark-core board
- *
- * @author      Christian Mehlis <mehlis@inf.fu-berlin.de>
- */
+/// @ingroup     boards_spark-core
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the spark-core board
+///
+/// @author      Christian Mehlis <mehlis@inf.fu-berlin.de>
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -47,12 +41,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tim3
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev      = USART2,
@@ -67,12 +59,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -86,10 +76,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

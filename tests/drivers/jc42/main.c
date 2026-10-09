@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the jc42 sensor driver
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the jc42 sensor driver
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #ifndef TEST_I2C
 #error "TEST_I2C not defined"
@@ -35,8 +31,7 @@
 
 #include "jc42.h"
 
-int main(void)
-{
+int main(void) {
     jc42_t dev;
     jc42_params_t params = {
         .i2c = TEST_I2C,
@@ -46,7 +41,7 @@ int main(void)
 
     puts("JC42 temperature sensor test application\n");
 
-    /* initialize the sensor */
+    // initialize the sensor
     printf("Initializing sensor...");
 
     if (jc42_init(&dev, &params) == 0) {
@@ -57,7 +52,7 @@ int main(void)
         return 1;
     }
 
-    /* read temperature every 1 seconds */
+    // read temperature every 1 seconds
     int16_t temperature;
     while (1) {
         printf("Testing sensor communication...");
@@ -74,12 +69,12 @@ int main(void)
             temperature = -temperature;
         }
 
-        /* display results */
+        // display results
         printf("temperature: %c%d.%02d C\n",
                 (negative) ? '-' : ' ',
                 temperature / 100, temperature % 100);
 
-        /* sleep between measurements */
+        // sleep between measurements
         xtimer_msleep(1000);
     }
 

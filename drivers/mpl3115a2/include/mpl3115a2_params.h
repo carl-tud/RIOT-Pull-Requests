@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_mpl3115a2
- * @{
- *
- * @file
- * @brief       Default configuration for MPL3115A2 devices
- *
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     drivers_mpl3115a2
+/// @{
+///
+/// @file
+/// @brief       Default configuration for MPL3115A2 devices
+///
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "board.h"
 #include "saul_reg.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Default configuration parameters for the MPL3115A2 driver
- * @{
- */
+/// @name   Default configuration parameters for the MPL3115A2 driver
+/// @{
 #ifndef MPL3115A2_PARAM_I2C
 #define MPL3115A2_PARAM_I2C         I2C_DEV(0)
 #endif
@@ -48,19 +42,15 @@ extern "C" {
 #ifndef MPL3115A2_SAUL_INFO
 #define MPL3115A2_SAUL_INFO         { .name = "mpl3115a2" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   MPL3115A2 configuration
- */
+/// @brief   MPL3115A2 configuration
 static const mpl3115a2_params_t mpl3115a2_params[] =
 {
     MPL3115A2_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t mpl3115a2_saul_info[] =
 {
     MPL3115A2_SAUL_INFO
@@ -70,4 +60,4 @@ static const saul_reg_info_t mpl3115a2_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

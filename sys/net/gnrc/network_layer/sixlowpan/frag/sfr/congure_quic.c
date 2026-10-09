@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "kernel_defines.h"
 #include "congure/quic.h"
@@ -18,12 +14,12 @@
 
 static congure_quic_snd_t _sfr_congures_quic[CONFIG_GNRC_SIXLOWPAN_FRAG_FB_SIZE];
 static const congure_quic_snd_consts_t _sfr_congure_quic_consts = {
-    /* cong_event_cb to resend a fragment is not needed since SFR always
-     * resends fragments lost or timed out immediately. In case of a reported
-     * ECN, it will also continue with the remaining fragments */
+    // cong_event_cb to resend a fragment is not needed since SFR always
+    // resends fragments lost or timed out immediately. In case of a reported
+    // ECN, it will also continue with the remaining fragments
     .init_wnd = CONFIG_GNRC_SIXLOWPAN_SFR_OPT_WIN_SIZE,
     .min_wnd = CONFIG_GNRC_SIXLOWPAN_SFR_MIN_WIN_SIZE,
-    /* TODO make those configurable via Kconfig? */
+    // TODO make those configurable via Kconfig?
     .init_rtt = 333U,
     .max_msg_size = 1,
     .pc_thresh = 3000,
@@ -34,8 +30,7 @@ static const congure_quic_snd_consts_t _sfr_congure_quic_consts = {
     .inter_msg_interval_denominator = 4,
 };
 
-congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void)
-{
+congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void) {
     for (unsigned i = 0; i < ARRAY_SIZE(_sfr_congures_quic); i++) {
         if (_sfr_congures_quic[i].super.driver == NULL) {
             congure_quic_snd_setup(&_sfr_congures_quic[i],
@@ -46,4 +41,4 @@ congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void)
     return NULL;
 }
 
-/** @} */
+/// @}

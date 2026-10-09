@@ -1,37 +1,30 @@
-/*
- * SPDX-FileCopyrightText: 2023 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <reent.h>
 
-int main(void)
-{
+int main(void) {
     return 0;
 }
 
-void _exit(int n)
-{
+void _exit(int n) {
     (void)n;
     while(1);
 }
 
-void *_sbrk_r(struct _reent *r, ptrdiff_t incr)
-{
+void *_sbrk_r(struct _reent *r, ptrdiff_t incr) {
     (void)r;
     (void)incr;
     return NULL;
 }
 
-int _close_r(struct _reent *r, int fd)
-{
+int _close_r(struct _reent *r, int fd) {
     (void)r;
     (void)fd;
     return 0;
 }
 
-_off_t _lseek_r(struct _reent *r, int fd, _off_t off, int whence)
-{
+_off_t _lseek_r(struct _reent *r, int fd, _off_t off, int whence) {
     (void)r;
     (void)fd;
     (void)off;
@@ -39,8 +32,7 @@ _off_t _lseek_r(struct _reent *r, int fd, _off_t off, int whence)
     return 0;
 }
 
-_ssize_t _read_r(struct _reent *r, int fd, void *buffer, size_t count)
-{
+_ssize_t _read_r(struct _reent *r, int fd, void *buffer, size_t count) {
     (void)r;
     (void)fd;
     (void)buffer;
@@ -49,8 +41,7 @@ _ssize_t _read_r(struct _reent *r, int fd, void *buffer, size_t count)
     return 0;
 }
 
-_ssize_t _write_r(struct _reent *r, int fd, const void *data, size_t count)
-{
+_ssize_t _write_r(struct _reent *r, int fd, const void *data, size_t count) {
     (void)r;
     (void)fd;
     (void)data;

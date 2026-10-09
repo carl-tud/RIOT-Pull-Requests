@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- *
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+///
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -39,8 +35,8 @@ int _test_udp_send(sock_udp_ep_t *remote, char *errno_str, int exp_res) {
 
     int res = sock_udp_send(&_udp_sock, _test_payload, sizeof(_test_payload),
                         remote);
-    /* remote is not reachable or route does not exist, so it should return an
-     * error */
+    // remote is not reachable or route does not exist, so it should return an
+    // error
     if (-res == exp_res) {
         printf("SUCCESS: error code %s (%li == %i)\n",
                errno_str, (long)(-res), exp_res);
@@ -53,8 +49,7 @@ int _test_udp_send(sock_udp_ep_t *remote, char *errno_str, int exp_res) {
     }
 }
 
-int main(void)
-{
+int main(void) {
     sock_udp_ep_t local = SOCK_IPV6_EP_ANY;
     sock_udp_ep_t remote = SOCK_IPV6_EP_ANY;
 
@@ -66,13 +61,13 @@ int main(void)
 
     memcpy(remote.addr.ipv6, _test_link_local_remote,
            sizeof(_test_link_local_remote));
-    /* With a 6LN this send may succeed, as according to RFC 6775 link-local
-     * addresses are assumed to be generated from the EUI-64, reversing the
-     * procedure of generating the address from EUI-64 for address resolution */
+    // With a 6LN this send may succeed, as according to RFC 6775 link-local
+    // addresses are assumed to be generated from the EUI-64, reversing the
+    // procedure of generating the address from EUI-64 for address resolution
     _test_udp_send(&remote, "EHOSTUNREACH", EHOSTUNREACH);
     memcpy(remote.addr.ipv6, _test_global_remote,
            sizeof(_test_global_remote));
     _test_udp_send(&remote, "ENETUNREACH", ENETUNREACH);
 }
 
-/** @} */
+/// @}

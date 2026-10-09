@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mag3110
- * @{
- *
- * @file
- * @brief       Driver for the Freescale MAG3110 magnetometer.
- *
- * @author      Johann Fischer <j.fischer@phytec.de>
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     drivers_mag3110
+/// @{
+///
+/// @file
+/// @brief       Driver for the Freescale MAG3110 magnetometer.
+///
+/// @author      Johann Fischer <j.fischer@phytec.de>
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <assert.h>
 #include <stdint.h>
@@ -35,39 +31,38 @@
 #define BUS                 (dev->params.i2c)
 #define ADDR                (dev->params.addr)
 
-int mag3110_init(mag3110_t *dev, const mag3110_params_t *params)
-{
+int mag3110_init(mag3110_t *dev, const mag3110_params_t *params) {
     uint8_t reg;
 
     assert(dev);
     assert(params);
 
-    /* write device descriptor */
+    // write device descriptor
     dev->params = *params;
 
     i2c_acquire(BUS);
-    /* test device */
+    // test device
     i2c_read_regs(BUS, ADDR, MAG3110_WHO_AM_I, &reg, 1, 0);
     if (reg != dev->params.type) {
         i2c_release(BUS);
         LOG_ERROR("mag3110_init: invalid WHO_AM_I value (0x%02x)!\n", (int)reg);
         return -MAG3110_ERROR_DEV;
     }
-    /* enable automatic magnetic sensor reset */
+    // enable automatic magnetic sensor reset
     reg = MAG3110_CTRL_REG2_AUTO_MRST_EN;
     if (i2c_write_regs(BUS, ADDR, MAG3110_CTRL_REG2, &reg, 1, 0) < 0) {
         i2c_release(BUS);
         LOG_ERROR("mag3110_init: failed to enable auto reset!\n");
         return -MAG3110_ERROR_CNF;
     }
-    /* set sample rate */
+    // set sample rate
     reg = MAG3110_CTRL_REG1_DROS(dev->params.dros);
     if (i2c_write_regs(BUS, ADDR, MAG3110_CTRL_REG1, &reg, 1, 0) < 0) {
         i2c_release(BUS);
         LOG_ERROR("mag3110_init: failed to set sample rate!\n");
         return -MAG3110_ERROR_CNF;
     }
-    /* set device active */
+    // set device active
     if (i2c_read_regs(BUS, ADDR, MAG3110_CTRL_REG1, &reg, 1, 0) < 0) {
         i2c_release(BUS);
         LOG_ERROR("mag3110_init: failed to read device state!\n");
@@ -80,13 +75,12 @@ int mag3110_init(mag3110_t *dev, const mag3110_params_t *params)
         return -MAG3110_ERROR_CNF;
     }
     i2c_release(BUS);
-    /* write user offsets */
+    // write user offsets
     return mag3110_set_user_offset(dev, dev->params.offset[0],
                                    dev->params.offset[1], dev->params.offset[2]);
 }
 
-int mag3110_set_user_offset(const mag3110_t *dev, int16_t x, int16_t y, int16_t z)
-{
+int mag3110_set_user_offset(const mag3110_t *dev, int16_t x, int16_t y, int16_t z) {
     uint8_t buf[6];
 
     assert(dev);
@@ -112,8 +106,7 @@ int mag3110_set_user_offset(const mag3110_t *dev, int16_t x, int16_t y, int16_t 
     return MAG3110_OK;
 }
 
-int mag3110_set_active(const mag3110_t *dev)
-{
+int mag3110_set_active(const mag3110_t *dev) {
     uint8_t reg;
 
     assert(dev);
@@ -135,8 +128,7 @@ int mag3110_set_active(const mag3110_t *dev)
     return MAG3110_OK;
 }
 
-int mag3110_set_standby(const mag3110_t *dev)
-{
+int mag3110_set_standby(const mag3110_t *dev) {
     uint8_t reg;
 
     assert(dev);
@@ -158,8 +150,7 @@ int mag3110_set_standby(const mag3110_t *dev)
     return MAG3110_OK;
 }
 
-int mag3110_is_ready(const mag3110_t *dev)
-{
+int mag3110_is_ready(const mag3110_t *dev) {
     uint8_t reg;
 
     assert(dev);
@@ -174,8 +165,7 @@ int mag3110_is_ready(const mag3110_t *dev)
     return (int)(reg & MAG3110_DR_STATUS_ZYXDR);
 }
 
-int mag3110_read(const mag3110_t *dev, mag3110_data_t *data)
-{
+int mag3110_read(const mag3110_t *dev, mag3110_data_t *data) {
     uint8_t buf[7];
 
     assert(dev);
@@ -186,9 +176,8 @@ int mag3110_read(const mag3110_t *dev, mag3110_data_t *data)
         return -MAG3110_ERROR_I2C;
     }
     i2c_release(BUS);
-    /* TODO: implement state handling, if needed?
-    uint8_t status = buf[0];
-    */
+    // TODO: implement state handling, if needed?
+    // uint8_t status = buf[0];
     data->x = ((int16_t)buf[1] << 8) | buf[2];
     data->y = ((int16_t)buf[3] << 8) | buf[4];
     data->z = ((int16_t)buf[5] << 8) | buf[6];
@@ -196,8 +185,7 @@ int mag3110_read(const mag3110_t *dev, mag3110_data_t *data)
     return MAG3110_OK;
 }
 
-int mag3110_read_dtemp(const mag3110_t *dev, int8_t *dtemp)
-{
+int mag3110_read_dtemp(const mag3110_t *dev, int8_t *dtemp) {
     assert(dev);
 
     i2c_acquire(BUS);

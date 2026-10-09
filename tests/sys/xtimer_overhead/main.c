@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     test
- * @{
- *
- * @file
- * @brief       xtimer overhead test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     test
+/// @{
+///
+/// @file
+/// @brief       xtimer overhead test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -29,8 +25,7 @@
 
 int32_t xtimer_overhead(uint32_t base);
 
-int main(void)
-{
+int main(void) {
     uint32_t total = 0;
 
     int32_t min = INT32_MAX;

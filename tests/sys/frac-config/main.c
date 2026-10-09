@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Frac library static configuration helper
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Frac library static configuration helper
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -21,8 +17,7 @@
 
 #include "frac.h"
 
-int main(void)
-{
+int main(void) {
     puts("frac library static configuration generator");
     while (1) {
         int res = 0;

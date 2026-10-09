@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2021 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2021 HAW Hamburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_psa_crypto sys_psa_crypto_alg_disp
- * @{
- *
- * @file
- * @brief       Dispatch calls from the PSA Crypto API to an available backend.
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     sys_psa_crypto sys_psa_crypto_alg_disp
+/// @{
+///
+/// @file
+/// @brief       Dispatch calls from the PSA Crypto API to an available backend.
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "kernel_defines.h"
@@ -48,8 +44,7 @@
 
 #if IS_USED(MODULE_PSA_HASH)
 psa_status_t psa_algorithm_dispatch_hash_setup(psa_hash_operation_t *operation,
-                                               psa_algorithm_t alg)
-{
+                                               psa_algorithm_t alg) {
     psa_status_t status = PSA_ERROR_NOT_SUPPORTED;
 
     switch (alg) {
@@ -153,8 +148,7 @@ psa_status_t psa_algorithm_dispatch_hash_setup(psa_hash_operation_t *operation,
 
 psa_status_t psa_algorithm_dispatch_hash_update(psa_hash_operation_t *operation,
                                                 const uint8_t *input,
-                                                size_t input_length)
-{
+                                                size_t input_length) {
     switch (operation->alg) {
     #if (IS_USED(MODULE_PSA_HASH_MD5))
     case PSA_ALG_MD5:
@@ -211,8 +205,7 @@ psa_status_t psa_algorithm_dispatch_hash_update(psa_hash_operation_t *operation,
 psa_status_t psa_algorithm_dispatch_hash_finish(psa_hash_operation_t *operation,
                                                 uint8_t *hash,
                                                 size_t hash_size,
-                                                size_t *hash_length)
-{
+                                                size_t *hash_length) {
     switch (operation->alg) {
     #if (IS_USED(MODULE_PSA_HASH_MD5))
     case PSA_ALG_MD5:
@@ -268,7 +261,7 @@ psa_status_t psa_algorithm_dispatch_hash_finish(psa_hash_operation_t *operation,
         return PSA_ERROR_NOT_SUPPORTED;
     }
 }
-#endif /* MODULE_PSA_HASH */
+#endif // MODULE_PSA_HASH
 
 #if IS_USED(MODULE_PSA_ASYMMETRIC)
 psa_status_t psa_algorithm_dispatch_sign_hash(  const psa_key_attributes_t *attributes,
@@ -278,8 +271,7 @@ psa_status_t psa_algorithm_dispatch_sign_hash(  const psa_key_attributes_t *attr
                                                 size_t hash_length,
                                                 uint8_t *signature,
                                                 size_t signature_size,
-                                                size_t *signature_length)
-{
+                                                size_t *signature_length) {
     psa_asym_key_t asym_key = PSA_INVALID_OPERATION;
     uint8_t *key_data = NULL;
     size_t *key_bytes = NULL;
@@ -330,8 +322,7 @@ psa_status_t psa_algorithm_dispatch_sign_message(const psa_key_attributes_t *att
                                                 size_t input_length,
                                                 uint8_t *signature,
                                                 size_t signature_size,
-                                                size_t *signature_length)
-{
+                                                size_t *signature_length) {
     psa_asym_key_t asym_key = PSA_INVALID_OPERATION;
     uint8_t *key_data = NULL;
     size_t *key_bytes = NULL;
@@ -395,8 +386,7 @@ psa_status_t psa_algorithm_dispatch_verify_hash(  const psa_key_attributes_t *at
                                                   const uint8_t *hash,
                                                   size_t hash_length,
                                                   const uint8_t *signature,
-                                                  size_t signature_length)
-{
+                                                  size_t signature_length) {
     psa_asym_key_t asym_key = PSA_INVALID_OPERATION;
     uint8_t *pubkey_data = NULL;
     size_t *pubkey_data_len = NULL;
@@ -441,8 +431,7 @@ psa_status_t psa_algorithm_dispatch_verify_message(const psa_key_attributes_t *a
                                                   const uint8_t *input,
                                                   size_t input_length,
                                                   const uint8_t *signature,
-                                                  size_t signature_length)
-{
+                                                  size_t signature_length) {
     psa_asym_key_t asym_key = PSA_INVALID_OPERATION;
     uint8_t *pubkey_data = NULL;
     size_t *pubkey_data_len = NULL;
@@ -488,22 +477,19 @@ psa_status_t psa_algorithm_dispatch_verify_message(const psa_key_attributes_t *a
         return PSA_ERROR_NOT_SUPPORTED;
     }
 }
-#endif /* MODULE_PSA_ASYMMETRIC */
+#endif // MODULE_PSA_ASYMMETRIC
 
 #if IS_USED(MODULE_PSA_KEY_MANAGEMENT)
 psa_status_t psa_algorithm_dispatch_generate_key(   const psa_key_attributes_t *attributes,
-                                                    psa_key_slot_t *slot)
-{
+                                                    psa_key_slot_t *slot) {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     uint8_t *key_data = NULL;
     size_t *key_bytes = NULL;
 
     psa_get_key_data_from_key_slot(slot, &key_data, &key_bytes);
 
-    /**
-     * Only asymmetric key generation needs special key generation algorithms. Symmetric keys can
-     * be created by generating random bytes.
-     */
+    /// Only asymmetric key generation needs special key generation algorithms. Symmetric keys can
+    /// be created by generating random bytes.
     if (PSA_KEY_TYPE_IS_ASYMMETRIC(attributes->type)) {
         psa_asym_key_t asym_key = PSA_INVALID_OPERATION;
         uint8_t *pubkey_data = NULL;
@@ -549,18 +535,15 @@ psa_status_t psa_algorithm_dispatch_generate_key(   const psa_key_attributes_t *
 
 psa_status_t psa_algorithm_dispatch_import_key(const psa_key_attributes_t *attributes,
                                                const uint8_t *data, size_t data_length,
-                                               psa_key_slot_t *slot, size_t *bits)
-{
+                                               psa_key_slot_t *slot, size_t *bits) {
     uint8_t *key_data = NULL;
     size_t *key_bytes = NULL;
     size_t key_data_size;
 
     key_data_size = psa_get_key_data_from_key_slot(slot, &key_data, &key_bytes);
 
-    /**
-     * Asymmetric keys needs special import handling:
-     * The public key needs to be derived from the imported private key.
-     */
+    /// Asymmetric keys needs special import handling:
+    /// The public key needs to be derived from the imported private key.
     if (PSA_KEY_TYPE_IS_KEY_PAIR(attributes->type)) {
         psa_asym_key_t asym_key = PSA_INVALID_OPERATION;
         uint8_t *pubkey_data = NULL;
@@ -607,7 +590,7 @@ psa_status_t psa_algorithm_dispatch_import_key(const psa_key_attributes_t *attri
             break;
         }
         if (ret == PSA_SUCCESS) {
-            /* save private key data */
+            // save private key data
             memcpy(key_data, data, data_length);
             *key_bytes = data_length;
         }
@@ -617,7 +600,7 @@ psa_status_t psa_algorithm_dispatch_import_key(const psa_key_attributes_t *attri
             data_length > PSA_HASH_BLOCK_LENGTH(attributes->policy.alg)){
         psa_status_t ret = PSA_ERROR_NOT_SUPPORTED;
 #if IS_USED(MODULE_PSA_HASH)
-        /* must compute hash beforehand if key is too long */
+        // must compute hash beforehand if key is too long
         ret = psa_hash_compute(PSA_ALG_HMAC_GET_HASH(attributes->policy.alg), data, data_length, key_data,
                                 PSA_HASH_MAX_BLOCK_SIZE, key_bytes);
         if (ret != PSA_SUCCESS) {
@@ -625,13 +608,13 @@ psa_status_t psa_algorithm_dispatch_import_key(const psa_key_attributes_t *attri
         }
         *bits = PSA_BYTES_TO_BITS(*key_bytes);
         slot->attr.bits = *bits;
-#endif /* MODULE_PSA_HASH */
+#endif // MODULE_PSA_HASH
         return ret;
     }
     return psa_builtin_import_key(attributes, data, data_length, key_data, key_data_size,
                                   key_bytes, bits);
 }
-#endif /* MODULE_PSA_KEY_MANAGEMENT */
+#endif // MODULE_PSA_KEY_MANAGEMENT
 
 #if IS_USED(MODULE_PSA_CIPHER)
 psa_status_t psa_algorithm_dispatch_cipher_encrypt( const psa_key_attributes_t *attributes,
@@ -641,8 +624,7 @@ psa_status_t psa_algorithm_dispatch_cipher_encrypt( const psa_key_attributes_t *
                                                     size_t input_length,
                                                     uint8_t *output,
                                                     size_t output_size,
-                                                    size_t *output_length)
-{
+                                                    size_t *output_length) {
     psa_cipher_op_t op = PSA_ENCODE_CIPHER_OPERATION(alg, attributes->type, attributes->bits);
 
     uint8_t *key_data = NULL;
@@ -695,8 +677,7 @@ psa_status_t psa_algorithm_dispatch_cipher_decrypt( const psa_key_attributes_t *
                                                     size_t input_length,
                                                     uint8_t *output,
                                                     size_t output_size,
-                                                    size_t *output_length)
-{
+                                                    size_t *output_length) {
     psa_cipher_op_t op = PSA_ENCODE_CIPHER_OPERATION(alg, attributes->type, attributes->bits);
 
     uint8_t *key_data = NULL;
@@ -741,7 +722,7 @@ psa_status_t psa_algorithm_dispatch_cipher_decrypt( const psa_key_attributes_t *
         return PSA_ERROR_NOT_SUPPORTED;
     }
 }
-#endif /* MODULE_PSA_CIPHER */
+#endif // MODULE_PSA_CIPHER
 
 #if IS_USED(MODULE_PSA_AEAD)
 psa_status_t psa_algorithm_dispatch_aead_encrypt(   const psa_key_attributes_t *attributes,
@@ -755,8 +736,7 @@ psa_status_t psa_algorithm_dispatch_aead_encrypt(   const psa_key_attributes_t *
                                                     size_t plaintext_length,
                                                     uint8_t *ciphertext,
                                                     size_t ciphertext_size,
-                                                    size_t *ciphertext_length)
-{
+                                                    size_t *ciphertext_length) {
     psa_aead_op_t op = PSA_ENCODE_AEAD_OPERATION(alg, attributes->type, attributes->bits);
 
     uint8_t *key_data = NULL;
@@ -827,8 +807,7 @@ psa_status_t psa_algorithm_dispatch_aead_decrypt(   const psa_key_attributes_t *
                                                     size_t ciphertext_length,
                                                     uint8_t *plaintext,
                                                     size_t plaintext_size,
-                                                    size_t *plaintext_length)
-{
+                                                    size_t *plaintext_length) {
     psa_aead_op_t op = PSA_ENCODE_AEAD_OPERATION(alg, attributes->type, attributes->bits);
 
     uint8_t *key_data = NULL;
@@ -887,7 +866,7 @@ psa_status_t psa_algorithm_dispatch_aead_decrypt(   const psa_key_attributes_t *
             return PSA_ERROR_NOT_SUPPORTED;
     }
 }
-#endif /* MODULE_PSA_AEAD */
+#endif // MODULE_PSA_AEAD
 
 #if IS_USED(MODULE_PSA_MAC)
 psa_status_t psa_algorithm_dispatch_mac_compute(const psa_key_attributes_t *attributes,
@@ -897,8 +876,7 @@ psa_status_t psa_algorithm_dispatch_mac_compute(const psa_key_attributes_t *attr
                                                 size_t input_length,
                                                 uint8_t *mac,
                                                 size_t mac_size,
-                                                size_t *mac_length)
-{
+                                                size_t *mac_length) {
     uint8_t *key_data = NULL;
     size_t *key_bytes = NULL;
 
@@ -972,8 +950,7 @@ psa_status_t psa_algorithm_dispatch_mac_verify(const psa_key_attributes_t *attri
                                                const uint8_t *input,
                                                size_t input_length,
                                                const uint8_t *mac,
-                                               size_t mac_length)
-{
+                                               size_t mac_length) {
     uint8_t *key_data = NULL;
     size_t *key_bytes = NULL;
 
@@ -1043,8 +1020,7 @@ psa_status_t psa_algorithm_dispatch_mac_verify(const psa_key_attributes_t *attri
 psa_status_t psa_algorithm_dispatch_mac_sign_setup(psa_mac_operation_t *operation,
                                                    const psa_key_attributes_t *attributes,
                                                    const psa_key_slot_t *slot,
-                                                   psa_algorithm_t alg)
-{
+                                                   psa_algorithm_t alg) {
     psa_status_t status = PSA_ERROR_NOT_SUPPORTED;
     uint8_t *key_data = NULL;
     size_t *key_bytes = NULL;
@@ -1143,8 +1119,7 @@ psa_status_t psa_algorithm_dispatch_mac_sign_setup(psa_mac_operation_t *operatio
 psa_status_t psa_algorithm_dispatch_mac_verify_setup(psa_mac_operation_t *operation,
                                                      const psa_key_attributes_t *attributes,
                                                      const psa_key_slot_t *slot,
-                                                     psa_algorithm_t alg)
-{
+                                                     psa_algorithm_t alg) {
     psa_status_t status = PSA_ERROR_NOT_SUPPORTED;
     uint8_t *key_data = NULL;
     size_t *key_bytes = NULL;
@@ -1242,8 +1217,7 @@ psa_status_t psa_algorithm_dispatch_mac_verify_setup(psa_mac_operation_t *operat
 
 psa_status_t psa_algorithm_dispatch_mac_update(psa_mac_operation_t *operation,
                                                const uint8_t *input,
-                                               size_t input_length)
-{
+                                               size_t input_length) {
     switch (operation->alg) {
 #if IS_USED(MODULE_PSA_MAC_HMAC_MD5)
     case PSA_ALG_HMAC(PSA_ALG_MD5):
@@ -1292,8 +1266,7 @@ psa_status_t psa_algorithm_dispatch_mac_update(psa_mac_operation_t *operation,
 psa_status_t psa_algorithm_dispatch_mac_sign_finish(psa_mac_operation_t *operation,
                                                     uint8_t *mac,
                                                     size_t mac_size,
-                                                    size_t *mac_length)
-{
+                                                    size_t *mac_length) {
     switch (operation->alg) {
 #if IS_USED(MODULE_PSA_MAC_HMAC_MD5)
     case PSA_ALG_HMAC(PSA_ALG_MD5):
@@ -1342,8 +1315,7 @@ psa_status_t psa_algorithm_dispatch_mac_sign_finish(psa_mac_operation_t *operati
 
 psa_status_t psa_algorithm_dispatch_mac_verify_finish(psa_mac_operation_t *operation,
                                                       const uint8_t *mac,
-                                                      size_t mac_length)
-{
+                                                      size_t mac_length) {
     switch (operation->alg) {
 #if IS_USED(MODULE_PSA_MAC_HMAC_MD5)
     case PSA_ALG_HMAC(PSA_ALG_MD5):
@@ -1389,8 +1361,7 @@ psa_status_t psa_algorithm_dispatch_mac_verify_finish(psa_mac_operation_t *opera
     }
 }
 
-psa_status_t psa_algorithm_dispatch_mac_abort(psa_mac_operation_t *operation)
-{
+psa_status_t psa_algorithm_dispatch_mac_abort(psa_mac_operation_t *operation) {
     switch (operation->alg) {
 #if IS_USED(MODULE_PSA_MAC_HMAC_MD5)
     case PSA_ALG_HMAC(PSA_ALG_MD5):
@@ -1429,11 +1400,11 @@ psa_status_t psa_algorithm_dispatch_mac_abort(psa_mac_operation_t *operation)
         return psa_mac_abort_hmac_sha3_512(operation);
 #endif
     case PSA_ALG_NONE:
-        /* Calling psa_mac_abort() on a fresh psa_mac_operation_t is valid */
+        // Calling psa_mac_abort() on a fresh psa_mac_operation_t is valid
         return PSA_SUCCESS;
     default:
         (void)operation;
         return PSA_ERROR_NOT_SUPPORTED;
     }
 }
-#endif /* MODULE_PSA_MAC */
+#endif // MODULE_PSA_MAC

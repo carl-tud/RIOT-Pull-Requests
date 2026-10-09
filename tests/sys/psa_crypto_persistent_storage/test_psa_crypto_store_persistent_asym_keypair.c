@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests CBOR encoding of a PSA Crypto asymmetric key pair slot.
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests CBOR encoding of a PSA Crypto asymmetric key pair slot.
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include "embUnit.h"
 #include "psa/crypto.h"
@@ -37,8 +33,7 @@ static psa_key_id_t overwrite_privkey_id = 3;
 
 static const uint8_t msg[EDDSA_MESSAGE_SIZE] = { 0x0b };
 
-static void _test_setup(void)
-{
+static void _test_setup(void) {
     uint8_t public_key[ECC_PUBLIC_KEY_SIZE];
     size_t pubkey_length;
 
@@ -56,10 +51,10 @@ static void _test_setup(void)
     psa_set_key_id(&privkey_attr, privkey_id);
     psa_set_key_lifetime(&privkey_attr, lifetime);
 
-    /* Generate persistent key */
+    // Generate persistent key
     TEST_ASSERT_PSA_SUCCESS(psa_generate_key(&privkey_attr, &privkey_id));
 
-    /* Export and import public key for verification */
+    // Export and import public key for verification
     TEST_ASSERT_PSA_SUCCESS(psa_export_public_key(privkey_id, public_key,
                                                             sizeof(public_key), &pubkey_length));
 
@@ -71,73 +66,65 @@ static void _test_setup(void)
     TEST_ASSERT_PSA_SUCCESS(psa_import_key(&pubkey_attr, public_key, pubkey_length, &pubkey_id));
 }
 
-static void _test_destroy_keys(int cleanup)
-{
-    /* Destroy first key */
+static void _test_destroy_keys(int cleanup) {
+    // Destroy first key
     TEST_ASSERT_PSA_SUCCESS(psa_destroy_key(privkey_id));
 
-    /* Destroy second key */
+    // Destroy second key
     TEST_ASSERT_PSA_SUCCESS(psa_destroy_key(pubkey_id));
 
     if (cleanup) {
-        /* Destroy last key, just to clean up */
+        // Destroy last key, just to clean up
         TEST_ASSERT_PSA_SUCCESS(psa_destroy_key(overwrite_privkey_id));
     }
 }
 
-/**
- * @brief   A persistently stored key should still be accessible after
- *          overwriting it in local memory
- */
-static void test_psa_store_persistent_asym_keypair(void)
-{
+/// @brief   A persistently stored key should still be accessible after
+///          overwriting it in local memory
+static void test_psa_store_persistent_asym_keypair(void) {
     uint8_t signature[SIGNATURE_SIZE];
     size_t sig_length;
 
     _test_setup();
 
-    /* Generate second keypair to overwrite the first one in volatile memory */
+    // Generate second keypair to overwrite the first one in volatile memory
     psa_set_key_id(&privkey_attr, overwrite_privkey_id);
     TEST_ASSERT_PSA_SUCCESS(psa_generate_key(&privkey_attr, &overwrite_privkey_id));
 
-    /* Generate message signature with first key */
+    // Generate message signature with first key
     TEST_ASSERT_PSA_SUCCESS(psa_sign_message(privkey_id, ECC_ALG, msg, sizeof(msg), signature, sizeof(signature), &sig_length));
 
-    /* Verify signature with public key of first keypair */
+    // Verify signature with public key of first keypair
     TEST_ASSERT_PSA_SUCCESS(psa_verify_message(pubkey_id, ECC_ALG, msg,
                                                             sizeof(msg), signature, sig_length));
 
     _test_destroy_keys(1);
 }
 
-/**
- * @brief   After destroying a persistent key, it should not be available anymore
- */
-static void test_psa_delete_persistent_asym_keypair(void)
-{
+/// @brief   After destroying a persistent key, it should not be available anymore
+static void test_psa_delete_persistent_asym_keypair(void) {
     uint8_t signature[SIGNATURE_SIZE];
     size_t sig_length;
 
     _test_setup();
 
-    /* Generate message signature with first key */
+    // Generate message signature with first key
     TEST_ASSERT_PSA_SUCCESS(psa_sign_message(privkey_id, ECC_ALG, msg, sizeof(msg), signature, sizeof(signature), &sig_length));
 
-    /* Verify signature with public key of first keypair */
+    // Verify signature with public key of first keypair
     TEST_ASSERT_PSA_SUCCESS(psa_verify_message(pubkey_id, ECC_ALG, msg,
                                                             sizeof(msg), signature, sig_length));
 
     _test_destroy_keys(0);
 
-    /* Signature and verification with deleted keys should fail */
+    // Signature and verification with deleted keys should fail
     TEST_ASSERT_PSA_DOES_NOT_EXIST(psa_sign_message(privkey_id, ECC_ALG, msg, sizeof(msg),
                                                         signature, sizeof(signature), &sig_length));
     TEST_ASSERT_PSA_DOES_NOT_EXIST(psa_verify_message(pubkey_id, ECC_ALG, msg, sizeof(msg),
                                                                             signature, sig_length));
 }
 
-Test* tests_psa_persistent_asym_keypair_storage(void)
-{
+Test* tests_psa_persistent_asym_keypair_storage(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_psa_store_persistent_asym_keypair),
         new_TestFixture(test_psa_delete_persistent_asym_keypair),

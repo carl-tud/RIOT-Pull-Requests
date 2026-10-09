@@ -1,8 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2025 Lasse Rosenow
- * SPDX-FileCopyrightText: 2025 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Lasse Rosenow
+// SPDX-FileCopyrightText: 2025 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdio.h>
 #include <string.h>
@@ -14,13 +12,12 @@
 #define MAIN_QUEUE_SIZE (8)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
-/* Buffer for the request */
+// Buffer for the request
 static uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
 
-/* Response handler callback */
+// Response handler callback
 static void _resp_handler(const gcoap_request_memo_t *memo, coap_pkt_t *pdu,
-                          const sock_udp_ep_t *remote)
-{
+                          const sock_udp_ep_t *remote) {
     (void)remote;
 
     if (memo->state == GCOAP_MEMO_TIMEOUT) {
@@ -35,21 +32,20 @@ static void _resp_handler(const gcoap_request_memo_t *memo, coap_pkt_t *pdu,
         printf("Response: %s (Code: %u.%02u)\n", class_str,
                coap_get_code_class(pdu), coap_get_code_detail(pdu));
 
-        /* Print payload if present */
+        // Print payload if present
         if (pdu->payload_len) {
             printf("Payload: %.*s\n", pdu->payload_len, (char *)pdu->payload);
         }
     }
 }
 
-/* Send CoAP GET request to /hello endpoint */
-static int _send_coap_request(void)
-{
+// Send CoAP GET request to /hello endpoint
+static int _send_coap_request(void) {
     sock_udp_ep_t remote;
     coap_pkt_t pdu;
     size_t len;
 
-    /* Parse IPv6 address */
+    // Parse IPv6 address
     remote.family = AF_INET6;
     remote.netif = SOCK_ADDR_ANY_NETIF;
     remote.port = CONFIG_GCOAP_PORT;
@@ -60,17 +56,17 @@ static int _send_coap_request(void)
         return -1;
     }
 
-    /* Initialize CoAP request */
+    // Initialize CoAP request
     len = gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_GET,
                          "/hello");
 
-    /* Set content format option */
+    // Set content format option
     coap_opt_add_format(&pdu, COAP_FORMAT_TEXT);
 
-    /* Finish options */
+    // Finish options
     len = coap_opt_finish(&pdu, COAP_OPT_FINISH_NONE);
 
-    /* Send request */
+    // Send request
     ssize_t res = gcoap_req_send(buf, len, &remote, NULL, _resp_handler, NULL,
                                  GCOAP_SOCKET_TYPE_UDP);
 
@@ -83,9 +79,8 @@ static int _send_coap_request(void)
     return 0;
 }
 
-/* Shell command to send CoAP request */
-static int _shell_command_hello(int argc, char **argv)
-{
+// Shell command to send CoAP request
+static int _shell_command_hello(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -95,8 +90,7 @@ static int _shell_command_hello(int argc, char **argv)
 SHELL_COMMAND(hello, "Send CoAP request to /hello endpoint",
               _shell_command_hello);
 
-int main(void)
-{
+int main(void) {
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     puts("RIOT CoAP Hello Client");

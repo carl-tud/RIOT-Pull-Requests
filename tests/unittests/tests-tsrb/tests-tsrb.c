@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <stdint.h>
 #include <string.h>
 
@@ -27,15 +23,13 @@ static uint8_t _tsrb_buffer[BUFFER_SIZE];
 static uint8_t _io_buffer[BUFFER_SIZE * 2];
 static tsrb_t _tsrb = TSRB_INIT(_tsrb_buffer);
 
-static void tear_down(void)
-{
+static void tear_down(void) {
     memset(_io_buffer, IO_BUFFER_CANARY, sizeof(_io_buffer));
     memset(_tsrb_buffer, 0, sizeof(_tsrb_buffer));
     tsrb_init(&_tsrb, _tsrb_buffer, BUFFER_SIZE);
 }
 
-static void test_clear(void)
-{
+static void test_clear(void) {
     TEST_ASSERT_EQUAL_INT(0, tsrb_avail(&_tsrb));
 
     for (int i = 0; i < BUFFER_SIZE; i++) {
@@ -48,16 +42,14 @@ static void test_clear(void)
     TEST_ASSERT_EQUAL_INT(0, tsrb_avail(&_tsrb));
 }
 
-static void test_empty(void)
-{
+static void test_empty(void) {
     TEST_ASSERT_EQUAL_INT(1, tsrb_empty(&_tsrb));
 
     TEST_ASSERT_EQUAL_INT(0, tsrb_add_one(&_tsrb, TEST_INPUT));
     TEST_ASSERT_EQUAL_INT(0, tsrb_empty(&_tsrb));
 }
 
-static void test_avail(void)
-{
+static void test_avail(void) {
     TEST_ASSERT_EQUAL_INT(0, tsrb_avail(&_tsrb));
 
     for (int i = 0; i < BUFFER_SIZE; i++) {
@@ -66,8 +58,7 @@ static void test_avail(void)
     }
 }
 
-static void test_full(void)
-{
+static void test_full(void) {
     TEST_ASSERT_EQUAL_INT(0, tsrb_full(&_tsrb));
 
     for (int i = 0; i < (BUFFER_SIZE - 1); i++) {
@@ -78,8 +69,7 @@ static void test_full(void)
     TEST_ASSERT_EQUAL_INT(1, tsrb_full(&_tsrb));
 }
 
-static void test_free(void)
-{
+static void test_free(void) {
     TEST_ASSERT_EQUAL_INT(BUFFER_SIZE, tsrb_free(&_tsrb));
 
     for (int i = 0; i < BUFFER_SIZE; i++) {
@@ -88,8 +78,7 @@ static void test_free(void)
     }
 }
 
-static void test_get_one(void)
-{
+static void test_get_one(void) {
     int res;
 
     TEST_ASSERT_EQUAL_INT(-1, tsrb_get_one(&_tsrb));
@@ -102,13 +91,12 @@ static void test_get_one(void)
     TEST_ASSERT_EQUAL_INT(0, tsrb_add_one(&_tsrb, 0xff));
     res = tsrb_get_one(&_tsrb);
     TEST_ASSERT_EQUAL_INT(0xff, res);
-    /* 0xff is -1 in signed int8_t */
+    // 0xff is -1 in signed int8_t
     TEST_ASSERT(-1 != res);
     TEST_ASSERT_EQUAL_INT(-1, tsrb_get_one(&_tsrb));
 }
 
-static void test_get(void)
-{
+static void test_get(void) {
     TEST_ASSERT(BUFFER_SIZE < sizeof(_io_buffer));
     TEST_ASSERT_EQUAL_INT(0, tsrb_get(&_tsrb, _io_buffer,
                                       sizeof(_io_buffer)));
@@ -126,8 +114,7 @@ static void test_get(void)
     }
 }
 
-static void test_peek_one(void)
-{
+static void test_peek_one(void) {
     int res;
 
     TEST_ASSERT_EQUAL_INT(-1, tsrb_peek_one(&_tsrb));
@@ -139,12 +126,11 @@ static void test_peek_one(void)
     TEST_ASSERT_EQUAL_INT(0, tsrb_add_one(&_tsrb, 0xff));
     res = tsrb_peek_one(&_tsrb);
     TEST_ASSERT_EQUAL_INT(0xff, res);
-    /* 0xff is -1 in signed int8_t */
+    // 0xff is -1 in signed int8_t
     TEST_ASSERT(-1 != res);
 }
 
-static void test_peek(void)
-{
+static void test_peek(void) {
     TEST_ASSERT(BUFFER_SIZE < sizeof(_io_buffer));
     TEST_ASSERT_EQUAL_INT(0, tsrb_peek(&_tsrb, _io_buffer,
                                       sizeof(_io_buffer)));
@@ -163,8 +149,7 @@ static void test_peek(void)
     TEST_ASSERT_EQUAL_INT(BUFFER_SIZE, tsrb_avail(&_tsrb));
 }
 
-static void test_drop(void)
-{
+static void test_drop(void) {
     TEST_ASSERT(BUFFER_SIZE < sizeof(_io_buffer));
     TEST_ASSERT_EQUAL_INT(0, tsrb_drop(&_tsrb, sizeof(_io_buffer)));
 
@@ -185,8 +170,7 @@ static void test_drop(void)
     }
 }
 
-static void test_add_one(void)
-{
+static void test_add_one(void) {
     test_get_one();     /* Do tests done for tsrb_get_one again, as they do
                          * tsrb_add_one */
 
@@ -196,8 +180,7 @@ static void test_add_one(void)
     TEST_ASSERT_EQUAL_INT(-1, tsrb_add_one(&_tsrb, TEST_INPUT));
 }
 
-static void test_add(void)
-{
+static void test_add(void) {
     for (int i = 0; i < (int)sizeof(_io_buffer); i++) {
         _io_buffer[i] = TEST_INPUT + i;
     }
@@ -210,8 +193,7 @@ static void test_add(void)
     }
 }
 
-static Test *tests_tsrb_tests(void)
-{
+static Test *tests_tsrb_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_clear),
         new_TestFixture(test_empty),
@@ -232,8 +214,7 @@ static Test *tests_tsrb_tests(void)
     return (Test *)&tsrb_tests;
 }
 
-void tests_tsrb(void)
-{
+void tests_tsrb(void) {
     TESTS_RUN(tests_tsrb_tests());
 }
-/** @} */
+/// @}

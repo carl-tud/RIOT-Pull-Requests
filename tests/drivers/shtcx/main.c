@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 RWTH Aachen, Steffen Robertz, Josua Arndt
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 RWTH Aachen, Steffen Robertz, Josua Arndt
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the SHTCX temperature and humidity sensor
- *
- * @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
- * @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
- * @author      Michel Gerlach <michel.gerlach@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the SHTCX temperature and humidity sensor
+///
+/// @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
+/// @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
+/// @author      Michel Gerlach <michel.gerlach@haw-hamburg.de>
+///
+/// @}
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,8 +22,7 @@
 #include "shtcx.h"
 #include "shtcx_params.h"
 
-int main(void)
-{
+int main(void) {
     shtcx_t dev;
     int16_t temp;
     uint16_t hum;
@@ -54,7 +49,7 @@ int main(void)
             strcpy(str_temp, "ERROR");
             strcpy(str_hum, "ERROR");
         }
-        /* print values to STDIO */
+        // print values to STDIO
         printf("Temperature [°C]: %s\n", str_temp);
         printf("  Humidity [%%rH]: %s\n", str_hum);
 

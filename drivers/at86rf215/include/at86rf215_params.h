@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_at86rf215
- * @{
- *
- * @file
- * @brief       Default configuration for the AT86RF215 driver
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     drivers_at86rf215
+/// @{
+///
+/// @file
+/// @brief       Default configuration for the AT86RF215 driver
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include "at86rf215.h"
 #include "board.h"
@@ -22,11 +18,9 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the AT86RF215 driver
- *          Example config for EXT3 on same54-xpro
- * @{
- */
+/// @name    Set default configuration parameters for the AT86RF215 driver
+///          Example config for EXT3 on same54-xpro
+/// @{
 #ifndef AT86RF215_PARAM_SPI
 #define AT86RF215_PARAM_SPI         (SPI_DEV(1))
 #endif
@@ -50,11 +44,9 @@ extern "C" {
                                       .int_pin = AT86RF215_PARAM_INT,     \
                                       .reset_pin = AT86RF215_PARAM_RESET }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   AT86RF215 configuration
- */
+/// @brief   AT86RF215 configuration
 static const at86rf215_params_t at86rf215_params[] =
 {
     AT86RF215_PARAMS
@@ -64,4 +56,4 @@ static const at86rf215_params_t at86rf215_params[] =
 }
 #endif
 
-/** @} */
+/// @}

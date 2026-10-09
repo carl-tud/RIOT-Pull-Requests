@@ -1,8 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2019 Sören Tempel <tempel@uni-bremen.de>
- * SPDX-FileCopyrightText: 2022 Bennet Blischke <bennet.blischke@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Sören Tempel <tempel@uni-bremen.de>
+// SPDX-FileCopyrightText: 2022 Bennet Blischke <bennet.blischke@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <errno.h>
 #include <unistd.h>
@@ -20,16 +18,15 @@
 extern int fuzzing_netdev(gnrc_netif_t *);
 extern void fuzzing_netdev_wait(void);
 
-/* buffer sizes for reading from an fd */
+// buffer sizes for reading from an fd
 #define FUZZING_BSIZE 1024
 #define FUZZING_BSTEP 128
 
-/* used by gnrc_pktbuf_malloc to exit on free */
+// used by gnrc_pktbuf_malloc to exit on free
 gnrc_pktsnip_t *gnrc_pktbuf_fuzzptr = NULL;
 
 int
-fuzzing_init(ipv6_addr_t *addr, unsigned pfx_len)
-{
+fuzzing_init(ipv6_addr_t *addr, unsigned pfx_len) {
     static gnrc_netif_t netif;
 
     if (fuzzing_netdev(&netif)) {
@@ -47,11 +44,10 @@ fuzzing_init(ipv6_addr_t *addr, unsigned pfx_len)
 }
 
 int
-fuzzing_read_packet(int fd, gnrc_pktsnip_t *pkt)
-{
+fuzzing_read_packet(int fd, gnrc_pktsnip_t *pkt) {
     size_t rsiz;
 
-    /* can only be called once currently */
+    // can only be called once currently
     assert(gnrc_pktbuf_fuzzptr == NULL);
 
     uint8_t *input = fuzzing_read_bytes(fd, &rsiz);
@@ -70,8 +66,7 @@ fuzzing_read_packet(int fd, gnrc_pktsnip_t *pkt)
 }
 
 uint8_t *
-fuzzing_read_bytes(int fd, size_t *size)
-{
+fuzzing_read_bytes(int fd, size_t *size) {
     uint8_t *buffer = NULL;
     ssize_t r;
     size_t csiz, rsiz;
@@ -99,7 +94,7 @@ fuzzing_read_bytes(int fd, size_t *size)
         return NULL;
     }
 
-    /* shrink buffer to actual size */
+    // shrink buffer to actual size
     if ((buffer = realloc(buffer, csiz)) == NULL) {
         return NULL;
     }

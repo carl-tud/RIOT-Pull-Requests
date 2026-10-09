@@ -1,25 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_lis2dh12
- * @{
- *
- * @file
- * @brief       LIS2DH12 accelerometer SAUL mapping
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_lis2dh12
+/// @{
+///
+/// @file
+/// @brief       LIS2DH12 accelerometer SAUL mapping
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include "saul.h"
 #include "lis2dh12.h"
 
-static int read_accelerometer(const void *dev, phydat_t *res)
-{
+static int read_accelerometer(const void *dev, phydat_t *res) {
     if (lis2dh12_read(dev, (lis2dh12_fifo_data_t*)res->val) != LIS2DH12_OK) {
         return 0;
     }
@@ -28,8 +23,7 @@ static int read_accelerometer(const void *dev, phydat_t *res)
     return 3;
 }
 
-static int read_temperature(const void *dev, phydat_t *res)
-{
+static int read_temperature(const void *dev, phydat_t *res) {
     if (lis2dh12_read_temperature(dev, &res->val[0])) {
         return -ECANCELED;
     }

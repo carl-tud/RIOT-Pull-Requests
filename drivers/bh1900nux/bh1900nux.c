@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Nalys
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Nalys
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_bh1900nux
- * @{
- *
- * @file
- * @brief       BH1900NUX temperature sensor driver implementation
- *
- * @author      Wouter Symons <wsymons@nalys-group.com>
- *
- * @}
- */
+/// @ingroup     drivers_bh1900nux
+/// @{
+///
+/// @file
+/// @brief       BH1900NUX temperature sensor driver implementation
+///
+/// @author      Wouter Symons <wsymons@nalys-group.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -23,25 +19,23 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-int bh1900nux_init(bh1900nux_t *dev, const bh1900nux_params_t *params)
-{
+int bh1900nux_init(bh1900nux_t *dev, const bh1900nux_params_t *params) {
     if ((dev == NULL) | (params == NULL)) {
         return -1;
     }
 
-    /* initialize the device descriptor */
+    // initialize the device descriptor
     dev->i2c = params->i2c;
     dev->addr = params->addr;
 
     return BH1900NUX_OK;
 }
 
-int bh1900nux_read(const bh1900nux_t *dev, int16_t *temp)
-{
+int bh1900nux_read(const bh1900nux_t *dev, int16_t *temp) {
     int ret = 0;
     int16_t raw;
 
-    /* Read raw sensor value */
+    // Read raw sensor value
     DEBUG("[bh1900nux] read temperature\n");
 
     i2c_acquire(dev->i2c);
@@ -52,7 +46,7 @@ int bh1900nux_read(const bh1900nux_t *dev, int16_t *temp)
         return ret;
     }
 
-    /* Calculate temperature */
+    // Calculate temperature
     raw = (int16_t) ntohs(raw) >> 4;
     *temp = ((int32_t) raw * 1000) / 16;
 

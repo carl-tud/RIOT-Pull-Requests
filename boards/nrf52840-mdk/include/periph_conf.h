@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf52840-mdk
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the nRF52840-MDK
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- */
+/// @ingroup     boards_nrf52840-mdk
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the nRF52840-MDK
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
 
 #include "periph_cpu.h"
 #include "cfg_clock_32_1.h"
@@ -27,10 +23,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = NRF_UARTE0,
@@ -47,10 +41,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          (isr_uart0)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

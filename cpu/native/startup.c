@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file    Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * @brief   Native CPU entry code
- * @ingroup cpu_native
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @file    Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+/// @brief   Native CPU entry code
+/// @ingroup cpu_native
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <dlfcn.h>
 #include <assert.h>
@@ -41,9 +37,9 @@
 #define DEBUG_STARTUP(...) DEBUG("[native] startup: " __VA_ARGS__)
 
 typedef enum {
-    _STDIOTYPE_STDIO = 0,   /**< leave intact */
-    _STDIOTYPE_NULL,        /**< redirect to "/dev/null" */
-    _STDIOTYPE_FILE,        /**< redirect to file */
+    _STDIOTYPE_STDIO = 0,   ///< leave intact
+    _STDIOTYPE_NULL,        ///< redirect to "/dev/null"
+    _STDIOTYPE_FILE,        ///< redirect to file
 } _stdiotype_t;
 
 int _native_null_in_pipe[2];
@@ -111,10 +107,10 @@ static const char short_opts[] = ":hi:s:deEoc:"
     "";
 
 #if __GLIBC__
-/* glibc and Apple's libSystem pass argc, argv, and envp to init_fini handlers */
+// glibc and Apple's libSystem pass argc, argv, and envp to init_fini handlers
 # define _HAVE_INIT_FINIT_PROGRAM_ARGUMENTS 1
 #else
-/* otherwise, not guaranteed */
+// otherwise, not guaranteed
 # define _HAVE_INIT_FINIT_PROGRAM_ARGUMENTS 0
 #endif
 
@@ -151,14 +147,11 @@ static const struct option long_opts[] = {
     { NULL, 0, NULL, '\0' },
 };
 
-/**
- * @brief   initialize _native_null_in_pipe to allow for reading from stdin
- *
- * @param[in] stdintype _STDIOTYPE_STDIO to to just initialize pipe, any other
- *                      value to also redirect stdin to that pipe
- */
-void _native_input(_stdiotype_t stdintype)
-{
+/// @brief   initialize _native_null_in_pipe to allow for reading from stdin
+///
+/// @param[in] stdintype _STDIOTYPE_STDIO to to just initialize pipe, any other
+///                      value to also redirect stdin to that pipe
+void _native_input(_stdiotype_t stdintype) {
     if (real_pipe(_native_null_in_pipe) == -1) {
         err(EXIT_FAILURE, "_native_null_in(): pipe()");
     }
@@ -172,18 +165,15 @@ void _native_input(_stdiotype_t stdintype)
     }
 }
 
-/**
- * @brief   set up output redirection
- *
- * @param[in] stdiotype The type of redirection
- * @param[in] output    Output file. May be either `STDOUT_FILENO` for stdout or
- *                      `STDERR_FILENO` for stderr
- *
- * @return The new file descriptor of the redirection
- * @return -1 if the file descriptor did not change from the standard one
- */
-int _native_log_output(_stdiotype_t stdiotype, int output)
-{
+/// @brief   set up output redirection
+///
+/// @param[in] stdiotype The type of redirection
+/// @param[in] output    Output file. May be either `STDOUT_FILENO` for stdout or
+///                      `STDERR_FILENO` for stderr
+///
+/// @return The new file descriptor of the redirection
+/// @return -1 if the file descriptor did not change from the standard one
+int _native_log_output(_stdiotype_t stdiotype, int output) {
     int outfile;
 
     assert((output == STDERR_FILENO) || (output == STDOUT_FILENO));
@@ -197,7 +187,7 @@ int _native_log_output(_stdiotype_t stdiotype, int output)
             }
             break;
         case _STDIOTYPE_FILE: {
-            /* 20 should suffice for 64-bit PIDs ;-) */
+            // 20 should suffice for 64-bit PIDs ;-)
             char logname[sizeof("/tmp/riot.stderr.") + 20];
 
             snprintf(logname, sizeof(logname), "/tmp/riot.std%s.%d",
@@ -217,8 +207,7 @@ int _native_log_output(_stdiotype_t stdiotype, int output)
     return outfile;
 }
 
-void daemonize(void)
-{
+void daemonize(void) {
     if ((_native_pid = real_fork()) == -1) {
         err(EXIT_FAILURE, "daemonize: fork");
     }
@@ -230,30 +219,27 @@ void daemonize(void)
     else {
         _native_pid = real_getpid();
 
-        /* detach from current working directory */
+        // detach from current working directory
         if (real_chdir("/") == -1) {
             err(EXIT_FAILURE, "daemonize: chdir");
         }
 
-        /* detach from process group */
+        // detach from process group
         if (real_setsid() == -1) {
             err(EXIT_FAILURE, "daemonize: setsid");
         }
 
-        /* set umask */
+        // set umask
         real_umask(0);
     }
 }
 
-/**
- * Remove any -d options from an argument vector.
- * This is needed to ensure that a rebooted RIOT that is already
- * daemonized doesn't try to daemonize again.
- *
- * @param[in,out]   argv    an argument vector
- */
-static void _consume_daemonize_argv(char **argv)
-{
+/// Remove any -d options from an argument vector.
+/// This is needed to ensure that a rebooted RIOT that is already
+/// daemonized doesn't try to daemonize again.
+///
+/// @param[in,out]   argv    an argument vector
+static void _consume_daemonize_argv(char **argv) {
     for (char **narg = argv; *narg != NULL; narg++) {
         if (strcmp("-d", narg[0]) == 0) {
             char **xarg = narg;
@@ -261,16 +247,15 @@ static void _consume_daemonize_argv(char **argv)
                 xarg[0] = xarg[1];
             } while (*xarg++ != NULL);
             if (optind > 1) {
-                /* adapt optind if changed */
+                // adapt optind if changed
                 optind--;
             }
-            narg--; /* rescan current item to filter out double args */
+            narg--; // rescan current item to filter out double args
         }
     }
 }
 
-void usage_exit(int status)
-{
+void usage_exit(int status) {
     real_printf("usage: %s", _progname);
 
 #if defined(MODULE_NETDEV_TAP)
@@ -286,8 +271,8 @@ void usage_exit(int status)
 #if defined(MODULE_SOCKET_ZEP) && (SOCKET_ZEP_MAX > 0)
     real_printf(" -z [[<laddr>:<lport>,]<raddr>:<rport>]");
     for (int i = 0; i < SOCKET_ZEP_MAX - 1; i++) {
-        /* for further interfaces the local address must be different so we omit
-         * the braces (marking them as optional) to be 100% clear on that */
+        // for further interfaces the local address must be different so we omit
+        // the braces (marking them as optional) to be 100% clear on that
         real_printf(" -z <laddr>:<lport>,<raddr>:<rport>");
     }
 #endif
@@ -378,28 +363,27 @@ void usage_exit(int status)
 }
 
 #ifdef MODULE_SOCKET_ZEP
-static void _parse_ep_str(char *ep_str, char **addr, char **port)
-{
-    /* read endpoint string in reverse, the last chars are the port and decimal
-     * numbers, then a colon, then the address (potentially containing colons,
-     * that's why we read in reverse) */
+static void _parse_ep_str(char *ep_str, char **addr, char **port) {
+    // read endpoint string in reverse, the last chars are the port and decimal
+    // numbers, then a colon, then the address (potentially containing colons,
+    // that's why we read in reverse)
     for (int i = strlen(ep_str) - 1; (i >= 0) && (*port == NULL); i--) {
         if (((ep_str[i] < '0') || (ep_str[i] > '9')) && (ep_str[i] != ':')) {
             usage_exit(EXIT_FAILURE);
         }
         if ((ep_str[i] == ':') && (i >= (int)sizeof("[]"))) {
-            /* found port delimiter, but we need to make sure it isn't delivered
-             * like :<port>. Two characters for either hostname or IP address
-             * seems reasonable especially considering, that we need to
-             * remove the [] around IPv6 addresses */
+            // found port delimiter, but we need to make sure it isn't delivered
+            // like :<port>. Two characters for either hostname or IP address
+            // seems reasonable especially considering, that we need to
+            // remove the [] around IPv6 addresses
             *port = &ep_str[i + 1];
             if ((ep_str[0] == '[') && (ep_str[i - 1] == ']')) {
-                /* addr is in the format [<addr>], strip [] */
+                // addr is in the format [<addr>], strip []
                 *addr = &ep_str[1];
                 ep_str[i - 1] = '\0';
             }
             else if ((ep_str[0] == '[') || (ep_str[i - 1] == ']')) {
-                /* unbalanced brackets */
+                // unbalanced brackets
                 usage_exit(EXIT_FAILURE);
             }
             else {
@@ -413,11 +397,10 @@ static void _parse_ep_str(char *ep_str, char **addr, char **port)
     }
 }
 
-static void _zep_params_setup(char *zep_str, int zep)
-{
+static void _zep_params_setup(char *zep_str, int zep) {
     char *save_ptr, *first_ep, *second_ep;
 
-    /* reboot uses execve() so we need to preserve argv */
+    // reboot uses execve() so we need to preserve argv
     zep_str = strdup(zep_str);
 
     if ((first_ep = strtok_r(zep_str, ",", &save_ptr)) == NULL) {
@@ -440,33 +423,30 @@ static void _zep_params_setup(char *zep_str, int zep)
 
 #endif
 
-/** @brief Initialization function pointer type */
+/// @brief Initialization function pointer type
 typedef void (*init_func_t)(int argc, char **argv, char **envp);
 #ifdef __APPLE__
-/* Taken from the sources of Apple's dyld launcher
- * https://github.com/opensource-apple/dyld/blob/3f928f32597888c5eac6003b9199d972d49857b5/src/dyldInitialization.cpp#L85-L104
- */
-/* Find the extents of the __DATA __mod_init_func section */
+// Taken from the sources of Apple's dyld launcher
+// https://github.com/opensource-apple/dyld/blob/3f928f32597888c5eac6003b9199d972d49857b5/src/dyldInitialization.cpp#L85-L104
+// Find the extents of the __DATA __mod_init_func section
 extern init_func_t __init_array_start __asm("section$start$__DATA$__mod_init_func");
 extern init_func_t __init_array_end   __asm("section$end$__DATA$__mod_init_func");
 #else
-/* Linker script provides pointers to the beginning and end of the init array */
+// Linker script provides pointers to the beginning and end of the init array
 extern init_func_t __init_array_start;
 extern init_func_t __init_array_end;
 #endif
 
-static void _reset_handler(void)
-{
+static void _reset_handler(void) {
     pm_reboot();
 }
 
-__attribute__((constructor)) static void startup(int argc, char **argv, char **envp)
-{
+__attribute__((constructor)) static void startup(int argc, char **argv, char **envp) {
     _native_init_syscalls();
 
-    /* Passing argc, argv, and envp to init_fini handlers is a glibc
-     * extension. If we are not running glibc, we parse /proc/self/cmdline
-     * to populate argc and argv by hand */
+    // Passing argc, argv, and envp to init_fini handlers is a glibc
+    // extension. If we are not running glibc, we parse /proc/self/cmdline
+    // to populate argc and argv by hand
     if (!_HAVE_INIT_FINIT_PROGRAM_ARGUMENTS) {
         const size_t bufsize = 4096;
         const size_t argc_max = 32;
@@ -506,7 +486,7 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
         expect((size_t)argc < argc_max);
         argv = realloc(argv, sizeof(char *) * (argc + 1));
     } else {
-        /* must be */
+        // must be
         assert(argc > 0);
         assert(argv);
         assert(argv[0]);
@@ -516,7 +496,7 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
     _progname = argv[0];
     _native_pid = real_getpid();
 
-    /* will possibly be overridden via option below: */
+    // will possibly be overridden via option below:
     _native_id = _native_pid;
 
     int c, opt_idx = 0, uart = 0;
@@ -535,7 +515,7 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
     while ((c = getopt_long(argc, argv, short_opts, long_opts, &opt_idx)) >= 0) {
         switch (c) {
             case 0:
-                /* fall through to 'h' */
+                // fall through to 'h'
             case 'h':
                 usage_exit(EXIT_SUCCESS);
                 break;
@@ -551,14 +531,14 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
                 break;
             case 'e':
                 if (force_stderr) {
-                    /* -e and -E are mutually exclusive */
+                    // -e and -E are mutually exclusive
                     usage_exit(EXIT_FAILURE);
                 }
                 stderrtype = _STDIOTYPE_FILE;
                 break;
             case 'E':
                 if (stderrtype == _STDIOTYPE_FILE) {
-                    /* -e and -E are mutually exclusive */
+                    // -e and -E are mutually exclusive
                     usage_exit(EXIT_FAILURE);
                 }
                 force_stderr = true;
@@ -646,7 +626,7 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
     }
 #ifdef MODULE_SOCKET_ZEP
     if (zeps != SOCKET_ZEP_MAX) {
-        /* not enough ZEPs given */
+        // not enough ZEPs given
         usage_exit(EXIT_FAILURE);
     }
 #endif
@@ -672,24 +652,23 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
     _native_null_out_file = _native_log_output(stdouttype, STDOUT_FILENO);
     _native_input(stdintype);
 
-    /* startup is a constructor which is being called from the init_array during
-     * C runtime initialization, this is normally used for code which must run
-     * before launching main(), such as C++ global object constructors etc.
-     * However, this function (startup) misbehaves a bit when we call
-     * kernel_init below, which does not return until there is an abort or a
-     * power off command.
-     * We need all C++ global constructors and other initializers to run before
-     * we enter the normal application code, which may depend on global objects
-     * having been initialized properly. Therefore, we iterate through the
-     * remainder of the init_array and call any constructors which have been
-     * placed after startup in the initialization order.
-     */
+    // startup is a constructor which is being called from the init_array during
+    // C runtime initialization, this is normally used for code which must run
+    // before launching main(), such as C++ global object constructors etc.
+    // However, this function (startup) misbehaves a bit when we call
+    // kernel_init below, which does not return until there is an abort or a
+    // power off command.
+    // We need all C++ global constructors and other initializers to run before
+    // we enter the normal application code, which may depend on global objects
+    // having been initialized properly. Therefore, we iterate through the
+    // remainder of the init_array and call any constructors which have been
+    // placed after startup in the initialization order.
     init_func_t *init_array_ptr = &__init_array_start;
     DEBUG("__init_array_start: %p\n", (void *)init_array_ptr);
     while (init_array_ptr < &__init_array_end) {
-        /* Skip everything which has already been run */
+        // Skip everything which has already been run
         if ((*init_array_ptr) == startup) {
-            /* Found ourselves, move on to calling the rest of the constructors */
+            // Found ourselves, move on to calling the rest of the constructors
             DEBUG_STARTUP("%18p - myself\n", (void *)init_array_ptr);
             ++init_array_ptr;
             break;
@@ -698,7 +677,7 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
         ++init_array_ptr;
     }
     while (init_array_ptr < &__init_array_end) {
-        /* call all remaining constructors */
+        // call all remaining constructors
         DEBUG_STARTUP("%18p - call\n", (void *)init_array_ptr);
         (*init_array_ptr)(argc, argv, envp);
         ++init_array_ptr;
@@ -726,7 +705,7 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
 
     native_register_interrupt(SIGUSR1, _reset_handler);
 
-    /* initialize stdio after signal setup */
+    // initialize stdio after signal setup
     early_init();
 
     puts("RIOT native hardware initialization complete.\n");

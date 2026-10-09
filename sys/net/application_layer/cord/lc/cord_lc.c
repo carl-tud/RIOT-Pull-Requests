@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017-2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017-2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_cord_lc
- * @{
- *
- * @file
- * @brief       CoRE Resource Directory lookup implementation
- *
- * @author      Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     net_cord_lc
+/// @{
+///
+/// @file
+/// @brief       CoRE Resource Directory lookup implementation
+///
+/// @author      Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -37,34 +33,34 @@
 #define BUFSIZE         (CONFIG_GCOAP_PDU_BUF_SIZE)
 #define MAX_EXPECTED_ATTRS (6)
 
-/* Filter to limit number of link returned by RD server to 1 */
+// Filter to limit number of link returned by RD server to 1
 #define SINGLE_COUNT_FILTER {                                   \
             .key = "count", .key_len = strlen("count"),         \
             .value = "1", .value_len = strlen("1")              \
         }
 
-/* Filter to continue request at page_str */
+// Filter to continue request at page_str
 #define PAGE_FILTER(page_str) {                                 \
             .key = "page", .key_len = strlen("page"),           \
             .value = page_str, .value_len = strlen(page_str)    \
         }
 
-/* Default filters that will be appended to existing filters for each request.
- * Consists of count=1 and page=last_page */
+// Default filters that will be appended to existing filters for each request.
+// Consists of count=1 and page=last_page
 #define DEFAULT_FILTERS(page_str) { SINGLE_COUNT_FILTER, PAGE_FILTER(page_str) }
 
 static void _lock(void);
 static int _sync(void);
-/* callback for _lookup_raw() request */
+// callback for _lookup_raw() request
 static void _on_lookup(const gcoap_request_memo_t *memo, coap_pkt_t *pdu,
                        const sock_udp_ep_t *remote);
-/* callback for _send_rd_init_req() */
+// callback for _send_rd_init_req()
 static void _on_rd_init(const gcoap_request_memo_t *memo, coap_pkt_t *pdu,
                         const sock_udp_ep_t *remote);
 static ssize_t _add_filters_to_lookup(coap_pkt_t *pkt, cord_lc_filter_t *filters);
 static int _send_rd_init_req(coap_pkt_t *pkt, const sock_udp_ep_t *remote,
                              void *buf, size_t maxlen);
-/* do a lookup and returns payload of the response */
+// do a lookup and returns payload of the response
 static ssize_t _lookup_raw(const cord_lc_rd_t *rd, unsigned content_format,
                            unsigned lookup_type, cord_lc_filter_t *filters,
                            void *result, size_t maxlen);
@@ -76,14 +72,12 @@ static uint8_t reqbuf[CONFIG_GCOAP_PDU_BUF_SIZE] = {0};
 static mutex_t _mutex = MUTEX_INIT;
 static thread_t *_waiter;
 
-static void _lock(void)
-{
+static void _lock(void) {
     mutex_lock(&_mutex);
     _waiter = thread_get_active();
 }
 
-static int _sync(void)
-{
+static int _sync(void) {
     thread_flags_t flags = thread_flags_wait_any(FLAG_MASK);
 
     if (flags & FLAG_ERR) {
@@ -100,8 +94,7 @@ static int _sync(void)
 }
 
 static void _on_lookup(const gcoap_request_memo_t *memo, coap_pkt_t *pdu,
-                       const sock_udp_ep_t *remote)
-{
+                       const sock_udp_ep_t *remote) {
     (void)remote;
 
     thread_flags_t flag = FLAG_ERR;
@@ -132,8 +125,7 @@ static void _on_lookup(const gcoap_request_memo_t *memo, coap_pkt_t *pdu,
     thread_flags_set(_waiter, flag);
 }
 
-static ssize_t _add_filters_to_lookup(coap_pkt_t *pkt, cord_lc_filter_t *filters)
-{
+static ssize_t _add_filters_to_lookup(coap_pkt_t *pkt, cord_lc_filter_t *filters) {
     cord_lc_filter_t *f = filters;
     while (f) {
         for (unsigned i = 0; i < f->len; i++) {
@@ -149,8 +141,7 @@ static ssize_t _add_filters_to_lookup(coap_pkt_t *pkt, cord_lc_filter_t *filters
 
 static ssize_t _lookup_raw(const cord_lc_rd_t *rd, unsigned content_format,
                            unsigned lookup_type, cord_lc_filter_t *filters,
-                           void *result, size_t maxlen)
-{
+                           void *result, size_t maxlen) {
     assert(rd->remote);
 
     int res;
@@ -165,17 +156,17 @@ static ssize_t _lookup_raw(const cord_lc_rd_t *rd, unsigned content_format,
         return CORD_LC_ERR;
     }
 
-    /* save pointer to result */
+    // save pointer to result
     _result_buf = result;
     _result_buf_len = maxlen;
 
-    /* add filters */
+    // add filters
     res = _add_filters_to_lookup(&pkt, filters);
     if (res != CORD_LC_OK) {
         return res;
     }
 
-    /* set packet options */
+    // set packet options
     if (content_format != COAP_FORMAT_LINK) {
         DEBUG("cord_lc: unsupported content format\n");
         return CORD_LC_ERR;
@@ -197,8 +188,7 @@ static ssize_t _lookup_raw(const cord_lc_rd_t *rd, unsigned content_format,
 }
 
 static void _on_rd_init(const gcoap_request_memo_t *memo, coap_pkt_t *pdu,
-                       const sock_udp_ep_t *remote)
-{
+                       const sock_udp_ep_t *remote) {
     (void)remote;
 
     thread_flags_t flag = FLAG_NORSC;
@@ -219,9 +209,9 @@ static void _on_rd_init(const gcoap_request_memo_t *memo, coap_pkt_t *pdu,
         }
         if (size >= full_buf_len) {
             DEBUG("cord_lc: truncating response from %" PRIuSIZE " to %" PRIuSIZE "\n", size, full_buf_len);
-            /* Not setting FLAG_OVERFLOW: There can still be valid
-             * .well-known/core lookup data in the usable area, which will be
-             * used as long as endpoint and resource lookup are both found */
+            // Not setting FLAG_OVERFLOW: There can still be valid
+            // .well-known/core lookup data in the usable area, which will be
+            // used as long as endpoint and resource lookup are both found
             size = full_buf_len;
             memcpy(_result_buf, pdu->payload, full_buf_len);
         }
@@ -239,8 +229,7 @@ end:
 }
 
 static int _send_rd_init_req(coap_pkt_t *pkt, const sock_udp_ep_t *remote,
-                             void *buf, size_t maxlen)
-{
+                             void *buf, size_t maxlen) {
 
     int res = gcoap_req_init(pkt, buf, maxlen, COAP_METHOD_GET, "/.well-known/core");
     if (res < 0) {
@@ -265,8 +254,7 @@ static int _send_rd_init_req(coap_pkt_t *pkt, const sock_udp_ep_t *remote,
 }
 
 int cord_lc_rd_init(cord_lc_rd_t *rd, void *buf, size_t maxlen,
-                    const sock_udp_ep_t *remote)
-{
+                    const sock_udp_ep_t *remote) {
     assert(remote);
 
     coap_pkt_t pkt;
@@ -283,13 +271,13 @@ int cord_lc_rd_init(cord_lc_rd_t *rd, void *buf, size_t maxlen,
         goto end;
     }
 
-    /* Parse the payload */
+    // Parse the payload
     clif_t lookif;
     clif_attr_t attrs[MAX_EXPECTED_ATTRS];
     unsigned attrs_used = 0;
     size_t parsed_len = 0;
-    /* Quitting the loop once everything we are interested in was found allows
-     * us to succeed even if the data was truncated by a too small buffer */
+    // Quitting the loop once everything we are interested in was found allows
+    // us to succeed even if the data was truncated by a too small buffer
     while ((!rd->res_lookif || !rd->ep_lookif) &&
            (parsed_len != _result_buf_len)) {
 
@@ -306,11 +294,11 @@ int cord_lc_rd_init(cord_lc_rd_t *rd, void *buf, size_t maxlen,
         attrs_used += lookif.attrs_len;
         parsed_len += ret;
 
-        /* check if we found ep_lookif or res_lookif */
+        // check if we found ep_lookif or res_lookif
         for (unsigned i = 0; i < lookif.attrs_len; i++) {
             clif_attr_t *current_attr = (lookif.attrs + i);
             if (current_attr->value == NULL) {
-                /* skip attributes that have no value */
+                // skip attributes that have no value
                 continue;
             }
 
@@ -339,8 +327,7 @@ end:
 
 ssize_t cord_lc_raw(const cord_lc_rd_t *rd, unsigned content_format,
                     unsigned lookup_type, cord_lc_filter_t *filters,
-                    void *result, size_t maxlen)
-{
+                    void *result, size_t maxlen) {
     _lock();
     ssize_t retval = _lookup_raw(rd, content_format, lookup_type, filters,
                                  result, maxlen);
@@ -350,20 +337,19 @@ ssize_t cord_lc_raw(const cord_lc_rd_t *rd, unsigned content_format,
 
 ssize_t _lookup_result(cord_lc_rd_t *rd, cord_lc_res_t *result,
                        cord_lc_filter_t *filters, void *buf, size_t maxlen,
-                       unsigned type)
-{
+                       unsigned type) {
     int retval;
 
     _lock();
     unsigned *page_ptr = (type == CORD_LC_EP)
                        ? &rd->ep_last_page : &rd->res_last_page;
-    /* int will always fit in an 12-char array */
+    // int will always fit in an 12-char array
     char page_str[12];
     snprintf(page_str, sizeof(page_str), "%u", (*page_ptr)++);
 
-    /* Append given filters to default filters (page, count).
-     * If same filter are also specified by filters, assume the RD server will
-     * use the value from last filter in the filter list */
+    // Append given filters to default filters (page, count).
+    // If same filter are also specified by filters, assume the RD server will
+    // use the value from last filter in the filter list
     clif_attr_t default_attrs[] = DEFAULT_FILTERS(page_str);
     cord_lc_filter_t *all_filters = &(cord_lc_filter_t) {
         .array = default_attrs,
@@ -381,7 +367,7 @@ ssize_t _lookup_result(cord_lc_rd_t *rd, cord_lc_res_t *result,
         return retval;
     }
 
-    /* parse the result */
+    // parse the result
     retval = clif_decode_link(&result->link, result->attrs, result->max_attrs,
                               buf, retval);
     if (retval < 0) {

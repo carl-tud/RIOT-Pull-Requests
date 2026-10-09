@@ -1,28 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2018 SKF AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 SKF AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ds3234
- * @{
- *
- * @file
- * @brief       Register map for the DS323x driver
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @ingroup     drivers_ds3234
+/// @{
+///
+/// @file
+/// @brief       Register map for the DS323x driver
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name    Register addresses
- * @{
- */
+/// @name    Register addresses
+/// @{
 enum {
     DS323X_REG_TIME_SECONDS     = (0x00),
     DS323X_REG_TIME_MINUTES     = (0x01),
@@ -47,24 +41,22 @@ enum {
     DS323X_REG_SRAM_ADDR        = (0x18),
     DS323X_REG_SRAM_DATA        = (0x19),
 };
-/** @} */
+/// @}
 
-/**
- * @name    Control register bits
- * @{
- */
-#define DS323X_REG_CONTROL_EOSC_MASK    (0x80) /**< Enable oscillator */
-#define DS323X_REG_CONTROL_BBSQW_MASK   (0x40) /**< Battery-Backed Square-Wave Enable */
-#define DS323X_REG_CONTROL_CONV_MASK    (0x20) /**< Convert Temperature */
-#define DS323X_REG_CONTROL_RS2_MASK     (0x10) /**< Rate Select 2 */
-#define DS323X_REG_CONTROL_RS1_MASK     (0x08) /**< Rate Select 1 */
-#define DS323X_REG_CONTROL_INTCN_MASK   (0x04) /**< Interrupt Control */
-#define DS323X_REG_CONTROL_A2IE_MASK    (0x02) /**< Alarm 2 Interrupt Enable */
-#define DS323X_REG_CONTROL_A1IE_MASK    (0x01) /**< Alarm 1 Interrupt Enable */
-/** @} */
+/// @name    Control register bits
+/// @{
+#define DS323X_REG_CONTROL_EOSC_MASK    (0x80) ///< Enable oscillator
+#define DS323X_REG_CONTROL_BBSQW_MASK   (0x40) ///< Battery-Backed Square-Wave Enable
+#define DS323X_REG_CONTROL_CONV_MASK    (0x20) ///< Convert Temperature
+#define DS323X_REG_CONTROL_RS2_MASK     (0x10) ///< Rate Select 2
+#define DS323X_REG_CONTROL_RS1_MASK     (0x08) ///< Rate Select 1
+#define DS323X_REG_CONTROL_INTCN_MASK   (0x04) ///< Interrupt Control
+#define DS323X_REG_CONTROL_A2IE_MASK    (0x02) ///< Alarm 2 Interrupt Enable
+#define DS323X_REG_CONTROL_A1IE_MASK    (0x01) ///< Alarm 1 Interrupt Enable
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

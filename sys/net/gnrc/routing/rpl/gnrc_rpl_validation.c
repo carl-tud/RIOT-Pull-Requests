@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2016 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- *
- * @author  Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+///
+/// @author  Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
 
 #include "net/gnrc/icmpv6.h"
 #include "net/gnrc/ipv6.h"
@@ -21,8 +17,7 @@
 #include "debug.h"
 
 bool gnrc_rpl_validation_options(int msg_type, gnrc_rpl_instance_t *inst,
-                                 gnrc_rpl_opt_t *opt, uint16_t len)
-{
+                                 gnrc_rpl_opt_t *opt, uint16_t len) {
     uint16_t expected_len = 0;
 
     while(expected_len < len) {
@@ -116,6 +111,4 @@ bool gnrc_rpl_validation_options(int msg_type, gnrc_rpl_instance_t *inst,
     return false;
 }
 
-/**
- * @}
- */
+/// @}

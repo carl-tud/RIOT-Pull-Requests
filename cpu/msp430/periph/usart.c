@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2023 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "macros/math.h"
 #include "mutex.h"
@@ -69,13 +67,12 @@ static mutex_t usart_locks[USART_NUMOF] = {
     MUTEX_INIT,
 };
 
-/* store the clock acquired by each USART, so it can be release again */
+// store the clock acquired by each USART, so it can be release again
 static msp430_usart_clk_t _clocks_acquired[USART_NUMOF];
 
 void msp430_usart_acquire(const msp430_usart_params_t *params,
                           const msp430_usart_conf_t *conf,
-                          uint8_t enable_mask)
-{
+                          uint8_t enable_mask) {
     assume(params->num < USART_NUMOF);
 
     mutex_lock(&usart_locks[params->num]);
@@ -91,38 +88,37 @@ void msp430_usart_acquire(const msp430_usart_params_t *params,
         msp430_clock_acquire(MSP430_CLOCK_AUXILIARY);
         break;
     default:
-        /* external clock from GPIO, safe to disable internal clocks */
+        // external clock from GPIO, safe to disable internal clocks
         break;
     }
 
-    /* first, make sure USART is off before reconfiguring it */
+    // first, make sure USART is off before reconfiguring it
     sfr->ME = 0;
-    /* reset USART */
+    // reset USART
     dev->CTL = SWRST;
 
-    /* apply given configuration */
+    // apply given configuration
     dev->CTL = conf->ctl | SWRST;
     dev->MCTL = conf->prescaler.mctl;
     dev->TCTL = conf->prescaler.clk_source;
     dev->BR0 = conf->prescaler.br0;
     dev->BR1 = conf->prescaler.br1;
 
-    /* disable USART IRQs and clear any spurious IRQ flags */
+    // disable USART IRQs and clear any spurious IRQ flags
     sfr->IE = 0;
     sfr->IFG = 0;
-    /* enable USART as specified */
+    // enable USART as specified
     sfr->ME = enable_mask;
 }
 
-void msp430_usart_release(const msp430_usart_params_t *params)
-{
+void msp430_usart_release(const msp430_usart_params_t *params) {
     assume(params->num < USART_NUMOF);
 
     msp430_usart_sfr_t *sfr = params->sfr;
 
-    /* Disable USART */
+    // Disable USART
     sfr->ME = 0;
-    /* disable USART IRQs and clear any spurious IRQ flags */
+    // disable USART IRQs and clear any spurious IRQ flags
     sfr->IE = 0;
     sfr->IFG = 0;
 
@@ -134,33 +130,32 @@ void msp430_usart_release(const msp430_usart_params_t *params)
         msp430_clock_release(MSP430_CLOCK_AUXILIARY);
         break;
     default:
-        /* external clock from GPIO, not managed here */
+        // external clock from GPIO, not managed here
         break;
     }
 
-    /* Release mutex */
+    // Release mutex
     mutex_unlock(&usart_locks[params->num]);
 }
 
-msp430_usart_prescaler_t msp430_usart_prescale(uint32_t clock, uint16_t min_br)
-{
+msp430_usart_prescaler_t msp430_usart_prescale(uint32_t clock, uint16_t min_br) {
     msp430_usart_prescaler_t result = { .mctl = 0 };
     uint32_t clk_hz;
 
-    /* If a watch crystal is used for the auxiliary clock, allow using the
-     * auxiliary clock to be used as clock source for well-known
-     * symbol rates, so that enabling low power modes is possible while
-     * UART RX is active */
+    // If a watch crystal is used for the auxiliary clock, allow using the
+    // auxiliary clock to be used as clock source for well-known
+    // symbol rates, so that enabling low power modes is possible while
+    // UART RX is active
     if ((clock_params.lfxt1_frequency == 32768)
             && (clock_params.auxiliary_clock_divier == AUXILIARY_CLOCK_DIVIDE_BY_1)) {
         clk_hz = msp430_auxiliary_clock_freq();
         assume(clk_hz == 32768);
         result.clk_source = USART_CLK_AUX;
-        /* Rather than calculating the correct modulation control register
-         * values, just hard-code it for four well-known symbol rates. If the
-         * symbol rate is something else, we go for the high frequency
-         * subsystem main clock, where bit timings are easier to hit even
-         * without fine-tuning it via the modulation control register */
+        // Rather than calculating the correct modulation control register
+        // values, just hard-code it for four well-known symbol rates. If the
+        // symbol rate is something else, we go for the high frequency
+        // subsystem main clock, where bit timings are easier to hit even
+        // without fine-tuning it via the modulation control register
         switch (clock) {
         case 9600:
             result.mctl = 0x4a;

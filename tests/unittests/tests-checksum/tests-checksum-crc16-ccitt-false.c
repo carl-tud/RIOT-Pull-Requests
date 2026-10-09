@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2022 Bennet Hattesen <bennet.blischke@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Bennet Hattesen <bennet.blischke@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdint.h>
 
@@ -13,8 +11,7 @@
 
 static int calc_and_compare_crc16_ccitt_false_with_update(const unsigned char *buf,
                                                           size_t len, size_t split,
-                                                          uint16_t expected)
-{
+                                                          uint16_t expected) {
     uint16_t result = crc16_ccitt_false_calc(buf, split);
 
     result = crc16_ccitt_false_update(result, buf + split, len - split);
@@ -22,15 +19,13 @@ static int calc_and_compare_crc16_ccitt_false_with_update(const unsigned char *b
 }
 
 static int calc_and_compare_crc16_ccitt_false(const unsigned char *buf, size_t len,
-                                              uint16_t expected)
-{
+                                              uint16_t expected) {
     uint16_t result = crc16_ccitt_false_calc(buf, len);
 
     return result == expected;
 }
 
-static void test_checksum_crc16_ccitt_false_sequence_empty(void)
-{
+static void test_checksum_crc16_ccitt_false_sequence_empty(void) {
     unsigned char buf[] = "";
     uint16_t expect = 0xFFFF;
 
@@ -39,8 +34,7 @@ static void test_checksum_crc16_ccitt_false_sequence_empty(void)
                                                                (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_crc16_ccitt_false_sequence_1a(void)
-{
+static void test_checksum_crc16_ccitt_false_sequence_1a(void) {
     unsigned char buf[] = "A";
     uint16_t expect = 0xB915;
 
@@ -49,8 +43,7 @@ static void test_checksum_crc16_ccitt_false_sequence_1a(void)
                                                                (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_crc16_ccitt_false_sequence_256a(void)
-{
+static void test_checksum_crc16_ccitt_false_sequence_256a(void) {
     unsigned char buf[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                           "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                           "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -65,8 +58,7 @@ static void test_checksum_crc16_ccitt_false_sequence_256a(void)
                                                                (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_crc16_ccitt_false_sequence_1to9(void)
-{
+static void test_checksum_crc16_ccitt_false_sequence_1to9(void) {
     unsigned char buf[] = "123456789";
     uint16_t expect = 0x29B1;
 
@@ -75,8 +67,7 @@ static void test_checksum_crc16_ccitt_false_sequence_1to9(void)
                                                                - 1, (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_crc16_ccitt_false_sequence_4bytes(void)
-{
+static void test_checksum_crc16_ccitt_false_sequence_4bytes(void) {
     unsigned char buf[] = { 0x12, 0x34, 0x56, 0x78 };
     uint16_t expect = 0x30EC;
 
@@ -85,8 +76,7 @@ static void test_checksum_crc16_ccitt_false_sequence_4bytes(void)
                                                                sizeof(buf) / 2, expect));
 }
 
-Test *tests_checksum_crc16_ccitt_false_tests(void)
-{
+Test *tests_checksum_crc16_ccitt_false_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_checksum_crc16_ccitt_false_sequence_empty),
         new_TestFixture(test_checksum_crc16_ccitt_false_sequence_1a),

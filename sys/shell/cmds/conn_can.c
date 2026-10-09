@@ -1,22 +1,18 @@
-/*
- * Copyright 2017 OTA keys S.A.
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright 2017 OTA keys S.A.
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell command implementation for CAN stack
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell command implementation for CAN stack
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -34,8 +30,7 @@
 
 static int _can_usage(void);
 
-static int _list(int argc, char **argv)
-{
+static int _list(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -52,8 +47,7 @@ static int _list(int argc, char **argv)
     return 0;
 }
 
-static int _send(int argc, char **argv)
-{
+static int _send(int argc, char **argv) {
     if (argc < 3 || argc > 11) {
         _can_usage();
         return 1;
@@ -77,8 +71,7 @@ static int _send(int argc, char **argv)
     return 0;
 }
 
-static int _dump(int argc, char **argv)
-{
+static int _dump(int argc, char **argv) {
     if (argc < 4) {
         _can_usage();
         return 0;
@@ -151,8 +144,7 @@ static int _dump(int argc, char **argv)
     return 0;
 }
 
-static int _can_usage(void)
-{
+static int _can_usage(void) {
     puts("usage: can <command> [arguments]");
     puts("commands:");
     puts("\tlist");
@@ -162,8 +154,7 @@ static int _can_usage(void)
     return 0;
 }
 
-static int _can_handler(int argc, char **argv)
-{
+static int _can_handler(int argc, char **argv) {
     if (argc < 2) {
         _can_usage();
         return 1;

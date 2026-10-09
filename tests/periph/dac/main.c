@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test case for the low-level DAC driver
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test case for the low-level DAC driver
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -24,8 +20,7 @@
 #define DELAY           (100U)
 #define STEPS           (1000U)
 
-int main(void)
-{
+int main(void) {
     xtimer_ticks32_t last = xtimer_now();
     uint16_t val = 0;
     uint16_t step = 0xffff / STEPS;
@@ -34,7 +29,7 @@ int main(void)
     puts("This test application produces a saw tooth signal on each available\n"
          "DAC line. The period of the signal should be around 100ms\n");
 
-    /* initialize all DAC lines */
+    // initialize all DAC lines
     for (unsigned i = 0; i < DAC_NUMOF; i++) {
         if (dac_init(DAC_LINE(i)) < 0) {
             printf("Error initializing DAC_LINE(%u)\n", i);
@@ -46,7 +41,7 @@ int main(void)
     }
     puts("");
 
-    /* create saw tooth signal */
+    // create saw tooth signal
     while (1) {
         for (unsigned i = 0; i < DAC_NUMOF; i++) {
             dac_set(DAC_LINE(i), val);

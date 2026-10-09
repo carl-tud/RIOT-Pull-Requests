@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @addtogroup  unittests
- * @{
- *
- * @file
- * @brief       Declarations for the core/xfa unit test
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @addtogroup  unittests
+/// @{
+///
+/// @file
+/// @brief       Declarations for the core/xfa unit test
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,4 +24,4 @@ typedef struct {
 }
 #endif
 
-/** @} */
+/// @}

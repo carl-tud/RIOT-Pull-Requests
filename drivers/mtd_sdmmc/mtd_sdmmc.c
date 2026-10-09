@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mtd_sdmmc
- * @{
- *
- * @file
- * @brief       Driver for using sdmmc via mtd interface
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     drivers_mtd_sdmmc
+/// @{
+///
+/// @file
+/// @brief       Driver for using sdmmc via mtd interface
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <errno.h>
 #include <inttypes.h>
@@ -29,22 +25,21 @@
 #include "mtd_sdmmc.h"
 #include "sdmmc/sdmmc.h"
 
-static int mtd_sdmmc_init(mtd_dev_t *dev)
-{
+static int mtd_sdmmc_init(mtd_dev_t *dev) {
     DEBUG("mtd_sdmmc_init\n");
     mtd_sdmmc_t *mtd_sd = (mtd_sdmmc_t*)dev;
 
-    /* get the SDMMC device descriptor from SDMMC peripheral index */
+    // get the SDMMC device descriptor from SDMMC peripheral index
     mtd_sd->sdmmc = sdmmc_get_dev(mtd_sd->sdmmc_idx);
 
     if (sdmmc_card_init(mtd_sd->sdmmc) == 0) {
-        /* erasing whole sectors is handled internally by the card so you can
-           delete single blocks (i.e. pages) */
+        // erasing whole sectors is handled internally by the card so you can
+        //    delete single blocks (i.e. pages)
         dev->pages_per_sector = 1;
         dev->sector_count     = (uint32_t)(sdmmc_get_capacity(mtd_sd->sdmmc) /
                                            SDMMC_SDHC_BLOCK_SIZE);
 
-        /* sdcard uses the fixed block size of SD-HC cards */
+        // sdcard uses the fixed block size of SD-HC cards
         dev->page_size        = SDMMC_SDHC_BLOCK_SIZE;
         dev->write_size       = SDMMC_SDHC_BLOCK_SIZE;
         return 0;
@@ -54,8 +49,7 @@ static int mtd_sdmmc_init(mtd_dev_t *dev)
 }
 
 static int mtd_sdmmc_read_page(mtd_dev_t *dev, void *buff, uint32_t page,
-                                uint32_t offset, uint32_t size)
-{
+                                uint32_t offset, uint32_t size) {
     mtd_sdmmc_t *mtd_sd = (mtd_sdmmc_t*)dev;
 
     DEBUG("mtd_sdmmc_read_page: page:%" PRIu32 " offset:%" PRIu32 " size:%" PRIu32 "\n",
@@ -92,8 +86,7 @@ static int mtd_sdmmc_read_page(mtd_dev_t *dev, void *buff, uint32_t page,
 }
 
 static int mtd_sdmmc_write_page(mtd_dev_t *dev, const void *buff, uint32_t page,
-                                 uint32_t offset, uint32_t size)
-{
+                                 uint32_t offset, uint32_t size) {
     mtd_sdmmc_t *mtd_sd = (mtd_sdmmc_t*)dev;
 
     DEBUG("mtd_sdmmc_write_page: page:%" PRIu32 " offset:%" PRIu32 " size:%" PRIu32 "\n",
@@ -134,25 +127,22 @@ static int mtd_sdmmc_write_page(mtd_dev_t *dev, const void *buff, uint32_t page,
     return size;
 }
 
-static int mtd_sdmmc_erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t count)
-{
+static int mtd_sdmmc_erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t count) {
     mtd_sdmmc_t *mtd_sd = (mtd_sdmmc_t*)dev;
     return sdmmc_erase_blocks(mtd_sd->sdmmc, sector, count);
 }
 
-static int mtd_sdmmc_power(mtd_dev_t *dev, enum mtd_power_state power)
-{
+static int mtd_sdmmc_power(mtd_dev_t *dev, enum mtd_power_state power) {
     (void)dev;
     (void)power;
 
-    /* TODO: implement power down of sdcard in sdcard_spi
-    (make use of sdcard_spi_params_t.power pin) */
-    return -ENOTSUP; /* currently not supported */
+    // TODO: implement power down of sdcard in sdcard_spi
+    // (make use of sdcard_spi_params_t.power pin)
+    return -ENOTSUP; // currently not supported
 }
 
 static int mtd_sdmmc_read(mtd_dev_t *dev, void *buff, uint32_t addr,
-                           uint32_t size)
-{
+                           uint32_t size) {
     int res = mtd_sdmmc_read_page(dev, buff, addr / SDMMC_SDHC_BLOCK_SIZE,
                                    addr % SDMMC_SDHC_BLOCK_SIZE, size);
     if (res < 0) {
@@ -192,7 +182,7 @@ const mtd_desc_t mtd_sdmmc_driver = {
     XFA_CONST(mtd_dev_t, mtd_dev_xfa, m) CONCAT(*mtd, m) = (mtd_dev_t *)&mtd_sdmmc_dev ## n
 
 #if IS_USED(MODULE_MTD_SDCARD_DEFAULT)
-/* we use /sd1 as default mount point for coexistence with mtd_sdcard */
+// we use /sd1 as default mount point for coexistence with mtd_sdcard
 #define MTD_SDMMC_DEV_FS(n, m, filesystem) \
     VFS_AUTO_MOUNT(filesystem, VFS_MTD(mtd_sdmmc_dev ##n), VFS_DEFAULT_SD(1), m)
 #else

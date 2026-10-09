@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the INA3221 sensor driver
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the INA3221 sensor driver
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -24,15 +20,15 @@
 #include "ina3221_params.h"
 #include "ina3221.h"
 
-/* Issue critical alert if shunt voltage is above this value */
+// Issue critical alert if shunt voltage is above this value
 #define CRIT_ALERT_LIM_UV      (2500)
-/* Issue warning alert if shunt voltage is above this value */
+// Issue warning alert if shunt voltage is above this value
 #define WARN_ALERT_LIM_UV      (1600)
-/* Issue power valid alert if bus voltage is below this value */
+// Issue power valid alert if bus voltage is below this value
 #define PV_LOWER_LIM_MV        (4500)
-/* Issue power valid alert if bus voltage is above this value */
+// Issue power valid alert if bus voltage is above this value
 #define PV_UPPER_LIM_MV        (5500)
-/* Issue critical alert if the sum of all shunt voltages is above this value */
+// Issue critical alert if the sum of all shunt voltages is above this value
 #define SUM_SHUNT_ALERT_LIM_UV (8000)
 
 #define COL   ("              ")
@@ -42,32 +38,28 @@
         "--------------+--------------+--------------+--------------+--------------")
 
 #ifdef MODULE_INA3221_ALERTS
-static void warning_alert(void *arg)
-{
+static void warning_alert(void *arg) {
     ina3221_t *dev = (ina3221_t *)arg;
 
     (void)dev;
     puts("WARNING");
 }
 
-static void critical_alert(void *arg)
-{
+static void critical_alert(void *arg) {
     ina3221_t *dev = (ina3221_t *)arg;
 
     (void)dev;
     puts("CRITICAL");
 }
 
-static void timing_control_alert(void *arg)
-{
+static void timing_control_alert(void *arg) {
     ina3221_t *dev = (ina3221_t *)arg;
 
     (void)dev;
     puts("TIMING CONTROL");
 }
 
-static void power_valid_alert(void *arg)
-{
+static void power_valid_alert(void *arg) {
     ina3221_t *dev = (ina3221_t *)arg;
 
     (void)dev;
@@ -75,8 +67,7 @@ static void power_valid_alert(void *arg)
 }
 #endif
 
-int main(void)
-{
+int main(void) {
     int status;
     ina3221_t dev;
 

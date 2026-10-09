@@ -8,19 +8,17 @@ extern "C"
 #define FONT_WIDTH 8
 #define FONT_HEIGHT 8
 #define FONT_VMIRROR 1
-/*
-   https://github.com/dhepper/font8x8
-   ; Summary: font8_8.asm
-   ; 8x8 monochrome bitmap fonts for rendering
-   ;
-   ; Author:
-   ;     Marcel Sondaar
-   ;     International Business Machines (public domain VGA fonts)
-   ;
-   ; License:
-   ;     Public Domain
-   ;
- */
+//    https://github.com/dhepper/font8x8
+//    ; Summary: font8_8.asm
+//    ; 8x8 monochrome bitmap fonts for rendering
+//    ;
+//    ; Author:
+//    ;     Marcel Sondaar
+//    ;     International Business Machines (public domain VGA fonts)
+//    ;
+//    ; License:
+//    ;     Public Domain
+//    ;
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     // U+0000 (nul)
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     // U+0001
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     // U+0002

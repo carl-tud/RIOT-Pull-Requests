@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
- * SPDX-FileCopyrightText: 2018 Beduino Master Projekt - University of Bremen
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
+// SPDX-FileCopyrightText: 2018 Beduino Master Projekt - University of Bremen
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mhz19
- * @{
- *
- * @file
- * @brief       Device driver implementation for MH-Z19 CO2 sensor.
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Christian Manal <manal@uni-bremen.de>
- *
- * @}
- */
+/// @ingroup     drivers_mhz19
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for MH-Z19 CO2 sensor.
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Christian Manal <manal@uni-bremen.de>
+///
+/// @}
 
 #include "mhz19.h"
 #include "mhz19_params.h"
@@ -26,8 +22,7 @@
 #include "debug.h"
 
 #ifdef MODULE_MHZ19_PWM
-int mhz19_init(mhz19_t *dev, const mhz19_params_t *params)
-{
+int mhz19_init(mhz19_t *dev, const mhz19_params_t *params) {
     int16_t res;
 
     dev->pin = params->pin;
@@ -36,7 +31,7 @@ int mhz19_init(mhz19_t *dev, const mhz19_params_t *params)
         return MHZ19_ERR_INIT;
     }
 
-    /* Take one measurement to make sure there's an mhz19 on the pin */
+    // Take one measurement to make sure there's an mhz19 on the pin
     if (mhz19_get_ppm(dev, &res) == MHZ19_ERR_TIMEOUT) {
         return MHZ19_ERR_TIMEOUT;
     }
@@ -44,15 +39,12 @@ int mhz19_init(mhz19_t *dev, const mhz19_params_t *params)
     return MHZ19_OK;
 }
 
-int mhz19_get_ppm(mhz19_t *dev, int16_t *ppm)
-{
+int mhz19_get_ppm(mhz19_t *dev, int16_t *ppm) {
     uint32_t start, middle, end, th, tl;
-    /*
-     * Per the docs, one sample should take 1004ms +-5%. Worst case is
-     * that  we come in right after the rising edge of the current cycle,
-     * so we want to wait two cycles plus some wiggle room at most for
-     * a measurement.
-     */
+    // Per the docs, one sample should take 1004ms +-5%. Worst case is
+    // that  we come in right after the rising edge of the current cycle,
+    // so we want to wait two cycles plus some wiggle room at most for
+    // a measurement.
     int16_t timeout = 2200;
 
     DEBUG("%s: Waiting for high level to end\n", __func__);
@@ -80,7 +72,7 @@ int mhz19_get_ppm(mhz19_t *dev, int16_t *ppm)
         ztimer_sleep(ZTIMER_MSEC, 1);
     }
 
-    /* If we waited too long for flanks, something went wrong */
+    // If we waited too long for flanks, something went wrong
     if (!timeout) {
         DEBUG("%s: Measurement timed out\n", __func__);
         return MHZ19_ERR_TIMEOUT;
@@ -96,4 +88,4 @@ int mhz19_get_ppm(mhz19_t *dev, int16_t *ppm)
 }
 #else
 typedef int dont_be_pedantic;
-#endif /* MODULE_MHZ19_PWM */
+#endif // MODULE_MHZ19_PWM

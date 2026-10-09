@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f746zg
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-f746zg board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_nucleo-f746zg
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-f746zg board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -37,19 +33,17 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 4 },    /* DMA1 Stream 4 - USART3_TX */
-    { .stream = 14 },   /* DMA2 Stream 6 - USART6_TX */
-    { .stream = 6 },    /* DMA1 Stream 6 - USART2_TX */
-    { .stream = 10 },   /* DMA2 Stream 2 - SPI1_RX   */
-    { .stream = 13 },   /* DMA2 Stream 5 - SPI1_TX   */
-    { .stream = 11 },   /* DMA2 Stream 3 - SPI4_RX   */
-    { .stream = 12 },   /* DMA2 Stream 4 - SPI4_TX   */
-    { .stream = 8 },    /* DMA2 Stream 0 - ETH_TX    */
+    { .stream = 4 },    // DMA1 Stream 4 - USART3_TX
+    { .stream = 14 },   // DMA2 Stream 6 - USART6_TX
+    { .stream = 6 },    // DMA1 Stream 6 - USART2_TX
+    { .stream = 10 },   // DMA2 Stream 2 - SPI1_RX
+    { .stream = 13 },   // DMA2 Stream 5 - SPI1_TX
+    { .stream = 11 },   // DMA2 Stream 3 - SPI4_RX
+    { .stream = 12 },   // DMA2 Stream 4 - SPI4_TX
+    { .stream = 8 },    // DMA2 Stream 0 - ETH_TX
 };
 
 #define DMA_0_ISR  isr_dma1_stream4
@@ -64,12 +58,10 @@ static const dma_conf_t dma_config[] = {
 #define DMA_7_ISR  isr_dma2_stream0
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM1,
@@ -94,12 +86,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART3,
@@ -150,20 +140,17 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
-        /* PA7 is the default MOSI pin, as it is required for compatibility with
-         * Arduino(ish) shields. Sadly, it is also connected to the RMII_DV of
-         * Ethernet PHY. We work around this by remapping the MOSI to PB5 when
-         * the on-board Ethernet PHY is used.
-         */
+        // PA7 is the default MOSI pin, as it is required for compatibility with
+        // Arduino(ish) shields. Sadly, it is also connected to the RMII_DV of
+        // Ethernet PHY. We work around this by remapping the MOSI to PB5 when
+        // the on-board Ethernet PHY is used.
 #ifdef MODULE_PERIPH_ETH
         .mosi_pin = GPIO_PIN(PORT_B, 5),
 #else
@@ -207,12 +194,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name ETH configuration
- * @{
- */
+/// @name ETH configuration
+/// @{
 static const eth_conf_t eth_config = {
     .mode = RMII,
     .speed = MII_BMCR_SPEED_100 | MII_BMCR_FULL_DPLX,
@@ -234,10 +219,10 @@ static const eth_conf_t eth_config = {
 
 #define ETH_DMA_ISR        isr_dma2_stream0
 
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "stack.h"
 
@@ -23,15 +19,13 @@
 static msg_t _msg_queue[_MSG_QUEUE_SIZE];
 static gnrc_netreg_entry_t _ip_handler;
 
-void _net_init(void)
-{
+void _net_init(void) {
     msg_init_queue(_msg_queue, _MSG_QUEUE_SIZE);
     gnrc_netreg_entry_init_pid(&_ip_handler, GNRC_NETREG_DEMUX_CTX_ALL,
                                thread_getpid());
 }
 
-void _prepare_send_checks(void)
-{
+void _prepare_send_checks(void) {
     gnrc_netreg_register(GNRC_NETTYPE_IPV6, &_ip_handler);
 }
 
@@ -39,8 +33,7 @@ static gnrc_pktsnip_t *_build_ipv6_packet(const ipv6_addr_t *src,
                                           const ipv6_addr_t *dst, uint8_t nh,
                                           void *data, size_t data_len,
                                           uint16_t netif,
-                                          const inject_aux_t *aux)
-{
+                                          const inject_aux_t *aux) {
     gnrc_pktsnip_t *netif_hdr_snip, *ipv6, *payload;
     ipv6_hdr_t *ipv6_hdr;
 
@@ -76,34 +69,30 @@ static gnrc_pktsnip_t *_build_ipv6_packet(const ipv6_addr_t *src,
 
 bool _inject_packet_aux(const ipv6_addr_t *src, const ipv6_addr_t *dst,
                         uint8_t proto, void *data, size_t data_len,
-                        uint16_t netif, const inject_aux_t *aux)
-{
+                        uint16_t netif, const inject_aux_t *aux) {
     gnrc_pktsnip_t *pkt = _build_ipv6_packet(src, dst, proto, data, data_len,
                                              netif, aux);
 
     if (pkt == NULL) {
         return false;
     }
-    /* put directly in mbox, dispatching to IPv6 would result in the packet
-     * being dropped, since dst is not on any interface */
+    // put directly in mbox, dispatching to IPv6 would result in the packet
+    // being dropped, since dst is not on any interface
     return (gnrc_netapi_dispatch_receive(GNRC_NETTYPE_IPV6, proto, pkt) > 0);
 }
 
-bool _check_net(void)
-{
+bool _check_net(void) {
     return (gnrc_pktbuf_is_sane() && gnrc_pktbuf_is_empty());
 }
 
-static inline bool _res(gnrc_pktsnip_t *pkt, bool res)
-{
+static inline bool _res(gnrc_pktsnip_t *pkt, bool res) {
     gnrc_pktbuf_release(pkt);
     return res;
 }
 
 bool _check_packet(const ipv6_addr_t *src, const ipv6_addr_t *dst,
                    uint8_t proto, void *data, size_t data_len,
-                   uint16_t netif)
-{
+                   uint16_t netif) {
     gnrc_pktsnip_t *pkt, *ipv6;
     ipv6_hdr_t *ipv6_hdr;
     msg_t msg;
@@ -140,4 +129,4 @@ bool _check_packet(const ipv6_addr_t *src, const ipv6_addr_t *dst,
                 (memcmp(data, ipv6->next->data, data_len) == 0));
 }
 
-/** @} */
+/// @}

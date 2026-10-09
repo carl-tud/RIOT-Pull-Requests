@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2023-2026 Jon Shallow <supjps-libcoap@jpshallow.com>
- * SPDX-License-Identifier: BSD-2-Clause
- */
+// SPDX-FileCopyrightText: 2023-2026 Jon Shallow <supjps-libcoap@jpshallow.com>
+// SPDX-License-Identifier: BSD-2-Clause
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       libcoap Client Example Implementation
- *
- * This file is part of the CoAP library libcoap. Please see README for terms
- * of use.
- *
- * @author      Jon Shallow <supjps-libcoap@jpshallow.com>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       libcoap Client Example Implementation
+///
+/// This file is part of the CoAP library libcoap. Please see README for terms
+/// of use.
+///
+/// @author      Jon Shallow <supjps-libcoap@jpshallow.com>
+///
+/// @}
 
 #include <thread.h>
 #include <debug.h>
@@ -27,21 +23,21 @@
 
 #ifdef CONFIG_LIBCOAP_CLIENT_URI
 #  define COAP_CLIENT_URI CONFIG_LIBCOAP_CLIENT_URI
-#else /* ! CONFIG_LIBCOAP_CLIENT_URI */
+#else // ! CONFIG_LIBCOAP_CLIENT_URI
 #  define COAP_CLIENT_URI "coap://[fe80::405:5aff:fe15:9b7f]/.well-known/core"
-#endif /* ! CONFIG_LIBCOAP_CLIENT_URI */
+#endif // ! CONFIG_LIBCOAP_CLIENT_URI
 
 #ifdef CONFIG_LIBCOAP_USE_PSK
 #  define COAP_USE_PSK CONFIG_LIBCOAP_USE_PSK
-#else /* ! CONFIG_LIBCOAP_USE_PSK */
+#else // ! CONFIG_LIBCOAP_USE_PSK
 #  define COAP_USE_PSK NULL
-#endif /* ! CONFIG_LIBCOAP_USE_PSK */
+#endif // ! CONFIG_LIBCOAP_USE_PSK
 
 #ifdef CONFIG_LIBCOAP_USE_PSK_ID
 #  define COAP_USE_PSK_ID CONFIG_LIBCOAP_USE_PSK_ID
-#else /* ! CONFIG_LIBCOAP_USE_PSK_ID */
+#else // ! CONFIG_LIBCOAP_USE_PSK_ID
 #  define COAP_USE_PSK_ID NULL
-#endif /* ! CONFIG_LIBCOAP_USE_PSK_ID */
+#endif // ! CONFIG_LIBCOAP_USE_PSK_ID
 
 static coap_context_t *main_coap_context = NULL;
 static coap_optlist_t *optlist = NULL;
@@ -51,13 +47,12 @@ static int is_mcast = 0;
 
 #define DEFAULT_WAIT_TIME 15
 
-unsigned int wait_seconds = DEFAULT_WAIT_TIME; /* default timeout in seconds */
+unsigned int wait_seconds = DEFAULT_WAIT_TIME; // default timeout in seconds
 
 static coap_response_t response_handler(coap_session_t *session,
                                         const coap_pdu_t *sent,
                                         const coap_pdu_t *received,
-                                        const coap_mid_t id)
-{
+                                        const coap_mid_t id) {
     const uint8_t *data;
     size_t len;
     size_t offset;
@@ -79,8 +74,7 @@ static coap_response_t response_handler(coap_session_t *session,
 static void nack_handler(coap_session_t *session COAP_UNUSED,
                          const coap_pdu_t *sent COAP_UNUSED,
                          const coap_nack_reason_t reason,
-                         const coap_mid_t id COAP_UNUSED)
-{
+                         const coap_mid_t id COAP_UNUSED) {
 
     switch (reason) {
     case COAP_NACK_TOO_MANY_RETRIES:
@@ -102,8 +96,7 @@ static void nack_handler(coap_session_t *session COAP_UNUSED,
 }
 
 static int resolve_address(const char *host, const char *service,
-                           coap_address_t *dst, int scheme_hint_bits)
-{
+                           coap_address_t *dst, int scheme_hint_bits) {
     uint16_t port = service ? atoi(service) : 0;
     int ret = 0;
     coap_str_const_t str_host;
@@ -124,8 +117,7 @@ static int resolve_address(const char *host, const char *service,
     return ret;
 }
 
-void client_coap_init(int argc, char **argv)
-{
+void client_coap_init(int argc, char **argv) {
     coap_session_t *session = NULL;
     coap_pdu_t *pdu;
     coap_address_t dst;
@@ -156,12 +148,12 @@ void client_coap_init(int argc, char **argv)
         coap_uri = argv[1];
     }
 
-    /* Initialize libcoap library */
+    // Initialize libcoap library
     coap_startup();
 
     coap_set_log_level(COAP_MAX_LOGGING_LEVEL);
 
-    /* Parse the URI */
+    // Parse the URI
     len = coap_split_uri((const unsigned char *)coap_uri, strlen(coap_uri), &uri);
     if (len != 0) {
         coap_log_warn("Failed to parse uri %s\n", coap_uri);
@@ -173,7 +165,7 @@ void client_coap_init(int argc, char **argv)
     snprintf(portbuf, sizeof(portbuf), "%d", uri.port);
     snprintf((char *)buf, sizeof(buf), "%*.*s", (int)uri.host.length,
              (int)uri.host.length, (const char *)uri.host.s);
-    /* resolve destination address where packet should be sent */
+    // resolve destination address where packet should be sent
     len = resolve_address((const char *)buf, portbuf, &dst, 1 << uri.scheme);
     if (len <= 0) {
         coap_log_warn("Failed to resolve address %*.*s\n", (int)uri.host.length,
@@ -214,10 +206,10 @@ void client_coap_init(int argc, char **argv)
 
         session = coap_new_client_session_psk3(main_coap_context, NULL, &dst,
                                                COAP_PROTO_DTLS, &dtls_psk, NULL, NULL, NULL);
-#else /* ! COAP_USE_PSK && ! COAP_USE_PSK_ID */
+#else // ! COAP_USE_PSK && ! COAP_USE_PSK_ID
         coap_log_err("CONFIG_LIBCOAP_USE_PSK and CONFIG_LIBCOAP_USE_PSK_ID not defined\n");
         goto fail;
-#endif /* ! COAP_USE_PSK && ! COAP_USE_PSK_ID */
+#endif // ! COAP_USE_PSK && ! COAP_USE_PSK_ID
     }
 
     if (!session) {
@@ -228,7 +220,7 @@ void client_coap_init(int argc, char **argv)
     coap_register_response_handler(main_coap_context, response_handler);
     coap_register_nack_handler(main_coap_context, nack_handler);
 
-    /* construct CoAP message */
+    // construct CoAP message
     pdu = coap_pdu_init(is_mcast ? COAP_MESSAGE_NON : COAP_MESSAGE_CON,
                         COAP_REQUEST_CODE_GET,
                         coap_new_message_id(session),
@@ -244,7 +236,7 @@ void client_coap_init(int argc, char **argv)
         goto fail;
     }
 
-    /* Add option list (which will be sorted) to the PDU */
+    // Add option list (which will be sorted) to the PDU
     if (optlist) {
         res = coap_add_optlist_pdu(pdu, &optlist);
         if (res != 1) {
@@ -253,12 +245,12 @@ void client_coap_init(int argc, char **argv)
         }
     }
     if (is_mcast) {
-        /* Allow for other servers to respond within DEFAULT_LEISURE RFC7252 8.2 */
+        // Allow for other servers to respond within DEFAULT_LEISURE RFC7252 8.2
         wait_seconds = coap_session_get_default_leisure(session).integer_part + 1;
     }
     wait_ms = wait_seconds * 1000;
 
-    /* and send the PDU */
+    // and send the PDU
     mid = coap_send(session, pdu);
     if (mid == COAP_INVALID_MID) {
         coap_log_warn("Failed to send PDU\n");
@@ -278,10 +270,10 @@ void client_coap_init(int argc, char **argv)
         }
     }
 fail:
-    /* Clean up library usage so client can be run again */
+    // Clean up library usage so client can be run again
     quit = 0;
     is_mcast = 0;
-    wait_seconds = DEFAULT_WAIT_TIME; /* default timeout in seconds */
+    wait_seconds = DEFAULT_WAIT_TIME; // default timeout in seconds
     coap_delete_optlist(optlist);
     optlist = NULL;
     coap_session_release(session);

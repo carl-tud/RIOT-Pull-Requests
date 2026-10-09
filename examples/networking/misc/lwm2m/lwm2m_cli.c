@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Wakaama LwM2M Client example CLI support
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Wakaama LwM2M Client example CLI support
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+/// @}
 
 #include "board.h"
 #include "lwm2m_client.h"
@@ -38,8 +34,7 @@ lwm2m_object_t *obj_list[OBJ_COUNT];
 lwm2m_client_data_t client_data;
 
 void _light_cb(lwm2m_object_t *object, uint16_t instance_id, bool status, uint8_t dimmer,
-               const char *color, const char *app_type, void *arg)
-{
+               const char *color, const char *app_type, void *arg) {
     (void)object;
     (void)instance_id;
     (void)arg;
@@ -57,19 +52,18 @@ void _light_cb(lwm2m_object_t *object, uint16_t instance_id, bool status, uint8_
 #endif
 }
 
-void lwm2m_cli_init(void)
-{
-    /* this call is needed before creating any objects */
+void lwm2m_cli_init(void) {
+    // this call is needed before creating any objects
     lwm2m_client_init(&client_data);
 
-    /* add objects that will be registered */
+    // add objects that will be registered
     obj_list[0] = lwm2m_object_security_init(&client_data);
     obj_list[1] = lwm2m_client_get_server_object(&client_data, CONFIG_LWM2M_SERVER_SHORT_ID);
     obj_list[2] = lwm2m_object_device_init(&client_data);
     obj_list[3] = lwm2m_object_light_control_init(&client_data);
     obj_list[4] = lwm2m_object_on_off_switch_init(&client_data);
 
-    /* create light control object instance */
+    // create light control object instance
     lwm2m_obj_light_control_args_t light_args = {
         .cb = _light_cb,
         .cb_arg = NULL,
@@ -84,7 +78,7 @@ void lwm2m_cli_init(void)
         puts("Error instantiating light control");
     }
 
-    /* create on/off switch object instance */
+    // create on/off switch object instance
     lwm2m_obj_on_off_switch_args_t switch_args = {
         .app_type = "Switch 0",
         .app_type_len = sizeof("Switch 0") - 1
@@ -95,7 +89,7 @@ void lwm2m_cli_init(void)
         puts("Error instantiating on/off switch");
     }
 
-    /* create security object instance */
+    // create security object instance
     lwm2m_obj_security_args_t security_args = {
         .server_id = CONFIG_LWM2M_SERVER_SHORT_ID,
         .server_uri = CONFIG_LWM2M_SERVER_URI,
@@ -106,7 +100,7 @@ void lwm2m_cli_init(void)
         .secret_key_len = sizeof(rpk_priv),
         .server_pub_key = server_rpk_pub,
         .server_pub_key_len = sizeof(server_rpk_pub),
-        .is_bootstrap = false, /* set to true when using Bootstrap server */
+        .is_bootstrap = false, // set to true when using Bootstrap server
         .client_hold_off_time = 5,
         .bootstrap_account_timeout = 0
     };
@@ -143,14 +137,12 @@ void lwm2m_cli_init(void)
     }
 }
 
-static void _print_usage_lwm2m_light_cmd(const char *cmd)
-{
+static void _print_usage_lwm2m_light_cmd(const char *cmd) {
     assert(cmd);
     printf("usage: %s light <on|off> <dimmer> [color]\n", cmd);
 }
 
-static int _parse_lwm2m_light_cmd(int argc, char **argv)
-{
+static int _parse_lwm2m_light_cmd(int argc, char **argv) {
     if (argc < 4 || argc > 5) {
         printf("Error: invalid number of arguments\n");
         _print_usage_lwm2m_light_cmd(argv[0]);
@@ -184,14 +176,13 @@ static int _parse_lwm2m_light_cmd(int argc, char **argv)
 
     lwm2m_object_light_control_update_status(0, status, false);
 
-    /* call the callback now to actually update the light */
+    // call the callback now to actually update the light
     lwm2m_object_light_control_update_dimmer(0, dimmer, true);
 
     return 0;
 }
 
-static int _parse_lwm2m_switch_cmd(int argc, char **argv)
-{
+static int _parse_lwm2m_switch_cmd(int argc, char **argv) {
     if (argc != 3) {
         printf("usage: %s switch <on|off>\n", argv[0]);
         return 1;
@@ -208,14 +199,13 @@ static int _parse_lwm2m_switch_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _cli_cmd(int argc, char **argv)
-{
+static int _cli_cmd(int argc, char **argv) {
     if (argc == 1) {
         goto help_error;
     }
 
     if (!strcmp(argv[1], "start")) {
-        /* run the LwM2M client */
+        // run the LwM2M client
         if (!connected && lwm2m_client_run(&client_data, obj_list, ARRAY_SIZE(obj_list))) {
             connected = 1;
         }

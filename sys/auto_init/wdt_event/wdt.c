@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- *
- * @file        wdt.c
- * @brief       Watchdog Event
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+///
+/// @file        wdt.c
+/// @brief       Watchdog Event
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include "auto_init.h"
 #include "auto_init_utils.h"
@@ -25,14 +21,12 @@
 #include "periph/wdt.h"
 #include "ztimer.h"
 
-static void _wdt_event_cb(void *ctx)
-{
+static void _wdt_event_cb(void *ctx) {
     (void)ctx;
     wdt_kick();
 }
 
-static void auto_init_wdt_event(void)
-{
+static void auto_init_wdt_event(void) {
     static event_periodic_callback_t wdt_event;
     unsigned sleep_ms = (CONFIG_PERIPH_WDT_WIN_MIN_MS + CONFIG_PERIPH_WDT_WIN_MAX_MS)
                       / 2;

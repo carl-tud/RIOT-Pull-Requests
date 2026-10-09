@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Event threads test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Event threads test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <assert.h>
 #include <stdio.h>
@@ -58,8 +54,7 @@ static void _handler_low(event_t *event) {
 
 static event_t event_low = { .handler=_handler_low };
 
-int main(void)
-{
+int main(void) {
     event_post(EVENT_PRIO_LOWEST, &event_low);
 
     puts("main done");

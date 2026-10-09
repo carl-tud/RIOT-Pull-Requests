@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_atwinc15x0
- * @{
- *
- * @file
- * @brief       RIOT bus wrapper API implementation
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     drivers_atwinc15x0
+/// @{
+///
+/// @file
+/// @brief       RIOT bus wrapper API implementation
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <assert.h>
 
@@ -30,8 +26,7 @@ tstrNmBusCapabilities egstrNmBusCapabilities =
     NM_BUS_MAX_TRX_SZ
 };
 
-sint8 nm_bus_init(void *arg)
-{
+sint8 nm_bus_init(void *arg) {
     (void)arg;
 
     assert(atwinc15x0);
@@ -45,15 +40,13 @@ sint8 nm_bus_init(void *arg)
     return 0;
 }
 
-sint8 nm_bus_ioctl(uint8 cmd, void* params)
-{
+sint8 nm_bus_ioctl(uint8 cmd, void* params) {
     assert(atwinc15x0);
 
     sint8 res = 0;
     tstrNmSpiRw *spi_params = (tstrNmSpiRw *)params;
 
-    switch (cmd)
-    {
+    switch (cmd) {
         case NM_BUS_IOCTL_RW:
             spi_acquire(atwinc15x0->params.spi, atwinc15x0->params.ssn_pin,
                         SPI_MODE_0, atwinc15x0->params.spi_clk);
@@ -74,13 +67,11 @@ sint8 nm_bus_ioctl(uint8 cmd, void* params)
     return res;
 }
 
-sint8 nm_bus_deinit(void)
-{
+sint8 nm_bus_deinit(void) {
     return 0;
 }
 
-sint8 nm_bus_reinit(void *arg)
-{
+sint8 nm_bus_reinit(void *arg) {
     (void)arg;
     return 0;
 }

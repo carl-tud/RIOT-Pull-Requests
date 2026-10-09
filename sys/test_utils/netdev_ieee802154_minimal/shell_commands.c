@@ -1,20 +1,16 @@
-/*
- * Copyright (C) 2022 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for
- * more details.
- */
+// Copyright (C) 2022 HAW Hamburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for
+// more details.
 
-/**
- * @ingroup     test_utils_netdev_ieee802154_minimal
- * @{
- *
- * @file
- * @brief       Shell commands for netdev Eth minimal test utility module
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- */
+/// @ingroup     test_utils_netdev_ieee802154_minimal
+/// @{
+///
+/// @file
+/// @brief       Shell commands for netdev Eth minimal test utility module
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
 
 #include <errno.h>
 #include <stdio.h>
@@ -41,8 +37,7 @@ static char _addr_str[IEEE802154_LONG_ADDRESS_LEN * 3];
 static int send(int iface, le_uint16_t dst_pan, uint8_t *dst_addr,
                 size_t dst_len, char *data);
 
-int ifconfig_list(int idx)
-{
+int ifconfig_list(int idx) {
     int res;
     uint8_t tmp[IEEE802154_LONG_ADDRESS_LEN];
     netdev_t *netdev = _devices[idx].dev;
@@ -150,8 +145,7 @@ int ifconfig_list(int idx)
     return 0;
 }
 
-int cmd_ifconfig(int argc, char **argv)
-{
+int cmd_ifconfig(int argc, char **argv) {
     (void)argc;
     (void)argv;
     for (unsigned int i = 0; i < NETDEV_IEEE802154_MINIMAL_NUMOF; i++) {
@@ -160,13 +154,11 @@ int cmd_ifconfig(int argc, char **argv)
     return 0;
 }
 
-static void txtsnd_usage(char *cmd_name)
-{
+static void txtsnd_usage(char *cmd_name) {
     printf("usage: %s <iface> [<pan>] <addr> <text>\n", cmd_name);
 }
 
-static int cmd_txtsnd(int argc, char **argv)
-{
+static int cmd_txtsnd(int argc, char **argv) {
     char *text;
     uint8_t addr[IEEE802154_LONG_ADDRESS_LEN];
     int iface, idx = 2;
@@ -200,8 +192,7 @@ static int cmd_txtsnd(int argc, char **argv)
 }
 
 static int send(int iface, le_uint16_t dst_pan, uint8_t *dst, size_t dst_len,
-                char *data)
-{
+                char *data) {
     int res;
     netdev_ieee802154_t *dev;
     uint8_t *src;
@@ -235,7 +226,7 @@ static int send(int iface, le_uint16_t dst_pan, uint8_t *dst, size_t dst_len,
         src_len = 2;
         src = dev->short_addr;
     }
-    /* fill MAC header, seq should be set by device */
+    // fill MAC header, seq should be set by device
     if ((res = ieee802154_set_frame_hdr(mhr, src, src_len,
                                         dst, dst_len,
                                         src_pan, dst_pan,
@@ -265,8 +256,8 @@ static int send(int iface, le_uint16_t dst_pan, uint8_t *dst, size_t dst_len,
     return 0;
 }
 
-/* declare shell commands */
+// declare shell commands
 SHELL_COMMAND(ifconfig, "Configure the device", cmd_ifconfig);
 SHELL_COMMAND(txtsnd, "Send an IEEE 802.15.4 packet", cmd_txtsnd);
 
-/** @} */
+/// @}

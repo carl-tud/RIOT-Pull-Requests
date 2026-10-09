@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "net/gnrc.h"
 #include "net/gnrc/netif.h"
@@ -22,10 +18,9 @@
 #include "shell.h"
 #endif
 
-int main(void)
-{
+int main(void) {
 #if IS_USED(MODULE_SOCKET_ZEP)
-    /* This is a test for native with socket_zep */
+    // This is a test for native with socket_zep
     char addr_str[GNRC_NETIF_L2ADDR_MAXLEN * 3];
     gnrc_netif_t *netif = gnrc_netif_iter(NULL);
 
@@ -40,11 +35,11 @@ int main(void)
     gnrc_netreg_register(GNRC_NETTYPE_UNDEF, &dump);
 
 #if IS_USED(MODULE_SHELL)
-    /* this is manual test for real MCU using shell module */
+    // this is manual test for real MCU using shell module
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 #endif
     return 0;
 }
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_max31855
- * @{
- *
- * @file
- * @brief       Device driver implementation for the drivers_sensors
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_max31855
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the drivers_sensors
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -26,8 +22,7 @@
 #include "max31855_constants.h"
 #include "max31855_params.h"
 
-void _raw_data_to_thermocouple_temperature(uint32_t raw_data, int32_t *temperature)
-{
+void _raw_data_to_thermocouple_temperature(uint32_t raw_data, int32_t *temperature) {
     assert(temperature);
 
     int32_t is_negative = raw_data & MAX31855_THERMOCOUPLE_SIGN_MASK;
@@ -39,10 +34,10 @@ void _raw_data_to_thermocouple_temperature(uint32_t raw_data, int32_t *temperatu
     *temperature = (raw_data & MAX31855_THERMOCOUPLE_INTEGER_MASK) >>
                         MAX31855_THERMOCOUPLE_INTEGER_SHIFT;
 
-    /* convert to centi degC */
+    // convert to centi degC
     *temperature = *temperature * 100;
 
-    /* add fractional parts */
+    // add fractional parts
     *temperature += (raw_data & MAX31855_THERMOCOUPLE_FRACTIONAL_HALF_MASK) ? 50 : 0;
     *temperature += (raw_data & MAX31855_THERMOCOUPLE_FRACTIONAL_QUARTER_MASK) ? 25 : 0;
 
@@ -51,8 +46,7 @@ void _raw_data_to_thermocouple_temperature(uint32_t raw_data, int32_t *temperatu
     }
 }
 
-void _raw_data_to_internal_temperature(uint32_t raw_data, int32_t *temperature)
-{
+void _raw_data_to_internal_temperature(uint32_t raw_data, int32_t *temperature) {
     assert(temperature);
 
     int32_t is_negative = raw_data & MAX31855_INTERNAL_SIGN_MASK;
@@ -63,10 +57,10 @@ void _raw_data_to_internal_temperature(uint32_t raw_data, int32_t *temperature)
 
     *temperature = (raw_data & MAX31855_INTERNAL_INTEGER_MASK) >> MAX31855_INTERNAL_INTEGER_SHIFT;
 
-    /* convert to centi degC */
+    // convert to centi degC
     *temperature = *temperature * 100;
 
-    /* add fractional parts */
+    // add fractional parts
     *temperature += (raw_data & MAX31855_INTERNAL_FRACTIONAL_HALF_MASK) ? 50 : 0;
     *temperature += (raw_data & MAX31855_INTERNAL_FRACTIONAL_QUARTER_MASK) ? 25 : 0;
     *temperature += (raw_data & MAX31855_INTERNAL_FRACTIONAL_EIGHTH_MASK) ? 12 : 0;
@@ -77,8 +71,7 @@ void _raw_data_to_internal_temperature(uint32_t raw_data, int32_t *temperature)
     }
 }
 
-void _raw_data_to_fault(uint32_t raw_data, max31855_fault_t *fault)
-{
+void _raw_data_to_fault(uint32_t raw_data, max31855_fault_t *fault) {
     assert(fault);
 
     switch (raw_data & MAX31855_FAULT_MASK) {
@@ -97,8 +90,7 @@ void _raw_data_to_fault(uint32_t raw_data, max31855_fault_t *fault)
     }
 }
 
-int max31855_init(max31855_t *dev, const max31855_params_t *params)
-{
+int max31855_init(max31855_t *dev, const max31855_params_t *params) {
     assert(dev);
     assert(params);
     dev->params = params;
@@ -113,8 +105,7 @@ int max31855_init(max31855_t *dev, const max31855_params_t *params)
     return 0;
 }
 
-void max31855_read_raw(max31855_t *dev, uint32_t *data)
-{
+void max31855_read_raw(max31855_t *dev, uint32_t *data) {
     assert(dev);
     assert(data);
 
@@ -126,8 +117,7 @@ void max31855_read_raw(max31855_t *dev, uint32_t *data)
     *data = byteorder_bebuftohl(buffer);
 }
 
-void max31855_raw_to_data(uint32_t raw_data, max31855_data_t *data)
-{
+void max31855_raw_to_data(uint32_t raw_data, max31855_data_t *data) {
     assert(data);
 
     _raw_data_to_thermocouple_temperature(raw_data, &data->thermocouple_temperature);
@@ -135,8 +125,7 @@ void max31855_raw_to_data(uint32_t raw_data, max31855_data_t *data)
     _raw_data_to_fault(raw_data, &data->fault);
 }
 
-int max31855_read(max31855_t *dev, max31855_data_t *data)
-{
+int max31855_read(max31855_t *dev, max31855_data_t *data) {
     assert(dev && data);
 
     uint32_t raw_data;

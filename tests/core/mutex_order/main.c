@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for testing mutexes
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for testing mutexes
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @}
 
 #include <stdio.h>
 
@@ -27,8 +23,7 @@ static const char prios[THREAD_NUMOF] = {THREAD_PRIORITY_MAIN - 1, 4, 0, 2, 1};
 
 static mutex_t testlock;
 
-static void *lockme(void *arg)
-{
+static void *lockme(void *arg) {
     (void)arg;
     thread_t *t = thread_get_active();
 
@@ -45,21 +40,20 @@ static void *lockme(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Mutex order test");
     puts("Please refer to the README.md for more information\n");
 
     mutex_init(&testlock);
 
-    /* lock mutex, so that spawned threads have to wait */
+    // lock mutex, so that spawned threads have to wait
     mutex_lock(&testlock);
-    /* create threads */
+    // create threads
     for (unsigned i = 0; i < THREAD_NUMOF; i++) {
         thread_create(stacks[i], sizeof(stacks[i]), prios[i], 0,
                       lockme, NULL, "t");
     }
-    /* allow threads to lock the mutex */
+    // allow threads to lock the mutex
     mutex_unlock(&testlock);
 
     mutex_lock(&testlock);

@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024-2025 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2025 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2025 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2025 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup unittests
- * @brief   Unit tests for PDU parsers
- * @author  Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @ingroup unittests
+/// @brief   Unit tests for PDU parsers
+/// @author  Carl Seifert <carl.seifert@tu-dresden.de>
 
 #include <stdio.h>
 #include <string.h>
@@ -30,8 +26,7 @@
 
 static void test_parsed_message(unicoap_parser_result_t *parsed, uint8_t code,
                                 size_t payload_size, const uint8_t *payload,
-                                uint8_t token_length, uint8_t *token)
-{
+                                uint8_t token_length, uint8_t *token) {
     TEST_ASSERT_EQUAL_INT(code, parsed->message.code);
     TEST_ASSERT_EQUAL_INT(payload_size, parsed->message.payload_size);
 
@@ -50,27 +45,25 @@ static void test_parsed_message(unicoap_parser_result_t *parsed, uint8_t code,
     TEST_ASSERT_NOT_NULL(parsed->message.options);
 }
 
-static void test_pdu_rfc7252_actuators_round_trip(void)
-{
-    /* In this order:
-     UDP
-     Message:
-     {
-       "type": "Confirmable",
-       "code": "POST",
-       "id": 65201,
-       "token": 0,
-       "options": [
-         "Uri-Path: actuators",
-         "Uri-Path: leds",
-         "Content-Format: application/json",
-         "Uri-Query: color=g",
-         "Accept: application/json"
-       ]
-     }
-     Payload (JSON):
-     6D 6F 64 65 3D 6F 6E
-     */
+static void test_pdu_rfc7252_actuators_round_trip(void) {
+    // In this order:
+    //  UDP
+    //  Message:
+    //  {
+    //    "type": "Confirmable",
+    //    "code": "POST",
+    //    "id": 65201,
+    //    "token": 0,
+    //    "options": [
+    //      "Uri-Path: actuators",
+    //      "Uri-Path: leds",
+    //      "Content-Format: application/json",
+    //      "Uri-Query: color=g",
+    //      "Accept: application/json"
+    //    ]
+    //  }
+    //  Payload (JSON):
+    //  6D 6F 64 65 3D 6F 6E
     uint8_t pdu[] = { 0x40, 0x02, 0xfe, 0xb1, 0xb9, 0x61, 0x63, 0x74,
                       0x75, 0x61, 0x74, 0x6f, 0x72, 0x73, 0x04, 0x6c,
                       0x65, 0x64, 0x73, 0x11, 0x32, 0x37, 0x63, 0x6f,
@@ -82,9 +75,9 @@ static void test_pdu_rfc7252_actuators_round_trip(void)
                                                               &parsed));
 
     _TEST_ASSERT_EQUAL_PARSED_RFC7252(&parsed, UNICOAP_METHOD_POST,
-                                      /* payload */
+                                      // payload
                                       "mode=on",
-                                      /* token */
+                                      // token
                                       _BYTES(), UNICOAP_TYPE_CON, 65201);
 
     TEST_ASSERT_EQUAL_INT(5, parsed.options.option_count);
@@ -140,7 +133,7 @@ static void test_pdu_rfc7252_actuators_round_trip(void)
                                                     &parsed.properties));
     _TEST_ASSERT_EQUAL_BYTES(pdu, pdu_copy, sizeof(pdu));
 
-    /* Try to build a vector */
+    // Try to build a vector
 
     memset(pdu_copy, 0, sizeof(pdu_copy));
 
@@ -156,20 +149,17 @@ static void test_pdu_rfc7252_actuators_round_trip(void)
     _TEST_ASSERT_EQUAL_BYTES(pdu, pdu_copy, sizeof(pdu));
 }
 
-static void test_pdu_rfc7252_method_not_allowed_ack_round_trip(void)
-{
-    /*
-     UDP
-     Message:
-     {
-       "type": "Acknowledgement",
-       "code": "MethodNotAllowed",
-       "id": 3132,
-       "token": 3516372673,
-       "options": []
-     }
-     */
-    /* from https://wiki.wireshark.org/samplecaptures */
+static void test_pdu_rfc7252_method_not_allowed_ack_round_trip(void) {
+    //  UDP
+    //  Message:
+    //  {
+    //    "type": "Acknowledgement",
+    //    "code": "MethodNotAllowed",
+    //    "id": 3132,
+    //    "token": 3516372673,
+    //    "options": []
+    //  }
+    // from https://wiki.wireshark.org/samplecaptures
     const uint8_t pdu[] = { 0x64, 0x85, 0x0c, 0x3c, 0xd1, 0x97, 0x96, 0xc1 };
 
     unicoap_parser_result_t parsed = { 0 };
@@ -195,7 +185,7 @@ static void test_pdu_rfc7252_method_not_allowed_ack_round_trip(void)
                                                     &parsed.properties));
     _TEST_ASSERT_EQUAL_BYTES(pdu, pdu_copy, sizeof(pdu));
 
-    /* Try to build a vector */
+    // Try to build a vector
 
     memset(pdu_copy, 0, sizeof(pdu_copy));
 
@@ -211,22 +201,19 @@ static void test_pdu_rfc7252_method_not_allowed_ack_round_trip(void)
     _TEST_ASSERT_EQUAL_BYTES(pdu, pdu_copy, sizeof(pdu));
 }
 
-static void test_pdu_rfc7252_cbor_request_round_trip(void)
-{
-    /*
-     UDP
-     Message:
-     {
-       "type": "Confirmable",
-       "code": "POST",
-       "id": 3134,
-       "token": 3516372675,
-       "options": [
-         "Content-Format: application/cbor"
-       ]
-     }
-     */
-    /* from https://wiki.wireshark.org/samplecaptures */
+static void test_pdu_rfc7252_cbor_request_round_trip(void) {
+    //  UDP
+    //  Message:
+    //  {
+    //    "type": "Confirmable",
+    //    "code": "POST",
+    //    "id": 3134,
+    //    "token": 3516372675,
+    //    "options": [
+    //      "Content-Format: application/cbor"
+    //    ]
+    //  }
+    // from https://wiki.wireshark.org/samplecaptures
     const uint8_t pdu[] = { 0x44, 0x02, 0x0c, 0x3e, 0xd1, 0x97,
                             0x96, 0xc3, 0xc1, 0x3c, 0xff, 0x0a };
 
@@ -246,7 +233,7 @@ static void test_pdu_rfc7252_cbor_request_round_trip(void)
                                                     &parsed.properties));
     _TEST_ASSERT_EQUAL_BYTES(pdu, pdu_copy, sizeof(pdu));
 
-    /* Try to build a vector */
+    // Try to build a vector
 
     memset(pdu_copy, 0, sizeof(pdu_copy));
 
@@ -262,8 +249,7 @@ static void test_pdu_rfc7252_cbor_request_round_trip(void)
     _TEST_ASSERT_EQUAL_BYTES(pdu, pdu_copy, sizeof(pdu));
 }
 
-Test *tests_unicoap_pdu(void)
-{
+Test *tests_unicoap_pdu(void) {
     EMB_UNIT_TESTFIXTURES(fixtures){
         new_TestFixture(test_pdu_rfc7252_actuators_round_trip),
         new_TestFixture(test_pdu_rfc7252_method_not_allowed_ack_round_trip),

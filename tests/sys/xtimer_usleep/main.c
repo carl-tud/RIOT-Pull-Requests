@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 Josua Arndt
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 Josua Arndt
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       xtimer_usleep test application
- *
- * @author      Francisco Acosta <francisco.acosta@inria.fr>
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- * @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       xtimer_usleep test application
+///
+/// @author      Francisco Acosta <francisco.acosta@inria.fr>
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+/// @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -32,22 +28,19 @@ static const uint32_t sleep_times[] = { 10000, 50000, 10234, 56780, 12122, 98765
 
 #define ERROR_US 70
 
-/*
- * To use a pin to probe the sleep times enable the gpio module and define
- * SLEEP_PORT and SLEEP_PIN in the makefile, the port information can be found
- * in the enum in `cpu/include/periph_cpu.h`.
- *
- * FEATURES_REQUIRED += periph_gpio
- * CFLAGS += -DSLEEP_PIN=7
- * CFLAGS += -DSLEEP_PORT=PORT_F
- * */
+// To use a pin to probe the sleep times enable the gpio module and define
+// SLEEP_PORT and SLEEP_PIN in the makefile, the port information can be found
+// in the enum in `cpu/include/periph_cpu.h`.
+//
+// FEATURES_REQUIRED += periph_gpio
+// CFLAGS += -DSLEEP_PIN=7
+// CFLAGS += -DSLEEP_PORT=PORT_F
 #ifdef SLEEP_PIN
 #include "board.h"
 #include "periph/gpio.h"
 #endif
 
-int main(void)
-{
+int main(void) {
     uint32_t start_test, testtime;
 
 #ifdef SLEEP_PIN

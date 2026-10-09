@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_msp430
-* @{
- *
- * @file
- * @brief       ISR related functions
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- */
+/// @ingroup     cpu_msp430
+/// @{
+///
+/// @file
+/// @brief       ISR related functions
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
 
 #include <stdbool.h>
 #include <msp430.h>
@@ -27,17 +23,14 @@
 extern "C" {
 #endif
 
-/*
- * gcc warns for missing NOPs before/after interrupt enable/disable.
- * so I added the NOP instructions, even though they might not be necessary
- * due to following AND. // Kaspar
- */
+// gcc warns for missing NOPs before/after interrupt enable/disable.
+// so I added the NOP instructions, even though they might not be necessary
+// due to following AND. // Kaspar
 
 extern volatile int __irq_is_in;
 #define _GENERAL_INTERRUPT_ENABLE   (0x0008)
 
-__attribute__((always_inline)) static inline unsigned int irq_disable(void)
-{
+__attribute__((always_inline)) static inline unsigned int irq_disable(void) {
     unsigned int state;
     __asm__ volatile(
         "mov.w SR, %[state]"                "\n\t"
@@ -52,8 +45,7 @@ __attribute__((always_inline)) static inline unsigned int irq_disable(void)
     return state;
 }
 
-__attribute__((always_inline)) static inline unsigned int irq_enable(void)
-{
+__attribute__((always_inline)) static inline unsigned int irq_enable(void) {
     unsigned int state;
     __asm__ volatile(
         "mov.w SR, %[state]"                "\n\t"
@@ -69,29 +61,26 @@ __attribute__((always_inline)) static inline unsigned int irq_enable(void)
     return state;
 }
 
-__attribute__((always_inline)) static inline void irq_restore(unsigned int state)
-{
+__attribute__((always_inline)) static inline void irq_restore(unsigned int state) {
     __asm__ volatile(
         "bis %[state], SR"                    "\n\t"
         "nop"                                 "\n\t"
-        : /* no outputs */
+        : // no outputs
         : [state]   "r"(state)
         : "memory"
     );
 }
 
-__attribute__((always_inline)) static inline bool irq_is_in(void)
-{
+__attribute__((always_inline)) static inline bool irq_is_in(void) {
     return __irq_is_in;
 }
 
-__attribute__((always_inline)) static inline bool irq_is_enabled(void)
-{
+__attribute__((always_inline)) static inline bool irq_is_enabled(void) {
     unsigned int state;
     __asm__ volatile(
         "mov.w SR,%[state]"                   "\n\t"
         : [state]   "=r"(state)
-        : /* no inputs */
+        : // no inputs
         : "memory"
     );
 
@@ -102,4 +91,4 @@ __attribute__((always_inline)) static inline bool irq_is_enabled(void)
 }
 #endif
 
-/** @} */
+/// @}

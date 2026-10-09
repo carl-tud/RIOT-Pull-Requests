@@ -1,9 +1,7 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martin Landsmann
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martin Landsmann
+// SPDX-License-Identifier: LGPL-2.1-only
 
-#define TEST_BASE64_SHOW_OUTPUT (0) /**< set if encoded/decoded string is displayed */
+#define TEST_BASE64_SHOW_OUTPUT (0) ///< set if encoded/decoded string is displayed
 
 #if (TEST_BASE64_SHOW_OUTPUT == 1)
 #include <stdio.h>
@@ -15,8 +13,7 @@
 
 #include "base64.h"
 
-static void test_base64_01_encode_string(void)
-{
+static void test_base64_01_encode_string(void) {
     static const char data_in[] = "Hello RIOT this is a base64 test!\n"
                                   "This should work as intended.";
 
@@ -29,9 +26,7 @@ static void test_base64_01_encode_string(void)
     size_t base64_out_size = 0;
     char base64_out[sizeof(expected_encoding)];
 
-    /*
-     * The first encoding attempt fails, but reveals the required out size.
-     */
+    // The first encoding attempt fails, but reveals the required out size.
     int ret = base64_encode(data_in, data_in_size, NULL, &base64_out_size);
 
     TEST_ASSERT_EQUAL_INT(BASE64_ERROR_BUFFER_OUT_SIZE, ret);
@@ -55,8 +50,7 @@ static void test_base64_01_encode_string(void)
 #endif
 }
 
-static void test_base64_02_decode_base64(void)
-{
+static void test_base64_02_decode_base64(void) {
     static const char encoded_base64[] =
         "SGVsbG8gUklPVCB0aGlzIGlzIGEgYmFzZTY0IHRlc3Q"
         "hClRoaXMgc2hvdWxkIHdvcmsgYXMgaW50ZW5kZWQu";
@@ -93,8 +87,7 @@ static void test_base64_02_decode_base64(void)
 #endif
 }
 
-static void test_base64_03_single_character(void)
-{
+static void test_base64_03_single_character(void) {
     size_t element_size = 1;
     static const char element[] = "1";
 
@@ -117,8 +110,7 @@ static void test_base64_03_single_character(void)
                         "encoding failed!(produced unexpected output)");
 }
 
-static void test_base64_04_free_conversion(void)
-{
+static void test_base64_04_free_conversion(void) {
     size_t elements = 255;
     char elm[elements];
 
@@ -128,7 +120,7 @@ static void test_base64_04_free_conversion(void)
     size_t elem_base64_out_decoded_size = 0;
     unsigned char elem_base64_out_decoded[ elements + 10 ];
 
-    /* fill some values */
+    // fill some values
     for (size_t i = 0; i < elements; ++i) {
         elm[i] = i;
     }
@@ -152,8 +144,7 @@ static void test_base64_04_free_conversion(void)
                         "decoding failed!(produced unexpected output)");
 }
 
-static void test_base64_05_decode_larger(void)
-{
+static void test_base64_05_decode_larger(void) {
     static const char decodeit[] =
         "SG93IG11Y2ggd29vZCB3b3VsZCBhIHdvb2RjaHVjayBjaHVj"
         "awppZiBhIHdvb2RjaHVjayBjb3VsZCBjaHVjayB3b29kPwpI"
@@ -181,17 +172,14 @@ static void test_base64_05_decode_larger(void)
 #endif
 }
 
-static void test_base64_06_stream_encode(void)
-{
-    /*
-     * In this test we divide the `stream_encode[]` input for the encoding
-     * into several portions (chunks).
-     *
-     * Every chunk is encoded and appended to the base64 `encode_result[]`.
-     * To enable appending further, the chunks MUST be dividable by 3.
-     * Only the final chunk MAY be prime to 3. (it is in this test)
-     *
-     */
+static void test_base64_06_stream_encode(void) {
+    // In this test we divide the `stream_encode[]` input for the encoding
+    // into several portions (chunks).
+    //
+    // Every chunk is encoded and appended to the base64 `encode_result[]`.
+    // To enable appending further, the chunks MUST be dividable by 3.
+    // Only the final chunk MAY be prime to 3. (it is in this test)
+    //
 
     static const char stream_encode[] =
         "Peter Piper picked a peck of pickled peppers.\n"
@@ -199,10 +187,10 @@ static void test_base64_06_stream_encode(void)
         "If Peter Piper picked a peck of pickled peppers,\n"
         "Where's the peck of pickled peppers Peter Piper picked?";
 
-    /* required output size +2 extra bytes */
+    // required output size +2 extra bytes
     size_t encoded_size = 264 + 2;
-    /* cppcheck-suppress unassignedVariable
-     * (reason: the above array is used/assigned in base64_encode() using its pointer) */
+    // cppcheck-suppress unassignedVariable
+    // (reason: the above array is used/assigned in base64_encode() using its pointer)
     char encode_result[encoded_size];
 
     int remain = strlen(stream_encode);
@@ -220,7 +208,7 @@ static void test_base64_06_stream_encode(void)
         remain -= i;
     }
 
-    /* this final chunk we want to encode and append is prime to 3 */
+    // this final chunk we want to encode and append is prime to 3
     size_t finish = encoded_size - out_iter;
     ret = base64_encode(stream_encode + (strlen(stream_encode) - remain),
                         remain, encode_result + out_iter, &finish);
@@ -238,15 +226,12 @@ static void test_base64_06_stream_encode(void)
 #endif
 }
 
-static void test_base64_07_stream_decode(void)
-{
+static void test_base64_07_stream_decode(void) {
 
-    /*
-     * Here we decode the base64 string `encoded[]`
-     *
-     * Every base64 chunk is decoded and appended to `stream_decoded[]`.
-     * The chunks passed to decode MUST be dividable by 4.
-     */
+    // Here we decode the base64 string `encoded[]`
+    //
+    // Every base64 chunk is decoded and appended to `stream_decoded[]`.
+    // The chunks passed to decode MUST be dividable by 4.
 
     static const char encoded[] =
         "UGV0ZXIgUGlwZXIgcGlja2VkIGEgcGVjayBvZiBwaWNrbGVkIH"
@@ -256,11 +241,11 @@ static void test_base64_07_stream_decode(void)
         "aGUgcGVjayBvZiBwaWNrbGVkIHBlcHBlcnMgUGV0ZXIgUGlwZX"
         "IgcGlja2VkPw==";
 
-    /* required output size +2 extra bytes */
+    // required output size +2 extra bytes
     size_t decoded_size = 196 + 2;
 
-    /* cppcheck-suppress unassignedVariable
-     * (reason: the above array is used/assigned in base64_decode() using its pointer) */
+    // cppcheck-suppress unassignedVariable
+    // (reason: the above array is used/assigned in base64_decode() using its pointer)
     char stream_decoded[decoded_size];
 
     size_t encoded_size = strlen(encoded);
@@ -296,8 +281,7 @@ static void test_base64_07_stream_decode(void)
 #endif
 }
 
-static void test_base64_08_encode_16_bytes(void)
-{
+static void test_base64_08_encode_16_bytes(void) {
     unsigned char buffer[16];
     size_t buffer_size = sizeof(buffer);
     for (size_t i = 0; i < buffer_size; ++i) {
@@ -322,8 +306,7 @@ static void test_base64_08_encode_16_bytes(void)
     TEST_ASSERT_EQUAL_INT(expected_out_size, element_base64_out_size);
 }
 
-static void test_base64_09_encode_size_determination(void)
-{
+static void test_base64_09_encode_size_determination(void) {
     enum { buffer_size = 20 };
     unsigned char buffer[buffer_size];
     for (int i = 0; i < buffer_size; ++i) {
@@ -334,7 +317,7 @@ static void test_base64_09_encode_size_determination(void)
     size_t element_base64_out_size = expected_out_size;
     unsigned char element_base64_out[expected_out_size];
 
-    /* test 20 bytes input, expected 28 bytes output */
+    // test 20 bytes input, expected 28 bytes output
     size_t required_out_size = 0;
     int ret = base64_encode(buffer, buffer_size,
                             element_base64_out, &required_out_size);
@@ -348,7 +331,7 @@ static void test_base64_09_encode_size_determination(void)
     TEST_ASSERT_EQUAL_INT(BASE64_SUCCESS, ret);
     TEST_ASSERT_EQUAL_INT(expected_out_size, element_base64_out_size);
 
-    /* test 19 bytes input, expected 28 bytes output */
+    // test 19 bytes input, expected 28 bytes output
     required_out_size = 0;
     ret = base64_encode(buffer, 19,
                         element_base64_out, &required_out_size);
@@ -356,7 +339,7 @@ static void test_base64_09_encode_size_determination(void)
     TEST_ASSERT_EQUAL_INT(BASE64_ERROR_BUFFER_OUT_SIZE, ret);
     TEST_ASSERT_EQUAL_INT(required_out_size, expected_out_size);
 
-    /* test 18 bytes input, expected 24 bytes output */
+    // test 18 bytes input, expected 24 bytes output
     expected_out_size = 24;
     required_out_size = 0;
     ret = base64_encode(buffer, 18,
@@ -365,7 +348,7 @@ static void test_base64_09_encode_size_determination(void)
     TEST_ASSERT_EQUAL_INT(BASE64_ERROR_BUFFER_OUT_SIZE, ret);
     TEST_ASSERT_EQUAL_INT(required_out_size, expected_out_size);
 
-    /* test 17 bytes input, expected 24 bytes output */
+    // test 17 bytes input, expected 24 bytes output
     expected_out_size = 24;
     required_out_size = 0;
     ret = base64_encode(buffer, 17,
@@ -375,8 +358,7 @@ static void test_base64_09_encode_size_determination(void)
     TEST_ASSERT_EQUAL_INT(required_out_size, expected_out_size);
 }
 
-static void test_base64_10_encode_empty(void)
-{
+static void test_base64_10_encode_empty(void) {
     unsigned char data_in[] = "";
 
     size_t base64_out_size = 8;
@@ -388,8 +370,7 @@ static void test_base64_10_encode_empty(void)
     TEST_ASSERT_EQUAL_INT(0, base64_out_size);
 }
 
-static void test_base64_11_encode_empty_null_out(void)
-{
+static void test_base64_11_encode_empty_null_out(void) {
     unsigned char data_in[] = "";
 
     size_t base64_out_size = 0;
@@ -400,18 +381,17 @@ static void test_base64_11_encode_empty_null_out(void)
     TEST_ASSERT_EQUAL_INT(0, base64_out_size);
 }
 
-static void test_base64_12_encode_overflow(void)
-{
+static void test_base64_12_encode_overflow(void) {
     unsigned char data_in[] = "";
 
     size_t base64_out_size = 0;
 
-    /* To test if `base64_encode()` detects an overflow of the output size
-     * argument, we need to pass a size argument that is incredibly large. The
-     * compiler is unaware that base64_encode() won't actually read from
-     * `data_in` due to the overflow and will complain about reading
-     * `SIZE_MAX - 1` bytes beyond `data_in`. So we just disable the diagnostics
-     * here temporarily. */
+    // To test if `base64_encode()` detects an overflow of the output size
+    // argument, we need to pass a size argument that is incredibly large. The
+    // compiler is unaware that base64_encode() won't actually read from
+    // `data_in` due to the overflow and will complain about reading
+    // `SIZE_MAX - 1` bytes beyond `data_in`. So we just disable the diagnostics
+    // here temporarily.
 #if defined(__clang__) || (defined(__GNUC__) && __GNUC__ >= 8)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wstringop-overflow"
@@ -424,8 +404,7 @@ static void test_base64_12_encode_overflow(void)
     TEST_ASSERT_EQUAL_INT(BASE64_ERROR_OVERFLOW, ret);
 }
 
-static void test_base64_13_decode_empty(void)
-{
+static void test_base64_13_decode_empty(void) {
     unsigned char data_in[] = "";
 
     size_t base64_out_size = 8;
@@ -437,8 +416,7 @@ static void test_base64_13_decode_empty(void)
     TEST_ASSERT_EQUAL_INT(0, base64_out_size);
 }
 
-static void test_base64_14_decode_empty_null_out(void)
-{
+static void test_base64_14_decode_empty_null_out(void) {
     unsigned char data_in[] = "";
 
     size_t data_out_size = 0;
@@ -449,21 +427,18 @@ static void test_base64_14_decode_empty_null_out(void)
     TEST_ASSERT_EQUAL_INT(0, data_out_size);
 }
 
-static void test_base64_15_urlsafe_encode_int(void)
-{
+static void test_base64_15_urlsafe_encode_int(void) {
     uint32_t data_in = 4345;
     unsigned char expected_encoding[] = "-RAAAA";
 
     size_t base64_out_size = 0;
 
-    /* Up to two = signs are suppressed in urlsafe encoding at the end, but
-     * still written in the implementation. Just allocate 2 bytes more as worst
-     * case */
+    // Up to two = signs are suppressed in urlsafe encoding at the end, but
+    // still written in the implementation. Just allocate 2 bytes more as worst
+    // case
     char base64_out[sizeof(expected_encoding) + 2];
 
-    /*
-     * The first encoding attempt fails, but reveals the required out size.
-     */
+    // The first encoding attempt fails, but reveals the required out size.
     int ret = base64url_encode(&data_in, sizeof(data_in), NULL, &base64_out_size);
 
     TEST_ASSERT_EQUAL_INT(BASE64_ERROR_BUFFER_OUT_SIZE, ret);
@@ -487,8 +462,7 @@ static void test_base64_15_urlsafe_encode_int(void)
 #endif
 }
 
-static void test_base64_16_urlsafe_decode_int(void)
-{
+static void test_base64_16_urlsafe_decode_int(void) {
     static const char encoded_base64[]  = "_____wAA";
     static const uint8_t expected[]     = {0xFF, 0xFF, 0xFF, 0xFF, 0x0, 0x0};
 
@@ -539,8 +513,7 @@ static void test_base64_17_size_estimation(void) {
     }
 }
 
-Test *tests_base64_tests(void)
-{
+Test *tests_base64_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_base64_01_encode_string),
         new_TestFixture(test_base64_02_decode_base64),
@@ -566,7 +539,6 @@ Test *tests_base64_tests(void)
     return (Test *)&base64_tests;
 }
 
-void tests_base64(void)
-{
+void tests_base64(void) {
     TESTS_RUN(tests_base64_tests());
 }

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 Dario Petrillo
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Dario Petrillo
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ir_nec
- *
- * @{
- * @file
- * @brief       Default configuration
- *
- * @author      Dario Petrillo <dario.pk1@gmail.com>
- */
+/// @ingroup     drivers_ir_nec
+///
+/// @{
+/// @file
+/// @brief       Default configuration
+///
+/// @author      Dario Petrillo <dario.pk1@gmail.com>
 
 #include "board.h"
 #include "ir_nec.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef IR_NEC_PARAM_PIN
 #define IR_NEC_PARAM_PIN    GPIO_UNDEF
 #endif
@@ -34,11 +28,9 @@ extern "C" {
 #ifndef IR_NEC_PARAMS
 #define IR_NEC_PARAMS   { .pin = IR_NEC_PARAM_PIN }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configuration struct
- */
+/// @brief   Configuration struct
 static const ir_nec_params_t ir_nec_params[] =
 {
     IR_NEC_PARAMS
@@ -48,4 +40,4 @@ static const ir_nec_params_t ir_nec_params[] =
 }
 #endif
 
-/** @} */
+/// @}

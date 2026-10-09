@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_arduino_due
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Arduino pins
- *
- * You can use the defines in this file for simplified interaction with the
- * Arduino specific pin numbers.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_common_arduino_due
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Arduino pins
+///
+/// You can use the defines in this file for simplified interaction with the
+/// Arduino specific pin numbers.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "periph/adc.h"
 #include "periph/gpio.h"
@@ -29,37 +25,25 @@
 extern "C" {
 #endif
 
-/**
- * @name    Arduino's default UART device
- * @{
- */
+/// @name    Arduino's default UART device
+/// @{
 #define ARDUINO_UART_D0D1        UART_DEV(0)
-/** @} */
+/// @}
 
-/**
- * @name    Arduino's default SPI device
- * @{
- */
-/**
- * @brief   SPI_DEV(0) is connected to the ISP header
- */
+/// @name    Arduino's default SPI device
+/// @{
+/// @brief   SPI_DEV(0) is connected to the ISP header
 #define ARDUINO_SPI_ISP         SPI_DEV(0)
-/** @} */
+/// @}
 
-/**
- * @name    Arduino's I2C buses
- * @{
- */
-/**
- * @brief   The only configured I2C
- */
+/// @name    Arduino's I2C buses
+/// @{
+/// @brief   The only configured I2C
 #define ARDUINO_I2C_UNO         I2C_DEV(0)
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of MCU pins to Arduino pins
- * @{
- */
+/// @name    Mapping of MCU pins to Arduino pins
+/// @{
 #define ARDUINO_PIN_0           GPIO_PIN(PA, 8)
 #define ARDUINO_PIN_1           GPIO_PIN(PA, 9)
 #define ARDUINO_PIN_2           GPIO_PIN(PB, 25)
@@ -141,12 +125,10 @@ extern "C" {
 #define ARDUINO_PIN_78          GPIO_PIN(PB, 23)
 
 #define ARDUINO_PIN_LAST        78
-/** @} */
+/// @}
 
-/**
- * @name    Aliases for analog pins
- * @{
- */
+/// @name    Aliases for analog pins
+/// @{
 #define ARDUINO_PIN_A0          ARDUINO_PIN_54
 #define ARDUINO_PIN_A1          ARDUINO_PIN_55
 #define ARDUINO_PIN_A2          ARDUINO_PIN_56
@@ -161,12 +143,10 @@ extern "C" {
 #define ARDUINO_PIN_A11         ARDUINO_PIN_65
 #define ARDUINO_PIN_DAC0        ARDUINO_PIN_66
 #define ARDUINO_PIN_DAC1        ARDUINO_PIN_67
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino analog pins to RIOT ADC lines
- * @{
- */
+/// @name    Mapping of Arduino analog pins to RIOT ADC lines
+/// @{
 #define ARDUINO_A0              ADC_LINE(7)
 #define ARDUINO_A1              ADC_LINE(6)
 #define ARDUINO_A2              ADC_LINE(5)
@@ -181,20 +161,18 @@ extern "C" {
 #define ARDUINO_A11             ADC_LINE(13)
 
 #define ARDUINO_ANALOG_PIN_LAST 11
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino DAC pins to RIOT DAC lines
- * @{
- */
+/// @name    Mapping of Arduino DAC pins to RIOT DAC lines
+/// @{
 #define ARDUINO_DAC0            DAC_LINE(0)
 #define ARDUINO_DAC1            DAC_LINE(1)
 
-#define ARDUINO_DAC_PIN_LAST    1                   /**< DAC1 is the last DAC pin */
-/** @} */
+#define ARDUINO_DAC_PIN_LAST    1                   ///< DAC1 is the last DAC pin
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

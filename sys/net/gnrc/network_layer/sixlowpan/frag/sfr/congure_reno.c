@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "kernel_defines.h"
 #include "congure/abe.h"
@@ -48,8 +44,7 @@ static const congure_abe_snd_consts_t _sfr_congure_abe_consts = {
 static const congure_reno_snd_consts_t _sfr_congure_reno_consts = SFR_CONGURE_RENO_CONSTS;
 #endif
 
-congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void)
-{
+congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void) {
     for (unsigned i = 0; i < ARRAY_SIZE(_sfr_congures); i++) {
         if (_sfr_congures[i].super.driver == NULL) {
 #if IS_USED(MODULE_CONGURE_ABE)
@@ -65,20 +60,18 @@ congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void)
     return NULL;
 }
 
-static void _fr(congure_reno_snd_t *c)
-{
+static void _fr(congure_reno_snd_t *c) {
     (void)c;
-    /* SFR resends when fast retransmits needs to be done anyways so
-     * do nothing */
+    // SFR resends when fast retransmits needs to be done anyways so
+    // do nothing
     return;
 }
 
-static bool _same_wnd_adv(congure_reno_snd_t *c, congure_snd_ack_t *ack)
-{
+static bool _same_wnd_adv(congure_reno_snd_t *c, congure_snd_ack_t *ack) {
     (void)c;
     (void)ack;
-    /* Window size is not advertised with SFR, so always true */
+    // Window size is not advertised with SFR, so always true
     return true;
 }
 
-/** @} */
+/// @}

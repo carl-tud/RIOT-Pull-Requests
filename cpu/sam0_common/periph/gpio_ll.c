@@ -1,37 +1,33 @@
-/*
- * SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam0_common
- * @ingroup     drivers_periph_gpio
- * @{
- *
- * @file
- * @brief       GPIO Low-level API implementation for the SAM0 GPIO peripheral
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
- *
- * This implementation uses the IOBUS for single-cycle I/O for writes in any
- * case. Reading via the IOBUS requires however for continuous sampling to
- * be enabled, as reads on the IOBUS cannot stall the CPU to wait for the
- * on-demand sampling result to be available. Therefore, reads are done by
- * default via the slower APB bus.
- *
- * To also enable reading via the IOBUS, add the following snipped to your
- * `Makefile`:
- *
- * ```
- * FEATURES_OPTIONAL += periph_gpio_fast_read
- * ```
- *
- * This enables continuous sampling on any pin configured as input, so that
- * the IOBUS can safely be used for reads as well. Consequently, it will now
- * consistently use the IOBUS for I/O.
- *
- * @}
- */
+/// @ingroup     cpu_sam0_common
+/// @ingroup     drivers_periph_gpio
+/// @{
+///
+/// @file
+/// @brief       GPIO Low-level API implementation for the SAM0 GPIO peripheral
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
+///
+/// This implementation uses the IOBUS for single-cycle I/O for writes in any
+/// case. Reading via the IOBUS requires however for continuous sampling to
+/// be enabled, as reads on the IOBUS cannot stall the CPU to wait for the
+/// on-demand sampling result to be available. Therefore, reads are done by
+/// default via the slower APB bus.
+///
+/// To also enable reading via the IOBUS, add the following snipped to your
+/// `Makefile`:
+///
+/// ```
+/// FEATURES_OPTIONAL += periph_gpio_fast_read
+/// ```
+///
+/// This enables continuous sampling on any pin configured as input, so that
+/// the IOBUS can safely be used for reads as well. Consequently, it will now
+/// consistently use the IOBUS for I/O.
+///
+/// @}
 
 #include <errno.h>
 #include <string.h>
@@ -45,14 +41,12 @@
 #  include "fmt.h"
 #else
 #  include <stdio.h>
-static inline void print_str(const char *str)
-{
+static inline void print_str(const char *str) {
     fputs(str, stdout);
 }
 #endif
 
-void gpio_ll_mux(gpio_port_t port, uint8_t pin, gpio_mux_t mux)
-{
+void gpio_ll_mux(gpio_port_t port, uint8_t pin, gpio_mux_t mux) {
     assume(pin < 32);
     assume(gpio_port_unpack_addr(port) == NULL);
     PortGroup *iobus = (PortGroup *)port;
@@ -74,8 +68,7 @@ void gpio_ll_mux(gpio_port_t port, uint8_t pin, gpio_mux_t mux)
     irq_restore(irq_state);
 }
 
-int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
-{
+int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf) {
     assume(pin < 32);
     assume(gpio_port_unpack_addr(port) == NULL);
     PortGroup *iobus = (PortGroup *)port;
@@ -125,8 +118,8 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
     }
 
     if (IS_USED(MODULE_PERIPH_GPIO_FAST_READ)) {
-        /* This read-modify-write needs to be made atomic to avoid
-         * corrupting the control register. */
+        // This read-modify-write needs to be made atomic to avoid
+        // corrupting the control register.
         unsigned state = irq_disable();
         if (conf.state == GPIO_INPUT) {
             apb->CTRL.reg |= pin_mask;
@@ -137,11 +130,11 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
         irq_restore(state);
     }
 
-    /* Writing the settings now in careful order. All accesses are done via
-     * the clear / set special registers that are naturally atomic, except
-     * for the PINCFG register. But that is not shared with other pins, so
-     * no need to sync that. (The API says concurrent configurations of the
-     * exact same GPIO pin are forbidden.) */
+    // Writing the settings now in careful order. All accesses are done via
+    // the clear / set special registers that are naturally atomic, except
+    // for the PINCFG register. But that is not shared with other pins, so
+    // no need to sync that. (The API says concurrent configurations of the
+    // exact same GPIO pin are forbidden.)
     if (initial_value) {
         iobus->OUTSET.reg = pin_mask;
     }
@@ -161,8 +154,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
     return 0;
 }
 
-gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
-{
+gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin) {
     gpio_conf_t result = { 0 };
     assume(pin < 32);
     assume(gpio_port_unpack_addr(port) == NULL);
@@ -212,8 +204,7 @@ gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
     return result;
 }
 
-void gpio_ll_print_conf(gpio_conf_t conf)
-{
+void gpio_ll_print_conf(gpio_conf_t conf) {
     static const char *drive_strs[] = {
         [GPIO_DRIVE_WEAK] = "weak",
         [GPIO_DRIVE_STRONG] = "strong",

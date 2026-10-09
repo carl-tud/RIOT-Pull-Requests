@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mtd_flashpage
- * @brief       Driver for internal flash devices implementing flashpage interface
- *
- * @{
- *
- * @file
- * @brief       Implementation for the flashpage memory driver
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author      Fabian Hüßler <fabian.huessler@st.ovgu.de>
- * @}
- */
+/// @ingroup     drivers_mtd_flashpage
+/// @brief       Driver for internal flash devices implementing flashpage interface
+///
+/// @{
+///
+/// @file
+/// @brief       Implementation for the flashpage memory driver
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author      Fabian Hüßler <fabian.huessler@st.ovgu.de>
+/// @}
 
 #include <string.h>
 #include <errno.h>
@@ -34,14 +30,13 @@
 
 #define MTD_FLASHPAGE_END_ADDR     ((uintptr_t) CPU_FLASH_BASE + (FLASHPAGE_NUMOF * FLASHPAGE_SIZE))
 
-static int _init(mtd_dev_t *dev)
-{
+static int _init(mtd_dev_t *dev) {
     mtd_flashpage_t *super = container_of(dev, mtd_flashpage_t, base);
     (void)super;
     assert(dev->pages_per_sector * dev->page_size == FLASHPAGE_SIZE);
     assert(!(super->offset % dev->pages_per_sector));
 
-    /* Use separate variable to avoid '>= 0 is always true' warning */
+    // Use separate variable to avoid '>= 0 is always true' warning
     #ifndef NDEBUG
     static const uintptr_t cpu_flash_base = CPU_FLASH_BASE;
     #endif
@@ -54,14 +49,13 @@ static int _init(mtd_dev_t *dev)
 }
 
 static int _read_page(mtd_dev_t *dev, void *buf, uint32_t page,
-                      uint32_t offset, uint32_t size)
-{
+                      uint32_t offset, uint32_t size) {
     mtd_flashpage_t *super = container_of(dev, mtd_flashpage_t, base);
 
     assert(page + super->offset >= page);
     page += super->offset;
 
-    /* mtd flashpage maps multiple pages to one virtual sector for unknown reason */
+    // mtd flashpage maps multiple pages to one virtual sector for unknown reason
     uint32_t fpage = page / dev->pages_per_sector;
     offset += (page % dev->pages_per_sector) * dev->page_size;
     uintptr_t addr = (uintptr_t)flashpage_addr(fpage);
@@ -90,15 +84,14 @@ static int _read_page(mtd_dev_t *dev, void *buf, uint32_t page,
 }
 
 static int _write_page(mtd_dev_t *dev, const void *buf, uint32_t page, uint32_t offset,
-                       uint32_t size)
-{
+                       uint32_t size) {
     mtd_flashpage_t *super = container_of(dev, mtd_flashpage_t, base);
 
     assert(page + super->offset >= page);
 
     page += super->offset;
 
-    /* mtd flashpage maps multiple pages to one virtual sector for unknown reason */
+    // mtd flashpage maps multiple pages to one virtual sector for unknown reason
     uint32_t fpage = page / dev->pages_per_sector;
     offset += (page % dev->pages_per_sector) * dev->page_size;
     uintptr_t addr = (uintptr_t)flashpage_addr(fpage);
@@ -127,15 +120,14 @@ static int _write_page(mtd_dev_t *dev, const void *buf, uint32_t page, uint32_t 
         return size;
     }
 
-    /* don't write less than the write block size */
+    // don't write less than the write block size
     size &= ~(FLASHPAGE_WRITE_BLOCK_SIZE - 1);
 
     flashpage_write((void *)addr, buf, size);
     return size;
 }
 
-static int _erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t count)
-{
+static int _erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t count) {
     mtd_flashpage_t *super = container_of(dev, mtd_flashpage_t, base);
 
     if (sector + (super->offset / dev->pages_per_sector) < sector) {

@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_eeprom
- * @brief   Low-level EEPROM driver implementation for native
- * @author  Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_eeprom
+/// @brief   Low-level EEPROM driver implementation for native
+/// @author  Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,8 +28,7 @@ static uint8_t _eeprom_buf[EEPROM_SIZE] = { EEPROM_CLEAR_BYTE };
 
 static mutex_t lock = MUTEX_INIT;
 
-static inline void eeprom_native_write(void)
-{
+static inline void eeprom_native_write(void) {
     FILE *fp = real_fopen(eeprom_file, "w");
     if (!fp) {
         return;
@@ -53,8 +48,7 @@ static inline void eeprom_native_write(void)
     fclose(fp);
 }
 
-void eeprom_native_read(void)
-{
+void eeprom_native_read(void) {
     FILE *fp = real_fopen(eeprom_file, "r");
     if (!fp) {
         return;
@@ -74,8 +68,7 @@ void eeprom_native_read(void)
     fclose(fp);
 }
 
-size_t eeprom_read(uint32_t pos, void *data, size_t len)
-{
+size_t eeprom_read(uint32_t pos, void *data, size_t len) {
     assert(pos + len <= EEPROM_SIZE);
 
     mutex_lock(&lock);
@@ -85,15 +78,14 @@ size_t eeprom_read(uint32_t pos, void *data, size_t len)
     return len;
 }
 
-size_t eeprom_write(uint32_t pos, const void *data, size_t len)
-{
+size_t eeprom_write(uint32_t pos, const void *data, size_t len) {
     assert(pos + len <= EEPROM_SIZE);
 
     mutex_lock(&lock);
     memcpy(&_eeprom_buf[pos], data, len);
     mutex_unlock(&lock);
 
-    /* Persist to the file */
+    // Persist to the file
     eeprom_native_write();
 
     return len;

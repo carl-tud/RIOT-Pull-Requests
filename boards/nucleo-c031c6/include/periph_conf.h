@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2024 BISSELL Homecare, Inc.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 BISSELL Homecare, Inc.
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-c031c6
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the Nucleo-C031C6 board
- *
- * @author      Jason Parker <Jason.Parker@bissell.com>
- */
+/// @ingroup     boards_nucleo-c031c6
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the Nucleo-C031C6 board
+///
+/// @author      Jason Parker <Jason.Parker@bissell.com>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -28,10 +24,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM3,
@@ -45,12 +39,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_0_ISR         isr_tim3
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -62,7 +54,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART2_IRQn,
     },
-    {   /* Arduino pinout on D0/D1 */
+    {   // Arduino pinout on D0/D1
         .dev        = USART1,
         .rcc_mask   = RCC_APBENR2_USART1EN,
         .rx_pin     = GPIO_PIN(PORT_B, 7),
@@ -78,55 +70,51 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32C031 order. Instead, we
- * just define 6 ADC channels, for the Nucleo
- * Arduino header pins A0-A5.
- *
- * The appropriate ADC device and channel for each pin
- * can be found in the board manual in the pin assignment
- * table. The format of the entries is ARD_A[N]_IN[X], where [N] describes the
- * analog arduino pin and [Y] describes the used channel - indexed from 1.
- * For example: ARD_A0_IN11 is Arduino A4, Channel 11.
- *
- * For the Nucleo-C031C6 this information is in the board manual,
- * Table 11 "ARDUINO connector pinout".
- *
- * @{
- */
+/// @name    ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32C031 order. Instead, we
+/// just define 6 ADC channels, for the Nucleo
+/// Arduino header pins A0-A5.
+///
+/// The appropriate ADC device and channel for each pin
+/// can be found in the board manual in the pin assignment
+/// table. The format of the entries is ARD_A[N]_IN[X], where [N] describes the
+/// analog arduino pin and [Y] describes the used channel - indexed from 1.
+/// For example: ARD_A0_IN11 is Arduino A4, Channel 11.
+///
+/// For the Nucleo-C031C6 this information is in the board manual,
+/// Table 11 "ARDUINO connector pinout".
+///
+/// @{
 static const adc_conf_t adc_config[] = {
-    { .pin = GPIO_PIN(PORT_A,  0), .dev = 0, .chan =  0 }, /* ARD_A0_IN0  */
-    { .pin = GPIO_PIN(PORT_A,  1), .dev = 0, .chan =  1 }, /* ARD_A1_IN1  */
-    { .pin = GPIO_PIN(PORT_A,  4), .dev = 0, .chan =  4 }, /* ARD_A2_IN4  */
-    { .pin = GPIO_PIN(PORT_B,  1), .dev = 0, .chan = 18 }, /* ARD_A3_IN18 */
-    { .pin = GPIO_PIN(PORT_A, 11), .dev = 0, .chan = 11 }, /* ARD_A4_IN11 */
-    { .pin = GPIO_PIN(PORT_A, 12), .dev = 0, .chan = 12 }, /* ARD_A5_IN12 */
+    { .pin = GPIO_PIN(PORT_A,  0), .dev = 0, .chan =  0 }, // ARD_A0_IN0
+    { .pin = GPIO_PIN(PORT_A,  1), .dev = 0, .chan =  1 }, // ARD_A1_IN1
+    { .pin = GPIO_PIN(PORT_A,  4), .dev = 0, .chan =  4 }, // ARD_A2_IN4
+    { .pin = GPIO_PIN(PORT_B,  1), .dev = 0, .chan = 18 }, // ARD_A3_IN18
+    { .pin = GPIO_PIN(PORT_A, 11), .dev = 0, .chan = 11 }, // ARD_A4_IN11
+    { .pin = GPIO_PIN(PORT_A, 12), .dev = 0, .chan = 12 }, // ARD_A5_IN12
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- *
- * The appropriate PWM device and channel for each pin can be found
- * in the MCU datasheet table "Alternate function AF0 to AF7".
- * The format of the entries is TIM[X]_CH[Y], where TIM[X] is the timer device
- * and [Y] describes the used channel (indexed from 0). For example TIM2_CH1 is
- * Timer 2, Channel 1 which corresponds to Channel 0 in the PWM configuration
- * structure.
- * The port column in the table describes the connected port.
- *
- * For the Nucleo-C031C6 this information can be found in the MCU datasheet,
- * Table 15 "Port B alternate function mapping (AF0 to AF7)".
- *
- */
+/// @name    PWM configuration
+/// @{
+///
+/// The appropriate PWM device and channel for each pin can be found
+/// in the MCU datasheet table "Alternate function AF0 to AF7".
+/// The format of the entries is TIM[X]_CH[Y], where TIM[X] is the timer device
+/// and [Y] describes the used channel (indexed from 0). For example TIM2_CH1 is
+/// Timer 2, Channel 1 which corresponds to Channel 0 in the PWM configuration
+/// structure.
+/// The port column in the table describes the connected port.
+///
+/// For the Nucleo-C031C6 this information can be found in the MCU datasheet,
+/// Table 15 "Port B alternate function mapping (AF0 to AF7)".
+///
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM3,
@@ -141,18 +129,16 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev            = SPI1,
-        .mosi_pin       = GPIO_PIN(PORT_A, 7),  /* Arduino D11 */
-        .miso_pin       = GPIO_PIN(PORT_A, 6),  /* Arduino D12 */
-        .sclk_pin       = GPIO_PIN(PORT_A, 5),  /* Arduino D13 */
+        .mosi_pin       = GPIO_PIN(PORT_A, 7),  // Arduino D11
+        .miso_pin       = GPIO_PIN(PORT_A, 6),  // Arduino D12
+        .sclk_pin       = GPIO_PIN(PORT_A, 5),  // Arduino D13
         .cs_pin         = GPIO_UNDEF,
         .mosi_af        = GPIO_AF0,
         .miso_af        = GPIO_AF0,
@@ -164,10 +150,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

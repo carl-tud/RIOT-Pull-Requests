@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2020 Nalys
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Nalys
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the candev abstraction
- *
- * @author      Wouter Symons <wosym@airsantelmo.com>
- * @author      Toon Stegen <tstegen@nalys-group.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the candev abstraction
+///
+/// @author      Wouter Symons <wosym@airsantelmo.com>
+/// @author      Toon Stegen <tstegen@nalys-group.com>
+///
+/// @}
 
 #include <isrpipe.h>
 #include <stdio.h>
@@ -26,7 +22,7 @@
 #include "shell.h"
 #include "test_utils/expect.h"
 
-/* The params header is only in the include path when the module is used */
+// The params header is only in the include path when the module is used
 #if MODULE_MCP2515
 #  include "mcp2515_params.h"
 #endif
@@ -39,7 +35,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* Default is not using loopback test mode */
+// Default is not using loopback test mode
 #ifndef CONFIG_USE_LOOPBACK_MODE
 #  define CONFIG_USE_LOOPBACK_MODE  0
 #endif
@@ -48,19 +44,19 @@
 #  define CONFIG_CAN_DEV 0
 #endif
 
-#define RX_RINGBUFFER_SIZE 128      /* Needs to be a power of 2! */
+#define RX_RINGBUFFER_SIZE 128      // Needs to be a power of 2!
 static isrpipe_t rxbuf;
 static uint8_t rx_ringbuf[RX_RINGBUFFER_SIZE];
 
 static candev_t *candev = NULL;
 
-/* Only one of them is actually used, depending on the driver selected.
- * We rely on the compiler to garbage collect the unused */
+// Only one of them is actually used, depending on the driver selected.
+// We rely on the compiler to garbage collect the unused
 static can_t periph_dev;
 static candev_mcp2515_t mcp2515_dev;
 
-/* The params header is only in the include path when the module is used,
- * so we fall back to a NULL ptr if not */
+// The params header is only in the include path when the module is used,
+// so we fall back to a NULL ptr if not
 #if MODULE_MCP2515
 static const candev_mcp2515_conf_t *mcp2515_conf = &candev_mcp2515_conf[CONFIG_CAN_DEV];
 #else
@@ -73,30 +69,25 @@ static const can_conf_t *periph_can_conf = &(candev_conf[CONFIG_CAN_DEV]);
 static const can_conf_t *periph_can_conf = NULL;
 #endif
 
-/**
- * @brief Convert a @ref can_t into an @ref candev_t
- * @param[in]   dev     Peripheral CAN to get the candev_t of
- * @return              The corresponding @ref candev_t
- *
- * @details     Either @ref can_t is an alias to @ref candev_t, or `HAVE_CAN_T`
- *              is defined `can_t` has a member `candev_t candev`.
- */
+/// @brief Convert a @ref can_t into an @ref candev_t
+/// @param[in]   dev     Peripheral CAN to get the candev_t of
+/// @return              The corresponding @ref candev_t
+///
+/// @details     Either @ref can_t is an alias to @ref candev_t, or `HAVE_CAN_T`
+///              is defined `can_t` has a member `candev_t candev`.
 static candev_t *_can_t2candev_t(can_t *dev);
 
 #ifdef HAVE_CAN_T
-static candev_t *_can_t2candev_t(can_t *dev)
-{
+static candev_t *_can_t2candev_t(can_t *dev) {
     return &dev->candev;
 }
 #else
-static candev_t *_can_t2candev_t(can_t *dev)
-{
+static candev_t *_can_t2candev_t(can_t *dev) {
     return dev;
 }
 #endif
 
-static int _send(int argc, char **argv)
-{
+static int _send(int argc, char **argv) {
     int ret = 0;
 
     can_frame_t frame = {
@@ -129,8 +120,7 @@ static int _send(int argc, char **argv)
     return 0;
 }
 
-static int _receive(int argc, char **argv)
-{
+static int _receive(int argc, char **argv) {
     int n = 1;
 
     if (argc > 1) {
@@ -146,12 +136,12 @@ static int _receive(int argc, char **argv)
 
         puts("Reading from Rxbuf...");
         isrpipe_read(&rxbuf, (uint8_t *)&(frame.can_id), sizeof(frame.can_id));
-        frame.can_id &= 0x1FFFFFFF; /* clear invalid bits */
+        frame.can_id &= 0x1FFFFFFF; // clear invalid bits
         isrpipe_read(&rxbuf, (uint8_t *)&(frame.len), 1);
         printf("id: %" PRIx32 " dlc: %" PRIx8, frame.can_id, frame.len);
         if (frame.len > 0) {
             printf(" data: ");
-            isrpipe_read(&rxbuf, frame.data, frame.len); /* data */
+            isrpipe_read(&rxbuf, frame.data, frame.len); // data
             for (int i = 0; i < frame.len; i++) {
                 printf("0x%X ", frame.data[i]);
             }
@@ -162,8 +152,7 @@ static int _receive(int argc, char **argv)
     return 0;
 }
 
-static int _set_bit_rate(int argc, char **argv)
-{
+static int _set_bit_rate(int argc, char **argv) {
     uint32_t bitrate = 250000;
     uint32_t sample_point = 875;
     int res = 0;
@@ -194,8 +183,7 @@ static int _set_bit_rate(int argc, char **argv)
     return res;
 }
 
-static int _set_can_filter(int argc, char **argv)
-{
+static int _set_can_filter(int argc, char **argv) {
     (void)argc;
     (void)argv;
     int res = 0;
@@ -213,8 +201,7 @@ static int _set_can_filter(int argc, char **argv)
     return res;
 }
 
-static int _power_off(int argc, char **argv)
-{
+static int _power_off(int argc, char **argv) {
     (void)argc;
     (void)argv;
     int res = 0;
@@ -225,8 +212,7 @@ static int _power_off(int argc, char **argv)
     return res;
 }
 
-static int _power_on(int argc, char **argv)
-{
+static int _power_on(int argc, char **argv) {
     (void)argc;
     (void)argv;
     int res = 0;
@@ -247,8 +233,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-static void _can_event_callback(candev_t *dev, candev_event_t event, void *arg)
-{
+static void _can_event_callback(candev_t *dev, candev_event_t event, void *arg) {
     (void)arg;
     can_frame_t *frame;
 
@@ -278,7 +263,7 @@ static void _can_event_callback(candev_t *dev, candev_event_t event, void *arg)
         }
         DEBUG_PUTS("");
 
-        /* Store in buffer until user requests the data */
+        // Store in buffer until user requests the data
         isrpipe_write(&rxbuf, (uint8_t *)&(frame->can_id), sizeof(frame->can_id));
         isrpipe_write_one(&rxbuf, frame->len);
         isrpipe_write(&rxbuf, frame->data, frame->len);
@@ -305,8 +290,7 @@ static void _can_event_callback(candev_t *dev, candev_event_t event, void *arg)
     }
 }
 
-int main(void)
-{
+int main(void) {
     puts("candev test application\n");
 
     isrpipe_init(&rxbuf, (uint8_t *)rx_ringbuf, sizeof(rx_ringbuf));
@@ -321,12 +305,12 @@ int main(void)
         candev = &mcp2515_dev.candev;
     }
     else {
-        /* No CAN driver is used or used CAN driver is not integrated in this
-         * test yet. We use an undefined function name to let this fail at
-         * compile time. The conditions above are all compile time constants
-         * and the compiler will eliminate the dead branches. So if any of them
-         * matched, this function call will not be part of the compiled object
-         * file and linking will work. */
+        // No CAN driver is used or used CAN driver is not integrated in this
+        // test yet. We use an undefined function name to let this fail at
+        // compile time. The conditions above are all compile time constants
+        // and the compiler will eliminate the dead branches. So if any of them
+        // matched, this function call will not be part of the compiled object
+        // file and linking will work.
         extern void the_can_test_apps_depends_on_a_supported_can_driver_but_none_is_used(void);
         the_can_test_apps_depends_on_a_supported_can_driver_but_none_is_used();
     }
@@ -340,22 +324,22 @@ int main(void)
 
 if (IS_ACTIVE(CONFIG_USE_LOOPBACK_MODE)) {
     puts("Switching to loopback mode");
-    /* set to loopback test mode */
+    // set to loopback test mode
     canopt_state_t mode = CANOPT_STATE_LOOPBACK;
     candev->driver->set(candev, CANOPT_STATE, &mode, sizeof(mode));
 }
 
-/* Depending from the CAN controller used, this test example will provide different results.
-- For MCP2515 standalone CAN controller, the last filter won't be applied
-as the first reception mailbox supports up to two filters
-- For SAMD5x/E5x CAN controller, and with keeping the default parameters in candev_samd5x.h,
-the last filter won't be applied as the CAN controller supports up to 3 standard filters
-- For SAMD5x/E5x CAN controller, if you increase the maximum capacity of the standard
-filters (check Makefile.board.dep), the last filter can be applied correctly. */
+// Depending from the CAN controller used, this test example will provide different results.
+// - For MCP2515 standalone CAN controller, the last filter won't be applied
+// as the first reception mailbox supports up to two filters
+// - For SAMD5x/E5x CAN controller, and with keeping the default parameters in candev_samd5x.h,
+// the last filter won't be applied as the CAN controller supports up to 3 standard filters
+// - For SAMD5x/E5x CAN controller, if you increase the maximum capacity of the standard
+// filters (check Makefile.board.dep), the last filter can be applied correctly.
 #if defined(MODULE_MCP2515)
     if (IS_ACTIVE(MCP2515_RECV_FILTER_EN)) {
 #endif
-        /* CAN filters examples */
+        // CAN filters examples
         struct can_filter filter[4];
         filter[0].can_mask = 0x7FF;
         filter[0].can_id = 0x001;
@@ -380,7 +364,7 @@ filters (check Makefile.board.dep), the last filter can be applied correctly. */
         for (uint8_t i = 0; i < 4; i++) {
             candev->driver->set_filter(candev, &filter[i]);
         }
-        /* All other messages won't be received */
+        // All other messages won't be received
 #if defined(MODULE_MCP2515)
     }
 #endif

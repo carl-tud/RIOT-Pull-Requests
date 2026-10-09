@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_io1_xplained
- * @{
- *
- * @file
- * @brief       Device driver implementation for the Atmel IO1 Xplained extension
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_io1_xplained
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the Atmel IO1 Xplained extension
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "io1_xplained.h"
 #include "io1_xplained_internals.h"
@@ -27,15 +23,14 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/*---------------------------------------------------------------------------*
- *                          IO1 Xplained Core API                            *
- *---------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------*
+//                          IO1 Xplained Core API                            *
+// ---------------------------------------------------------------------------
 
-int io1_xplained_init(io1_xplained_t *dev, const io1_xplained_params_t *params)
-{
+int io1_xplained_init(io1_xplained_t *dev, const io1_xplained_params_t *params) {
     dev->params = *params;
 
-    /* Initialize I2C interface */
+    // Initialize I2C interface
     if (at30tse75x_init(&dev->temp,
                         I2C_DEV(0),
                         (IO1_TEMPERATURE_BASE_ADDR | dev->params.addr)) < 0) {
@@ -43,7 +38,7 @@ int io1_xplained_init(io1_xplained_t *dev, const io1_xplained_params_t *params)
         return -IO1_XPLAINED_NOTEMP;
     }
 
-    /* Use maximum resolution */
+    // Use maximum resolution
     at30tse75x_set_resolution(&dev->temp, AT30TSE75X_RESOLUTION_12BIT);
 
     if (gpio_init(IO1_SDCARD_SPI_PARAM_DETECT, GPIO_IN) < 0) {
@@ -51,9 +46,9 @@ int io1_xplained_init(io1_xplained_t *dev, const io1_xplained_params_t *params)
         return -IO1_XPLAINED_NOSDCARD;
     }
 
-    /* Card detect pin is inverted */
+    // Card detect pin is inverted
     if (!gpio_read(IO1_SDCARD_SPI_PARAM_DETECT)) {
-        /* Initialize the SD Card */
+        // Initialize the SD Card
         sdcard_spi_params_t sdcard_params = {
             .spi_dev        = IO1_SDCARD_SPI_PARAM_SPI,
             .cs             = IO1_SDCARD_SPI_PARAM_CS,
@@ -94,8 +89,7 @@ int io1_xplained_init(io1_xplained_t *dev, const io1_xplained_params_t *params)
     return IO1_XPLAINED_OK;
 }
 
-int io1_xplained_read_light_level(uint16_t *light)
-{
+int io1_xplained_read_light_level(uint16_t *light) {
     int sample = adc_sample(IO1_LIGHT_ADC_LINE, IO1_LIGHT_ADC_RES);
 
     if (sample < 0) {

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_mulle
- * @{
- *
- * @file
- * @name        Peripheral MCU configuration for the Eistec Mulle
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_mulle
+/// @{
+///
+/// @file
+/// @name        Peripheral MCU configuration for the Eistec Mulle
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "periph_cpu.h"
 
@@ -24,68 +20,61 @@ extern "C"
 {
 #endif
 
-/**
- * @name Clock system configuration
- * @{
- */
-/* The crystal on the Mulle is designed for 12.5 pF load capacitance. According
- * to the data sheet, the K60 will have a 5 pF parasitic capacitance on the
- * XTAL32/EXTAL32 connection. The board traces might give some minor parasitic
- * capacitance as well. */
-/* Use the equation
- * CL = (C1 * C2) / (C1 + C2) + Cstray
- * with C1 == C2:
- * C1 = 2 * (CL - Cstray)
- */
-/* enable 14pF load capacitor which will yield a crystal load capacitance of 12 pF */
+/// @name Clock system configuration
+/// @{
+// The crystal on the Mulle is designed for 12.5 pF load capacitance. According
+// to the data sheet, the K60 will have a 5 pF parasitic capacitance on the
+// XTAL32/EXTAL32 connection. The board traces might give some minor parasitic
+// capacitance as well.
+// Use the equation
+// CL = (C1 * C2) / (C1 + C2) + Cstray
+// with C1 == C2:
+// C1 = 2 * (CL - Cstray)
+// enable 14pF load capacitor which will yield a crystal load capacitance of 12 pF
 #define RTC_LOAD_CAP_BITS   (RTC_CR_SC8P_MASK | RTC_CR_SC4P_MASK | RTC_CR_SC2P_MASK)
 
 static const clock_config_t clock_config = {
-    /*
-     * This configuration results in the system running from the FLL output with
-     * the following clock frequencies:
-     * Core:  48 MHz
-     * Bus:   48 MHz
-     * Flex:  24 MHz
-     * Flash: 24 MHz
-     */
-    /* The board has a 16 MHz crystal, though it is not used in this configuration */
-    /* This configuration uses the RTC crystal to provide the base clock, it
-     * should have better accuracy than the internal slow clock, and lower power
-     * consumption than using the 16 MHz crystal and the OSC0 module */
+    // This configuration results in the system running from the FLL output with
+    // the following clock frequencies:
+    // Core:  48 MHz
+    // Bus:   48 MHz
+    // Flex:  24 MHz
+    // Flash: 24 MHz
+    // The board has a 16 MHz crystal, though it is not used in this configuration
+    // This configuration uses the RTC crystal to provide the base clock, it
+    // should have better accuracy than the internal slow clock, and lower power
+    // consumption than using the 16 MHz crystal and the OSC0 module
     .clkdiv1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(0) |
                SIM_CLKDIV1_OUTDIV3(1) | SIM_CLKDIV1_OUTDIV4(1),
     .rtc_clc = RTC_LOAD_CAP_BITS,
     .osc32ksel = SIM_SOPT1_OSC32KSEL(2),
     .clock_flags =
-        /* no OSC0_EN, the RTC module provides the clock input signal for the FLL */
+        // no OSC0_EN, the RTC module provides the clock input signal for the FLL
         KINETIS_CLOCK_RTCOSC_EN |
         KINETIS_CLOCK_USE_FAST_IRC |
         0,
     .default_mode = KINETIS_MCG_MODE_FEE,
-    .erc_range = KINETIS_MCG_ERC_RANGE_LOW, /* Input clock is 32768 Hz */
-    /* 16 pF capacitors yield ca 10 pF load capacitance as required by the
-     * onboard xtal, not used when OSC0 is disabled */
+    .erc_range = KINETIS_MCG_ERC_RANGE_LOW, // Input clock is 32768 Hz
+    // 16 pF capacitors yield ca 10 pF load capacitance as required by the
+    // onboard xtal, not used when OSC0 is disabled
     .osc_clc = OSC_CR_SC16P_MASK,
-    .oscsel = MCG_C7_OSCSEL(1), /* Use RTC for external clock */
-    .fcrdiv = MCG_SC_FCRDIV(0), /* Fast IRC divide by 1 => 4 MHz */
-    .fll_frdiv = MCG_C1_FRDIV(0b000), /* Divide by 1 => FLL input 32768 Hz */
-    .fll_factor_fei = KINETIS_MCG_FLL_FACTOR_1464, /* FLL freq = 48 MHz */
-    .fll_factor_fee = KINETIS_MCG_FLL_FACTOR_1464, /* FLL freq = 48 MHz */
-    /* PLL is unavailable when using a 32768 Hz source clock, so the
-     * configuration below can only be used if the above config is modified to
-     * use the 16 MHz crystal instead of the RTC. */
-    .pll_prdiv = MCG_C5_PRDIV0(0b00111), /* Divide by 8 */
-    .pll_vdiv = MCG_C6_VDIV0(0b01100), /* Multiply by 36 => PLL freq = 72 MHz */
+    .oscsel = MCG_C7_OSCSEL(1), // Use RTC for external clock
+    .fcrdiv = MCG_SC_FCRDIV(0), // Fast IRC divide by 1 => 4 MHz
+    .fll_frdiv = MCG_C1_FRDIV(0b000), // Divide by 1 => FLL input 32768 Hz
+    .fll_factor_fei = KINETIS_MCG_FLL_FACTOR_1464, // FLL freq = 48 MHz
+    .fll_factor_fee = KINETIS_MCG_FLL_FACTOR_1464, // FLL freq = 48 MHz
+    // PLL is unavailable when using a 32768 Hz source clock, so the
+    // configuration below can only be used if the above config is modified to
+    // use the 16 MHz crystal instead of the RTC.
+    .pll_prdiv = MCG_C5_PRDIV0(0b00111), // Divide by 8
+    .pll_vdiv = MCG_C6_VDIV0(0b01100), // Multiply by 36 => PLL freq = 72 MHz
 };
 #define CLOCK_CORECLOCK              (48000000ul)
 #define CLOCK_BUSCLOCK               (CLOCK_CORECLOCK / 1)
-/** @} */
+/// @}
 
-/**
- * @name Timer configuration
- * @{
- */
+/// @name Timer configuration
+/// @{
 #define PIT_NUMOF               (2U)
 #define PIT_CONFIG {                 \
         {                            \
@@ -113,12 +102,10 @@ static const clock_config_t clock_config = {
 #define PIT_ISR_1               isr_pit3
 #define LPTMR_ISR_0             isr_lptmr0
 
-/** @} */
+/// @}
 
-/**
- * @name UART configuration
- * @{
- */
+/// @name UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev    = UART0,
@@ -152,65 +139,59 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_uart1_rx_tx)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
-    /* internal: temperature sensor */
-    /* The temperature sensor has a very high output impedance, it must not be
-     * sampled using hardware averaging, or the sampled values will be garbage */
+    // internal: temperature sensor
+    // The temperature sensor has a very high output impedance, it must not be
+    // sampled using hardware averaging, or the sampled values will be garbage
     [ 0] = { .dev = ADC1, .pin = GPIO_UNDEF,           .chan = 26, .avg = ADC_AVG_NONE },
-    /* internal: band gap */
+    // internal: band gap
     [ 1] = { .dev = ADC1, .pin = GPIO_UNDEF,           .chan = 27, .avg = ADC_AVG_MAX },
-    /* internal: V_REFSH */
+    // internal: V_REFSH
     [ 2] = { .dev = ADC1, .pin = GPIO_UNDEF,           .chan = 29, .avg = ADC_AVG_MAX },
-    /* internal: V_REFSL */
+    // internal: V_REFSL
     [ 3] = { .dev = ADC1, .pin = GPIO_UNDEF,           .chan = 30, .avg = ADC_AVG_MAX },
-    /* internal: DAC0 module output level */
+    // internal: DAC0 module output level
     [ 4] = { .dev = ADC1, .pin = GPIO_UNDEF,           .chan = 23, .avg = ADC_AVG_MAX },
-    /* internal: VREF module output level */
+    // internal: VREF module output level
     [ 5] = { .dev = ADC1, .pin = GPIO_UNDEF,           .chan = 18, .avg = ADC_AVG_MAX },
-    /* on board connection to Mulle Vbat/2 on PGA1_DP pin */
+    // on board connection to Mulle Vbat/2 on PGA1_DP pin
     [ 6] = { .dev = ADC1, .pin = GPIO_UNDEF,           .chan =  0, .avg = ADC_AVG_MAX },
-    /* on board connection to Mulle Vchr/2 on PGA1_DM pin */
+    // on board connection to Mulle Vchr/2 on PGA1_DM pin
     [ 7] = { .dev = ADC1, .pin = GPIO_UNDEF,           .chan = 19, .avg = ADC_AVG_MAX },
-    /* expansion port PGA0_DP pin */
+    // expansion port PGA0_DP pin
     [ 8] = { .dev = ADC0, .pin = GPIO_UNDEF,           .chan =  0, .avg = ADC_AVG_MAX },
-    /* expansion port PGA0_DM pin */
+    // expansion port PGA0_DM pin
     [ 9] = { .dev = ADC0, .pin = GPIO_UNDEF,           .chan = 19, .avg = ADC_AVG_MAX },
-    /* expansion port PTA17 */
+    // expansion port PTA17
     [10] = { .dev = ADC1, .pin = GPIO_PIN(PORT_A, 17), .chan = 17, .avg = ADC_AVG_MAX },
-    /* expansion port PTB0  */
+    // expansion port PTB0
     [11] = { .dev = ADC1, .pin = GPIO_PIN(PORT_B,  0), .chan =  8, .avg = ADC_AVG_MAX },
-    /* expansion port PTC0  */
+    // expansion port PTC0
     [12] = { .dev = ADC0, .pin = GPIO_PIN(PORT_C,  0), .chan = 14, .avg = ADC_AVG_MAX },
-    /* expansion port PTC8  */
+    // expansion port PTC8
     [13] = { .dev = ADC1, .pin = GPIO_PIN(PORT_C,  8), .chan =  4, .avg = ADC_AVG_MAX },
-    /* expansion port PTC9  */
+    // expansion port PTC9
     [14] = { .dev = ADC1, .pin = GPIO_PIN(PORT_C,  9), .chan =  5, .avg = ADC_AVG_MAX },
-    /* expansion port PTC10 */
+    // expansion port PTC10
     [15] = { .dev = ADC1, .pin = GPIO_PIN(PORT_C, 10), .chan =  6, .avg = ADC_AVG_MAX },
-    /* expansion port PTC11 */
+    // expansion port PTC11
     [16] = { .dev = ADC1, .pin = GPIO_PIN(PORT_C, 11), .chan =  7, .avg = ADC_AVG_MAX },
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/*
- * K60D ADC reference settings:
- * 0: VREFH/VREFL external pin pair
- * 1: VREF_OUT internal 1.2 V reference (VREF module must be enabled)
- * 2-3: reserved
- */
+// K60D ADC reference settings:
+// 0: VREFH/VREFL external pin pair
+// 1: VREF_OUT internal 1.2 V reference (VREF module must be enabled)
+// 2-3: reserved
 #define ADC_REF_SETTING     0
-/** @} */
+/// @}
 
-/**
- * @name    DAC configuration
- * @{
- */
+/// @name    DAC configuration
+/// @{
 static const dac_conf_t dac_config[] = {
     {
         .dev       = DAC0,
@@ -220,12 +201,10 @@ static const dac_conf_t dac_config[] = {
 };
 
 #define DAC_NUMOF           ARRAY_SIZE(dac_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .ftm        = FTM0,
@@ -252,45 +231,43 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name SPI configuration
- *
- * Clock configuration values based on the configured 47988736Hz module clock.
- *
- * Auto-generated by:
- * cpu/kinetis/dist/calc_spi_scalers/calc_spi_scalers.c
- *
- * @{
- */
+/// @name SPI configuration
+///
+/// Clock configuration values based on the configured 47988736Hz module clock.
+///
+/// Auto-generated by:
+/// cpu/kinetis/dist/calc_spi_scalers/calc_spi_scalers.c
+///
+/// @{
 static const uint32_t spi_clk_config[] = {
     (
-        SPI_CTAR_PBR(0) | SPI_CTAR_BR(8) |          /* -> 93728Hz */
+        SPI_CTAR_PBR(0) | SPI_CTAR_BR(8) |          // -> 93728Hz
         SPI_CTAR_PCSSCK(0) | SPI_CTAR_CSSCK(8) |
         SPI_CTAR_PASC(0) | SPI_CTAR_ASC(8) |
         SPI_CTAR_PDT(0) | SPI_CTAR_DT(8)
     ),
     (
-        SPI_CTAR_PBR(0) | SPI_CTAR_BR(6) |          /* -> 374912Hz */
+        SPI_CTAR_PBR(0) | SPI_CTAR_BR(6) |          // -> 374912Hz
         SPI_CTAR_PCSSCK(0) | SPI_CTAR_CSSCK(6) |
         SPI_CTAR_PASC(0) | SPI_CTAR_ASC(6) |
         SPI_CTAR_PDT(0) | SPI_CTAR_DT(6)
     ),
     (
-        SPI_CTAR_PBR(1) | SPI_CTAR_BR(4) |          /* -> 999765Hz */
+        SPI_CTAR_PBR(1) | SPI_CTAR_BR(4) |          // -> 999765Hz
         SPI_CTAR_PCSSCK(1) | SPI_CTAR_CSSCK(3) |
         SPI_CTAR_PASC(1) | SPI_CTAR_ASC(3) |
         SPI_CTAR_PDT(1) | SPI_CTAR_DT(3)
     ),
     (
-        SPI_CTAR_PBR(2) | SPI_CTAR_BR(0) |          /* -> 4798873Hz */
+        SPI_CTAR_PBR(2) | SPI_CTAR_BR(0) |          // -> 4798873Hz
         SPI_CTAR_PCSSCK(2) | SPI_CTAR_CSSCK(0) |
         SPI_CTAR_PASC(2) | SPI_CTAR_ASC(0) |
         SPI_CTAR_PDT(2) | SPI_CTAR_DT(0)
     ),
     (
-        SPI_CTAR_PBR(1) | SPI_CTAR_BR(0) |          /* -> 7998122Hz */
+        SPI_CTAR_PBR(1) | SPI_CTAR_BR(0) |          // -> 7998122Hz
         SPI_CTAR_PCSSCK(1) | SPI_CTAR_CSSCK(0) |
         SPI_CTAR_PASC(1) | SPI_CTAR_ASC(0) |
         SPI_CTAR_PDT(1) | SPI_CTAR_DT(0)
@@ -331,12 +308,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .i2c = I2C0,
@@ -352,10 +327,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
 #define I2C_0_ISR           (isr_i2c0)
 #define I2C_1_ISR           (isr_i2c1)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

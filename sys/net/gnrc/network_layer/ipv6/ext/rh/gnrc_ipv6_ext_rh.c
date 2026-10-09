@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2015 Cenk Gündoğan <cenk.guendogan@fu-berlin.de>
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Cenk Gündoğan <cenk.guendogan@fu-berlin.de>
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author Cenk Gündoğan <cenk.guendogan@fu-berlin.de>
- * @author Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author Cenk Gündoğan <cenk.guendogan@fu-berlin.de>
+/// @author Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 
@@ -28,10 +24,9 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* unchecked precondition: hdr is gnrc_pktsnip_t::data of the
- * GNRC_NETTYPE_IPV6 snip within pkt */
-static void _forward_pkt(gnrc_pktsnip_t *pkt, ipv6_hdr_t *hdr)
-{
+// unchecked precondition: hdr is gnrc_pktsnip_t::data of the
+// GNRC_NETTYPE_IPV6 snip within pkt
+static void _forward_pkt(gnrc_pktsnip_t *pkt, ipv6_hdr_t *hdr) {
     gnrc_pktsnip_t *netif_snip;
 
     if (--(hdr->hl) == 0) {
@@ -40,19 +35,19 @@ static void _forward_pkt(gnrc_pktsnip_t *pkt, ipv6_hdr_t *hdr)
         gnrc_pktbuf_release_error(pkt, ETIMEDOUT);
         return;
     }
-    /* remove L2 headers around IPV6 */
+    // remove L2 headers around IPV6
     netif_snip = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_NETIF);
     if (netif_snip != NULL) {
         pkt = gnrc_pktbuf_remove_snip(pkt, netif_snip);
     }
-    /* reverse packet into send order */
+    // reverse packet into send order
     pkt = gnrc_pktbuf_reverse_snips(pkt);
     if (pkt == NULL) {
         DEBUG("ipv6_ext_rh: can't reverse snip order in packet");
-        /* gnrc_pktbuf_reverse_snips() releases pkt on error */
+        // gnrc_pktbuf_reverse_snips() releases pkt on error
         return;
     }
-    /* forward packet */
+    // forward packet
     if (!gnrc_netapi_dispatch_send(GNRC_NETTYPE_IPV6,
                                    GNRC_NETREG_DEMUX_CTX_ALL,
                                    pkt)) {
@@ -62,15 +57,14 @@ static void _forward_pkt(gnrc_pktsnip_t *pkt, ipv6_hdr_t *hdr)
     }
 }
 
-int gnrc_ipv6_ext_rh_process(gnrc_pktsnip_t *pkt)
-{
+int gnrc_ipv6_ext_rh_process(gnrc_pktsnip_t *pkt) {
     gnrc_pktsnip_t *ipv6;
     ipv6_ext_rh_t *ext = pkt->data;
     ipv6_hdr_t *hdr;
     int res = GNRC_IPV6_EXT_RH_AT_DST;
     void *err_ptr = NULL;
 
-    /* check seg_left early to avoid duplicating the packet */
+    // check seg_left early to avoid duplicating the packet
     if (ext->seg_left == 0) {
         return res;
     }
@@ -111,4 +105,4 @@ int gnrc_ipv6_ext_rh_process(gnrc_pktsnip_t *pkt)
     return res;
 }
 
-/** @} */
+/// @}

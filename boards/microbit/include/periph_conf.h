@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_microbit
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the BBC micro:bit
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_microbit
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the BBC micro:bit
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "periph_cpu.h"
 #include "cfg_clock_16_0.h"
@@ -24,12 +20,10 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    { /* Mapped to USB virtual COM port */
+    { // Mapped to USB virtual COM port
         .dev        = NRF_UART0,
         .rx_pin     = GPIO_PIN(0, 25),
         .tx_pin     = GPIO_PIN(0, 24),
@@ -43,12 +37,10 @@ static const uart_conf_t uart_config[] = {
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
 #define UART_0_ISR          isr_uart0
-/** @} */
+/// @}
 
-/**
- * @name   I2C (TWI) configuration
- * @{
- */
+/// @name   I2C (TWI) configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev     = NRF_TWI0,
@@ -60,10 +52,10 @@ static const i2c_conf_t i2c_config[] = {
 };
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       emcute MQTT-SN test application
- *
- * @author      Martine Sophie Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       emcute MQTT-SN test application
+///
+/// @author      Martine Sophie Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -27,12 +23,12 @@
 #include "thread.h"
 #include "net/sock/util.h"
 
-/* get to maximum length for client ID ;-)*/
+// get to maximum length for client ID ;-)
 #define EMCUTE_ID           "emcute test app ......."
 #define EMCUTE_PRIO         (THREAD_PRIORITY_MAIN - 1)
 
 #define NUMOFTOPS           (4U)
-#define SHELL_BUFSIZE       (512U)  /* for sub with long topic */
+#define SHELL_BUFSIZE       (512U)  // for sub with long topic
 
 static char _emcute_stack[THREAD_STACKSIZE_DEFAULT];
 static char _shell_buffer[SHELL_BUFSIZE];
@@ -66,15 +62,13 @@ static const shell_command_t _shell_commands[] = {
     { NULL, NULL, NULL },
 };
 
-static void *_emcute_thread(void *arg)
-{
+static void *_emcute_thread(void *arg) {
     (void)arg;
     emcute_run(CONFIG_EMCUTE_DEFAULT_PORT, EMCUTE_ID);
-    return NULL;    /* should never be reached */
+    return NULL;    // should never be reached
 }
 
-static unsigned _get_qos(const char *str)
-{
+static unsigned _get_qos(const char *str) {
     int qos = atoi(str);
     switch (qos) {
         case 1:     return EMCUTE_QOS_1;
@@ -83,15 +77,13 @@ static unsigned _get_qos(const char *str)
     }
 }
 
-static void _on_pub(const emcute_topic_t *topic, void *data, size_t len)
-{
+static void _on_pub(const emcute_topic_t *topic, void *data, size_t len) {
     (void)data;
     printf("### got publication of %" PRIuSIZE " bytes for topic '%s' [%u] ###\n",
            len, topic->name, topic->id);
 }
 
-static int _con(int argc, char **argv)
-{
+static int _con(int argc, char **argv) {
     char *topic = NULL;
     char *message = NULL;
     size_t len = 0;
@@ -126,8 +118,7 @@ static int _con(int argc, char **argv)
     return 0;
 }
 
-static int _discon(int argc, char **argv)
-{
+static int _discon(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -144,8 +135,7 @@ static int _discon(int argc, char **argv)
     return 0;
 }
 
-static int _topic_name_find(const char *name)
-{
+static int _topic_name_find(const char *name) {
     int res = -1;
 
     for (unsigned i = 0; i < NUMOFTOPS; i++) {
@@ -160,8 +150,7 @@ static int _topic_name_find(const char *name)
     return res;
 }
 
-static int _reg(int argc, char **argv)
-{
+static int _reg(int argc, char **argv) {
     emcute_topic_t *t;
     int idx;
     bool was_set = false;
@@ -197,8 +186,7 @@ static int _reg(int argc, char **argv)
     return 0;
 }
 
-static int _pub(int argc, char **argv)
-{
+static int _pub(int argc, char **argv) {
     unsigned flags = EMCUTE_QOS_0;
     int len;
     emcute_topic_t *t;
@@ -237,8 +225,7 @@ static int _pub(int argc, char **argv)
     return 0;
 }
 
-static int _sub(int argc, char **argv)
-{
+static int _sub(int argc, char **argv) {
     unsigned flags = EMCUTE_QOS_0;
     int idx;
     bool was_set = false;
@@ -282,8 +269,7 @@ static int _sub(int argc, char **argv)
     return 0;
 }
 
-static int _unsub(int argc, char **argv)
-{
+static int _unsub(int argc, char **argv) {
     int idx;
 
     if (argc < 2) {
@@ -306,8 +292,7 @@ static int _unsub(int argc, char **argv)
     return 1;
 }
 
-static int _will(int argc, char **argv)
-{
+static int _will(int argc, char **argv) {
     if (argc < 3) {
         printf("usage %s <will topic name> <will message content>\n", argv[0]);
         return 1;
@@ -326,8 +311,7 @@ static int _will(int argc, char **argv)
     return 0;
 }
 
-static int _info(int argc, char **argv)
-{
+static int _info(int argc, char **argv) {
     (void)argc;
     (void)argv;
     if (_gw.port > 0) {
@@ -352,13 +336,12 @@ static int _info(int argc, char **argv)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     puts("success: starting test application");
-    /* start the emcute thread */
+    // start the emcute thread
     thread_create(_emcute_stack, sizeof(_emcute_stack), EMCUTE_PRIO, 0,
                   _emcute_thread, NULL, "emcute");
-    /* start shell */
+    // start shell
     shell_run(_shell_commands, _shell_buffer, sizeof(_shell_buffer));
     return 0;
 }

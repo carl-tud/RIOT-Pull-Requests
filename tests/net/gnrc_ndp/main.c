@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests NDP message handling of gnrc stack.
- *
- * @author      Martine S. Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests NDP message handling of gnrc stack.
+///
+/// @author      Martine S. Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <kernel_defines.h>
 #include <stdio.h>
@@ -72,13 +68,11 @@ static gnrc_netif_t _netif;
 static void init_pkt_handler(void);
 static inline size_t ceil8(size_t size);
 
-static void set_up(void)
-{
+static void set_up(void) {
     gnrc_pktbuf_init();
 }
 
-static void fill_pktbuf(void)
-{
+static void fill_pktbuf(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           _align(sizeof(gnrc_pktsnip_t)),
@@ -87,23 +81,21 @@ static void fill_pktbuf(void)
     TEST_ASSERT(gnrc_pktbuf_is_sane());
 }
 
-static void test_nbr_sol_build__pktbuf_full(void)
-{
+static void test_nbr_sol_build__pktbuf_full(void) {
     fill_pktbuf();
     TEST_ASSERT_NULL(gnrc_ndp_nbr_sol_build(&test_tgt, NULL));
 }
 
-static void test_nbr_sol_build__success(void)
-{
+static void test_nbr_sol_build__success(void) {
     gnrc_pktsnip_t *pkt;
     ndp_nbr_sol_t *nbr_sol;
 
     TEST_ASSERT(gnrc_pktbuf_is_empty());
     TEST_ASSERT_NOT_NULL((pkt = gnrc_ndp_nbr_sol_build(&test_tgt, NULL)));
     TEST_ASSERT(gnrc_pktbuf_is_sane());
-    /* check packet meta-data */
+    // check packet meta-data
     TEST_ASSERT_ALLOCATION(pkt, sizeof(ndp_nbr_sol_t), GNRC_NETTYPE_ICMPV6);
-    /* check packet content */
+    // check packet content
     nbr_sol = pkt->data;
     TEST_ASSERT_EQUAL_INT(ICMPV6_NBR_SOL, nbr_sol->type);
     TEST_ASSERT_EQUAL_INT(0, nbr_sol->code);
@@ -114,14 +106,12 @@ static void test_nbr_sol_build__success(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_adv_build__pktbuf_full(void)
-{
+static void test_nbr_adv_build__pktbuf_full(void) {
     fill_pktbuf();
     TEST_ASSERT_NULL(gnrc_ndp_nbr_adv_build(&test_tgt, 0, NULL));
 }
 
-static void test_nbr_adv_build__success(uint8_t flags)
-{
+static void test_nbr_adv_build__success(uint8_t flags) {
     gnrc_pktsnip_t *pkt;
     ndp_nbr_adv_t *nbr_adv;
 
@@ -129,9 +119,9 @@ static void test_nbr_adv_build__success(uint8_t flags)
     TEST_ASSERT_NOT_NULL((pkt = gnrc_ndp_nbr_adv_build(&test_tgt, flags,
                                                        NULL)));
     TEST_ASSERT(gnrc_pktbuf_is_sane());
-    /* check packet meta-data */
+    // check packet meta-data
     TEST_ASSERT_ALLOCATION(pkt, sizeof(ndp_nbr_adv_t), GNRC_NETTYPE_ICMPV6);
-    /* check packet content */
+    // check packet content
     nbr_adv = pkt->data;
     TEST_ASSERT_EQUAL_INT(ICMPV6_NBR_ADV, nbr_adv->type);
     TEST_ASSERT_EQUAL_INT(0, nbr_adv->code);
@@ -145,33 +135,29 @@ static void test_nbr_adv_build__success(uint8_t flags)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_adv_build__success_without_flags(void)
-{
+static void test_nbr_adv_build__success_without_flags(void) {
     test_nbr_adv_build__success(0);
 }
 
-static void test_nbr_adv_build__success_with_flags(void)
-{
+static void test_nbr_adv_build__success_with_flags(void) {
     test_nbr_adv_build__success(NDP_NBR_ADV_FLAGS_S);
 }
 
-static void test_rtr_sol_build__pktbuf_full(void)
-{
+static void test_rtr_sol_build__pktbuf_full(void) {
     fill_pktbuf();
     TEST_ASSERT_NULL(gnrc_ndp_rtr_sol_build(NULL));
 }
 
-static void test_rtr_sol_build__success(void)
-{
+static void test_rtr_sol_build__success(void) {
     gnrc_pktsnip_t *pkt;
     ndp_rtr_sol_t *rtr_sol;
 
     TEST_ASSERT(gnrc_pktbuf_is_empty());
     TEST_ASSERT_NOT_NULL((pkt = gnrc_ndp_rtr_sol_build(NULL)));
     TEST_ASSERT(gnrc_pktbuf_is_sane());
-    /* check packet meta-data */
+    // check packet meta-data
     TEST_ASSERT_ALLOCATION(pkt, sizeof(ndp_rtr_sol_t), GNRC_NETTYPE_ICMPV6);
-    /* check packet content */
+    // check packet content
     rtr_sol = pkt->data;
     TEST_ASSERT_EQUAL_INT(ICMPV6_RTR_SOL, rtr_sol->type);
     TEST_ASSERT_EQUAL_INT(0, rtr_sol->code);
@@ -180,16 +166,14 @@ static void test_rtr_sol_build__success(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_adv_build__pktbuf_full(void)
-{
+static void test_rtr_adv_build__pktbuf_full(void) {
     fill_pktbuf();
     TEST_ASSERT_NULL(gnrc_ndp_rtr_adv_build(TEST_CUR_HL, 0, TEST_LTIME,
                                             TEST_REACH_TIME,
                                             TEST_RETRANS_TIMER, NULL));
 }
 
-static void test_rtr_adv_build__success(uint8_t flags)
-{
+static void test_rtr_adv_build__success(uint8_t flags) {
     gnrc_pktsnip_t *pkt;
     ndp_rtr_adv_t *rtr_adv;
 
@@ -200,9 +184,9 @@ static void test_rtr_adv_build__success(uint8_t flags)
                                                        TEST_RETRANS_TIMER,
                                                        NULL)));
     TEST_ASSERT(gnrc_pktbuf_is_sane());
-    /* check packet meta-data */
+    // check packet meta-data
     TEST_ASSERT_ALLOCATION(pkt, sizeof(ndp_rtr_adv_t), GNRC_NETTYPE_ICMPV6);
-    /* check packet content */
+    // check packet content
     rtr_adv = pkt->data;
     TEST_ASSERT_EQUAL_INT(ICMPV6_RTR_ADV, rtr_adv->type);
     TEST_ASSERT_EQUAL_INT(0, rtr_adv->code);
@@ -217,25 +201,21 @@ static void test_rtr_adv_build__success(uint8_t flags)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_adv_build__success_without_flags(void)
-{
+static void test_rtr_adv_build__success_without_flags(void) {
     test_rtr_adv_build__success(0);
 }
 
-static void test_rtr_adv_build__success_with_flags(void)
-{
+static void test_rtr_adv_build__success_with_flags(void) {
     test_rtr_adv_build__success(NDP_RTR_ADV_FLAGS_M);
 }
 
-static void test_opt_build__pktbuf_full(void)
-{
+static void test_opt_build__pktbuf_full(void) {
     fill_pktbuf();
     TEST_ASSERT_NULL(gnrc_ndp_opt_build(TEST_NDP_OPT_TYPE, TEST_NDP_OPT_SIZE,
                                         NULL));
 }
 
-static void test_opt_build__success(void)
-{
+static void test_opt_build__success(void) {
     gnrc_pktsnip_t *pkt;
     ndp_opt_t *opt;
 
@@ -244,9 +224,9 @@ static void test_opt_build__success(void)
                                                    TEST_NDP_OPT_SIZE,
                                                    NULL)));
     TEST_ASSERT(gnrc_pktbuf_is_sane());
-    /* check packet meta-data */
+    // check packet meta-data
     TEST_ASSERT_ALLOCATION(pkt, ceil8(TEST_NDP_OPT_SIZE), GNRC_NETTYPE_UNDEF);
-    /* check packet content */
+    // check packet content
     opt = pkt->data;
     TEST_ASSERT_EQUAL_INT(TEST_NDP_OPT_TYPE, opt->type);
     TEST_ASSERT_EQUAL_INT(ceil8(TEST_NDP_OPT_SIZE) / 8, opt->len);
@@ -254,15 +234,13 @@ static void test_opt_build__success(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_opt_sl2a_build__pktbuf_full(void)
-{
+static void test_opt_sl2a_build__pktbuf_full(void) {
     fill_pktbuf();
     TEST_ASSERT_NULL(gnrc_ndp_opt_sl2a_build(test_src_l2, sizeof(test_src_l2),
                                              NULL));
 }
 
-static void test_opt_sl2a_build__success(void)
-{
+static void test_opt_sl2a_build__success(void) {
     gnrc_pktsnip_t *pkt;
     ndp_opt_t *opt;
 
@@ -271,10 +249,10 @@ static void test_opt_sl2a_build__success(void)
                                                         sizeof(test_src_l2),
                                                         NULL)));
     TEST_ASSERT(gnrc_pktbuf_is_sane());
-    /* check packet meta-data */
+    // check packet meta-data
     TEST_ASSERT_ALLOCATION(pkt, ceil8(sizeof(ndp_opt_t) + sizeof(test_src_l2)),
                            GNRC_NETTYPE_UNDEF);
-    /* check packet content */
+    // check packet content
     opt = pkt->data;
     TEST_ASSERT_EQUAL_INT(NDP_OPT_SL2A, opt->type);
     TEST_ASSERT_EQUAL_INT(ceil8(sizeof(ndp_opt_t) + sizeof(test_src_l2)) / 8,
@@ -285,15 +263,13 @@ static void test_opt_sl2a_build__success(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_opt_tl2a_build__pktbuf_full(void)
-{
+static void test_opt_tl2a_build__pktbuf_full(void) {
     fill_pktbuf();
     TEST_ASSERT_NULL(gnrc_ndp_opt_tl2a_build(test_src_l2, sizeof(test_src_l2),
                                              NULL));
 }
 
-static void test_opt_tl2a_build__success(void)
-{
+static void test_opt_tl2a_build__success(void) {
     gnrc_pktsnip_t *pkt;
     ndp_opt_t *opt;
 
@@ -302,10 +278,10 @@ static void test_opt_tl2a_build__success(void)
                                                         sizeof(test_src_l2),
                                                         NULL)));
     TEST_ASSERT(gnrc_pktbuf_is_sane());
-    /* check packet meta-data */
+    // check packet meta-data
     TEST_ASSERT_ALLOCATION(pkt, ceil8(sizeof(ndp_opt_t) + sizeof(test_src_l2)),
                            GNRC_NETTYPE_UNDEF);
-    /* check packet content */
+    // check packet content
     opt = pkt->data;
     TEST_ASSERT_EQUAL_INT(NDP_OPT_TL2A, opt->type);
     TEST_ASSERT_EQUAL_INT(ceil8(sizeof(ndp_opt_t) + sizeof(test_src_l2)) / 8,
@@ -316,16 +292,14 @@ static void test_opt_tl2a_build__success(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_opt_pi_build__pktbuf_full(void)
-{
+static void test_opt_pi_build__pktbuf_full(void) {
     fill_pktbuf();
     TEST_ASSERT_NULL(gnrc_ndp_opt_pi_build(&test_pfx, TEST_PFX_LEN,
                                            TEST_VALID_LTIME, TEST_PREF_LTIME,
                                            0, NULL));
 }
 
-static void test_opt_pi_build__success(uint8_t flags)
-{
+static void test_opt_pi_build__success(uint8_t flags) {
     gnrc_pktsnip_t *pkt;
     ndp_opt_pi_t *opt;
     ipv6_addr_t exp_pfx = IPV6_ADDR_UNSPECIFIED;
@@ -336,12 +310,12 @@ static void test_opt_pi_build__success(uint8_t flags)
                                                       TEST_PREF_LTIME, flags,
                                                       NULL)));
     TEST_ASSERT(gnrc_pktbuf_is_sane());
-    /* check packet meta-data */
+    // check packet meta-data
     TEST_ASSERT_ALLOCATION(pkt, ceil8(sizeof(ndp_opt_pi_t)),
                            GNRC_NETTYPE_UNDEF);
-    /* check packet content */
-    /* prepare expected prefix (the function MUST remove all the garbage after
-     * the prefix) */
+    // check packet content
+    // prepare expected prefix (the function MUST remove all the garbage after
+    // the prefix)
     ipv6_addr_init_prefix(&exp_pfx, &test_pfx, TEST_PFX_LEN);
     opt = pkt->data;
     TEST_ASSERT_EQUAL_INT(NDP_OPT_PI, opt->type);
@@ -359,33 +333,29 @@ static void test_opt_pi_build__success(uint8_t flags)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_opt_pi_build__success_without_flags(void)
-{
+static void test_opt_pi_build__success_without_flags(void) {
     test_opt_pi_build__success(0);
 }
 
-static void test_opt_pi_build__success_with_flags(void)
-{
+static void test_opt_pi_build__success_with_flags(void) {
     test_opt_pi_build__success(NDP_OPT_PI_FLAGS_L);
 }
 
-static void test_opt_mtu_build__pktbuf_full(void)
-{
+static void test_opt_mtu_build__pktbuf_full(void) {
     fill_pktbuf();
     TEST_ASSERT_NULL(gnrc_ndp_opt_mtu_build(TEST_MTU, NULL));
 }
 
-static void test_opt_mtu_build__success(void)
-{
+static void test_opt_mtu_build__success(void) {
     gnrc_pktsnip_t *pkt;
     ndp_opt_mtu_t *opt;
 
     TEST_ASSERT(gnrc_pktbuf_is_empty());
     TEST_ASSERT_NOT_NULL((pkt = gnrc_ndp_opt_mtu_build(TEST_MTU, NULL)));
     TEST_ASSERT(gnrc_pktbuf_is_sane());
-    /* check packet meta-data */
+    // check packet meta-data
     TEST_ASSERT_ALLOCATION(pkt, ceil8(sizeof(ndp_opt_mtu_t)), GNRC_NETTYPE_UNDEF);
-    /* check packet content */
+    // check packet content
     opt = pkt->data;
     TEST_ASSERT_EQUAL_INT(NDP_OPT_MTU, opt->type);
     TEST_ASSERT_EQUAL_INT(NDP_OPT_MTU_LEN, opt->len);
@@ -395,18 +365,15 @@ static void test_opt_mtu_build__success(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static inline kernel_pid_t _get_iface(gnrc_netif_hdr_t *hdr)
-{
+static inline kernel_pid_t _get_iface(gnrc_netif_hdr_t *hdr) {
     return hdr->if_pid;
 }
 
-static inline ipv6_addr_t *_get_ipv6_src(ipv6_hdr_t *hdr)
-{
+static inline ipv6_addr_t *_get_ipv6_src(ipv6_hdr_t *hdr) {
     return &hdr->src;
 }
 
-static inline ipv6_addr_t *_get_ipv6_dst(ipv6_hdr_t *hdr)
-{
+static inline ipv6_addr_t *_get_ipv6_dst(ipv6_hdr_t *hdr) {
     return &hdr->dst;
 }
 
@@ -430,21 +397,20 @@ static inline ipv6_addr_t *_get_ipv6_dst(ipv6_hdr_t *hdr)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_ICMPV6, pkt->type); \
     TEST_ASSERT_NOT_NULL(pkt->data)
 
-static void test_nbr_sol_send(const ipv6_addr_t *src)
-{
+static void test_nbr_sol_send(const ipv6_addr_t *src) {
     msg_t msg;
     gnrc_pktsnip_t *pkt;
     ndp_nbr_sol_t *nbr_sol;
 
     while (msg_try_receive(&msg) == 1) {
-        /* empty message queue */
+        // empty message queue
     }
     TEST_ASSERT_NOT_NULL(test_netif);
     gnrc_ndp_nbr_sol_send(&test_tgt, test_netif, src, &test_dst, NULL);
     msg_receive(&msg);
     TEST_ASSERT_EQUAL_INT(GNRC_NETAPI_MSG_TYPE_SND, msg.type);
     pkt = msg.content.ptr;
-    /* check packet */
+    // check packet
     ASSERT_NETIF_HDR(test_netif, pkt);
     if ((src != NULL) && ipv6_addr_is_unspecified(src)) {
         ASSERT_IPV6_HDR(&ipv6_addr_unspecified, &test_dst, pkt->next);
@@ -476,25 +442,21 @@ static void test_nbr_sol_send(const ipv6_addr_t *src)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_sol_send__src_NULL(void)
-{
+static void test_nbr_sol_send__src_NULL(void) {
     test_nbr_sol_send(NULL);
 }
 
-static void test_nbr_sol_send__src_unspecified(void)
-{
+static void test_nbr_sol_send__src_unspecified(void) {
     test_nbr_sol_send(&ipv6_addr_unspecified);
 }
 
-static void test_nbr_sol_send__src_NOT_NULL(void)
-{
+static void test_nbr_sol_send__src_NOT_NULL(void) {
     test_nbr_sol_send(&test_src);
 }
 
-static void test_nbr_sol_send__pktbuf_full1(void)
-{
-    /* don't be able to fit any more data into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding */
+static void test_nbr_sol_send__pktbuf_full1(void) {
+    // don't be able to fit any more data into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           _align(sizeof(gnrc_pktsnip_t)),
@@ -506,11 +468,10 @@ static void test_nbr_sol_send__pktbuf_full1(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_sol_send__pktbuf_full2(void)
-{
-    /* just be able to fit the SLLAO into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of SLLAO for IEEE 802.15.4 */
+static void test_nbr_sol_send__pktbuf_full2(void) {
+    // just be able to fit the SLLAO into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of SLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (2 * _align(sizeof(gnrc_pktsnip_t))) - 16,
@@ -522,11 +483,10 @@ static void test_nbr_sol_send__pktbuf_full2(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_sol_send__pktbuf_full3(void)
-{
-    /* just be able to fit the SLLAO and NS into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of SLLAO for IEEE 802.15.4 */
+static void test_nbr_sol_send__pktbuf_full3(void) {
+    // just be able to fit the SLLAO and NS into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of SLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (3 * _align(sizeof(gnrc_pktsnip_t))) - 16 -
@@ -539,11 +499,10 @@ static void test_nbr_sol_send__pktbuf_full3(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_sol_send__pktbuf_full4(void)
-{
-    /* just be able to fit the SLLAO, NS, and IPv6 header into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of SLLAO for IEEE 802.15.4 */
+static void test_nbr_sol_send__pktbuf_full4(void) {
+    // just be able to fit the SLLAO, NS, and IPv6 header into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of SLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (4 * _align(sizeof(gnrc_pktsnip_t))) - 16 -
@@ -558,8 +517,7 @@ static void test_nbr_sol_send__pktbuf_full4(void)
 }
 
 static void test_nbr_adv_send(const ipv6_addr_t *tgt, const ipv6_addr_t *dst,
-                              bool supply_tl2a, gnrc_pktsnip_t *exp_ext_opts)
-{
+                              bool supply_tl2a, gnrc_pktsnip_t *exp_ext_opts) {
     msg_t msg;
     gnrc_pktsnip_t *pkt;
     ndp_nbr_adv_t *nbr_adv;
@@ -569,7 +527,7 @@ static void test_nbr_adv_send(const ipv6_addr_t *tgt, const ipv6_addr_t *dst,
     msg_receive(&msg);
     TEST_ASSERT_EQUAL_INT(GNRC_NETAPI_MSG_TYPE_SND, msg.type);
     pkt = msg.content.ptr;
-    /* check packet */
+    // check packet
     ASSERT_NETIF_HDR(test_netif, pkt);
     if (ipv6_addr_is_unspecified(dst)) {
         ASSERT_IPV6_HDR(&ipv6_addr_unspecified, &ipv6_addr_all_nodes_link_local,
@@ -590,7 +548,7 @@ static void test_nbr_adv_send(const ipv6_addr_t *tgt, const ipv6_addr_t *dst,
         TEST_ASSERT_NOT_NULL(pkt->next->next->next);
         TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_UNDEF, pkt->next->next->next->type);
         TEST_ASSERT_NOT_NULL(pkt->next->next->next->data);
-        /* implicitly this is the same */
+        // implicitly this is the same
         if (supply_tl2a || ipv6_addr_is_unspecified(dst)) {
             ndp_opt_t *opt = pkt->next->next->next->data;
             TEST_ASSERT_EQUAL_INT(NDP_OPT_TL2A, opt->type);
@@ -600,12 +558,12 @@ static void test_nbr_adv_send(const ipv6_addr_t *tgt, const ipv6_addr_t *dst,
                 TEST_ASSERT_NULL(pkt->next->next->next->next);
             }
             else {
-                /* extra option comes after TL2AO */
+                // extra option comes after TL2AO
                 ext_opts = pkt->next->next->next->next;
             }
         }
         else {
-            /* extra option comes directly after neighbor advertisement */
+            // extra option comes directly after neighbor advertisement
             ext_opts = pkt->next->next->next;
         }
         TEST_ASSERT(exp_ext_opts == ext_opts);
@@ -618,98 +576,81 @@ static void test_nbr_adv_send(const ipv6_addr_t *tgt, const ipv6_addr_t *dst,
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_adv_send__foreign_tgt_unspecified_dst_no_supply_tl2a_no_ext_opts(void)
-{
+static void test_nbr_adv_send__foreign_tgt_unspecified_dst_no_supply_tl2a_no_ext_opts(void) {
     test_nbr_adv_send(&test_src, &ipv6_addr_unspecified, false, NULL);
 }
 
-static void test_nbr_adv_send__foreign_tgt_unspecified_dst_no_supply_tl2a_ext_opts(void)
-{
+static void test_nbr_adv_send__foreign_tgt_unspecified_dst_no_supply_tl2a_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_nbr_adv_send(&test_src, &ipv6_addr_unspecified, false, ext_opts);
 }
 
-static void test_nbr_adv_send__foreign_tgt_unspecified_dst_supply_tl2a_no_ext_opts(void)
-{
+static void test_nbr_adv_send__foreign_tgt_unspecified_dst_supply_tl2a_no_ext_opts(void) {
     test_nbr_adv_send(&test_src, &ipv6_addr_unspecified, true, NULL);
 }
 
-static void test_nbr_adv_send__foreign_tgt_unspecified_dst_supply_tl2a_ext_opts(void)
-{
+static void test_nbr_adv_send__foreign_tgt_unspecified_dst_supply_tl2a_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_nbr_adv_send(&test_src, &ipv6_addr_unspecified, true, ext_opts);
 }
 
-static void test_nbr_adv_send__foreign_tgt_specified_dst_no_supply_tl2a_no_ext_opts(void)
-{
+static void test_nbr_adv_send__foreign_tgt_specified_dst_no_supply_tl2a_no_ext_opts(void) {
     test_nbr_adv_send(&test_src, &test_dst, false, NULL);
 }
 
-static void test_nbr_adv_send__foreign_tgt_specified_dst_no_supply_tl2a_ext_opts(void)
-{
+static void test_nbr_adv_send__foreign_tgt_specified_dst_no_supply_tl2a_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_nbr_adv_send(&test_src, &test_dst, false, ext_opts);
 }
 
-static void test_nbr_adv_send__foreign_tgt_specified_dst_supply_tl2a_no_ext_opts(void)
-{
+static void test_nbr_adv_send__foreign_tgt_specified_dst_supply_tl2a_no_ext_opts(void) {
     test_nbr_adv_send(&test_src, &test_dst, true, NULL);
 }
 
-static void test_nbr_adv_send__foreign_tgt_specified_dst_supply_tl2a_ext_opts(void)
-{
+static void test_nbr_adv_send__foreign_tgt_specified_dst_supply_tl2a_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_nbr_adv_send(&test_src, &test_dst, true, ext_opts);
 }
 
-static void test_nbr_adv_send__src_tgt_unspecified_dst_no_supply_tl2a_no_ext_opts(void)
-{
+static void test_nbr_adv_send__src_tgt_unspecified_dst_no_supply_tl2a_no_ext_opts(void) {
     test_nbr_adv_send(&test_src, &ipv6_addr_unspecified, false, NULL);
 }
 
-static void test_nbr_adv_send__src_tgt_unspecified_dst_no_supply_tl2a_ext_opts(void)
-{
+static void test_nbr_adv_send__src_tgt_unspecified_dst_no_supply_tl2a_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_nbr_adv_send(&test_src, &ipv6_addr_unspecified, false, ext_opts);
 }
 
-static void test_nbr_adv_send__src_tgt_unspecified_dst_supply_tl2a_no_ext_opts(void)
-{
+static void test_nbr_adv_send__src_tgt_unspecified_dst_supply_tl2a_no_ext_opts(void) {
     test_nbr_adv_send(&test_src, &ipv6_addr_unspecified, true, NULL);
 }
 
-static void test_nbr_adv_send__src_tgt_unspecified_dst_supply_tl2a_ext_opts(void)
-{
+static void test_nbr_adv_send__src_tgt_unspecified_dst_supply_tl2a_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_nbr_adv_send(&test_src, &ipv6_addr_unspecified, true, ext_opts);
 }
 
-static void test_nbr_adv_send__src_tgt_specified_dst_no_supply_tl2a_no_ext_opts(void)
-{
+static void test_nbr_adv_send__src_tgt_specified_dst_no_supply_tl2a_no_ext_opts(void) {
     test_nbr_adv_send(&test_src, &test_dst, false, NULL);
 }
 
-static void test_nbr_adv_send__src_tgt_specified_dst_no_supply_tl2a_ext_opts(void)
-{
+static void test_nbr_adv_send__src_tgt_specified_dst_no_supply_tl2a_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_nbr_adv_send(&test_src, &test_dst, false, ext_opts);
 }
 
-static void test_nbr_adv_send__src_tgt_specified_dst_supply_tl2a_no_ext_opts(void)
-{
+static void test_nbr_adv_send__src_tgt_specified_dst_supply_tl2a_no_ext_opts(void) {
     test_nbr_adv_send(&test_src, &test_dst, true, NULL);
 }
 
-static void test_nbr_adv_send__src_tgt_specified_dst_supply_tl2a_ext_opts(void)
-{
+static void test_nbr_adv_send__src_tgt_specified_dst_supply_tl2a_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_nbr_adv_send(&test_src, &test_dst, true, ext_opts);
 }
 
-static void test_nbr_adv_send__pktbuf_full1(void)
-{
-    /* don't be able to fit any more data into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding */
+static void test_nbr_adv_send__pktbuf_full1(void) {
+    // don't be able to fit any more data into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           _align(sizeof(gnrc_pktsnip_t)),
@@ -721,11 +662,10 @@ static void test_nbr_adv_send__pktbuf_full1(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_adv_send__pktbuf_full2(void)
-{
-    /* just be able to fit the TLLAO into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of TLLAO for IEEE 802.15.4 */
+static void test_nbr_adv_send__pktbuf_full2(void) {
+    // just be able to fit the TLLAO into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of TLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (2 * _align(sizeof(gnrc_pktsnip_t))) - 16,
@@ -737,11 +677,10 @@ static void test_nbr_adv_send__pktbuf_full2(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_adv_send__pktbuf_full3(void)
-{
-    /* just be able to fit the TLLAO and NA into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of TLLAO for IEEE 802.15.4 */
+static void test_nbr_adv_send__pktbuf_full3(void) {
+    // just be able to fit the TLLAO and NA into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of TLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (3 * _align(sizeof(gnrc_pktsnip_t))) - 16 -
@@ -754,11 +693,10 @@ static void test_nbr_adv_send__pktbuf_full3(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_nbr_adv_send__pktbuf_full4(void)
-{
-    /* just be able to fit the TLLAO, NA, and IPv6 header into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of TLLAO for IEEE 802.15.4 */
+static void test_nbr_adv_send__pktbuf_full4(void) {
+    // just be able to fit the TLLAO, NA, and IPv6 header into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of TLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (4 * _align(sizeof(gnrc_pktsnip_t))) - 16 -
@@ -772,8 +710,7 @@ static void test_nbr_adv_send__pktbuf_full4(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_sol_send(const ipv6_addr_t *dst)
-{
+static void test_rtr_sol_send(const ipv6_addr_t *dst) {
     msg_t msg;
     gnrc_pktsnip_t *pkt;
     ndp_rtr_sol_t *rtr_sol;
@@ -783,7 +720,7 @@ static void test_rtr_sol_send(const ipv6_addr_t *dst)
     msg_receive(&msg);
     TEST_ASSERT_EQUAL_INT(GNRC_NETAPI_MSG_TYPE_SND, msg.type);
     pkt = msg.content.ptr;
-    /* check packet */
+    // check packet
     ASSERT_NETIF_HDR(test_netif, pkt);
     if (dst != NULL) {
         ASSERT_IPV6_HDR(&test_src, dst, pkt->next);
@@ -814,18 +751,15 @@ static void test_rtr_sol_send(const ipv6_addr_t *dst)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_sol_send__dst_NULL(void)
-{
+static void test_rtr_sol_send__dst_NULL(void) {
     test_rtr_sol_send(NULL);
 }
 
-static void test_rtr_sol_send__dst_local(void)
-{
+static void test_rtr_sol_send__dst_local(void) {
     test_rtr_sol_send(&test_dst);
 }
 
-static void test_rtr_sol_send__dst_global(void)
-{
+static void test_rtr_sol_send__dst_global(void) {
     ipv6_addr_t dst;
 
     memcpy(&dst, &test_dst, sizeof(dst));
@@ -833,10 +767,9 @@ static void test_rtr_sol_send__dst_global(void)
     test_rtr_sol_send(&test_dst);
 }
 
-static void test_rtr_sol_send__pktbuf_full1(void)
-{
-    /* don't be able to fit any more data into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding */
+static void test_rtr_sol_send__pktbuf_full1(void) {
+    // don't be able to fit any more data into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           _align(sizeof(gnrc_pktsnip_t)),
@@ -848,11 +781,10 @@ static void test_rtr_sol_send__pktbuf_full1(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_sol_send__pktbuf_full2(void)
-{
-    /* just be able to fit the SLLAO into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of SLLAO for IEEE 802.15.4 */
+static void test_rtr_sol_send__pktbuf_full2(void) {
+    // just be able to fit the SLLAO into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of SLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (2 * _align(sizeof(gnrc_pktsnip_t))) - 16,
@@ -864,11 +796,10 @@ static void test_rtr_sol_send__pktbuf_full2(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_sol_send__pktbuf_full3(void)
-{
-    /* just be able to fit the SLLAO and RS into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of SLLAO for IEEE 802.15.4 */
+static void test_rtr_sol_send__pktbuf_full3(void) {
+    // just be able to fit the SLLAO and RS into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of SLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (3 * _align(sizeof(gnrc_pktsnip_t))) - 16 -
@@ -881,11 +812,10 @@ static void test_rtr_sol_send__pktbuf_full3(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_sol_send__pktbuf_full4(void)
-{
-    /* just be able to fit the SLLAO, RS, and IPv6 header into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of SLLAO for IEEE 802.15.4 */
+static void test_rtr_sol_send__pktbuf_full4(void) {
+    // just be able to fit the SLLAO, RS, and IPv6 header into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of SLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (4 * _align(sizeof(gnrc_pktsnip_t))) - 16 -
@@ -901,8 +831,7 @@ static void test_rtr_sol_send__pktbuf_full4(void)
 
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_ROUTER)
 static void test_rtr_adv_send(const ipv6_addr_t *src, const ipv6_addr_t *dst,
-                              bool fin, gnrc_pktsnip_t *exp_ext_opts)
-{
+                              bool fin, gnrc_pktsnip_t *exp_ext_opts) {
     msg_t msg;
     gnrc_pktsnip_t *pkt;
     ndp_rtr_adv_t *rtr_adv;
@@ -912,10 +841,10 @@ static void test_rtr_adv_send(const ipv6_addr_t *src, const ipv6_addr_t *dst,
     msg_receive(&msg);
     TEST_ASSERT_EQUAL_INT(GNRC_NETAPI_MSG_TYPE_SND, msg.type);
     pkt = msg.content.ptr;
-    /* check packet */
+    // check packet
     ASSERT_NETIF_HDR(test_netif, pkt);
-    /* testing for unspecified source is complicated so we skip it here and
-     * do it in later integration tests */
+    // testing for unspecified source is complicated so we skip it here and
+    // do it in later integration tests
     if (dst != NULL) {
         ASSERT_IPV6_HDR(&test_src, dst, pkt->next);
     }
@@ -933,7 +862,7 @@ static void test_rtr_adv_send(const ipv6_addr_t *src, const ipv6_addr_t *dst,
     else {
         TEST_ASSERT_MESSAGE(rtr_adv->ltime.u16 != 0, "rtr_adv->ltime == 0");
     }
-    /* check for SLLAO */
+    // check for SLLAO
     TEST_ASSERT_NOT_NULL(pkt->next->next->next);
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_UNDEF, pkt->next->next->next->type);
     TEST_ASSERT_NOT_NULL(pkt->next->next->next->data);
@@ -948,98 +877,81 @@ static void test_rtr_adv_send(const ipv6_addr_t *src, const ipv6_addr_t *dst,
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_adv_send__src_NULL_dst_NULL_no_fin_no_ext_opts(void)
-{
+static void test_rtr_adv_send__src_NULL_dst_NULL_no_fin_no_ext_opts(void) {
     test_rtr_adv_send(NULL, NULL, false, NULL);
 }
 
-static void test_rtr_adv_send__src_NULL_dst_NULL_no_fin_ext_opts(void)
-{
+static void test_rtr_adv_send__src_NULL_dst_NULL_no_fin_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_rtr_adv_send(NULL, NULL, false, ext_opts);
 }
 
-static void test_rtr_adv_send__src_NULL_dst_NULL_fin_no_ext_opts(void)
-{
+static void test_rtr_adv_send__src_NULL_dst_NULL_fin_no_ext_opts(void) {
     test_rtr_adv_send(NULL, NULL, true, NULL);
 }
 
-static void test_rtr_adv_send__src_NULL_dst_NULL_fin_ext_opts(void)
-{
+static void test_rtr_adv_send__src_NULL_dst_NULL_fin_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_rtr_adv_send(NULL, NULL, true, ext_opts);
 }
 
-static void test_rtr_adv_send__src_NULL_dst_no_fin_no_ext_opts(void)
-{
+static void test_rtr_adv_send__src_NULL_dst_no_fin_no_ext_opts(void) {
     test_rtr_adv_send(NULL, &test_dst, false, NULL);
 }
 
-static void test_rtr_adv_send__src_NULL_dst_no_fin_ext_opts(void)
-{
+static void test_rtr_adv_send__src_NULL_dst_no_fin_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_rtr_adv_send(NULL, &test_dst, false, ext_opts);
 }
 
-static void test_rtr_adv_send__src_NULL_dst_fin_no_ext_opts(void)
-{
+static void test_rtr_adv_send__src_NULL_dst_fin_no_ext_opts(void) {
     test_rtr_adv_send(NULL, &test_dst, true, NULL);
 }
 
-static void test_rtr_adv_send__src_NULL_dst_fin_ext_opts(void)
-{
+static void test_rtr_adv_send__src_NULL_dst_fin_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_rtr_adv_send(NULL, &test_dst, true, ext_opts);
 }
 
-static void test_rtr_adv_send__src_dst_NULL_no_fin_no_ext_opts(void)
-{
+static void test_rtr_adv_send__src_dst_NULL_no_fin_no_ext_opts(void) {
     test_rtr_adv_send(&test_src, NULL, false, NULL);
 }
 
-static void test_rtr_adv_send__src_dst_NULL_no_fin_ext_opts(void)
-{
+static void test_rtr_adv_send__src_dst_NULL_no_fin_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_rtr_adv_send(&test_src, NULL, false, ext_opts);
 }
 
-static void test_rtr_adv_send__src_dst_NULL_fin_no_ext_opts(void)
-{
+static void test_rtr_adv_send__src_dst_NULL_fin_no_ext_opts(void) {
     test_rtr_adv_send(&test_src, NULL, true, NULL);
 }
 
-static void test_rtr_adv_send__src_dst_NULL_fin_ext_opts(void)
-{
+static void test_rtr_adv_send__src_dst_NULL_fin_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_rtr_adv_send(&test_src, NULL, true, ext_opts);
 }
 
-static void test_rtr_adv_send__src_dst_no_fin_no_ext_opts(void)
-{
+static void test_rtr_adv_send__src_dst_no_fin_no_ext_opts(void) {
     test_rtr_adv_send(&test_src, &test_dst, false, NULL);
 }
 
-static void test_rtr_adv_send__src_dst_no_fin_ext_opts(void)
-{
+static void test_rtr_adv_send__src_dst_no_fin_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_rtr_adv_send(&test_src, &test_dst, false, ext_opts);
 }
 
-static void test_rtr_adv_send__src_dst_fin_no_ext_opts(void)
-{
+static void test_rtr_adv_send__src_dst_fin_no_ext_opts(void) {
     test_rtr_adv_send(&test_src, &test_dst, true, NULL);
 }
 
-static void test_rtr_adv_send__src_dst_fin_ext_opts(void)
-{
+static void test_rtr_adv_send__src_dst_fin_ext_opts(void) {
     gnrc_pktsnip_t *ext_opts = gnrc_pktbuf_add(NULL, NULL, 8U, GNRC_NETTYPE_UNDEF);
     test_rtr_adv_send(&test_src, &test_dst, true, ext_opts);
 }
 
-static void test_rtr_adv_send__pktbuf_full1(void)
-{
-    /* don't be able to fit any more data into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding */
+static void test_rtr_adv_send__pktbuf_full1(void) {
+    // don't be able to fit any more data into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           _align(sizeof(gnrc_pktsnip_t)),
@@ -1051,11 +963,10 @@ static void test_rtr_adv_send__pktbuf_full1(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_adv_send__pktbuf_full2(void)
-{
-    /* just be able to fit the SLLAO into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of SLLAO for IEEE 802.15.4 */
+static void test_rtr_adv_send__pktbuf_full2(void) {
+    // just be able to fit the SLLAO into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of SLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (2 * _align(sizeof(gnrc_pktsnip_t))) - 16,
@@ -1067,11 +978,10 @@ static void test_rtr_adv_send__pktbuf_full2(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_adv_send__pktbuf_full3(void)
-{
-    /* just be able to fit the SLLAO and RA into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of SLLAO for IEEE 802.15.4 */
+static void test_rtr_adv_send__pktbuf_full3(void) {
+    // just be able to fit the SLLAO and RA into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of SLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (3 * _align(sizeof(gnrc_pktsnip_t))) - 16 -
@@ -1084,11 +994,10 @@ static void test_rtr_adv_send__pktbuf_full3(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_rtr_adv_send__pktbuf_full4(void)
-{
-    /* just be able to fit the SLLAO, RA, and IPv6 header into packet buffer
-     * - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
-     * - 16 == size of SLLAO for IEEE 802.15.4 */
+static void test_rtr_adv_send__pktbuf_full4(void) {
+    // just be able to fit the SLLAO, RA, and IPv6 header into packet buffer
+    // - sizeof(gnrc_pktsnip_t) + pktbuf internal padding
+    // - 16 == size of SLLAO for IEEE 802.15.4
     gnrc_pktsnip_t *tmp = gnrc_pktbuf_add(NULL, NULL,
                                           CONFIG_GNRC_PKTBUF_SIZE -
                                           (4 * _align(sizeof(gnrc_pktsnip_t))) - 16 -
@@ -1103,8 +1012,7 @@ static void test_rtr_adv_send__pktbuf_full4(void)
 }
 #endif
 
-static Test *tests_gnrc_ndp_build(void)
-{
+static Test *tests_gnrc_ndp_build(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_nbr_sol_build__pktbuf_full),
         new_TestFixture(test_nbr_sol_build__success),
@@ -1134,8 +1042,7 @@ static Test *tests_gnrc_ndp_build(void)
     return (Test *)&tests;
 }
 
-static Test *tests_gnrc_ndp_send(void)
-{
+static Test *tests_gnrc_ndp_send(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_nbr_sol_send__src_NULL),
         new_TestFixture(test_nbr_sol_send__src_unspecified),
@@ -1199,8 +1106,7 @@ static Test *tests_gnrc_ndp_send(void)
     return (Test *)&tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_gnrc_ndp_build());
     init_pkt_handler();
@@ -1217,21 +1123,18 @@ static msg_t msg_queue_main[MSG_QUEUE_SIZE];
 static gnrc_netreg_entry_t netreg_entry;
 static netdev_test_t dev;
 
-static int _test_netif_send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
-{
+static int _test_netif_send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt) {
     (void)netif;
     gnrc_pktbuf_release(pkt);
     return 0;
 }
 
-static gnrc_pktsnip_t *_test_netif_recv(gnrc_netif_t *netif)
-{
+static gnrc_pktsnip_t *_test_netif_recv(gnrc_netif_t *netif) {
     (void)netif;
     return NULL;
 }
 
-static int _test_netif_set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt)
-{
+static int _test_netif_set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt) {
     (void)netif;
     (void)opt;
     return -ENOTSUP;
@@ -1245,48 +1148,42 @@ static const gnrc_netif_ops_t _test_netif_ops = {
     .set = _test_netif_set,
 };
 
-static int _netdev_test_address_long(netdev_t *dev, void *value, size_t max_len)
-{
+static int _netdev_test_address_long(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     expect(max_len >= sizeof(test_src_l2));
     memcpy(value, test_src_l2, sizeof(test_src_l2));
     return sizeof(test_src_l2);
 }
 
-static int _netdev_test_proto(netdev_t *dev, void *value, size_t max_len)
-{
+static int _netdev_test_proto(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
      expect(max_len == sizeof(gnrc_nettype_t));
      *((gnrc_nettype_t *)value) = GNRC_NETTYPE_UNDEF;
      return sizeof(gnrc_nettype_t);
 }
 
-static int _netdev_test_src_len(netdev_t *dev, void *value, size_t max_len)
-{
+static int _netdev_test_src_len(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
      expect(max_len == sizeof(uint16_t));
      *((uint16_t *)value) = sizeof(test_src_l2);
      return sizeof(uint16_t);
 }
 
-static int _netdev_test_max_pdu_size(netdev_t *dev, void *value, size_t max_len)
-{
+static int _netdev_test_max_pdu_size(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
      expect(max_len == sizeof(uint16_t));
      *((uint16_t *)value) = 100U;
      return sizeof(uint16_t);
 }
 
-static int _netdev_test_device_type(netdev_t *dev, void *value, size_t max_len)
-{
+static int _netdev_test_device_type(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
      expect(max_len == sizeof(uint16_t));
      *((uint16_t *)value) = NETDEV_TYPE_IEEE802154;
      return sizeof(uint16_t);
 }
 
-static void init_pkt_handler(void)
-{
+static void init_pkt_handler(void) {
     msg_init_queue(msg_queue_main, MSG_QUEUE_SIZE);
     gnrc_netreg_entry_init_pid(&netreg_entry, GNRC_NETREG_DEMUX_CTX_ALL,
                                thread_getpid());
@@ -1312,8 +1209,7 @@ static void init_pkt_handler(void)
     test_netif->l2addr_len = sizeof(test_src_l2);
 }
 
-static inline size_t ceil8(size_t size)
-{
+static inline size_t ceil8(size_t size) {
     if (size % 8) {
         return ((size / 8) + 1) * 8;
     }

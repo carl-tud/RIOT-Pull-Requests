@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief pthread test application
- *
- * @author Christian Mehlis <mehlis@inf.fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief pthread test application
+///
+/// @author Christian Mehlis <mehlis@inf.fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018-2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018-2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Default STM32L0/STM32L1 clock configuration
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Default STM32L0/STM32L1 clock configuration
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "cfg_clock_common_lx_u5_wx.h"
 #include "kernel_defines.h"
@@ -24,15 +20,13 @@
 extern "C" {
 #endif
 
-/**
- * @name    L0/L1 clock system configuration
- * @{
- */
+/// @name    L0/L1 clock system configuration
+/// @{
 #if IS_ACTIVE(CONFIG_BOARD_HAS_HSE) && (CONFIG_CLOCK_HSE < MHZ(1) || CONFIG_CLOCK_HSE > MHZ(24))
 #error "HSE clock frequency must be between 1MHz and 24MHz"
 #endif
 
-/* The following parameters configure a 32MHz system clock with HSI as input clock */
+// The following parameters configure a 32MHz system clock with HSI as input clock
 #ifndef CONFIG_CLOCK_PLL_DIV
 #define CONFIG_CLOCK_PLL_DIV            (2)
 #endif
@@ -58,38 +52,37 @@ extern "C" {
 #error "HSE must be greater than 2MHz when used as PLL input clock"
 #endif
 #define CLOCK_PLL_SRC                   (CONFIG_CLOCK_HSE)
-#else /* CONFIG_CLOCK_HSI */
+#else // CONFIG_CLOCK_HSI
 #define CLOCK_PLL_SRC                   (CONFIG_CLOCK_HSI)
-#endif /* CONFIG_BOARD_HAS_HSE */
-/* PLL configuration: make sure your values are legit!
- *
- * compute by: CORECLOCK = ((PLL_IN / PLL_PREDIV) * PLL_MUL)
- * with:
- * PLL_IN:          input clock is HSE if available or HSI otherwise
- * PLL_DIV :        divider, allowed values: 2, 3, 4. Default is 2.
- * PLL_MUL:         multiplier, allowed values: 3, 4, 6, 8, 12, 16, 24, 32, 48. Default is 4.
- * CORECLOCK        -> 32MHz MAX!
- */
+#endif // CONFIG_BOARD_HAS_HSE
+// PLL configuration: make sure your values are legit!
+//
+// compute by: CORECLOCK = ((PLL_IN / PLL_PREDIV) * PLL_MUL)
+// with:
+// PLL_IN:          input clock is HSE if available or HSI otherwise
+// PLL_DIV :        divider, allowed values: 2, 3, 4. Default is 2.
+// PLL_MUL:         multiplier, allowed values: 3, 4, 6, 8, 12, 16, 24, 32, 48. Default is 4.
+// CORECLOCK        -> 32MHz MAX!
 #define CLOCK_CORECLOCK                 ((CLOCK_PLL_SRC * CONFIG_CLOCK_PLL_MUL) / CONFIG_CLOCK_PLL_DIV)
 #if CLOCK_CORECLOCK > MHZ(32)
 #error "SYSCLK cannot exceed 32MHz"
 #endif
-#endif /* CONFIG_USE_CLOCK_PLL */
+#endif // CONFIG_USE_CLOCK_PLL
 
-#define CLOCK_AHB                       CLOCK_CORECLOCK  /* max: 32MHz */
+#define CLOCK_AHB                       CLOCK_CORECLOCK  // max: 32MHz
 
 #ifndef CONFIG_CLOCK_APB1_DIV
 #define CONFIG_CLOCK_APB1_DIV           (1)
 #endif
-#define CLOCK_APB1                      (CLOCK_CORECLOCK / CONFIG_CLOCK_APB1_DIV)   /* max: 32MHz */
+#define CLOCK_APB1                      (CLOCK_CORECLOCK / CONFIG_CLOCK_APB1_DIV)   // max: 32MHz
 #ifndef CONFIG_CLOCK_APB2_DIV
 #define CONFIG_CLOCK_APB2_DIV           (1)
 #endif
-#define CLOCK_APB2                      (CLOCK_CORECLOCK / CONFIG_CLOCK_APB2_DIV)   /* max: 32MHz */
-/** @} */
+#define CLOCK_APB2                      (CLOCK_CORECLOCK / CONFIG_CLOCK_APB2_DIV)   // max: 32MHz
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,18 +1,14 @@
-/*
- * Copyright (C) Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- *
- * @file
- * @author Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author Martin Landsmann <martin.landsmann@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+/// @author Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author Martin Landsmann <martin.landsmann@haw-hamburg.de>
 
 #include <stdio.h>
 #include <string.h>
@@ -20,8 +16,7 @@
 #include "net/gnrc/ipv6/blacklist.h"
 #include "shell.h"
 
-static void _usage(char *cmd)
-{
+static void _usage(char *cmd) {
     printf("usage: * %s\n", cmd);
     puts("         Lists all addresses in the blacklist.");
     printf("       * %s add <addr>\n", cmd);
@@ -32,8 +27,7 @@ static void _usage(char *cmd)
     puts("         Print this.");
 }
 
-static int _blacklist(int argc, char **argv)
-{
+static int _blacklist(int argc, char **argv) {
     ipv6_addr_t addr;
     if (argc < 2) {
         gnrc_ipv6_blacklist_print();
@@ -65,4 +59,4 @@ SHELL_COMMAND(blacklist,
         "manage IPv6 addresses in reception deny list ('blacklist [add|del|help]')",
         _blacklist);
 
-/** @} */
+/// @}

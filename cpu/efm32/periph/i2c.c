@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016-2017 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2017 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_i2c
- * @{
- *
- * @file
- * @brief       Low-level I2C driver implementation
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- * @}
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_i2c
+/// @{
+///
+/// @file
+/// @brief       Low-level I2C driver implementation
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -29,35 +25,26 @@
 #include "em_cmu.h"
 #include "em_i2c.h"
 
-/**
- * @brief   Large-enough value to have some timeout value for rogue I2C
- *          transfers. Value based on kit driver (shipped with Simplicity
- *          Studio).
- */
+/// @brief   Large-enough value to have some timeout value for rogue I2C
+///          transfers. Value based on kit driver (shipped with Simplicity
+///          Studio).
 #define I2C_TIMEOUT (300000)
 
-/**
- * @brief   Holds the I2C transfer progress.
- */
+/// @brief   Holds the I2C transfer progress.
 static volatile I2C_TransferReturn_TypeDef i2c_progress[I2C_NUMOF];
 
-/**
- * @brief   Initialized bus locks (we have a maximum of three devices)
- */
+/// @brief   Initialized bus locks (we have a maximum of three devices)
 static mutex_t i2c_lock[I2C_NUMOF];
 
-/**
- * @brief   Start and track an I2C transfer.
- */
-static int _transfer(i2c_t dev, I2C_TransferSeq_TypeDef *transfer)
-{
+/// @brief   Start and track an I2C transfer.
+static int _transfer(i2c_t dev, I2C_TransferSeq_TypeDef *transfer) {
     bool busy = true;
     uint32_t timeout = I2C_TIMEOUT;
 
-    /* start the i2c transaction */
+    // start the i2c transaction
     i2c_progress[dev] = I2C_TransferInit(i2c_config[dev].dev, transfer);
 
-    /* the transfer progresses via the interrupt handler */
+    // the transfer progresses via the interrupt handler
     while (busy) {
         unsigned int cpsr = irq_disable();
 
@@ -71,12 +58,12 @@ static int _transfer(i2c_t dev, I2C_TransferSeq_TypeDef *transfer)
         irq_restore(cpsr);
     }
 
-    /* check for timeout */
+    // check for timeout
     if (!timeout) {
         return -ETIMEDOUT;
     }
 
-    /* transfer finished, interpret the result */
+    // transfer finished, interpret the result
     switch (i2c_progress[dev]) {
     case i2cTransferDone:
         return 0;
@@ -94,26 +81,25 @@ static int _transfer(i2c_t dev, I2C_TransferSeq_TypeDef *transfer)
 #define GET_PIN(x) (x & 0xf)
 #define GET_PORT(x) (x >> 4)
 
-void i2c_init(i2c_t dev)
-{
-    /* check if device is valid */
+void i2c_init(i2c_t dev) {
+    // check if device is valid
     assert(dev < I2C_NUMOF);
 
-    /* initialize lock */
+    // initialize lock
     mutex_init(&i2c_lock[dev]);
 
-    /* enable clocks */
+    // enable clocks
 #if defined(_SILICON_LABS_32B_SERIES_0) || defined(_SILICON_LABS_32B_SERIES_1)
     CMU_ClockEnable(cmuClock_HFPER, true);
 #endif
     CMU_ClockEnable(i2c_config[dev].cmu, true);
 
-    /* configure the pins, the configurable pull-up ensures the bus is driven
-     * high when nothing is connected */
+    // configure the pins, the configurable pull-up ensures the bus is driven
+    // high when nothing is connected
     gpio_init(i2c_config[dev].scl_pin, i2c_config[dev].use_internal_pull_ups ? GPIO_OD_PU : GPIO_OD);
     gpio_init(i2c_config[dev].sda_pin, i2c_config[dev].use_internal_pull_ups ? GPIO_OD_PU : GPIO_OD);
 
-    /* reset and initialize the peripheral */
+    // reset and initialize the peripheral
     I2C_Init_TypeDef init = I2C_INIT_DEFAULT;
 
     init.enable = false;
@@ -122,7 +108,7 @@ void i2c_init(i2c_t dev)
     I2C_Reset(i2c_config[dev].dev);
     I2C_Init(i2c_config[dev].dev, &init);
 
-    /* configure pin functions */
+    // configure pin functions
 #if defined(_SILICON_LABS_32B_SERIES_0)
     i2c_config[dev].dev->ROUTE = (i2c_config[dev].loc |
                                   I2C_ROUTE_SDAPEN | I2C_ROUTE_SCLPEN);
@@ -140,43 +126,40 @@ void i2c_init(i2c_t dev)
         (GPIO_I2C_ROUTEEN_SCLPEN | GPIO_I2C_ROUTEEN_SDAPEN);
 #endif
 
-    /* enable interrupts */
+    // enable interrupts
     NVIC_ClearPendingIRQ(i2c_config[dev].irq);
     NVIC_EnableIRQ(i2c_config[dev].irq);
 
-    /* enable peripheral */
+    // enable peripheral
     I2C_Enable(i2c_config[dev].dev, true);
 }
 
-void i2c_acquire(i2c_t dev)
-{
+void i2c_acquire(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
-    /* acquire lock */
+    // acquire lock
     mutex_lock(&i2c_lock[dev]);
 
-    /* power peripheral */
+    // power peripheral
     CMU_ClockEnable(i2c_config[dev].cmu, true);
 }
 
-void i2c_release(i2c_t dev)
-{
+void i2c_release(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
-    /* disable peripheral */
+    // disable peripheral
     CMU_ClockEnable(i2c_config[dev].cmu, false);
 
-    /* release lock */
+    // release lock
     mutex_unlock(&i2c_lock[dev]);
 }
 
-int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length, uint8_t flags)
-{
+int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length, uint8_t flags) {
     if (flags & (I2C_NOSTART | I2C_NOSTOP)) {
         return -EOPNOTSUPP;
     }
 
-    /* prepare transfer */
+    // prepare transfer
     I2C_TransferSeq_TypeDef transfer;
 
     transfer.addr = (address << 1);
@@ -184,25 +167,24 @@ int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length, uint8
     transfer.buf[0].data = (uint8_t *)data;
     transfer.buf[0].len = length;
 
-    /* start a transfer */
+    // start a transfer
     return _transfer(dev, &transfer);
 }
 
 int i2c_read_regs(i2c_t dev, uint16_t address, uint16_t reg,
-                  void *data, size_t length, uint8_t flags)
-{
+                  void *data, size_t length, uint8_t flags) {
     uint16_t reg_end = reg;
 
     if (flags & (I2C_NOSTART | I2C_NOSTOP)) {
         return -EOPNOTSUPP;
     }
 
-    /* Handle endianness of register if 16 bit */
+    // Handle endianness of register if 16 bit
     if (flags & I2C_REG16) {
-        reg_end = htons(reg); /* Make sure register is in big-endian on I2C bus */
+        reg_end = htons(reg); // Make sure register is in big-endian on I2C bus
     }
 
-    /* prepare transfer */
+    // prepare transfer
     I2C_TransferSeq_TypeDef transfer;
 
     transfer.addr = (address << 1);
@@ -212,17 +194,16 @@ int i2c_read_regs(i2c_t dev, uint16_t address, uint16_t reg,
     transfer.buf[1].data = (uint8_t *)data;
     transfer.buf[1].len = length;
 
-    /* start a transfer */
+    // start a transfer
     return _transfer(dev, &transfer);
 }
 
-int i2c_write_bytes(i2c_t dev, uint16_t address, const void *data, size_t length, uint8_t flags)
-{
+int i2c_write_bytes(i2c_t dev, uint16_t address, const void *data, size_t length, uint8_t flags) {
     if (flags & (I2C_NOSTART | I2C_NOSTOP)) {
         return -EOPNOTSUPP;
     }
 
-    /* prepare transfer */
+    // prepare transfer
     I2C_TransferSeq_TypeDef transfer;
 
     transfer.addr = (address << 1);
@@ -230,25 +211,24 @@ int i2c_write_bytes(i2c_t dev, uint16_t address, const void *data, size_t length
     transfer.buf[0].data = (uint8_t *)data;
     transfer.buf[0].len = length;
 
-    /* start a transfer */
+    // start a transfer
     return _transfer(dev, &transfer);
 }
 
 int i2c_write_regs(i2c_t dev, uint16_t address, uint16_t reg,
-                   const void *data, size_t length, uint8_t flags)
-{
+                   const void *data, size_t length, uint8_t flags) {
     uint16_t reg_end = reg;
 
     if (flags & (I2C_NOSTART | I2C_NOSTOP)) {
         return -EOPNOTSUPP;
     }
 
-    /* Handle endianness of register if 16 bit */
+    // Handle endianness of register if 16 bit
     if (flags & I2C_REG16) {
-        reg_end = htons(reg); /* Make sure register is in big-endian on I2C bus */
+        reg_end = htons(reg); // Make sure register is in big-endian on I2C bus
     }
 
-    /* prepare transfer */
+    // prepare transfer
     I2C_TransferSeq_TypeDef transfer;
 
     transfer.addr = (address << 1);
@@ -258,29 +238,26 @@ int i2c_write_regs(i2c_t dev, uint16_t address, uint16_t reg,
     transfer.buf[1].data = (uint8_t *)data;
     transfer.buf[1].len = length;
 
-    /* start a transfer */
+    // start a transfer
     return _transfer(dev, &transfer);
 }
 
 #ifdef I2C_0_ISR
-void I2C_0_ISR(void)
-{
+void I2C_0_ISR(void) {
     i2c_progress[0] = I2C_Transfer(i2c_config[0].dev);
     cortexm_isr_end();
 }
 #endif
 
 #ifdef I2C_1_ISR
-void I2C_1_ISR(void)
-{
+void I2C_1_ISR(void) {
     i2c_progress[1] = I2C_Transfer(i2c_config[1].dev);
     cortexm_isr_end();
 }
 #endif
 
 #ifdef I2C_2_ISR
-void I2C_2_ISR(void)
-{
+void I2C_2_ISR(void) {
     i2c_progress[2] = I2C_Transfer(i2c_config[2].dev);
     cortexm_isr_end();
 }

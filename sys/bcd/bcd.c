@@ -1,31 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_bcd
- * @{
- *
- * @file
- * @brief       Library to de- and encode binary coded decimals
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_bcd
+/// @{
+///
+/// @file
+/// @brief       Library to de- and encode binary coded decimals
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include "bcd.h"
 #include <errno.h>
 #include <string.h>
 
-static inline uint8_t swap_nibbles(uint8_t b)
-{
+static inline uint8_t swap_nibbles(uint8_t b) {
     return (b << 4) | (b >> 4);
 }
 
-int bcd_buf_from_u32(uint32_t val, void *dst, size_t len)
-{
+int bcd_buf_from_u32(uint32_t val, void *dst, size_t len) {
     uint8_t *tgt = dst;
     uint8_t hex = 0;
     uint8_t idx = 0;
@@ -54,7 +48,7 @@ int bcd_buf_from_u32(uint32_t val, void *dst, size_t len)
     return (uintptr_t)tgt - (uintptr_t)dst;
 }
 
-/* Use the same code for 32 bit and 64 bit sum */
+// Use the same code for 32 bit and 64 bit sum
 #define _BCD_CONVERT(sum, len)                  \
     for (int i = len * 2 - 1; i >= 0; --i) {    \
         uint8_t digit = i & 1                   \
@@ -63,8 +57,7 @@ int bcd_buf_from_u32(uint32_t val, void *dst, size_t len)
         sum = sum * 10 + digit;                 \
     }
 
-uint32_t bcd_buf_to_u32(const void *src, size_t len)
-{
+uint32_t bcd_buf_to_u32(const void *src, size_t len) {
     const uint8_t *bcd = src;
     uint32_t sum = 0;
 
@@ -73,8 +66,7 @@ uint32_t bcd_buf_to_u32(const void *src, size_t len)
     return sum;
 }
 
-uint64_t bcd_buf_to_u64(const void *src, size_t len)
-{
+uint64_t bcd_buf_to_u64(const void *src, size_t len) {
     const uint8_t *bcd = src;
     uint64_t sum = 0;
 
@@ -83,13 +75,11 @@ uint64_t bcd_buf_to_u64(const void *src, size_t len)
     return sum;
 }
 
-static bool _is_digit(char c)
-{
+static bool _is_digit(char c) {
     return c >= '0' && c <= '9';
 }
 
-int bcd_buf_from_str(const char *str, size_t len, void *dst, size_t dst_len)
-{
+int bcd_buf_from_str(const char *str, size_t len, void *dst, size_t dst_len) {
     uint8_t *bcd = dst;
     memset(dst, 0, dst_len);
     dst_len *= 2;

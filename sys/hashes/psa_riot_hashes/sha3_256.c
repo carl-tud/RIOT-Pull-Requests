@@ -1,38 +1,31 @@
-/*
- * SPDX-FileCopyrightText: 2024 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_psa_crypto
- * @{
- *
- * @brief       Glue code translating between PSA Crypto and the RIOT SHA3 Hash module
- *
- * @author      Lennard Melling <lennard.melling@msx.tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     sys_psa_crypto
+/// @{
+///
+/// @brief       Glue code translating between PSA Crypto and the RIOT SHA3 Hash module
+///
+/// @author      Lennard Melling <lennard.melling@msx.tu-dresden.de>
+///
+/// @}
 #include "psa/crypto.h"
 #include "hashes/psa/riot_hashes.h"
 
 psa_status_t psa_hashes_sha3_256_update(psa_hashes_sha3_ctx_t *ctx,
                                       const uint8_t *input,
-                                      size_t input_length)
-{
+                                      size_t input_length) {
     sha3_update((keccak_state_t *)ctx, input, input_length);
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_hashes_sha3_256_setup(psa_hashes_sha3_ctx_t *ctx)
-{
+psa_status_t psa_hashes_sha3_256_setup(psa_hashes_sha3_ctx_t *ctx) {
     sha3_256_init((keccak_state_t *)ctx);
     return PSA_SUCCESS;
 }
 
 psa_status_t psa_hashes_sha3_256_finish(psa_hashes_sha3_ctx_t *ctx,
-                                      uint8_t *hash)
-{
+                                      uint8_t *hash) {
     sha3_256_final((keccak_state_t *)ctx, hash);
     return PSA_SUCCESS;
 }

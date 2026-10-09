@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_kw41zrf
- * @{
- *
- * @file
- * @brief       Implementation of 802.15.4 Radio HAL interface for KW41ZRF
- *              transceivers.
- *
- * @author     Stepan Konoplev <stepan.konoplev@haw-hamburg.de>
- * @}
- */
+/// @ingroup     drivers_kw41zrf
+/// @{
+///
+/// @file
+/// @brief       Implementation of 802.15.4 Radio HAL interface for KW41ZRF
+///              transceivers.
+///
+/// @author     Stepan Konoplev <stepan.konoplev@haw-hamburg.de>
+/// @}
 
 #include <stdio.h>
 #include <errno.h>
@@ -44,29 +40,27 @@
 
 #define CHECKSUM_MASK               0xFFFF
 
-/* Mask for all kinds of IEEE 802.15.4 frames supported by the radio */
+// Mask for all kinds of IEEE 802.15.4 frames supported by the radio
 #define ALL_FRAMES_TYPE_MASK        (ZLL_RX_FRAME_FILTER_BEACON_FT_MASK | \
                                      ZLL_RX_FRAME_FILTER_DATA_FT_MASK    | \
                                      ZLL_RX_FRAME_FILTER_CMD_FT_MASK     | \
                                      ZLL_RX_FRAME_FILTER_ACK_FT_MASK)
 
-/* IRQ mask: RF (0-6), WAKE (8), TMR_IRQ (16-19), TMR_MSK (20-23) */
+// IRQ mask: RF (0-6), WAKE (8), TMR_IRQ (16-19), TMR_MSK (20-23)
 #define KW41ZRF_IRQS    (0x00ff017fUL)
 
 static kw41zrf_t intern_dev;
 static const ieee802154_radio_ops_t kw41zrf_ops;
 static ieee802154_dev_t *_kw41zrf_hal_dev;
 
-static int _request_on(ieee802154_dev_t *dev)
-{
+static int _request_on(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[kw41zrf] request_on\n");
     kw41zrf_set_power_mode(&intern_dev, KW41ZRF_POWER_IDLE);
     return 0;
 }
 
-static int _confirm_on(ieee802154_dev_t *dev)
-{
+static int _confirm_on(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[kw41zrf] confirm_on\n");
     if (kw41zrf_is_dsm()) {
@@ -75,8 +69,7 @@ static int _confirm_on(ieee802154_dev_t *dev)
     return 0;
 }
 
-static int _off(ieee802154_dev_t *dev)
-{
+static int _off(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[kw41zrf] off\n");
     if (!kw41zrf_is_dsm()) {
@@ -85,14 +78,13 @@ static int _off(ieee802154_dev_t *dev)
     return 0;
 }
 
-static int _write(ieee802154_dev_t *hal, const iolist_t *psdu)
-{
+static int _write(ieee802154_dev_t *hal, const iolist_t *psdu) {
     DEBUG("[kw41zrf] write\n");
     (void)hal;
     uint8_t len = 0;
     uint8_t *data = psdu->iol_base;
 
-    /* Indicate if an ack was requested to handle auto ack */
+    // Indicate if an ack was requested to handle auto ack
     if (*data & IEEE802154_FCF_ACK_REQ) {
         bit_set32(&ZLL->PHY_CTRL, ZLL_PHY_CTRL_RXACKRQD_SHIFT);
     }
@@ -100,9 +92,9 @@ static int _write(ieee802154_dev_t *hal, const iolist_t *psdu)
         bit_clear32(&ZLL->PHY_CTRL, ZLL_PHY_CTRL_RXACKRQD_SHIFT);
     }
 
-    /* load packet data into buffer */
+    // load packet data into buffer
     for (const iolist_t *iol = psdu; iol; iol = iol->iol_next) {
-        /* current packet data + FCS too long */
+        // current packet data + FCS too long
         if ((len + iol->iol_len) > (KW41ZRF_MAX_PKT_LENGTH - IEEE802154_FCS_LEN)) {
             return -EOVERFLOW;
         }
@@ -110,11 +102,9 @@ static int _write(ieee802154_dev_t *hal, const iolist_t *psdu)
         len += iol->iol_len;
     }
 
-    /*
-     * First octet in the TX buffer contains the frame length.
-     * Nbytes = FRAME_LEN - 2 -> FRAME_LEN = Nbytes + 2
-     * MKW41Z ref. man. 44.6.2.6.3.1.3 Sequence T (Transmit), p. 2147
-     */
+    // First octet in the TX buffer contains the frame length.
+    // Nbytes = FRAME_LEN - 2 -> FRAME_LEN = Nbytes + 2
+    // MKW41Z ref. man. 44.6.2.6.3.1.3 Sequence T (Transmit), p. 2147
     *((volatile uint8_t *)&ZLL->PKT_BUFFER_TX[0]) = len + IEEE802154_FCS_LEN;
 
 #if defined(MODULE_OD) && ENABLE_DEBUG
@@ -124,8 +114,7 @@ static int _write(ieee802154_dev_t *hal, const iolist_t *psdu)
     return 0;
 }
 
-static int _len(ieee802154_dev_t *dev)
-{
+static int _len(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[kw41zrf] len\n");
     uint32_t len = ((ZLL->IRQSTS & ZLL_IRQSTS_RX_FRAME_LENGTH_MASK) >>
@@ -133,8 +122,7 @@ static int _len(ieee802154_dev_t *dev)
     return (int)len;
 }
 
-static int _read(ieee802154_dev_t *hal, void *buf, size_t size, ieee802154_rx_info_t *info)
-{
+static int _read(ieee802154_dev_t *hal, void *buf, size_t size, ieee802154_rx_info_t *info) {
     DEBUG("[kw41zrf] read\n");
 
     if (!buf) {
@@ -148,9 +136,9 @@ static int _read(ieee802154_dev_t *hal, void *buf, size_t size, ieee802154_rx_in
     od_hex_dump((const uint8_t *)ZLL->PKT_BUFFER_RX, pkt_len, OD_WIDTH_DEFAULT);
 #endif
 
-    /* Read packet buffer. */
-    /* Don't use memcpy to work around a presumed compiler bug in
-     * arm-none-eabi-gcc 7.3.1 2018-q2-6 */
+    // Read packet buffer.
+    // Don't use memcpy to work around a presumed compiler bug in
+    // arm-none-eabi-gcc 7.3.1 2018-q2-6
     for (int i = 0; i < pkt_len; i++) {
         ((uint8_t *)buf)[i] = ((uint8_t *)ZLL->PKT_BUFFER_RX)[i];
     }
@@ -163,8 +151,7 @@ static int _read(ieee802154_dev_t *hal, void *buf, size_t size, ieee802154_rx_in
     return pkt_len;
 }
 
-static int _request_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx)
-{
+static int _request_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx) {
     (void)hal;
     int res = -ENOTSUP;
     uint8_t state = kw41zrf_get_sequence(&intern_dev);
@@ -207,7 +194,7 @@ static int _request_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx)
         }
 
         if (force) {
-            /* aborts any sequence by setting idle sequence */
+            // aborts any sequence by setting idle sequence
             kw41zrf_set_sequence(&intern_dev, XCVSEQ_IDLE);
             return 0;
         }
@@ -231,8 +218,7 @@ static int _request_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx)
     return res;
 }
 
-static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
-{
+static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx) {
     (void)dev;
     ieee802154_tx_info_t *info = ctx;
 
@@ -281,8 +267,7 @@ static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
     return 0;
 }
 
-int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
-{
+int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode) {
     (void)dev;
     uint8_t cca_type = 0;
 
@@ -310,16 +295,14 @@ int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
     return 0;
 }
 
-int _set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold)
-{
+int _set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold) {
     (void)dev;
     DEBUG("[kw41zrf] set_cca_threshold\n");
     kw41zrf_set_cca_threshold(&intern_dev, threshold);
     return 0;
 }
 
-int _set_csma_params(ieee802154_dev_t *dev, const ieee802154_csma_be_t *bd, int8_t retries)
-{
+int _set_csma_params(ieee802154_dev_t *dev, const ieee802154_csma_be_t *bd, int8_t retries) {
     (void)bd;
     (void)dev;
 
@@ -337,8 +320,7 @@ int _set_csma_params(ieee802154_dev_t *dev, const ieee802154_csma_be_t *bd, int8
     return -EINVAL;
 }
 
-int _set_frame_filter_mode(ieee802154_dev_t *hal, ieee802154_filter_mode_t mode)
-{
+int _set_frame_filter_mode(ieee802154_dev_t *hal, ieee802154_filter_mode_t mode) {
     (void)hal;
 
     DEBUG("[kw41zrf] set_frame_filter_mode\n");
@@ -382,16 +364,14 @@ int _set_frame_filter_mode(ieee802154_dev_t *hal, ieee802154_filter_mode_t mode)
     return 0;
 }
 
-static int _get_frame_filter_mode(ieee802154_dev_t *hal, ieee802154_filter_mode_t *mode)
-{
+static int _get_frame_filter_mode(ieee802154_dev_t *hal, ieee802154_filter_mode_t *mode) {
     (void)hal;
     DEBUG("[kw41zrf] get_frame_filter_mode\n");
     *mode = intern_dev.filter_mode;
     return 0;
 }
 
-int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value)
-{
+int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value) {
     (void)dev;
 
     DEBUG("[kw41zrf] config_addr_filter\n");
@@ -418,13 +398,11 @@ int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const vo
     return 0;
 }
 
-uint16_t _calc_short_addr_checksum(uint16_t short_addr, uint16_t dest_pan_id)
-{
+uint16_t _calc_short_addr_checksum(uint16_t short_addr, uint16_t dest_pan_id) {
     return (short_addr + dest_pan_id) & CHECKSUM_MASK;
 }
 
-uint16_t _calc_ext_addr_checksum(const eui64_t *ext_addr, uint16_t dest_pan_id)
-{
+uint16_t _calc_ext_addr_checksum(const eui64_t *ext_addr, uint16_t dest_pan_id) {
     uint16_t checksum = 0;
 
     checksum = (ext_addr->uint16[0].u16 + dest_pan_id) & CHECKSUM_MASK;
@@ -434,17 +412,15 @@ uint16_t _calc_ext_addr_checksum(const eui64_t *ext_addr, uint16_t dest_pan_id)
     return checksum;
 }
 
-void _update_next_free_idx(void)
-{
+void _update_next_free_idx(void) {
     DEBUG("[kw41zrf] update_next_free_idx\n");
     bit_set32(&ZLL->SAM_TABLE, ZLL_SAM_TABLE_FIND_FREE_IDX_SHIFT);
-    /* wait while hw updating next free index */
+    // wait while hw updating next free index
     while (ZLL->SAM_TABLE & ZLL_SAM_TABLE_SAM_BUSY_MASK) {}
 
 }
 
-int _add_to_sam_table(uint16_t checksum)
-{
+int _add_to_sam_table(uint16_t checksum) {
     uint8_t free_idx = kw41zrf_get_1st_free_idx_sap0();
 
     DEBUG("[kw41zrf] add_to_sam_table\n");
@@ -464,8 +440,7 @@ int _add_to_sam_table(uint16_t checksum)
     return 0;
 }
 
-int _remove_from_sam_table(uint16_t checksum)
-{
+int _remove_from_sam_table(uint16_t checksum) {
     uint8_t end_idx = kw41zrf_get_partition_start(ZLL_SAM_CTRL_SAA0_START_MASK,
                                                   ZLL_SAM_CTRL_SAA0_START_SHIFT);
 
@@ -491,8 +466,7 @@ int _remove_from_sam_table(uint16_t checksum)
     return -ENOENT;
 }
 
-int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t cmd, const void *value)
-{
+int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t cmd, const void *value) {
     (void)dev;
     uint16_t pan_id = kw41zrf_get_pan(&intern_dev);
     uint16_t checksum = 0;
@@ -532,32 +506,30 @@ int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t cmd, co
     return 0;
 }
 
-/* Common CCA check handler code for sequences Transmit and Transmit/Receive */
-static uint32_t _isr_event_seq_t_ccairq(kw41zrf_t *dev, uint32_t irqsts)
-{
+// Common CCA check handler code for sequences Transmit and Transmit/Receive
+static uint32_t _isr_event_seq_t_ccairq(kw41zrf_t *dev, uint32_t irqsts) {
     uint32_t handled_irqs = 0;
 
     DEBUG("[kw41zrf] _isr_event_seq_t_ccairq\n");
 
     if (irqsts & ZLL_IRQSTS_CCAIRQ_MASK) {
-        /* CCA before TX has completed */
+        // CCA before TX has completed
         handled_irqs |= ZLL_IRQSTS_CCAIRQ_MASK;
         dev->cca_busy = (irqsts & ZLL_IRQSTS_CCA_MASK) > 0;
     }
     return handled_irqs;
 }
 
-/* Handler for standalone CCA */
+// Handler for standalone CCA
 static uint32_t _isr_event_seq_cca(kw41zrf_t *dev, uint32_t irqsts,
                                    bool *indicate_hal_event,
-                                   ieee802154_trx_ev_t *hal_event)
-{
+                                   ieee802154_trx_ev_t *hal_event) {
     uint32_t handled_irqs = 0;
 
     DEBUG("[kw41zrf] _isr_event_seq_cca\n");
 
     if (irqsts & ZLL_IRQSTS_SEQIRQ_MASK) {
-        /* Finished CCA sequence */
+        // Finished CCA sequence
         handled_irqs |= ZLL_IRQSTS_SEQIRQ_MASK;
         dev->cca_busy = (irqsts & ZLL_IRQSTS_CCA_MASK) > 0;
         kw41zrf_abort_sequence(&intern_dev);
@@ -570,11 +542,10 @@ static uint32_t _isr_event_seq_cca(kw41zrf_t *dev, uint32_t irqsts,
     return handled_irqs;
 }
 
-/* Handler for Receive sequence */
+// Handler for Receive sequence
 static uint32_t _isr_event_seq_r(kw41zrf_t *dev, uint32_t irqsts,
                                  bool *indicate_hal_event,
-                                 ieee802154_trx_ev_t *hal_event)
-{
+                                 ieee802154_trx_ev_t *hal_event) {
     (void)dev;
     uint32_t handled_irqs = 0;
 
@@ -585,7 +556,7 @@ static uint32_t _isr_event_seq_r(kw41zrf_t *dev, uint32_t irqsts,
         if (_kw41zrf_hal_dev->cb) {
             *hal_event = IEEE802154_RADIO_INDICATION_RX_START;
             *indicate_hal_event = true;
-            return handled_irqs; /* don't process further events on RX_START */
+            return handled_irqs; // don't process further events on RX_START
         }
     }
 
@@ -625,7 +596,7 @@ static uint32_t _isr_event_seq_r(kw41zrf_t *dev, uint32_t irqsts,
                                   ZLL_SEQ_CTRL_STS_SW_ABORTED_MASK)) > 0) {
             assert(1);
         }
-        /* No error reported */
+        // No error reported
         else {
             if (_kw41zrf_hal_dev->cb) {
                 *hal_event = IEEE802154_RADIO_INDICATION_RX_DONE;
@@ -636,11 +607,10 @@ static uint32_t _isr_event_seq_r(kw41zrf_t *dev, uint32_t irqsts,
     return handled_irqs;
 }
 
-/* Handler for Transmit sequence */
+// Handler for Transmit sequence
 static uint32_t _isr_event_seq_t(kw41zrf_t *dev, uint32_t irqsts,
                                  bool *indicate_hal_event,
-                                 ieee802154_trx_ev_t *hal_event)
-{
+                                 ieee802154_trx_ev_t *hal_event) {
     (void)dev;
     uint32_t handled_irqs = 0;
 
@@ -665,11 +635,10 @@ static uint32_t _isr_event_seq_t(kw41zrf_t *dev, uint32_t irqsts,
     return handled_irqs;
 }
 
-/* Handler for Transmit/Receive sequence */
+// Handler for Transmit/Receive sequence
 static uint32_t _isr_event_seq_tr(kw41zrf_t *dev, uint32_t irqsts,
                                   bool *indicate_hal_event,
-                                  ieee802154_trx_ev_t *hal_event)
-{
+                                  ieee802154_trx_ev_t *hal_event) {
     uint32_t handled_irqs = 0;
 
     DEBUG("[kw41zrf] _isr_event_seq_tr\n");
@@ -677,9 +646,9 @@ static uint32_t _isr_event_seq_tr(kw41zrf_t *dev, uint32_t irqsts,
     if (irqsts & ZLL_IRQSTS_TXIRQ_MASK) {
         KW41ZRF_LED_RX_ON;
         handled_irqs |= ZLL_IRQSTS_TXIRQ_MASK;
-        /* TX done, now waiting for ACK - START timer NOW */
+        // TX done, now waiting for ACK - START timer NOW
         if (kw41zrf_ack_requested(dev)) {
-            /* Set timeout from current time */
+            // Set timeout from current time
             kw41zrf_timer_set(dev, &ZLL->T3CMP, IEEE802154_ACK_TIMEOUT_SYMS);
             bit_set32(&ZLL->PHY_CTRL, ZLL_PHY_CTRL_TMR3CMP_EN_SHIFT);
 
@@ -702,7 +671,7 @@ static uint32_t _isr_event_seq_tr(kw41zrf_t *dev, uint32_t irqsts,
         KW41ZRF_LED_TX_OFF;
         KW41ZRF_LED_RX_OFF;
 
-        /* Disable RX Timeout */
+        // Disable RX Timeout
         bit_clear32(&ZLL->PHY_CTRL, ZLL_PHY_CTRL_TC3TMOUT_SHIFT);
         bit_clear32(&ZLL->PHY_CTRL, ZLL_PHY_CTRL_TMR3CMP_EN_SHIFT);
 
@@ -712,7 +681,7 @@ static uint32_t _isr_event_seq_tr(kw41zrf_t *dev, uint32_t irqsts,
         }
 
         if (seq_ctrl_sts & ZLL_SEQ_CTRL_STS_PLL_ABORTED_MASK) {
-            /* if this does happen in development, it's worth checking why */
+            // if this does happen in development, it's worth checking why
             assert(false);
         }
         else if (seq_ctrl_sts & ZLL_SEQ_CTRL_STS_TC3_ABORTED_MASK) {
@@ -723,11 +692,11 @@ static uint32_t _isr_event_seq_tr(kw41zrf_t *dev, uint32_t irqsts,
             }
         }
         else if ((seq_ctrl_sts & ZLL_SEQ_CTRL_STS_SW_ABORTED_MASK)) {
-            /* Software aborted, no callback needed */
+            // Software aborted, no callback needed
             assert(false);
         }
         else {
-            /* No error reported */
+            // No error reported
             intern_dev.tx_status = intern_dev.cca_busy ? TX_STATUS_MEDIUM_BUSY : TX_STATUS_SUCCESS;
             if (_kw41zrf_hal_dev->cb) {
                 *hal_event = IEEE802154_RADIO_CONFIRM_TX_DONE;
@@ -738,23 +707,22 @@ static uint32_t _isr_event_seq_tr(kw41zrf_t *dev, uint32_t irqsts,
     return handled_irqs;
 }
 
-static void kw41zrf_radio_hal_irq_handler(void *dev)
-{
+static void kw41zrf_radio_hal_irq_handler(void *dev) {
     (void)dev;
     DEBUG("[kw41zrf] kw41zrf_radio_hal_irq_handler\n");
 
     kw41zrf_mask_irqs();
 
-    /* ZLL register access requires that the transceiver is not in deep sleep mode */
+    // ZLL register access requires that the transceiver is not in deep sleep mode
     if (kw41zrf_is_dsm()) {
-        /* Transceiver is sleeping, the IRQ must have occurred before entering
-         * sleep, discard the call */
+        // Transceiver is sleeping, the IRQ must have occurred before entering
+        // sleep, discard the call
         kw41zrf_unmask_irqs();
         return;
     }
 
     uint32_t irqsts = ZLL->IRQSTS;
-    /* Clear all IRQ flags now */
+    // Clear all IRQ flags now
     ZLL->IRQSTS = irqsts;
 
     uint32_t handled_irqs = 0;
@@ -775,9 +743,9 @@ static void kw41zrf_radio_hal_irq_handler(void *dev)
         break;
 
     case XCVSEQ_TRANSMIT:
-        /* First check CCA flags */
+        // First check CCA flags
         handled_irqs |= _isr_event_seq_t_ccairq(&intern_dev, irqsts);
-        /* Then TX flags */
+        // Then TX flags
         handled_irqs |= _isr_event_seq_t(&intern_dev, irqsts & ~handled_irqs, &indicate_hal_event,
                                          &hal_event);
         break;
@@ -787,9 +755,9 @@ static void kw41zrf_radio_hal_irq_handler(void *dev)
         break;
 
     case XCVSEQ_TX_RX:
-        /* First check CCA flags */
+        // First check CCA flags
         handled_irqs |= _isr_event_seq_t_ccairq(&intern_dev, irqsts);
-        /* Then TX/RX flags */
+        // Then TX/RX flags
         handled_irqs |= _isr_event_seq_tr(&intern_dev, irqsts & ~handled_irqs, &indicate_hal_event,
                                           &hal_event);
         break;
@@ -804,20 +772,19 @@ static void kw41zrf_radio_hal_irq_handler(void *dev)
     }
 
     irqsts &= ~handled_irqs;
-    /* doesn't need handling; just prevent outputting an error below */
+    // doesn't need handling; just prevent outputting an error below
     irqsts &= ~ZLL_IRQSTS_RXWTRMRKIRQ_MASK;
 
-    /* Enable IRQs first */
+    // Enable IRQs first
     kw41zrf_unmask_irqs();
 
-    /* Then call the callback if needed */
+    // Then call the callback if needed
     if (indicate_hal_event && _kw41zrf_hal_dev->cb) {
         _kw41zrf_hal_dev->cb(_kw41zrf_hal_dev, hal_event);
     }
 }
 
-int _config_phy(ieee802154_dev_t *hal, const ieee802154_phy_conf_t *conf)
-{
+int _config_phy(ieee802154_dev_t *hal, const ieee802154_phy_conf_t *conf) {
     (void)hal;
     int8_t pow = conf->pow;
     uint8_t channel = conf->channel;
@@ -832,15 +799,13 @@ int _config_phy(ieee802154_dev_t *hal, const ieee802154_phy_conf_t *conf)
     return 0;
 }
 
-int kw41zrf_reset(void)
-{
+int kw41zrf_reset(void) {
     DEBUG("[kw41zrf] reset\n");
     kw41zrf_mask_irqs();
 
-    /* Sometimes (maybe 1 in 30 reboots) there is a failure in the vendor
-     * routines in kw41zrf_rx_bba_dcoc_dac_trim_DCest() that can be worked
-     * around by retrying. Clearly this is not ideal.
-     */
+    // Sometimes (maybe 1 in 30 reboots) there is a failure in the vendor
+    // routines in kw41zrf_rx_bba_dcoc_dac_trim_DCest() that can be worked
+    // around by retrying. Clearly this is not ideal.
     for (int retries = 0; ; retries++) {
         int res = kw41zrf_reset_hardware(&intern_dev);
         if (!res) {
@@ -865,26 +830,25 @@ int kw41zrf_reset(void)
     return 0;
 }
 
-int kw41zrf_init(void)
-{
+int kw41zrf_init(void) {
     DEBUG("[kw41zrf] init\n");
 
-    /* Save a copy of the RF_OSC_EN setting to use when the radio is in deep sleep */
+    // Save a copy of the RF_OSC_EN setting to use when the radio is in deep sleep
     intern_dev.rf_osc_en_idle = RSIM->CONTROL & RSIM_CONTROL_RF_OSC_EN_MASK;
     intern_dev.pm_blocked = 0;
     kw41zrf_mask_irqs();
     kw41zrf_set_irq_callback(kw41zrf_radio_hal_irq_handler, &intern_dev);
 
-    /* Perform clean reset of the radio modules. */
+    // Perform clean reset of the radio modules.
     int res = kw41zrf_reset();
     if (res < 0) {
-        /* Restore saved RF_OSC_EN setting */
+        // Restore saved RF_OSC_EN setting
         RSIM->CONTROL = (RSIM->CONTROL & ~RSIM_CONTROL_RF_OSC_EN_MASK) | intern_dev.rf_osc_en_idle;
         return res;
     }
-    /* Radio is now on and idle */
+    // Radio is now on and idle
 
-    /* Allow radio interrupts */
+    // Allow radio interrupts
     kw41zrf_unmask_irqs();
 
     bit_clear32(&ZLL->PHY_CTRL, ZLL_PHY_CTRL_RX_WMRK_MSK_SHIFT);
@@ -892,11 +856,10 @@ int kw41zrf_init(void)
     return 0;
 }
 
-void kw41zrf_hal_setup(ieee802154_dev_t *hal)
-{
+void kw41zrf_hal_setup(ieee802154_dev_t *hal) {
     DEBUG("[kw41zrf] hal_setup\n");
-    /* We don't set &intern_dev because the context of this device is global.
-     * We need to store a reference to the HAL descriptor though for the ISR */
+    // We don't set &intern_dev because the context of this device is global.
+    // We need to store a reference to the HAL descriptor though for the ISR
     hal->driver = &kw41zrf_ops;
     _kw41zrf_hal_dev = hal;
 }

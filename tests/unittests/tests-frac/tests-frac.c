@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <inttypes.h>
 #include <string.h>
@@ -42,7 +40,7 @@ static const uint32_t u32_fraction_operands[] = {
     0x10000000ul,
     0x1000000ul,
     1000000000ul,
-    999999733ul,  /* <- prime */
+    999999733ul,  // <- prime
     512000000ul,
     1024000000ul,
     0x40000000ul,
@@ -80,7 +78,7 @@ static const uint32_t u32_test_values[] = {
     32767ul,
     327679999ul,
     100000000ul,
-    2100012683ul,            /* <- prime */
+    2100012683ul,            // <- prime
     0x7ffffffful,
     0x80000000ul,
     0xc0000000ul,
@@ -96,8 +94,7 @@ static const uint32_t u32_test_values[] = {
 #define N_U32_OPERANDS ARRAY_SIZE(u32_fraction_operands)
 #define N_U32_VALS ARRAY_SIZE(u32_test_values)
 
-static void test_frac_scale32(void)
-{
+static void test_frac_scale32(void) {
     for (unsigned k = 0; k < N_U32_OPERANDS; ++k) {
         for (unsigned j = 0; j < N_U32_OPERANDS; ++j) {
             uint32_t num = u32_fraction_operands[j];
@@ -107,7 +104,7 @@ static void test_frac_scale32(void)
             for (unsigned i = 0; i < N_U32_VALS; i++) {
                 DEBUG("Scaling %" PRIu32 " by (%" PRIu32 " / %" PRIu32 "), ",
                     u32_test_values[i], num, den);
-                /* intermediate result */
+                // intermediate result
                 volatile uint64_t tmp = (uint64_t)u32_test_values[i] * num;
                 volatile uint64_t expected = tmp / (uint64_t)den;
                 if (expected > 0xfffffffful) {
@@ -132,9 +129,9 @@ static void test_frac_scale32(void)
                         actual, diff, frac.shift);
 #endif
 
-                    /* The frac algorithm sacrifices accuracy for speed,
-                     * some large numbers will be incorrectly rounded,
-                     * resulting in small differences here.. */
+                    // The frac algorithm sacrifices accuracy for speed,
+                    // some large numbers will be incorrectly rounded,
+                    // resulting in small differences here..
                     uint32_t max_error = frac_scale(&frac, 2);
                     max_error = max_error ? max_error : 1;
                     TEST_ASSERT_EQUAL_INT(1, diff >= 0);
@@ -148,8 +145,7 @@ static void test_frac_scale32(void)
     }
 }
 
-Test *tests_frac_tests(void)
-{
+Test *tests_frac_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_frac_scale32),
     };
@@ -159,7 +155,6 @@ Test *tests_frac_tests(void)
     return (Test *)&frac_tests;
 }
 
-void tests_frac(void)
-{
+void tests_frac(void) {
     TESTS_RUN(tests_frac_tests());
 }

@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2017 Neo Nenaco <neo@nenaco.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Neo Nenaco <neo@nenaco.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief   Auto initialization for mrf24j40 network interfaces
- *
- * @author  Neo Nenaco <neo@nenaco.de>
- */
+/// @ingroup sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief   Auto initialization for mrf24j40 network interfaces
+///
+/// @author  Neo Nenaco <neo@nenaco.de>
 
 #include "log.h"
 #include "board.h"
@@ -24,10 +20,8 @@
 #include "mrf24j40.h"
 #include "mrf24j40_params.h"
 
-/**
- * @brief   Define stack parameters for the MAC layer thread
- * @{
- */
+/// @brief   Define stack parameters for the MAC layer thread
+/// @{
 #define MRF24J40_MAC_STACKSIZE     (IEEE802154_STACKSIZE_DEFAULT)
 #ifndef MRF24J40_MAC_PRIO
 #define MRF24J40_MAC_PRIO          (GNRC_NETIF_PRIO)
@@ -42,13 +36,12 @@ static char _mrf24j40_stacks[MRF24J40_NUM][MRF24J40_MAC_STACKSIZE];
 static gnrc_netif_t _netif[MRF24J40_NUM];
 static bhp_event_t mrf24j40_bhp[MRF24J40_NUM];
 
-void auto_init_mrf24j40(void)
-{
+void auto_init_mrf24j40(void) {
     for (unsigned i = 0; i < MRF24J40_NUM; i++) {
         const mrf24j40_params_t *p = &mrf24j40_params[i];
         LOG_DEBUG("[auto_init_netif] initializing mrf24j40 #%u\n", i);
 
-        /* Init Bottom Half Processor (with events module) and radio */
+        // Init Bottom Half Processor (with events module) and radio
         bhp_event_init(&mrf24j40_bhp[i], &_netif[i].evq[GNRC_NETIF_EVQ_INDEX_PRIO_HIGH], &mrf24j40_radio_irq_handler, &mrf24j40_netdev[i].submac.dev);
         mrf24j40_init(&mrf24j40_devs[i], (mrf24j40_params_t*) p, &mrf24j40_netdev[i].submac.dev,
                       bhp_event_isr_cb, &mrf24j40_bhp[i]);
@@ -62,4 +55,4 @@ void auto_init_mrf24j40(void)
                                      &mrf24j40_netdev[i].dev.netdev);
     }
 }
-/** @} */
+/// @}

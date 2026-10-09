@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   Test application of the DFPlayer Mini driver
- *
- * @author  Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   Test application of the DFPlayer Mini driver
+///
+/// @author  Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -42,8 +38,7 @@ typedef struct {
     dfplayer_source_set_t sources;
 } media_changed_event_t;
 
-static void playback_done_handler(event_t *_data)
-{
+static void playback_done_handler(event_t *_data) {
     playback_done_event_t *data = (playback_done_event_t *)_data;
 
     const char *source = _sources[data->src];
@@ -91,8 +86,7 @@ static void playback_done_handler(event_t *_data)
     dfplayer_next(dev);
 }
 
-static void _cb_done(dfplayer_t *dev, dfplayer_source_t src, uint16_t track)
-{
+static void _cb_done(dfplayer_t *dev, dfplayer_source_t src, uint16_t track) {
     (void)dev;
     static playback_done_event_t event = {
         .event = { .handler = playback_done_handler }
@@ -103,8 +97,7 @@ static void _cb_done(dfplayer_t *dev, dfplayer_source_t src, uint16_t track)
     event_post(EVENT_PRIO_LOWEST, &event.event);
 }
 
-static void media_changed_handler(event_t *_data)
-{
+static void media_changed_handler(event_t *_data) {
     media_changed_event_t *data = (media_changed_event_t *)_data;
     print_str("List of available playback sources changed. New list:\n");
 
@@ -133,8 +126,7 @@ static void media_changed_handler(event_t *_data)
     }
 }
 
-static void _cb_src(dfplayer_t *dev, dfplayer_source_set_t srcs)
-{
+static void _cb_src(dfplayer_t *dev, dfplayer_source_set_t srcs) {
     (void)dev;
     static media_changed_event_t event = {
         .event = { .handler = media_changed_handler }
@@ -144,8 +136,7 @@ static void _cb_src(dfplayer_t *dev, dfplayer_source_set_t srcs)
     event_post(EVENT_PRIO_LOWEST, &event.event);
 }
 
-int main(void)
-{
+int main(void) {
     print_str(
         "DFPlayer Mini Driver Test\n"
         "=========================\n"

@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2014-2015 Martine Lenders <mail@martine-lenders.eu>
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2015 Martine Lenders <mail@martine-lenders.eu>
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -32,13 +28,11 @@
 #define _INIT_ELEM_STATIC_TYPE(_type, _next) \
     { .users = 1, .next = (_next), .data = NULL, .size = 0, .type = (_type) }
 
-static void test_pkt_prev_snip__NULL_NULL(void)
-{
+static void test_pkt_prev_snip__NULL_NULL(void) {
     TEST_ASSERT_NULL(gnrc_pkt_prev_snip(NULL, NULL));
 }
 
-static void test_pkt_prev_snip__pkt_NULL(void)
-{
+static void test_pkt_prev_snip__pkt_NULL(void) {
     gnrc_pktsnip_t pkt = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t *res;
 
@@ -46,15 +40,13 @@ static void test_pkt_prev_snip__pkt_NULL(void)
     TEST_ASSERT((&pkt) == res);
 }
 
-static void test_pkt_prev_snip__NULL_snip(void)
-{
+static void test_pkt_prev_snip__NULL_snip(void) {
     gnrc_pktsnip_t snip = _INIT_ELEM(SIZE_MAX, NULL, NULL);
 
     TEST_ASSERT_NULL(gnrc_pkt_prev_snip(NULL, &snip));
 }
 
-static void test_pkt_prev_snip__pkt_snip(void)
-{
+static void test_pkt_prev_snip__pkt_snip(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM(SIZE_MAX, NULL, &snip1);
     gnrc_pktsnip_t pkt = _INIT_ELEM(SIZE_MAX, NULL, &snip2);
@@ -64,34 +56,29 @@ static void test_pkt_prev_snip__pkt_snip(void)
     TEST_ASSERT((&snip2) == res);
 }
 
-static void test_pkt_len__NULL(void)
-{
+static void test_pkt_len__NULL(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_pkt_len(NULL));
 }
 
-static void test_pkt_len__1_elem__size_MAX(void)
-{
+static void test_pkt_len__1_elem__size_MAX(void) {
     gnrc_pktsnip_t snip = _INIT_ELEM(SIZE_MAX, NULL, NULL);
 
     TEST_ASSERT_EQUAL_INT(SIZE_MAX, gnrc_pkt_len(&snip));
 }
 
-static void test_pkt_len__1_elem__size_0(void)
-{
+static void test_pkt_len__1_elem__size_0(void) {
     gnrc_pktsnip_t snip = _INIT_ELEM(0, NULL, NULL);
 
     TEST_ASSERT_EQUAL_INT(0, gnrc_pkt_len(&snip));
 }
 
-static void test_pkt_len__1_elem__size_data(void)
-{
+static void test_pkt_len__1_elem__size_data(void) {
     gnrc_pktsnip_t snip = _INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
 
     TEST_ASSERT_EQUAL_INT(sizeof(TEST_STRING8), gnrc_pkt_len(&snip));
 }
 
-static void test_pkt_len__2_elem(void)
-{
+static void test_pkt_len__2_elem(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM_STATIC_DATA(TEST_STRING12, &snip1);
 
@@ -100,18 +87,16 @@ static void test_pkt_len__2_elem(void)
     TEST_ASSERT_EQUAL_INT(sizeof(TEST_STRING8), gnrc_pkt_len(&snip1));
 }
 
-static void test_pkt_len__2_elem__overflow(void)
-{
+static void test_pkt_len__2_elem__overflow(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM(SIZE_MAX, NULL, &snip1);
 
     TEST_ASSERT_EQUAL_INT(sizeof(TEST_STRING8) - 1, gnrc_pkt_len(&snip2));
-    /* size should overflow */
+    // size should overflow
     TEST_ASSERT_EQUAL_INT(sizeof(TEST_STRING8), gnrc_pkt_len(&snip1));
 }
 
-static void test_pkt_len__3_elem(void)
-{
+static void test_pkt_len__3_elem(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM_STATIC_DATA(TEST_STRING12, &snip1);
     gnrc_pktsnip_t snip3 = _INIT_ELEM(sizeof("a"), "a", &snip2);
@@ -122,8 +107,7 @@ static void test_pkt_len__3_elem(void)
     TEST_ASSERT_EQUAL_INT(sizeof(TEST_STRING8), gnrc_pkt_len(&snip1));
 }
 
-static void test_pkt_append(void)
-{
+static void test_pkt_append(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t pkt = _INIT_ELEM(SIZE_MAX, NULL, NULL);
@@ -139,8 +123,7 @@ static void test_pkt_append(void)
     TEST_ASSERT((&snip2) == res->next->next);
 }
 
-static void test_pkt_prepend(void)
-{
+static void test_pkt_prepend(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t pkt = _INIT_ELEM(SIZE_MAX, NULL, NULL);
@@ -156,8 +139,7 @@ static void test_pkt_prepend(void)
     TEST_ASSERT((&pkt) == res->next->next);
 }
 
-static void test_pkt_delete__NULL(void)
-{
+static void test_pkt_delete__NULL(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t pkt = _INIT_ELEM(SIZE_MAX, NULL, NULL);
@@ -169,14 +151,13 @@ static void test_pkt_delete__NULL(void)
     TEST_ASSERT((&snip1) == res->next);
     TEST_ASSERT((&pkt) == res->next->next);
     res = gnrc_pkt_delete(res, NULL);
-    /* pkt did not change */
+    // pkt did not change
     TEST_ASSERT((&snip2) == res);
     TEST_ASSERT((&snip1) == res->next);
     TEST_ASSERT((&pkt) == res->next->next);
 }
 
-static void test_pkt_delete(void)
-{
+static void test_pkt_delete(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM(SIZE_MAX, NULL, NULL);
     gnrc_pktsnip_t pkt = _INIT_ELEM(SIZE_MAX, NULL, NULL);
@@ -196,13 +177,11 @@ static void test_pkt_delete(void)
     TEST_ASSERT_NULL(res);
 }
 
-static void test_pkt_len_upto__NULL(void)
-{
+static void test_pkt_len_upto__NULL(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_pkt_len_upto(NULL, GNRC_NETTYPE_TEST));
 }
 
-static void test_pkt_len_upto__not_in_list(void)
-{
+static void test_pkt_len_upto__not_in_list(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM_STATIC_DATA(TEST_STRING12, &snip1);
     gnrc_pktsnip_t snip3 = _INIT_ELEM(sizeof("a"), "a", &snip2);
@@ -211,8 +190,7 @@ static void test_pkt_len_upto__not_in_list(void)
                           gnrc_pkt_len_upto(&snip3, GNRC_NETTYPE_TEST));
 }
 
-static void test_pkt_len_upto__in_list(void)
-{
+static void test_pkt_len_upto__in_list(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM_STATIC_TYPE(GNRC_NETTYPE_TEST, &snip1);
     gnrc_pktsnip_t snip3 = _INIT_ELEM(sizeof("a"), "a", &snip2);
@@ -221,15 +199,13 @@ static void test_pkt_len_upto__in_list(void)
                           gnrc_pkt_len_upto(&snip3, GNRC_NETTYPE_TEST));
 }
 
-static void test_pkt_count__1_elem(void)
-{
+static void test_pkt_count__1_elem(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
 
     TEST_ASSERT_EQUAL_INT(1, gnrc_pkt_count(&snip1));
 }
 
-static void test_pkt_count__5_elem(void)
-{
+static void test_pkt_count__5_elem(void) {
     gnrc_pktsnip_t snip1 = _INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM_STATIC_DATA(TEST_STRING12, &snip1);
     gnrc_pktsnip_t snip3 = _INIT_ELEM(sizeof("a"), "a", &snip2);
@@ -239,18 +215,16 @@ static void test_pkt_count__5_elem(void)
     TEST_ASSERT_EQUAL_INT(5, gnrc_pkt_count(&snip5));
 }
 
-static void test_pkt_count__null(void)
-{
+static void test_pkt_count__null(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_pkt_count(NULL));
 }
 
-static void test_pktsnip_search_type(void)
-{
-    /* init packet snips */
+static void test_pktsnip_search_type(void) {
+    // init packet snips
     gnrc_pktsnip_t snip1 = _INIT_ELEM_STATIC_TYPE(GNRC_NETTYPE_UNDEF, NULL);
     gnrc_pktsnip_t snip2 = _INIT_ELEM_STATIC_TYPE(GNRC_NETTYPE_TEST, &snip1);
     gnrc_pktsnip_t snip3 = _INIT_ELEM_STATIC_TYPE(GNRC_NETTYPE_IPV6, &snip2);
-    /* successful searches */
+    // successful searches
     gnrc_pktsnip_t *res;
     TEST_ASSERT_NOT_NULL((res = gnrc_pktsnip_search_type(&snip3, GNRC_NETTYPE_UNDEF)));
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_UNDEF, res->type);
@@ -258,36 +232,35 @@ static void test_pktsnip_search_type(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_TEST, res->type);
     TEST_ASSERT_NOT_NULL((res = gnrc_pktsnip_search_type(&snip3, GNRC_NETTYPE_IPV6)));
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_IPV6, res->type);
-    /* failing searches  */
+    // failing searches
     TEST_ASSERT_NULL(gnrc_pktsnip_search_type(&snip1, GNRC_NETTYPE_TEST));
     TEST_ASSERT_NULL(gnrc_pktsnip_search_type(&snip2, GNRC_NETTYPE_IPV6));
     TEST_ASSERT_NULL(gnrc_pktsnip_search_type(&snip3, GNRC_NETTYPE_NUMOF));
 }
 
-static void test_pkt_equals_iolist(void)
-{
+static void test_pkt_equals_iolist(void) {
     iolist_t iol;
     gnrc_pktsnip_t pkt;
 
     memset(&iol, '\0', sizeof(iol));
     memset(&pkt, '\0', sizeof(pkt));
 
-    /* compare empty structs */
+    // compare empty structs
     TEST_ASSERT_EQUAL_INT(0, memcmp(&iol, &pkt, sizeof(iol)));
 
-    /* check next pointer position */
+    // check next pointer position
     iol.iol_next = (void *)0xAAAAAAAA;
     pkt.next = (void *)0xAAAAAAAA;
 
     TEST_ASSERT_EQUAL_INT(0, memcmp(&iol, &pkt, sizeof(iol)));
 
-    /* check data pointer position */
+    // check data pointer position
     iol.iol_base = &iol;
     pkt.data = &iol;
 
     TEST_ASSERT_EQUAL_INT(0, memcmp(&iol, &pkt, sizeof(iol)));
 
-    /* check size position */
+    // check size position
     iol.iol_len = (size_t)0x12345678;
     pkt.size = (size_t)0x12345678;
 
@@ -298,8 +271,7 @@ static void test_pkt_equals_iolist(void)
     TEST_ASSERT_EQUAL_INT(offsetof(iolist_t, iol_len), offsetof(gnrc_pktsnip_t, size));
 }
 
-Test *tests_pkt_tests(void)
-{
+Test *tests_pkt_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_pkt_prev_snip__NULL_NULL),
         new_TestFixture(test_pkt_prev_snip__pkt_NULL),
@@ -331,8 +303,7 @@ Test *tests_pkt_tests(void)
     return (Test *)&pkt_tests;
 }
 
-void tests_pkt(void)
-{
+void tests_pkt(void) {
     TESTS_RUN(tests_pkt_tests());
 }
-/** @} */
+/// @}

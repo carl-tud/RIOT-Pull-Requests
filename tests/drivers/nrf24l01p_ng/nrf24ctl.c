@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tool to configure NRF24L01+ (NG) transceiver
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tool to configure NRF24L01+ (NG) transceiver
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+///
+/// @}
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,8 +28,7 @@
 
 extern nrf24l01p_ng_t _nrf24l01p_ng_devs[NRF24L01P_NG_NUM];
 
-static void print_help(void)
-{
+static void print_help(void) {
     puts(
     "Usage:\n"
 
@@ -60,8 +55,7 @@ static void print_help(void)
     );
 }
 
-int sc_nrf24ctl(int argc, char *argv[])
-{
+int sc_nrf24ctl(int argc, char *argv[]) {
     if (argc < MIN_ARGC) {
         printf("[nrf24ctl] Expect at least %d arguments\n", MIN_ARGC);
         goto PRINT_HELP_EXIT;
@@ -75,7 +69,7 @@ int sc_nrf24ctl(int argc, char *argv[])
     int ret = 0;
     switch (argc) {
         case 6: {
-            /* nrf24ctl <dev_index> --set <attribute> <value> <pipe> */
+            // nrf24ctl <dev_index> --set <attribute> <value> <pipe>
             int pipe = atoi(argv[5]);
             if (pipe < 0 || pipe >= NRF24L01P_NG_PX_NUM_OF) {
                 printf("[nrf24ctl] bad pipe index\n");
@@ -122,7 +116,7 @@ int sc_nrf24ctl(int argc, char *argv[])
             }
         } break;
         case 5: {
-            /* nrf24ctl <dev_index> --set <attribute> <value> */
+            // nrf24ctl <dev_index> --set <attribute> <value>
             if ((!strcmp(argv[2], "-s")) || (!strcmp(argv[2], "--set"))) {
                 if (!(strcmp(argv[3], "channel"))) {
                     int ch = atoi(argv[4]);
@@ -202,7 +196,7 @@ int sc_nrf24ctl(int argc, char *argv[])
                     goto PRINT_HELP_EXIT;
                 }
             }
-            /* nrf24ctl <dev_index> --get <attribute> <pipe> */
+            // nrf24ctl <dev_index> --get <attribute> <pipe>
             else if ((!strcmp(argv[2], "-g")) ||
                      (!strcmp(argv[2], "--get"))) {
                 int pipe = atoi(argv[4]);
@@ -245,7 +239,7 @@ int sc_nrf24ctl(int argc, char *argv[])
             }
         } break;
         case 4: {
-            /* nrf24ctl <dev_index> --get <attribute> */
+            // nrf24ctl <dev_index> --get <attribute>
             if ((!strcmp(argv[2], "-g")) || (!strcmp(argv[2], "--get"))) {
                 if (!(strcmp(argv[3], "channel"))) {
                     uint8_t ch = nrf24l01p_ng_get_channel(dev);
@@ -303,11 +297,11 @@ int sc_nrf24ctl(int argc, char *argv[])
             }
         } break;
         case 3: {
-            /* nrf24ctl <dev_index> --regs */
+            // nrf24ctl <dev_index> --regs
             if ((!strcmp(argv[2], "-r")) || (!strcmp(argv[2], "--regs"))) {
                 nrf24l01p_ng_print_all_regs(dev);
             }
-            /* nrf24ctl <dev_index> --info */
+            // nrf24ctl <dev_index> --info
             else if ((!strcmp(argv[2], "-i")) ||
                      (!strcmp(argv[2], "--info"))) {
                 nrf24l01p_ng_print_dev_info(dev);

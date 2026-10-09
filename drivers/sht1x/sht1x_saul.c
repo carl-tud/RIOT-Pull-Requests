@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sht1x
- * @{
- *
- * @file
- * @brief       SAUL adaption for SHT10/SHT11/SHT15 devices
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_sht1x
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption for SHT10/SHT11/SHT15 devices
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -24,8 +20,7 @@
 #include "sht1x_defines.h"
 #include "sht1x.h"
 
-static int read(const sht1x_dev_t *dev, int16_t *temp, int16_t *hum)
-{
+static int read(const sht1x_dev_t *dev, int16_t *temp, int16_t *hum) {
     for (int retries = 0; retries < SHT1X_SAUL_RETRIES; retries++) {
         switch (sht1x_read(dev, temp, hum)) {
         case 0:
@@ -38,9 +33,9 @@ static int read(const sht1x_dev_t *dev, int16_t *temp, int16_t *hum)
             continue;
         case -ECANCELED:
             puts("[sht1x] Measurement times out");
-            /* falls through */
+            // falls through
         default:
-            /* Other failure, cannot recover so giving up */
+            // Other failure, cannot recover so giving up
             return -1;
         }
     }
@@ -50,8 +45,7 @@ static int read(const sht1x_dev_t *dev, int16_t *temp, int16_t *hum)
     return -1;
 }
 
-static int read_temp(const void *dev, phydat_t *res)
-{
+static int read_temp(const void *dev, phydat_t *res) {
     if (read(dev, &res->val[0], NULL) == 0) {
         res->unit = UNIT_TEMP_C;
         res->scale = -2;
@@ -61,8 +55,7 @@ static int read_temp(const void *dev, phydat_t *res)
     return -ECANCELED;
 }
 
-static int read_hum(const void *dev, phydat_t *res)
-{
+static int read_hum(const void *dev, phydat_t *res) {
     if (read(dev, NULL, &res->val[0]) == 0) {
         res->unit = UNIT_PERCENT;
         res->scale = -2;

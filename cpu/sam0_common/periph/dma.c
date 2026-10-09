@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam0_common
- * @{
- *
- * @file
- * @brief       Low-level DMA driver implementation
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     cpu_sam0_common
+/// @{
+///
+/// @file
+/// @brief       Low-level DMA driver implementation
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include "periph_cpu.h"
 #include "periph_conf.h"
@@ -29,11 +25,11 @@
 #define CONFIG_DMA_NUMOF DMAC_CH_NUM
 #endif
 
-/* In memory DMA transfer descriptors */
+// In memory DMA transfer descriptors
 static DmacDescriptor DMA_DESCRIPTOR_ATTRS descriptors[CONFIG_DMA_NUMOF];
 static DmacDescriptor DMA_DESCRIPTOR_ATTRS writeback[CONFIG_DMA_NUMOF];
 
-/* Bitmap of dma channels available */
+// Bitmap of dma channels available
 static uint32_t channels_free = (1LLU << CONFIG_DMA_NUMOF) - 1;
 
 struct dma_ctx {
@@ -43,8 +39,7 @@ struct dma_ctx {
 
 struct dma_ctx dma_ctx[CONFIG_DMA_NUMOF];
 
-static void _poweron(void)
-{
+static void _poweron(void) {
 #if defined(MCLK)
     MCLK->AHBMASK.reg |= MCLK_AHBMASK_DMAC;
 #else
@@ -53,11 +48,10 @@ static void _poweron(void)
 #endif
 }
 
-void dma_init(void)
-{
+void dma_init(void) {
     _poweron();
 
-    /* Enable all priorities with RR scheduling */
+    // Enable all priorities with RR scheduling
     DMAC->CTRL.reg = DMAC_CTRL_LVLEN0 |
                      DMAC_CTRL_LVLEN1 |
                      DMAC_CTRL_LVLEN2 |
@@ -88,26 +82,24 @@ void dma_init(void)
     DMAC->CTRL.reg |= DMAC_CTRL_DMAENABLE;
 }
 
-dma_t dma_acquire_channel(void)
-{
+dma_t dma_acquire_channel(void) {
     dma_t channel = UINT8_MAX;
     unsigned state = irq_disable();
 
     if (channels_free) {
         channel = bitarithm_lsb(channels_free);
-        /* Clear channel bit */
+        // Clear channel bit
         channels_free &= ~(1 << channel);
     }
     irq_restore(state);
     return channel;
 }
 
-void dma_release_channel(dma_t dma)
-{
+void dma_release_channel(dma_t dma) {
     unsigned state = irq_disable();
 #ifdef REG_DMAC_CHID
     DMAC->CHID.reg = dma;
-    /* Reset DMA channel */
+    // Reset DMA channel
     DMAC->CHCTRLA.reg = DMAC_CHCTRLA_SWRST;
 #else
     DMAC->Channel[dma].CHCTRLA.reg = DMAC_CHCTRLA_SWRST;
@@ -116,46 +108,39 @@ void dma_release_channel(dma_t dma)
     irq_restore(state);
 }
 
-static inline void _set_source(DmacDescriptor *descr, const void *src)
-{
+static inline void _set_source(DmacDescriptor *descr, const void *src) {
     descr->SRCADDR.reg = (uint32_t)src;
 }
 
-static inline void _set_destination(DmacDescriptor *descr, void *dst)
-{
+static inline void _set_destination(DmacDescriptor *descr, void *dst) {
     descr->DSTADDR.reg = (uint32_t)dst;
 }
 
-static inline void _set_num(DmacDescriptor *descr, size_t num)
-{
+static inline void _set_num(DmacDescriptor *descr, size_t num) {
     descr->BTCNT.reg = num;
 }
 
-static inline void _set_next_descriptor(DmacDescriptor *descr, void *next)
-{
+static inline void _set_next_descriptor(DmacDescriptor *descr, void *next) {
     descr->DESCADDR.reg = (uint32_t)next;
 }
 
-static inline DmacDescriptor *_get_next_descriptor(const DmacDescriptor *descr)
-{
+static inline DmacDescriptor *_get_next_descriptor(const DmacDescriptor *descr) {
     return (DmacDescriptor *)descr->DESCADDR.reg;
 }
 
-void dma_set_cb_arg(dma_t dma, void *ctx)
-{
+void dma_set_cb_arg(dma_t dma, void *ctx) {
     dma_ctx[dma].ctx = ctx;
 }
 
-void dma_setup(dma_t dma, unsigned trigger, uint8_t prio, dma_cb_t cb, void *ctx)
-{
+void dma_setup(dma_t dma, unsigned trigger, uint8_t prio, dma_cb_t cb, void *ctx) {
 #ifdef REG_DMAC_CHID
-    /* Ensure that this set of register writes is atomic */
+    // Ensure that this set of register writes is atomic
     unsigned state = irq_disable();
     DMAC->CHID.reg = dma;
     DMAC->CHCTRLB.reg = DMAC_CHCTRLB_TRIGACT_BEAT |
                         (trigger << DMAC_CHCTRLB_TRIGSRC_Pos) |
                         (prio << DMAC_CHCTRLB_LVL_Pos);
-    /* Clear everything in case a previous user left it configured */
+    // Clear everything in case a previous user left it configured
     DMAC->CHINTENCLR.reg = 0xFF;
     if (cb) {
         DMAC->CHINTENSET.reg = DMAC_CHINTENSET_TCMPL;
@@ -176,8 +161,7 @@ void dma_setup(dma_t dma, unsigned trigger, uint8_t prio, dma_cb_t cb, void *ctx
 }
 
 void dma_prepare(dma_t dma, uint8_t width, const void *src, void *dst,
-                 size_t num, dma_incr_t incr)
-{
+                 size_t num, dma_incr_t incr) {
     DEBUG("[DMA]: Prepare %u, num: %u\n", dma, (unsigned)num);
     DmacDescriptor *descr = &descriptors[dma];
     _set_num(descr, num);
@@ -189,8 +173,7 @@ void dma_prepare(dma_t dma, uint8_t width, const void *src, void *dst,
                         DMAC_BTCTRL_VALID;
 }
 
-void dma_prepare_src(dma_t dma, const void *src, size_t num, bool incr)
-{
+void dma_prepare_src(dma_t dma, const void *src, size_t num, bool incr) {
     DEBUG("[dma]: %u: prep src %p, %u, %u\n", dma, src, (unsigned)num, incr);
     DmacDescriptor *descr = &descriptors[dma];
     _set_num(descr, num);
@@ -200,8 +183,7 @@ void dma_prepare_src(dma_t dma, const void *src, size_t num, bool incr)
     _set_next_descriptor(descr, NULL);
 }
 
-void dma_prepare_dst(dma_t dma, void *dst, size_t num, bool incr)
-{
+void dma_prepare_dst(dma_t dma, void *dst, size_t num, bool incr) {
     DEBUG("[dma]: %u: prep dst %p, %u, %u\n", dma, dst, (unsigned)num, incr);
     DmacDescriptor *descr = &descriptors[dma];
     _set_num(descr, num);
@@ -212,9 +194,8 @@ void dma_prepare_dst(dma_t dma, void *dst, size_t num, bool incr)
 }
 
 static void _fmt_append(DmacDescriptor *descr, DmacDescriptor *next,
-                        const void *src, void *dst, size_t num)
-{
-    /* Configure the full descriptor besides the BTCTRL data */
+                        const void *src, void *dst, size_t num) {
+    // Configure the full descriptor besides the BTCTRL data
     _set_next_descriptor(descr, next);
     _set_next_descriptor(next, NULL);
     _set_source(next, src);
@@ -223,8 +204,7 @@ static void _fmt_append(DmacDescriptor *descr, DmacDescriptor *next,
 }
 
 void dma_append(dma_t dma, DmacDescriptor *next, uint8_t width,
-                const void *src, void *dst, size_t num, dma_incr_t incr)
-{
+                const void *src, void *dst, size_t num, dma_incr_t incr) {
     DmacDescriptor *descr = &descriptors[dma];
 
     next->BTCTRL.reg = width << DMAC_BTCTRL_BEATSIZE_Pos |
@@ -234,57 +214,52 @@ void dma_append(dma_t dma, DmacDescriptor *next, uint8_t width,
 }
 
 void dma_append_src(dma_t dma, DmacDescriptor *next, const void *src,
-                    size_t num, bool incr)
-{
+                    size_t num, bool incr) {
     DmacDescriptor *descr = &descriptors[dma];
 
-    /* Copy the original descriptor config and modify the increment */
+    // Copy the original descriptor config and modify the increment
     next->BTCTRL.reg = (descr->BTCTRL.reg & ~DMAC_BTCTRL_SRCINC) |
                        (incr << DMAC_BTCTRL_SRCINC_Pos);
     _fmt_append(descr, next, src, (void *)descr->DSTADDR.reg, num);
 }
 
 void dma_append_dst(dma_t dma, DmacDescriptor *next, void *dst, size_t num,
-                    bool incr)
-{
+                    bool incr) {
     DmacDescriptor *descr = &descriptors[dma];
 
-    /* Copy the original descriptor config and modify the increment */
+    // Copy the original descriptor config and modify the increment
     next->BTCTRL.reg = (descr->BTCTRL.reg & ~DMAC_BTCTRL_DSTINC) |
                        (incr << DMAC_BTCTRL_DSTINC_Pos);
     _fmt_append(descr, next, (void *)descr->SRCADDR.reg, dst, num);
 }
 
-void dma_enable_loop(dma_t dma)
-{
+void dma_enable_loop(dma_t dma) {
     DmacDescriptor *first = &descriptors[dma];
     DmacDescriptor *last = first;
     while (_get_next_descriptor(last)) {
         last = _get_next_descriptor(last);
         if (last == first) {
-            /* loop already exists */
+            // loop already exists
             return;
         }
     }
     _set_next_descriptor(last, first);
 }
 
-void dma_disable_loop(dma_t dma)
-{
+void dma_disable_loop(dma_t dma) {
     DmacDescriptor *first = &descriptors[dma];
     DmacDescriptor *last = first;
     while (_get_next_descriptor(last) != first) {
         last = _get_next_descriptor(last);
         if (last == NULL) {
-            /* loop already disabled */
+            // loop already disabled
             return;
         }
     }
     _set_next_descriptor(last, NULL);
 }
 
-void dma_start(dma_t dma)
-{
+void dma_start(dma_t dma) {
     DEBUG("[dma]: starting: %u\n", dma);
 
 #ifdef REG_DMAC_CHID
@@ -297,15 +272,14 @@ void dma_start(dma_t dma)
 #endif
 }
 
-void dma_cancel(dma_t dma)
-{
+void dma_cancel(dma_t dma) {
     DEBUG("[DMA]: Cancelling active transfer: %u\n", dma);
 #ifdef REG_DMAC_CHID
     unsigned state = irq_disable();
     DMAC->CHID.reg = DMAC_CHID_ID(dma);
-    /* Write zero to the enable bit */
+    // Write zero to the enable bit
     DMAC->CHCTRLA.reg = 0;
-    /* Wait until the active beat is finished */
+    // Wait until the active beat is finished
     while (DMAC->CHCTRLA.reg & DMAC_CHCTRLA_ENABLE) {}
     irq_restore(state);
 #else
@@ -314,15 +288,14 @@ void dma_cancel(dma_t dma)
 #endif
 }
 
-void isr_dmac(void)
-{
-    /* Always holds the interrupt status for the highest priority channel with
-     * pending interrupts */
+void isr_dmac(void) {
+    // Always holds the interrupt status for the highest priority channel with
+    // pending interrupts
     uint16_t status = DMAC->INTPEND.reg;
     dma_t dma = status & DMAC_INTPEND_ID_Msk;
 
-    /* Clear the pending interrupt flags for this channel by writing the
-     * channel ID together with the flags to clear */
+    // Clear the pending interrupt flags for this channel by writing the
+    // channel ID together with the flags to clear
     DMAC->INTPEND.reg = status;
     if ((status & DMAC_INTPEND_TCMPL) && dma_ctx[dma].cb) {
         dma_ctx[dma].cb(dma_ctx[dma].ctx);
@@ -331,27 +304,22 @@ void isr_dmac(void)
     cortexm_isr_end();
 }
 
-void isr_dmac0(void)
-{
+void isr_dmac0(void) {
     isr_dmac();
 }
 
-void isr_dmac1(void)
-{
+void isr_dmac1(void) {
     isr_dmac();
 }
 
-void isr_dmac2(void)
-{
+void isr_dmac2(void) {
     isr_dmac();
 }
 
-void isr_dmac3(void)
-{
+void isr_dmac3(void) {
     isr_dmac();
 }
 
-void isr_dmac4(void)
-{
+void isr_dmac4(void) {
     isr_dmac();
 }

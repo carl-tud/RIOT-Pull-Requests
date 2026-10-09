@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_b-l072z-lrwan1
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the ST B-L072Z-LRWAN1 board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Thibault Tisserand <gzordrai@gmail.com>
- */
+/// @ingroup     boards_b-l072z-lrwan1
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the ST B-L072Z-LRWAN1 board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Thibault Tisserand <gzordrai@gmail.com>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -31,33 +27,27 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 1  }, /* channel 2 */
-    { .stream = 2  }, /* channel 3 */
-    { .stream = 3  }, /* channel 4 */
-    { .stream = 4  }, /* channel 5 */
-    { .stream = 5  }, /* channel 6 */
+    { .stream = 1  }, // channel 2
+    { .stream = 2  }, // channel 3
+    { .stream = 3  }, // channel 4
+    { .stream = 4  }, // channel 5
+    { .stream = 5  }, // channel 6
 };
 
 #define DMA_SHARED_ISR_0            isr_dma1_channel2_3
-#define DMA_SHARED_ISR_0_STREAMS    { 0, 1 } /* Indexes 0 and 1 of dma_config share the same isr */
+#define DMA_SHARED_ISR_0_STREAMS    { 0, 1 } // Indexes 0 and 1 of dma_config share the same isr
 #define DMA_SHARED_ISR_1            isr_dma1_channel4_5_6_7
-/*
- * @brief Indexes 2, 3 and 4 of dma_config share the same isr
- */
+// @brief Indexes 2, 3 and 4 of dma_config share the same isr
 #define DMA_SHARED_ISR_1_STREAMS    { 2, 3, 4 }
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -69,7 +59,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART2_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
 #ifdef MODULE_PERIPH_DMA
         .dma        = 2,
         .dma_chan   = 4,
@@ -85,7 +75,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
 #ifdef MODULE_PERIPH_DMA
         .dma        = 0,
         .dma_chan   = 3,
@@ -97,12 +87,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI2,
@@ -124,7 +112,7 @@ static const spi_conf_t spi_config[] = {
 #endif
     },
     {
-        .dev      = SPI1, /* connected to SX1276 */
+        .dev      = SPI1, // connected to SX1276
         .mosi_pin = GPIO_PIN(PORT_A, 7),
         .miso_pin = GPIO_PIN(PORT_A, 6),
         .sclk_pin = GPIO_PIN(PORT_B, 3),
@@ -145,12 +133,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_A, 0), 0 },
     { GPIO_PIN(PORT_A, 2), 2 },
@@ -160,10 +146,10 @@ static const adc_conf_t adc_config[] = {
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

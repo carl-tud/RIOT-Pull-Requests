@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2024 Isikcan 'Jon' Yilmaz
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Isikcan 'Jon' Yilmaz
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_seeedstudio-xiao-esp32s3
- * @brief       Board specific configuration of direct mapped GPIOs
- * @file
- * @author      Isikcan 'Jon' Yilmaz <can158@gmail.com>
- * @{
- */
+/// @ingroup     boards_seeedstudio-xiao-esp32s3
+/// @brief       Board specific configuration of direct mapped GPIOs
+/// @file
+/// @author      Isikcan 'Jon' Yilmaz <can158@gmail.com>
+/// @{
 
 #include "board.h"
 #include "saul/periph.h"
@@ -20,9 +16,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   LED and Button configuration
- */
+/// @brief   LED and Button configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -42,4 +36,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 #ifdef __cplusplus
 }
 #endif
-/** @} */
+/// @}

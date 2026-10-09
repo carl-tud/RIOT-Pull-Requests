@@ -1,65 +1,60 @@
-/*
- * SPDX-FileCopyrightText: 2016 MUTEX NZ Ltd.
- * SPDX-FileCopyrightText: 2015 Loci Controls Inc.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 MUTEX NZ Ltd.
+// SPDX-FileCopyrightText: 2015 Loci Controls Inc.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_cc2538
- * @{
- *
- * @file
- * @brief       Getter and setter functions for the cc2538_rf driver
- *
- * @author      Aaron Sowry <aaron@mutex.nz>
- * @author      Ian Martin <ian@locicontrols.com>
- *
- * @}
- */
+/// @ingroup     cpu_cc2538
+/// @{
+///
+/// @file
+/// @brief       Getter and setter functions for the cc2538_rf driver
+///
+/// @author      Aaron Sowry <aaron@mutex.nz>
+/// @author      Ian Martin <ian@locicontrols.com>
+///
+/// @}
 
 #include "cc2538_rf.h"
 
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* static const __flash uint8_t? */
+// static const __flash uint8_t?
 static const uint8_t power_lut[NUM_POWER_LEVELS] = {
-    0,   /**< -24 dBm */
-    7,   /**< -23 dBm */
-    15,  /**< -22 dBm */
-    22,  /**< -21 dBm */
-    29,  /**< -20 dBm */
-    37,  /**< -19 dBm */
-    44,  /**< -18 dBm */
-    51,  /**< -17 dBm */
-    59,  /**< -16 dBm */
-    66,  /**< -15 dBm */
-    77,  /**< -14 dBm */
-    88,  /**< -13 dBm */
-    93,  /**< -12 dBm */
-    98,  /**< -11 dBm */
-    106, /**< -10 dBm */
-    114, /**<  -9 dBm */
-    125, /**<  -8 dBm */
-    136, /**<  -7 dBm */
-    141, /**<  -6 dBm */
-    145, /**<  -5 dBm */
-    153, /**<  -4 dBm */
-    161, /**<  -3 dBm */
-    169, /**<  -2 dBm */
-    176, /**<  -1 dBm */
-    182, /**<   0 dBm */
-    197, /**<   1 dBm */
-    205, /**<   2 dBm */
-    213, /**<   3 dBm */
-    225, /**<   4 dBm */
-    237, /**<   5 dBm */
-    246, /**<   6 dBm */
-    255, /**<   7 dBm */
+    0,   ///< -24 dBm
+    7,   ///< -23 dBm
+    15,  ///< -22 dBm
+    22,  ///< -21 dBm
+    29,  ///< -20 dBm
+    37,  ///< -19 dBm
+    44,  ///< -18 dBm
+    51,  ///< -17 dBm
+    59,  ///< -16 dBm
+    66,  ///< -15 dBm
+    77,  ///< -14 dBm
+    88,  ///< -13 dBm
+    93,  ///< -12 dBm
+    98,  ///< -11 dBm
+    106, ///< -10 dBm
+    114, ///< -9 dBm
+    125, ///< -8 dBm
+    136, ///< -7 dBm
+    141, ///< -6 dBm
+    145, ///< -5 dBm
+    153, ///< -4 dBm
+    161, ///< -3 dBm
+    169, ///< -2 dBm
+    176, ///< -1 dBm
+    182, ///< 0 dBm
+    197, ///< 1 dBm
+    205, ///< 2 dBm
+    213, ///< 3 dBm
+    225, ///< 4 dBm
+    237, ///< 5 dBm
+    246, ///< 6 dBm
+    255, ///< 7 dBm
 };
 
-void cc2538_get_addr_long(uint8_t *addr)
-{
+void cc2538_get_addr_long(uint8_t *addr) {
     addr[7] = RFCORE_FFSM_EXT_ADDR0;
     addr[6] = RFCORE_FFSM_EXT_ADDR1;
     addr[5] = RFCORE_FFSM_EXT_ADDR2;
@@ -70,29 +65,24 @@ void cc2538_get_addr_long(uint8_t *addr)
     addr[0] = RFCORE_FFSM_EXT_ADDR7;
 }
 
-void cc2538_get_addr_short(uint8_t *addr)
-{
+void cc2538_get_addr_short(uint8_t *addr) {
     addr[1] = RFCORE_FFSM_SHORT_ADDR0;
     addr[0] = RFCORE_FFSM_SHORT_ADDR1;
 }
 
-unsigned int cc2538_get_chan(void)
-{
+unsigned int cc2538_get_chan(void) {
     return IEEE802154_FREQ2CHAN(CC2538_MIN_FREQ + RFCORE_XREG_FREQCTRL);
 }
 
-bool cc2538_get_monitor(void)
-{
+bool cc2538_get_monitor(void) {
     return NOT(RFCORE->XREG_FRMFILT0bits.FRAME_FILTER_EN);
 }
 
-uint16_t cc2538_get_pan(void)
-{
+uint16_t cc2538_get_pan(void) {
     return (RFCORE_FFSM_PAN_ID1 << 8) | RFCORE_FFSM_PAN_ID0;
 }
 
-int cc2538_get_tx_power(void)
-{
+int cc2538_get_tx_power(void) {
     int index;
     int best_index = 0;
     int best_delta = INT_MAX;
@@ -112,8 +102,7 @@ int cc2538_get_tx_power(void)
     return OUTPUT_POWER_MIN + best_index;
 }
 
-void cc2538_set_addr_long(const uint8_t *addr)
-{
+void cc2538_set_addr_long(const uint8_t *addr) {
     RFCORE_FFSM_EXT_ADDR0 = addr[7];
     RFCORE_FFSM_EXT_ADDR1 = addr[6];
     RFCORE_FFSM_EXT_ADDR2 = addr[5];
@@ -124,14 +113,12 @@ void cc2538_set_addr_long(const uint8_t *addr)
     RFCORE_FFSM_EXT_ADDR7 = addr[0];
 }
 
-void cc2538_set_addr_short(const uint8_t *addr)
-{
+void cc2538_set_addr_short(const uint8_t *addr) {
     RFCORE_FFSM_SHORT_ADDR0 = addr[1];
     RFCORE_FFSM_SHORT_ADDR1 = addr[0];
 }
 
-void cc2538_set_chan(unsigned int chan)
-{
+void cc2538_set_chan(unsigned int chan) {
     DEBUG("%s(%u): Setting channel to ", __FUNCTION__, chan);
 
     if (chan < IEEE802154_CHANNEL_MIN) {
@@ -147,8 +134,7 @@ void cc2538_set_chan(unsigned int chan)
     cc2538_set_freq(IEEE802154_CHAN2FREQ(chan));
 }
 
-void cc2538_set_freq(unsigned int MHz)
-{
+void cc2538_set_freq(unsigned int MHz) {
     DEBUG("%s(%u): Setting frequency to ", __FUNCTION__, MHz);
 
     if (MHz < IEEE802154_MIN_FREQ) {
@@ -162,13 +148,11 @@ void cc2538_set_freq(unsigned int MHz)
     RFCORE_XREG_FREQCTRL = MHz - CC2538_MIN_FREQ;
 }
 
-void cc2538_set_monitor(bool mode)
-{
+void cc2538_set_monitor(bool mode) {
     RFCORE->XREG_FRMFILT0bits.FRAME_FILTER_EN = NOT(mode);
 }
 
-void cc2538_set_state(cc2538_rf_t *dev, netopt_state_t state)
-{
+void cc2538_set_state(cc2538_rf_t *dev, netopt_state_t state) {
     switch (state) {
         case NETOPT_STATE_OFF:
         case NETOPT_STATE_SLEEP:
@@ -200,14 +184,12 @@ void cc2538_set_state(cc2538_rf_t *dev, netopt_state_t state)
     }
 }
 
-void cc2538_set_pan(uint16_t pan)
-{
+void cc2538_set_pan(uint16_t pan) {
     RFCORE_FFSM_PAN_ID0 = pan;
     RFCORE_FFSM_PAN_ID1 = pan >> 8;
 }
 
-void cc2538_set_tx_power(int dBm)
-{
+void cc2538_set_tx_power(int dBm) {
     DEBUG("%s(%i): Setting TX power to ", __FUNCTION__, dBm);
 
     if (dBm < OUTPUT_POWER_MIN) {

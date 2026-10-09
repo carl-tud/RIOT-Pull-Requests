@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @ingroup     drivers_periph_flashpage
- * @{
- *
- * @file
- * @brief       Low-level flash page driver implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Francisco Acosta <francisco.acosta@inria.fr>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @ingroup     drivers_periph_flashpage
+/// @{
+///
+/// @file
+/// @brief       Low-level flash page driver implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Francisco Acosta <francisco.acosta@inria.fr>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "cpu.h"
 #include "stmclk.h"
@@ -29,7 +25,7 @@
 #include "debug.h"
 
 #if defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1)
-/* Program memory unlock keys */
+// Program memory unlock keys
 #define FLASH_PRGKEY1          ((uint32_t)0x8C9DAEBF)
 #define FLASH_PRGKEY2          ((uint32_t)0x13141516)
 #define CNTRL_REG              (FLASH->PECR)
@@ -72,12 +68,11 @@ extern void _wait_for_pending_operations(void);
 #if defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32L5) || \
     defined(CPU_FAM_STM32U5)
 #define MAX_PAGES_PER_BANK      (128)
-#else /* CPU_FAM_STM32L4 */
+#else // CPU_FAM_STM32L4
 #define MAX_PAGES_PER_BANK      (256)
 #endif
 
-static void _unlock_flash(void)
-{
+static void _unlock_flash(void) {
     _unlock();
 
 #if defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1)
@@ -92,22 +87,21 @@ static void _unlock_flash(void)
 #endif
 }
 
-static void _erase_page(void *page_addr)
-{
+static void _erase_page(void *page_addr) {
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3)
     uint32_t hsi_state = (RCC->CR & RCC_CR_HSION);
-    /* the internal RC oscillator (HSI) must be enabled */
+    // the internal RC oscillator (HSI) must be enabled
     stmclk_enable_hsi();
 #endif
 
-    /* unlock the flash module */
+    // unlock the flash module
     _unlock_flash();
 
-    /* make sure no flash operation is ongoing */
+    // make sure no flash operation is ongoing
     _wait_for_pending_operations();
 
-    /* set page erase bit and program page address */
+    // set page erase bit and program page address
     DEBUG("[flashpage] erase: setting the erase bit\n");
     CNTRL_REG |= FLASH_CR_PER;
     DEBUG("address to erase: %p\n", page_addr);
@@ -149,24 +143,24 @@ static void _erase_page(void *page_addr)
 #endif
     CNTRL_REG |= FLASH_CR_STRT;
     DEBUG("[flashpage] erase: the page address is set and started\n");
-#else /* CPU_FAM_STM32F0 || CPU_FAM_STM32F1 || CPU_FAM_STM32F3 */
+#else // CPU_FAM_STM32F0 || CPU_FAM_STM32F1 || CPU_FAM_STM32F3
     DEBUG("[flashpage] erase: setting the page address\n");
     FLASH->AR = (uint32_t)page_addr;
-    /* trigger the page erase and wait for it to be finished */
+    // trigger the page erase and wait for it to be finished
     DEBUG("[flashpage] erase: trigger the page erase\n");
     CNTRL_REG |= FLASH_CR_STRT;
 #endif
-    /* wait as long as device is busy */
+    // wait as long as device is busy
     _wait_for_pending_operations();
 
-#ifdef FLASH_ACR_DCEN /* Flush the data cache after page erase */
+#ifdef FLASH_ACR_DCEN // Flush the data cache after page erase
     if (FLASH->ACR & FLASH_ACR_DCEN) {
         FLASH->ACR &= ~FLASH_ACR_DCEN;
         FLASH->ACR |= FLASH_ACR_DCRST;
         FLASH->ACR |= FLASH_ACR_DCEN;
     }
 #endif
-#ifdef FLASH_ACR_ICEN /* Flush the instruction cache after page erase */
+#ifdef FLASH_ACR_ICEN // Flush the instruction cache after page erase
     if (FLASH->ACR & FLASH_ACR_ICEN) {
         FLASH->ACR &= ~FLASH_ACR_ICEN;
         FLASH->ACR |= FLASH_ACR_ICRST;
@@ -177,27 +171,26 @@ static void _erase_page(void *page_addr)
     DEBUG("[flashpage] erase: resetting the page erase bit\n");
     CNTRL_REG &= ~(FLASH_CR_PER);
 #ifdef FLASH_CR_PNB
-    /* reset PNB bit (if the register settings exist) */
+    // reset PNB bit (if the register settings exist)
     CNTRL_REG &= ~(FLASH_CR_PNB);
 #endif
 
-    /* lock the flash module again */
+    // lock the flash module again
     _lock();
 
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3)
-    /* restore the HSI state */
+    // restore the HSI state
     if (!hsi_state) {
         stmclk_disable_hsi();
     }
 #endif
 }
 
-void flashpage_erase(unsigned page)
-{
+void flashpage_erase(unsigned page) {
     assert(page < (int)FLASHPAGE_NUMOF);
 
-    /* ensure there is no attempt to write to CPU2 protected area */
+    // ensure there is no attempt to write to CPU2 protected area
 #if defined(CPU_FAM_STM32WB) || (defined(CPU_FAM_STM32WL) && \
                                  !defined(CPU_LINE_STM32WLE5xx))
     assert(page < (int)(FLASH->SFR & FLASH_SFR_SFSA));
@@ -205,21 +198,20 @@ void flashpage_erase(unsigned page)
 
     void *page_addr = flashpage_addr(page);
 
-    /* ERASE sequence */
+    // ERASE sequence
     _erase_page(page_addr);
 }
 
-void flashpage_write(void *target_addr, const void *data, size_t len)
-{
-    /* assert multiples of FLASHPAGE_WRITE_BLOCK_SIZE are written and no less of
-       that length. */
+void flashpage_write(void *target_addr, const void *data, size_t len) {
+    // assert multiples of FLASHPAGE_WRITE_BLOCK_SIZE are written and no less of
+    //    that length.
     assert(!(len % FLASHPAGE_WRITE_BLOCK_SIZE));
 
-    /* ensure writes are aligned */
+    // ensure writes are aligned
     assert(!(((unsigned)target_addr % FLASHPAGE_WRITE_BLOCK_ALIGNMENT) ||
             ((unsigned)data % FLASHPAGE_WRITE_BLOCK_ALIGNMENT)));
 
-    /* ensure the length doesn't exceed the actual flash size */
+    // ensure the length doesn't exceed the actual flash size
     assert(((uintptr_t)(target_addr) + len) <
             (uintptr_t)flashpage_addr(FLASHPAGE_NUMOF + 1));
 
@@ -229,39 +221,39 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3)
     uint32_t hsi_state = (RCC->CR & RCC_CR_HSION);
-    /* the internal RC oscillator (HSI) must be enabled */
+    // the internal RC oscillator (HSI) must be enabled
     stmclk_enable_hsi();
 #endif
 
 #ifdef FLASH_ACR_DCEN
-    /* Disable the data cache during page writes */
+    // Disable the data cache during page writes
     bool data_cache = FLASH->ACR & FLASH_ACR_DCEN;
     if (data_cache) {
         FLASH->ACR &= ~FLASH_ACR_DCEN;
     }
 #endif
 #ifdef FLASH_ACR_ICEN
-    /* Disable the instruction cache during page writes */
+    // Disable the instruction cache during page writes
     bool instruction_cache = FLASH->ACR & FLASH_ACR_ICEN;
     if (instruction_cache) {
         FLASH->ACR &= ~FLASH_ACR_ICEN;
 #if defined(CPU_FAM_STM32WL)
-        /* Reset the instruction cache after it has been disabled. This
-           operation is required as the cpu stalls after a flash write operation
-           for unknown reasons in STM32WL55JC */
+        // Reset the instruction cache after it has been disabled. This
+        //    operation is required as the cpu stalls after a flash write operation
+        //    for unknown reasons in STM32WL55JC
         FLASH->ACR |= FLASH_ACR_ICRST;
 #endif
     }
 #endif
 
-    /* unlock the flash module */
+    // unlock the flash module
     _unlock_flash();
 
 #ifdef FLASH_CR_PSIZE_1
-    CNTRL_REG |= FLASH_CR_PSIZE_1; /* Word size parallelism */
+    CNTRL_REG |= FLASH_CR_PSIZE_1; // Word size parallelism
 #endif
 
-    /* make sure no flash operation is ongoing */
+    // make sure no flash operation is ongoing
     _wait_for_pending_operations();
 
     DEBUG("[flashpage_raw] write: now writing the data\n");
@@ -272,7 +264,7 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
     defined(CPU_FAM_STM32F2) || defined(CPU_FAM_STM32F4) || \
     defined(CPU_FAM_STM32F7) || defined(CPU_FAM_STM32U5) || \
     defined(CPU_FAM_STM32WL) || defined(CPU_FAM_STM32C0)
-    /* set PG bit and program page to flash */
+    // set PG bit and program page to flash
     CNTRL_REG |= FLASH_CR_PG;
 #endif
     for (size_t i = 0; i < (len / sizeof(stm32_flashpage_block_t)); i++) {
@@ -281,11 +273,11 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
 #if defined(CPU_FAM_STM32F7)
         __DMB();
 #endif
-        /* wait as long as device is busy */
+        // wait as long as device is busy
         _wait_for_pending_operations();
     }
 
-    /* clear program bit again */
+    // clear program bit again
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3) || defined(CPU_FAM_STM32L4) || \
     defined(CPU_FAM_STM32WB) || defined(CPU_FAM_STM32G4) || \
@@ -297,18 +289,18 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
 #endif
     DEBUG("[flashpage_raw] write: done writing data\n");
 
-    /* lock the flash module again */
+    // lock the flash module again
     _lock();
 
 #ifdef FLASH_ACR_DCEN
-    /* Enable the data cache if it was enabled before. Always reset it */
+    // Enable the data cache if it was enabled before. Always reset it
     FLASH->ACR |= FLASH_ACR_DCRST;
     if (data_cache) {
         FLASH->ACR |= FLASH_ACR_DCEN;
     }
 #endif
 #ifdef FLASH_ACR_ICEN
-    /* Enable the instruction cache if it was enabled before. Always reset it */
+    // Enable the instruction cache if it was enabled before. Always reset it
     FLASH->ACR |= FLASH_ACR_ICRST;
     if (instruction_cache) {
         FLASH->ACR |= FLASH_ACR_ICEN;
@@ -317,7 +309,7 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
 
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3)
-    /* restore the HSI state */
+    // restore the HSI state
     if (!hsi_state) {
         stmclk_disable_hsi();
     }
@@ -326,8 +318,7 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
 
 #if defined(CPU_FAM_STM32F2) || defined(CPU_FAM_STM32F4) || \
     defined(CPU_FAM_STM32F7)
-size_t flashpage_size(unsigned page)
-{
+size_t flashpage_size(unsigned page) {
     if (page < 4) {
         return FLASHPAGE_MIN_SECTOR_SIZE;
     }
@@ -339,24 +330,23 @@ size_t flashpage_size(unsigned page)
     }
 }
 
-unsigned flashpage_page(const void *addr)
-{
-    /* Calculates the flashpage number based on the address for the
-     * non-homogeneous flashpage stm32 series.
-     * These all follow the same pattern of 4 sectors of base size, 1 sector of
-     * 4 times the base size and the rest of the pages are 8 times the base
-     * size. Here we calculate the page number as if all pages are of base size
-     * and then compensate for the larger sectors */
+unsigned flashpage_page(const void *addr) {
+    // Calculates the flashpage number based on the address for the
+    // non-homogeneous flashpage stm32 series.
+    // These all follow the same pattern of 4 sectors of base size, 1 sector of
+    // 4 times the base size and the rest of the pages are 8 times the base
+    // size. Here we calculate the page number as if all pages are of base size
+    // and then compensate for the larger sectors
     unsigned page = (((intptr_t)addr - CPU_FLASH_BASE) /
                         FLASHPAGE_MIN_SECTOR_SIZE);
 
-    /* check if beyond the 4 base sectors + the 4 * base size sector */
+    // check if beyond the 4 base sectors + the 4 * base size sector
     if (page > 7) {
-        /* Divide by 8 and compensate for the initial 5 sectors */
+        // Divide by 8 and compensate for the initial 5 sectors
         page = (page / 8) + 4;
     }
-    /* If the page number is between 4 and 7 (inclusive), the address is in the
-     * single 4 * base size sector */
+    // If the page number is between 4 and 7 (inclusive), the address is in the
+    // single 4 * base size sector
     else if (page > 3) {
         page = 4;
     }

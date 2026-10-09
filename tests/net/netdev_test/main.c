@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Show case application for netdev_test
- *
- * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       Show case application for netdev_test
+///
+/// @author      Martine Lenders <mlenders@inf.fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -64,9 +60,8 @@ static int _dev_send(netdev_t *dev, const iolist_t *iolist);
 static int _dev_get_addr(netdev_t *dev, void *value, size_t max_len);
 static int _dev_set_addr(netdev_t *dev, const void *value, size_t max_len);
 
-/* tests getter */
-static int test_get_addr(void)
-{
+// tests getter
+static int test_get_addr(void) {
     uint8_t tmp[sizeof(_dev_addr)];
 
     if (gnrc_netapi_get(_mac_pid, NETOPT_ADDRESS, 0, tmp, sizeof(tmp)) != sizeof(_dev_addr)) {
@@ -80,15 +75,14 @@ static int test_get_addr(void)
     return 1;
 }
 
-/* tests sending */
-static int test_send(void)
-{
+// tests sending
+static int test_send(void) {
     ethernet_hdr_t *exp_mac = (ethernet_hdr_t *)_tmp;
     uint8_t *exp_payload = _tmp + sizeof(ethernet_hdr_t);
     gnrc_pktsnip_t *pkt, *hdr;
     msg_t msg;
 
-    /* prepare packet for sending */
+    // prepare packet for sending
     pkt = gnrc_pktbuf_add(NULL, _TEST_PAYLOAD1, sizeof(_TEST_PAYLOAD1) - 1,
                           GNRC_NETTYPE_UNDEF);
     if (pkt == NULL) {
@@ -102,20 +96,20 @@ static int test_send(void)
         return 0;
     }
     pkt = gnrc_pkt_prepend(pkt, hdr);
-    /* prepare expected data */
+    // prepare expected data
     memcpy(exp_mac->dst, _test_dst, sizeof(_test_dst));
     memcpy(exp_mac->src, _dev_addr, sizeof(_dev_addr));
     exp_mac->type = byteorder_htons(ETHERTYPE_UNKNOWN);
     memcpy(exp_payload, _TEST_PAYLOAD1, sizeof(_TEST_PAYLOAD1) - 1);
     _tmp_len = sizeof(_TEST_PAYLOAD1) + sizeof(ethernet_hdr_t) - 1;
-    /* register for returned packet status */
+    // register for returned packet status
     if (gnrc_neterr_reg(pkt) != 0) {
         puts("Can not register for error reporting");
         return 0;
     }
-    /* send packet to MAC layer */
+    // send packet to MAC layer
     gnrc_netif_send(gnrc_netif_get_by_pid(_mac_pid), pkt);
-    /* wait for packet status and check */
+    // wait for packet status and check
     msg_receive(&msg);
     if ((msg.type != GNRC_NETERR_MSG_TYPE) ||
         (msg.content.value != GNRC_NETERR_SUCCESS)) {
@@ -125,9 +119,8 @@ static int test_send(void)
     return 1;
 }
 
-/* tests receiving */
-static int test_receive(void)
-{
+// tests receiving
+static int test_receive(void) {
     ethernet_hdr_t *rcv_mac = (ethernet_hdr_t *)_tmp;
     uint8_t *rcv_payload = _tmp + sizeof(ethernet_hdr_t);
     gnrc_pktsnip_t *pkt, *hdr;
@@ -139,22 +132,22 @@ static int test_receive(void)
         puts("Device's event_callback not set");
         return 0;
     }
-    /* prepare receive buffer */
+    // prepare receive buffer
     memcpy(rcv_mac->dst, _dev_addr, sizeof(_dev_addr));
     memcpy(rcv_mac->src, _test_src, sizeof(_test_src));
-    /* no gnrc_ipv6 in compile unit => ETHERTYPE_IPV6 translates to
-     * GNRC_NETTYPE_UNDEF */
+    // no gnrc_ipv6 in compile unit => ETHERTYPE_IPV6 translates to
+    // GNRC_NETTYPE_UNDEF
     rcv_mac->type = byteorder_htons(ETHERTYPE_IPV6);
     memcpy(rcv_payload, _TEST_PAYLOAD2, sizeof(_TEST_PAYLOAD2) - 1);
     _tmp_len = sizeof(_TEST_PAYLOAD2) + sizeof(ethernet_hdr_t) - 1;
 
-    /* register for GNRC_NETTYPE_UNDEF */
+    // register for GNRC_NETTYPE_UNDEF
     gnrc_netreg_register(GNRC_NETTYPE_UNDEF, &me);
-    /* fire ISR event */
+    // fire ISR event
     netdev_trigger_event_isr(&_dev.netdev.netdev);
-    /* wait for packet from MAC layer*/
+    // wait for packet from MAC layer
     msg_receive(&msg);
-    /* check message */
+    // check message
     if (msg.sender_pid != _mac_pid) {
         puts("Unexpected sender of netapi receive message");
         return 0;
@@ -164,7 +157,7 @@ static int test_receive(void)
         return 0;
     }
     pkt = msg.content.ptr;
-    /* check payload */
+    // check payload
     if (pkt->size != _tmp_len - sizeof(ethernet_hdr_t)) {
         puts("Payload of unexpected size");
     }
@@ -182,7 +175,7 @@ static int test_receive(void)
         return 0;
     }
     hdr = pkt->next;
-    /* check netif header */
+    // check netif header
     if ((hdr->type != GNRC_NETTYPE_NETIF) || (hdr->next != NULL) ||
         (hdr->size) != (sizeof(gnrc_netif_hdr_t) + (2 * ETHERNET_ADDR_LEN))) {
         puts("Malformed header received");
@@ -224,8 +217,7 @@ static int test_receive(void)
     return 1;
 }
 
-static int test_set_addr(void)
-{
+static int test_set_addr(void) {
     static const uint8_t new_addr[] = { 0x71, 0x29, 0x5b, 0xc8, 0x52, 0x65 };
     uint8_t tmp[sizeof(new_addr)];
 
@@ -246,9 +238,8 @@ static int test_set_addr(void)
     return 1;
 }
 
-int main(void)
-{
-    /* initialization */
+int main(void) {
+    // initialization
     gnrc_pktbuf_init();
     msg_init_queue(_main_msg_queue, _MAIN_MSG_QUEUE_SIZE);
     netdev_test_setup(&_dev, NULL);
@@ -261,7 +252,7 @@ int main(void)
                                          "netdev_test", &_dev.netdev.netdev);
     _mac_pid = _netif.pid;
 
-    /* test execution */
+    // test execution
     EXECUTE(test_get_addr);
     EXECUTE(test_send);
     EXECUTE(test_receive);
@@ -271,17 +262,15 @@ int main(void)
     return 0;
 }
 
-/* netdev_test callbacks */
-static void _dev_isr(netdev_t *dev)
-{
+// netdev_test callbacks
+static void _dev_isr(netdev_t *dev) {
     (void)dev;
     if (dev->event_callback) {
         dev->event_callback(dev, NETDEV_EVENT_RX_COMPLETE);
     }
 }
 
-static int _dev_recv(netdev_t *dev, char *buf, int len, void *info)
-{
+static int _dev_recv(netdev_t *dev, char *buf, int len, void *info) {
     (void)dev;
     (void)info;
     if (buf == NULL) {
@@ -296,12 +285,11 @@ static int _dev_recv(netdev_t *dev, char *buf, int len, void *info)
     }
 }
 
-static int _dev_send(netdev_t *dev, const iolist_t *iolist)
-{
+static int _dev_send(netdev_t *dev, const iolist_t *iolist) {
     int idx = 0;
 
     (void)dev;
-    /* check packet content with expected data */
+    // check packet content with expected data
     for (; iolist; iolist = iolist->iol_next) {
         if (memcmp(&(_tmp[idx]), iolist->iol_base, iolist->iol_len) != 0) {
             puts("Unexpected send data:");
@@ -325,8 +313,7 @@ static int _dev_send(netdev_t *dev, const iolist_t *iolist)
     return idx;
 }
 
-static int _dev_get_addr(netdev_t *dev, void *value, size_t max_len)
-{
+static int _dev_get_addr(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     if (max_len < sizeof(_dev_addr)) {
         return -ENOBUFS;
@@ -335,8 +322,7 @@ static int _dev_get_addr(netdev_t *dev, void *value, size_t max_len)
     return sizeof(_dev_addr);
 }
 
-static int _dev_set_addr(netdev_t *dev, const void *value, size_t value_len)
-{
+static int _dev_set_addr(netdev_t *dev, const void *value, size_t value_len) {
     (void)dev;
     if (value_len != sizeof(_dev_addr)) {
         return -EOVERFLOW;

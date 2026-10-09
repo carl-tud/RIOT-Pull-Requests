@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Deutsches Zentrum für Luft- und Raumfahrt e.V. (DLR)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Deutsches Zentrum für Luft- und Raumfahrt e.V. (DLR)
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_hsc
- *
- * @{
- * @file
- * @brief       Default configuration for HSC
- *
- * @author      Quang Pham <phhr_quang@live.com>
- */
+/// @ingroup     drivers_hsc
+///
+/// @{
+/// @file
+/// @brief       Default configuration for HSC
+///
+/// @author      Quang Pham <phhr_quang@live.com>
 
 #include "board.h"
 #include "hsc.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the HSC
- * @{
- */
+/// @name    Set default configuration parameters for the HSC
+/// @{
 #ifndef HSC_PARAM_I2C_DEV
 #define HSC_PARAM_I2C_DEV         I2C_DEV(0)
 #endif
@@ -46,19 +40,15 @@ extern "C" {
 #ifndef HSC_SAUL_INFO
 #define HSC_SAUL_INFO             { .name = "hsc" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure HSC
- */
+/// @brief   Configure HSC
 static const hsc_params_t hsc_params[] =
 {
     HSC_PARAMS
 };
 
-/**
- * @brief   Configure SAUL registry entries
- */
+/// @brief   Configure SAUL registry entries
 static const saul_reg_info_t hsc_saul_info[] =
 {
     HSC_SAUL_INFO
@@ -68,4 +58,4 @@ static const saul_reg_info_t hsc_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

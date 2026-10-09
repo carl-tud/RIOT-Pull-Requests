@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_stm32l0538-disco
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the STM32L0538-DISCO board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_stm32l0538-disco
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the STM32L0538-DISCO board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -39,12 +33,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_0_ISR         isr_tim2
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -56,19 +48,17 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     }
 };
 
 #define UART_0_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -99,10 +89,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

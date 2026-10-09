@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     tests
- * @brief
- * @{
- *
- * @file
- * @brief
- *
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- * @}
- */
+/// @ingroup     tests
+/// @brief
+/// @{
+///
+/// @file
+/// @brief
+///
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
+/// @}
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define _TEST_PROTO         (254) /* https://tools.ietf.org/html/rfc3692#section-2.1 */
+#define _TEST_PROTO         (254) // https://tools.ietf.org/html/rfc3692#section-2.1
 #define _TEST_NETIF         (31)
 #define _TEST_TIMEOUT       (1000000U)
 #define _TEST_ADDR_LOCAL    { 0x7f, 0xc4, 0x11, 0x5a, 0xe6, 0x91, 0x8d, 0x5d, \

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @brief       Tests the PSA secure element ECDSA configurations
- *              Contents have been copied from `examples/advanced/psa_crypto`
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @brief       Tests the PSA secure element ECDSA configurations
+///              Contents have been copied from `examples/advanced/psa_crypto`
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -28,14 +24,11 @@
 #define ECC_ALG_HASH (PSA_ALG_SHA_256)
 #define ECC_ALG (PSA_ALG_ECDSA(ECC_ALG_HASH))
 
-/**
- * @brief   Example function to perform an ECDSA operation with a NIST P256 curve
- *          with the PSA Crypto API.
- *
- * @return  psa_status_t
- */
-psa_status_t example_ecdsa_p256(void)
-{
+/// @brief   Example function to perform an ECDSA operation with a NIST P256 curve
+///          with the PSA Crypto API.
+///
+/// @return  psa_status_t
+psa_status_t example_ecdsa_p256(void) {
     psa_key_id_t privkey_id;
     psa_key_attributes_t privkey_attr = psa_key_attributes_init();
     psa_key_id_t pubkey_id;
@@ -77,7 +70,7 @@ psa_status_t example_ecdsa_p256(void)
         return status;
     }
 
-    /* Currently there is no support for message signature and verification on secure elements */
+    // Currently there is no support for message signature and verification on secure elements
     psa_set_key_lifetime(&pubkey_attr, lifetime);
     psa_set_key_usage_flags(&pubkey_attr, PSA_KEY_USAGE_VERIFY_HASH);
     psa_set_key_algorithm(&pubkey_attr, ECC_ALG);
@@ -95,7 +88,7 @@ psa_status_t example_ecdsa_p256(void)
         return status;
     }
 
-    /* Currently there is only support for hash signature and verification on secure elements,
-       so we can't verify the message, but only the hash */
+    // Currently there is only support for hash signature and verification on secure elements,
+    //    so we can't verify the message, but only the hash
     return psa_verify_hash(pubkey_id, ECC_ALG, hash, sizeof(hash), signature, sig_length);
 }

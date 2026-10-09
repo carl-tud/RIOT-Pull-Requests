@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2016 Eistec AB
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2016 Eistec AB
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands for the VFS module
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands for the VFS module
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #if MODULE_VFS
 #include <stdint.h>
@@ -43,24 +39,18 @@
 #define SHELL_VFS_BUFSIZE 256
 static uint8_t _shell_vfs_data_buffer[SHELL_VFS_BUFSIZE];
 
-/**
- * @brief Auto-Mount array
- */
+/// @brief Auto-Mount array
 XFA_USE_CONST(vfs_mount_t, vfs_mountpoints_xfa);
 
-/**
- * @brief Number of automatic mountpoints
- */
+/// @brief Number of automatic mountpoints
 #define MOUNTPOINTS_NUMOF XFA_LEN(vfs_mount_t, vfs_mountpoints_xfa)
 
-static void _ls_usage(char **argv)
-{
+static void _ls_usage(char **argv) {
     printf("%s <path>\n", argv[0]);
     puts("list files in <path>");
 }
 
-static void _vfs_usage(char **argv)
-{
+static void _vfs_usage(char **argv) {
     printf("%s r <path> [bytes] [offset]\n", argv[0]);
     printf("%s w <path> <ascii|hex> <a|o> <data>\n", argv[0]);
     printf("%s ls <path>\n", argv[0]);
@@ -95,8 +85,7 @@ static void _vfs_usage(char **argv)
     puts("df: Show file system space utilization stats");
 }
 
-static void _print_size(uint64_t size)
-{
+static void _print_size(uint64_t size) {
     unsigned long len;
     const char *unit;
 
@@ -126,8 +115,7 @@ static void _print_size(uint64_t size)
     }
 }
 
-static void _print_df(vfs_DIR *dir)
-{
+static void _print_df(vfs_DIR *dir) {
     struct statvfs buf;
     int res = vfs_dstatvfs(dir, &buf);
     printf("%-16s ", dir->mp->mount_point);
@@ -142,13 +130,12 @@ static void _print_df(vfs_DIR *dir)
     printf("%7lu%%\n", (unsigned long)(((buf.f_blocks - buf.f_bfree) * 100) / buf.f_blocks));
 }
 
-static int _df_handler(int argc, char **argv)
-{
+static int _df_handler(int argc, char **argv) {
     puts("Mountpoint              Total         Used    Available     Use%");
     if (argc > 1) {
         const char *path = argv[1];
-        /* Opening a directory just to statfs is somewhat odd, but it is the
-         * easiest to support with a single _print_df function */
+        // Opening a directory just to statfs is somewhat odd, but it is the
+        // easiest to support with a single _print_df function
         vfs_DIR dir;
         int res = vfs_opendir(&dir, path);
         if (res == 0) {
@@ -159,7 +146,7 @@ static int _df_handler(int argc, char **argv)
         }
     }
     else {
-        /* Iterate through all mount points */
+        // Iterate through all mount points
         vfs_DIR it = { 0 };
         while (vfs_iterate_mount_dirs(&it)) {
             _print_df(&it);
@@ -168,8 +155,7 @@ static int _df_handler(int argc, char **argv)
     return 0;
 }
 
-static int _mount_handler(int argc, char **argv)
-{
+static int _mount_handler(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s [path]\n", argv[0]);
         puts("mount pre-configured mount point");
@@ -184,8 +170,7 @@ static int _mount_handler(int argc, char **argv)
     return res;
 }
 
-static int _umount_handler(int argc, char **argv)
-{
+static int _umount_handler(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s [path]\n", argv[0]);
         puts("umount pre-configured mount point");
@@ -200,8 +185,7 @@ static int _umount_handler(int argc, char **argv)
     return res;
 }
 
-static int _remount_handler(int argc, char **argv)
-{
+static int _remount_handler(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s [path]\n", argv[0]);
         puts("remount pre-configured mount point");
@@ -217,8 +201,7 @@ static int _remount_handler(int argc, char **argv)
     return res;
 }
 
-static int _format_handler(int argc, char **argv)
-{
+static int _format_handler(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s [path]\n", argv[0]);
         puts("format pre-configured mount point");
@@ -233,8 +216,7 @@ static int _format_handler(int argc, char **argv)
     return res;
 }
 
-static int _read_handler(int argc, char **argv)
-{
+static int _read_handler(int argc, char **argv) {
     uint8_t buf[16];
     size_t nbytes = sizeof(buf);
     off_t offset = 0;
@@ -285,7 +267,7 @@ static int _read_handler(int argc, char **argv)
             return 6;
         }
         else if (res == 0) {
-            /* EOF */
+            // EOF
             printf("-- EOF --\n");
             break;
         }
@@ -322,8 +304,7 @@ static int _read_handler(int argc, char **argv)
     return 0;
 }
 
-static inline int _dehex(char c)
-{
+static inline int _dehex(char c) {
     if ('0' <= c && c <= '9') {
         return c - '0';
     }
@@ -338,8 +319,7 @@ static inline int _dehex(char c)
     }
 }
 
-static int _write_handler(int argc, char **argv)
-{
+static int _write_handler(int argc, char **argv) {
     char *w_buf;
     size_t nbytes = 0;
     size_t nb_str = 0;
@@ -387,12 +367,12 @@ static int _write_handler(int argc, char **argv)
     }
     w_buf = argv[4];
     nbytes = strlen(w_buf);
-    /* in hex string mode, bytes may be separated by spaces */
-    /* in ascii mode, there could be spaces */
-    /* we need the total number of strings to go through */
+    // in hex string mode, bytes may be separated by spaces
+    // in ascii mode, there could be spaces
+    // we need the total number of strings to go through
     nb_str = argc - 4;
     if (!ascii) {
-        /* sanity check: only hex digit and hex strings length must be even */
+        // sanity check: only hex digit and hex strings length must be even
         for (size_t i = 0; i < nb_str; i++) {
             char c;
             size_t j = 0;
@@ -463,8 +443,7 @@ static int _write_handler(int argc, char **argv)
     return 0;
 }
 
-static int _cp_handler(int argc, char **argv)
-{
+static int _cp_handler(int argc, char **argv) {
     if (argc < 3) {
         _vfs_usage(argv);
         return 1;
@@ -500,7 +479,7 @@ static int _cp_handler(int argc, char **argv)
                 return 2;
             }
             if (res == 0) {
-                /* EOF */
+                // EOF
                 eof = 1;
                 break;
             }
@@ -540,8 +519,7 @@ static int _cp_handler(int argc, char **argv)
     return 0;
 }
 
-static int _mv_handler(int argc, char **argv)
-{
+static int _mv_handler(int argc, char **argv) {
     if (argc < 3) {
         _vfs_usage(argv);
         return 1;
@@ -558,8 +536,7 @@ static int _mv_handler(int argc, char **argv)
     return 0;
 }
 
-static int _rm_handler(int argc, char **argv)
-{
+static int _rm_handler(int argc, char **argv) {
     if (argc < 2) {
         _vfs_usage(argv);
         return 1;
@@ -586,8 +563,7 @@ static int _rm_handler(int argc, char **argv)
     return 0;
 }
 
-static int _mkdir_handler(int argc, char **argv)
-{
+static int _mkdir_handler(int argc, char **argv) {
     if (argc < 2) {
         _vfs_usage(argv);
         return 1;
@@ -603,8 +579,7 @@ static int _mkdir_handler(int argc, char **argv)
     return 0;
 }
 
-static int _ls_handler(int argc, char **argv)
-{
+static int _ls_handler(int argc, char **argv) {
     if (argc < 2) {
         _ls_usage(argv);
         return 1;
@@ -634,14 +609,14 @@ static int _ls_handler(int argc, char **argv)
         if (res < 0) {
             printf("vfs_readdir error: %s\n", tiny_strerror(res));
             if (res == -EAGAIN) {
-                /* try again */
+                // try again
                 continue;
             }
             ret = 2;
             break;
         }
         if (res == 0) {
-            /* end of stream */
+            // end of stream
             break;
         }
 
@@ -673,14 +648,13 @@ static int _ls_handler(int argc, char **argv)
 
 SHELL_COMMAND(ls, "list files", _ls_handler);
 
-static int _vfs_handler(int argc, char **argv)
-{
+static int _vfs_handler(int argc, char **argv) {
     if (argc < 2) {
         _vfs_usage(argv);
         return 1;
     }
     if (strcmp(argv[1], "r") == 0) {
-        /* pass on to read handler, shifting the arguments by one */
+        // pass on to read handler, shifting the arguments by one
         return _read_handler(argc - 1, &argv[1]);
     }
     else if (strcmp(argv[1], "w") == 0) {
@@ -725,9 +699,8 @@ static int _vfs_handler(int argc, char **argv)
 SHELL_COMMAND(vfs, "virtual file system operations", _vfs_handler);
 
 #if MODULE_SHELL_CMD_GENFILE
-static char _get_char(unsigned i)
-{
-    i %= 62; /* a-z, A-Z, 0..9, -> 62 characters */
+static char _get_char(unsigned i) {
+    i %= 62; // a-z, A-Z, 0..9, -> 62 characters
 
     if (i < 10) {
         return '0' + i;
@@ -742,8 +715,7 @@ static char _get_char(unsigned i)
     return 'A' + i;
 }
 
-static void _write_block(int fd, unsigned bs, unsigned i)
-{
+static void _write_block(int fd, unsigned bs, unsigned i) {
     char block[bs];
 
     int size_wanted = snprintf(block, bs, "|%03u|", i);
@@ -753,7 +725,7 @@ static void _write_block(int fd, unsigned bs, unsigned i)
         return;
     }
 
-    /* Only memset the buffer, if there is space left in the buffer */
+    // Only memset the buffer, if there is space left in the buffer
     if ((unsigned) size_wanted < bs) {
         memset(&block[size_wanted], _get_char(i), bs - size_wanted);
     }
@@ -763,8 +735,7 @@ static void _write_block(int fd, unsigned bs, unsigned i)
     vfs_write(fd, block, bs);
 }
 
-static int _vfs_genfile_cmd(int argc, char **argv)
-{
+static int _vfs_genfile_cmd(int argc, char **argv) {
     unsigned blocksize = 64;
     unsigned blocks = 32;
     int fd = STDOUT_FILENO;
@@ -823,9 +794,8 @@ static int _vfs_genfile_cmd(int argc, char **argv)
 SHELL_COMMAND(genfile, "generate dummy file", _vfs_genfile_cmd);
 #endif
 
-__attribute__((used)) /* only used if md5sum / sha1sum / sha256sum is used */
-static inline void _print_digest(const uint8_t *digest, size_t len, const char *file)
-{
+__attribute__((used)) // only used if md5sum / sha1sum / sha256sum is used
+static inline void _print_digest(const uint8_t *digest, size_t len, const char *file) {
     for (unsigned i = 0; i < len; ++i) {
         printf("%02x", digest[i]);
     }
@@ -834,8 +804,7 @@ static inline void _print_digest(const uint8_t *digest, size_t len, const char *
 
 #if MODULE_SHELL_CMD_MD5SUM
 #include "hashes/md5.h"
-static int _vfs_md5sum_cmd(int argc, char **argv)
-{
+static int _vfs_md5sum_cmd(int argc, char **argv) {
     int res;
     uint8_t digest[MD5_DIGEST_LENGTH];
 
@@ -863,8 +832,7 @@ SHELL_COMMAND(md5sum, "Compute and check MD5 message digest", _vfs_md5sum_cmd);
 
 #if MODULE_SHELL_CMD_SHA1SUM
 #include "hashes/sha1.h"
-static int _vfs_sha1sum_cmd(int argc, char **argv)
-{
+static int _vfs_sha1sum_cmd(int argc, char **argv) {
     int res;
     uint8_t digest[SHA1_DIGEST_LENGTH];
 
@@ -892,8 +860,7 @@ SHELL_COMMAND(sha1sum, "Compute and check SHA1 message digest", _vfs_sha1sum_cmd
 
 #if MODULE_SHELL_CMD_SHA256SUM
 #include "hashes/sha256.h"
-static int _vfs_sha256sum_cmd(int argc, char **argv)
-{
+static int _vfs_sha256sum_cmd(int argc, char **argv) {
     uint8_t digest[SHA256_DIGEST_LENGTH];
 
     if (argc < 2) {

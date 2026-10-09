@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ft5x06
- * @{
- *
- * @file
- * @brief       Driver adaption to touch_dev generic interface
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     drivers_ft5x06
+/// @{
+///
+/// @file
+/// @brief       Driver adaption to touch_dev generic interface
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include <stddef.h>
 #include <stdint.h>
@@ -29,24 +25,21 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-uint16_t _ft5x06_height(const touch_dev_t *touch_dev)
-{
+uint16_t _ft5x06_height(const touch_dev_t *touch_dev) {
     const ft5x06_t *dev = (const ft5x06_t *)touch_dev;
     assert(dev);
 
     return dev->params->ymax;
 }
 
-uint16_t _ft5x06_width(const touch_dev_t *touch_dev)
-{
+uint16_t _ft5x06_width(const touch_dev_t *touch_dev) {
     const ft5x06_t *dev = (const ft5x06_t *)touch_dev;
     assert(dev);
 
     return dev->params->xmax;
 }
 
-uint8_t _ft5x06_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t len)
-{
+uint8_t _ft5x06_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t len) {
     ft5x06_t *dev = (ft5x06_t *)touch_dev;
     assert(dev);
 
@@ -61,8 +54,7 @@ uint8_t _ft5x06_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t l
     return ret;
 }
 
-void _ft5x06_set_event_callback(const touch_dev_t *touch_dev, touch_event_cb_t cb, void *arg)
-{
+void _ft5x06_set_event_callback(const touch_dev_t *touch_dev, touch_event_cb_t cb, void *arg) {
     ft5x06_t *dev = (ft5x06_t *)touch_dev;
     assert(dev);
 

@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Unit tests for ztimer_ondemand
- *
- * @author      Juergen Fitschen <me@jue.yt>
- */
+/// @{
+///
+/// @file
+/// @brief       Unit tests for ztimer_ondemand
+///
+/// @author      Juergen Fitschen <me@jue.yt>
 
 #include "ztimer.h"
 #include "ztimer/mock.h"
@@ -22,12 +18,11 @@
 
 #include <stdio.h>
 
-static void test_ztimer_ondemand_acquire_release(void)
-{
+static void test_ztimer_ondemand_acquire_release(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
-    /* initialize 32bit mock timer */
+    // initialize 32bit mock timer
     ztimer_mock_init(&zmock, 32);
 
     TEST_ASSERT_EQUAL_INT(0, zmock.running);
@@ -50,13 +45,12 @@ static void test_ztimer_ondemand_acquire_release(void)
     TEST_ASSERT_EQUAL_INT(1, zmock.calls.stop);
 }
 
-static void test_ztimer_ondemand_acquire_ops_unsupported(void)
-{
+static void test_ztimer_ondemand_acquire_ops_unsupported(void) {
     ztimer_mock_t zmock;
     ztimer_ops_t zmock_ops;
     ztimer_clock_t *z = &zmock.super;
 
-    /* initialize mock timer without start and stop ops */
+    // initialize mock timer without start and stop ops
     ztimer_mock_init(&zmock, 24);
     zmock_ops = *zmock.super.ops;
     zmock_ops.start = NULL;
@@ -72,12 +66,11 @@ static void test_ztimer_ondemand_acquire_ops_unsupported(void)
     TEST_ASSERT_EQUAL_INT(0, zmock.armed);
 }
 
-static void test_ztimer_ondemand_acquire_release_extend(void)
-{
+static void test_ztimer_ondemand_acquire_release_extend(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
-    /* initialize 24bit mock timer that must be extended */
+    // initialize 24bit mock timer that must be extended
     ztimer_mock_init(&zmock, 24);
 
     TEST_ASSERT_EQUAL_INT(0, zmock.running);
@@ -93,21 +86,19 @@ static void test_ztimer_ondemand_acquire_release_extend(void)
 
 #define HAS_BEEN_EXEC (1)
 
-static void _set_cb(void *arg)
-{
+static void _set_cb(void *arg) {
     int *val = arg;
     *val = HAS_BEEN_EXEC;
 }
 
-static void test_ztimer_ondemand_timers(void)
-{
+static void test_ztimer_ondemand_timers(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
     ztimer_mock_init(&zmock, 32);
     z->adjust_clock_start = 10;
 
-    /* set first timer */
+    // set first timer
     int a_arg = 0;
     ztimer_t a = {.callback = _set_cb, .arg = &a_arg};
     const uint32_t a_val = 100;
@@ -116,27 +107,27 @@ static void test_ztimer_ondemand_timers(void)
     TEST_ASSERT_EQUAL_INT(1, zmock.running);
     TEST_ASSERT_EQUAL_INT(1, zmock.armed);
 
-    /* set second timer */
+    // set second timer
     int b_arg = 0;
     ztimer_t b = {.callback = _set_cb, .arg = &b_arg};
     const uint32_t b_val = 200;
     uint32_t diff = zmock.target;
     ztimer_set(z, &b, b_val);
 
-    /* let the first timer fire */
+    // let the first timer fire
     ztimer_mock_advance(&zmock, zmock.target);
     TEST_ASSERT_EQUAL_INT(HAS_BEEN_EXEC, a_arg);
     TEST_ASSERT_EQUAL_INT(b_val - diff, zmock.target);
     TEST_ASSERT_EQUAL_INT(1, zmock.running);
     TEST_ASSERT_EQUAL_INT(1, zmock.armed);
 
-    /* let the second timer fire -> no users left! */
+    // let the second timer fire -> no users left!
     ztimer_mock_advance(&zmock, zmock.target);
     TEST_ASSERT_EQUAL_INT(HAS_BEEN_EXEC, b_arg);
     TEST_ASSERT_EQUAL_INT(0, zmock.running);
     TEST_ASSERT_EQUAL_INT(0, zmock.armed);
 
-    /* set and remove timer */
+    // set and remove timer
     ztimer_set(z, &a, a_val);
     TEST_ASSERT_EQUAL_INT(1, zmock.running);
     TEST_ASSERT_EQUAL_INT(1, zmock.armed);
@@ -145,13 +136,12 @@ static void test_ztimer_ondemand_timers(void)
     TEST_ASSERT_EQUAL_INT(0, zmock.armed);
 }
 
-static void test_ztimer_ondemand_timers_converted(void)
-{
+static void test_ztimer_ondemand_timers_converted(void) {
     ztimer_mock_t zmock;
     ztimer_convert_frac_t zc;
     ztimer_clock_t *z = &zc.super.super;
 
-    /* the base timer must be extended */
+    // the base timer must be extended
     ztimer_mock_init(&zmock, 24);
     const uint32_t factor = 10;
     ztimer_convert_frac_init(&zc, &zmock.super, 1, factor);
@@ -172,8 +162,7 @@ static void test_ztimer_ondemand_timers_converted(void)
     TEST_ASSERT_EQUAL_INT(0, zmock.armed);
 }
 
-Test *tests_ztimer_ondemand_tests(void)
-{
+Test *tests_ztimer_ondemand_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_ztimer_ondemand_acquire_release),
         new_TestFixture(test_ztimer_ondemand_acquire_ops_unsupported),
@@ -187,4 +176,4 @@ Test *tests_ztimer_ondemand_tests(void)
     return (Test *)&ztimer_tests;
 }
 
-/** @} */
+/// @}

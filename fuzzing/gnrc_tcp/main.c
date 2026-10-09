@@ -1,10 +1,8 @@
-/*
- * Copyright (C) 2019 Sören Tempel <tempel@uni-bremen.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Sören Tempel <tempel@uni-bremen.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #include <err.h>
 #include <stdlib.h>
@@ -26,8 +24,7 @@ static gnrc_nettype_t ntype = GNRC_NETTYPE_TCP;
 static gnrc_tcp_tcb_queue_t queue = GNRC_TCP_TCB_QUEUE_INIT;
 static gnrc_tcp_tcb_t tcbs[TCB_QUEUE_SIZE];
 
-static void *tcploop(void *arg)
-{
+static void *tcploop(void *arg) {
     mutex_t *tcpmtx = arg;
     gnrc_tcp_ep_t ep;
 
@@ -54,13 +51,12 @@ static void *tcploop(void *arg)
         }
     }
 
-    /* Never reached but, for clean programming sake */
+    // Never reached but, for clean programming sake
     gnrc_tcp_stop_listen(&queue);
     return NULL;
 }
 
-static void inittcp(void)
-{
+static void inittcp(void) {
     static char tcpthr[THREAD_STACKSIZE_DEFAULT];
     static mutex_t tcpmtx = MUTEX_INIT_LOCKED;
     kernel_pid_t pid;
@@ -71,11 +67,10 @@ static void inittcp(void)
         errx(EXIT_FAILURE, "thread_create failed: %d\n", pid);
     }
 
-    mutex_lock(&tcpmtx); /* wait until tcp is initialized */
+    mutex_lock(&tcpmtx); // wait until tcp is initialized
 }
 
-void initialize(ipv6_addr_t *addr)
-{
+void initialize(ipv6_addr_t *addr) {
     if (ipv6_addr_from_str(addr, SERVER_ADDR) == NULL) {
         errx(EXIT_FAILURE, "ipv6_addr_from_str failed");
     }
@@ -86,8 +81,7 @@ void initialize(ipv6_addr_t *addr)
     inittcp();
 }
 
-int main(void)
-{
+int main(void) {
     ipv6_addr_t myaddr;
     gnrc_pktsnip_t *ipkt, *tpkt;
 

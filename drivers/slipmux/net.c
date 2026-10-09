@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2026 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2026 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author  Bennet Hattesen <bennet.hattesen@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author  Bennet Hattesen <bennet.hattesen@haw-hamburg.de>
 
 #include "log.h"
 #include "slipdev.h"
@@ -24,22 +20,19 @@
 
 void _slip_rx_cb(void *arg, uint8_t byte);
 
-static inline void _slipdev_lock(void)
-{
+static inline void _slipdev_lock(void) {
     if (IS_USED(MODULE_STDIO_SLIPDEV) || IS_USED(MODULE_SLIPDEV_CONFIG)) {
         mutex_lock(&slipdev_mutex);
     }
 }
 
-static inline void _slipdev_unlock(void)
-{
+static inline void _slipdev_unlock(void) {
     if (IS_USED(MODULE_STDIO_SLIPDEV) || IS_USED(MODULE_SLIPDEV_CONFIG)) {
         mutex_unlock(&slipdev_mutex);
     }
 }
 
-static void _poweron(slipdev_t *dev)
-{
+static void _poweron(slipdev_t *dev) {
     if ((dev->state != SLIPDEV_STATE_STANDBY) &&
         (dev->state != SLIPDEV_STATE_SLEEP)) {
         return;
@@ -49,19 +42,17 @@ static void _poweron(slipdev_t *dev)
     uart_init(dev->config.uart, dev->config.baudrate, _slip_rx_cb, dev);
 }
 
-static inline void _poweroff(slipdev_t *dev, uint8_t state)
-{
+static inline void _poweroff(slipdev_t *dev, uint8_t state) {
     uart_poweroff(dev->config.uart);
     dev->state = state;
 }
 
-static int _init(netdev_t *netdev)
-{
+static int _init(netdev_t *netdev) {
     slipdev_t *dev = (slipdev_t *)netdev;
 
     DEBUG("slipdev: initializing device %p on UART %i with baudrate %" PRIu32 "\n",
           (void *)dev, dev->config.uart, dev->config.baudrate);
-    /* initialize buffers */
+    // initialize buffers
     crb_init(&dev->rb, dev->rxmem, sizeof(dev->rxmem));
     if (uart_init(dev->config.uart, dev->config.baudrate, _slip_rx_cb,
                   dev) != UART_OK) {
@@ -70,25 +61,24 @@ static int _init(netdev_t *netdev)
         return -ENODEV;
     }
 
-    /* signal link UP */
+    // signal link UP
     netdev->event_callback(netdev, NETDEV_EVENT_LINK_UP);
 
     return 0;
 }
 
-static int _check_state(slipdev_t *dev)
-{
-    /* power states not supported when multiplexing stdio / configuration */
+static int _check_state(slipdev_t *dev) {
+    // power states not supported when multiplexing stdio / configuration
     if (IS_USED(MODULE_STDIO_SLIPDEV) || IS_USED(MODULE_SLIPDEV_CONFIG)) {
         return 0;
     }
 
-    /* discard data when interface is in SLEEP mode */
+    // discard data when interface is in SLEEP mode
     if (dev->state == SLIPDEV_STATE_SLEEP) {
         return -ENETDOWN;
     }
 
-    /* sending data wakes the interface from STANDBY */
+    // sending data wakes the interface from STANDBY
     if (dev->state == SLIPDEV_STATE_STANDBY) {
         _poweron(dev);
     }
@@ -96,8 +86,7 @@ static int _check_state(slipdev_t *dev)
     return 0;
 }
 
-static int _send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _send(netdev_t *netdev, const iolist_t *iolist) {
     slipdev_t *dev = (slipdev_t *)netdev;
     int bytes = _check_state(dev);
 
@@ -118,19 +107,18 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
     return bytes;
 }
 
-static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     slipdev_t *dev = (slipdev_t *)netdev;
     size_t res = 0;
 
     (void)info;
     if (buf == NULL) {
         if (len > 0) {
-            /* remove data */
+            // remove data
             crb_consume_chunk(&dev->rb, NULL, len);
         }
         else {
-            /* the user was warned not to use a buffer size > `INT_MAX` ;-) */
+            // the user was warned not to use a buffer size > `INT_MAX` ;-)
             crb_get_chunk_size(&dev->rb, &res);
         }
     }
@@ -141,8 +129,7 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
     return res;
 }
 
-static void _isr(netdev_t *netdev)
-{
+static void _isr(netdev_t *netdev) {
     slipdev_t *dev = (slipdev_t *)netdev;
 
     DEBUG("slipdev: handling ISR event\n");
@@ -155,8 +142,7 @@ static void _isr(netdev_t *netdev)
 }
 
 #if !(IS_USED(MODULE_STDIO_SLIPDEV) || IS_USED(MODULE_SLIPDEV_CONFIG))
-static int _set_state(slipdev_t *dev, netopt_state_t state)
-{
+static int _set_state(slipdev_t *dev, netopt_state_t state) {
     if (IS_USED(MODULE_STDIO_SLIPDEV) || IS_USED(MODULE_SLIPDEV_CONFIG)) {
         return -ENOTSUP;
     }
@@ -178,8 +164,7 @@ static int _set_state(slipdev_t *dev, netopt_state_t state)
     return sizeof(netopt_state_t);
 }
 
-static int _set(netdev_t *netdev, netopt_t opt, const void *value, size_t max_len)
-{
+static int _set(netdev_t *netdev, netopt_t opt, const void *value, size_t max_len) {
     (void)max_len;
 
     slipdev_t *dev = (slipdev_t *)netdev;
@@ -191,10 +176,9 @@ static int _set(netdev_t *netdev, netopt_t opt, const void *value, size_t max_le
         return -ENOTSUP;
     }
 }
-#endif /* !(MODULE_STDIO_SLIPDEV || MODULE_SLIPDEV_CONFIG) */
+#endif // !(MODULE_STDIO_SLIPDEV || MODULE_SLIPDEV_CONFIG)
 
-static int _get(netdev_t *netdev, netopt_t opt, void *value, size_t max_len)
-{
+static int _get(netdev_t *netdev, netopt_t opt, void *value, size_t max_len) {
     (void)netdev;
     (void)max_len;
     switch (opt) {
@@ -215,8 +199,7 @@ static int _get(netdev_t *netdev, netopt_t opt, void *value, size_t max_len)
     }
 }
 
-static int _confirm_send(netdev_t *netdev, void *info)
-{
+static int _confirm_send(netdev_t *netdev, void *info) {
     (void)netdev;
     (void)info;
     return -EOPNOTSUPP;
@@ -242,4 +225,4 @@ void slipdev_setup_net(slipdev_t *dev, uint8_t index) {
     netdev_register(&dev->netdev, NETDEV_SLIPDEV, index);
 }
 
-/** @} */
+/// @}

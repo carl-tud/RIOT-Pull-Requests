@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_iotlab
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the iotlab-m3 board
- *
- * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_common_iotlab
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the iotlab-m3 board
+///
+/// @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
-/* iotlab boards provide an LSE */
+// iotlab boards provide an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* HSE is clocked at 16MHz */
+// HSE is clocked at 16MHz
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -37,10 +33,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_A, 3), 0, 3 },
     { GPIO_UNDEF, 0, 16 },
@@ -48,27 +42,23 @@ static const adc_conf_t adc_config[] = {
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 3 },    /* DMA1 Channel 4 - USART1_TX */
-    { .stream = 5 },    /* DMA1 Channel 6 - USART2_TX */
+    { .stream = 3 },    // DMA1 Channel 4 - USART1_TX
+    { .stream = 5 },    // DMA1 Channel 6 - USART2_TX
 };
 
 #define DMA_0_ISR  isr_dma1_channel4
 #define DMA_1_ISR  isr_dma1_channel6
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -90,12 +80,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tim3
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev      = USART1,
@@ -127,21 +115,17 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    Real time counter configuration
- * @{
- */
+/// @name    Real time counter configuration
+/// @{
 #ifndef RTT_FREQUENCY
-#define RTT_FREQUENCY       (RTT_MAX_FREQUENCY)     /* in Hz */
+#define RTT_FREQUENCY       (RTT_MAX_FREQUENCY)     // in Hz
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
-  * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -158,10 +142,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_0_ISR           isr_i2c1_ev
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

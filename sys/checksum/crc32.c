@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 Ayman El Didi
- * SPDX-License-Identifier: CC0-1.0
- */
+// SPDX-FileCopyrightText: 2020 Ayman El Didi
+// SPDX-License-Identifier: CC0-1.0
 
-/**
- * @ingroup     sys_checksum_crc32
- *
- * @{
- *
- * @file
- * @author      Ayman El Didi <ayman@eldidi.org>
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     sys_checksum_crc32
+///
+/// @{
+///
+/// @file
+/// @author      Ayman El Didi <ayman@eldidi.org>
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include "kernel_defines.h"
 #include "checksum/crc32.h"
@@ -62,8 +58,7 @@ static const uint32_t _crc32_tab[] = {
     0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-static inline uint32_t crc32_for_byte(uint32_t result)
-{
+static inline uint32_t crc32_for_byte(uint32_t result) {
     if (IS_USED(MODULE_CRC32_FAST)) {
         return _crc32_tab[result & 0xFF] ^ (result >> 8);
     }
@@ -71,37 +66,34 @@ static inline uint32_t crc32_for_byte(uint32_t result)
     const uint32_t polynomial = 0xEDB88320L;
 
     for (unsigned i = 0; i < 8; i++) {
-        /* IMPLEMENTATION: the code below always shifts result right by
-         * 1, but only XORs it by the polynomial if we're on the lowest
-         * bit.
-         *
-         * This is because 1 in binary is 00000001, so ANDing the
-         * result by 1 will always give 0 unless the lowest bit is set.
-         * And since XOR by zero does nothing, the other half only
-         * occurs when we're on the lowest bit.
-         *
-         * I didn't leave the above implementation in, despite being
-         * faster on my machine since it is a more complex operation
-         * which may be slower on less sophisticated processors. It can
-         * be added in in place of the loop code below.
-         */
+        // IMPLEMENTATION: the code below always shifts result right by
+        // 1, but only XORs it by the polynomial if we're on the lowest
+        // bit.
+        //
+        // This is because 1 in binary is 00000001, so ANDing the
+        // result by 1 will always give 0 unless the lowest bit is set.
+        // And since XOR by zero does nothing, the other half only
+        // occurs when we're on the lowest bit.
+        //
+        // I didn't leave the above implementation in, despite being
+        // faster on my machine since it is a more complex operation
+        // which may be slower on less sophisticated processors. It can
+        // be added in in place of the loop code below.
 
         result = (result >> 1) ^ (result & 1) * polynomial;
 
-        /* Here is the code I replaced with the branch I tried to
-         * remove:
-        if (result & 1) {
-            result = (result >> 1) ^ polynomial;
-            continue;
-        }
-        result >>= 1;
-         */
+        // Here is the code I replaced with the branch I tried to
+        // remove:
+        // if (result & 1) {
+        //     result = (result >> 1) ^ polynomial;
+        //     continue;
+        // }
+        // result >>= 1;
     }
     return result;
 }
 
-uint32_t crc32(const void *buf, size_t size)
-{
+uint32_t crc32(const void *buf, size_t size) {
     const uint8_t *p = buf;
     uint32_t crc = ~0U;
 
@@ -114,4 +106,4 @@ uint32_t crc32(const void *buf, size_t size)
     return ~crc;
 }
 
-/** @} */
+/// @}

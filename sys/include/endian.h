@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2024 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    sys_endian  endian conversions as provided by most libcs
- * @ingroup     sys
- *
- * This module provides architecture-independent access to architecture details.
- *
- * @{
- *
- * @file
- * @brief       libc header for endian conversion
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
- */
+/// @defgroup    sys_endian  endian conversions as provided by most libcs
+/// @ingroup     sys
+///
+/// This module provides architecture-independent access to architecture details.
+///
+/// @{
+///
+/// @file
+/// @brief       libc header for endian conversion
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
 
 #include <stdint.h>
 
@@ -26,50 +22,42 @@ extern "C" {
 #endif
 
 #ifdef DOXYGEN
-/**
- * @brief   A numeric constant representing little endian byte order
- */
+/// @brief   A numeric constant representing little endian byte order
 #define LITTLE_ENDIAN   magic-number
 
-/**
- * @brief   A numeric constant representing big endian byte order
- */
+/// @brief   A numeric constant representing big endian byte order
 #define BIG_ENDIAN      magic-number
 
-/**
- * @brief   A numeric constant representing PDP endian byte order
- */
+/// @brief   A numeric constant representing PDP endian byte order
 #define PDP_ENDIAN      magic-number
 
-/**
- * @brief   The byte order of this machines indicated by the constant
- *          @ref BIG_ENDIAN or @ref LITTLE_ENDIAN
- *
- * @note    This numeric constant is available at preprocessor time, so you
- *          can compare this to @ref BIG_ENDIAN or @ref LITTLE_ENDIAN in
- *          `#if` directives.
- */
+/// @brief   The byte order of this machines indicated by the constant
+///          @ref BIG_ENDIAN or @ref LITTLE_ENDIAN
+///
+/// @note    This numeric constant is available at preprocessor time, so you
+///          can compare this to @ref BIG_ENDIAN or @ref LITTLE_ENDIAN in
+///          `#if` directives.
 #define BYTE_ORDER      <LITTLE_ENDIAN or BIG_ENDIAN>
 
-uint16_t htobe16(uint16_t host_16bits);         /**< host to big endian, 16 bit */
-uint16_t htole16(uint16_t host_16bits);         /**< host to little endian, 16 bit */
-uint16_t be16toh(uint16_t big_endian_16bits);   /**< big endian to host, 16 bit */
-uint16_t le16toh(uint16_t little_endian_16bits);/**< little endian to host, 16 bit */
+uint16_t htobe16(uint16_t host_16bits);         ///< host to big endian, 16 bit
+uint16_t htole16(uint16_t host_16bits);         ///< host to little endian, 16 bit
+uint16_t be16toh(uint16_t big_endian_16bits);   ///< big endian to host, 16 bit
+uint16_t le16toh(uint16_t little_endian_16bits);///< little endian to host, 16 bit
 
-uint32_t htobe32(uint32_t host_32bits);         /**< host to big endian, 32 bit */
-uint32_t htole32(uint32_t host_32bits);         /**< host to little endian, 32 bit */
-uint32_t be32toh(uint32_t big_endian_32bits);   /**< big endian to host, 32 bit */
-uint32_t le32toh(uint32_t little_endian_32bits);/**< little endian to host, 32 bit */
+uint32_t htobe32(uint32_t host_32bits);         ///< host to big endian, 32 bit
+uint32_t htole32(uint32_t host_32bits);         ///< host to little endian, 32 bit
+uint32_t be32toh(uint32_t big_endian_32bits);   ///< big endian to host, 32 bit
+uint32_t le32toh(uint32_t little_endian_32bits);///< little endian to host, 32 bit
 
-uint64_t htobe64(uint64_t host_64bits);         /**< host to big endian, 64 bit */
-uint64_t htole64(uint64_t host_64bits);         /**< host to little endian, 64 bit */
-uint64_t be64toh(uint64_t big_endian_64bits);   /**< big endian to host, 64 bit */
-uint64_t le64toh(uint64_t little_endian_64bits);/**< little endian to host, 64 bit */
+uint64_t htobe64(uint64_t host_64bits);         ///< host to big endian, 64 bit
+uint64_t htole64(uint64_t host_64bits);         ///< host to little endian, 64 bit
+uint64_t be64toh(uint64_t big_endian_64bits);   ///< big endian to host, 64 bit
+uint64_t le64toh(uint64_t little_endian_64bits);///< little endian to host, 64 bit
 
-#else /* DOXYGEN */
+#else // DOXYGEN
 
-/* Depending on the version of newlib used, newlib may provide them indirectly
- * as well. We don't want to redefine them in this case */
+// Depending on the version of newlib used, newlib may provide them indirectly
+// as well. We don't want to redefine them in this case
 #ifndef LITTLE_ENDIAN
 #  define LITTLE_ENDIAN 1234
 #endif
@@ -83,8 +71,8 @@ uint64_t le64toh(uint64_t little_endian_64bits);/**< little endian to host, 64 b
 #  define BYTE_ORDER    __BYTE_ORDER__
 #endif
 
-/* But to avoid lots of pain in the ass: Let's at least make sure everyone
- * agrees on what magic number is what */
+// But to avoid lots of pain in the ass: Let's at least make sure everyone
+// agrees on what magic number is what
 #if (LITTLE_ENDIAN != 1234) || (BIG_ENDIAN != 4321) || (PDP_ENDIAN != 3412)
 #  error "Mismatching magic numbers to refer to endianness"
 #endif
@@ -167,10 +155,10 @@ uint64_t le64toh(uint64_t little_endian_64bits);/**< little endian to host, 64 b
 #  error "Byte order not supported"
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

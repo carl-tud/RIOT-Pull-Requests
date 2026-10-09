@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg
- * SPDX-FileCopyrightText: 2021 Francisco Molina
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg
+// SPDX-FileCopyrightText: 2021 Francisco Molina
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_lcd
- * @{
- *
- * @file
- * @brief       Device driver implementation for the lcd display controller
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     drivers_lcd
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the lcd display controller
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -39,49 +35,44 @@
 
 #if IS_USED(MODULE_LCD_PARALLEL)
 
-static void lcd_ll_par_write_byte(lcd_t *dev, bool cont, uint8_t out)
-{
+static void lcd_ll_par_write_byte(lcd_t *dev, bool cont, uint8_t out) {
     lcd_ll_par_driver.write_byte(dev, cont, out);
 }
 
-static uint8_t lcd_ll_par_read_byte(lcd_t *dev, bool cont)
-{
+static uint8_t lcd_ll_par_read_byte(lcd_t *dev, bool cont) {
     return lcd_ll_par_driver.read_byte(dev, cont);
 }
 
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
-static void lcd_ll_par_write_word(lcd_t *dev, bool cont, uint16_t out)
-{
+static void lcd_ll_par_write_word(lcd_t *dev, bool cont, uint16_t out) {
     lcd_ll_par_driver.write_word(dev, cont, out);
 }
 
-static uint16_t lcd_ll_par_read_word(lcd_t *dev, bool cont)
-{
+static uint16_t lcd_ll_par_read_word(lcd_t *dev, bool cont) {
     return lcd_ll_par_driver.read_word(dev, cont);
 }
 
-#endif /* IS_USED(MODULE_LCD_PARALLEL_16BIT) */
+#endif // IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
 static void lcd_ll_par_write_bytes(lcd_t *dev, bool cont,
-                                   const void *data, size_t len)
-{
+                                   const void *data, size_t len) {
     assert(len);
 
     const uint8_t *data_out = data;
 
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
     if (dev->word_access) {
-        /* len has to be a multiple of two for word access */
+        // len has to be a multiple of two for word access
         assert((len % 2) == 0);
         for (size_t i = 0; i < len; i += 2) {
-            /* data[i] is the high byte and data[i+1] is the low byte in BE */
+            // data[i] is the high byte and data[i+1] is the low byte in BE
             uint16_t out_word = (data_out[i] << 8) + data_out[i + 1];
             lcd_ll_par_write_word(dev, i == (len - 2) ? cont : true, out_word);
         }
         return;
     }
-#endif /* IS_USED(MODULE_LCD_PARALLEL_16BIT) */
+#endif // IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
     for (size_t i = 0; i < len; i++) {
         lcd_ll_par_write_byte(dev, i == (len - 1) ? cont : true, data_out[i]);
@@ -89,43 +80,41 @@ static void lcd_ll_par_write_bytes(lcd_t *dev, bool cont,
 }
 
 static void lcd_ll_par_read_bytes(lcd_t *dev, bool cont,
-                                  void *data, size_t len)
-{
+                                  void *data, size_t len) {
     assert(len);
 
     uint8_t *data_in = data;
 
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
     if (dev->word_access) {
-        /* len has to be a multiple of two for word access */
+        // len has to be a multiple of two for word access
         assert((len % 2) == 0);
         for (size_t i = 0; i < len; i += 2) {
             uint16_t in_word = lcd_ll_par_read_word(dev, i == (len - 2) ? cont : true);
-            data_in[i] = in_word >> 8;       /* data[i] is the high byte in BE */
-            data_in[i + 1] = in_word & 0xff; /* data[i+1] is the low byte in BE */
+            data_in[i] = in_word >> 8;       // data[i] is the high byte in BE
+            data_in[i + 1] = in_word & 0xff; // data[i+1] is the low byte in BE
         }
         return;
     }
-#endif /* IS_USED(MODULE_LCD_PARALLEL_16BIT) */
+#endif // IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
     for (size_t i = 0; i < len; i++) {
         data_in[i] = lcd_ll_par_read_byte(dev, i == (len - 1) ? cont : true);
     }
 }
 
-#endif /* IS_USED(MODULE_LCD_PARALLEL) */
+#endif // IS_USED(MODULE_LCD_PARALLEL)
 
-static inline void lcd_ll_write_byte(lcd_t *dev, bool cont, uint8_t data)
-{
+static inline void lcd_ll_write_byte(lcd_t *dev, bool cont, uint8_t data) {
 #if IS_USED(MODULE_LCD_SPI)
     if (dev->params->spi != SPI_UNDEF) {
-        /* SPI serial interface is used */
+        // SPI serial interface is used
         spi_transfer_byte(dev->params->spi, dev->params->cs_pin, cont, data);
     }
     else {
 #endif
 #if IS_USED(MODULE_LCD_PARALLEL)
-        /* MCU 8080 8-/16-bit parallel interface is used */
+        // MCU 8080 8-/16-bit parallel interface is used
         lcd_ll_par_write_byte(dev, cont, data);
 #endif
 #if IS_USED(MODULE_LCD_SPI)
@@ -134,18 +123,17 @@ static inline void lcd_ll_write_byte(lcd_t *dev, bool cont, uint8_t data)
 }
 
 static inline void lcd_ll_write_bytes(lcd_t *dev, bool cont,
-                                      const void *data, size_t len)
-{
+                                      const void *data, size_t len) {
 #if IS_USED(MODULE_LCD_SPI)
     if (dev->params->spi != SPI_UNDEF) {
-        /* SPI serial interface is used */
+        // SPI serial interface is used
         spi_transfer_bytes(dev->params->spi,
                            dev->params->cs_pin, cont, data, NULL, len);
     }
     else {
 #endif
 #if IS_USED(MODULE_LCD_PARALLEL)
-        /* MCU 8080 8-/16-bit parallel interface is used */
+        // MCU 8080 8-/16-bit parallel interface is used
         lcd_ll_par_write_bytes(dev, cont, data, len);
 #endif
 #if IS_USED(MODULE_LCD_SPI)
@@ -154,30 +142,29 @@ static inline void lcd_ll_write_bytes(lcd_t *dev, bool cont,
 }
 
 static inline void lcd_ll_read_bytes(lcd_t *dev, bool cont,
-                                     void *data, size_t len)
-{
+                                     void *data, size_t len) {
 #if IS_USED(MODULE_LCD_SPI)
     if (dev->params->spi != SPI_UNDEF) {
-        /* SPI serial interface is used */
-        /* Dummy read */
+        // SPI serial interface is used
+        // Dummy read
         spi_transfer_byte(dev->params->spi,
                           dev->params->cs_pin, true, 0x00);
         spi_transfer_bytes(dev->params->spi,
                            dev->params->cs_pin, cont, NULL, data, len);
     }
     else {
-#endif /* IS_USED(MODULE_LCD_SPI) */
+#endif // IS_USED(MODULE_LCD_SPI)
 #if IS_USED(MODULE_LCD_PARALLEL)
-        /* MCU 8080 8-/16-bit parallel interface is used */
+        // MCU 8080 8-/16-bit parallel interface is used
 
-        /* switch GPIO mode to input */
+        // switch GPIO mode to input
         lcd_ll_par_driver.set_data_dir(dev, false);
 
-        /* Dummy read */
+        // Dummy read
         lcd_ll_par_read_byte(dev, true);
         lcd_ll_par_read_bytes(dev, cont, data, len);
 
-        /* switch GPIO mode back to output */
+        // switch GPIO mode back to output
         lcd_ll_par_driver.set_data_dir(dev, true);
 #endif
 #if IS_USED(MODULE_LCD_SPI)
@@ -185,8 +172,7 @@ static inline void lcd_ll_read_bytes(lcd_t *dev, bool cont,
 #endif
 }
 
-static void lcd_ll_cmd_start(lcd_t *dev, uint8_t cmd, bool cont)
-{
+static void lcd_ll_cmd_start(lcd_t *dev, uint8_t cmd, bool cont) {
 #if IS_USED(MODULE_LCD_PARALLEL)
     if (dev->params->mode != LCD_IF_SPI) {
         lcd_ll_par_driver.cmd_start(dev, cmd, cont);
@@ -201,7 +187,7 @@ static void lcd_ll_cmd_start(lcd_t *dev, uint8_t cmd, bool cont)
 #endif
 
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
-    /* only the RAMRD and RAMRDC commands use 16-bit data access */
+    // only the RAMRD and RAMRDC commands use 16-bit data access
     if (((cmd == LCD_CMD_RAMWR) || (cmd == LCD_CMD_RAMWRC) ||
          (cmd == LCD_CMD_RAMRD) || (cmd == LCD_CMD_RAMRDC)) &&
         (dev->params->mode == LCD_IF_PARALLEL_16BIT)) {
@@ -211,8 +197,7 @@ static void lcd_ll_cmd_start(lcd_t *dev, uint8_t cmd, bool cont)
 }
 
 static void lcd_ll_set_area_default(lcd_t *dev, uint16_t x1, uint16_t x2,
-                                    uint16_t y1, uint16_t y2)
-{
+                                    uint16_t y1, uint16_t y2) {
     be_uint16_t params[2];
 
     x1 += dev->params->offset_x;
@@ -220,9 +205,9 @@ static void lcd_ll_set_area_default(lcd_t *dev, uint16_t x1, uint16_t x2,
     y1 += dev->params->offset_y;
     y2 += dev->params->offset_y;
 
-    /* Function is called by a high level function of the LCD driver where
-     * the device is already acquired. So we don't must acquire it here.
-     * Therefore the low level write command function is called. */
+    // Function is called by a high level function of the LCD driver where
+    // the device is already acquired. So we don't must acquire it here.
+    // Therefore the low level write command function is called.
 
     params[0] = byteorder_htons(x1);
     params[1] = byteorder_htons(x2);
@@ -234,8 +219,7 @@ static void lcd_ll_set_area_default(lcd_t *dev, uint16_t x1, uint16_t x2,
                      sizeof(params));
 }
 
-void lcd_ll_set_area(lcd_t *dev, uint16_t x1, uint16_t x2, uint16_t y1, uint16_t y2)
-{
+void lcd_ll_set_area(lcd_t *dev, uint16_t x1, uint16_t x2, uint16_t y1, uint16_t y2) {
     if (dev->driver->set_area) {
         dev->driver->set_area(dev, x1, x2, y1, y2);
     }
@@ -244,18 +228,17 @@ void lcd_ll_set_area(lcd_t *dev, uint16_t x1, uint16_t x2, uint16_t y1, uint16_t
     }
 }
 
-void lcd_ll_acquire(lcd_t *dev)
-{
+void lcd_ll_acquire(lcd_t *dev) {
 #if IS_USED(MODULE_LCD_SPI)
     if (dev->params->spi != SPI_UNDEF) {
-        /* SPI serial interface is used */
+        // SPI serial interface is used
         spi_acquire(dev->params->spi, dev->params->cs_pin,
                     dev->params->spi_mode, dev->params->spi_clk);
     }
     else {
 #endif
 #if IS_USED(MODULE_LCD_PARALLEL)
-        /* MCU 8080 8-/16-bit parallel interface is used */
+        // MCU 8080 8-/16-bit parallel interface is used
         mutex_lock(&dev->lock);
 #endif
 #if IS_USED(MODULE_LCD_SPI)
@@ -263,22 +246,21 @@ void lcd_ll_acquire(lcd_t *dev)
 #endif
 }
 
-void lcd_ll_release(lcd_t *dev)
-{
+void lcd_ll_release(lcd_t *dev) {
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
-    /* reset word to byte access */
+    // reset word to byte access
     dev->word_access = false;
 #endif
 
 #if IS_USED(MODULE_LCD_SPI)
     if (dev->params->spi != SPI_UNDEF) {
-        /* SPI serial interface is used */
+        // SPI serial interface is used
         spi_release(dev->params->spi);
     }
     else {
 #endif
 #if IS_USED(MODULE_LCD_PARALLEL)
-        /* MCU 8080 8-/16-bit parallel interface is used */
+        // MCU 8080 8-/16-bit parallel interface is used
         mutex_unlock(&dev->lock);
 #endif
 #if IS_USED(MODULE_LCD_SPI)
@@ -287,8 +269,7 @@ void lcd_ll_release(lcd_t *dev)
 }
 
 void lcd_ll_write_cmd(lcd_t *dev, uint8_t cmd, const uint8_t *data,
-                      size_t len)
-{
+                      size_t len) {
     DEBUG("[%s] command 0x%02x (%" PRIuSIZE ") ", __func__, cmd, len);
     if (IS_USED(ENABLE_DEBUG) && len) {
         for (uint8_t i = 0; i < len; i++) {
@@ -303,8 +284,7 @@ void lcd_ll_write_cmd(lcd_t *dev, uint8_t cmd, const uint8_t *data,
     }
 }
 
-void lcd_ll_read_cmd(lcd_t *dev, uint8_t cmd, uint8_t *data, size_t len)
-{
+void lcd_ll_read_cmd(lcd_t *dev, uint8_t cmd, uint8_t *data, size_t len) {
     assert(len);
 
     DEBUG("[%s] command 0x%02x (%" PRIuSIZE ") ", __func__, cmd, len);
@@ -320,8 +300,7 @@ void lcd_ll_read_cmd(lcd_t *dev, uint8_t cmd, uint8_t *data, size_t len)
     DEBUG("\n");
 }
 
-int lcd_init(lcd_t *dev, const lcd_params_t *params)
-{
+int lcd_init(lcd_t *dev, const lcd_params_t *params) {
     dev->params = params;
 
 #if IS_USED(MODULE_LCD_SPI)
@@ -329,7 +308,7 @@ int lcd_init(lcd_t *dev, const lcd_params_t *params)
         assert(gpio_is_valid(dev->params->dcx_pin));
         gpio_init(dev->params->dcx_pin, GPIO_OUT);
 
-        /* SPI serial interface is used */
+        // SPI serial interface is used
         int res = spi_init_cs(dev->params->spi, dev->params->cs_pin);
 
         if (res != SPI_OK) {
@@ -338,20 +317,20 @@ int lcd_init(lcd_t *dev, const lcd_params_t *params)
         }
     }
     else {
-#endif /* IS_USED(MODULE_LCD_SPI) */
+#endif // IS_USED(MODULE_LCD_SPI)
 
 #if IS_USED(MODULE_LCD_PARALLEL)
         mutex_init(&dev->lock);
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
         dev->word_access = false;
-#endif /* IS_USED(MODULE_LCD_PARALLEL_16BIT) */
+#endif // IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
-        /* Low-level parallel interface initialization */
+        // Low-level parallel interface initialization
         lcd_ll_par_driver.init(dev);
-        /* set output data direction */
+        // set output data direction
         lcd_ll_par_driver.set_data_dir(dev, true);
 
-#else /* IS_USED(MODULE_LCD_PARALLEL) */
+#else // IS_USED(MODULE_LCD_PARALLEL)
 
         LOG_ERROR("[lcd] either lcd_parallel or lcd_spi has to be enabled");
         assert(false);
@@ -369,43 +348,40 @@ int lcd_init(lcd_t *dev, const lcd_params_t *params)
     }
     ztimer_sleep(ZTIMER_MSEC, 120);
 
-    /* controller-specific init function has to be defined */
+    // controller-specific init function has to be defined
     assert(dev->driver->init);
     return dev->driver->init(dev, params);
 }
 
 void lcd_write_cmd(lcd_t *dev, uint8_t cmd, const uint8_t *data,
-                   size_t len)
-{
+                   size_t len) {
     lcd_ll_acquire(dev);
     lcd_ll_write_cmd(dev, cmd, data, len);
     lcd_ll_release(dev);
 }
 
-void lcd_read_cmd(lcd_t *dev, uint8_t cmd, uint8_t *data, size_t len)
-{
+void lcd_read_cmd(lcd_t *dev, uint8_t cmd, uint8_t *data, size_t len) {
     lcd_ll_acquire(dev);
     lcd_ll_read_cmd(dev, cmd, data, len);
     lcd_ll_release(dev);
 }
 
 void lcd_fill(lcd_t *dev, uint16_t x1, uint16_t x2, uint16_t y1,
-              uint16_t y2, uint16_t color)
-{
-    /* Send fill area to the display */
+              uint16_t y2, uint16_t color) {
+    // Send fill area to the display
 
-    /* Calculate number of pixels */
+    // Calculate number of pixels
     int32_t num_pix = (x2 - x1 + 1) * (y2 - y1 + 1);
 
     DEBUG("[lcd]: Write x1: %" PRIu16 ", x2: %" PRIu16 ", "
           "y1: %" PRIu16 ", y2: %" PRIu16 ". Num pixels: %lu\n",
           x1, x2, y1, y2, (unsigned long)num_pix);
 
-    /* Send fill area to the display */
+    // Send fill area to the display
     lcd_ll_acquire(dev);
 
     lcd_ll_set_area(dev, x1, x2, y1, y2);
-    /* Memory access command */
+    // Memory access command
     lcd_ll_cmd_start(dev, LCD_CMD_RAMWR, true);
 
     if (IS_ACTIVE(CONFIG_LCD_LE_MODE)) {
@@ -420,8 +396,7 @@ void lcd_fill(lcd_t *dev, uint16_t x1, uint16_t x2, uint16_t y1,
 }
 
 void lcd_pixmap(lcd_t *dev, uint16_t x1, uint16_t x2,
-                uint16_t y1, uint16_t y2, const uint16_t *color)
-{
+                uint16_t y1, uint16_t y2, const uint16_t *color) {
     size_t num_pix = (x2 - x1 + 1) * (y2 - y1 + 1);
 
     DEBUG("[lcd]: Write x1: %" PRIu16 ", x2: %" PRIu16 ", "
@@ -430,10 +405,10 @@ void lcd_pixmap(lcd_t *dev, uint16_t x1, uint16_t x2,
 
     lcd_ll_acquire(dev);
 
-    /* Send fill area to the display */
+    // Send fill area to the display
     lcd_ll_set_area(dev, x1, x2, y1, y2);
 
-    /* Memory access command */
+    // Memory access command
     lcd_ll_cmd_start(dev, LCD_CMD_RAMWR, true);
 
     if (IS_ACTIVE(CONFIG_LCD_LE_MODE)) {
@@ -451,24 +426,21 @@ void lcd_pixmap(lcd_t *dev, uint16_t x1, uint16_t x2,
     lcd_ll_release(dev);
 }
 
-void lcd_invert_on(lcd_t *dev)
-{
+void lcd_invert_on(lcd_t *dev) {
     uint8_t command = (dev->params->inverted) ? LCD_CMD_DINVOFF
                                               : LCD_CMD_DINVON;
 
     lcd_write_cmd(dev, command, NULL, 0);
 }
 
-void lcd_invert_off(lcd_t *dev)
-{
+void lcd_invert_off(lcd_t *dev) {
     uint8_t command = (dev->params->inverted) ? LCD_CMD_DINVON
                                               : LCD_CMD_DINVOFF;
 
     lcd_write_cmd(dev, command, NULL, 0);
 }
 
-void lcd_set_brightness(lcd_t *dev, uint8_t brightness)
-{
+void lcd_set_brightness(lcd_t *dev, uint8_t brightness) {
     lcd_write_cmd(dev, LCD_CMD_WRDISBV, &brightness, 1);
     uint8_t param = 0x26;
     lcd_write_cmd(dev, LCD_CMD_WRCTRLD, &param, 1);

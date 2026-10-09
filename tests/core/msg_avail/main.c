@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 Nick van IJzendoorn <nijzendoorn@engineering-spirit.nl>
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Nick van IJzendoorn <nijzendoorn@engineering-spirit.nl>
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Thread test application
- *
- * @author Nick van IJzendoorn <nijzendoorn@engineering-spirit.nl>
- * @author Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Thread test application
+///
+/// @author Nick van IJzendoorn <nijzendoorn@engineering-spirit.nl>
+/// @author Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -27,15 +23,14 @@
 
 msg_t msg_queue[MSG_QUEUE_LENGTH];
 
-int main(void)
-{
+int main(void) {
     msg_t msges[MSG_QUEUE_LENGTH];
 
     msg_init_queue(msg_queue, MSG_QUEUE_LENGTH);
 
     puts("[START]");
 
-    /* add message to own queue */
+    // add message to own queue
     for (unsigned idx = 0; idx < MSG_QUEUE_LENGTH; ++idx) {
         msges[idx].type = idx;
         msg_send_to_self(msges + idx);
@@ -45,7 +40,7 @@ int main(void)
             return 1;
         }
     }
-    /* receive available messages in queue */
+    // receive available messages in queue
     for (unsigned idx = msg_avail(); idx > 0; --idx) {
         msg_t msg;
         msg_receive(&msg);

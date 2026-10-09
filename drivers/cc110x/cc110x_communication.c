@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_cc110x
- * @{
- *
- * @file
- * @brief       Functions to communicate with the CC1100/CC1101 transceiver
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- * @}
- */
+/// @ingroup     drivers_cc110x
+/// @{
+///
+/// @file
+/// @brief       Functions to communicate with the CC1100/CC1101 transceiver
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+/// @}
 
 #include <errno.h>
 
@@ -24,8 +20,7 @@
 #include "periph/spi.h"
 #include "xtimer.h"
 
-int cc110x_power_on_and_acquire(cc110x_t *dev)
-{
+int cc110x_power_on_and_acquire(cc110x_t *dev) {
     gpio_t cs = dev->params.cs;
 
     if (gpio_init(cs, GPIO_OUT)) {
@@ -46,8 +41,7 @@ int cc110x_power_on_and_acquire(cc110x_t *dev)
     return 0;
 }
 
-uint8_t cc110x_read(cc110x_t *dev, uint8_t addr, uint8_t *dest)
-{
+uint8_t cc110x_read(cc110x_t *dev, uint8_t addr, uint8_t *dest) {
     uint8_t status;
 
     addr |= CC110X_SINGLE_BYTE_READ;
@@ -57,8 +51,7 @@ uint8_t cc110x_read(cc110x_t *dev, uint8_t addr, uint8_t *dest)
     return status;
 }
 
-uint8_t cc110x_read_reliable(cc110x_t *dev, uint8_t addr, uint8_t *dest)
-{
+uint8_t cc110x_read_reliable(cc110x_t *dev, uint8_t addr, uint8_t *dest) {
     uint8_t status, tmp;
 
     do {
@@ -69,8 +62,7 @@ uint8_t cc110x_read_reliable(cc110x_t *dev, uint8_t addr, uint8_t *dest)
     return status;
 }
 
-uint8_t cc110x_write(cc110x_t *dev, uint8_t addr, uint8_t data)
-{
+uint8_t cc110x_write(cc110x_t *dev, uint8_t addr, uint8_t data) {
     uint8_t status;
 
     addr |= CC110X_SINGLE_BYTE_WRITE;
@@ -80,8 +72,7 @@ uint8_t cc110x_write(cc110x_t *dev, uint8_t addr, uint8_t data)
     return status;
 }
 
-uint8_t cc110x_burst_read(cc110x_t *dev, uint8_t addr, void *dest, size_t len)
-{
+uint8_t cc110x_burst_read(cc110x_t *dev, uint8_t addr, void *dest, size_t len) {
     uint8_t status;
 
     addr |= CC110X_BURST_READ;
@@ -92,8 +83,7 @@ uint8_t cc110x_burst_read(cc110x_t *dev, uint8_t addr, void *dest, size_t len)
 }
 
 uint8_t cc110x_burst_write(cc110x_t *dev, uint8_t addr,
-                           const void *src, size_t len)
-{
+                           const void *src, size_t len) {
     uint8_t status;
 
     addr |= CC110X_BURST_WRITE;
@@ -103,8 +93,7 @@ uint8_t cc110x_burst_write(cc110x_t *dev, uint8_t addr,
     return status;
 }
 
-uint8_t cc110x_cmd(cc110x_t *dev, uint8_t cmd_strobe)
-{
+uint8_t cc110x_cmd(cc110x_t *dev, uint8_t cmd_strobe) {
     uint8_t status;
 
     spi_transfer_bytes(dev->params.spi, dev->params.cs, false,
@@ -112,8 +101,7 @@ uint8_t cc110x_cmd(cc110x_t *dev, uint8_t cmd_strobe)
     return status;
 }
 
-uint8_t cc110x_status(cc110x_t *dev)
-{
+uint8_t cc110x_status(cc110x_t *dev) {
     uint8_t status;
 
     do {

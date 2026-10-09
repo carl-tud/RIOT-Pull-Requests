@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <string.h>
 #include <errno.h>
 
@@ -32,32 +28,27 @@ static mtd_at25xxx_t _dev = {
 
 static mtd_dev_t *dev = (mtd_dev_t *)&_dev;
 
-static void setup(void)
-{
+static void setup(void) {
     int ret = mtd_init(dev);
     TEST_ASSERT_EQUAL_INT(0, ret);
     mtd_erase(dev, TEST_ADDRESS, dev->pages_per_sector * dev->page_size);
 }
 
-static void teardown(void)
-{
+static void teardown(void) {
     mtd_erase(dev, TEST_ADDRESS, dev->pages_per_sector * dev->page_size);
 }
 
-static void test_mtd_init(void)
-{
+static void test_mtd_init(void) {
     int ret = mtd_init(dev);
     TEST_ASSERT_EQUAL_INT(0, ret);
 }
 
-static void test_mtd_erase(void)
-{
+static void test_mtd_erase(void) {
     int ret = mtd_erase(dev, TEST_ADDRESS, dev->page_size);
     TEST_ASSERT_EQUAL_INT(0, ret);
 }
 
-static void test_mtd_write_erase(void)
-{
+static void test_mtd_write_erase(void) {
     uint8_t buf_empty[] = {0, 0, 0};
     const char buf[] = "MTD_AT25XXX_TEST_WRITE_ERASE";
 
@@ -77,15 +68,14 @@ static void test_mtd_write_erase(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(expected, buf_read, sizeof(buf_read)));
 }
 
-static void test_mtd_write_read(void)
-{
+static void test_mtd_write_read(void) {
     uint8_t buf_empty[] = {0, 0, 0};
     const char buf[] = "MTD_AT25XXX_TEST_WRITE_ERASE";
 
     char buf_read[sizeof(buf) + sizeof(buf_empty)];
     memset(buf_read, 0, sizeof(buf_read));
 
-    /* Basic write / read */
+    // Basic write / read
     int ret = mtd_write(dev, buf, TEST_ADDRESS, sizeof(buf));
     TEST_ASSERT_EQUAL_INT(0, ret);
 
@@ -98,8 +88,7 @@ static void test_mtd_write_read(void)
     TEST_ASSERT_EQUAL_INT(0, ret);
 }
 
-Test *tests_mtd_at25xxx_tests(void)
-{
+Test *tests_mtd_at25xxx_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_mtd_init),
         new_TestFixture(test_mtd_erase),
@@ -112,11 +101,10 @@ Test *tests_mtd_at25xxx_tests(void)
     return (Test *)&mtd_at25xxx_tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_mtd_at25xxx_tests());
     TESTS_END();
     return 0;
 }
-/** @} */
+/// @}

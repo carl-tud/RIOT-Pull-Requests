@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2016 Laurent Navet <laurent.navet@gmail.com>
- * SPDX-FileCopyrightText: 2017 Thomas Perrot <thomas.perrot@tupi.fr>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2016 Laurent Navet <laurent.navet@gmail.com>
+// SPDX-FileCopyrightText: 2017 Thomas Perrot <thomas.perrot@tupi.fr>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_arduino-atmega
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Arduino pins for Arduino Atmega boards
- *
- * You can use the defines in this file for simplified interaction with the
- * Arduino specific pin numbers.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Daniel Nordahl <nordahl.d@gmail.com>
- * @author      Laurent Navet <laurent.navet@gmail.com>
- * @author      Thomas Perrot <thomas.perrot@tupi.fr>
- */
+/// @ingroup     boards_common_arduino-atmega
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Arduino pins for Arduino Atmega boards
+///
+/// You can use the defines in this file for simplified interaction with the
+/// Arduino specific pin numbers.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Daniel Nordahl <nordahl.d@gmail.com>
+/// @author      Laurent Navet <laurent.navet@gmail.com>
+/// @author      Thomas Perrot <thomas.perrot@tupi.fr>
 
 #include "periph/adc.h"
 #include "periph/gpio.h"
@@ -29,51 +25,39 @@
 #include "periph/pwm.h"
 #include "periph/spi.h"
 #include "periph/uart.h"
-#include "periph_conf.h" /* For ADC_NUMOF */
+#include "periph_conf.h" // For ADC_NUMOF
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name    Arduino's UART devices
- * @{
- */
+/// @name    Arduino's UART devices
+/// @{
 #define ARDUINO_UART_D0D1        UART_DEV(0)
-/** @} */
+/// @}
 
-/**
- * @name    Arduino's SPI buses
- * @{
- */
-/**
- * @brief   The only hardware SPI is connected to the ISP header
- */
+/// @name    Arduino's SPI buses
+/// @{
+/// @brief   The only hardware SPI is connected to the ISP header
 #define ARDUINO_SPI_ISP         SPI_DEV(0)
-/** @} */
+/// @}
 
-/**
- * @name    Arduino's I2C buses
- * @{
- */
-/**
- * @brief   The only hardware I2C on ATmegas
- */
+/// @name    Arduino's I2C buses
+/// @{
+/// @brief   The only hardware I2C on ATmegas
 #ifndef BOARD_ARDUINO_NANO
 #define ARDUINO_I2C_UNO         I2C_DEV(0)
 #else
 #define ARDUINO_I2C_NANO        I2C_DEV(0)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of MCU pins to Arduino pins
- *
- * @note    ISCP pins are not mapped.
- * @{
- */
+/// @name    Mapping of MCU pins to Arduino pins
+///
+/// @note    ISCP pins are not mapped.
+/// @{
 
-/* Digital pins */
+// Digital pins
 #ifdef CPU_ATMEGA328P
 #  define ARDUINO_PIN_0         GPIO_PIN(PORT_D, 0)
 #  define ARDUINO_PIN_1         GPIO_PIN(PORT_D, 1)
@@ -89,7 +73,7 @@ extern "C" {
 #  define ARDUINO_PIN_11        GPIO_PIN(PORT_B, 3)
 #  define ARDUINO_PIN_12        GPIO_PIN(PORT_B, 4)
 #  define ARDUINO_PIN_13        GPIO_PIN(PORT_B, 5)
-/* Analog pins as digital pins: */
+// Analog pins as digital pins:
 #  define ARDUINO_PIN_14        GPIO_PIN(PORT_C, 0)
 #  define ARDUINO_PIN_15        GPIO_PIN(PORT_C, 1)
 #  define ARDUINO_PIN_16        GPIO_PIN(PORT_C, 2)
@@ -99,7 +83,7 @@ extern "C" {
 
 #  define ARDUINO_PIN_LAST      19
 
-/* Analog aliases */
+// Analog aliases
 #  define ARDUINO_PIN_A0        ARDUINO_PIN_14
 #  define ARDUINO_PIN_A1        ARDUINO_PIN_15
 #  define ARDUINO_PIN_A2        ARDUINO_PIN_16
@@ -109,7 +93,7 @@ extern "C" {
 #endif
 
 #ifdef CPU_ATMEGA32U4
-/* Digital pins */
+// Digital pins
 #  define ARDUINO_PIN_0         GPIO_PIN(PORT_D, 2)
 #  define ARDUINO_PIN_1         GPIO_PIN(PORT_D, 3)
 #  define ARDUINO_PIN_2         GPIO_PIN(PORT_D, 1)
@@ -124,7 +108,7 @@ extern "C" {
 #  define ARDUINO_PIN_17        GPIO_PIN(PORT_B, 0)
 #  define ARDUINO_PIN_30        GPIO_PIN(PORT_D, 5)
 
-/* Analog pins as digital pins: */
+// Analog pins as digital pins:
 #  define ARDUINO_PIN_4         GPIO_PIN(PORT_D, 4)
 #  define ARDUINO_PIN_6         GPIO_PIN(PORT_D, 7)
 #  define ARDUINO_PIN_8         GPIO_PIN(PORT_B, 4)
@@ -140,7 +124,7 @@ extern "C" {
 
 #  define ARDUINO_PIN_LAST      23
 
-/* Analog aliases */
+// Analog aliases
 #  define ARDUINO_PIN_A0        ARDUINO_PIN_18
 #  define ARDUINO_PIN_A1        ARDUINO_PIN_19
 #  define ARDUINO_PIN_A2        ARDUINO_PIN_20
@@ -156,7 +140,7 @@ extern "C" {
 #endif
 
 #ifdef CPU_ATMEGA2560
-/* Digital pins */
+// Digital pins
 #  define ARDUINO_PIN_0         GPIO_PIN(PORT_E, 0)
 #  define ARDUINO_PIN_1         GPIO_PIN(PORT_E, 1)
 #  define ARDUINO_PIN_2         GPIO_PIN(PORT_E, 4)
@@ -212,7 +196,7 @@ extern "C" {
 #  define ARDUINO_PIN_52        GPIO_PIN(PORT_B, 1)
 #  define ARDUINO_PIN_53        GPIO_PIN(PORT_B, 0)
 
-/* Analog pins as digital pins: */
+// Analog pins as digital pins:
 #  define ARDUINO_PIN_54        GPIO_PIN(PORT_F, 0)
 #  define ARDUINO_PIN_55        GPIO_PIN(PORT_F, 1)
 #  define ARDUINO_PIN_56        GPIO_PIN(PORT_F, 2)
@@ -232,7 +216,7 @@ extern "C" {
 
 #  define ARDUINO_PIN_LAST      69
 
-/* Analog aliases */
+// Analog aliases
 #  define ARDUINO_PIN_A0        ARDUINO_PIN_54
 #  define ARDUINO_PIN_A1        ARDUINO_PIN_55
 #  define ARDUINO_PIN_A2        ARDUINO_PIN_56
@@ -272,24 +256,20 @@ extern "C" {
 #  define ARDUINO_A15           ADC_LINE(15)
 #endif
 
-/* Either 8, 16 or 0 ADC lines are configured by all ATmega boards */
+// Either 8, 16 or 0 ADC lines are configured by all ATmega boards
 #if ADC_NUMOF == 8
 #  define ARDUINO_ANALOG_PIN_LAST 7
 #elif ADC_NUMOF == 16
 #  define ARDUINO_ANALOG_PIN_LAST 15
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino pins to RIOT PWM dev and channel pairs
- * @{
- */
-/**
- * @brief   PWM frequency
- */
+/// @name    Mapping of Arduino pins to RIOT PWM dev and channel pairs
+/// @{
+/// @brief   PWM frequency
 #define ARDUINO_PWM_FREQU       (490U)
 
-/* keep in sync with PWM config in boards/common/atmega/include/periph_conf_atmega_common.h */
+// keep in sync with PWM config in boards/common/atmega/include/periph_conf_atmega_common.h
 #if defined(CPU_ATMEGA328P)
 #  define ARDUINO_PIN_6_PWM_DEV     PWM_DEV(0)
 #  define ARDUINO_PIN_6_PWM_CHAN    0
@@ -322,10 +302,10 @@ extern "C" {
 #  define ARDUINO_PIN_3_PWM_CHAN    1
 #endif
 
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

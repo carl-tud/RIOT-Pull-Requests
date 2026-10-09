@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test for the dbgpin module
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test for the dbgpin module
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -22,8 +18,7 @@
 
 #define TICK_MS         5U
 
-int main(void)
-{
+int main(void) {
     printf("Found %i configured debug pin(s)\n", dbgpin_count());
 
     for (unsigned p = 0; p < dbgpin_count(); p++) {

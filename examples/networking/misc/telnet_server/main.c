@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Example application for demonstrating the RIOT telnet server
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Example application for demonstrating the RIOT telnet server
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -26,8 +22,7 @@
 #define MAIN_QUEUE_SIZE     (8)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
-static void _print_motd(void)
-{
+static void _print_motd(void) {
     puts("RIOT telnet example application");
 
     puts("╔═══════════════════════════════════════════════════╗");
@@ -36,8 +31,7 @@ static void _print_motd(void)
     puts("╚═══════════════════════════════════════════════════╝");
 }
 
-void telnet_cb_pre_connected(sock_tcp_t *sock)
-{
+void telnet_cb_pre_connected(sock_tcp_t *sock) {
     sock_tcp_ep_t ep;
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
@@ -47,38 +41,35 @@ void telnet_cb_pre_connected(sock_tcp_t *sock)
     printf("%s connected\n", addr_str);
 }
 
-/* shell lock module makes use of disconnect callback */
+// shell lock module makes use of disconnect callback
 #ifndef MODULE_SHELL_LOCK
-void telnet_cb_disconneced(void)
-{
+void telnet_cb_disconneced(void) {
     puts("disconnected");
 }
 #endif
 
-void telnet_cb_connected(sock_tcp_t *sock)
-{
+void telnet_cb_connected(sock_tcp_t *sock) {
     (void)sock;
     _print_motd();
 }
 
-int main(void)
-{
-    /* we need a message queue for the thread running the shell in order to
-     * receive potentially fast incoming networking packets */
+int main(void) {
+    // we need a message queue for the thread running the shell in order to
+    // receive potentially fast incoming networking packets
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     _print_motd();
 
-    /* print address(es) so we can connect to it */
+    // print address(es) so we can connect to it
     printf("{\"IPv6 addresses\": [\"");
     netifs_print_ipv6("\", \"");
     puts("\"]}");
 
-    /* start shell */
+    // start shell
     printf("All up, awaiting connection on port %u\n", CONFIG_TELNET_PORT);
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }

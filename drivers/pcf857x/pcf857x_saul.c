@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_pcf857x
- * @brief       PCF857X adaption to the RIOT actuator/sensor interface
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- */
+/// @ingroup     drivers_pcf857x
+/// @brief       PCF857X adaption to the RIOT actuator/sensor interface
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
 #if MODULE_SAUL_GPIO
 
 #include <string.h>
@@ -18,8 +14,7 @@
 
 extern pcf857x_t pcf857x_devs[];
 
-static int read(const void *dev, phydat_t *res)
-{
+static int read(const void *dev, phydat_t *res) {
     const pcf857x_saul_gpio_params_t *p = (const pcf857x_saul_gpio_params_t *)dev;
     int inverted = (p->gpio.flags & SAUL_GPIO_INVERTED);
 
@@ -30,8 +25,7 @@ static int read(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int write(const void *dev, const phydat_t *state)
-{
+static int write(const void *dev, const phydat_t *state) {
     const pcf857x_saul_gpio_params_t *p = (const pcf857x_saul_gpio_params_t *)dev;
     int inverted = (p->gpio.flags & SAUL_GPIO_INVERTED);
     int value = (state->val[0] ? !inverted : inverted);
@@ -51,4 +45,4 @@ const saul_driver_t pcf857x_gpio_in_saul_driver = {
     .write = saul_write_notsup,
     .type = SAUL_SENSE_BTN
 };
-#endif /* MODULE_SAUL_GPIO */
+#endif // MODULE_SAUL_GPIO

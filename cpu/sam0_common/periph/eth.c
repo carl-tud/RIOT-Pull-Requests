@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam0_common
- * @{
- *
- * @file
- * @brief       Low-level Ethernet driver implementation
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup     cpu_sam0_common
+/// @{
+///
+/// @file
+/// @brief       Low-level Ethernet driver implementation
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include "iolist.h"
 #include "mii.h"
@@ -31,11 +27,11 @@
 
 #include <string.h>
 
-/* Internal helpers */
+// Internal helpers
 #define PHY_READ_OP 0x02
 #define PHY_WRITE_OP 0x01
 
-/* Internal RX/TX descriptors */
+// Internal RX/TX descriptors
 #define DESC_RX_ADDR_OWNSHP    1
 #define DESC_RX_ADDR_WRAP      2
 #define DESC_RX_ADDR_ADDR_MASK 0xFFFFFFFC
@@ -72,7 +68,7 @@ struct eth_buf_desc {
     uint32_t status;
 };
 
-/* GMAC buffer descriptors */
+// GMAC buffer descriptors
 #define GMAC_DESC_ALIGNMENT 8
 #define GMAC_BUF_ALIGNMENT  32
 static struct eth_buf_desc rx_desc[ETH_RX_BUFFER_COUNT] __attribute__((aligned(GMAC_DESC_ALIGNMENT)));
@@ -81,8 +77,8 @@ static struct eth_buf_desc tx_desc[ETH_TX_BUFFER_COUNT] __attribute__((aligned(G
 static struct eth_buf_desc *rx_curr;
 static struct eth_buf_desc *tx_curr;
 
-/* Declare our own indexes to point to a RX/TX buffer descriptor.
-   GMAC IP have its own indexes on its side */
+// Declare our own indexes to point to a RX/TX buffer descriptor.
+//    GMAC IP have its own indexes on its side
 static uint8_t  tx_idx;
 static uint8_t  rx_idx;
 
@@ -92,10 +88,9 @@ extern sam0_eth_netdev_t _sam0_eth_dev;
 
 static bool _is_sleeping;
 
-/* Flush our reception buffers and reset reception internal mechanism,
-   this function may be call from ISR context */
-void sam0_clear_rx_buffers(void)
-{
+// Flush our reception buffers and reset reception internal mechanism,
+//    this function may be call from ISR context
+void sam0_clear_rx_buffers(void) {
     for (int i=0; i<ETH_RX_BUFFER_COUNT; i++) {
         rx_desc[i].address &= ~DESC_RX_ADDR_OWNSHP;
     }
@@ -104,22 +99,19 @@ void sam0_clear_rx_buffers(void)
     GMAC->RBQB.reg = (uint32_t) rx_desc;
 }
 
-static void _enable_clock(void)
-{
-    /* Enable GMAC clocks */
+static void _enable_clock(void) {
+    // Enable GMAC clocks
     MCLK->AHBMASK.reg |= MCLK_AHBMASK_GMAC;
     MCLK->APBCMASK.reg |= MCLK_APBCMASK_GMAC;
 }
 
-static void _disable_clock(void)
-{
-    /* Disable GMAC clocks */
+static void _disable_clock(void) {
+    // Disable GMAC clocks
     MCLK->AHBMASK.reg &= ~MCLK_AHBMASK_GMAC;
     MCLK->APBCMASK.reg &= ~MCLK_APBCMASK_GMAC;
 }
 
-unsigned sam0_read_phy(uint8_t phy, uint8_t addr)
-{
+unsigned sam0_read_phy(uint8_t phy, uint8_t addr) {
     if (_is_sleeping) {
         return 0;
     }
@@ -128,14 +120,13 @@ unsigned sam0_read_phy(uint8_t phy, uint8_t addr)
                   | GMAC_MAN_CLTTO      | GMAC_MAN_WTN(0x2)
                   | GMAC_MAN_OP(PHY_READ_OP);
 
-    /* Wait for operation completion */
+    // Wait for operation completion
     while (!(GMAC->NSR.reg & GMAC_NSR_IDLE)) {}
-    /* return content of shift register */
+    // return content of shift register
     return GMAC->MAN.reg & GMAC_MAN_DATA_Msk;
 }
 
-void sam0_write_phy(uint8_t phy, uint8_t addr, uint16_t data)
-{
+void sam0_write_phy(uint8_t phy, uint8_t addr, uint16_t data) {
     if (_is_sleeping) {
         return;
     }
@@ -144,19 +135,18 @@ void sam0_write_phy(uint8_t phy, uint8_t addr, uint16_t data)
                   | GMAC_MAN_WTN(0x2)   | GMAC_MAN_OP(PHY_WRITE_OP)
                   | GMAC_MAN_CLTTO      | GMAC_MAN_DATA(data);
 
-    /* Wait for operation completion */
+    // Wait for operation completion
     while (!(GMAC->NSR.reg & GMAC_NSR_IDLE)) {}
 }
 
-void sam0_eth_poweron(void)
-{
+void sam0_eth_poweron(void) {
     _enable_clock();
     sam0_clear_rx_buffers();
 
-    /* enable PHY */
+    // enable PHY
     gpio_set(sam_gmac_config[0].rst_pin);
 
-    /* if the PHY is not idle, it's likely broken */
+    // if the PHY is not idle, it's likely broken
     if (!(GMAC->NSR.reg & GMAC_NSR_IDLE)) {
         DEBUG_PUTS("sam0_eth: PHY not IDLE, likely broken.");
         return;
@@ -166,50 +156,46 @@ void sam0_eth_poweron(void)
     while (MII_BMCR_RESET & sam0_read_phy(0, MII_BMCR)) {}
 }
 
-void sam0_eth_poweroff(void)
-{
-    /* disable PHY */
+void sam0_eth_poweroff(void) {
+    // disable PHY
     gpio_clear(sam_gmac_config[0].rst_pin);
 
     _is_sleeping = true;
     _disable_clock();
 }
 
-static void _init_desc_buf(void)
-{
+static void _init_desc_buf(void) {
     int i;
-    /* Initialize RX buffer descriptors */
+    // Initialize RX buffer descriptors
     for (i=0; i < ETH_RX_BUFFER_COUNT; i++) {
         rx_desc[i].address = ((uint32_t) (rx_buf[i]) & DESC_RX_ADDR_ADDR_MASK);
     }
-    /* Set WRAP flag to indicate last buffer */
+    // Set WRAP flag to indicate last buffer
     rx_desc[i-1].address |= DESC_RX_ADDR_WRAP;
     rx_curr = &rx_desc[0];
-    /* Initialize TX buffer descriptors */
+    // Initialize TX buffer descriptors
     for (i=0; i < ETH_TX_BUFFER_COUNT; i++) {
         tx_desc[i].address = (uint32_t) tx_buf[i];
     }
-    /* Set WRAP flag to indicate last buffer */
+    // Set WRAP flag to indicate last buffer
     tx_desc[i-1].status |= DESC_TX_STATUS_WRAP;
     tx_curr = &tx_desc[0];
-    /* Setup buffers index */
+    // Setup buffers index
     rx_idx = 0;
     tx_idx = 0;
-    /* Store RX buffer descriptor list */
+    // Store RX buffer descriptor list
     GMAC->RBQB.reg = (uint32_t) rx_desc;
-    /* Store TX buffer descriptor list */
+    // Store TX buffer descriptor list
     GMAC->TBQB.reg = (uint32_t) tx_desc;
 }
 
-void sam0_eth_set_mac(const eui48_t *mac)
-{
+void sam0_eth_set_mac(const eui48_t *mac) {
     GMAC->Sa[0].SAT.reg = ((mac->uint8[5] << 8)  | mac->uint8[4]);
     GMAC->Sa[0].SAB.reg = ((mac->uint8[3] << 24) | (mac->uint8[2] << 16)
                         |  (mac->uint8[1] << 8)  | mac->uint8[0]);
 }
 
-void sam0_eth_get_mac(eui48_t *out)
-{
+void sam0_eth_get_mac(eui48_t *out) {
     out->uint8[5] = (GMAC->Sa[0].SAT.reg >> 8);
     out->uint8[4] = (GMAC->Sa[0].SAT.reg);
     out->uint8[3] = (GMAC->Sa[0].SAB.reg >> 24);
@@ -218,8 +204,7 @@ void sam0_eth_get_mac(eui48_t *out)
     out->uint8[0] = (GMAC->Sa[0].SAB.reg);
 }
 
-int sam0_eth_send(const struct iolist *iolist)
-{
+int sam0_eth_send(const struct iolist *iolist) {
     unsigned tx_len = 0;
     tx_curr = &tx_desc[tx_idx];
 
@@ -227,7 +212,7 @@ int sam0_eth_send(const struct iolist *iolist)
         return -ENETDOWN;
     }
 
-    /* load packet data into TX buffer */
+    // load packet data into TX buffer
     for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
         if (tx_len + iol->iol_len > ETHERNET_MAX_LEN) {
             return -EOVERFLOW;
@@ -238,44 +223,42 @@ int sam0_eth_send(const struct iolist *iolist)
         }
     }
 
-    /* Clear and set the frame size */
+    // Clear and set the frame size
     tx_curr->status = (tx_len & DESC_TX_STATUS_LEN_MASK)
-    /* Indicate this is the last buffer and the frame is ready */
+    // Indicate this is the last buffer and the frame is ready
                     | DESC_TX_STATUS_LAST_BUF;
-    /* Prepare next buffer index */
+    // Prepare next buffer index
     if (++tx_idx == ETH_TX_BUFFER_COUNT) {
-        /* Set WRAP flag to indicate last buffer */
+        // Set WRAP flag to indicate last buffer
         tx_curr->status |= DESC_TX_STATUS_WRAP;
         tx_idx = 0;
     }
     __DMB();
 
-    /* Start transmission */
+    // Start transmission
     GMAC->NCR.reg |= GMAC_NCR_TSTART;
-    /* Set the next buffer */
+    // Set the next buffer
     tx_curr = &tx_desc[tx_idx];
 
     return 0;
 }
 
-unsigned _sam0_eth_get_last_len(void)
-{
+unsigned _sam0_eth_get_last_len(void) {
     unsigned idx = tx_idx ? tx_idx - 1 : ETH_TX_BUFFER_COUNT - 1;
     return tx_desc[idx].status & DESC_TX_STATUS_LEN_MASK;
 }
 
-static int _try_receive(char* data, unsigned max_len, int block)
-{
+static int _try_receive(char* data, unsigned max_len, int block) {
     (void)block;
     unsigned rxlen = 0;
     uint16_t idx = rx_idx;
     uint8_t tmp = ETH_RX_BUFFER_COUNT;
 
-    /* Check if the current rx descriptor contains the beginning of
-       a new frame, iterates over all our RX buffers if not.
-       If there is no new frame (because we may have flush our RX
-       buffers due to BNA interrupt), return an error to netdev so
-       we can move forward */
+    // Check if the current rx descriptor contains the beginning of
+    //    a new frame, iterates over all our RX buffers if not.
+    //    If there is no new frame (because we may have flush our RX
+    //    buffers due to BNA interrupt), return an error to netdev so
+    //    we can move forward
     do {
         if ((rx_curr->address & DESC_RX_ADDR_OWNSHP)
             && (rx_curr->status & DESC_RX_STATUS_STA_FRAME)) {
@@ -293,49 +276,49 @@ static int _try_receive(char* data, unsigned max_len, int block)
     }
 
     for (unsigned cpt=0; cpt < ETH_RX_BUFFER_COUNT; cpt++) {
-        /* Get the length of the received frame */
+        // Get the length of the received frame
         unsigned len = (rx_curr->status & DESC_RX_STATUS_FRAME_LEN_MASK);
 
-        /* Only copy data if the stack requested it, otherwise return the length
-           of the next frame if available */
+        // Only copy data if the stack requested it, otherwise return the length
+        //    of the next frame if available
         if (max_len) {
-            /* If buffer available, copy data into it */
+            // If buffer available, copy data into it
             if (data)  {
-                /* If provided buffer is smaller than the received frame,
-                drop it as netdev request */
+                // If provided buffer is smaller than the received frame,
+                // drop it as netdev request
                 if (rxlen + len > max_len) {
                     return -ENOBUFS;
                 }
                 memcpy(&data[rxlen], rx_buf[idx], len);
             }
-            /* Tell the GMAC IP that we don't need this frame anymore  */
+            // Tell the GMAC IP that we don't need this frame anymore
             rx_curr->address &= ~DESC_RX_ADDR_OWNSHP;
         }
 
         rxlen += len;
 
         if (rx_curr->status & DESC_RX_STATUS_END_FRAME) {
-            /* We reach the end of frame, leave the loop */
+            // We reach the end of frame, leave the loop
             break;
         }
-        /* Prepare next buffer */
+        // Prepare next buffer
         idx = (idx + 1) % ETH_RX_BUFFER_COUNT;
         rx_curr = &rx_desc[idx];
 
     }
-    /* restore the previous index if packets were not released */
+    // restore the previous index if packets were not released
     if (!max_len) {
        rx_curr = &rx_desc[rx_idx];
     }
-    /* Point to the next buffer as GMAC IP will likely used it
-       to store the next frame */
+    // Point to the next buffer as GMAC IP will likely used it
+    //    to store the next frame
     else {
        rx_idx = (idx+1) % ETH_RX_BUFFER_COUNT;
        rx_curr = &rx_desc[rx_idx];
     }
 
-    /* If provided buffer is smaller than the received frame,
-       drop it as netdev request */
+    // If provided buffer is smaller than the received frame,
+    //    drop it as netdev request
     if (data != NULL && rxlen > max_len) {
        return -ENOBUFS;
    }
@@ -343,24 +326,21 @@ static int _try_receive(char* data, unsigned max_len, int block)
     return rxlen;
 }
 
-int sam0_eth_receive_blocking(char *data, unsigned max_len)
-{
+int sam0_eth_receive_blocking(char *data, unsigned max_len) {
     return _try_receive(data, max_len, 1);
 }
 
-bool sam0_eth_has_queued_pkt(void)
-{
+bool sam0_eth_has_queued_pkt(void) {
     return _try_receive(NULL, 0, 0) > 0;
 }
 
-int sam0_eth_init(void)
-{
-    /* HACK: interrupting the init sequence leads to strange hangs */
+int sam0_eth_init(void) {
+    // HACK: interrupting the init sequence leads to strange hangs
     unsigned state = irq_disable();
 
-    /* Enable clocks */
+    // Enable clocks
     _enable_clock();
-    /* Initialize GPIOs */
+    // Initialize GPIOs
     gpio_init_mux(sam_gmac_config[0].refclk, GPIO_MUX_L);
     gpio_init_mux(sam_gmac_config[0].txen, GPIO_MUX_L);
     gpio_init_mux(sam_gmac_config[0].txd0, GPIO_MUX_L);
@@ -371,30 +351,30 @@ int sam0_eth_init(void)
     gpio_init_mux(sam_gmac_config[0].rxer, GPIO_MUX_L);
     gpio_init_mux(sam_gmac_config[0].mdc, GPIO_MUX_L);
     gpio_init_mux(sam_gmac_config[0].mdio, GPIO_MUX_L);
-    /* PHY reset */
+    // PHY reset
     gpio_init(sam_gmac_config[0].rst_pin, GPIO_OUT);
     gpio_clear(sam_gmac_config[0].rst_pin);
 
-    /* reset buffers */
+    // reset buffers
     memset(rx_buf, 0, sizeof(rx_buf));
     memset(tx_buf, 0, sizeof(tx_buf));
     memset(rx_desc, 0, sizeof(rx_desc));
     memset(tx_desc, 0, sizeof(tx_desc));
 
-    /* Initialize buffers descriptor */
+    // Initialize buffers descriptor
     _init_desc_buf();
-    /* Disable RX and TX */
+    // Disable RX and TX
     GMAC->NCR.reg &= ~(GMAC_NCR_RXEN | GMAC_NCR_TXEN);
-    /* Enable Port Management */
+    // Enable Port Management
     GMAC->NCR.reg |= GMAC_NCR_MPE;
-    /* TODO: Implements MII, default to RMII */
+    // TODO: Implements MII, default to RMII
     GMAC->UR.reg = 0;
-    /* disable all interrupts */
+    // disable all interrupts
     GMAC->IDR.reg = 0xFFFFFFFF;
-    /* clear flags */
+    // clear flags
     GMAC->RSR.reg = GMAC_RSR_HNO | GMAC_RSR_RXOVR | GMAC_RSR_REC | GMAC_RSR_BNA;
     GMAC->TSR.reg = 0xFFFF;
-    /* Enable needed interrupts */
+    // Enable needed interrupts
     GMAC->IER.reg = GMAC_IER_RCOMP
                   | GMAC_IER_TCOMP | GMAC_IER_TFC | GMAC_IER_RLEX;
 
@@ -403,17 +383,17 @@ int sam0_eth_init(void)
                     | GMAC_NCFGR_LFERD | GMAC_NCFGR_RFCS | GMAC_NCFGR_CLK(3)
                     | GMAC_NCFGR_DBW(1);
 
-    /* Enable all multicast addresses */
+    // Enable all multicast addresses
     GMAC->HRB.reg = 0xffffffff;
     GMAC->HRT.reg = 0xffffffff;
 
-    /* Set DMA receive buffer size to 1536 bytes */
+    // Set DMA receive buffer size to 1536 bytes
     GMAC->DCFGR.reg |= GMAC_DCFGR_DRBS(0x18);
-    /* Enable PHY */
+    // Enable PHY
     gpio_set(sam_gmac_config[0].rst_pin);
-    /* Enable IRQ */
+    // Enable IRQ
     NVIC_EnableIRQ(GMAC_IRQn);
-    /* Enable both receiver and transmitter */
+    // Enable both receiver and transmitter
     GMAC->NCR.reg |= GMAC_NCR_TXEN | GMAC_NCR_RXEN;
 
     irq_restore(state);

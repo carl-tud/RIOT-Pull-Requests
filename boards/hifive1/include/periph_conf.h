@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Ken Rabold
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Ken Rabold
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_hifive1
- * @{
- *
- * @file
- * @brief       Peripheral specific definitions for the HiFive1 RISC-V board
- *
- * @author      Ken Rabold
- */
+/// @ingroup     boards_hifive1
+/// @{
+///
+/// @file
+/// @brief       Peripheral specific definitions for the HiFive1 RISC-V board
+///
+/// @author      Ken Rabold
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
@@ -23,18 +19,14 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- *
- * @{
- */
+/// @name    Timer configuration
+///
+/// @{
 #define TIMER_NUMOF                 (1)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .addr       = UART0_CTRL_ADDR,
@@ -51,35 +43,31 @@ static const uart_conf_t uart_config[] = {
 };
 
 #define UART_NUMOF                  ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI device configuration
- *
- * @{
- */
+/// @name    SPI device configuration
+///
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .addr       = SPI1_CTRL_ADDR,
-        .mosi       = GPIO_PIN(0, 3), /* D11 */
-        .miso       = GPIO_PIN(0, 4), /* D12 */
-        .sclk       = GPIO_PIN(0, 5), /* D13 */
+        .mosi       = GPIO_PIN(0, 3), // D11
+        .miso       = GPIO_PIN(0, 4), // D12
+        .sclk       = GPIO_PIN(0, 5), // D13
     },
 };
 
 #define SPI_NUMOF                  ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- *
- * @{
- */
+/// @name    PWM configuration
+///
+/// @{
 #define PWM_NUMOF                   (3)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

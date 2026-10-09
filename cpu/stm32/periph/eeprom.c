@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @ingroup     drivers_periph_eeprom
- * @{
- *
- * @file
- * @brief       Low-level eeprom driver implementation
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Oleg Artamonov <oleg@unwds.com>
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @ingroup     drivers_periph_eeprom
+/// @{
+///
+/// @file
+/// @brief       Low-level eeprom driver implementation
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Oleg Artamonov <oleg@unwds.com>
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <assert.h>
 
@@ -39,31 +35,28 @@ extern void _wait_for_pending_operations(void);
 #define BYTE_MASK           (0xFF)
 #define BYTE_BITS           (0x08)
 
-static void _erase_word(uint32_t addr)
-{
-    /* Wait for last operation to be completed */
+static void _erase_word(uint32_t addr) {
+    // Wait for last operation to be completed
     _wait_for_pending_operations();
 
-    /* Write "00000000h" to valid address in the data memory" */
+    // Write "00000000h" to valid address in the data memory"
     *(__IO uint32_t *)addr = 0x00000000;
 }
 
-static void _write_word(uint32_t addr, uint32_t data)
-{
-    /* Wait for last operation to be completed */
+static void _write_word(uint32_t addr, uint32_t data) {
+    // Wait for last operation to be completed
     _wait_for_pending_operations();
 
     *(__IO uint32_t *)addr = data;
 }
 #endif
 
-static void _write_byte(uint32_t addr, uint8_t data)
-{
-    /* Wait for last operation to be completed */
+static void _write_byte(uint32_t addr, uint8_t data) {
+    // Wait for last operation to be completed
     _wait_for_pending_operations();
 
 #if defined(CPU_MODEL_STM32L151CB)
-    /* stm32l1xxx cat 1 can't write NULL bytes RefManual p79*/
+    // stm32l1xxx cat 1 can't write NULL bytes RefManual p79
     uint32_t tmp = 0;
     uint32_t data_mask = 0;
 
@@ -82,8 +75,7 @@ static void _write_byte(uint32_t addr, uint8_t data)
 #endif
 }
 
-size_t eeprom_read(uint32_t pos, void *data, size_t len)
-{
+size_t eeprom_read(uint32_t pos, void *data, size_t len) {
     assert(pos + len <= EEPROM_SIZE);
 
     uint8_t *p = data;
@@ -99,8 +91,7 @@ size_t eeprom_read(uint32_t pos, void *data, size_t len)
     return len;
 }
 
-size_t eeprom_write(uint32_t pos, const void *data, size_t len)
-{
+size_t eeprom_write(uint32_t pos, const void *data, size_t len) {
     assert(pos + len <= EEPROM_SIZE);
 
     uint8_t *p = (uint8_t *)data;

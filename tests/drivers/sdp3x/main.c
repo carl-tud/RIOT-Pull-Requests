@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Jan Schlichter
- * SPDX-FileCopyrightText: 2020 Nishchay Agrawal
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Jan Schlichter
+// SPDX-FileCopyrightText: 2020 Nishchay Agrawal
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for sdp3x temperature and differential
- *              pressure sensor driver
- *
- * @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
- * @author      Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for sdp3x temperature and differential
+///              pressure sensor driver
+///
+/// @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
+/// @author      Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
+/// @}
 #include <stdio.h>
 
 #include "xtimer.h"
@@ -29,8 +25,7 @@ static sdp3x_params_t params = SDP3X_PARAMS;
 sdp3x_measurement_t result;
 xtimer_t continuous_timer;
 
-void continuous_measurement_callback(void *arg)
-{
+void continuous_measurement_callback(void *arg) {
     uint32_t *interval = (uint32_t *)arg;
 
     sdp3x_read_continuous(&result, &sdp3x_dev);
@@ -38,8 +33,7 @@ void continuous_measurement_callback(void *arg)
     xtimer_set(&continuous_timer, *interval);
 }
 
-int main(void)
-{
+int main(void) {
 
     sdp3x_init(&sdp3x_dev, &params);
 
@@ -57,10 +51,8 @@ int main(void)
 
     xtimer_set(&continuous_timer, interval);
 
-    /*
-     * Get measurements using continuous method for TEST_ITERATIONS
-     * number of iterations
-     */
+    // Get measurements using continuous method for TEST_ITERATIONS
+    // number of iterations
     while (i < (uint32_t)TEST_ITERATIONS) {
         printf(
             "Continuous values for temp: %.02f°C pressure: %.02fPa \n",
@@ -72,10 +64,8 @@ int main(void)
     sdp3x_stop_continuous(&sdp3x_dev, &continuous_timer);
     i = 0;
 
-    /*
-     * Get measurements using triggered method for TEST_ITERATIONS
-     * number of iterations
-     */
+    // Get measurements using triggered method for TEST_ITERATIONS
+    // number of iterations
     while (i < (uint32_t)TEST_ITERATIONS) {
         sdp3x_read_single_measurement(&sdp3x_dev, SDP3X_FLAG_DIFF_PRESS,
                                       &result);

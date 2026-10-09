@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf51dk
- * @{
- *
- * @file
- * @brief       Board specific configuration for the nRF51DK
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nrf51dk
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration for the nRF51DK
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board_common.h"
 
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(0, 21)
 #define LED1_PIN            GPIO_PIN(0, 22)
 #define LED2_PIN            GPIO_PIN(0, 23)
@@ -50,12 +44,10 @@ extern "C" {
 #define LED3_ON             (NRF_GPIO->OUTCLR = LED3_MASK)
 #define LED3_OFF            (NRF_GPIO->OUTSET = LED3_MASK)
 #define LED3_TOGGLE         (NRF_GPIO->OUT   ^= LED3_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    Button pin definitions
- * @{
- */
+/// @name    Button pin definitions
+/// @{
 #define BTN0_PIN            GPIO_PIN(0, 17)
 #define BTN0_MODE           GPIO_IN_PU
 #define BTN1_PIN            GPIO_PIN(0, 18)
@@ -64,10 +56,10 @@ extern "C" {
 #define BTN2_MODE           GPIO_IN_PU
 #define BTN3_PIN            GPIO_PIN(0, 20)
 #define BTN3_MODE           GPIO_IN_PU
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

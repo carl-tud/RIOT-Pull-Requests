@@ -1,11 +1,7 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * FreeRTOS to RIOT-OS adaption module for source code compatibility
- */
+// FreeRTOS to RIOT-OS adaption module for source code compatibility
 
 #pragma once
 
@@ -22,24 +18,22 @@ extern "C" {
 
 typedef void* QueueHandle_t;
 
-/*
- * In FreeRTOS different types of semaphores, mutexes and queues are all
- * mapped to a single generic queue type. With all these different types,
- * single functions for send, receive, give and take are then used. To be
- * able to distinguish between these different types in RIOT, we need typed
- * objects.
- */
+// In FreeRTOS different types of semaphores, mutexes and queues are all
+// mapped to a single generic queue type. With all these different types,
+// single functions for send, receive, give and take are then used. To be
+// able to distinguish between these different types in RIOT, we need typed
+// objects.
 typedef struct {
-    uint8_t     type;        /* type of the queue, MUST be the first element */
-    bool        stat;        /* statically allocated queue memory */
-    list_node_t sending;     /* threads that are waiting to send */
-    list_node_t receiving;   /* threads that are waiting to receive */
-    uint8_t*    queue;       /* the queue of waiting items */
-    uint32_t    item_size;   /* size of each item in the queue */
-    uint32_t    item_num;    /* num of items that can be stored in queue */
-    uint32_t    item_front;  /* first item in queue */
-    uint32_t    item_tail;   /* last item in queue */
-    uint32_t    item_level;  /* num of items stored in queue */
+    uint8_t     type;        // type of the queue, MUST be the first element
+    bool        stat;        // statically allocated queue memory
+    list_node_t sending;     // threads that are waiting to send
+    list_node_t receiving;   // threads that are waiting to receive
+    uint8_t*    queue;       // the queue of waiting items
+    uint32_t    item_size;   // size of each item in the queue
+    uint32_t    item_num;    // num of items that can be stored in queue
+    uint32_t    item_front;  // first item in queue
+    uint32_t    item_tail;   // last item in queue
+    uint32_t    item_level;  // num of items stored in queue
 } _queue_t;
 
 typedef _queue_t StaticQueue_t;
@@ -98,20 +92,18 @@ BaseType_t xQueueGiveFromISR (QueueHandle_t xQueue,
 
 UBaseType_t uxQueueMessagesWaiting( QueueHandle_t xQueue );
 
-/*
- * PLEASE NOTE: Following definitions were copied directly from the FreeRTOS
- * distribution and are under the following copyright:
- *
- * FreeRTOS V8.2.0 - Copyright (C) 2015 Real Time Engineers Ltd.
- * All rights reserved
- *
- * FreeRTOS is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License (version 2) as published by the
- * Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
- *
- * Full license text is available on the following
- * link: http://www.freertos.org/a00114.html
- */
+// PLEASE NOTE: Following definitions were copied directly from the FreeRTOS
+// distribution and are under the following copyright:
+//
+// FreeRTOS V8.2.0 - Copyright (C) 2015 Real Time Engineers Ltd.
+// All rights reserved
+//
+// FreeRTOS is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License (version 2) as published by the
+// Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+//
+// Full license text is available on the following
+// link: http://www.freertos.org/a00114.html
 
 #define queueSEND_TO_BACK         ( ( BaseType_t ) 0 )
 #define queueSEND_TO_FRONT        ( ( BaseType_t ) 1 )
@@ -172,4 +164,4 @@ UBaseType_t uxQueueMessagesWaiting( QueueHandle_t xQueue );
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

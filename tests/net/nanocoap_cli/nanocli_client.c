@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Ken Bannister
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Ken Bannister
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       nanocoap test CLI client
- *
- * @author      Ken Bannister <kb2ma@runbox.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       nanocoap test CLI client
+///
+/// @author      Ken Bannister <kb2ma@runbox.com>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -32,18 +28,17 @@
 
 #ifdef MODULE_GNRC_IPV6
 static ssize_t _send(coap_pkt_t *pkt, size_t len,
-                          char *addr_str, const char *port_str)
-{
+                          char *addr_str, const char *port_str) {
     ipv6_addr_t addr;
     sock_udp_ep_t remote;
 
     remote.family = AF_INET6;
 
-    /* parse for interface */
+    // parse for interface
     char *iface = ipv6_addr_split_iface(addr_str);
     if (!iface) {
         if (gnrc_netif_numof() == 1) {
-            /* assign the single interface found in gnrc_netif_numof() */
+            // assign the single interface found in gnrc_netif_numof()
             remote.netif = (uint16_t)gnrc_netif_iter(NULL)->pid;
         }
         else {
@@ -59,7 +54,7 @@ static ssize_t _send(coap_pkt_t *pkt, size_t len,
         remote.netif = pid;
     }
 
-    /* parse destination address */
+    // parse destination address
     if (ipv6_addr_from_str(&addr, addr_str) == NULL) {
         puts("nanocli: unable to parse destination address");
         return 0;
@@ -70,7 +65,7 @@ static ssize_t _send(coap_pkt_t *pkt, size_t len,
     }
     memcpy(&remote.addr.ipv6[0], &addr.u8[0], sizeof(addr.u8));
 
-    /* parse port */
+    // parse port
     remote.port = atoi(port_str);
     if (remote.port == 0) {
         puts("nanocli: unable to parse destination port");
@@ -84,15 +79,14 @@ static uint8_t _client_token[COAP_TOKEN_LENGTH_MAX] = { 0xDA, 0xEC };
 static uint8_t _client_token_len = 2;
 static uint8_t _client_buf[512];
 
-static int _cmd_client(int argc, char **argv)
-{
-    /* Ordered like the RFC method code numbers, but off by 1. GET is code 0. */
+static int _cmd_client(int argc, char **argv) {
+    // Ordered like the RFC method code numbers, but off by 1. GET is code 0.
     const char *method_codes[] = {"get", "post", "put"};
     coap_pkt_t pkt;
     size_t len;
 
     if (argc == 1) {
-        /* show help for commands */
+        // show help for commands
         goto end;
     }
 
@@ -108,7 +102,7 @@ static int _cmd_client(int argc, char **argv)
 
     pkt.buf = _client_buf;
 
-    /* parse options */
+    // parse options
     if (argc == 5 || argc == 6) {
         ssize_t hdrlen = coap_build_udp_hdr(_client_buf, sizeof(_client_buf), COAP_TYPE_CON,
                                             _client_token, _client_token_len,
@@ -145,7 +139,7 @@ static int _cmd_client(int argc, char **argv)
                         || format == COAP_FORMAT_LINK
                         || coap_get_code_class(&pkt) == COAP_CLASS_CLIENT_FAILURE
                         || coap_get_code_class(&pkt) == COAP_CLASS_SERVER_FAILURE) {
-                    /* Expecting diagnostic payload in failure cases */
+                    // Expecting diagnostic payload in failure cases
                     printf(", %u bytes\n%.*s\n", pkt.payload_len, pkt.payload_len,
                                                                   (char *)pkt.payload);
                 }
@@ -195,8 +189,7 @@ SHELL_COMMAND(client_token, "Set Token for CoAP client", _cmd_client_token);
 #endif
 
 static int _blockwise_cb(void *arg, size_t offset, uint8_t *buf,
-                         size_t len, int more)
-{
+                         size_t len, int more) {
     (void)arg;
     (void)more;
 
@@ -209,9 +202,8 @@ static int _blockwise_cb(void *arg, size_t offset, uint8_t *buf,
     return 0;
 }
 
-static int _cmd_url(int argc, char **argv)
-{
-    /* Ordered like the RFC method code numbers, but off by 1. GET is code 0. */
+static int _cmd_url(int argc, char **argv) {
+    // Ordered like the RFC method code numbers, but off by 1. GET is code 0.
     const char *method_codes[] = { "get", "post", "put", "delete" };
     int res;
 
@@ -238,7 +230,7 @@ static int _cmd_url(int argc, char **argv)
     case COAP_METHOD_POST - 1:
     case COAP_METHOD_PUT - 1:
     {
-        /* brackets are required since declarations are not allowed to follow a label */
+        // brackets are required since declarations are not allowed to follow a label
         char response[32];
         nanocoap_sock_t sock;
         res = nanocoap_sock_url_connect(argv[2], &sock);
@@ -302,8 +294,7 @@ static const char song[] =
     "Join us now and share the software;\n"
     "You'll be free, hackers, you'll be free.\n";
 
-static int _cmd_put(int argc, char **argv)
-{
+static int _cmd_put(int argc, char **argv) {
     int res;
     nanocoap_sock_t sock;
     coap_block_request_t ctx;
@@ -339,8 +330,7 @@ static int _cmd_put(int argc, char **argv)
 
 SHELL_COMMAND(put, "experimental put", _cmd_put);
 
-static int _cmd_put_non(int argc, char **argv)
-{
+static int _cmd_put_non(int argc, char **argv) {
     int res;
 
     if (argc < 3) {
@@ -360,8 +350,7 @@ static int _cmd_put_non(int argc, char **argv)
 
 SHELL_COMMAND(put_non, "non-confirmable put", _cmd_put_non);
 
-static int _cmd_get_non(int argc, char **argv)
-{
+static int _cmd_get_non(int argc, char **argv) {
     int res;
 
     uint8_t response[COAP_SZX2SIZE(CONFIG_NANOCOAP_BLOCKSIZE_DEFAULT)];
@@ -389,8 +378,7 @@ static int _cmd_get_non(int argc, char **argv)
 SHELL_COMMAND(get_non, "non-confirmable get", _cmd_get_non);
 
 #ifdef MODULE_NANOCOAP_SOCK_OBSERVE
-static int _observe_cb(void *arg, coap_pkt_t *pkt)
-{
+static int _observe_cb(void *arg, coap_pkt_t *pkt) {
     (void)arg;
 
     if (coap_get_code_class(pkt) != COAP_CLASS_SUCCESS) {
@@ -402,8 +390,7 @@ static int _observe_cb(void *arg, coap_pkt_t *pkt)
     return pkt->payload_len;
 }
 
-static int _cmd_observe(int argc, char **argv)
-{
+static int _cmd_observe(int argc, char **argv) {
     static coap_observe_client_t ctx;
     bool observe = true;
     int res;
@@ -434,10 +421,9 @@ static int _cmd_observe(int argc, char **argv)
     return res;
 }
 SHELL_COMMAND(observe, "observe URL", _cmd_observe);
-#endif /* MODULE_NANOCOAP_SOCK_OBSERVE */
+#endif // MODULE_NANOCOAP_SOCK_OBSERVE
 
-static int _cmd_get_slice(int argc, char **argv)
-{
+static int _cmd_get_slice(int argc, char **argv) {
     if ((argc < 3) || (argc > 5)) {
         printf("Usage: %s <URI> <LEN_BYTE> [OFFSET_BYTE] [BLOCK_SIZE_BYTE]\n",
                argv[0]);

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_dwm1001
- * @{
- *
- * @file
- * @brief       Board specific configuration for the DWM1001 dev board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_dwm1001
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration for the DWM1001 dev board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board_common.h"
 
@@ -21,14 +17,12 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin configuration
- * @{
- */
-#define LED0_PIN            GPIO_PIN(0, 30)  /**< Green LED on D9 */
-#define LED1_PIN            GPIO_PIN(0, 14)  /**< Red LED on D12 */
-#define LED2_PIN            GPIO_PIN(0, 22)  /**< Red LED on D11 */
-#define LED3_PIN            GPIO_PIN(0, 31)  /**< Blue LED on D10 */
+/// @name    LED pin configuration
+/// @{
+#define LED0_PIN            GPIO_PIN(0, 30)  ///< Green LED on D9
+#define LED1_PIN            GPIO_PIN(0, 14)  ///< Red LED on D12
+#define LED2_PIN            GPIO_PIN(0, 22)  ///< Red LED on D11
+#define LED3_PIN            GPIO_PIN(0, 31)  ///< Blue LED on D10
 
 #define LED_PORT            (NRF_P0)
 #define LED0_MASK           (1 << 30)
@@ -52,34 +46,28 @@ extern "C" {
 #define LED3_ON             (LED_PORT->OUTCLR = LED3_MASK)
 #define LED3_OFF            (LED_PORT->OUTSET = LED3_MASK)
 #define LED3_TOGGLE         (LED_PORT->OUT   ^= LED3_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    Button pin configuration
- * @{
- */
+/// @name    Button pin configuration
+/// @{
 #define BTN0_PIN            GPIO_PIN(0, 2)
 #define BTN0_MODE           GPIO_IN_PU
-/** @} */
+/// @}
 
-/**
- * @name    LIS2DH12 driver configuration
- * @{
- */
+/// @name    LIS2DH12 driver configuration
+/// @{
 #define LIS2DH12_PARAM_INT_PIN1     GPIO_PIN(0, 25)
-/** @} */
+/// @}
 
-/**
- * @name    DW1000 UWB transceiver
- * @{
- */
+/// @name    DW1000 UWB transceiver
+/// @{
 #define DW1000_PARAM_SPI            SPI_DEV(1)
 #define DW1000_PARAM_CS_PIN         GPIO_PIN(0, 17)
 #define DW1000_PARAM_INT_PIN        GPIO_PIN(0, 19)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

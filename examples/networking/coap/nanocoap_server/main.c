@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       CoAP example server application (using nanocoap)
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       CoAP example server application (using nanocoap)
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @}
 
 #include <stdio.h>
 
@@ -31,11 +27,10 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 extern void setup_observe_event(void);
 
-int main(void)
-{
+int main(void) {
     puts("RIOT nanocoap example application");
 
-    /* nanocoap_server uses gnrc sock which uses gnrc which needs a msg queue */
+    // nanocoap_server uses gnrc sock which uses gnrc which needs a msg queue
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     puts("Waiting for address autoconfiguration...");
@@ -46,8 +41,8 @@ int main(void)
     }
 
 #ifdef MODULE_LWIP_IPV4
-#define _TEST_ADDR4_LOCAL  (0x9664a8c0U)   /* 192.168.100.150 */
-#define _TEST_ADDR4_MASK   (0x00ffffffU)   /* 255.255.255.0 */
+#define _TEST_ADDR4_LOCAL  (0x9664a8c0U)   // 192.168.100.150
+#define _TEST_ADDR4_MASK   (0x00ffffffU)   // 255.255.255.0
 
     sys_lock_tcpip_core();
     struct netif *iface = netif_find("ET0");
@@ -60,28 +55,28 @@ int main(void)
 #endif
     sys_unlock_tcpip_core();
 
-    /* print network addresses */
+    // print network addresses
     printf("{\"IPv4 addresses\": [\"");
     char buffer[16];
     inet_ntop(AF_INET, netif_ip_addr4(iface), buffer, 16);
     printf("%s\"]}\n", buffer);
 
-    /* initialize nanocoap server instance for IPv4*/
+    // initialize nanocoap server instance for IPv4
     uint8_t buf[COAP_INBUF_SIZE];
     sock_udp_ep_t local = { .port=COAP_PORT, .family=AF_INET };
     nanocoap_server(&local, buf, sizeof(buf));
 #else
-    /* print network addresses */
+    // print network addresses
     printf("{\"IPv6 addresses\": [\"");
     netifs_print_ipv6("\", \"");
     puts("\"]}");
 
-    /* initialize nanocoap server instance for IPv6*/
+    // initialize nanocoap server instance for IPv6
     uint8_t buf[COAP_INBUF_SIZE];
     sock_udp_ep_t local = { .port=COAP_PORT, .family=AF_INET6 };
     nanocoap_server(&local, buf, sizeof(buf));
 #endif
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }

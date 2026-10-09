@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup drivers_nrf24l01p_ng
- * @{
- *
- * @file
- * @brief     Implementation of gnrc_netif Rx/Tx adaptation functions
- *            for the NRF24L01+ (NG) transceiver
- *
- * @author Fabian Hüßler <fabian.huessler@ovgu.de>
- * @}
- */
+/// @ingroup drivers_nrf24l01p_ng
+/// @{
+///
+/// @file
+/// @brief     Implementation of gnrc_netif Rx/Tx adaptation functions
+///            for the NRF24L01+ (NG) transceiver
+///
+/// @author Fabian Hüßler <fabian.huessler@ovgu.de>
+/// @}
 #include <assert.h>
 
 #define ENABLE_DEBUG 0
@@ -25,17 +21,14 @@
 #include "nrf24l01p_ng.h"
 #include "utlist.h"
 
-/**
- * @brief   Broadcast/Multicast flag
- */
+/// @brief   Broadcast/Multicast flag
 #define BCAST  (GNRC_NETIF_HDR_FLAGS_BROADCAST | GNRC_NETIF_HDR_FLAGS_MULTICAST)
 
-static gnrc_pktsnip_t *_nrf24l01p_ng_pkt_recv(gnrc_netif_t *netif)
-{
-    /* get frame size */
+static gnrc_pktsnip_t *_nrf24l01p_ng_pkt_recv(gnrc_netif_t *netif) {
+    // get frame size
     int frame_len = netif->dev->driver->recv(netif->dev, NULL, 1, NULL);
 
-    /* allocate space for the packet in the pktbuf */
+    // allocate space for the packet in the pktbuf
     gnrc_pktsnip_t *frame = gnrc_pktbuf_add(NULL, NULL, frame_len,
                                             NRF24L01P_NG_UPPER_LAYER_PROTOCOL);
     if (!frame) {
@@ -43,7 +36,7 @@ static gnrc_pktsnip_t *_nrf24l01p_ng_pkt_recv(gnrc_netif_t *netif)
         return NULL;
     }
 
-    /* copy the payload into the packet buffer */
+    // copy the payload into the packet buffer
     frame_len = netif->dev->driver->recv(netif->dev, frame->data,
                                          frame_len, NULL);
     if (frame_len <= 0) {
@@ -54,24 +47,21 @@ static gnrc_pktsnip_t *_nrf24l01p_ng_pkt_recv(gnrc_netif_t *netif)
     return frame;
 }
 
-/**
- * @brief   Receives a @ref net_gnrc_pkt "packet" from the network interface
- *
- * @pre `netif != NULL`
- *
- * @note The function takes the bytes received via netdev_driver_t::recv()
- *       from gnrc_netif_t::dev and re-formats it to a
- *       @ref net_gnrc_pkt "packet" containing a @ref net_gnrc_netif_hdr
- *       and a payload header in receive order.
- *
- * @param[in] netif The network interface.
- *
- * @return  The packet received. Contains the payload (with the type marked
- *          accordingly) and a @ref net_gnrc_netif_hdr in receive order.
- * @return  NULL, if @ref net_gnrc_pktbuf was full.
- */
-static gnrc_pktsnip_t *_nrf24l01p_ng_adpt_recv(gnrc_netif_t *netif)
-{
+/// @brief   Receives a @ref net_gnrc_pkt "packet" from the network interface
+///
+/// @pre `netif != NULL`
+///
+/// @note The function takes the bytes received via netdev_driver_t::recv()
+///       from gnrc_netif_t::dev and re-formats it to a
+///       @ref net_gnrc_pkt "packet" containing a @ref net_gnrc_netif_hdr
+///       and a payload header in receive order.
+///
+/// @param[in] netif The network interface.
+///
+/// @return  The packet received. Contains the payload (with the type marked
+///          accordingly) and a @ref net_gnrc_netif_hdr in receive order.
+/// @return  NULL, if @ref net_gnrc_pktbuf was full.
+static gnrc_pktsnip_t *_nrf24l01p_ng_adpt_recv(gnrc_netif_t *netif) {
     assert(netif);
     assert(netif->dev);
 
@@ -129,28 +119,25 @@ static gnrc_pktsnip_t *_nrf24l01p_ng_adpt_recv(gnrc_netif_t *netif)
     return frame;
 }
 
-/**
- * @brief   Send a @ref net_gnrc_pkt "packet" over the network interface
- *
- * @pre `netif != NULL && pkt != NULL`
- *
- * @note The function re-formats the content of @p pkt to a format expected
- *       by the netdev_driver_t::send() method of gnrc_netif_t::dev and
- *       releases the packet before returning (so no additional release
- *       should be required after calling this method).
- *
- * @param[in] netif The network interface.
- * @param[in] pkt   A packet to send.
- *
- * @return  The number of bytes actually sent on success
- * @return  -EBADMSG, if the @ref net_gnrc_netif_hdr in @p pkt is missing
- *          or is in an unexpected format.
- * @return  -ENOTSUP, if sending @p pkt in the given format isn't supported
- *          (e.g. empty payload with Ethernet).
- * @return  Any negative error code reported by gnrc_netif_t::dev.
- */
-static int _nrf24l01p_ng_adpt_send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
-{
+/// @brief   Send a @ref net_gnrc_pkt "packet" over the network interface
+///
+/// @pre `netif != NULL && pkt != NULL`
+///
+/// @note The function re-formats the content of @p pkt to a format expected
+///       by the netdev_driver_t::send() method of gnrc_netif_t::dev and
+///       releases the packet before returning (so no additional release
+///       should be required after calling this method).
+///
+/// @param[in] netif The network interface.
+/// @param[in] pkt   A packet to send.
+///
+/// @return  The number of bytes actually sent on success
+/// @return  -EBADMSG, if the @ref net_gnrc_netif_hdr in @p pkt is missing
+///          or is in an unexpected format.
+/// @return  -ENOTSUP, if sending @p pkt in the given format isn't supported
+///          (e.g. empty payload with Ethernet).
+/// @return  Any negative error code reported by gnrc_netif_t::dev.
+static int _nrf24l01p_ng_adpt_send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt) {
     assert(netif);
     assert(pkt);
     assert(netif->dev);
@@ -204,12 +191,12 @@ static int _nrf24l01p_ng_adpt_send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
     int res;
     while ((res = netdev->driver->send(netdev, &iolist)) < 0) {
         if (res == -EAGAIN) {
-            /* pending interrupts? */
+            // pending interrupts?
             continue;
         }
         else if (res == -EBUSY) {
             if (!IS_ACTIVE(MODULE_GNRC_NETIF_PKTQ)) {
-                /* busy send */
+                // busy send
                 continue;
             }
         }
@@ -229,14 +216,12 @@ static const gnrc_netif_ops_t nrf24l01p_ng_netif_ops = {
 
 int gnrc_netif_nrf24l01p_ng_create(gnrc_netif_t *netif, char *stack,
                                    int stacksize, char priority, char *name,
-                                   netdev_t *dev)
-{
+                                   netdev_t *dev) {
     return gnrc_netif_create(netif, stack, stacksize, priority, name,
                              dev, &nrf24l01p_ng_netif_ops);
 }
 
-void __attribute__((weak)) nrf24l01p_ng_eui_get(const netdev_t *netdev, uint8_t *eui)
-{
+void __attribute__((weak)) nrf24l01p_ng_eui_get(const netdev_t *netdev, uint8_t *eui) {
     (void)netdev;
     do {
         luid_get_lb(eui, NRF24L01P_NG_ADDR_WIDTH);

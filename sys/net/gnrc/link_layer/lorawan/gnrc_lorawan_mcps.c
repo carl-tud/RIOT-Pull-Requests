@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  José Ignacio Alamos <jose.alamos@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+/// @author  José Ignacio Alamos <jose.alamos@haw-hamburg.de>
 
 #include <assert.h>
 #include <stdio.h>
@@ -32,8 +28,7 @@
 static void _end_of_tx(gnrc_lorawan_t *mac, int type, int status);
 
 static int gnrc_lorawan_mic_is_valid(uint8_t *buf, size_t len, uint8_t *key,
-                                     uint32_t fcnt_up, bool optneg)
-{
+                                     uint32_t fcnt_up, bool optneg) {
     (void)fcnt_up;
     le_uint32_t calc_mic;
 
@@ -43,17 +38,15 @@ static int gnrc_lorawan_mic_is_valid(uint8_t *buf, size_t len, uint8_t *key,
     iolist_t iol =
     { .iol_base = buf, .iol_len = len - MIC_SIZE, .iol_next = NULL };
 
-    /* for LoRaWAN 1.0 conf_fcnt is hardcoded to be 0 */
+    // for LoRaWAN 1.0 conf_fcnt is hardcoded to be 0
     uint16_t conf_fnct = 0x00;
 
     if (IS_USED(MODULE_GNRC_LORAWAN_1_1) && optneg) {
-        /**
-         * If the device is connected to a LoRaWAN 1.1 Network Server and the
-         * ACK bit of the downlink frame is set, meaning this frame is acknowledging
-         * an uplink “confirmed” frame,then ConfFCnt is the frame counter value
-         * modulo 2^16 of the “confirmed” uplink frame that is being acknowledged.
-         * In all other cases ConfFCnt = 0x0000.
-         */
+        /// If the device is connected to a LoRaWAN 1.1 Network Server and the
+        /// ACK bit of the downlink frame is set, meaning this frame is acknowledging
+        /// an uplink “confirmed” frame,then ConfFCnt is the frame counter value
+        /// modulo 2^16 of the “confirmed” uplink frame that is being acknowledged.
+        /// In all other cases ConfFCnt = 0x0000.
         if (lorawan_hdr_get_ack(lw_hdr)) {
             conf_fnct = fcnt_up;
         }
@@ -65,8 +58,7 @@ static int gnrc_lorawan_mic_is_valid(uint8_t *buf, size_t len, uint8_t *key,
     return calc_mic.u32 == ((le_uint32_t *)(buf + len - MIC_SIZE))->u32;
 }
 
-uint32_t gnrc_lorawan_fcnt_stol(uint32_t fcnt_down, uint16_t s_fcnt)
-{
+uint32_t gnrc_lorawan_fcnt_stol(uint32_t fcnt_down, uint16_t s_fcnt) {
     uint32_t u32_fcnt = (fcnt_down & _16_UPPER_BITMASK) | s_fcnt;
 
     if (fcnt_down + CONFIG_LORAMAC_DEFAULT_MAX_FCNT_GAP >= _16_LOWER_BITMASK
@@ -76,23 +68,20 @@ uint32_t gnrc_lorawan_fcnt_stol(uint32_t fcnt_down, uint16_t s_fcnt)
     return u32_fcnt;
 }
 
-/**
- * @brief holder of parsed packet
- */
+/// @brief holder of parsed packet
 struct parsed_packet {
-    uint32_t fcnt_down;         /**< frame counter */
-    lorawan_hdr_t *hdr;         /**< pointer to the LoRaWAN header */
-    bool ack_req;               /**< whether an ACK was requested or not */
-    iolist_t fopts;             /**< iolist with Fopts information */
-    iolist_t enc_payload;       /**< iolist with encrypted payload */
-    uint8_t port;               /**< Fport of the packet */
-    bool ack;                   /**< whether the ACK bit was set or not */
-    bool frame_pending;         /**< whether there's pending data or not */
+    uint32_t fcnt_down;         ///< frame counter
+    lorawan_hdr_t *hdr;         ///< pointer to the LoRaWAN header
+    bool ack_req;               ///< whether an ACK was requested or not
+    iolist_t fopts;             ///< iolist with Fopts information
+    iolist_t enc_payload;       ///< iolist with encrypted payload
+    uint8_t port;               ///< Fport of the packet
+    bool ack;                   ///< whether the ACK bit was set or not
+    bool frame_pending;         ///< whether there's pending data or not
 };
 
 int gnrc_lorawan_parse_dl(gnrc_lorawan_t *mac, uint8_t *buf, size_t len,
-                          struct parsed_packet *pkt)
-{
+                          struct parsed_packet *pkt) {
     memset(pkt, 0, sizeof(struct parsed_packet));
 
     lorawan_hdr_t *_hdr = (lorawan_hdr_t *)buf;
@@ -101,7 +90,7 @@ int gnrc_lorawan_parse_dl(gnrc_lorawan_t *mac, uint8_t *buf, size_t len,
     pkt->hdr = _hdr;
     buf += sizeof(lorawan_hdr_t);
 
-    /* Validate header */
+    // Validate header
     if (_hdr->addr.u32 != mac->dev_addr.u32) {
         DEBUG("gnrc_lorawan: received packet with wrong dev addr. Drop\n");
         return -1;
@@ -162,8 +151,7 @@ int gnrc_lorawan_parse_dl(gnrc_lorawan_t *mac, uint8_t *buf, size_t len,
 }
 
 void gnrc_lorawan_mcps_process_downlink(gnrc_lorawan_t *mac, uint8_t *psdu,
-                                        size_t size)
-{
+                                        size_t size) {
     struct parsed_packet _pkt;
 
     if (size < sizeof(lorawan_hdr_t) + MIC_SIZE) {
@@ -171,7 +159,7 @@ void gnrc_lorawan_mcps_process_downlink(gnrc_lorawan_t *mac, uint8_t *psdu,
         return;
     }
 
-    /* NOTE: MIC is in pkt */
+    // NOTE: MIC is in pkt
     if (!gnrc_lorawan_mic_is_valid(psdu, size, mac->ctx.snwksintkey,
                                    mac->mcps.fcnt, gnrc_lorawan_optneg_is_set(mac))) {
         DEBUG("gnrc_lorawan: invalid MIC\n");
@@ -227,7 +215,7 @@ void gnrc_lorawan_mcps_process_downlink(gnrc_lorawan_t *mac, uint8_t *psdu,
         mac->mcps.ack_requested = true;
     }
 
-    /* if there are fopts, it's either an empty packet or application payload */
+    // if there are fopts, it's either an empty packet or application payload
     if (fopts) {
         if (IS_USED(MODULE_GNRC_LORAWAN_1_1) && gnrc_lorawan_optneg_is_set(mac)) {
             if (_pkt.port) {
@@ -268,8 +256,7 @@ void gnrc_lorawan_mcps_process_downlink(gnrc_lorawan_t *mac, uint8_t *psdu,
 
 size_t gnrc_lorawan_build_hdr(uint8_t mtype, le_uint32_t *dev_addr,
                               uint32_t fcnt, uint8_t ack, uint8_t fopts_length,
-                              lorawan_buffer_t *buf)
-{
+                              lorawan_buffer_t *buf) {
     assert(fopts_length < 16);
     lorawan_hdr_t *lw_hdr = (lorawan_hdr_t *)buf->data;
 
@@ -291,8 +278,7 @@ size_t gnrc_lorawan_build_hdr(uint8_t mtype, le_uint32_t *dev_addr,
 }
 
 size_t gnrc_lorawan_build_uplink(gnrc_lorawan_t *mac, iolist_t *payload,
-                                 int confirmed_data, uint8_t port)
-{
+                                 int confirmed_data, uint8_t port) {
     lorawan_buffer_t buf = {
         .data = (uint8_t *)mac->mcps.mhdr_mic,
         .size = sizeof(mac->mcps.mhdr_mic),
@@ -344,8 +330,7 @@ size_t gnrc_lorawan_build_uplink(gnrc_lorawan_t *mac, iolist_t *payload,
     return buf.index;
 }
 
-static void _end_of_tx(gnrc_lorawan_t *mac, int type, int status)
-{
+static void _end_of_tx(gnrc_lorawan_t *mac, int type, int status) {
     mlme_confirm_t mlme_confirm;
     mcps_confirm_t mcps_confirm;
 
@@ -369,8 +354,7 @@ static void _end_of_tx(gnrc_lorawan_t *mac, int type, int status)
     gnrc_lorawan_mcps_confirm(mac, &mcps_confirm);
 }
 
-static void _transmit_pkt(gnrc_lorawan_t *mac)
-{
+static void _transmit_pkt(gnrc_lorawan_t *mac) {
     size_t mhdr_size = sizeof(lorawan_hdr_t) + 1 +
                        lorawan_hdr_get_frame_opts_len((void *)mac->mcps.mhdr_mic);
 
@@ -391,12 +375,10 @@ static void _transmit_pkt(gnrc_lorawan_t *mac)
     uint16_t conf_fcnt = 0;
 
     if (IS_USED(MODULE_GNRC_LORAWAN_1_1)) {
-        /**
-         * If the ACK bit of the uplink frame is set, meaning this frame is
-         * acknowledging a downlink “confirmed” frame, then ConfFCnt is the frame
-         * counter value modulo 2^16 of the “confirmed” downlink frame that is being
-         * acknowledged. In all other cases ConfFCnt = 0x0000
-         */
+        /// If the ACK bit of the uplink frame is set, meaning this frame is
+        /// acknowledging a downlink “confirmed” frame, then ConfFCnt is the frame
+        /// counter value modulo 2^16 of the “confirmed” downlink frame that is being
+        /// acknowledged. In all other cases ConfFCnt = 0x0000
         lorawan_hdr_t *lw_hdr = (lorawan_hdr_t *)header.iol_base;
         if (lorawan_hdr_get_ack(lw_hdr)) {
             conf_fcnt = gnrc_lorawan_get_last_fcnt_down(mac);
@@ -409,50 +391,47 @@ static void _transmit_pkt(gnrc_lorawan_t *mac)
     gnrc_lorawan_send_pkt(mac, &header, mac->last_dr,
                           mac->channel[mac->last_chan_idx]);
 
-    /* cppcheck-suppress redundantAssignment
-     * (reason: cppcheck bug. The pointer is temporally modified to add a footer.
-     *          The `gnrc_lorawan_send_pkt` function uses this hack to append
-     *          the MIC independently of `gnrc_pktsnip_t` structures) */
+    // cppcheck-suppress redundantAssignment
+    // (reason: cppcheck bug. The pointer is temporally modified to add a footer.
+    //          The `gnrc_lorawan_send_pkt` function uses this hack to append
+    //          the MIC independently of `gnrc_pktsnip_t` structures)
     last_snip->iol_next = NULL;
 }
 
-void gnrc_lorawan_event_retrans_timeout(gnrc_lorawan_t *mac)
-{
+void gnrc_lorawan_event_retrans_timeout(gnrc_lorawan_t *mac) {
     _transmit_pkt(mac);
 }
 
-static void _handle_retransmissions(gnrc_lorawan_t *mac)
-{
-    /* Check if retransmission should be handled.
-     *
-     * If there was a confirmed uplink, follow the standard retransmission
-     * procedure.
-     * If it was an unconfirmed uplink, perform retransmissions only if
-     * there's redundancy > 0 */
+static void _handle_retransmissions(gnrc_lorawan_t *mac) {
+    // Check if retransmission should be handled.
+    //
+    // If there was a confirmed uplink, follow the standard retransmission
+    // procedure.
+    // If it was an unconfirmed uplink, perform retransmissions only if
+    // there's redundancy > 0
     if (mac->mcps.nb_trials-- == 0) {
         if (mac->mcps.waiting_for_ack) {
-            /* If we are here, the node ran out of confirmed uplink retransmissions.
-             * This means, the transmission was not successful. */
+            // If we are here, the node ran out of confirmed uplink retransmissions.
+            // This means, the transmission was not successful.
             _end_of_tx(mac, MCPS_CONFIRMED, -ETIMEDOUT);
         }
         else {
-            /* In this case, we finished sending one or more unconfirmed
-             * (depending on the redundancy) */
+            // In this case, we finished sending one or more unconfirmed
+            // (depending on the redundancy)
             _end_of_tx(mac, MCPS_UNCONFIRMED, GNRC_LORAWAN_REQ_STATUS_SUCCESS);
         }
     }
     else {
-        /* Schedule a retransmission */
+        // Schedule a retransmission
         gnrc_lorawan_set_timer(mac, 1000000 + random_uint32_range(0, 2000000));
     }
 }
 
-void gnrc_lorawan_event_no_rx(gnrc_lorawan_t *mac)
-{
+void gnrc_lorawan_event_no_rx(gnrc_lorawan_t *mac) {
     mlme_confirm_t mlme_confirm;
 
     if (mac->mlme.activation == MLME_ACTIVATION_NONE) {
-        /* This was a Join Request */
+        // This was a Join Request
         mlme_confirm.type = MLME_JOIN;
         mlme_confirm.status = -ETIMEDOUT;
         gnrc_lorawan_mac_release(mac);
@@ -465,8 +444,7 @@ void gnrc_lorawan_event_no_rx(gnrc_lorawan_t *mac)
 
 void gnrc_lorawan_mcps_request(gnrc_lorawan_t *mac,
                                const mcps_request_t *mcps_request,
-                               mcps_confirm_t *mcps_confirm)
-{
+                               mcps_confirm_t *mcps_confirm) {
     iolist_t *pkt = mcps_request->data.pkt;
 
     if (mac->mlme.activation == MLME_ACTIVATION_NONE) {
@@ -492,8 +470,8 @@ void gnrc_lorawan_mcps_request(gnrc_lorawan_t *mac,
     }
 
     uint8_t fopts_length = gnrc_lorawan_build_options(mac, NULL);
-    /* We don't include the port because `MACPayload` doesn't consider
-     * the MHDR...*/
+    // We don't include the port because `MACPayload` doesn't consider
+    // the MHDR...
     size_t mac_payload_size = sizeof(lorawan_hdr_t) + fopts_length +
                               iolist_size(pkt);
 
@@ -524,4 +502,4 @@ out:
     }
 }
 
-/** @} */
+/// @}

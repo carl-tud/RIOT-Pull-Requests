@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_nanocoap
- * @{
- *
- * @file
- * @brief       nanoCoAP VFS helpers
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     net_nanocoap
+/// @{
+///
+/// @file
+/// @brief       nanoCoAP VFS helpers
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <fcntl.h>
 #include "net/nanocoap_vfs.h"
@@ -23,8 +19,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static int _2file(void *arg, size_t offset, uint8_t *buf, size_t len, int more)
-{
+static int _2file(void *arg, size_t offset, uint8_t *buf, size_t len, int more) {
     (void)more;
     int *fd = arg;
 
@@ -32,9 +27,8 @@ static int _2file(void *arg, size_t offset, uint8_t *buf, size_t len, int more)
     return vfs_write(*fd, buf, len);
 }
 
-static int _prepare_file(const char *dst, char *dst_tmp, size_t len)
-{
-    /* download to temp file, rename it later */
+static int _prepare_file(const char *dst, char *dst_tmp, size_t len) {
+    // download to temp file, rename it later
     if (snprintf(dst_tmp, len, "%s.t", dst) > (int)len) {
         return -ENOBUFS;
     }
@@ -42,11 +36,10 @@ static int _prepare_file(const char *dst, char *dst_tmp, size_t len)
     return vfs_open(dst_tmp, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 }
 
-static int _finalize_file(int fd, int res, const char *dst, const char *dst_tmp)
-{
+static int _finalize_file(int fd, int res, const char *dst, const char *dst_tmp) {
     vfs_close(fd);
 
-    /* move file to it's final location */
+    // move file to it's final location
     if (res >= 0) {
         DEBUG("nanocoap: moving %s to %s\n", dst_tmp, dst);
         vfs_unlink(dst);
@@ -58,8 +51,7 @@ static int _finalize_file(int fd, int res, const char *dst, const char *dst_tmp)
     return res;
 }
 
-int nanocoap_vfs_get(nanocoap_sock_t *sock, const char *path, const char *dst)
-{
+int nanocoap_vfs_get(nanocoap_sock_t *sock, const char *path, const char *dst) {
     int fd, res;
     char dst_tmp[CONFIG_SOCK_URLPATH_MAXLEN];
 
@@ -74,8 +66,7 @@ int nanocoap_vfs_get(nanocoap_sock_t *sock, const char *path, const char *dst)
     return _finalize_file(fd, res, dst, dst_tmp);
 }
 
-int nanocoap_vfs_get_url(const char *url, const char *dst)
-{
+int nanocoap_vfs_get_url(const char *url, const char *dst) {
     int fd, res;
     char dst_tmp[CONFIG_SOCK_URLPATH_MAXLEN];
 
@@ -90,14 +81,13 @@ int nanocoap_vfs_get_url(const char *url, const char *dst)
     return _finalize_file(fd, res, dst, dst_tmp);
 }
 
-static int _vfs_put(coap_block_request_t *ctx, const char *file, void *buffer)
-{
+static int _vfs_put(coap_block_request_t *ctx, const char *file, void *buffer) {
     int res, fd = vfs_open(file, O_RDONLY, 0644);
     if (fd < 0) {
         return fd;
     }
 
-    /* buffer is at least one larger than SZX value */
+    // buffer is at least one larger than SZX value
     int buffer_len = coap_szx2size(ctx->blksize) + 1;
 
     bool more = true;
@@ -116,8 +106,7 @@ static int _vfs_put(coap_block_request_t *ctx, const char *file, void *buffer)
 }
 
 int nanocoap_vfs_put(nanocoap_sock_t *sock, const char *path, const char *src,
-                     void *work_buf, size_t work_buf_len)
-{
+                     void *work_buf, size_t work_buf_len) {
     DEBUG("nanocoap: uploading %s to %s\n", src, path);
 
     if (work_buf_len < coap_szx2size(0) + 1) {
@@ -135,8 +124,7 @@ int nanocoap_vfs_put(nanocoap_sock_t *sock, const char *path, const char *src,
 }
 
 int nanocoap_vfs_put_url(const char *url, const char *src,
-                         void *work_buf, size_t work_buf_len)
-{
+                         void *work_buf, size_t work_buf_len) {
     DEBUG("nanocoap: uploading %s to %s\n", src, url);
 
     if (work_buf_len < coap_szx2size(0) + 1) {

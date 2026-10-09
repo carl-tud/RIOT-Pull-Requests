@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf52840dk
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the nRF52840 DK
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- */
+/// @ingroup     boards_nrf52840dk
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the nRF52840 DK
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
 
 #include "kernel_defines.h"
 #include "periph_conf_common.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPIM0,
@@ -42,14 +36,12 @@ static const spi_conf_t spi_config[] = {
     }
 };
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    { /* Mapped to USB virtual COM port */
+    { // Mapped to USB virtual COM port
         .dev        = NRF_UARTE0,
         .rx_pin     = GPIO_PIN(0, 8),
         .tx_pin     = GPIO_PIN(0, 6),
@@ -59,7 +51,7 @@ static const uart_conf_t uart_config[] = {
 #endif
         .irqn       = UARTE0_UART0_IRQn,
     },
-    { /* Mapped to Arduino D0/D1 pins */
+    { // Mapped to Arduino D0/D1 pins
         .dev        = NRF_UARTE1,
         .rx_pin     = GPIO_PIN(1, 1),
         .tx_pin     = GPIO_PIN(1, 2),
@@ -75,10 +67,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_uarte1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

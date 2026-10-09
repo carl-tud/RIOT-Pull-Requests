@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_lora-e5-dev
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the LoRa-E5 Development Board
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- */
+/// @ingroup     boards_lora-e5-dev
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the LoRa-E5 Development Board
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
 
-/* This board provides a 32MHz HSE oscillator  */
+// This board provides a 32MHz HSE oscillator
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE            1
 #endif
@@ -39,10 +35,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
    {
         .dev        = USART1,
@@ -54,7 +48,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
     {
         .dev        = USART2,
@@ -66,7 +60,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART2_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
     {
         .dev        = LPUART1,
@@ -78,7 +72,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB12,
         .irqn       = LPUART1_IRQn,
         .type       = STM32_LPUART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
 };
 
@@ -87,14 +81,12 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          isr_lpuart1
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
-/**
- * @name    SPI configuration
- * @{
- */
+/// @}
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
-        .dev      = SUBGHZSPI, /* Internally connected to Sub-GHz radio Modem  */
+        .dev      = SUBGHZSPI, // Internally connected to Sub-GHz radio Modem
         .mosi_pin = GPIO_UNDEF,
         .miso_pin = GPIO_UNDEF,
         .sclk_pin = GPIO_UNDEF,
@@ -106,7 +98,7 @@ static const spi_conf_t spi_config[] = {
         .rccmask  = RCC_APB3ENR_SUBGHZSPIEN,
         .apbbus   = APB3,
     },
-/* SUBGHZ DEBUG PINS use the SPI1 pins */
+// SUBGHZ DEBUG PINS use the SPI1 pins
 #if !IS_ACTIVE(CONFIG_STM32_WLX5XX)
     {
         .dev      = SPI2,
@@ -125,12 +117,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C2,
@@ -141,7 +131,7 @@ static const i2c_conf_t i2c_config[] = {
         .sda_af         = GPIO_AF4,
         .bus            = APB1,
         .rcc_mask       = RCC_APB1ENR1_I2C2EN,
-        .rcc_sw_mask    = RCC_CCIPR_I2C2SEL_1,      /* HSI (16 MHz) */
+        .rcc_sw_mask    = RCC_CCIPR_I2C2SEL_1,      // HSI (16 MHz)
         .irqn           = I2C2_ER_IRQn,
     }
 };
@@ -149,24 +139,22 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c2_er
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- * @{
- */
+/// @name   ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_B, 3), 2 },
     { GPIO_PIN(PORT_B, 4), 3 },
-    { GPIO_UNDEF, 14 }, /* VBAT */
+    { GPIO_UNDEF, 14 }, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(2) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(2) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

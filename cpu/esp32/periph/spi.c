@@ -1,30 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32
- * @ingroup     drivers_periph_spi
- * @{
- *
- * @file
- * @brief       Low-level SPI driver implementation for ESP32 SoCs
- *
- * The implementation uses the ESP-IDF Low level interface in polling mode
- * without DMA.
- *
- * @TODO
- * - transaction interrupts to avoid busy waiting in polling mode
- * - DMA transfer
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @ingroup     drivers_periph_spi
+/// @{
+///
+/// @file
+/// @brief       Low-level SPI driver implementation for ESP32 SoCs
+///
+/// The implementation uses the ESP-IDF Low level interface in polling mode
+/// without DMA.
+///
+/// @TODO
+/// - transaction interrupts to avoid busy waiting in polling mode
+/// - DMA transfer
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
-/* -Wsign-compare has to be deactivated in this file due to the comparison
- * of int and size_t in spi_ll.h of the ESP-IDF */
+// -Wsign-compare has to be deactivated in this file due to the comparison
+// of int and size_t in spi_ll.h of the ESP-IDF
 #pragma GCC diagnostic ignored "-Wsign-compare"
 
 #include <assert.h>
@@ -55,20 +51,20 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* Ensure that the SPIn_* symbols define SPI_DEV(n) */
+// Ensure that the SPIn_* symbols define SPI_DEV(n)
 #if !defined(SPI0_CTRL) && defined(SPI1_CTRL)
 #error "SPI_DEV(1) is used but SPI_DEV(0) is not defined"
 #endif
 
-/* SPI bus descriptor structure */
+// SPI bus descriptor structure
 struct _spi_bus_t {
-    mutex_t lock;                    /* mutex for each SPI interface */
-    spi_host_device_t hostid;        /* SPI hostid as used by ESP-IDF */
-    const spi_signal_conn_t *periph; /* SPI peripheral descriptor */
-    spi_hal_timing_conf_t timing;    /* calculated SPI timing parameters */
-    spi_clk_t clk_last;              /* SPI clock speed used last time in Hz */
-    uint8_t mode_last;               /* SPI mode used last time */
-    bool pins_initialized;           /* SPI pins initialized */
+    mutex_t lock;                    // mutex for each SPI interface
+    spi_host_device_t hostid;        // SPI hostid as used by ESP-IDF
+    const spi_signal_conn_t *periph; // SPI peripheral descriptor
+    spi_hal_timing_conf_t timing;    // calculated SPI timing parameters
+    spi_clk_t clk_last;              // SPI clock speed used last time in Hz
+    uint8_t mode_last;               // SPI mode used last time
+    bool pins_initialized;           // SPI pins initialized
 };
 
 static struct _spi_bus_t _spi[] = {
@@ -108,18 +104,17 @@ _Static_assert(SPI_NUMOF <= SPI_NUMOF_MAX,
 #  define PERIPH_SPI3_MODULE  PERIPH_HSPI_MODULE
 #endif
 
-void IRAM_ATTR spi_init(spi_t bus)
-{
+void IRAM_ATTR spi_init(spi_t bus) {
     DEBUG("%s bus=%u\n", __func__, bus);
 
     assert(bus < SPI_NUMOF_MAX);
     assert(bus < SPI_NUMOF);
 
-    /* initialize pins */
+    // initialize pins
     spi_init_pins(bus);
 
-    /* check whether pins could be initialized, otherwise return, CS is not
-       initialized in spi_init_pins */
+    // check whether pins could be initialized, otherwise return, CS is not
+    //    initialized in spi_init_pins
     if (gpio_get_pin_usage(spi_config[bus].sck) != _SPI &&
         gpio_get_pin_usage(spi_config[bus].miso) != _SPI &&
         gpio_get_pin_usage(spi_config[bus].mosi) != _SPI &&
@@ -127,7 +122,7 @@ void IRAM_ATTR spi_init(spi_t bus)
         return;
     }
 
-    /* enable (power on) the according SPI module */
+    // enable (power on) the according SPI module
     if (spi_config[bus].ctrl == SPI1_HOST) {
         periph_module_enable(PERIPH_SPI1_MODULE);
     }
@@ -145,25 +140,24 @@ void IRAM_ATTR spi_init(spi_t bus)
         assert(false);
     }
 
-    /* initialize SPI peripheral */
+    // initialize SPI peripheral
     spi_ll_master_init(_spi[bus].periph->hw);
     spi_ll_set_mosi_delay(_spi[bus].periph->hw, 0, 0);
     spi_ll_apply_config(_spi[bus].periph->hw);
 
-    /* bring the bus into a defined state (one-line mode) */
+    // bring the bus into a defined state (one-line mode)
     spi_ll_master_set_line_mode(_spi[bus].periph->hw, (spi_line_mode_t){ 1, 1, 1 });
     spi_ll_set_rx_lsbfirst(_spi[bus].periph->hw, false);
     spi_ll_set_tx_lsbfirst(_spi[bus].periph->hw, false);
 
-    /* acquire and release to set default parameters */
+    // acquire and release to set default parameters
     spi_acquire(bus, GPIO_UNDEF, SPI_MODE_0, SPI_CLK_100KHZ);
     spi_release(bus);
 
     return;
 }
 
-static int _init_spi_pin(gpio_t pin, gpio_mode_t mode)
-{
+static int _init_spi_pin(gpio_t pin, gpio_mode_t mode) {
     int res;
 
     if (!gpio_is_valid(pin)) {
@@ -175,16 +169,15 @@ static int _init_spi_pin(gpio_t pin, gpio_mode_t mode)
         return res;
     }
 
-    /* store the usage type in GPIO table */
+    // store the usage type in GPIO table
     gpio_set_pin_usage(pin, _SPI);
     return 0;
 }
 
-void spi_init_pins(spi_t bus)
-{
+void spi_init_pins(spi_t bus) {
     assert(bus < SPI_NUMOF);
 
-    /* avoid multiple pin initializations */
+    // avoid multiple pin initializations
     if (_spi[bus].pins_initialized) {
         return;
     }
@@ -206,10 +199,10 @@ void spi_init_pins(spi_t bus)
         return;
     }
 
-    /* TODO  the IO_MUX should be used instead of GPIO matrix routing for
-             lower delays and higher clock rates whenever possible */
+    // TODO  the IO_MUX should be used instead of GPIO matrix routing for
+    //          lower delays and higher clock rates whenever possible
 
-    /* connect SCK and MOSI pins to the output signal through the GPIO matrix */
+    // connect SCK and MOSI pins to the output signal through the GPIO matrix
     if (gpio_is_valid(spi_config[bus].sck)) {
         esp_rom_gpio_connect_out_signal(spi_config[bus].sck,
                                         _spi[bus].periph->spiclk_out, false, false);
@@ -219,7 +212,7 @@ void spi_init_pins(spi_t bus)
                                         _spi[bus].periph->spid_out, false, false);
     }
 
-    /* connect MISO input signal to the MISO pin through the GPIO matrix */
+    // connect MISO input signal to the MISO pin through the GPIO matrix
     if (gpio_is_valid(spi_config[bus].miso)) {
         esp_rom_gpio_connect_in_signal(spi_config[bus].miso,
                                        _spi[bus].periph->spiq_in, false);
@@ -228,8 +221,7 @@ void spi_init_pins(spi_t bus)
     mutex_unlock(&_spi[bus].lock);
 }
 
-int spi_init_cs(spi_t bus, spi_cs_t cs)
-{
+int spi_init_cs(spi_t bus, spi_cs_t cs) {
     DEBUG("%s bus=%u cs=%u\n", __func__, bus, cs);
 
     assert(bus < SPI_NUMOF);
@@ -238,31 +230,30 @@ int spi_init_cs(spi_t bus, spi_cs_t cs)
         return SPI_OK;
     }
 
-    /* return if pin is already initialized as SPI CS signal */
+    // return if pin is already initialized as SPI CS signal
     if (gpio_get_pin_usage(cs) == _SPI) {
         return SPI_OK;
     }
 
-    /* check whether CS pin is used otherwise */
+    // check whether CS pin is used otherwise
     if (gpio_get_pin_usage(cs) != _GPIO) {
         return SPI_NOCS;
     }
 
-    /* initialize the pin */
+    // initialize the pin
     gpio_init(cs, GPIO_OUT);
     gpio_set(cs);
 
-    /* pin cannot be used for anything else */
+    // pin cannot be used for anything else
     gpio_set_pin_usage(cs, _SPI);
 
     return SPI_OK;
 }
 
-void spi_deinit_pins(spi_t bus)
-{
+void spi_deinit_pins(spi_t bus) {
     assert(bus < SPI_NUMOF);
 
-    /* avoid multiple pin deinitializations */
+    // avoid multiple pin deinitializations
     if (!_spi[bus].pins_initialized) {
         return;
     }
@@ -291,16 +282,15 @@ void spi_deinit_pins(spi_t bus)
     mutex_lock(&_spi[bus].lock);
 }
 
-void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
-{
+void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk) {
     DEBUG("%s bus=%u cs=%u mode=%u clk=%u\n", __func__, bus, cs, mode, clk);
 
     assert(bus < SPI_NUMOF);
 
-    /* if parameter cs is GPIO_UNDEF, the default CS pin is used */
+    // if parameter cs is GPIO_UNDEF, the default CS pin is used
     cs = (cs == GPIO_UNDEF) ? spi_config[bus].cs : cs;
 
-    /* if the CS pin used is not yet initialized, we do it now */
+    // if the CS pin used is not yet initialized, we do it now
     if ((gpio_get_pin_usage(cs) != _SPI) && (spi_init_cs(bus, cs) != SPI_OK)) {
         LOG_TAG_ERROR("spi",
                       "SPI_DEV(%d) CS signal could not be initialized\n",
@@ -308,19 +298,17 @@ void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t cl
         assert(0);
     }
 
-    /* lock the bus */
+    // lock the bus
     mutex_lock(&_spi[bus].lock);
 
-    /* enable peripheral output clock */
+    // enable peripheral output clock
     spi_ll_enable_clock(_spi[bus].hostid, true);
 
-    /*
-     * set SPI mode
-     * see ESP32 Technical Reference, Section 7.4.1, Table 27
-     * https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
-     */
+    // set SPI mode
+    // see ESP32 Technical Reference, Section 7.4.1, Table 27
+    // https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
 
-    /* hardware CS not used (TODO) */
+    // hardware CS not used (TODO)
     spi_ll_master_select_cs(_spi[bus].periph->hw, INT_MAX);
     spi_ll_master_set_cs_setup(_spi[bus].periph->hw, 2);
     spi_ll_master_set_mode(_spi[bus].periph->hw, mode);
@@ -330,13 +318,11 @@ void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t cl
     spi_ll_set_miso_delay(_spi[bus].periph->hw, delay_mode, 0);
     spi_ll_set_mosi_delay(_spi[bus].periph->hw, 0, 0);
 
-    /*
-     * set SPI clock
-     * see ESP32 Technical Reference, Section 7.8 SPI_CLOCK_REG
-     * https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
-     */
+    // set SPI clock
+    // see ESP32 Technical Reference, Section 7.8 SPI_CLOCK_REG
+    // https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
 
-    /* check whether timing has to be recalculated (time consuming) */
+    // check whether timing has to be recalculated (time consuming)
     if (clk != _spi[bus].clk_last) {
         uint32_t apb_clk = 0;
         uint32_t clk_reg;
@@ -353,7 +339,7 @@ void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t cl
             assert(false);
         }
 
-        /* duty cycle is measured in 1/256th, 50% = 128 */
+        // duty cycle is measured in 1/256th, 50% = 128
         int _clk = spi_ll_master_cal_clock(apb_clk, clk,
                                            128, &clk_reg);
 
@@ -371,36 +357,33 @@ void IRAM_ATTR spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t cl
     spi_ll_apply_config(_spi[bus].periph->hw);
 
 #if CPU_FAM_ESP32C3 || CPU_FAM_ESP32C6 || CPU_FAM_ESP32H2 || CPU_FAM_ESP32S3
-    /*
-     * If the SPI mode has been changed, the clock signal is only set to the
-     * correct level at the beginning of the transfer on the ESP32x3. However,
-     * if a generic GPIO is used as CS signal instead of the hardware CS,
-     * the CS signal is already LOW at this time. Thus, the clock signal will
-     * have the wrong level when the SPI mode is changed and the CS signal
-     * becomes LOW.
-     * The following is a workaround by receiving a dummy byte without pulling
-     * the CS signal LOW when the mode has been changed.
-     */
+    // If the SPI mode has been changed, the clock signal is only set to the
+    // correct level at the beginning of the transfer on the ESP32x3. However,
+    // if a generic GPIO is used as CS signal instead of the hardware CS,
+    // the CS signal is already LOW at this time. Thus, the clock signal will
+    // have the wrong level when the SPI mode is changed and the CS signal
+    // becomes LOW.
+    // The following is a workaround by receiving a dummy byte without pulling
+    // the CS signal LOW when the mode has been changed.
     if (_spi[bus].mode_last != mode) {
         uint8_t temp = 0xff;
         spi_transfer_bytes(bus, GPIO_UNDEF, false, &temp, &temp, 1);
         _spi[bus].mode_last = mode;
     }
 #elif CPU_FAM_ESP32 || CPU_FAM_ESP32S2
-    /* This workaround isn't needed on ESP32 and ESP32-S2 */
+    // This workaround isn't needed on ESP32 and ESP32-S2
 #else
 #error Platform implementation is missing
 #endif
 
 }
 
-void IRAM_ATTR spi_release(spi_t bus)
-{
+void IRAM_ATTR spi_release(spi_t bus) {
     DEBUG("%s bus=%u\n", __func__, bus);
 
     assert(bus < SPI_NUMOF);
 
-    /* release the bus */
+    // release the bus
     mutex_unlock(&_spi[bus].lock);
 }
 
@@ -423,8 +406,7 @@ static const char* _spi_names[] = { "SPI", "FSPI", "SPI" };
 _Static_assert(ARRAY_SIZE(_spi_names) == SOC_SPI_PERIPH_NUM,
                "Number of _spi_names doesn't match SOC_SPI_PERIPH_NUM");
 
-void spi_print_config(void)
-{
+void spi_print_config(void) {
     for (unsigned bus = 0; bus < SPI_NUMOF; bus++) {
         printf("\tSPI_DEV(%u)\t%s ", bus, _spi_names[_spi[bus].hostid]);
         printf("sck=%d ", spi_config[bus].sck);
@@ -437,16 +419,15 @@ void spi_print_config(void)
 static const uint8_t _spi_empty_out[SOC_SPI_MAXIMUM_BUFFER_SIZE] = { 0 };
 
 static void IRAM_ATTR _spi_transfer(uint8_t bus,
-                                    const void *out, void *in, size_t len)
-{
-    /* transfer one block with a maximum size of SOC_SPI_MAXIMUM_BUFFER_SIZE */
+                                    const void *out, void *in, size_t len) {
+    // transfer one block with a maximum size of SOC_SPI_MAXIMUM_BUFFER_SIZE
 
     DEBUG("%s bus=%u out=%p in=%p len=%u\n", __func__, bus, out, in, len);
 
-    /* wait until an existing transfer is finished */
+    // wait until an existing transfer is finished
     while (spi_ll_get_running_cmd(_spi[bus].periph->hw)) {}
 
-    /* prepare the transfer */
+    // prepare the transfer
     spi_ll_set_half_duplex(_spi[bus].periph->hw, false);
     spi_ll_set_command_bitlen(_spi[bus].periph->hw, 0);
     spi_ll_set_addr_bitlen(_spi[bus].periph->hw, 0);
@@ -454,25 +435,24 @@ static void IRAM_ATTR _spi_transfer(uint8_t bus,
     spi_ll_set_miso_bitlen(_spi[bus].periph->hw, (uint32_t)len << 3);
     spi_ll_enable_mosi(_spi[bus].periph->hw, 1);
 
-    /* write output data to the buffer of the SPI controller */
+    // write output data to the buffer of the SPI controller
     spi_ll_write_buffer(_spi[bus].periph->hw, out ? out : _spi_empty_out, len << 3);
 
-    /* start the transfer */
+    // start the transfer
     spi_ll_apply_config(_spi[bus].periph->hw);
     spi_ll_user_start(_spi[bus].periph->hw);
 
-    /* wait until the transfer is finished */
+    // wait until the transfer is finished
     while (spi_ll_get_running_cmd(_spi[bus].periph->hw)) {}
 
-    /* read input data from  the buffer of the SPI controller */
+    // read input data from  the buffer of the SPI controller
     if (in) {
         spi_ll_read_buffer(_spi[bus].periph->hw, in, len << 3);
     }
 }
 
 void IRAM_ATTR spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
-                                  const void *out, void *in, size_t len)
-{
+                                  const void *out, void *in, size_t len) {
     assert(bus < SPI_NUMOF);
 
     DEBUG("%s bus=%u cs=%u cont=%d out=%p in=%p len=%u\n",
@@ -501,7 +481,7 @@ void IRAM_ATTR spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
     size_t idx = 0;
 
     while (idx < len) {
-        /* maximum non-DMA transfer size is SOC_SPI_MAXIMUM_BUFFER_SIZE */
+        // maximum non-DMA transfer size is SOC_SPI_MAXIMUM_BUFFER_SIZE
         size_t blk_len = MIN(len - idx, SOC_SPI_MAXIMUM_BUFFER_SIZE);
         _spi_transfer(bus, blk_out, blk_in, blk_len);
         blk_out = (out) ? blk_out + blk_len : NULL;

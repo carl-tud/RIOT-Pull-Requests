@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       main
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       main
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+///
+/// @}
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,7 +27,7 @@
 
 #include "can/can_trx.h"
 
-#define SHELL_BUFSIZE   512 /* Needed for CAN FD frame */
+#define SHELL_BUFSIZE   512 // Needed for CAN FD frame
 
 #ifdef MODULE_TJA1042
 #include "tja1042.h"
@@ -89,8 +85,7 @@ static conn_can_isotp_t conn_isotp[RCV_THREAD_NUMOF];
 
 static int thread_busy[RCV_THREAD_NUMOF];
 
-static void print_usage(void)
-{
+static void print_usage(void) {
     puts("test_can list");
     puts("test_can send ifnum can_id [B1 [B2 [B3 [B4 [B5 [B6 [B7 [B8]]]]]]]]");
     puts("test_can sendrtr ifnum can_id length(0..8)");
@@ -133,8 +128,7 @@ static int _list(int argc, char **argv) {
     return 0;
 }
 
-static int _send(int argc, char **argv, bool rtr, bool is_fd)
-{
+static int _send(int argc, char **argv, bool rtr, bool is_fd) {
     if (argc < 5) {
         print_usage();
         return 1;
@@ -194,8 +188,7 @@ static int _send(int argc, char **argv, bool rtr, bool is_fd)
     return 0;
 }
 
-static int _receive(int argc, char **argv)
-{
+static int _receive(int argc, char **argv) {
     if (argc < 4) {
         print_usage();
         return 1;
@@ -250,8 +243,7 @@ static int _receive(int argc, char **argv)
     return 0;
 }
 
-static int _close(int argc, char **argv)
-{
+static int _close(int argc, char **argv) {
     if (argc < 2) {
         print_usage();
         return 1;
@@ -267,8 +259,7 @@ static int _close(int argc, char **argv)
 }
 
 #ifdef MODULE_CAN_ISOTP
-static int _bind_isotp(int argc, char **argv)
-{
+static int _bind_isotp(int argc, char **argv) {
     if (argc < 4) {
         print_usage();
         return 1;
@@ -310,8 +301,7 @@ static int _bind_isotp(int argc, char **argv)
     return 0;
 }
 
-static int _send_isotp(int argc, char **argv)
-{
+static int _send_isotp(int argc, char **argv) {
     if (argc < 4) {
         print_usage();
         return 1;
@@ -342,8 +332,7 @@ static int _send_isotp(int argc, char **argv)
     return 0;
 }
 
-static int _receive_isotp(int argc, char **argv)
-{
+static int _receive_isotp(int argc, char **argv) {
     if (argc < 4) {
         print_usage();
         return 1;
@@ -363,8 +352,7 @@ static int _receive_isotp(int argc, char **argv)
     return 0;
 }
 
-static int _close_isotp(int argc, char **argv)
-{
+static int _close_isotp(int argc, char **argv) {
     if (argc < 2) {
         print_usage();
         return 1;
@@ -378,10 +366,9 @@ static int _close_isotp(int argc, char **argv)
     thread_busy[thread_nb] = 0;
     return 0;
 }
-#endif /* MODULE_CAN_ISOTP */
+#endif // MODULE_CAN_ISOTP
 
-static int _get_filter(int argc, char **argv)
-{
+static int _get_filter(int argc, char **argv) {
     if (argc < 3) {
         print_usage();
         return 1;
@@ -409,8 +396,7 @@ static int _get_filter(int argc, char **argv)
     return 0;
 }
 
-static int _set_bitrate(int argc, char **argv)
-{
+static int _set_bitrate(int argc, char **argv) {
     if (argc < 4) {
         print_usage();
         return 1;
@@ -444,8 +430,7 @@ static int _set_bitrate(int argc, char **argv)
     return 0;
 }
 
-static int _get_bitrate(int argc, char **argv)
-{
+static int _get_bitrate(int argc, char **argv) {
     if (argc < 3) {
         print_usage();
         return 1;
@@ -472,8 +457,7 @@ static int _get_bitrate(int argc, char **argv)
     return 0;
 }
 
-static int _get_counter(int argc, char **argv)
-{
+static int _get_counter(int argc, char **argv) {
     if (argc < 3) {
         print_usage();
         return 1;
@@ -515,8 +499,7 @@ static int _get_counter(int argc, char **argv)
     return res;
 }
 
-static int _power_up(int argc, char **argv)
-{
+static int _power_up(int argc, char **argv) {
     if (argc < 3) {
         print_usage();
         return 1;
@@ -538,8 +521,7 @@ static int _power_up(int argc, char **argv)
     return res;
 }
 
-static int _power_down(int argc, char **argv)
-{
+static int _power_down(int argc, char **argv) {
     if (argc < 3) {
         print_usage();
         return 1;
@@ -561,8 +543,7 @@ static int _power_down(int argc, char **argv)
     return res;
 }
 
-static int _can_handler(int argc, char **argv)
-{
+static int _can_handler(int argc, char **argv) {
     if (argc < 2) {
         print_usage();
         return 1;
@@ -628,13 +609,12 @@ static int _can_handler(int argc, char **argv)
     }
 }
 
-static void *_receive_thread(void *args)
-{
+static void *_receive_thread(void *args) {
     int thread_nb = (intptr_t)args;
     can_frame_t frame;
     msg_t msg, msg_queue[RECEIVE_THREAD_MSG_QUEUE_SIZE];
 
-    /* setup the device layers message queue */
+    // setup the device layers message queue
     msg_init_queue(msg_queue, RECEIVE_THREAD_MSG_QUEUE_SIZE);
 
     printf("%d: launching receive_thread\n", thread_nb);
@@ -694,7 +674,7 @@ static void *_receive_thread(void *args)
             msg_reply(&msg, &reply);
             break;
         }
-#endif /* MODULE_CAN_ISOTP */
+#endif // MODULE_CAN_ISOTP
         default:
             printf("%d: _receive_thread: received unknown message\n",
                 thread_nb);
@@ -765,8 +745,7 @@ static const shell_command_t _commands[] = {
     { NULL, NULL, NULL},
 };
 
-int main(void)
-{
+int main(void) {
     for (intptr_t i = 0; i < RCV_THREAD_NUMOF; i++) {
         receive_pid[i] = thread_create(thread_stack[i], THREAD_STACKSIZE,
                                        THREAD_PRIORITY_MAIN - 1,

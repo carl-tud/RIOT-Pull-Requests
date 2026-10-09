@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf52840-mdk-dongle
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped PWM channels
- *
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- */
+/// @ingroup     boards_nrf52840-mdk-dongle
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped PWM channels
+///
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,14 +18,10 @@
 extern "C" {
 #endif
 
-/**
- * @brief    No individual LED that needs dimming
- */
+/// @brief    No individual LED that needs dimming
 #define SAUL_PWM_NO_DIMMER
 
-/**
- * @brief    The on-board RGB LED
- */
+/// @brief    The on-board RGB LED
 static const saul_pwm_rgb_params_t saul_pwm_rgb_params[] =
 {
     {
@@ -46,4 +38,4 @@ static const saul_pwm_rgb_params_t saul_pwm_rgb_params[] =
 }
 #endif
 
-/** @} */
+/// @}

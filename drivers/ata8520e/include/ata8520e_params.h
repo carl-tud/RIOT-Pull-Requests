@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ata8520e
- * @brief       Default initialization parameters for the ATA8520E device
- * @{
- * @file
- * @brief       Default initialization parameters for the ATA8520E device
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_ata8520e
+/// @brief       Default initialization parameters for the ATA8520E device
+/// @{
+/// @file
+/// @brief       Default initialization parameters for the ATA8520E device
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "ata8520e.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the ATA8520E driver
- * @{
- */
+/// @name    Set default configuration parameters for the ATA8520E driver
+/// @{
 #ifndef ATA8520E_PARAM_SPI
 #define ATA8520E_PARAM_SPI         SPI_DEV(0)
 #endif
@@ -53,11 +47,9 @@ extern "C" {
                                      .power_pin = ATA8520E_PARAM_POWER_PIN, \
                                      .reset_pin = ATA8520E_PARAM_RESET_PIN }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   ATA8520E configuration
- */
+/// @brief   ATA8520E configuration
 static const ata8520e_params_t ata8520e_params[] =
 {
     ATA8520E_PARAMS
@@ -67,4 +59,4 @@ static const ata8520e_params_t ata8520e_params[] =
 }
 #endif
 
-/** @} */
+/// @}

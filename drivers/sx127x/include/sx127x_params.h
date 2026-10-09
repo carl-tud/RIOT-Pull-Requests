@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-FileCopyrightText: 2017 Inria Chile
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-FileCopyrightText: 2017 Inria Chile
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_sx127x
- * @{
- * @file
- * @brief       Default configuration for SX127X driver
- *
- * @author      José Ignacio Alamos <jose.alamos@inria.cl>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_sx127x
+/// @{
+/// @file
+/// @brief       Default configuration for SX127X driver
+///
+/// @author      José Ignacio Alamos <jose.alamos@inria.cl>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "sx127x.h"
@@ -23,37 +19,35 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the SX127X driver
- *          Pins are adapted to STM32 Nucleo-64 boards.
- * @{
- */
+/// @name    Set default configuration parameters for the SX127X driver
+///          Pins are adapted to STM32 Nucleo-64 boards.
+/// @{
 #ifndef SX127X_PARAM_SPI
 #define SX127X_PARAM_SPI                    (SPI_DEV(0))
 #endif
 
 #ifndef SX127X_PARAM_SPI_NSS
-#define SX127X_PARAM_SPI_NSS                GPIO_PIN(1, 6)       /* D10 */
+#define SX127X_PARAM_SPI_NSS                GPIO_PIN(1, 6)       // D10
 #endif
 
 #ifndef SX127X_PARAM_RESET
-#define SX127X_PARAM_RESET                  GPIO_PIN(0, 0)       /* A0 */
+#define SX127X_PARAM_RESET                  GPIO_PIN(0, 0)       // A0
 #endif
 
 #ifndef SX127X_PARAM_DIO0
-#define SX127X_PARAM_DIO0                   GPIO_PIN(0, 10)      /* D2 */
+#define SX127X_PARAM_DIO0                   GPIO_PIN(0, 10)      // D2
 #endif
 
 #ifndef SX127X_PARAM_DIO1
-#define SX127X_PARAM_DIO1                   GPIO_PIN(1, 3)       /* D3 */
+#define SX127X_PARAM_DIO1                   GPIO_PIN(1, 3)       // D3
 #endif
 
 #ifndef SX127X_PARAM_DIO2
-#define SX127X_PARAM_DIO2                   GPIO_PIN(1, 5)       /* D4 */
+#define SX127X_PARAM_DIO2                   GPIO_PIN(1, 5)       // D4
 #endif
 
 #ifndef SX127X_PARAM_DIO3
-#define SX127X_PARAM_DIO3                   GPIO_PIN(1, 4)       /* D5 */
+#define SX127X_PARAM_DIO3                   GPIO_PIN(1, 4)       // D5
 #endif
 
 #ifndef SX127X_PARAM_PASELECT
@@ -91,11 +85,9 @@ extern "C" {
                                     .paselect  = SX127X_PARAM_PASELECT }
 #endif
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   SX127X configuration
- */
+/// @brief   SX127X configuration
 static const sx127x_params_t sx127x_params[] =
 {
     SX127X_PARAMS
@@ -105,4 +97,4 @@ static const sx127x_params_t sx127x_params[] =
 }
 #endif
 
-/** @} */
+/// @}

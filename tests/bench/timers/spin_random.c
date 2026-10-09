@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_spin_random
- *
- * @{
- * @file
- * @brief       spin_random implementation
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     sys_spin_random
+///
+/// @{
+/// @file
+/// @brief       spin_random implementation
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #include <stdint.h>
 #include <inttypes.h>
@@ -25,29 +21,24 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* Default is whatever, just some small delay if the user forgets to initialize */
+// Default is whatever, just some small delay if the user forgets to initialize
 static uint32_t spin_max = 64;
 
-/**
- * @brief   Busy wait (spin) for the given number of loop iterations
- */
-static void spin(uint32_t limit)
-{
-    /* Platform independent busy wait loop, should never be optimized out
-     * because of the volatile asm statement */
+/// @brief   Busy wait (spin) for the given number of loop iterations
+static void spin(uint32_t limit) {
+    // Platform independent busy wait loop, should never be optimized out
+    // because of the volatile asm statement
     while (limit--) {
         __asm__ volatile ("");
     }
 }
 
-void spin_random_delay(void)
-{
+void spin_random_delay(void) {
     uint32_t limit = random_uint32_range(0, spin_max);
     spin(limit);
 }
 
-uint32_t spin_random_calibrate(tim_t timer_dev, uint32_t spin_max_target)
-{
+uint32_t spin_random_calibrate(tim_t timer_dev, uint32_t spin_max_target) {
     spin_max = 16;
     uint32_t t1;
     uint32_t t2;

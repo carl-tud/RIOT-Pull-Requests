@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for ieee802154_hal
- *
- * @author      José I. Alamos <jose.alamos@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for ieee802154_hal
+///
+/// @author      José I. Alamos <jose.alamos@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "assert.h"
@@ -71,14 +67,13 @@ static mrf24j40_t mrf24j40_dev[MRF24J40_NUM];
 static bhp_event_t mrf24j40_bhp[MRF24J40_NUM];
 #endif
 
-void ieee802154_hal_test_init_devs(ieee802154_dev_cb_t cb, void *opaque)
-{
+void ieee802154_hal_test_init_devs(ieee802154_dev_cb_t cb, void *opaque) {
     if (IS_USED(MODULE_EVENT_THREAD)) {
         auto_init_event_thread();
     }
 
-    /* Call the init function of the device (this should be handled by
-     * `auto_init`) */
+    // Call the init function of the device (this should be handled by
+    // `auto_init`)
     ieee802154_dev_t *radio = NULL;
     (void) radio;
     (void) cb;

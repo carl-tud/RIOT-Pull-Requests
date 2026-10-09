@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014-2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   simple test application for atomic mutex unlocking and sleeping
- *
- * @author  Martin Landsmann <martin.landsmann@haw-hamburg.de>
- * @author  Sebastian Meiling <s@mlng.net>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   simple test application for atomic mutex unlocking and sleeping
+///
+/// @author  Martin Landsmann <martin.landsmann@haw-hamburg.de>
+/// @author  Sebastian Meiling <s@mlng.net>
+/// @}
 
 #include <stdio.h>
 #include "thread.h"
@@ -30,8 +26,7 @@ static const unsigned KITERATIONS = 100;
 static const unsigned KITERATIONS = 10;
 #endif
 
-static void *second_thread(void *arg)
-{
+static void *second_thread(void *arg) {
     (void) arg;
     while (1) {
         mutex_lock(&mutex);
@@ -42,8 +37,7 @@ static void *second_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     uint32_t count = 0;
     uint32_t kcount = 0;
 

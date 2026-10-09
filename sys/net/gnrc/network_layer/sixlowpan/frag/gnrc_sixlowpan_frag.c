@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-FileCopyrightText: 2015 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-FileCopyrightText: 2015 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- *
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author  Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+///
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author  Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
 
 #include <assert.h>
 #include <inttypes.h>
@@ -30,46 +26,41 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static inline uint16_t _floor8(uint16_t length)
-{
+static inline uint16_t _floor8(uint16_t length) {
     return length & 0xfff8U;
 }
 
-static inline size_t _min(size_t a, size_t b)
-{
+static inline size_t _min(size_t a, size_t b) {
     return (a < b) ? a : b;
 }
 
 static inline uint8_t _max_frag_size(gnrc_netif_t *iface,
-                                     gnrc_sixlowpan_frag_fb_t *fbuf)
-{
+                                     gnrc_sixlowpan_frag_fb_t *fbuf) {
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_HINT
     if (fbuf->hint.fragsz > 0) {
-        /* account for rounding down to 8*/
+        // account for rounding down to 8
         return (fbuf->hint.fragsz & 0x7)
                ? (fbuf->hint.fragsz + 8U)
                : fbuf->hint.fragsz;
     }
-#endif /* MODULE_GNRC_SIXLOWPAN_FRAG_HINT */
+#endif // MODULE_GNRC_SIXLOWPAN_FRAG_HINT
     (void)fbuf;
     return iface->sixlo.max_frag_size;
 }
 
 static inline int _payload_diff(gnrc_sixlowpan_frag_fb_t *fbuf,
-                                size_t payload_len)
-{
+                                size_t payload_len) {
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_HINT
     if (fbuf->hint.fragsz > 0) {
         return fbuf->hint.fragsz_uncomp - fbuf->hint.fragsz;
     }
-#endif /* MODULE_GNRC_SIXLOWPAN_FRAG_HINT */
+#endif // MODULE_GNRC_SIXLOWPAN_FRAG_HINT
     return (fbuf->datagram_size - payload_len);
 }
 
 static gnrc_pktsnip_t *_build_frag_pkt(gnrc_pktsnip_t *pkt,
                                        gnrc_sixlowpan_frag_fb_t *fbuf,
-                                       size_t payload_len, size_t size)
-{
+                                       size_t payload_len, size_t size) {
     sixlowpan_frag_t *frag_hdr;
     gnrc_netif_hdr_t *netif_hdr = pkt->data, *new_netif_hdr;
     gnrc_pktsnip_t *netif, *frag;
@@ -79,9 +70,9 @@ static gnrc_pktsnip_t *_build_frag_pkt(gnrc_pktsnip_t *pkt,
                          ? size     /* we want the calculated fragment size
                                      * to include full IPHC header */
                          : _min(size, payload_len);
-#else   /* MODULE_GNRC_SIXLOWPAN_FRAG_HINT */
+#else   // MODULE_GNRC_SIXLOWPAN_FRAG_HINT
     size_t fragment_size = _min(size, payload_len);
-#endif  /* MODULE_GNRC_SIXLOWPAN_FRAG_HINT */
+#endif  // MODULE_GNRC_SIXLOWPAN_FRAG_HINT
 
     netif = gnrc_netif_hdr_build(gnrc_netif_hdr_get_src_addr(netif_hdr),
                                  netif_hdr->src_l2addr_len,
@@ -94,7 +85,7 @@ static gnrc_pktsnip_t *_build_frag_pkt(gnrc_pktsnip_t *pkt,
     }
 
     new_netif_hdr = netif->data;
-    /* src_l2addr_len and dst_l2addr_len are already the same, now copy the rest */
+    // src_l2addr_len and dst_l2addr_len are already the same, now copy the rest
     *new_netif_hdr = *netif_hdr;
 
     frag = gnrc_pktbuf_add(NULL, NULL, fragment_size, GNRC_NETTYPE_SIXLOWPAN);
@@ -105,7 +96,7 @@ static gnrc_pktsnip_t *_build_frag_pkt(gnrc_pktsnip_t *pkt,
         return NULL;
     }
     frag_hdr = frag->data;
-    /* XXX: truncation of datagram_size > 4095 may happen here */
+    // XXX: truncation of datagram_size > 4095 may happen here
     frag_hdr->disp_size = byteorder_htons(fbuf->datagram_size);
     frag_hdr->tag = byteorder_htons(fbuf->tag);
 
@@ -113,8 +104,7 @@ static gnrc_pktsnip_t *_build_frag_pkt(gnrc_pktsnip_t *pkt,
 }
 
 static uint16_t _copy_pkt_to_frag(uint8_t *data, const gnrc_pktsnip_t *pkt,
-                                  uint16_t max_frag_size, uint16_t init_offset)
-{
+                                  uint16_t max_frag_size, uint16_t init_offset) {
     uint16_t offset = init_offset;
 
     while ((pkt != NULL) && (offset < max_frag_size)) {
@@ -130,17 +120,16 @@ static uint16_t _copy_pkt_to_frag(uint8_t *data, const gnrc_pktsnip_t *pkt,
 
 static uint16_t _send_1st_fragment(gnrc_netif_t *iface,
                                    gnrc_sixlowpan_frag_fb_t *fbuf,
-                                   size_t payload_len)
-{
+                                   size_t payload_len) {
     gnrc_pktsnip_t *frag, *pkt = fbuf->pkt;
     sixlowpan_frag_t *hdr;
     uint8_t *data;
-    /* payload_len: actual size of the packet vs
-     * datagram_size: size of the uncompressed IPv6 packet */
+    // payload_len: actual size of the packet vs
+    // datagram_size: size of the uncompressed IPv6 packet
     int payload_diff = _payload_diff(fbuf, payload_len);
     uint16_t local_offset;
-    /* virtually add payload_diff to flooring to account for offset (must be dividable by 8)
-     * in uncompressed datagram */
+    // virtually add payload_diff to flooring to account for offset (must be dividable by 8)
+    // in uncompressed datagram
     uint16_t max_frag_size = _floor8(_max_frag_size(iface, fbuf) +
                                      payload_diff - sizeof(sixlowpan_frag_t)) -
                              payload_diff;
@@ -158,11 +147,11 @@ static uint16_t _send_1st_fragment(gnrc_netif_t *iface,
     data = (uint8_t *)(hdr + 1);
     hdr->disp_size.u8[0] |= SIXLOWPAN_FRAG_1_DISP;
 
-    /* Tell the link layer that we will send more fragments */
+    // Tell the link layer that we will send more fragments
     gnrc_netif_hdr_t *netif_hdr = frag->data;
     netif_hdr->flags |= GNRC_NETIF_HDR_FLAGS_MORE_DATA;
 
-    pkt = pkt->next;    /* don't copy netif header */
+    pkt = pkt->next;    // don't copy netif header
     local_offset = _copy_pkt_to_frag(data, pkt, max_frag_size, 0);
 
     DEBUG("6lo frag: send first fragment (datagram size: %u, "
@@ -175,14 +164,13 @@ static uint16_t _send_1st_fragment(gnrc_netif_t *iface,
 static uint16_t _send_nth_fragment(gnrc_netif_t *iface,
                                    gnrc_sixlowpan_frag_fb_t *fbuf,
                                    size_t payload_len,
-                                   gnrc_pktsnip_t **tx_sync)
-{
+                                   gnrc_pktsnip_t **tx_sync) {
     gnrc_pktsnip_t *frag, *pkt = fbuf->pkt;
     sixlowpan_frag_n_t *hdr;
     uint8_t *data;
     uint16_t local_offset = 0, offset_count = 0, offset = fbuf->offset;
-    /* since dispatches aren't supposed to go into subsequent fragments, we need not account
-     * for payload difference as for the first fragment */
+    // since dispatches aren't supposed to go into subsequent fragments, we need not account
+    // for payload difference as for the first fragment
     uint16_t max_frag_size = _floor8(iface->sixlo.max_frag_size -
                                      sizeof(sixlowpan_frag_n_t));
 
@@ -199,15 +187,15 @@ static uint16_t _send_nth_fragment(gnrc_netif_t *iface,
     hdr = frag->next->data;
     data = (uint8_t *)(hdr + 1);
     hdr->disp_size.u8[0] |= SIXLOWPAN_FRAG_N_DISP;
-    /* don't mention payload diff in offset */
+    // don't mention payload diff in offset
     hdr->offset = (uint8_t)((offset + _payload_diff(fbuf,
                                                     payload_len)) >> 3);
-    pkt = pkt->next;    /* don't copy netif header */
-    while ((pkt != NULL) && (offset_count != offset)) {   /* go to offset */
+    pkt = pkt->next;    // don't copy netif header
+    while ((pkt != NULL) && (offset_count != offset)) {   // go to offset
         offset_count += (uint16_t)pkt->size;
 
-        if (offset_count > offset) {    /* we overshot */
-            /* => copy rest of partly send packet snip */
+        if (offset_count > offset) {    // we overshot
+            // => copy rest of partly send packet snip
             uint16_t pkt_offset = offset - (offset_count - ((uint16_t)pkt->size));
             size_t clen = _min(max_frag_size, pkt->size - pkt_offset);
 
@@ -219,7 +207,7 @@ static uint16_t _send_nth_fragment(gnrc_netif_t *iface,
 
         pkt = pkt->next;
     }
-    /* copy remaining packet snips */
+    // copy remaining packet snips
     local_offset = _copy_pkt_to_frag(data, pkt, max_frag_size, local_offset);
 
     if ((offset + local_offset) < payload_len) {
@@ -238,15 +226,14 @@ static uint16_t _send_nth_fragment(gnrc_netif_t *iface,
     return local_offset;
 }
 
-void gnrc_sixlowpan_frag_send(gnrc_pktsnip_t *pkt, void *ctx, unsigned page)
-{
+void gnrc_sixlowpan_frag_send(gnrc_pktsnip_t *pkt, void *ctx, unsigned page) {
     assert(ctx != NULL);
     gnrc_sixlowpan_frag_fb_t *fbuf = ctx;
     gnrc_netif_t *iface;
     gnrc_pktsnip_t *tx_sync = NULL;
     uint16_t res;
-    /* payload_len: actual size of the packet vs
-     * datagram_size: size of the uncompressed IPv6 packet */
+    // payload_len: actual size of the packet vs
+    // datagram_size: size of the uncompressed IPv6 packet
     size_t payload_len = gnrc_pkt_len(fbuf->pkt->next);
 
     assert((fbuf->pkt == pkt) || (pkt == NULL));
@@ -256,9 +243,9 @@ void gnrc_sixlowpan_frag_send(gnrc_pktsnip_t *pkt, void *ctx, unsigned page)
 #if defined(DEVELHELP) && ENABLE_DEBUG
     if (iface == NULL) {
         DEBUG("6lo frag: iface == NULL, expect segmentation fault.\n");
-        /* remove original packet from packet buffer */
+        // remove original packet from packet buffer
         gnrc_pktbuf_release(fbuf->pkt);
-        /* 6LoWPAN free for next fragmentation */
+        // 6LoWPAN free for next fragmentation
         fbuf->pkt = NULL;
         return;
     }
@@ -268,18 +255,18 @@ void gnrc_sixlowpan_frag_send(gnrc_pktsnip_t *pkt, void *ctx, unsigned page)
         tx_sync = gnrc_tx_sync_split((pkt) ? pkt : fbuf->pkt);
     }
 
-    /* Check whether to send the first or an Nth fragment */
+    // Check whether to send the first or an Nth fragment
     if (fbuf->offset == 0) {
         if ((res = _send_1st_fragment(iface, fbuf, payload_len)) == 0) {
-            /* error sending first fragment */
+            // error sending first fragment
             DEBUG("6lo frag: error sending 1st fragment\n");
             goto error;
         }
     }
-    /* (offset + (datagram_size - payload_len) < datagram_size) simplified */
+    // (offset + (datagram_size - payload_len) < datagram_size) simplified
     else if (fbuf->offset < payload_len) {
         if ((res = _send_nth_fragment(iface, fbuf, payload_len, &tx_sync)) == 0) {
-            /* error sending subsequent fragment */
+            // error sending subsequent fragment
             DEBUG("6lo frag: error sending subsequent fragment"
                   "(offset = %u)\n", fbuf->offset);
             goto error;
@@ -295,8 +282,8 @@ void gnrc_sixlowpan_frag_send(gnrc_pktsnip_t *pkt, void *ctx, unsigned page)
         goto error;
     }
     if (IS_USED(MODULE_GNRC_TX_SYNC) && tx_sync) {
-        /* re-attach tx_sync to allow releasing it at end
-         * of transmission, or transmission failure */
+        // re-attach tx_sync to allow releasing it at end
+        // of transmission, or transmission failure
         gnrc_pkt_append((pkt) ? pkt : fbuf->pkt, tx_sync);
     }
     thread_yield();
@@ -309,8 +296,7 @@ error:
     }
 }
 
-void gnrc_sixlowpan_frag_recv(gnrc_pktsnip_t *pkt, void *ctx, unsigned page)
-{
+void gnrc_sixlowpan_frag_recv(gnrc_pktsnip_t *pkt, void *ctx, unsigned page) {
     gnrc_pktsnip_t *netif_hdr = pkt->next;
     gnrc_netif_hdr_t *hdr = netif_hdr->data;
     sixlowpan_frag_t *frag = pkt->data;
@@ -353,4 +339,4 @@ void gnrc_sixlowpan_frag_recv(gnrc_pktsnip_t *pkt, void *ctx, unsigned page)
     gnrc_pktbuf_release(netif_hdr);
 }
 
-/** @} */
+/// @}

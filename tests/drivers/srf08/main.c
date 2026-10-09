@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the SRF08 ultrasonic range sensor
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- * @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
- * @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the SRF08 ultrasonic range sensor
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+/// @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
+/// @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -35,8 +31,7 @@
 
 static srf08_t srf08_0;
 
-int main(void)
-{
+int main(void) {
     puts("SRF08 ultrasonic ranger test application\n");
     printf("Initializing SRF08 sensor at I2C_%i... ", srf08_params[0].i2c);
 

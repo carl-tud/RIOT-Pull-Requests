@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   simple thread flags test application
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   simple thread flags test application
+///
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,8 +23,7 @@ volatile unsigned done;
 #define TIMEOUT     (100UL * US_PER_MS)
 #define THRESHOLD   (500U)
 
-static void *_thread(void *arg)
-{
+static void *_thread(void *arg) {
     (void) arg;
 
     thread_flags_t flags;
@@ -58,14 +53,12 @@ static void *_thread(void *arg)
     return NULL;
 }
 
-static void _set(thread_t *thread, thread_flags_t flags)
-{
+static void _set(thread_t *thread, thread_flags_t flags) {
     printf("main(): setting flag 0x%04x\n", (unsigned)flags & 0xFFFF);
     thread_flags_set(thread, flags);
 }
 
-int main(void)
-{
+int main(void) {
     puts("START");
 
     kernel_pid_t pid = thread_create(stack,

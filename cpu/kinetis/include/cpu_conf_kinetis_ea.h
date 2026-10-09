@@ -1,32 +1,28 @@
-/*
- * SPDX-FileCopyrightText: 2017 Eistec AB
- * SPDX-FileCopyrightText: 2018 HERE Deutschland GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Eistec AB
+// SPDX-FileCopyrightText: 2018 HERE Deutschland GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_kinetis
- * @brief           CPU specific implementations for the NXP Kinetis EA series of
- *                  Cortex-M MCUs
- * @{
- *
- * @file
- * @brief           Implementation specific CPU configuration options
- *
- * @author          Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author          Anton Gerasimov <anton.gerasimov@here.com>
- */
+/// @ingroup         cpu_kinetis
+/// @brief           CPU specific implementations for the NXP Kinetis EA series of
+///                  Cortex-M MCUs
+/// @{
+///
+/// @file
+/// @brief           Implementation specific CPU configuration options
+///
+/// @author          Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author          Anton Gerasimov <anton.gerasimov@here.com>
 
 #if defined(KINETIS_CORE_Z)
 #if (KINETIS_ROMSIZE == 128)
-/* Kinetis KEAZ128 */
+// Kinetis KEAZ128
 #include "vendor/SKEAZ1284.h"
 
 #define KINETIS_SINGLE_UART_IRQ
-#endif  /* (KINETIS_ROMSIZE == y) */
-#endif  /* (KINETIS_CORE_x) */
+#endif  // (KINETIS_ROMSIZE == y)
+#endif  // (KINETIS_CORE_x)
 
 #ifdef __cplusplus
 extern "C"
@@ -37,4 +33,4 @@ extern "C"
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * Copyright (C) 2021 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for
- * more details.
- */
+// Copyright (C) 2021 ML!PA Consulting GmbH
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for
+// more details.
 
-/**
- * @ingroup     tools
- * @{
- *
- * @file
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     tools
+/// @{
+///
+/// @file
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -47,14 +43,13 @@ typedef struct {
 
 static bool one_way;
 static uint32_t cookie;
-static uint32_t delay_us    = 100 * US_PER_MS; /* 100 ms */
+static uint32_t delay_us    = 100 * US_PER_MS; // 100 ms
 static uint16_t payload_len = 32;
 
 static char addr_str[INET6_ADDRSTRLEN];
 
 static bench_client_t *_find_or_add(list_node_t *head, struct sockaddr_in6 *addr,
-                                    bool *new_node)
-{
+                                    bool *new_node) {
     for (list_node_t* n = head->next; n; n = n->next) {
         bench_client_t *node = container_of(n, bench_client_t, node);
 
@@ -74,19 +69,16 @@ static bench_client_t *_find_or_add(list_node_t *head, struct sockaddr_in6 *addr
     return node;
 }
 
-static void clrscr(void)
-{
+static void clrscr(void) {
     printf("\e[1;1H\e[2J");
 }
 
-static uint64_t _tv_diff_msec(struct timeval *a, struct timeval *b)
-{
+static uint64_t _tv_diff_msec(struct timeval *a, struct timeval *b) {
     return (a->tv_sec - b->tv_sec) * MS_PER_SEC
          + (a->tv_usec - b->tv_usec) / US_PER_MS;
 }
 
-static void _print_stats(list_node_t *head, struct timeval *now)
-{
+static void _print_stats(list_node_t *head, struct timeval *now) {
     static uint8_t max_addr_len;
 
     printf("host%*s\tbandwidth\tnum TX\tnum RX",  max_addr_len - 4, "");
@@ -128,8 +120,7 @@ static void _print_stats(list_node_t *head, struct timeval *now)
     }
 }
 
-static void dispatch_loop(int sock)
-{
+static void dispatch_loop(int sock) {
     list_node_t head = { .next = NULL };
     struct timeval tv_now, tv_last = { 0 };
     const size_t len_total = payload_len + sizeof(benchmark_msg_ping_t);
@@ -140,7 +131,7 @@ static void dispatch_loop(int sock)
         struct sockaddr_in6 src_addr;
         socklen_t addr_len = sizeof(src_addr);
 
-        /* receive incoming packet */
+        // receive incoming packet
         ssize_t bytes_in = recvfrom(sock, buffer, len_total, 0,
                                     (struct sockaddr*)&src_addr, &addr_len);
 
@@ -176,7 +167,7 @@ static void dispatch_loop(int sock)
                          : ping->rtt_last;
         }
 
-        /* send reply */
+        // send reply
         if (!one_way || new_node) {
             sendto(sock, buffer, bytes_in, 0, (struct sockaddr*)&src_addr, addr_len);
         }
@@ -190,8 +181,7 @@ static void dispatch_loop(int sock)
     }
 }
 
-static void _print_help(const char *progname)
-{
+static void _print_help(const char *progname) {
     fprintf(stderr, "usage: %s [-i send interval] [-s payload size] <address> <port>\n",
             progname);
 
@@ -205,8 +195,7 @@ static void _print_help(const char *progname)
     fprintf(stderr, "\t-o one-way mode, don't echo back packets\n");
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     const char *progname = argv[0];
     int c;
 
@@ -276,4 +265,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
-/** @} */
+/// @}

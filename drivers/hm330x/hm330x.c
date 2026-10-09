@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_hm330x
- * @{
- *
- * @file
- * @brief       Device driver implementation for the HM330X Sensor Driver
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_hm330x
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the HM330X Sensor Driver
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <string.h>
 #include <assert.h>
@@ -34,11 +30,10 @@
 #define ENABLE_DEBUG    0
 #include "debug.h"
 
-/* pull reset pin low for ~10 us */
+// pull reset pin low for ~10 us
 #define HM330X_RESET_TIME_US       (10)
 
-int _set_i2c_mode(hm330x_t *dev)
-{
+int _set_i2c_mode(hm330x_t *dev) {
     i2c_acquire(dev->params.i2c);
     uint8_t cmd = HM330X_CMD_I2C_MODE;
     int ret = i2c_write_bytes(dev->params.i2c, HM330X_I2C_ADDRESS, &cmd, 1, 0);
@@ -48,8 +43,7 @@ int _set_i2c_mode(hm330x_t *dev)
     return ret;
 }
 
-int hm330x_init(hm330x_t *dev, const hm330x_params_t *params)
-{
+int hm330x_init(hm330x_t *dev, const hm330x_params_t *params) {
     assert(dev && params);
     memset(dev, 0, sizeof(hm330x_t));
     dev->params = *params;
@@ -80,8 +74,7 @@ int hm330x_init(hm330x_t *dev, const hm330x_params_t *params)
     return 0;
 }
 
-int hm330x_read(hm330x_t *dev, hm330x_data_t *data)
-{
+int hm330x_read(hm330x_t *dev, hm330x_data_t *data) {
     i2c_acquire(dev->params.i2c);
 
     uint8_t buf[HM330X_DATA_LENGTH] = { 0 };
@@ -90,7 +83,7 @@ int hm330x_read(hm330x_t *dev, hm330x_data_t *data)
         return -EPROTO;
     }
 
-    /* calculate crc */
+    // calculate crc
     uint8_t crc = 0;
 
     for (uint8_t i = 0; i < HM330X_DATA_LENGTH - 1; i++) {
@@ -125,8 +118,7 @@ int hm330x_read(hm330x_t *dev, hm330x_data_t *data)
     return 0;
 }
 
-void hm330x_reset(hm330x_t *dev)
-{
+void hm330x_reset(hm330x_t *dev) {
     if (gpio_is_valid(dev->params.reset_pin)) {
         gpio_clear(dev->params.reset_pin);
 #if IS_USED(MODULE_ZTIMER_USEC)
@@ -134,13 +126,13 @@ void hm330x_reset(hm330x_t *dev)
 #elif IS_USED(MODULE_XTIMER)
         xtimer_sleep(HM330X_RESET_TIME_US);
 #else
-        /* each loop iteration is at least 3 instructions, so this tries
-           to approximate the target time based on coreclk(), but
-           a precise time is not needed here */
+        // each loop iteration is at least 3 instructions, so this tries
+        //    to approximate the target time based on coreclk(), but
+        //    a precise time is not needed here
         for (uint32_t i = 0;
              i < HM330X_RESET_TIME_US * (coreclk() / US_PER_SEC / 3);
              i++) {
-            /* Make sure for loop is not optimized out */
+            // Make sure for loop is not optimized out
             __asm__ ("");
         }
 #endif
@@ -148,15 +140,13 @@ void hm330x_reset(hm330x_t *dev)
     }
 }
 
-void hm330x_sleep(hm330x_t *dev)
-{
+void hm330x_sleep(hm330x_t *dev) {
     if (gpio_is_valid(dev->params.set_pin)) {
         gpio_clear(dev->params.set_pin);
     }
 }
 
-void hm330x_wakeup(hm330x_t *dev)
-{
+void hm330x_wakeup(hm330x_t *dev) {
     if (gpio_is_valid(dev->params.set_pin)) {
         gpio_set(dev->params.set_pin);
     }

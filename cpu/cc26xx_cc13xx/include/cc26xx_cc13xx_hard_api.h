@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Locha Inc
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Locha Inc
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_cc26xx_cc13xx_definitions
- * @{
- *
- * @file
- * @brief           CC26xx/CC13xx ROM Hard-API
- *
- * @author          Jean Pierre Dudey <jeandudey@hotmail.com>
- */
+/// @ingroup         cpu_cc26xx_cc13xx_definitions
+/// @{
+///
+/// @file
+/// @brief           CC26xx/CC13xx ROM Hard-API
+///
+/// @author          Jean Pierre Dudey <jeandudey@hotmail.com>
 
 #include "cc26xx_cc13xx.h"
 
@@ -21,50 +17,44 @@
 extern "C" {
 #endif
 
-/**
- * @brief   ROM Hard-API
- */
+/// @brief   ROM Hard-API
 typedef struct {
-    /** CRC-32 */
+    /// CRC-32
     uint32_t (* crc32)(uint8_t *data, uint32_t bytecount, uint32_t repeatcount);
-    uint32_t (* get_fl_size)(void); /**< Get flash size */
-    uint32_t (* get_chip_id)(void); /**< Get chip ID */
-    uint32_t (* __reserved0)(uint32_t); /**< Reserved */
-    uint32_t (* __reserved1)(void); /**< Reserved */
-    uint32_t (* __reserved2)(uint8_t *, uint32_t, uint32_t); /**< Reserved */
-    void (* resetdev)(void); /**< Reset device */
+    uint32_t (* get_fl_size)(void); ///< Get flash size
+    uint32_t (* get_chip_id)(void); ///< Get chip ID
+    uint32_t (* __reserved0)(uint32_t); ///< Reserved
+    uint32_t (* __reserved1)(void); ///< Reserved
+    uint32_t (* __reserved2)(uint8_t *, uint32_t, uint32_t); ///< Reserved
+    void (* resetdev)(void); ///< Reset device
     uint32_t (* fletcher32)(uint16_t *data, uint16_t wordcount,
-                            uint16_t repeatcount); /**< Fletcher-32 */
-    /** Min. value */
+                            uint16_t repeatcount); ///< Fletcher-32
+    /// Min. value
     uint32_t (* min_val)(uint32_t *buffer, uint32_t datacount);
-    /** Max. value */
+    /// Max. value
     uint32_t (* max_val)(uint32_t *databuffer, uint32_t datacount);
-    /** Mean. value */
+    /// Mean. value
     uint32_t (* mean_val)(uint32_t *databuffer, uint32_t datacount);
-    /** Standard deviation value */
+    /// Standard deviation value
     uint32_t (* stdd_val)(uint32_t *databuffer, uint32_t datacount);
-    void (* hf_source_safe_switch)(void); /**< HF source safe-switch */
-    void (* __reserved3)(uint32_t); /**< Reserved */
-    void (* __reserved4)(uint32_t); /**< Reserved */
-    void (* compa_in)(uint8_t signal); /**< Select CompA input */
-    void (* compa_ref)(uint8_t signal); /**< Select CompA reference */
-    void (* adc_compb_in)(uint8_t signal); /**< Select ADC CompB input */
+    void (* hf_source_safe_switch)(void); ///< HF source safe-switch
+    void (* __reserved3)(uint32_t); ///< Reserved
+    void (* __reserved4)(uint32_t); ///< Reserved
+    void (* compa_in)(uint8_t signal); ///< Select CompA input
+    void (* compa_ref)(uint8_t signal); ///< Select CompA reference
+    void (* adc_compb_in)(uint8_t signal); ///< Select ADC CompB input
 #ifdef CPU_VARIANT_X2
-    void (* dac_vref)(uint8_t signal); /**< Select DAC vref */
+    void (* dac_vref)(uint8_t signal); ///< Select DAC vref
 #else
-    void (* compb_ref)(uint8_t signal); /**< Select CompB reference */
+    void (* compb_ref)(uint8_t signal); ///< Select CompB reference
 #endif
 } hard_api_t;
 
-/**
- * @brief   Hard-API function table
- */
+/// @brief   Hard-API function table
 #define HARD_API ((hard_api_t *) ROM_HARD_API_BASE)
 
-/**
- * @brief   Hard-API functions
- * @{
- */
+/// @brief   Hard-API functions
+/// @{
 #define rom_hapi_crc32(a, b, c)            (HARD_API->crc32((a), (b), (c)))
 #define rom_hapi_get_flashsize()           (HARD_API->get_fl_size())
 #define rom_hapi_get_chipid()              (HARD_API->get_chip_id())
@@ -83,10 +73,10 @@ typedef struct {
 #else
 #define rom_hapi_select_compb_ref(a)       (HARD_API->compb_vref((a)))
 #endif
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

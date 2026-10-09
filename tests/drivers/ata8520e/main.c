@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the ATA8520E Sigfox module
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the ATA8520E Sigfox module
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,8 +23,7 @@
 
 static ata8520e_t dev;
 
-static void _print_sigfox_usage(void)
-{
+static void _print_sigfox_usage(void) {
     puts("Usage: sigfox <info|keys|tx|tx_rx>\n\n"
          " <info> prints information on module versions\n"
          " <keys> prints device internal keys, use them to register the device"
@@ -38,8 +33,7 @@ static void _print_sigfox_usage(void)
          "data");
 }
 
-int ata8520e_sigfox_cmd(int argc, char **argv)
-{
+int ata8520e_sigfox_cmd(int argc, char **argv) {
     if (argc < 2) {
         _print_sigfox_usage();
         return 1;
@@ -123,8 +117,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("ATA8520E test application\n");
     puts("+------------Initializing------------+\n");
     switch (ata8520e_init(&dev, &ata8520e_params[0])) {
@@ -142,7 +135,7 @@ int main(void)
             return -1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization OK, starting shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

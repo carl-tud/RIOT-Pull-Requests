@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2015 Daniel Krebs
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2015 Daniel Krebs
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Provides shell commands to test AT30TSE75x temperature sensor
- *
- * @author      Daniel Krebs <github@daniel-krebs.net>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Provides shell commands to test AT30TSE75x temperature sensor
+///
+/// @author      Daniel Krebs <github@daniel-krebs.net>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -31,8 +27,7 @@
 static bool initialized = false;
 static at30tse75x_t dev;
 
-static int _at30tse75x_handler(int argc, char **argv)
-{
+static int _at30tse75x_handler(int argc, char **argv) {
     if(argc <= 1) {
         printf("Usage: %s init|read|mode|resolution|save|restore|config\n", argv[0]);
         return -1;
@@ -46,12 +41,12 @@ static int _at30tse75x_handler(int argc, char **argv)
         }
 
         int error;
-        unsigned addr = 0x48;   /* default to A0-A2 connected to GND */
+        unsigned addr = 0x48;   // default to A0-A2 connected to GND
 
-        /* Try to parse i2c dev */
+        // Try to parse i2c dev
         i2c_t i2c_dev = (i2c_t) strtol(argv[2], &argv[1] + 1, 10);
 
-        /* Address given */
+        // Address given
         if(argc == 4) {
             char* hex = strstr(argv[3], "0x");
             if(hex) {
@@ -140,7 +135,7 @@ static int _at30tse75x_handler(int argc, char **argv)
                 }
                 printf("Config: 0x%x\n", config);
             } else {
-                /* Try to parse config in hex format */
+                // Try to parse config in hex format
                 uint8_t config;
                 char* hex = strstr(argv[2], "0x");
                 if(!hex) {
@@ -161,4 +156,4 @@ static int _at30tse75x_handler(int argc, char **argv)
 
 SHELL_COMMAND(at30tse75x, "Test AT30TSE75X temperature sensor", _at30tse75x_handler);
 
-#endif /* MODULE_AT30TSE75X */
+#endif // MODULE_AT30TSE75X

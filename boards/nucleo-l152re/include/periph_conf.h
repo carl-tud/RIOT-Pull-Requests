@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-l152re
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-l152re board
- *
- * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_nucleo-l152re
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-l152re board
+///
+/// @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
@@ -24,15 +20,13 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 1 },    /* DMA1 Channel 2 - SPI1_RX / USART3_TX */
-    { .stream = 2 },    /* DMA1 Channel 3 - SPI1_TX */
-    { .stream = 6 },    /* DMA1 Channel 7 - USART2_TX */
-    { .stream = 4 },    /* DMA1 Channel 4 - USART1_TX */
+    { .stream = 1 },    // DMA1 Channel 2 - SPI1_RX / USART3_TX
+    { .stream = 2 },    // DMA1 Channel 3 - SPI1_TX
+    { .stream = 6 },    // DMA1 Channel 7 - USART2_TX
+    { .stream = 4 },    // DMA1 Channel 4 - USART1_TX
 };
 
 #define DMA_0_ISR  isr_dma1_channel2
@@ -41,12 +35,10 @@ static const dma_conf_t dma_config[] = {
 #define DMA_3_ISR  isr_dma1_channel4
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev      = USART2,
@@ -97,12 +89,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart3)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM2,
@@ -127,12 +117,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -156,12 +144,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
-  * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -193,12 +179,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c2_ev
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- * @{
- */
+/// @name   ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_A, 0), 0 },
     { GPIO_PIN(PORT_A, 1), 1 },
@@ -209,22 +193,20 @@ static const adc_conf_t adc_config[] = {
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name   DAC configuration
- * @{
- */
+/// @name   DAC configuration
+/// @{
 static const dac_conf_t dac_config[] = {
     { .pin = GPIO_PIN(PORT_A,  4), .chan = 0 },
     { .pin = GPIO_PIN(PORT_A,  5), .chan = 1 }
 };
 
 #define DAC_NUMOF           ARRAY_SIZE(dac_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

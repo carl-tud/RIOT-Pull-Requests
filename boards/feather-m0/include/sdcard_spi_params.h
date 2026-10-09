@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_feather-m0
- * @{
- *
- * @file
- * @brief       SD card configuration for the Adafruit Feather M0 Adalogger
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_feather-m0
+/// @{
+///
+/// @file
+/// @brief       SD card configuration for the Adafruit Feather M0 Adalogger
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 
@@ -21,14 +17,10 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Card detect pin
- */
+/// @brief   Card detect pin
  #define CARD_DETECT_PIN              (GPIO_PIN(PA, 21))
 
-/**
- * @brief   sdcard_spi configuration
- */
+/// @brief   sdcard_spi configuration
 static const  sdcard_spi_params_t sdcard_spi_params[] = {
     {
         .spi_dev        = SPI_DEV(0),
@@ -45,4 +37,4 @@ static const  sdcard_spi_params_t sdcard_spi_params[] = {
 }
 #endif
 
-/** @} */
+/// @}

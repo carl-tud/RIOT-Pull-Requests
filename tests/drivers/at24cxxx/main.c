@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief    AT24CXXX test application
- *
- * Tested with bluepill and AT24C256
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief    AT24CXXX test application
+///
+/// Tested with bluepill and AT24C256
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -41,8 +37,7 @@
 #define SET_CHARACTER           'G'
 #define SET_LEN                 (20U)
 
-int main(void)
-{
+int main(void) {
     puts("Starting tests for module at24cxxx");
 
     at24cxxx_t at24cxxx_dev;
@@ -51,7 +46,7 @@ int main(void)
     printf("EEPROM size: %u byte\n", AT24CXXX_EEPROM_SIZE);
     printf("Page size  : %u byte\n", AT24CXXX_PAGE_SIZE);
 
-    /* Test: Init */
+    // Test: Init
     check = at24cxxx_init(&at24cxxx_dev, &at24cxxx_params[0]);
     if (check != AT24CXXX_OK) {
         printf("[FAILURE] at24cxxx_init: (%d)\n", check);
@@ -61,7 +56,7 @@ int main(void)
         puts("[SUCCESS] at24cxxx_init");
     }
 
-    /* erase EEPROM to exclude side effects from prior test runs */
+    // erase EEPROM to exclude side effects from prior test runs
 #if AT24CXXX_ERASE
     check = at24cxxx_erase(&at24cxxx_dev);
     if (check != AT24CXXX_OK) {
@@ -74,7 +69,7 @@ int main(void)
     }
 #endif
 
-    /* Test: Write/Read Byte */
+    // Test: Write/Read Byte
     check = at24cxxx_write_byte(&at24cxxx_dev, WRITE_BYTE_POSITION,
                                 WRITE_BYTE_CHARACTER);
     if (check != AT24CXXX_OK) {
@@ -104,7 +99,7 @@ int main(void)
         puts("[SUCCESS] write_byte/read_byte");
     }
 
-    /* Test: Write */
+    // Test: Write
     uint8_t expected_write_data[] = WRITE_CHARACTERS;
 
     check = at24cxxx_write(&at24cxxx_dev, WRITE_POSITION, expected_write_data,
@@ -118,7 +113,7 @@ int main(void)
         puts("[SUCCESS] at24cxxx_write");
     }
 
-    /* Test: Read */
+    // Test: Read
     uint8_t actual_write_data[sizeof(expected_write_data)];
 
     check = at24cxxx_read(&at24cxxx_dev, WRITE_POSITION, actual_write_data,
@@ -141,7 +136,7 @@ int main(void)
         puts("[SUCCESS] write/read");
     }
 
-    /* Test: Set */
+    // Test: Set
     uint8_t expected_set_data[SET_LEN];
     memset(expected_set_data, SET_CHARACTER, SET_LEN);
 

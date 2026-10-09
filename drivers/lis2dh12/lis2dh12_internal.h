@@ -1,28 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_lis2dh12
- * @{
- *
- * @file
- * @brief       Command definition for the LIS2DH12 accelerometer
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_lis2dh12
+/// @{
+///
+/// @file
+/// @brief       Command definition for the LIS2DH12 accelerometer
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name    LIS2DH12 registers
- * @{
- */
+/// @name    LIS2DH12 registers
+/// @{
 #define REG_STATUS_REG_AUX          (0x07)
 #define REG_OUT_TEMP_L              (0x0C)
 #define REG_OUT_TEMP_H              (0x0D)
@@ -61,18 +55,16 @@ extern "C" {
 #define REG_TIME_WINDOW             (0x3D)
 #define REG_ACT_THS                 (0x3E)
 #define REG_ACT_DUR                 (0x3F)
-/** @} */
+/// @}
 
-/**
- * @name    Selected register values
- * @{
- */
+/// @name    Selected register values
+/// @{
 #define WHO_AM_I_VAL                (0x33)
 #define CTRL_REG0_DEFAULT           (0x10)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

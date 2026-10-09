@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mcp2515
- * @{
- *
- * @file
- * @brief       MCP2515 can spi driver
- *
- * @author      Toon Stegen <toon.stegen@altran.com>
- * @}
- */
+/// @ingroup     drivers_mcp2515
+/// @{
+///
+/// @file
+/// @brief       MCP2515 can spi driver
+///
+/// @author      Toon Stegen <toon.stegen@altran.com>
+/// @}
 
 #include <stdio.h>
 
@@ -27,11 +23,10 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-int mcp2515_spi_init(const candev_mcp2515_t *dev)
-{
+int mcp2515_spi_init(const candev_mcp2515_t *dev) {
     int res;
 
-    /* Configure SPI */
+    // Configure SPI
     res = spi_init_cs(dev->conf->spi, dev->conf->cs_pin);
     if (res != SPI_OK) {
         DEBUG("spi_init_master: error initializing SPI_%i device (code %i)\n",
@@ -41,8 +36,7 @@ int mcp2515_spi_init(const candev_mcp2515_t *dev)
     return 0;
 }
 
-int mcp2515_spi_reset(const candev_mcp2515_t *dev)
-{
+int mcp2515_spi_reset(const candev_mcp2515_t *dev) {
     spi_acquire(dev->conf->spi, dev->conf->cs_pin, dev->conf->spi_mode,
                 dev->conf->spi_clk);
     spi_transfer_byte(dev->conf->spi, dev->conf->cs_pin, false,
@@ -52,8 +46,7 @@ int mcp2515_spi_reset(const candev_mcp2515_t *dev)
 }
 
 int mcp2515_spi_read(const candev_mcp2515_t *dev, uint8_t addr, uint8_t *buf,
-                     unsigned int len)
-{
+                     unsigned int len) {
     spi_acquire(dev->conf->spi, dev->conf->cs_pin, dev->conf->spi_mode,
                 dev->conf->spi_clk);
     spi_transfer_byte(dev->conf->spi, dev->conf->cs_pin, true,
@@ -65,9 +58,8 @@ int mcp2515_spi_read(const candev_mcp2515_t *dev, uint8_t addr, uint8_t *buf,
 }
 
 int mcp2515_spi_read_rxbuf(const candev_mcp2515_t *dev, uint8_t mailbox,
-                           void *buf, uint8_t len)
-{
-    /* See TABLE 12-1:SPI INSTRUCTION SET in mcp2515 datasheet */
+                           void *buf, uint8_t len) {
+    // See TABLE 12-1:SPI INSTRUCTION SET in mcp2515 datasheet
     spi_acquire(dev->conf->spi, dev->conf->cs_pin, dev->conf->spi_mode,
                 dev->conf->spi_clk);
     spi_transfer_byte(dev->conf->spi, dev->conf->cs_pin, true,
@@ -79,8 +71,7 @@ int mcp2515_spi_read_rxbuf(const candev_mcp2515_t *dev, uint8_t mailbox,
 }
 
 int mcp2515_spi_write(const candev_mcp2515_t *dev, uint8_t addr, uint8_t *buf,
-                      unsigned int len)
-{
+                      unsigned int len) {
     spi_acquire(dev->conf->spi, dev->conf->cs_pin, dev->conf->spi_mode,
                 dev->conf->spi_clk);
     spi_transfer_byte(dev->conf->spi, dev->conf->cs_pin, true,
@@ -92,8 +83,7 @@ int mcp2515_spi_write(const candev_mcp2515_t *dev, uint8_t addr, uint8_t *buf,
 }
 
 int mcp2515_spi_write_txbuf(const candev_mcp2515_t *dev, uint8_t mailbox,
-                            void *buf, uint8_t len)
-{
+                            void *buf, uint8_t len) {
     spi_acquire(dev->conf->spi, dev->conf->cs_pin, dev->conf->spi_mode,
                 dev->conf->spi_clk);
     spi_transfer_byte(dev->conf->spi, dev->conf->cs_pin, true,
@@ -104,8 +94,7 @@ int mcp2515_spi_write_txbuf(const candev_mcp2515_t *dev, uint8_t mailbox,
     return 0;
 }
 
-int mcp2515_spi_rts(const candev_mcp2515_t *dev, uint8_t mailbox)
-{
+int mcp2515_spi_rts(const candev_mcp2515_t *dev, uint8_t mailbox) {
     spi_acquire(dev->conf->spi, dev->conf->cs_pin, dev->conf->spi_mode,
                 dev->conf->spi_clk);
     spi_transfer_byte(dev->conf->spi, dev->conf->cs_pin, false,
@@ -114,8 +103,7 @@ int mcp2515_spi_rts(const candev_mcp2515_t *dev, uint8_t mailbox)
     return 0;
 }
 
-uint8_t mcp2515_spi_read_status(const candev_mcp2515_t *dev)
-{
+uint8_t mcp2515_spi_read_status(const candev_mcp2515_t *dev) {
     uint8_t status;
 
     spi_acquire(dev->conf->spi, dev->conf->cs_pin, dev->conf->spi_mode,
@@ -127,8 +115,7 @@ uint8_t mcp2515_spi_read_status(const candev_mcp2515_t *dev)
     return status;
 }
 
-int mcp2515_spi_rx_status(const candev_mcp2515_t *dev)
-{
+int mcp2515_spi_rx_status(const candev_mcp2515_t *dev) {
     uint8_t status;
 
     spi_acquire(dev->conf->spi, dev->conf->cs_pin, dev->conf->spi_mode,
@@ -141,8 +128,7 @@ int mcp2515_spi_rx_status(const candev_mcp2515_t *dev)
 }
 
 int mcp2515_spi_bitmod(const candev_mcp2515_t *dev, uint8_t addr, uint8_t mask,
-                       uint8_t buf)
-{
+                       uint8_t buf) {
     uint8_t msg[2];
 
     spi_acquire(dev->conf->spi, dev->conf->cs_pin, dev->conf->spi_mode,

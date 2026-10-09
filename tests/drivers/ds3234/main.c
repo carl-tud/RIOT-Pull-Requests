@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 SKF AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 SKF AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the DS3234 RTC driver
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the DS3234 RTC driver
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se
+///
+/// @}
 
 #include <stdio.h>
 
@@ -22,8 +18,7 @@
 #include "ds3234_params.h"
 #include "kernel_defines.h"
 
-int main(void)
-{
+int main(void) {
     puts("DS3234 RTC PPS test application\n");
 
     for (unsigned k = 0; k < ARRAY_SIZE(ds3234_params); ++k) {
@@ -42,7 +37,7 @@ int main(void)
     puts("Check SQW pin on all connected DS3234 for a 1 Hz square wave signal\n");
 
     while (1) {
-        /* Spin */
+        // Spin
     }
 
     return 0;

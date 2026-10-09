@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       Test logging with colors gives the expected output
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- */
+/// @file
+/// @brief       Test logging with colors gives the expected output
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
 
 #include <inttypes.h>
 
@@ -17,8 +13,7 @@
 
 #define format "Logging value '%d' and string '%s'\n"
 
-int main(void)
-{
+int main(void) {
     const uint8_t value = 42;
     const char *string = "test";
 

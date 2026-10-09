@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup    tests
- * @{
- *
- * @file
- * @brief      Tests for suit manifest parser module
- *
- * @author     Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @ingroup    tests
+/// @{
+///
+/// @file
+/// @brief      Tests for suit manifest parser module
+///
+/// @author     Kaspar Schleiser <kaspar@schleiser.de>
 
 #include <stdio.h>
 
@@ -25,8 +21,8 @@
 
 #define TEST_MANIFEST_INCLUDE(file) <blob/bin/BOARD_NAME_UNQ/manifests/file>
 
-/* cppcheck-suppress preprocessorErrorDirective
- * (reason: board-dependent include paths) */
+// cppcheck-suppress preprocessorErrorDirective
+// (reason: board-dependent include paths)
 #include TEST_MANIFEST_INCLUDE(manifest0.bin.h)
 #include TEST_MANIFEST_INCLUDE(manifest1.bin.h)
 #include TEST_MANIFEST_INCLUDE(manifest2.bin.h)
@@ -43,7 +39,7 @@ typedef struct {
 } manifest_blob_t;
 
 const manifest_blob_t manifest_blobs[] = {
-    /* Older GCC can't handle manifestx_bin_len here */
+    // Older GCC can't handle manifestx_bin_len here
     { manifest0_bin, sizeof(manifest0_bin), SUIT_ERR_SIGNATURE },
     { manifest1_bin, sizeof(manifest1_bin), SUIT_ERR_SEQUENCE_NUMBER },
     { manifest2_bin, sizeof(manifest2_bin), SUIT_ERR_COND },
@@ -67,8 +63,7 @@ const suit_transport_mock_payload_t payloads[] = {
 const size_t num_payloads = ARRAY_SIZE(payloads);
 
 static int test_suit_manifest(const unsigned char *manifest_bin,
-                                size_t manifest_bin_len)
-{
+                                size_t manifest_bin_len) {
     char _url[CONFIG_SOCK_URLPATH_MAXLEN];
     suit_manifest_t manifest;
 
@@ -87,8 +82,7 @@ static int test_suit_manifest(const unsigned char *manifest_bin,
     return res;
 }
 
-static void test_suit_manifest_01_manifests(void)
-{
+static void test_suit_manifest_01_manifests(void) {
     suit_storage_set_seq_no_all(1);
     for (unsigned i = 0; i < manifest_blobs_numof; i++) {
         printf("\n--- testing manifest %u\n", i);
@@ -99,8 +93,7 @@ static void test_suit_manifest_01_manifests(void)
     }
 }
 
-Test *tests_suit_manifest(void)
-{
+Test *tests_suit_manifest(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_suit_manifest_01_manifests),
     };
@@ -110,8 +103,7 @@ Test *tests_suit_manifest(void)
     return (Test *)&suit_manifest_tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_suit_manifest());
     TESTS_END();

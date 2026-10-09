@@ -1,14 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2026 Francois Perrad
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Francois Perrad
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "ficl.h"
 #include "led.h"
 #include "ztimer.h"
 
-static void led0(FICL_VM *pVM)
-{
+static void led0(FICL_VM *pVM) {
 #if FICL_ROBUST > 1
     vmCheckStack(pVM, 1, 0);
 #endif
@@ -21,8 +18,7 @@ static void led0(FICL_VM *pVM)
     return;
 }
 
-static void ms(FICL_VM *pVM)
-{
+static void ms(FICL_VM *pVM) {
 #if FICL_ROBUST > 1
     vmCheckStack(pVM, 1, 0);
 #endif
@@ -30,8 +26,7 @@ static void ms(FICL_VM *pVM)
     return;
 }
 
-void ficlCompilePlatform(FICL_SYSTEM *pSys)
-{
+void ficlCompilePlatform(FICL_SYSTEM *pSys) {
     FICL_DICT *dp = pSys->dp;
 
     assert(dp);

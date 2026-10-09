@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2023 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2023 HAW Hamburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_psa_crypto
- * @{
- *
- * @file
- * @brief       Implementation of persistent storage for PSA Crypto keys
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     sys_psa_crypto
+/// @{
+///
+/// @file
+/// @brief       Implementation of persistent storage for PSA Crypto keys
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include <fcntl.h>
 #include "psa/crypto.h"
@@ -31,23 +27,20 @@
 
 XFA_USE(vfs_mount_t, vfs_mountpoints_xfa);
 
-/* dir path needs to be as long as mount point + psa_key_id_t as string */
+// dir path needs to be as long as mount point + psa_key_id_t as string
 #ifndef CONFIG_PSA_CRYPTO_MAX_PATH_LEN
 #  define CONFIG_PSA_CRYPTO_MAX_PATH_LEN 64
 #endif
 
-/**
- * @brief       Build the VFS path to the given key id and store it in @p path
- * @param[out]  path    The formatted path (on success)
- * @param[in]   id      The key to build the path for
- * @retval      true    Success, @p path contains the _fmt_path
- * @retval      false   Failure, @p path too small
- *
- * @post        If `true` is returned, @p path contains the path to the key.
- *              Otherwise, @p path contains garbage.
- */
-static bool _fmt_path(char path[CONFIG_PSA_CRYPTO_MAX_PATH_LEN], psa_key_id_t id)
-{
+/// @brief       Build the VFS path to the given key id and store it in @p path
+/// @param[out]  path    The formatted path (on success)
+/// @param[in]   id      The key to build the path for
+/// @retval      true    Success, @p path contains the _fmt_path
+/// @retval      false   Failure, @p path too small
+///
+/// @post        If `true` is returned, @p path contains the path to the key.
+///              Otherwise, @p path contains garbage.
+static bool _fmt_path(char path[CONFIG_PSA_CRYPTO_MAX_PATH_LEN], psa_key_id_t id) {
     unsigned len = snprintf(path, CONFIG_PSA_CRYPTO_MAX_PATH_LEN, "%s/%d",
                              vfs_mountpoints_xfa[0].mount_point, (int)id);
 
@@ -56,15 +49,14 @@ static bool _fmt_path(char path[CONFIG_PSA_CRYPTO_MAX_PATH_LEN], psa_key_id_t id
 
 psa_status_t psa_write_encoded_key_slot_to_file(psa_key_id_t id,
                                                 uint8_t* input,
-                                                size_t input_len)
-{
+                                                size_t input_len) {
     char string_path[CONFIG_PSA_CRYPTO_MAX_PATH_LEN];
 
     if (!_fmt_path(string_path, id)) {
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
 
-    /* Check whether file already exists */
+    // Check whether file already exists
     int fd = vfs_open(string_path, O_RDWR, 0);
     if (fd >= 0) {
         DEBUG("[psa_crypto] persist key: key with this ID already exists in storage: %d\n", fd);
@@ -72,7 +64,7 @@ psa_status_t psa_write_encoded_key_slot_to_file(psa_key_id_t id,
         return PSA_ERROR_ALREADY_EXISTS;
     }
 
-    /* If file does not exist, create one */
+    // If file does not exist, create one
     fd = vfs_open(string_path, O_CREAT | O_RDWR, 0);
 
     if (fd <= 0) {
@@ -96,8 +88,7 @@ psa_status_t psa_write_encoded_key_slot_to_file(psa_key_id_t id,
 psa_status_t psa_read_encoded_key_slot_from_file(psa_key_id_t id,
                                                      uint8_t *output,
                                                      size_t output_size,
-                                                     size_t *output_data_len)
-{
+                                                     size_t *output_data_len) {
     char string_path[CONFIG_PSA_CRYPTO_MAX_PATH_LEN];
 
     if (!_fmt_path(string_path, id)) {
@@ -127,8 +118,7 @@ psa_status_t psa_read_encoded_key_slot_from_file(psa_key_id_t id,
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_destroy_persistent_key(psa_key_id_t key_id)
-{
+psa_status_t psa_destroy_persistent_key(psa_key_id_t key_id) {
     if (psa_key_id_is_volatile(key_id)) {
         DEBUG("[psa_crypto] persist key: ID is volatile\n");
         return PSA_ERROR_INVALID_ARGUMENT;

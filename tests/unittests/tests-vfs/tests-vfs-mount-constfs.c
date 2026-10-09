@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Unittests for vfs_mount, vfs_umount, ConstFS, VFS POSIX wrappers
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @{
+///
+/// @file
+/// @brief       Unittests for vfs_mount, vfs_umount, ConstFS, VFS POSIX wrappers
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 #include <errno.h>
 #include <stdint.h>
 #include <string.h>
@@ -32,8 +28,8 @@ static const uint8_t bin_data[] = {
     0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF,
 };
 static const uint8_t str_data[] = "This is a test file";
-                                /* 01234567890123456789 */
-                                /* 0         1          */
+                                // 01234567890123456789
+                                // 0         1
 static const constfs_file_t _files[] = {
     {
         .path = "/test.txt",
@@ -64,8 +60,7 @@ static vfs_mount_t _test_vfs_mount = {
     .private_data = (void *)&fs_data,
 };
 
-static void test_vfs_mount_umount(void)
-{
+static void test_vfs_mount_umount(void) {
     int res;
     res = vfs_mount(&_test_vfs_mount);
     TEST_ASSERT_EQUAL_INT(0, res);
@@ -73,8 +68,7 @@ static void test_vfs_mount_umount(void)
     TEST_ASSERT_EQUAL_INT(0, res);
 }
 
-static void test_vfs_mount__invalid(void)
-{
+static void test_vfs_mount__invalid(void) {
     int res;
     res = vfs_mount(NULL);
     TEST_ASSERT(res < 0);
@@ -83,8 +77,7 @@ static void test_vfs_mount__invalid(void)
     TEST_ASSERT(res < 0);
 }
 
-static void test_vfs_umount__invalid_mount(void)
-{
+static void test_vfs_umount__invalid_mount(void) {
     int res;
     res = vfs_umount(NULL, false);
     TEST_ASSERT(res < 0);
@@ -92,8 +85,7 @@ static void test_vfs_umount__invalid_mount(void)
     TEST_ASSERT(res < 0);
 }
 
-static void test_vfs_constfs_open(void)
-{
+static void test_vfs_constfs_open(void) {
     int res;
     res = vfs_mount(&_test_vfs_mount);
     TEST_ASSERT_EQUAL_INT(0, res);
@@ -125,8 +117,7 @@ static void test_vfs_constfs_open(void)
     TEST_ASSERT_EQUAL_INT(0, res);
 }
 
-static void test_vfs_constfs_read_lseek(void)
-{
+static void test_vfs_constfs_read_lseek(void) {
     int res;
     res = vfs_mount(&_test_vfs_mount);
     TEST_ASSERT_EQUAL_INT(0, res);
@@ -142,16 +133,16 @@ static void test_vfs_constfs_read_lseek(void)
     TEST_ASSERT_EQUAL_STRING((const char *)&str_data[0], (const char *)&strbuf[0]);
 
     off_t pos;
-    /* lseek to the middle */
+    // lseek to the middle
     memset(strbuf, '\0', sizeof(strbuf));
     pos = vfs_lseek(fd, sizeof(str_data) / 2, SEEK_SET);
     TEST_ASSERT_EQUAL_INT(sizeof(str_data) / 2, pos);
     nbytes = vfs_read(fd, strbuf, sizeof(strbuf));
-    TEST_ASSERT_EQUAL_INT((sizeof(str_data) + 1) / 2, nbytes); /* + 1 for rounding up */
+    TEST_ASSERT_EQUAL_INT((sizeof(str_data) + 1) / 2, nbytes); // + 1 for rounding up
     TEST_ASSERT_EQUAL_STRING((const char *)&str_data[sizeof(str_data) / 2],
                              (const char *)&strbuf[0]);
 
-    /* lseek to near the end */
+    // lseek to near the end
     memset(strbuf, '\0', sizeof(strbuf));
     pos = vfs_lseek(fd, -1, SEEK_END);
     TEST_ASSERT_EQUAL_INT(sizeof(str_data) - 1, pos);
@@ -171,8 +162,7 @@ static void test_vfs_constfs_read_lseek(void)
 }
 
 #if MODULE_NEWLIB || MODULE_PICOLIBC || defined(CPU_NATIVE)
-static void test_vfs_constfs__posix(void)
-{
+static void test_vfs_constfs__posix(void) {
     int res;
     res = vfs_mount(&_test_vfs_mount);
     TEST_ASSERT_EQUAL_INT(0, res);
@@ -188,7 +178,7 @@ static void test_vfs_constfs__posix(void)
     TEST_ASSERT_EQUAL_STRING((const char *)&str_data[0], (const char *)&strbuf[0]);
 
 #if HAVE_FCNTL
-    /* fcntl support is optional in newlib */
+    // fcntl support is optional in newlib
     res = fcntl(fd, F_GETFL, 0);
     TEST_ASSERT_EQUAL_INT(O_RDONLY, res);
 #endif
@@ -201,8 +191,7 @@ static void test_vfs_constfs__posix(void)
 }
 #endif
 
-Test *tests_vfs_mount_constfs_tests(void)
-{
+Test *tests_vfs_mount_constfs_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_vfs_mount_umount),
         new_TestFixture(test_vfs_mount__invalid),
@@ -219,4 +208,4 @@ Test *tests_vfs_mount_constfs_tests(void)
     return (Test *)&vfs_mount_tests;
 }
 
-/** @} */
+/// @}

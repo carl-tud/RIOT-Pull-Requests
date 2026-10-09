@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2016 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -38,8 +34,7 @@ gnrc_pktsnip_t *gnrc_sock_prevpkt = NULL;
 #endif
 
 #ifdef SOCK_HAS_ASYNC
-static void _netapi_cb(uint16_t cmd, gnrc_pktsnip_t *pkt, void *ctx)
-{
+static void _netapi_cb(uint16_t cmd, gnrc_pktsnip_t *pkt, void *ctx) {
     if (cmd == GNRC_NETAPI_MSG_TYPE_RCV) {
         msg_t msg = { .type = GNRC_NETAPI_MSG_TYPE_RCV,
                       .content = { .ptr = pkt } };
@@ -48,7 +43,7 @@ static void _netapi_cb(uint16_t cmd, gnrc_pktsnip_t *pkt, void *ctx)
         if (mbox_try_put(&reg->mbox, &msg) < 1) {
             LOG_WARNING("gnrc_sock: dropped message to %p (was full)\n",
                         (void *)&reg->mbox);
-            /* packet could not be delivered so it should be dropped */
+            // packet could not be delivered so it should be dropped
             gnrc_pktbuf_release(pkt);
             return;
         }
@@ -57,38 +52,36 @@ static void _netapi_cb(uint16_t cmd, gnrc_pktsnip_t *pkt, void *ctx)
         }
     }
 }
-#endif /* SOCK_HAS_ASYNC */
+#endif // SOCK_HAS_ASYNC
 
-void gnrc_sock_create(gnrc_sock_reg_t *reg, gnrc_nettype_t type, uint32_t demux_ctx)
-{
+void gnrc_sock_create(gnrc_sock_reg_t *reg, gnrc_nettype_t type, uint32_t demux_ctx) {
     mbox_init(&reg->mbox, reg->mbox_queue, GNRC_SOCK_MBOX_SIZE);
 #ifdef SOCK_HAS_ASYNC
     reg->async_cb.generic = NULL;
     reg->netreg_cb.cb = _netapi_cb;
     reg->netreg_cb.ctx = reg;
     gnrc_netreg_entry_init_cb(&reg->entry, demux_ctx, &reg->netreg_cb);
-#else   /* SOCK_HAS_ASYNC */
+#else   // SOCK_HAS_ASYNC
     gnrc_netreg_entry_init_mbox(&reg->entry, demux_ctx, &reg->mbox);
-#endif  /* SOCK_HAS_ASYNC */
+#endif  // SOCK_HAS_ASYNC
     gnrc_netreg_register(type, &reg->entry);
 }
 
 ssize_t gnrc_sock_recv(gnrc_sock_reg_t *reg, gnrc_pktsnip_t **pkt_out,
                        uint32_t timeout, sock_ip_ep_t *remote,
-                       gnrc_sock_recv_aux_t *aux)
-{
-    /* only used when some sock_aux_% module is used */
+                       gnrc_sock_recv_aux_t *aux) {
+    // only used when some sock_aux_% module is used
     (void)aux;
     gnrc_pktsnip_t *pkt, *netif;
     msg_t msg;
 
-    /* The fuzzing module is only enabled when building a fuzzing
-     * application from the fuzzing/ subdirectory. When using gnrc_sock
-     * the fuzzer assumes that gnrc_sock_recv is called in a loop. If it
-     * is called again and the previous return value was the special
-     * crafted fuzzing packet, the fuzzing application terminates.
-     *
-     * sock_async_event has its on fuzzing termination condition. */
+    // The fuzzing module is only enabled when building a fuzzing
+    // application from the fuzzing/ subdirectory. When using gnrc_sock
+    // the fuzzer assumes that gnrc_sock_recv is called in a loop. If it
+    // is called again and the previous return value was the special
+    // crafted fuzzing packet, the fuzzing application terminates.
+    //
+    // sock_async_event has its on fuzzing termination condition.
 #if defined(MODULE_FUZZING) && !defined(MODULE_SOCK_ASYNC_EVENT)
     if (gnrc_sock_prevpkt && gnrc_sock_prevpkt == gnrc_pktbuf_fuzzptr) {
         exit(EXIT_SUCCESS);
@@ -101,8 +94,8 @@ ssize_t gnrc_sock_recv(gnrc_sock_reg_t *reg, gnrc_pktsnip_t **pkt_out,
 
 #if defined(DEVELHELP) && IS_ACTIVE(SOCK_HAS_ASYNC)
     if ((timeout != 0) && (reg->async_cb.generic)) {
-        /* this warning is a false positive when sock_*_recv() was not called from
-         * the asynchronous handler */
+        // this warning is a false positive when sock_*_recv() was not called from
+        // the asynchronous handler
         LOG_WARNING("gnrc_sock: timeout != 0 within the asynchronous callback lead "
                     "to unexpected delays within the asynchronous handler.\n");
     }
@@ -117,12 +110,12 @@ ssize_t gnrc_sock_recv(gnrc_sock_reg_t *reg, gnrc_pktsnip_t **pkt_out,
         }
     }
     else {
-        /* Preferring low power over us precision here if both options are
-         * possible. This is typically the better trade-off, as even on fast
-         * networks round-trip-times are typically measured in ms rather than
-         * in us */
+        // Preferring low power over us precision here if both options are
+        // possible. This is typically the better trade-off, as even on fast
+        // networks round-trip-times are typically measured in ms rather than
+        // in us
         if (IS_USED(MODULE_ZTIMER_MSEC)) {
-            /* rounding up seems more sensible here */
+            // rounding up seems more sensible here
             uint32_t timeout_ms = (timeout + US_PER_MS - 1) / US_PER_MS;
             if (ztimer_mbox_get_timeout(ZTIMER_MSEC, &reg->mbox, &msg, timeout_ms)) {
                 return -ETIMEDOUT;
@@ -134,7 +127,7 @@ ssize_t gnrc_sock_recv(gnrc_sock_reg_t *reg, gnrc_pktsnip_t **pkt_out,
             }
         }
         else {
-            /* cannot do timeout without a timer */
+            // cannot do timeout without a timer
             assert(0);
             return -ENOTSUP;
         }
@@ -146,8 +139,8 @@ ssize_t gnrc_sock_recv(gnrc_sock_reg_t *reg, gnrc_pktsnip_t **pkt_out,
         default:
             return -EINVAL;
     }
-    /* TODO: discern NETTYPE from remote->family (set in caller), when IPv4
-     * was implemented */
+    // TODO: discern NETTYPE from remote->family (set in caller), when IPv4
+    // was implemented
     ipv6_hdr_t *ipv6_hdr = gnrc_ipv6_get_header(pkt);
     assert(ipv6_hdr != NULL);
     memcpy(&remote->addr, &ipv6_hdr->src, sizeof(ipv6_addr_t));
@@ -157,14 +150,14 @@ ssize_t gnrc_sock_recv(gnrc_sock_reg_t *reg, gnrc_pktsnip_t **pkt_out,
         memcpy(&aux->local->addr, &ipv6_hdr->dst, sizeof(ipv6_addr_t));
         aux->local->family = AF_INET6;
     }
-#endif /* MODULE_SOCK_AUX_LOCAL */
+#endif // MODULE_SOCK_AUX_LOCAL
     netif = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_NETIF);
     if (netif == NULL) {
         remote->netif = SOCK_ADDR_ANY_NETIF;
     }
     else {
         gnrc_netif_hdr_t *netif_hdr = netif->data;
-        /* TODO: use API in #5511 */
+        // TODO: use API in #5511
         remote->netif = (uint16_t)netif_hdr->if_pid;
 #if IS_USED(MODULE_SOCK_AUX_TIMESTAMP)
         if (aux->timestamp != NULL) {
@@ -172,15 +165,15 @@ ssize_t gnrc_sock_recv(gnrc_sock_reg_t *reg, gnrc_pktsnip_t **pkt_out,
                 aux->flags |= GNRC_SOCK_RECV_AUX_FLAG_TIMESTAMP;
             }
         }
-#endif /* MODULE_SOCK_AUX_TIMESTAMP */
+#endif // MODULE_SOCK_AUX_TIMESTAMP
 #if IS_USED(MODULE_SOCK_AUX_RSSI)
         if ((aux->rssi) && (netif_hdr->rssi != GNRC_NETIF_HDR_NO_RSSI)) {
             aux->flags |= GNRC_SOCK_RECV_AUX_FLAG_RSSI;
             *aux->rssi = netif_hdr->rssi;
         }
-#endif /* MODULE_SOCK_AUX_RSSI */
+#endif // MODULE_SOCK_AUX_RSSI
     }
-    *pkt_out = pkt; /* set out parameter */
+    *pkt_out = pkt; // set out parameter
 
 #if IS_ACTIVE(SOCK_HAS_ASYNC)
     if (reg->async_cb.generic && mbox_avail(&reg->mbox)) {
@@ -195,8 +188,7 @@ ssize_t gnrc_sock_recv(gnrc_sock_reg_t *reg, gnrc_pktsnip_t **pkt_out,
 }
 
 ssize_t gnrc_sock_send(gnrc_pktsnip_t *payload, sock_ip_ep_t *local,
-                       const sock_ip_ep_t *remote, uint8_t nh)
-{
+                       const sock_ip_ep_t *remote, uint8_t nh) {
     gnrc_pktsnip_t *pkt;
     kernel_pid_t iface = KERNEL_PID_UNDEF;
     gnrc_nettype_t type;
@@ -247,11 +239,11 @@ ssize_t gnrc_sock_send(gnrc_pktsnip_t *payload, sock_ip_ep_t *local,
             return -EAFNOSUPPORT;
     }
     if (local->netif != SOCK_ADDR_ANY_NETIF) {
-        /* TODO: use API in #5511 */
+        // TODO: use API in #5511
         iface = (kernel_pid_t)local->netif;
     }
     else if (remote->netif != SOCK_ADDR_ANY_NETIF) {
-        /* TODO: use API in #5511 */
+        // TODO: use API in #5511
         iface = (kernel_pid_t)remote->netif;
     }
     if (iface != KERNEL_PID_UNDEF) {
@@ -267,17 +259,17 @@ ssize_t gnrc_sock_send(gnrc_pktsnip_t *payload, sock_ip_ep_t *local,
         pkt = gnrc_pkt_prepend(pkt, netif);
     }
 #ifdef MODULE_GNRC_NETERR
-    /* cppcheck-suppress uninitvar
-     * (reason: pkt is initialized in AF_INET6 case above, otherwise function
-     * will return early) */
+    // cppcheck-suppress uninitvar
+    // (reason: pkt is initialized in AF_INET6 case above, otherwise function
+    // will return early)
     for (gnrc_pktsnip_t *ptr = pkt; ptr != NULL; ptr = ptr->next) {
-        /* no error should occur since pkt was created here */
+        // no error should occur since pkt was created here
         gnrc_neterr_reg(ptr);
         status_subs++;
     }
 #endif
     if (!gnrc_netapi_dispatch_send(type, GNRC_NETREG_DEMUX_CTX_ALL, pkt)) {
-        /* this should not happen, but just in case */
+        // this should not happen, but just in case
         gnrc_pktbuf_release(pkt);
         return -EBADMSG;
     }
@@ -304,7 +296,7 @@ ssize_t gnrc_sock_send(gnrc_pktsnip_t *payload, sock_ip_ep_t *local,
 
             for (unsigned i = 0; i < status_subs; i++) {
                 err_report.type = 0;
-                /* remove remaining status reports from queue */
+                // remove remaining status reports from queue
                 while (err_report.type != GNRC_NETERR_MSG_TYPE) {
                     msg_try_receive(&err_report);
                     if (err_report.type != GNRC_NETERR_MSG_TYPE) {
@@ -320,4 +312,4 @@ ssize_t gnrc_sock_send(gnrc_pktsnip_t *payload, sock_ip_ep_t *local,
     return payload_len;
 }
 
-/** @} */
+/// @}

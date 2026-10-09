@@ -1,15 +1,12 @@
-/*
- * Copyright (C) 2021 Silke Hofstra
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2021 Silke Hofstra
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #include "senml.h"
 
-const char *senml_unit_to_str(senml_unit_t unit)
-{
+const char *senml_unit_to_str(senml_unit_t unit) {
     switch (unit) {
     case SENML_UNIT_NONE:                         return "";
     case SENML_UNIT_METER:                        return "m";

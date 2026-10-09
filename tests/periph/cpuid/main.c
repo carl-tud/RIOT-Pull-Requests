@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief GET_CPU_ID() test application
- *
- * @author Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief GET_CPU_ID() test application
+///
+/// @author Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -22,8 +18,7 @@
 #include "cpu_conf.h"
 #include "periph/cpuid.h"
 
-int main(void)
-{
+int main(void) {
     uint8_t id[CPUID_LEN];
 
     puts("Test for the CPUID driver");
@@ -31,10 +26,10 @@ int main(void)
 
     printf("CPUID_LEN: %u\n", CPUID_LEN);
 
-    /* read the CPUID */
+    // read the CPUID
     cpuid_get(id);
 
-    /* print the CPUID */
+    // print the CPUID
     printf("CPUID:");
     for (unsigned int i = 0; i < CPUID_LEN; i++) {
         printf(" 0x%02x", id[i]);

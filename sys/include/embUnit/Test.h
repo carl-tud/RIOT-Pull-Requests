@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_TEST_H
 #define EMBUNIT_TEST_H
 
@@ -10,10 +8,10 @@ extern "C" {
 #endif
 
 typedef struct __TestResult     TestResult;
-typedef struct __TestResult*    TestResultRef;/*downward compatible*/
+typedef struct __TestResult*    TestResultRef;// downward compatible
 
 typedef struct __TestImplement  TestImplement;
-typedef struct __TestImplement* TestImplementRef;/*downward compatible*/
+typedef struct __TestImplement* TestImplementRef;// downward compatible
 
 typedef char*(*TestNameFunction)(void*);
 typedef void(*TestRunFunction)(void*,TestResult*);
@@ -26,7 +24,7 @@ struct __TestImplement {
 };
 
 typedef struct __Test   Test;
-typedef struct __Test*  TestRef;/*downward compatible*/
+typedef struct __Test*  TestRef;// downward compatible
 
 struct __Test {
     TestImplement* isa;
@@ -40,4 +38,4 @@ struct __Test {
 }
 #endif
 
-#endif /* EMBUNIT_TEST_H */
+#endif // EMBUNIT_TEST_H

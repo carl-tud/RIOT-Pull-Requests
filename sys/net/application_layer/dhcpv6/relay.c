@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 
@@ -16,7 +12,7 @@
 #include "event/thread.h"
 #include "log.h"
 #include "net/dhcpv6.h"
-#include "net/dhcpv6/client.h"      /* required for dhcpv6_duid_l2_t in _dhcpv6.h */
+#include "net/dhcpv6/client.h"      // required for dhcpv6_duid_l2_t in _dhcpv6.h
 #include "net/dhcpv6/relay.h"
 #include "net/ipv6/addr.h"
 #include "net/netif.h"
@@ -50,8 +46,7 @@ static void _forward_msg(const sock_udp_ep_t *remote, const uint8_t *msg, size_t
                          msg_size, bool is_client_msg);
 static void _forward_reply(const uint8_t *in_msg, size_t in_msg_size);
 
-static int16_t _only_one_netif(void)
-{
+static int16_t _only_one_netif(void) {
     if (IS_USED(MODULE_NETIF)) {
         netif_t *netif = netif_iter(NULL);
 
@@ -62,8 +57,7 @@ static int16_t _only_one_netif(void)
     }
 }
 
-void dhcpv6_relay_auto_init(void)
-{
+void dhcpv6_relay_auto_init(void) {
     if (IS_USED(MODULE_AUTO_INIT_DHCPV6_RELAY)) {
         int16_t netif = _only_one_netif();
         if (netif > 0) {
@@ -83,8 +77,7 @@ void dhcpv6_relay_auto_init(void)
     }
 }
 
-static int _join_all_relays_and_server(uint16_t netif_id)
-{
+static int _join_all_relays_and_server(uint16_t netif_id) {
     netif_t *netif = netif_get_by_id(netif_id);
     ipv6_addr_t all_relays_and_server = {
         .u8 = DHCPV6_ALL_RELAY_AGENTS_AND_SERVERS
@@ -96,8 +89,7 @@ static int _join_all_relays_and_server(uint16_t netif_id)
 }
 
 void dhcpv6_relay_init(event_queue_t *eq, uint16_t listen_netif,
-                       uint16_t fwd_netif)
-{
+                       uint16_t fwd_netif) {
     sock_udp_ep_t local = { .family = AF_INET6, .port = DHCPV6_SERVER_PORT,
                             .netif = listen_netif };
     static sock_udp_t listen_sock;
@@ -112,7 +104,7 @@ void dhcpv6_relay_init(event_queue_t *eq, uint16_t listen_netif,
               "%d\n", -res);
         return;
     }
-    /* initialize client-listening sock */
+    // initialize client-listening sock
     res = sock_udp_create(&listen_sock, &local, NULL, 0);
     if (res < 0) {
         DEBUG("DHCPv6 relay: unable to open listen sock: %d\n", -res);
@@ -125,7 +117,7 @@ void dhcpv6_relay_init(event_queue_t *eq, uint16_t listen_netif,
         static sock_udp_t fwd_sock;
 
         memset(&fwd_sock, 0, sizeof(fwd_sock));
-        /* initialize forwarding / reply-listening sock */
+        // initialize forwarding / reply-listening sock
         local.netif = fwd_netif;
         res = sock_udp_create(&fwd_sock, &local, NULL, 0);
         if (res < 0) {
@@ -137,8 +129,7 @@ void dhcpv6_relay_init(event_queue_t *eq, uint16_t listen_netif,
     }
 }
 
-static void *_dhcpv6_relay_auto_init_thread(void *args)
-{
+static void *_dhcpv6_relay_auto_init_thread(void *args) {
     event_queue_t queue;
     int16_t netif = (intptr_t)args;
 
@@ -149,8 +140,7 @@ static void *_dhcpv6_relay_auto_init_thread(void *args)
 }
 
 static void _udp_handler(sock_udp_t *sock, sock_async_flags_t type,
-                         void *arg)
-{
+                         void *arg) {
     (void)arg;
     if (type == SOCK_ASYNC_MSG_RECV) {
         sock_udp_ep_t remote = { .family = AF_INET6 };
@@ -166,8 +156,7 @@ static void _udp_handler(sock_udp_t *sock, sock_async_flags_t type,
 }
 
 static void _dhcpv6_handler(const sock_udp_ep_t *remote, const uint8_t *msg,
-                            size_t msg_size)
-{
+                            size_t msg_size) {
     bool is_client_msg = false;
 
     if (msg_size == 0) {
@@ -188,7 +177,7 @@ static void _dhcpv6_handler(const sock_udp_ep_t *remote, const uint8_t *msg,
         case DHCPV6_DECLINE:
         case DHCPV6_INFO_REQUEST:
             is_client_msg = true;
-            /* intentionally falls through */
+            // intentionally falls through
         case DHCPV6_RELAY_FORW:
             _forward_msg(remote, msg, msg_size, is_client_msg);
             break;
@@ -203,8 +192,7 @@ static void _dhcpv6_handler(const sock_udp_ep_t *remote, const uint8_t *msg,
 }
 
 static uint16_t _compose_iid_opt(dhcpv6_opt_iid_t *opt,
-                                 const sock_udp_ep_t *remote)
-{
+                                 const sock_udp_ep_t *remote) {
     opt->type = byteorder_htons(DHCPV6_OPT_IID);
     opt->len = byteorder_htons(sizeof(remote->netif));
     memcpy(opt->iid, &remote->netif, sizeof(remote->netif));
@@ -213,16 +201,14 @@ static uint16_t _compose_iid_opt(dhcpv6_opt_iid_t *opt,
 
 static uint16_t _compose_relay_msg_opt(dhcpv6_opt_relay_msg_t *opt,
                                        const uint8_t *in_msg,
-                                       size_t in_msg_size)
-{
+                                       size_t in_msg_size) {
     opt->type = byteorder_htons(DHCPV6_OPT_RELAY_MSG);
     opt->len = byteorder_htons((uint16_t)in_msg_size);
     memcpy(opt->msg, in_msg, in_msg_size);
     return (uint16_t)in_msg_size + sizeof(dhcpv6_opt_relay_msg_t);
 }
 
-static bool _addr_unspec(const uint8_t *addr, size_t addr_len)
-{
+static bool _addr_unspec(const uint8_t *addr, size_t addr_len) {
     for (unsigned i = 0; i < addr_len; i++) {
         if (addr[i] != 0U) {
             return false;
@@ -231,8 +217,7 @@ static bool _addr_unspec(const uint8_t *addr, size_t addr_len)
     return true;
 }
 
-static bool _remote_unspec(const sock_udp_ep_t *remote)
-{
+static bool _remote_unspec(const sock_udp_ep_t *remote) {
     switch (remote->family) {
         case AF_INET6:
             return _addr_unspec(remote->addr.ipv6, sizeof(remote->addr.ipv6));
@@ -242,8 +227,7 @@ static bool _remote_unspec(const sock_udp_ep_t *remote)
 }
 
 static void _forward_msg(const sock_udp_ep_t *remote, const uint8_t *in_msg,
-                         size_t in_msg_size, bool is_client_msg)
-{
+                         size_t in_msg_size, bool is_client_msg) {
     dhcpv6_relay_msg_t *out_fwd = (dhcpv6_relay_msg_t *)_relay_state.outbuf;
     int res;
     sock_udp_ep_t send_remote = {
@@ -278,20 +262,20 @@ static void _forward_msg(const sock_udp_ep_t *remote, const uint8_t *in_msg,
             DEBUG("DHCPv6 relay: incoming forward message too small\n");
             return;
         }
-        /* TODO: check if peer-address is myself to prevent network spam when
-         * fwd_netif == listen_netif */
+        // TODO: check if peer-address is myself to prevent network spam when
+        // fwd_netif == listen_netif
         out_fwd->hop_count = in_fwd->hop_count + 1;
     }
 
     out_fwd->type = DHCPV6_RELAY_FORW;
-    /* set link-address to unspecified address, we will provide an Interface-ID
-     * option instead */
+    // set link-address to unspecified address, we will provide an Interface-ID
+    // option instead
     memset(&out_fwd->link_address, 0, sizeof(out_fwd->link_address));
     assert(sizeof(out_fwd->peer_address) == sizeof(remote->addr.ipv6));
     memcpy(&out_fwd->peer_address, &remote->addr.ipv6,
            sizeof(out_fwd->peer_address));
 
-    /* set mandatory options */
+    // set mandatory options
     out_fwd_len += _compose_iid_opt(
         (dhcpv6_opt_iid_t *)&_relay_state.outbuf[out_fwd_len], remote
     );
@@ -311,23 +295,19 @@ static void _forward_msg(const sock_udp_ep_t *remote, const uint8_t *in_msg,
     }
 }
 
-static uint16_t _get_iid(dhcpv6_opt_iid_t *opt)
-{
+static uint16_t _get_iid(dhcpv6_opt_iid_t *opt) {
     return (opt->iid[1] << 8) | (opt->iid[0] & 0xff);
 }
 
-static inline size_t _opt_len(dhcpv6_opt_t *opt)
-{
+static inline size_t _opt_len(dhcpv6_opt_t *opt) {
     return sizeof(dhcpv6_opt_t) + byteorder_ntohs(opt->len);
 }
 
-static inline dhcpv6_opt_t *_opt_next(dhcpv6_opt_t *opt)
-{
+static inline dhcpv6_opt_t *_opt_next(dhcpv6_opt_t *opt) {
     return (dhcpv6_opt_t *)(((uint8_t *)opt) + _opt_len(opt));
 }
 
-static void _forward_reply(const uint8_t *in_msg, size_t in_msg_size)
-{
+static void _forward_reply(const uint8_t *in_msg, size_t in_msg_size) {
     const dhcpv6_relay_msg_t *in_reply = (const dhcpv6_relay_msg_t *)in_msg;
     const uint8_t *out_msg = NULL;
     size_t out_msg_len = 0;
@@ -383,11 +363,11 @@ static void _forward_reply(const uint8_t *in_msg, size_t in_msg_size)
         return;
     }
     if (out_msg[0] == DHCPV6_RELAY_REPL) {
-        /* out message is heading for the next relay */
+        // out message is heading for the next relay
         target.port = DHCPV6_SERVER_PORT;
     }
     else {
-        /* out message is heading for the client it is destined to */
+        // out message is heading for the client it is destined to
         target.port = DHCPV6_CLIENT_PORT;
     }
     assert(sizeof(in_reply->peer_address) == sizeof(target.addr.ipv6));
@@ -409,4 +389,4 @@ static void _forward_reply(const uint8_t *in_msg, size_t in_msg_size)
     }
 }
 
-/** @} */
+/// @}

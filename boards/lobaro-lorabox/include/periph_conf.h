@@ -1,28 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_lobaro_lorabox
- * @brief       Support for the Lobaro lorabox with stm32l151cb
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the Lobaro lorabox board
- *
- * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- */
+/// @ingroup     boards_lobaro_lorabox
+/// @brief       Support for the Lobaro lorabox with stm32l151cb
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the Lobaro lorabox board
+///
+/// @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
 
-/*
- * This board provides an LSE, so enable it before including the default clock config
- */
+// This board provides an LSE, so enable it before including the default clock config
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -35,10 +29,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev      = USART1,
@@ -66,19 +58,15 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 #define PWM_NUMOF           0
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -109,12 +97,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
-  * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -133,10 +119,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_0_ISR           isr_i2c1_ev
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

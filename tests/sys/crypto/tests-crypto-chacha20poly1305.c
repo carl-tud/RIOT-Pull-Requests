@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "embUnit/embUnit.h"
 #include "tests-crypto.h"
@@ -12,15 +10,13 @@
 
 #include "crypto/chacha20poly1305.h"
 
-/*
- *  Example and Test Vector for AEAD_CHACHA20_POLY1305
- *
- *  https://tools.ietf.org/html/rfc7539#appendix-A
- */
+//  Example and Test Vector for AEAD_CHACHA20_POLY1305
+//
+//  https://tools.ietf.org/html/rfc7539#appendix-A
 
-/* ciphertext buffer */
+// ciphertext buffer
 uint8_t ebuf[1024];
-/* Plaintext buffer */
+// Plaintext buffer
 uint8_t pbuf[1024];
 
 static const uint8_t key_1[32] = {
@@ -63,8 +59,7 @@ static const uint8_t ciphertext_1[] = {
 
 static void _test_chacha20poly1305(const uint8_t *key, const uint8_t *nonce,
                                    const uint8_t *msg, size_t msglen,
-                                   const uint8_t *aad, size_t aadlen)
-{
+                                   const uint8_t *aad, size_t aadlen) {
     memcpy(ebuf, msg, msglen);
     chacha20poly1305_encrypt(ebuf, msg, msglen, aad, aadlen, key, nonce);
     TEST_ASSERT_EQUAL_INT(0, memcmp(ebuf, ciphertext_1, msglen + 16));
@@ -74,13 +69,11 @@ static void _test_chacha20poly1305(const uint8_t *key, const uint8_t *nonce,
     TEST_ASSERT_EQUAL_INT(0, memcmp(pbuf, msg_1, msglen));
 }
 
-static void test_crypto_chacha20poly1305_1(void)
-{
+static void test_crypto_chacha20poly1305_1(void) {
     _test_chacha20poly1305(key_1, nonce_1, msg_1, sizeof(msg_1), aad_1, sizeof(aad_1));
 }
 
-Test *tests_crypto_chacha20poly1305_tests(void)
-{
+Test *tests_crypto_chacha20poly1305_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_crypto_chacha20poly1305_1),
     };

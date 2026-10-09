@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup net_sock_dns
- * @{
- * @file
- * @brief   sock DNS client implementation
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- * @author  Hendrik van Essen <hendrik.ve@fu-berlin.de>
- * @}
- */
+/// @ingroup net_sock_dns
+/// @{
+/// @file
+/// @brief   sock DNS client implementation
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+/// @author  Hendrik van Essen <hendrik.ve@fu-berlin.de>
+/// @}
 
 #include <errno.h>
 #include <string.h>
@@ -28,15 +24,14 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* min domain name length is 1, so minimum record length is 7 */
+// min domain name length is 1, so minimum record length is 7
 #define DNS_MIN_REPLY_LEN   (unsigned)(sizeof(dns_hdr_t) + 7)
 
-/* global DNS server UDP endpoint */
+// global DNS server UDP endpoint
 sock_udp_ep_t sock_dns_server;
 
 #ifdef MODULE_AUTO_INIT_SOCK_DNS
-void auto_init_sock_dns(void)
-{
+void auto_init_sock_dns(void) {
     assert(   CONFIG_AUTO_INIT_SOCK_DNS_IP_VERSION == 4
            || CONFIG_AUTO_INIT_SOCK_DNS_IP_VERSION == 6);
 
@@ -65,10 +60,9 @@ void auto_init_sock_dns(void)
 
     sock_dns_server.port = CONFIG_AUTO_INIT_SOCK_DNS_SERVER_PORT;
 }
-#endif /* MODULE_AUTO_INIT_SOCK_DNS */
+#endif // MODULE_AUTO_INIT_SOCK_DNS
 
-int sock_dns_query(const char *domain_name, void *addr_out, int family)
-{
+int sock_dns_query(const char *domain_name, void *addr_out, int family) {
     ssize_t res;
     sock_udp_t sock_dns;
     static uint8_t dns_buf[CONFIG_DNS_MSG_LEN];

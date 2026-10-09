@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2022 Bennet Hattesen
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Bennet Hattesen
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -34,23 +30,19 @@ typedef struct {
     char *query;
 } expected_uri_result_t;
 
-static void _print_return_expectation(const char *uri, int expected, int observed)
-{
+static void _print_return_expectation(const char *uri, int expected, int observed) {
     printf("\nURI-Input: %s\n", uri);
     printf("Expected return: %d\n", expected);
     printf("Observed return: %d", observed);
 }
 
-/*
- * The uri_parser returns a string-buffer (non zero terminated).
- * This function compares a given string with a given uri_parser buffer + length.
- * Additionally, it takes the original uri (from the test vector) and a name
- * in order to print a precise and helpful error message if the buffer and string
- * aren't identical.
- */
+// The uri_parser returns a string-buffer (non zero terminated).
+// This function compares a given string with a given uri_parser buffer + length.
+// Additionally, it takes the original uri (from the test vector) and a name
+// in order to print a precise and helpful error message if the buffer and string
+// aren't identical.
 static int _compare_string_buffer(const char *name, const char *input_uri, const char *expected_str,
-                                  const char *actual_str, size_t actual_len)
-{
+                                  const char *actual_str, size_t actual_len) {
     if ((actual_len == strlen(expected_str)) &&
         (strncmp(actual_str, expected_str, actual_len) == 0)) {
         return 0;
@@ -62,13 +54,10 @@ static int _compare_string_buffer(const char *name, const char *input_uri, const
     return -1;
 }
 
-/*
- * Given a simple valid uri, this test checks that the parsing returns success
- */
-static void _successful_parsing_of_valid_uri(void)
-{
+// Given a simple valid uri, this test checks that the parsing returns success
+static void _successful_parsing_of_valid_uri(void) {
     char *failure_msg = "Failure: The uri_parser failed to parse a correct and valid uri.";
-    int expected_ret = 0;  /* Indicates a successful parsing */
+    int expected_ret = 0;  // Indicates a successful parsing
 
     char *simple_uri_1 = "coap://example.org/foo/bar";
     char *simple_uri_2 = "ftp://riot-os.org/bar/foo";
@@ -153,13 +142,10 @@ static void _successful_parsing_of_valid_uri(void)
     }
 }
 
-/*
- * Given a simple invalid uri, this test checks that the parsing returns an error
- */
-static void _successful_rejecting_of_invalid_uri(void)
-{
+// Given a simple invalid uri, this test checks that the parsing returns an error
+static void _successful_rejecting_of_invalid_uri(void) {
     char *failure_msg = "Failure: The uri_parser failed to reject an invalid uri.";
-    int expected_ret = -1;  /* Indicates an invalid uri */
+    int expected_ret = -1;  // Indicates an invalid uri
 
     char *trailing_percent = "coap://RIOT:test@[fe80:db8::1%]:5683/.well-known/core?v=1";
     char *invalid_port = "coap://R@[2001:db8::1]:5own/v=1";
@@ -197,16 +183,13 @@ static void _successful_rejecting_of_invalid_uri(void)
     }
 }
 
-/*
- * This test checks if the uri_parser returns an error if the port length
- * (as a string) is invalid, that is, longer than 5 characters.
- * This differs from the RFC, where the port in an uri can be zero to infinite
- * number of characters long; ABNF: *DIGIT
- */
-static void _error_if_port_str_is_too_long(void)
-{
+// This test checks if the uri_parser returns an error if the port length
+// (as a string) is invalid, that is, longer than 5 characters.
+// This differs from the RFC, where the port in an uri can be zero to infinite
+// number of characters long; ABNF: *DIGIT
+static void _error_if_port_str_is_too_long(void) {
     char *failure_msg = "Failure: The uri_parser did not detect an invalid port-length as invalid.";
-    int expected_ret = -1; /* Indicates an invalid uri */
+    int expected_ret = -1; // Indicates an invalid uri
 
     char *leading_zeroes_arent_ignored = "https://example.org:000456/foo/bar";
     char *too_many_digits = "https://example.org:123456/foo/bar";
@@ -230,14 +213,11 @@ static void _error_if_port_str_is_too_long(void)
     }
 }
 
-/*
- * This test checks if the uri_parser returns an error if the port
- * (as a string) is invalid, that is, containing illegal characters
- */
-static void _error_if_port_str_contains_illegal_characters(void)
-{
+// This test checks if the uri_parser returns an error if the port
+// (as a string) is invalid, that is, containing illegal characters
+static void _error_if_port_str_contains_illegal_characters(void) {
     char *failure_msg = "Failure: The uri_parser did not detect an invalid port-string as invalid.";
-    int expected_ret = -1; /* Indicates an invalid uri */
+    int expected_ret = -1; // Indicates an invalid uri
 
     char *letters_within_a_number = "https://example.org:12ff34/foo/bar";
     char *hex_number_as_port = "https://example.org:0x1234/foo/bar";
@@ -267,12 +247,9 @@ static void _error_if_port_str_contains_illegal_characters(void)
     }
 }
 
-/*
- * Given a uri which contains a scheme, this test checks that the
- * uri_parser can isolate that scheme successful.
- */
-static void _result_component_scheme_matches_input_scheme(void)
-{
+// Given a uri which contains a scheme, this test checks that the
+// uri_parser can isolate that scheme successful.
+static void _result_component_scheme_matches_input_scheme(void) {
     char *failure_msg = "Failure: The uri_parser did not parse the scheme correctly.";
     int expected_ret = 0;
 
@@ -306,15 +283,15 @@ static void _result_component_scheme_matches_input_scheme(void)
     for (unsigned int i = 0; i < ARRAY_SIZE(test_vec); ++i) {
         ret = uri_parser_process_string(&uri_res, test_vec[i]->input_uri);
         if (ret != expected_ret) {
-            /* if the uri_parser return indicates an error, this test fails */
+            // if the uri_parser return indicates an error, this test fails
             _print_return_expectation(test_vec[i]->input_uri, expected_ret, ret);
             TEST_FAIL(failure_msg);
         }
         else {
-            /* if the uri_parser return indicates success
-             * the length of the schemes must match.
-             * we can't use strlen on the result scheme as it is not null terminated,
-             * but the uri_parser provides the length separately*/
+            // if the uri_parser return indicates success
+            // the length of the schemes must match.
+            // we can't use strlen on the result scheme as it is not null terminated,
+            // but the uri_parser provides the length separately
             if (uri_res.scheme_len != strlen(test_vec[i]->scheme)) {
                 printf(
                     "With given input uri '%s', expected a scheme with the length '%" PRIuSIZE "' but got '%d'\n",
@@ -322,7 +299,7 @@ static void _result_component_scheme_matches_input_scheme(void)
                 TEST_FAIL(failure_msg);
             }
             else {
-                /* If the schemes have the same length, they also should look identical */
+                // If the schemes have the same length, they also should look identical
                 if (strncmp(uri_res.scheme, test_vec[i]->scheme, uri_res.scheme_len) != 0) {
                     printf("With given input uri '%s', expected scheme '%s' but got '%.*s'\n",
                            test_vec[i]->input_uri, test_vec[i]->scheme, uri_res.scheme_len,
@@ -334,26 +311,23 @@ static void _result_component_scheme_matches_input_scheme(void)
     }
 }
 
-/*
- * Given a valid uri, this test checks that the
- * uri_parser can isolate all parts of it successfully.
- */
-static void _result_components_matches_input(void)
-{
+// Given a valid uri, this test checks that the
+// uri_parser can isolate all parts of it successfully.
+static void _result_components_matches_input(void) {
     char *failure_msg = "Failure: The uri_parser did not parse the uri correctly.";
     int expected_ret = 0;
 
     expected_uri_result_t uri_0 = {
         .input_uri = "coap://example.org/foo/bar",
         .scheme = "coap",
-        .userinfo = "", /* This is an empty string because no userinfo has been set in this uri */
+        .userinfo = "", // This is an empty string because no userinfo has been set in this uri
         .host = "example.org",
-        .ipv6addr = "", /* This is an empty string because a hostname was used instead in this uri */
-        .zoneid = "",   /* Not applicable without ipv6 */
-        .port_str = "", /* This is an empty string because no port has been set in this uri */
-        .port = 0,      /* Remains zero when no port is given */
+        .ipv6addr = "", // This is an empty string because a hostname was used instead in this uri
+        .zoneid = "",   // Not applicable without ipv6
+        .port_str = "", // This is an empty string because no port has been set in this uri
+        .port = 0,      // Remains zero when no port is given
         .path = "/foo/bar",
-        .query = ""     /* This is an empty string because no query is present in this uri */
+        .query = ""     // This is an empty string because no query is present in this uri
     };
     expected_uri_result_t uri_trailing_slash = {
         .input_uri = "coap://example.org/",
@@ -446,12 +420,12 @@ static void _result_components_matches_input(void)
 
         ret = uri_parser_process_string(&uri_res, this_vec->input_uri);
         if (ret != expected_ret) {
-            /* if the uri_parser return indicates an error, this test fails */
+            // if the uri_parser return indicates an error, this test fails
             _print_return_expectation(this_vec->input_uri, expected_ret, ret);
             TEST_FAIL(failure_msg);
         }
         else {
-            /* if the uri_parser return indicates success */
+            // if the uri_parser return indicates success
             if (_compare_string_buffer("scheme", this_vec->input_uri, this_vec->scheme,
                                        uri_res.scheme, uri_res.scheme_len) != 0) {
                 TEST_FAIL(failure_msg);
@@ -488,8 +462,7 @@ static void _result_components_matches_input(void)
     }
 }
 
-static void test_uri_parser__unterminated_string(void)
-{
+static void test_uri_parser__unterminated_string(void) {
     char *failure_msg =
         "Failure: The uri_parser did not parse an unterminated uri string correctly.";
     expected_uri_result_t this_vec = {
@@ -508,7 +481,7 @@ static void test_uri_parser__unterminated_string(void)
     uri_parser_result_t ures;
     char uri[64];
 
-    /* initialize with a non-null character  */
+    // initialize with a non-null character
     memset(uri, 'Z', sizeof(uri));
 
     memcpy(uri, this_vec.input_uri, strlen(this_vec.input_uri));
@@ -547,8 +520,7 @@ static void test_uri_parser__unterminated_string(void)
     }
 }
 
-Test *tests_uri_parser_tests(void)
-{
+Test *tests_uri_parser_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(_successful_parsing_of_valid_uri),
         new_TestFixture(_successful_rejecting_of_invalid_uri),
@@ -576,14 +548,12 @@ Test *tests_uri_parser_tests(void)
 static uri_parser_query_param_t _params[4U];
 static uri_parser_result_t _uri_results;
 
-static void _setup_query(void)
-{
+static void _setup_query(void) {
     memset(_params, 0, sizeof(_params));
     memset(&_uri_results, 0, sizeof(_uri_results));
 }
 
-static void test_split_query__broken_input(void)
-{
+static void test_split_query__broken_input(void) {
     int res;
 
     INIT_URI_RESULTS("&");
@@ -607,8 +577,7 @@ static void test_split_query__broken_input(void)
     TEST_ASSERT_EQUAL_INT(-1, res);
 }
 
-void test_split_query__truncated(void)
-{
+void test_split_query__truncated(void) {
     int res;
 
     INIT_URI_RESULTS("this=0&is=1&a=very&long=3&query=foo");
@@ -625,8 +594,7 @@ void test_split_query__truncated(void)
     TEST_ASSERT_PARAM("3", 3, value);
 }
 
-void test_split_query__success(void)
-{
+void test_split_query__success(void) {
     int res;
 
     INIT_URI_RESULTS("foo=&=&bar=1");
@@ -644,8 +612,7 @@ void test_split_query__success(void)
     TEST_ASSERT_NULL(_params[3].value);
 }
 
-Test *tests_query_split_tests(void)
-{
+Test *tests_query_split_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_split_query__broken_input),
         new_TestFixture(test_split_query__truncated),
@@ -657,9 +624,8 @@ Test *tests_query_split_tests(void)
     return (Test *)&query_split_tests;
 }
 
-void tests_uri_parser(void)
-{
+void tests_uri_parser(void) {
     TESTS_RUN(tests_uri_parser_tests());
     TESTS_RUN(tests_query_split_tests());
 }
-/** @} */
+/// @}

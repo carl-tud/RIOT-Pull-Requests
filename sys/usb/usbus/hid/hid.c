@@ -1,19 +1,15 @@
-/*
- * Copyright (C) 2020 Nils Ollrogge
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Nils Ollrogge
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup usbus_hid
- * @{
- * @file
- *
- * @author  Nils Ollrogge <nils.ollrogge@fu-berlin.de>
- * @}
- */
+/// @ingroup usbus_hid
+/// @{
+/// @file
+///
+/// @author  Nils Ollrogge <nils.ollrogge@fu-berlin.de>
+/// @}
 
 #define USB_H_USER_IS_RIOT_INTERNAL
 
@@ -55,8 +51,7 @@ static const usbus_descr_gen_funcs_t _hid_descriptor = {
     .len_type = USBUS_DESCR_LEN_FIXED
 };
 
-static size_t _gen_hid_descriptor(usbus_t *usbus, void *arg)
-{
+static size_t _gen_hid_descriptor(usbus_t *usbus, void *arg) {
     usbus_hid_device_t *hid_dev = arg;
     usb_desc_hid_t hid_desc;
 
@@ -73,16 +68,14 @@ static size_t _gen_hid_descriptor(usbus_t *usbus, void *arg)
     return sizeof(usb_desc_hid_t);
 }
 
-static void _handle_tx_ready(event_t *ev)
-{
+static void _handle_tx_ready(event_t *ev) {
     usbus_hid_device_t *hid = container_of(ev, usbus_hid_device_t, tx_ready);
 
     usbdev_ep_xmit(hid->ep_in->ep, hid->in_buf, hid->occupied);
 }
 
 void usbus_hid_init(usbus_t *usbus, usbus_hid_device_t *hid, usbus_hid_cb_t cb,
-                    const uint8_t *report_desc, size_t report_desc_size)
-{
+                    const uint8_t *report_desc, size_t report_desc_size) {
     memset(hid, 0, sizeof(usbus_hid_device_t));
     hid->usbus = usbus;
     mutex_init(&hid->in_lock);
@@ -95,8 +88,7 @@ void usbus_hid_init(usbus_t *usbus, usbus_hid_device_t *hid, usbus_hid_cb_t cb,
     usbus_register_event_handler(usbus, &hid->handler_ctrl);
 }
 
-static void _init(usbus_t *usbus, usbus_handler_t *handler)
-{
+static void _init(usbus_t *usbus, usbus_handler_t *handler) {
     DEBUG("USB_HID: initialization\n");
     usbus_hid_device_t *hid = (usbus_hid_device_t *)handler;
 
@@ -106,49 +98,46 @@ static void _init(usbus_t *usbus, usbus_handler_t *handler)
     hid->hid_descr.funcs = &_hid_descriptor;
     hid->hid_descr.arg = hid;
 
-    /*
-       Configure Interface as USB_HID interface, choosing NONE for subclass and
-       protocol in order to represent a generic I/O device
-     */
+    //    Configure Interface as USB_HID interface, choosing NONE for subclass and
+    //    protocol in order to represent a generic I/O device
     hid->iface.class = USB_CLASS_HID;
     hid->iface.subclass = USB_HID_SUBCLASS_NONE;
     hid->iface.protocol = USB_HID_PROTOCOL_NONE;
     hid->iface.descr_gen = &hid->hid_descr;
     hid->iface.handler = handler;
 
-    /* IN endpoint to send data to host */
+    // IN endpoint to send data to host
     hid->ep_in = usbus_add_endpoint(usbus, &hid->iface,
                                     USB_EP_TYPE_INTERRUPT,
                                     USB_EP_DIR_IN,
                                     CONFIG_USBUS_HID_INTERRUPT_EP_SIZE);
     assert(hid->ep_in);
 
-    /* interrupt endpoint polling rate in ms */
+    // interrupt endpoint polling rate in ms
     hid->ep_in->interval = 0x05;
 
     usbus_enable_endpoint(hid->ep_in);
 
-    /* OUT endpoint to receive data from host */
+    // OUT endpoint to receive data from host
     hid->ep_out = usbus_add_endpoint(usbus, &hid->iface,
                                      USB_EP_TYPE_INTERRUPT, USB_EP_DIR_OUT,
                                      CONFIG_USBUS_HID_INTERRUPT_EP_SIZE);
     assert(hid->ep_out);
 
-    /* interrupt endpoint polling rate in ms */
+    // interrupt endpoint polling rate in ms
     hid->ep_out->interval = 0x05;
 
     usbus_enable_endpoint(hid->ep_out);
 
     usbus_add_interface(usbus, &hid->iface);
 
-    /* Wait for data from HOST */
+    // Wait for data from HOST
     usbdev_ep_xmit(hid->ep_out->ep, hid->out_buf,
                    CONFIG_USBUS_HID_INTERRUPT_EP_SIZE);
 }
 
 static void _event_handler(usbus_t *usbus, usbus_handler_t *handler,
-                           usbus_event_usb_t event)
-{
+                           usbus_event_usb_t event) {
     (void)usbus;
     (void)handler;
 
@@ -161,14 +150,13 @@ static void _event_handler(usbus_t *usbus, usbus_handler_t *handler,
 
 static int _control_handler(usbus_t *usbus, usbus_handler_t *handler,
                             usbus_control_request_state_t state,
-                            usb_setup_t *setup)
-{
+                            usb_setup_t *setup) {
     usbus_hid_device_t *hid = (usbus_hid_device_t *)handler;
 
     DEBUG("USB_HID: request: %d type: %d value: %d length: %d state: %d \n",
           setup->request, setup->type, setup->value >> 8, setup->length, state);
 
-    /* Requests defined in USB HID 1.11 spec section 7 */
+    // Requests defined in USB HID 1.11 spec section 7
     switch (setup->request) {
     case USB_SETUP_REQ_GET_DESCRIPTOR: {
         uint8_t desc_type = setup->value >> 8;
@@ -197,7 +185,7 @@ static int _control_handler(usbus_t *usbus, usbus_handler_t *handler,
         }
         break;
     case USB_HID_REQUEST_SET_IDLE:
-        /* Wait for data from HOST */
+        // Wait for data from HOST
         usbdev_ep_xmit(hid->ep_out->ep, hid->out_buf,
                        CONFIG_USBUS_HID_INTERRUPT_EP_SIZE);
         break;
@@ -211,8 +199,7 @@ static int _control_handler(usbus_t *usbus, usbus_handler_t *handler,
 }
 
 static void _transfer_handler(usbus_t *usbus, usbus_handler_t *handler,
-                              usbdev_ep_t *ep, usbus_event_transfer_t event)
-{
+                              usbdev_ep_t *ep, usbus_event_transfer_t event) {
     (void)usbus;
     (void)event;
     DEBUG("USB_HID: transfer_handler\n");

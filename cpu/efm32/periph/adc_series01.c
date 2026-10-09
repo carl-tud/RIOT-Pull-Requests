@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016-2017 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2017 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_adc
- * @{
- *
- * @file
- * @brief       Low-level ADC driver implementation
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_adc
+/// @{
+///
+/// @file
+/// @brief       Low-level ADC driver implementation
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include <assert.h>
 
@@ -29,9 +25,8 @@
 
 static mutex_t adc_lock[ADC_DEV_NUMOF];
 
-int adc_init(adc_t line)
-{
-    /* check if line is valid */
+int adc_init(adc_t line) {
+    // check if line is valid
     if (line >= ADC_NUMOF) {
         return -1;
     }
@@ -39,14 +34,14 @@ int adc_init(adc_t line)
     uint8_t dev = adc_channel_config[line].dev;
     assert(dev < ADC_DEV_NUMOF);
 
-    /* initialize lock */
+    // initialize lock
     mutex_init(&adc_lock[dev]);
 
-    /* enable clock */
+    // enable clock
     CMU_ClockEnable(cmuClock_HFPER, true);
     CMU_ClockEnable(adc_config[dev].cmu, true);
 
-    /* reset and initialize peripheral */
+    // reset and initialize peripheral
     ADC_Init_TypeDef init = ADC_INIT_DEFAULT;
 
     init.timebase = ADC_TimebaseCalc(0);
@@ -58,19 +53,18 @@ int adc_init(adc_t line)
     return 0;
 }
 
-int32_t adc_sample(adc_t line, adc_res_t res)
-{
-    /* resolutions larger than 12 bits are not supported */
+int32_t adc_sample(adc_t line, adc_res_t res) {
+    // resolutions larger than 12 bits are not supported
     if (res >= ADC_MODE_UNDEF(0)) {
         return -1;
     }
 
     uint8_t dev = adc_channel_config[line].dev;
 
-    /* lock device */
+    // lock device
     mutex_lock(&adc_lock[dev]);
 
-    /* setup channel */
+    // setup channel
     ADC_InitSingle_TypeDef init = ADC_INITSINGLE_DEFAULT;
 
     init.acqTime = adc_channel_config[line].acq_time;
@@ -84,18 +78,18 @@ int32_t adc_sample(adc_t line, adc_res_t res)
 
     ADC_InitSingle(adc_config[dev].dev, &init);
 
-    /* start conversion and block until it completes */
+    // start conversion and block until it completes
     ADC_Start(adc_config[dev].dev, adcStartSingle);
 
     while ((adc_config[dev].dev->STATUS & ADC_STATUS_SINGLEDV) == 0);
 
     int result = ADC_DataSingleGet(adc_config[dev].dev);
 
-    /* for resolutions that are not really supported, shift the result (for
-       instance, 10 bit resolution is achieved by shifting a 12 bit sample). */
+    // for resolutions that are not really supported, shift the result (for
+    //    instance, 10 bit resolution is achieved by shifting a 12 bit sample).
     result = result >> (res >> 4);
 
-    /* unlock device */
+    // unlock device
     mutex_unlock(&adc_lock[dev]);
 
     return result;

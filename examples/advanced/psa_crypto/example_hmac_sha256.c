@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup examples
- * @{
- *
- * @brief   Example functions for HMAC SHA256 with PSA Crypto
- *
- * @author  Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup examples
+/// @{
+///
+/// @brief   Example functions for HMAC SHA256 with PSA Crypto
+///
+/// @author  Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -27,8 +23,8 @@ static const uint8_t HMAC_KEY[] = {
 };
 static size_t HMAC_KEY_LEN = 32;
 
-/* certain PSA backends require the data to be in RAM rather than ROM
- * so these values cannot be `const` */
+// certain PSA backends require the data to be in RAM rather than ROM
+// so these values cannot be `const`
 static uint8_t HMAC_MSG[] = {
     0x54, 0x68, 0x69, 0x73, 0x20, 0x69, 0x73, 0x20,
     0x61, 0x20, 0x74, 0x65, 0x73, 0x74, 0x73, 0x74,
@@ -37,14 +33,11 @@ static uint8_t HMAC_MSG[] = {
 };
 static size_t HMAC_MSG_LEN = 32;
 
-/**
- * @brief   Example function to perform an HMAC SHA-256 computation
- *          with the PSA Crypto API.
- *
- * @return  psa_status_t
- */
-psa_status_t example_hmac_sha256(void)
-{
+/// @brief   Example function to perform an HMAC SHA-256 computation
+///          with the PSA Crypto API.
+///
+/// @return  psa_status_t
+psa_status_t example_hmac_sha256(void) {
     psa_key_attributes_t attr = psa_key_attributes_init();
     psa_key_id_t key_id = 0;
     psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_MESSAGE;
@@ -77,8 +70,7 @@ psa_status_t example_hmac_sha256(void)
 }
 
 #if MULTIPLE_SE
-psa_status_t example_hmac_sha256_sec_se(void)
-{
+psa_status_t example_hmac_sha256_sec_se(void) {
     psa_key_attributes_t attr = psa_key_attributes_init();
     psa_key_id_t key_id = 0;
     psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_MESSAGE;

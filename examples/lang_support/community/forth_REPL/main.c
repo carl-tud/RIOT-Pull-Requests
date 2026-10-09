@@ -1,13 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2026 Francois Perrad
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Francois Perrad
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "ficl.h"
 #include "shell.h"
 
-int main(void)
-{
+int main(void) {
     char in[80] = { 0 };
     FICL_SYSTEM *pSys = ficlInitSystem(4096);
     FICL_VM *pVM = ficlNewVM(pSys);

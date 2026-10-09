@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_entropy_source_zero
- * @{
- * @file
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     sys_entropy_source_zero
+/// @{
+/// @file
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+///
+/// @}
 
 #include "kernel_defines.h"
 #include "entropy_source.h"
@@ -20,8 +16,7 @@
 entropy_source_tests_rep_t zero_state_rep;
 entropy_source_tests_prop_t zero_state_prop;
 
-static int _get_sample(uint8_t *out)
-{
+static int _get_sample(uint8_t *out) {
     int ret = ENTROPY_SOURCE_OK;
     uint8_t byte = 0;
 
@@ -34,8 +29,7 @@ static int _get_sample(uint8_t *out)
     return ret;
 }
 
-int entropy_source_zero_init(void)
-{
+int entropy_source_zero_init(void) {
     if (IS_ACTIVE(CONFIG_ENTROPY_SOURCE_ZERO_HEALTH_TEST)) {
         unsigned int cutoff;
         cutoff = entropy_source_test_rep_cutoff(CONFIG_ENTROPY_SOURCE_ZERO_HMIN);
@@ -47,8 +41,7 @@ int entropy_source_zero_init(void)
     return ENTROPY_SOURCE_OK;
 }
 
-int entropy_source_zero_get(uint8_t *out, size_t len)
-{
+int entropy_source_zero_get(uint8_t *out, size_t len) {
     assert(out != NULL);
 
     int ret = ENTROPY_SOURCE_OK;
@@ -59,8 +52,8 @@ int entropy_source_zero_get(uint8_t *out, size_t len)
     else {
         for (unsigned iter = 0; iter < len; iter++) {
             int tmp = _get_sample(&out[iter]);
-            /* Remember the worst failure during
-             * sampling multiple values to return */
+            // Remember the worst failure during
+            // sampling multiple values to return
             if (tmp < ret) {
                 ret = tmp;
             }

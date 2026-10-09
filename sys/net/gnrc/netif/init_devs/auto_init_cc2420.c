@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief       Auto initialization for CC2420 network devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Francisco Acosta <francisco.acosta@inria.fr>
- */
+/// @ingroup     sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief       Auto initialization for CC2420 network devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Francisco Acosta <francisco.acosta@inria.fr>
 
 #include "log.h"
 #include "board.h"
@@ -24,32 +20,25 @@
 #include "cc2420.h"
 #include "cc2420_params.h"
 
-/**
- * @brief   MAC layer stack parameters
- * @{
- */
+/// @brief   MAC layer stack parameters
+/// @{
 #define CC2420_MAC_STACKSIZE           (IEEE802154_STACKSIZE_DEFAULT)
 #ifndef CC2420_MAC_PRIO
 #define CC2420_MAC_PRIO                (GNRC_NETIF_PRIO)
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   Get the number of configured CC2420 devices
- */
+/// @brief   Get the number of configured CC2420 devices
 #define CC2420_NUMOF        ARRAY_SIZE(cc2420_params)
 
-/**
- * @brief   Allocate memory for dev descriptors, stacks, and 802.15.4 adaption
- * @{
- */
+/// @brief   Allocate memory for dev descriptors, stacks, and 802.15.4 adaption
+/// @{
 static cc2420_t cc2420_devs[CC2420_NUMOF];
 static char _cc2420_stacks[CC2420_NUMOF][CC2420_MAC_STACKSIZE];
 static gnrc_netif_t _netif[CC2420_NUMOF];
-/** @} */
+/// @}
 
-void auto_init_cc2420(void)
-{
+void auto_init_cc2420(void) {
     for (unsigned i = 0; i < CC2420_NUMOF; i++) {
         LOG_DEBUG("[auto_init_netif] initializing cc2420 #%u\n", i);
 
@@ -59,4 +48,4 @@ void auto_init_cc2420(void)
                                      &cc2420_devs[i].netdev.netdev);
     }
 }
-/** @} */
+/// @}

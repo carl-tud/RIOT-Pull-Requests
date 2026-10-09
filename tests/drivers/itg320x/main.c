@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 /**
  * @ingroup     tests
@@ -49,17 +47,15 @@
 static kernel_pid_t p_main;
 
 #ifdef MODULE_ITG320X_INT
-static void itg320x_isr_data_ready (void *arg)
-{
+static void itg320x_isr_data_ready (void *arg) {
     (void)arg;
-    /* send a message to trigger main thread to handle the interrupt */
+    // send a message to trigger main thread to handle the interrupt
     msg_t msg;
     msg_send(&msg, p_main);
 }
 #endif
 
-int main(void)
-{
+int main(void) {
     itg320x_t dev;
 
     p_main = thread_getpid();
@@ -67,7 +63,7 @@ int main(void)
     puts("ITG320X gyroscope driver test application\n");
     puts("Initializing ITG320X sensor");
 
-    /* initialize the sensor with default configuration parameters */
+    // initialize the sensor with default configuration parameters
     if (itg320x_init(&dev, &itg320x_params[0]) == ITG320X_OK) {
         puts("[OK]\n");
     }
@@ -77,25 +73,25 @@ int main(void)
     }
 
 #ifdef MODULE_ITG320X_INT
-    /* init interrupt */
+    // init interrupt
     itg320x_init_int(&dev, itg320x_isr_data_ready, 0);
 #endif
 
     while (1) {
 #ifdef MODULE_ITG320X_INT
-        /* wait for data ready interrupt */
+        // wait for data ready interrupt
         msg_t msg;
         msg_receive(&msg);
 #else
         while (1) {
-            /* wait longer than period of ITG320X DOR */
+            // wait longer than period of ITG320X DOR
             xtimer_usleep(ITG320X_SLEEP);
             if (itg320x_data_ready(&dev) == ITG320X_OK) {
                 break;
             }
         }
 #endif
-        /* read and print data in any case */
+        // read and print data in any case
         itg320x_data_t data;
         if (itg320x_read(&dev, &data) == ITG320X_OK) {
             printf("gyro [dps/10] x: "

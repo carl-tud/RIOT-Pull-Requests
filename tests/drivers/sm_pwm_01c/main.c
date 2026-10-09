@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- * @file
- * @brief       Test application for SM_PWM_01C driver
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @}
- */
+/// @ingroup     tests
+/// @{
+/// @file
+/// @brief       Test application for SM_PWM_01C driver
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @}
 
 #include <stdio.h>
 
@@ -24,8 +20,7 @@
 
 static progress_bar_t progress_bar_list[2];
 
-int main(void)
-{
+int main(void) {
     sm_pwm_01c_t dev;
 
     puts("sm_pwm_01c driver test application");

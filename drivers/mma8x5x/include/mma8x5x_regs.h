@@ -1,82 +1,74 @@
-/*
- * SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_mma8x5x
- * @{
- *
- * @file
- * @brief       Register definition for the MMA8x5x accelerometer driver
- *
- * @author      Johann Fischer <j.fischer@phytec.de>
- * @author      Hauke Petersen
- *
- */
+/// @ingroup     drivers_mma8x5x
+/// @{
+///
+/// @file
+/// @brief       Register definition for the MMA8x5x accelerometer driver
+///
+/// @author      Johann Fischer <j.fischer@phytec.de>
+/// @author      Hauke Petersen
+///
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-/**
- * @name    Register addresses
- * @{
- */
-#define MMA8X5X_STATUS              0x00 /**< Data or FIFO Status */
-#define MMA8X5X_OUT_X_MSB           0x01 /**< [7:0] are 8 MSBs of X data */
-#define MMA8X5X_OUT_X_LSB           0x02 /**< [7:4] are 4 LSBs of X data */
-#define MMA8X5X_OUT_Y_MSB           0x03 /**< [7:0] are 8 MSBs of Y data */
-#define MMA8X5X_OUT_Y_LSB           0x04 /**< [7:4] are 4 LSBs of Y data */
-#define MMA8X5X_OUT_Z_MSB           0x05 /**< [7:0] are 8 MSBs of Z data */
-#define MMA8X5X_OUT_Z_LSB           0x06 /**< [7:4] are 8 LSBs of Z data */
-#define MMA8X5X_F_SETUP             0x09 /**< FIFO setup */
-#define MMA8X5X_TRIG_CFG            0x0A /**< Map of FIFO data capture events */
-#define MMA8X5X_SYSMOD              0x0B /**< Current System mode */
-#define MMA8X5X_INT_SOURCE          0x0C /**< Interrupt status */
-#define MMA8X5X_WHO_AM_I            0x0D /**< Device ID */
-#define MMA8X5X_XYZ_DATA_CFG        0x0E /**< Dynamic Range Settings */
-#define MMA8X5X_HP_FILTER_CUTOFF    0x0F /**< High-Pass Filter Selection */
-#define MMA8X5X_PL_STATUS           0x10 /**< Landscape/Portrait orientation status */
-#define MMA8X5X_PL_CFG              0x11 /**< Landscape/Portrait configuration */
-#define MMA8X5X_PL_COUNT            0x12 /**< Landscape/Portrait debounce counter */
-#define MMA8X5X_PL_BF_ZCOMP         0x13 /**< Back/Front, Z-Lock Trip threshold */
-#define MMA8X5X_P_L_THS_REG         0x14 /**< Portrait/Landscape Threshold and Hysteresis */
-#define MMA8X5X_FF_MT_CFG           0x15 /**< Freefall/Motion functional block configuration */
-#define MMA8X5X_FF_MT_SRC           0x16 /**< Freefall/Motion event source register */
-#define MMA8X5X_FF_MT_THS           0x17 /**< Freefall/Motion threshold register */
-#define MMA8X5X_FF_MT_COUNT         0x18 /**< Freefall/Motion debounce counter */
-#define MMA8X5X_TRANSIENT_CFG       0x1D /**< Transient functional block configuration */
-#define MMA8X5X_TRANSIENT_SRC       0x1E /**< Transient event status register */
-#define MMA8X5X_TRANSIENT_THS       0x1F /**< Transient event threshold */
-#define MMA8X5X_TRANSIENT_COUNT     0x20 /**< Transient debounce counter */
-#define MMA8X5X_PULSE_CFG           0x21 /**< Pulse enable configuration */
-#define MMA8X5X_PULSE_SRC           0x22 /**< Pulse detection source */
-#define MMA8X5X_PULSE_THSX          0x23 /**< X pulse threshold */
-#define MMA8X5X_PULSE_THSY          0x24 /**< Y pulse threshold */
-#define MMA8X5X_PULSE_THSZ          0x25 /**< Z pulse threshold */
-#define MMA8X5X_PULSE_TMLT          0x26 /**< Time limit for pulse */
-#define MMA8X5X_PULSE_LTCY          0x27 /**< Latency time for 2nd pulse */
-#define MMA8X5X_PULSE_WIND          0x28 /**< Window time for 2nd pulse */
-#define MMA8X5X_ASLP_COUNT          0x29 /**< Counter setting for Auto-SLEEP */
-#define MMA8X5X_CTRL_REG1           0x2A /**< Data rates and modes setting */
-#define MMA8X5X_CTRL_REG2           0x2B /**< Sleep Enable, OS modes, RST, ST */
-#define MMA8X5X_CTRL_REG3           0x2C /**< Wake from Sleep, IPOL, PP_OD */
-#define MMA8X5X_CTRL_REG4           0x2D /**< Interrupt enable register */
-#define MMA8X5X_CTRL_REG5           0x2E /**< Interrupt pin (INT1/INT2) map */
-#define MMA8X5X_OFF_X               0x2F /**< X-axis offset adjust */
-#define MMA8X5X_OFF_Y               0x30 /**< Y-axis offset adjust */
-#define MMA8X5X_OFF_Z               0x31 /**< Z-axis offset adjust */
-/** @} */
+/// @name    Register addresses
+/// @{
+#define MMA8X5X_STATUS              0x00 ///< Data or FIFO Status
+#define MMA8X5X_OUT_X_MSB           0x01 ///< [7:0] are 8 MSBs of X data
+#define MMA8X5X_OUT_X_LSB           0x02 ///< [7:4] are 4 LSBs of X data
+#define MMA8X5X_OUT_Y_MSB           0x03 ///< [7:0] are 8 MSBs of Y data
+#define MMA8X5X_OUT_Y_LSB           0x04 ///< [7:4] are 4 LSBs of Y data
+#define MMA8X5X_OUT_Z_MSB           0x05 ///< [7:0] are 8 MSBs of Z data
+#define MMA8X5X_OUT_Z_LSB           0x06 ///< [7:4] are 8 LSBs of Z data
+#define MMA8X5X_F_SETUP             0x09 ///< FIFO setup
+#define MMA8X5X_TRIG_CFG            0x0A ///< Map of FIFO data capture events
+#define MMA8X5X_SYSMOD              0x0B ///< Current System mode
+#define MMA8X5X_INT_SOURCE          0x0C ///< Interrupt status
+#define MMA8X5X_WHO_AM_I            0x0D ///< Device ID
+#define MMA8X5X_XYZ_DATA_CFG        0x0E ///< Dynamic Range Settings
+#define MMA8X5X_HP_FILTER_CUTOFF    0x0F ///< High-Pass Filter Selection
+#define MMA8X5X_PL_STATUS           0x10 ///< Landscape/Portrait orientation status
+#define MMA8X5X_PL_CFG              0x11 ///< Landscape/Portrait configuration
+#define MMA8X5X_PL_COUNT            0x12 ///< Landscape/Portrait debounce counter
+#define MMA8X5X_PL_BF_ZCOMP         0x13 ///< Back/Front, Z-Lock Trip threshold
+#define MMA8X5X_P_L_THS_REG         0x14 ///< Portrait/Landscape Threshold and Hysteresis
+#define MMA8X5X_FF_MT_CFG           0x15 ///< Freefall/Motion functional block configuration
+#define MMA8X5X_FF_MT_SRC           0x16 ///< Freefall/Motion event source register
+#define MMA8X5X_FF_MT_THS           0x17 ///< Freefall/Motion threshold register
+#define MMA8X5X_FF_MT_COUNT         0x18 ///< Freefall/Motion debounce counter
+#define MMA8X5X_TRANSIENT_CFG       0x1D ///< Transient functional block configuration
+#define MMA8X5X_TRANSIENT_SRC       0x1E ///< Transient event status register
+#define MMA8X5X_TRANSIENT_THS       0x1F ///< Transient event threshold
+#define MMA8X5X_TRANSIENT_COUNT     0x20 ///< Transient debounce counter
+#define MMA8X5X_PULSE_CFG           0x21 ///< Pulse enable configuration
+#define MMA8X5X_PULSE_SRC           0x22 ///< Pulse detection source
+#define MMA8X5X_PULSE_THSX          0x23 ///< X pulse threshold
+#define MMA8X5X_PULSE_THSY          0x24 ///< Y pulse threshold
+#define MMA8X5X_PULSE_THSZ          0x25 ///< Z pulse threshold
+#define MMA8X5X_PULSE_TMLT          0x26 ///< Time limit for pulse
+#define MMA8X5X_PULSE_LTCY          0x27 ///< Latency time for 2nd pulse
+#define MMA8X5X_PULSE_WIND          0x28 ///< Window time for 2nd pulse
+#define MMA8X5X_ASLP_COUNT          0x29 ///< Counter setting for Auto-SLEEP
+#define MMA8X5X_CTRL_REG1           0x2A ///< Data rates and modes setting
+#define MMA8X5X_CTRL_REG2           0x2B ///< Sleep Enable, OS modes, RST, ST
+#define MMA8X5X_CTRL_REG3           0x2C ///< Wake from Sleep, IPOL, PP_OD
+#define MMA8X5X_CTRL_REG4           0x2D ///< Interrupt enable register
+#define MMA8X5X_CTRL_REG5           0x2E ///< Interrupt pin (INT1/INT2) map
+#define MMA8X5X_OFF_X               0x2F ///< X-axis offset adjust
+#define MMA8X5X_OFF_Y               0x30 ///< Y-axis offset adjust
+#define MMA8X5X_OFF_Z               0x31 ///< Z-axis offset adjust
+/// @}
 
-/**
- * @brief   MMA8x5x register bitfields
- * @{
- */
+/// @brief   MMA8x5x register bitfields
+/// @{
 #define MMA8X5X_STATUS_XDR                  (1 << 0)
 #define MMA8X5X_STATUS_YDR                  (1 << 1)
 #define MMA8X5X_STATUS_ZDR                  (1 << 2)
@@ -247,10 +239,10 @@ extern "C"
 #define MMA8X5X_CTRL_REG5_INT_CFG_TRANS     (1 << 5)
 #define MMA8X5X_CTRL_REG5_INT_CFG_FIFO      (1 << 6)
 #define MMA8X5X_CTRL_REG5_INT_CFG_ASLP      (1 << 7)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

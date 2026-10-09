@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       MAX313xx RTC driver implementation
- *
- * @author      Jakob Müller <ja.mueller@tuhh.de>
- */
+/// @file
+/// @brief       MAX313xx RTC driver implementation
+///
+/// @author      Jakob Müller <ja.mueller@tuhh.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -23,18 +19,15 @@
 #include "max313xx_internal.h"
 #include "max313xx_params.h"
 
-static int _read_regs(const max313xx_t *dev, uint8_t reg, void *buf, size_t len)
-{
+static int _read_regs(const max313xx_t *dev, uint8_t reg, void *buf, size_t len) {
     return i2c_read_regs(dev->i2c, MAX313XX_I2C_ADDR, reg, buf, len, 0);
 }
 
-static int _write_regs(const max313xx_t *dev, uint8_t reg, const void *buf, size_t len)
-{
+static int _write_regs(const max313xx_t *dev, uint8_t reg, const void *buf, size_t len) {
     return i2c_write_regs(dev->i2c, MAX313XX_I2C_ADDR, reg, buf, len, 0);
 }
 
-static int _validate_tm_for_set(const struct tm *t)
-{
+static int _validate_tm_for_set(const struct tm *t) {
     if (!rtc_tm_valid(t)) {
         return -ERANGE;
     }
@@ -51,8 +44,7 @@ static int _validate_tm_for_set(const struct tm *t)
     return 0;
 }
 
-static int _alarm1_set_enable(const max313xx_t *dev, bool en)
-{
+static int _alarm1_set_enable(const max313xx_t *dev, bool en) {
     uint8_t ie = 0;
     int res = _read_regs(dev, MAX313XX_REG_INT_EN, &ie, 1);
     if (res != 0) {
@@ -68,8 +60,7 @@ static int _alarm1_set_enable(const max313xx_t *dev, bool en)
     return _write_regs(dev, MAX313XX_REG_INT_EN, &ie, 1);
 }
 
-int max313xx_init(max313xx_t *dev, const max313xx_params_t *params)
-{
+int max313xx_init(max313xx_t *dev, const max313xx_params_t *params) {
     if (!dev || !params) {
         return -EINVAL;
     }
@@ -94,8 +85,7 @@ int max313xx_init(max313xx_t *dev, const max313xx_params_t *params)
     return time_lost ? -ENODATA : 0;
 }
 
-int max313xx_get_time(const max313xx_t *dev, struct tm *time)
-{
+int max313xx_get_time(const max313xx_t *dev, struct tm *time) {
     assert(dev);
     assert(time);
 
@@ -113,7 +103,7 @@ int max313xx_get_time(const max313xx_t *dev, struct tm *time)
     time->tm_min  = bcd_to_byte(raw[1] & 0x7FU);
     time->tm_hour = bcd_to_byte(raw[2] & 0x3FU);
     int wday = (raw[3] & 0x07U);
-    /* Map weekday: chip 1..7 -> tm 0..6 */
+    // Map weekday: chip 1..7 -> tm 0..6
     time->tm_wday = (wday >= 1 && wday <= 7) ? (wday - 1) : 0;
 
     time->tm_mday = bcd_to_byte(raw[4] & 0x3FU);
@@ -135,8 +125,7 @@ int max313xx_get_time(const max313xx_t *dev, struct tm *time)
     }
 }
 
-int max313xx_set_time(const max313xx_t *dev, const struct tm *time)
-{
+int max313xx_set_time(const max313xx_t *dev, const struct tm *time) {
     assert(dev);
     assert(time);
 
@@ -165,8 +154,7 @@ int max313xx_set_time(const max313xx_t *dev, const struct tm *time)
     return res;
 }
 
-int max313xx_set_alarm(const max313xx_t *dev, const struct tm *time)
-{
+int max313xx_set_alarm(const max313xx_t *dev, const struct tm *time) {
     assert(dev);
     assert(time);
 
@@ -192,7 +180,7 @@ int max313xx_set_alarm(const max313xx_t *dev, const struct tm *time)
 
     i2c_acquire(dev->i2c);
 
-    /* Disable alarm interrupt before writing registers */
+    // Disable alarm interrupt before writing registers
     res = _alarm1_set_enable(dev, false);
     if (res == 0) {
         res = _write_regs(dev, MAX313XX_REG_ALM1_SEC, alarm_reg, sizeof(alarm_reg));
@@ -201,8 +189,7 @@ int max313xx_set_alarm(const max313xx_t *dev, const struct tm *time)
     return res;
 }
 
-int max313xx_get_alarm(const max313xx_t *dev, struct tm *time)
-{
+int max313xx_get_alarm(const max313xx_t *dev, struct tm *time) {
     assert(dev);
     assert(time);
 
@@ -229,8 +216,7 @@ int max313xx_get_alarm(const max313xx_t *dev, struct tm *time)
     return 0;
 }
 
-int max313xx_set_alarm_int(const max313xx_t *dev, bool enable)
-{
+int max313xx_set_alarm_int(const max313xx_t *dev, bool enable) {
     assert(dev);
 
     i2c_acquire(dev->i2c);
@@ -245,8 +231,7 @@ int max313xx_set_alarm_int(const max313xx_t *dev, bool enable)
     return res;
 }
 
-int max313xx_poweron(const max313xx_t *dev)
-{
+int max313xx_poweron(const max313xx_t *dev) {
     assert(dev);
 
     uint8_t cfg1 = 0;
@@ -264,8 +249,7 @@ int max313xx_poweron(const max313xx_t *dev)
     return res;
 }
 
-int max313xx_poweroff(const max313xx_t *dev)
-{
+int max313xx_poweroff(const max313xx_t *dev) {
     assert(dev);
 
     uint8_t cfg1 = 0;
@@ -283,8 +267,7 @@ int max313xx_poweroff(const max313xx_t *dev)
     return res;
 }
 
-int max313xx_set_sqw(const max313xx_t *dev, max313xx_sqw_freq_t freq)
-{
+int max313xx_set_sqw(const max313xx_t *dev, max313xx_sqw_freq_t freq) {
     assert(dev);
 
     if (!IS_USED(MODULE_MAX31343)) {
@@ -309,8 +292,7 @@ int max313xx_set_sqw(const max313xx_t *dev, max313xx_sqw_freq_t freq)
     return res;
 }
 
-int max313xx_get_temp(const max313xx_t *dev, int16_t *temp_centi)
-{
+int max313xx_get_temp(const max313xx_t *dev, int16_t *temp_centi) {
     assert(dev);
     assert(temp_centi);
 
@@ -336,8 +318,7 @@ int max313xx_get_temp(const max313xx_t *dev, int16_t *temp_centi)
 }
 
 int max313xx_trickle_charge_enable(const max313xx_t *dev, bool diode,
-                                   max313xx_trickle_res_t res)
-{
+                                   max313xx_trickle_res_t res) {
     assert(dev);
 
     uint8_t reg = 0;
@@ -360,8 +341,7 @@ int max313xx_trickle_charge_enable(const max313xx_t *dev, bool diode,
     return ret;
 }
 
-int max313xx_trickle_charge_disable(const max313xx_t *dev)
-{
+int max313xx_trickle_charge_disable(const max313xx_t *dev) {
     assert(dev);
 
     i2c_acquire(dev->i2c);
@@ -385,8 +365,7 @@ int max313xx_trickle_charge_disable(const max313xx_t *dev)
     return res;
 }
 
-int max313xx_temp_set_automode(const max313xx_t *dev, bool enable, max313xx_ttsint_t ttsint)
-{
+int max313xx_temp_set_automode(const max313xx_t *dev, bool enable, max313xx_ttsint_t ttsint) {
     assert(dev);
 
     if (!IS_USED(MODULE_MAX31343)) {
@@ -409,7 +388,7 @@ int max313xx_temp_set_automode(const max313xx_t *dev, bool enable, max313xx_ttsi
             ts &= (uint8_t)~MAX31343_TS_AUTOMODE;
         }
 
-        /* set TTSINT field */
+        // set TTSINT field
         ts &= (uint8_t)~MAX31343_TS_TTSINT_MASK;
         ts |= (uint8_t)(((uint8_t)ttsint << MAX31343_TS_TTSINT_SHIFT)
                 & MAX31343_TS_TTSINT_MASK);
@@ -425,14 +404,12 @@ int max313xx_temp_set_automode(const max313xx_t *dev, bool enable, max313xx_ttsi
 static max313xx_t _walltime_dev;
 static bool _walltime_init_done;
 
-void walltime_impl_init(void)
-{
+void walltime_impl_init(void) {
     int res = max313xx_init(&_walltime_dev, &max313xx_params[0]);
     _walltime_init_done = (res == 0 || res == -ENODATA);
 }
 
-int walltime_impl_get(struct tm *time, uint16_t *ms)
-{
+int walltime_impl_get(struct tm *time, uint16_t *ms) {
     if (!_walltime_init_done) {
         return -ENODEV;
     }
@@ -440,8 +417,7 @@ int walltime_impl_get(struct tm *time, uint16_t *ms)
     return max313xx_get_time(&_walltime_dev, time);
 }
 
-int walltime_impl_set(struct tm *time)
-{
+int walltime_impl_set(struct tm *time) {
     if (!_walltime_init_done) {
         return -ENODEV;
     }

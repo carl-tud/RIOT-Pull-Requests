@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @{
+///
+/// @file
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 #include <errno.h>
 #include <stdint.h>
 
@@ -22,45 +18,39 @@
 
 static gnrc_netif_t dummy_netif[2];
 
-static void test_ipv6_addr_from_str__one_colon_start(void)
-{
+static void test_ipv6_addr_from_str__one_colon_start(void) {
     ipv6_addr_t address;
     netif_t *netif;
 
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv6(&address, &netif, ":ff::1"), -EINVAL);
 }
 
-static void test_ipv6_addr_from_str__three_colons(void)
-{
+static void test_ipv6_addr_from_str__three_colons(void) {
     ipv6_addr_t address;
     netif_t *netif;
 
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv6(&address, &netif, "ff02:::1"), -EINVAL);
 }
 
-static void test_ipv6_addr_from_str__illegal_chars(void)
-{
+static void test_ipv6_addr_from_str__illegal_chars(void) {
     ipv6_addr_t address;
     netif_t *netif;
 
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv6(&address, &netif, ":-D"), -EINVAL);
 }
 
-static void test_ipv6_addr_from_str__addr_NULL(void)
-{
+static void test_ipv6_addr_from_str__addr_NULL(void) {
     ipv6_addr_t address;
     netif_t *netif;
 
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv6(&address, &netif, NULL), -EINVAL);
 }
 
-static void test_ipv6_addr_from_str__address_NULL(void)
-{
+static void test_ipv6_addr_from_str__address_NULL(void) {
     TEST_ASSERT_NULL(ipv6_addr_from_str(NULL, "::"));
 }
 
-static void test_ipv6_addr_from_str__success(void)
-{
+static void test_ipv6_addr_from_str__success(void) {
     static const ipv6_addr_t a = { {
             0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
             0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
@@ -74,8 +64,7 @@ static void test_ipv6_addr_from_str__success(void)
     TEST_ASSERT_NULL(netif);
 }
 
-static void test_ipv6_addr_from_str__success2(void)
-{
+static void test_ipv6_addr_from_str__success2(void) {
     static const ipv6_addr_t a = { {
             0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff
@@ -89,16 +78,14 @@ static void test_ipv6_addr_from_str__success2(void)
     TEST_ASSERT(ipv6_addr_equal(&a, &address));
 }
 
-static void test_ipv6_addr_from_str__invalid_interface(void)
-{
+static void test_ipv6_addr_from_str__invalid_interface(void) {
     ipv6_addr_t address;
     netif_t *netif;
 
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv6(&address, &netif, "fe80::f8f9:fafb:fcfd:feff%3"), -EINVAL);
 }
 
-static void test_ipv6_addr_from_str__success4(void)
-{
+static void test_ipv6_addr_from_str__success4(void) {
     ipv6_addr_t address;
     netif_t *netif;
 
@@ -106,8 +93,7 @@ static void test_ipv6_addr_from_str__success4(void)
     TEST_ASSERT(ipv6_addr_equal(&sock_dns_mock_example_com_addr_ipv6, &address));
 }
 
-static void test_ipv6_addr_from_str__success5(void)
-{
+static void test_ipv6_addr_from_str__success5(void) {
     static const ipv6_addr_t a = IPV6_ADDR_LOOPBACK;
     ipv6_addr_t address;
 
@@ -115,8 +101,7 @@ static void test_ipv6_addr_from_str__success5(void)
     TEST_ASSERT(ipv6_addr_equal(&a, &address));
 }
 
-static void test_ipv4_addr_from_str__missing_parts(void)
-{
+static void test_ipv4_addr_from_str__missing_parts(void) {
     ipv4_addr_t address;
 
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv4(&address, "1"), -EINVAL);
@@ -127,27 +112,23 @@ static void test_ipv4_addr_from_str__missing_parts(void)
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv4(&address, "1.2.3."), -EINVAL);
 }
 
-static void test_ipv4_addr_from_str__illegal_chars(void)
-{
+static void test_ipv4_addr_from_str__illegal_chars(void) {
     ipv4_addr_t address;
 
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv4(&address, ":-D"), -ENOTSUP);
 }
 
-static void test_ipv4_addr_from_str__addr_NULL(void)
-{
+static void test_ipv4_addr_from_str__addr_NULL(void) {
     ipv4_addr_t address;
 
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv4(&address, NULL), -EINVAL);
 }
 
-static void test_ipv4_addr_from_str__address_NULL(void)
-{
+static void test_ipv4_addr_from_str__address_NULL(void) {
     TEST_ASSERT_NULL(ipv4_addr_from_str(NULL, "1.2.3.4"));
 }
 
-static void test_ipv4_addr_from_str__success(void)
-{
+static void test_ipv4_addr_from_str__success(void) {
     static const ipv4_addr_t a = IPV4_ADDR_INIT(1, 2, 3, 4);
     ipv4_addr_t address;
 
@@ -155,18 +136,16 @@ static void test_ipv4_addr_from_str__success(void)
     TEST_ASSERT(ipv4_addr_equal(&a, &address));
 }
 
-static void test_ipv4_addr_from_str__success2(void)
-{
+static void test_ipv4_addr_from_str__success2(void) {
     ipv4_addr_t address;
 
     TEST_ASSERT_EQUAL_INT(netutils_get_ipv4(&address, SOCK_DNS_MOCK_EXAMPLE_COM_HOSTNAME), 0);
     TEST_ASSERT(ipv4_addr_equal(&sock_dns_mock_example_com_addr_ipv4, &address));
 }
 
-Test *tests_netutils_ipv4_tests(void)
-{
+Test *tests_netutils_ipv4_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
-        /* IPv4 tests */
+        // IPv4 tests
         new_TestFixture(test_ipv4_addr_from_str__missing_parts),
         new_TestFixture(test_ipv4_addr_from_str__illegal_chars),
         new_TestFixture(test_ipv4_addr_from_str__addr_NULL),
@@ -180,8 +159,7 @@ Test *tests_netutils_ipv4_tests(void)
     return (Test *)&ipv4_addr_tests;
 }
 
-static void test_sock_tl_name2ep__ip_if_port(void)
-{
+static void test_sock_tl_name2ep__ip_if_port(void) {
     static const ipv6_addr_t a = { {
             0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff
@@ -197,8 +175,7 @@ static void test_sock_tl_name2ep__ip_if_port(void)
     TEST_ASSERT(ipv6_addr_equal(&a, (ipv6_addr_t *)&ep.addr.ipv6));
 }
 
-static void test_sock_tl_name2ep__name_port(void)
-{
+static void test_sock_tl_name2ep__name_port(void) {
     static const ipv6_addr_t a = { {
             0x26, 0x06, 0x28, 0x00, 0x02, 0x20, 0x00, 0x01,
             0x02, 0x48, 0x18, 0x93, 0x25, 0xc8, 0x19, 0x46
@@ -213,8 +190,7 @@ static void test_sock_tl_name2ep__name_port(void)
     TEST_ASSERT(ipv6_addr_equal(&a, (ipv6_addr_t *)&ep.addr.ipv6));
 }
 
-static void test_sock_tl_name2ep__name_only(void)
-{
+static void test_sock_tl_name2ep__name_only(void) {
     static const ipv6_addr_t a = { {
             0x26, 0x06, 0x28, 0x00, 0x02, 0x20, 0x00, 0x01,
             0x02, 0x48, 0x18, 0x93, 0x25, 0xc8, 0x19, 0x46
@@ -229,8 +205,7 @@ static void test_sock_tl_name2ep__name_only(void)
     TEST_ASSERT(ipv6_addr_equal(&a, (ipv6_addr_t *)&ep.addr.ipv6));
 }
 
-Test *tests_netutils_ipv6_tests(void)
-{
+Test *tests_netutils_ipv6_tests(void) {
     for (unsigned i = 0; i < ARRAY_SIZE(dummy_netif); ++i) {
         netif_register(&dummy_netif[i].netif);
         dummy_netif[i].pid = i;
@@ -257,8 +232,7 @@ Test *tests_netutils_ipv6_tests(void)
     return (Test *)&ipv6_addr_tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_netutils_ipv4_tests());
     TESTS_RUN(tests_netutils_ipv6_tests());
@@ -266,4 +240,4 @@ int main(void)
 
     return 0;
 }
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Measure messages send per second
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Measure messages send per second
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdatomic.h>
@@ -31,14 +27,12 @@
 
 static char _stack[THREAD_STACKSIZE_MAIN];
 
-static void _timer_callback(void *_flag)
-{
+static void _timer_callback(void *_flag) {
     atomic_flag *flag = _flag;
     atomic_flag_clear(flag);
 }
 
-static void *_second_thread(void *arg)
-{
+static void *_second_thread(void *arg) {
     (void)arg;
 
     while (1) {
@@ -49,8 +43,7 @@ static void *_second_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("main starting");
 
     kernel_pid_t other = thread_create(_stack,

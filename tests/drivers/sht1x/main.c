@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the SHT10/11/15 family of temperature and
- *              humidity sensors
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the SHT10/11/15 family of temperature and
+///              humidity sensors
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stddef.h>
@@ -27,8 +23,7 @@
 extern sht1x_dev_t sht1x_devs[SHT1X_NUM];
 static sht1x_dev_t *dev = &sht1x_devs[0];
 
-static int run_tests(void)
-{
+static int run_tests(void) {
     const char *resolution[] = { "high", "low" };
     const char *calibration[] = { "on", "off" };
     const char *heater[] = { "off", "on" };
@@ -92,7 +87,7 @@ static int run_tests(void)
                                  "configuration");
                             return -1;
                         default:
-                            /* Will never happen, but better safe than sorry */
+                            // Will never happen, but better safe than sorry
                             puts("Unknown error");
                             return -1;
                     }
@@ -113,7 +108,7 @@ static int run_tests(void)
                                 puts("Error: Measurement timed out");
                                 return -1;
                             default:
-                                /* Won't happen, but better safe than sorry */
+                                // Won't happen, but better safe than sorry
                                 puts("Unknown error");
                                 return -1;
                         }
@@ -145,7 +140,7 @@ static int run_tests(void)
                  "configuration");
             return -1;
         default:
-            /* Will never happen, but better safe than sorry */
+            // Will never happen, but better safe than sorry
             puts("Unknown error");
             return -1;
     }
@@ -153,8 +148,7 @@ static int run_tests(void)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     if (run_tests()) {
         puts("TESTS FAILED!");
     }

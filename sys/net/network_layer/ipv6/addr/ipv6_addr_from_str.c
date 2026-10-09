@@ -1,30 +1,26 @@
-/*
- * Copyright (c) 1996 by Internet Software Consortium.
- * Copyright (c) 2015 by Martine Lenders <mlenders@inf.fu-berlin.de>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM DISCLAIMS
- * ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET SOFTWARE
- * CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
- * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
- * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
- * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- * SOFTWARE.
- */
+// Copyright (c) 1996 by Internet Software Consortium.
+// Copyright (c) 2015 by Martine Lenders <mlenders@inf.fu-berlin.de>
+//
+// Permission to use, copy, modify, and distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+//
+// THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM DISCLAIMS
+// ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
+// OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET SOFTWARE
+// CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+// DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+// PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+// ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+// SOFTWARE.
 
-/**
- * @ingroup     net_ipv6_addr
- * @{
- *
- * @file
- *
- * @author      Paul Vixie
- * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @ingroup     net_ipv6_addr
+/// @{
+///
+/// @file
+///
+/// @author      Paul Vixie
+/// @author      Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <errno.h>
 #include <inttypes.h>
@@ -38,10 +34,9 @@
 #define HEX_L   "0123456789abcdef"
 #define HEX_U   "0123456789ABCDEF"
 
-/* based on inet_pton6() by Paul Vixie */
+// based on inet_pton6() by Paul Vixie
 ipv6_addr_t *ipv6_addr_from_buf(ipv6_addr_t *result, const char *addr,
-                                size_t addr_len)
-{
+                                size_t addr_len) {
     uint8_t *colonp = 0;
     const char *start = addr;
 #ifdef MODULE_IPV4_ADDR
@@ -58,7 +53,7 @@ ipv6_addr_t *ipv6_addr_from_buf(ipv6_addr_t *result, const char *addr,
 
     ipv6_addr_set_unspecified(result);
 
-    /* Leading :: requires some special handling. */
+    // Leading :: requires some special handling.
     if (*addr == ':') {
         if (*++addr != ':') {
             return NULL;
@@ -117,7 +112,7 @@ ipv6_addr_t *ipv6_addr_from_buf(ipv6_addr_t *result, const char *addr,
                                curtok, addr_len - (curtok - start)) != NULL) {
             i += sizeof(ipv4_addr_t);
             saw_xdigit = 0;
-            break;  /* '\0' was seen by ipv4_addr_from_str(). */
+            break;  // '\0' was seen by ipv4_addr_from_str().
         }
 #endif
 
@@ -134,10 +129,8 @@ ipv6_addr_t *ipv6_addr_from_buf(ipv6_addr_t *result, const char *addr,
     }
 
     if (colonp != NULL) {
-        /*
-         * Since some memmove()'s erroneously fail to handle
-         * overlapping regions, we'll do the shift by hand.
-         */
+        // Since some memmove()'s erroneously fail to handle
+        // overlapping regions, we'll do the shift by hand.
         const int32_t n = &(result->u8[i++]) - colonp;
 
         for (int32_t j = 1; j <= n; j++) {
@@ -155,8 +148,7 @@ ipv6_addr_t *ipv6_addr_from_buf(ipv6_addr_t *result, const char *addr,
     return result;
 }
 
-ipv6_addr_t *ipv6_addr_from_str(ipv6_addr_t *result, const char *addr)
-{
+ipv6_addr_t *ipv6_addr_from_str(ipv6_addr_t *result, const char *addr) {
     if ((result == NULL) || (addr == NULL)) {
         return NULL;
     }
@@ -164,8 +156,7 @@ ipv6_addr_t *ipv6_addr_from_str(ipv6_addr_t *result, const char *addr)
     return ipv6_addr_from_buf(result, addr, strlen(addr));
 }
 
-int ipv6_prefix_from_str(ipv6_addr_t *result, const char *addr)
-{
+int ipv6_prefix_from_str(ipv6_addr_t *result, const char *addr) {
     size_t str_len;
     int pfx_len;
     const char *separator;
@@ -192,6 +183,4 @@ int ipv6_prefix_from_str(ipv6_addr_t *result, const char *addr)
     return pfx_len;
 }
 
-/**
- * @}
- */
+/// @}

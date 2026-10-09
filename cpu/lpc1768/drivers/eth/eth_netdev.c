@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_lpc1768_eth
- *
- * @{
- * @file
- * @brief       netdev driver for the LPC1768 EMAC peripheral
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- * @}
- */
+/// @ingroup     cpu_lpc1768_eth
+///
+/// @{
+/// @file
+/// @brief       netdev driver for the LPC1768 EMAC peripheral
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -42,30 +38,26 @@
 #  define TRACE_PUTS(...)
 #endif
 
-/**
- * @brief   Singleton netdev instance for the LPC1768 EMAC peripheral.
- *
- * This is used by the low-level ethernet driver to deliver ISR events.
- */
+/// @brief   Singleton netdev instance for the LPC1768 EMAC peripheral.
+///
+/// This is used by the low-level ethernet driver to deliver ISR events.
 netdev_t *lpc1768_eth_netdev;
 
 static ztimer_periodic_t _link_timer;
 static bool _link_state;
 static volatile bool _link_check;
 
-static bool _link_timer_cb(void *arg)
-{
+static bool _link_timer_cb(void *arg) {
     netdev_t *netdev = arg;
 
-    /* link check happens in event loop to not block the ISR */
+    // link check happens in event loop to not block the ISR
     _link_check = true;
     netdev_trigger_event_isr(netdev);
 
     return ZTIMER_PERIODIC_KEEP_GOING;
 }
 
-static int _init(netdev_t *netdev)
-{
+static int _init(netdev_t *netdev) {
     eui48_t hwaddr;
 
     DEBUG_PUTS("[eth-netdev] _init: netdev init");
@@ -81,25 +73,24 @@ static int _init(netdev_t *netdev)
 
     if (IS_USED(MODULE_LPC1768_ETH_LINK_UP)) {
         if (IS_USED(MODULE_LPC1768_ETH_AUTO)) {
-            /* start auto-negotiation of the link speed */
+            // start auto-negotiation of the link speed
             lpc1768_eth_start_auto_negotiation();
         }
 
-        /* periodically wake the event loop to poll the link state */
+        // periodically wake the event loop to poll the link state
         ztimer_periodic_init(ZTIMER_MSEC, &_link_timer, _link_timer_cb, netdev,
                              CONFIG_LPC1768_ETH_LINK_POLL_MS);
         ztimer_periodic_start(&_link_timer);
     }
     else {
-        /* assume link is up */
+        // assume link is up
         netdev->event_callback(netdev, NETDEV_EVENT_LINK_UP);
     }
 
     return 0;
 }
 
-static int _send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _send(netdev_t *netdev, const iolist_t *iolist) {
     TRACE("[eth-netdev] _send: sending packet, length=%" PRIuSIZE " bytes\n", iolist_size(iolist));
 
     netdev->event_callback(netdev, NETDEV_EVENT_TX_STARTED);
@@ -113,16 +104,14 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
     return 0;
 }
 
-static int _confirm_send(netdev_t *netdev, void *info)
-{
+static int _confirm_send(netdev_t *netdev, void *info) {
     (void)netdev;
     (void)info;
 
     return lpc1768_eth_tx_status();
 }
 
-static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     (void)netdev;
     (void)info;
 
@@ -130,8 +119,8 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
 
     int res = lpc1768_eth_recv(buf, len);
 
-    /* signal event loop that there is more to consume, in case an interrupt
-     * was missed */
+    // signal event loop that there is more to consume, in case an interrupt
+    // was missed
     if (lpc1768_eth_rx_pending()) {
         netdev_trigger_event_isr(netdev);
     }
@@ -139,9 +128,8 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
     return res;
 }
 
-static void _isr(netdev_t *netdev)
-{
-    /* poll the link state in thread context when the timer requested it */
+static void _isr(netdev_t *netdev) {
+    // poll the link state in thread context when the timer requested it
     if (IS_USED(MODULE_LPC1768_ETH_LINK_UP) && _link_check) {
         _link_check = false;
 
@@ -153,7 +141,7 @@ static void _isr(netdev_t *netdev)
             if (up) {
                 DEBUG_PUTS("[eth-netdev] _isr: link up");
                 if (IS_USED(MODULE_LPC1768_ETH_AUTO)) {
-                    /* complete auto-negotiation of the link */
+                    // complete auto-negotiation of the link
                     lpc1768_eth_complete_auto_negotiation();
                 }
                 netdev->event_callback(netdev, NETDEV_EVENT_LINK_UP);
@@ -165,14 +153,13 @@ static void _isr(netdev_t *netdev)
         }
     }
 
-    /* receive if necessary */
+    // receive if necessary
     if (lpc1768_eth_rx_pending()) {
         netdev->event_callback(netdev, NETDEV_EVENT_RX_COMPLETE);
     }
 }
 
-static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
-{
+static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len) {
     switch (opt) {
     case NETOPT_ADDRESS:
         assert(max_len >= ETHERNET_ADDR_LEN);
@@ -191,8 +178,7 @@ static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
     }
 }
 
-static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len)
-{
+static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len) {
     switch (opt) {
     case NETOPT_ADDRESS:
         assert(len >= ETHERNET_ADDR_LEN);
@@ -217,14 +203,13 @@ const netdev_driver_t lpc1768_eth_driver = {
     .set = _set,
 };
 
-void lpc1768_eth_netdev_setup(netdev_t *netdev)
-{
+void lpc1768_eth_netdev_setup(netdev_t *netdev) {
     DEBUG_PUTS("[eth-netdev] lpc1768_eth_netdev_setup: registering netdev");
 
-    /* keep local netdev copy to invoke netdev ISR from ethernet ISR */
+    // keep local netdev copy to invoke netdev ISR from ethernet ISR
     lpc1768_eth_netdev = netdev;
 
-    /* initialize netdev fields */
+    // initialize netdev fields
     netdev->event_callback = NULL;
     netdev->context = NULL;
     netdev->driver = &lpc1768_eth_driver;

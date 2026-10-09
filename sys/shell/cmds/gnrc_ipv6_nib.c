@@ -1,17 +1,13 @@
-/*
- * Copyright (C) 2017 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2017 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <stdio.h>
 
@@ -28,12 +24,11 @@ static int _nib_prefix(int argc, char **argv);
 static int _nib_route(int argc, char **argv);
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C)
 static int _nib_abr(int argc, char **argv);
-#endif  /* CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C */
+#endif  // CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C
 
-/* TODO: updated tests/net/gnrc_dhcpv6_client to no longer abuse this shell command
- * and add static qualifier */
-int _gnrc_ipv6_nib(int argc, char **argv)
-{
+// TODO: updated tests/net/gnrc_dhcpv6_client to no longer abuse this shell command
+// and add static qualifier
+int _gnrc_ipv6_nib(int argc, char **argv) {
     int res = 1;
 
     if ((argc < 2) || (strcmp(argv[1], "help") == 0)) {
@@ -53,7 +48,7 @@ int _gnrc_ipv6_nib(int argc, char **argv)
     else if (strcmp(argv[1], "abr") == 0) {
         res = _nib_abr(argc, argv);
     }
-#endif  /* CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C */
+#endif  // CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C
     else {
         _usage(argv);
     }
@@ -62,25 +57,22 @@ int _gnrc_ipv6_nib(int argc, char **argv)
 
 SHELL_COMMAND(nib, "Configure neighbor information base", _gnrc_ipv6_nib);
 
-static void _usage(char **argv)
-{
+static void _usage(char **argv) {
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C)
     printf("usage: %s {neigh|prefix|route|abr|help} ...\n", argv[0]);
-#else   /* CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C */
+#else   // CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C
     printf("usage: %s {neigh|prefix|route|help} ...\n", argv[0]);
-#endif  /* CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C */
+#endif  // CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C
 }
 
-static void _usage_nib_neigh(char **argv)
-{
+static void _usage_nib_neigh(char **argv) {
     printf("usage: %s %s [show|add|del|help]\n", argv[0], argv[1]);
     printf("       %s %s add <iface> <ipv6 addr> [<l2 addr>]\n", argv[0], argv[1]);
     printf("       %s %s del <iface> <ipv6 addr>\n", argv[0], argv[1]);
     printf("       %s %s show [iface]\n", argv[0], argv[1]);
 }
 
-static void _usage_nib_prefix(char **argv)
-{
+static void _usage_nib_prefix(char **argv) {
     printf("usage: %s %s [show|add|del|help]\n", argv[0], argv[1]);
     printf("       %s %s add <iface> <prefix>[/<prefix_len>] [<valid in sec>] [<pref in sec>]\n",
            argv[0], argv[1]);
@@ -88,8 +80,7 @@ static void _usage_nib_prefix(char **argv)
     printf("       %s %s show [iface]\n", argv[0], argv[1]);
 }
 
-static void _usage_nib_route(char **argv)
-{
+static void _usage_nib_route(char **argv) {
     printf("usage: %s %s [show|add|del|help]\n", argv[0], argv[1]);
     printf("       %s %s add <iface> <prefix>[/<prefix_len>] <next_hop> [<ltime in sec>]\n",
            argv[0], argv[1]);
@@ -97,17 +88,15 @@ static void _usage_nib_route(char **argv)
     printf("       %s %s show [iface]\n", argv[0], argv[1]);
 }
 
-static inline gnrc_netif_t *_get_iface(unsigned iface)
-{
-     /* To prevent integer overflow we can't use pid_is_valid() since it
-      * itself would cause an overflow due to the cast to `kernel_pid_t` */
+static inline gnrc_netif_t *_get_iface(unsigned iface) {
+     // To prevent integer overflow we can't use pid_is_valid() since it
+     // itself would cause an overflow due to the cast to `kernel_pid_t`
     return (iface <= ((unsigned)KERNEL_PID_LAST))
            ? gnrc_netif_get_by_pid(iface)
            : NULL;
 }
 
-static int _nib_neigh(int argc, char **argv)
-{
+static int _nib_neigh(int argc, char **argv) {
     if ((argc == 2) || (strcmp(argv[2], "show") == 0)) {
         gnrc_ipv6_nib_nc_t entry;
         void *state = NULL;
@@ -137,7 +126,7 @@ static int _nib_neigh(int argc, char **argv)
             _usage_nib_neigh(argv);
             return 1;
         }
-        if ((argc > 5) && /* TODO also check if interface supports link-layers or not */
+        if ((argc > 5) && // TODO also check if interface supports link-layers or not
             (l2addr_len = gnrc_netif_addr_from_str(argv[5], l2addr)) == 0) {
             _usage_nib_neigh(argv);
             return 1;
@@ -168,8 +157,7 @@ static int _nib_neigh(int argc, char **argv)
     return 0;
 }
 
-static int _nib_prefix(int argc, char **argv)
-{
+static int _nib_prefix(int argc, char **argv) {
     if ((argc == 2) || (strcmp(argv[2], "show") == 0)) {
         gnrc_ipv6_nib_pl_t entry;
         void *state = NULL;
@@ -239,8 +227,7 @@ static int _nib_prefix(int argc, char **argv)
     return 0;
 }
 
-static int _nib_route(int argc, char **argv)
-{
+static int _nib_route(int argc, char **argv) {
     if ((argc == 2) || (strcmp(argv[2], "show") == 0)) {
         gnrc_ipv6_nib_ft_t entry;
         void *state = NULL;
@@ -271,8 +258,8 @@ static int _nib_route(int argc, char **argv)
             return 1;
         }
         if (ipv6_addr_from_str(&pfx, argv[4]) == NULL) {
-            /* check if string equals "default"
-             * => keep pfx as unspecified address == default route */
+            // check if string equals "default"
+            // => keep pfx as unspecified address == default route
             if (strcmp(argv[4], "default") != 0) {
                 _usage_nib_route(argv);
                 return 1;
@@ -305,8 +292,7 @@ static int _nib_route(int argc, char **argv)
 }
 
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C)
-static void _usage_nib_abr(char **argv)
-{
+static void _usage_nib_abr(char **argv) {
     if (IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_6LBR)) {
         printf("usage: %s %s [show|add|del|help]\n", argv[0], argv[1]);
         printf("       %s %s add <ipv6 global addr>\n", argv[0], argv[1]);
@@ -318,8 +304,7 @@ static void _usage_nib_abr(char **argv)
     printf("       %s %s show\n", argv[0], argv[1]);
 }
 
-static int _nib_abr(int argc, char **argv)
-{
+static int _nib_abr(int argc, char **argv) {
     if ((argc == 2) || (strcmp(argv[2], "show") == 0)) {
         gnrc_ipv6_nib_abr_t entry;
         void *state = NULL;
@@ -349,7 +334,7 @@ static int _nib_abr(int argc, char **argv)
             _usage_nib_abr(argv);
             return 1;
         }
-        /* check addr */
+        // check addr
         if (ipv6_addr_is_link_local(&addr)) {
             printf("address %s must be global\n", argv[3]);
             return 1;
@@ -365,13 +350,13 @@ static int _nib_abr(int argc, char **argv)
             return 1;
         }
     }
-#endif  /* CONFIG_GNRC_IPV6_NIB_6LBR */
+#endif  // CONFIG_GNRC_IPV6_NIB_6LBR
     else {
         _usage_nib_abr(argv);
         return 1;
     }
     return 0;
 }
-#endif  /* CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C */
+#endif  // CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C
 
-/** @} */
+/// @}

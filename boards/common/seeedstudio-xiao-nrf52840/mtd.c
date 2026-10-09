@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2024 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_seeedstudio-xiao-nrf52840
- * @ingroup     boards_seeedstudio-xiao-nrf52840-sense
- * @{
- *
- * @file
- * @brief       MTD configuration for the XIAO nRF52840
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     boards_seeedstudio-xiao-nrf52840
+/// @ingroup     boards_seeedstudio-xiao-nrf52840-sense
+/// @{
+///
+/// @file
+/// @brief       MTD configuration for the XIAO nRF52840
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+///
+/// @}
 
 #ifdef MODULE_MTD
 
@@ -26,7 +22,7 @@
 
 static const mtd_spi_nor_params_t _xiao_nrf52840_nor_params = {
     .opcode = &mtd_spi_nor_opcode_default,
-    /* datasheet reports 20ms, but experiments showed ~135ms*/
+    // datasheet reports 20ms, but experiments showed ~135ms
     .wait_chip_erase = 200LU * US_PER_MS,
     .wait_32k_erase = 20LU * US_PER_MS,
     .wait_sector_erase = 20LU * US_PER_MS,

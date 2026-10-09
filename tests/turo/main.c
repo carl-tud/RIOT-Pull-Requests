@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Test Utils Result Output test application
- *
- * @author Kevin Weiss <kevin.weiss@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Test Utils Result Output test application
+///
+/// @author Kevin Weiss <kevin.weiss@haw-hamburg.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -29,8 +25,7 @@
 
 turo_t ctx;
 
-static int _sc_arg2long(const char *arg, long *val)
-{
+static int _sc_arg2long(const char *arg, long *val) {
     errno = 0;
     char *end;
     long res = strtol(arg, &end, 0);
@@ -42,11 +37,10 @@ static int _sc_arg2long(const char *arg, long *val)
     return 0;
 }
 
-/* We need to disable warning since long can mean different things */
+// We need to disable warning since long can mean different things
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wtype-limits"
-static int _sc_arg2s32(const char *arg, int32_t *val)
-{
+static int _sc_arg2s32(const char *arg, int32_t *val) {
     long lval;
     int res = _sc_arg2long(arg, &lval);
 
@@ -63,8 +57,7 @@ static int _sc_arg2s32(const char *arg, int32_t *val)
 }
 #pragma GCC diagnostic pop
 
-static int _sc_arg2u8(const char *arg, uint8_t *val)
-{
+static int _sc_arg2u8(const char *arg, uint8_t *val) {
     long lval;
     int res = _sc_arg2long(arg, &lval);
     if (res == 0) {
@@ -78,8 +71,7 @@ static int _sc_arg2u8(const char *arg, uint8_t *val)
     return res;
 }
 
-static void _netif_list(turo_t *ctx, int32_t netif_num)
-{
+static void _netif_list(turo_t *ctx, int32_t netif_num) {
     uint8_t buf8[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
     turo_dict_open(ctx);
@@ -125,8 +117,7 @@ static void _netif_list(turo_t *ctx, int32_t netif_num)
     turo_dict_close(ctx);
 }
 
-static int cmd_turo_simple_s32(int argc, char **argv)
-{
+static int cmd_turo_simple_s32(int argc, char **argv) {
     int32_t s32 = 0;
     if (argc != 2) {
         turo_simple_exit_status(&ctx, -2);
@@ -141,8 +132,7 @@ static int cmd_turo_simple_s32(int argc, char **argv)
     return 0;
 }
 
-static int cmd_turo_simple_array_u8(int argc, char **argv)
-{
+static int cmd_turo_simple_array_u8(int argc, char **argv) {
     uint8_t buf8[_BUF_COUNT];
     if (argc == 1) {
         turo_simple_exit_status(&ctx, -4);
@@ -164,8 +154,7 @@ static int cmd_turo_simple_array_u8(int argc, char **argv)
     return 0;
 }
 
-static int cmd_turo_simple_array_s32(int argc, char **argv)
-{
+static int cmd_turo_simple_array_s32(int argc, char **argv) {
     int32_t buf32[_BUF_COUNT];
     if (argc == 1) {
         turo_simple_exit_status(&ctx, -7);
@@ -187,8 +176,7 @@ static int cmd_turo_simple_array_s32(int argc, char **argv)
     return 0;
 }
 
-static int cmd_turo_simple_dict_string(int argc, char **argv)
-{
+static int cmd_turo_simple_dict_string(int argc, char **argv) {
     if (argc != 3) {
         turo_simple_exit_status(&ctx, -10);
         return 1;
@@ -198,8 +186,7 @@ static int cmd_turo_simple_dict_string(int argc, char **argv)
     return 0;
 }
 
-static int cmd_turo_simple_dict_s32(int argc, char **argv)
-{
+static int cmd_turo_simple_dict_s32(int argc, char **argv) {
     int32_t s32 = 0;
     if (argc != 3) {
         turo_simple_exit_status(&ctx, -11);
@@ -215,8 +202,7 @@ static int cmd_turo_simple_dict_s32(int argc, char **argv)
     return 0;
 }
 
-static int cmd_turo_simple_exit_status(int argc, char **argv)
-{
+static int cmd_turo_simple_exit_status(int argc, char **argv) {
     int32_t s32 = 0;
     if (argc != 2) {
         turo_simple_exit_status(&ctx, -13);
@@ -232,8 +218,7 @@ static int cmd_turo_simple_exit_status(int argc, char **argv)
     return 0;
 }
 
-static int cmd_test_multi_element_dict(int argc, char **argv)
-{
+static int cmd_test_multi_element_dict(int argc, char **argv) {
     if (argc != 5) {
         turo_simple_exit_status(&ctx, -15);
         return 1;
@@ -251,8 +236,7 @@ static int cmd_test_multi_element_dict(int argc, char **argv)
     return 0;
 }
 
-static int cmd_test_netif(int argc, char **argv)
-{
+static int cmd_test_netif(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -276,8 +260,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     puts("Test for the test utilities result output");
     turo_init(&ctx);

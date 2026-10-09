@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup drivers_nrf24l01p_ng
- * @{
- *
- * @file
- * @brief   Implementation of the public NRF24L01+ (NG) device interface
- *
- * @author Fabian Hüßler <fabian.huessler@ovgu.de>
- * @}
- */
+/// @ingroup drivers_nrf24l01p_ng
+/// @{
+///
+/// @file
+/// @brief   Implementation of the public NRF24L01+ (NG) device interface
+///
+/// @author Fabian Hüßler <fabian.huessler@ovgu.de>
+/// @}
 
 #include <errno.h>
 #include <string.h>
@@ -35,8 +31,7 @@
 
 int nrf24l01p_ng_setup(nrf24l01p_ng_t *dev,
                        const nrf24l01p_ng_params_t *params,
-                       uint8_t index)
-{
+                       uint8_t index) {
     assert(dev);
     assert(params);
     memset((char *)dev + sizeof(netdev_t), 0x00,
@@ -50,8 +45,7 @@ int nrf24l01p_ng_setup(nrf24l01p_ng_t *dev,
 }
 
 int nrf24l01p_ng_set_enable_pipe(nrf24l01p_ng_t *dev, nrf24l01p_ng_pipe_t pipe,
-                                 bool enable)
-{
+                                 bool enable) {
     assert(dev);
     if (pipe >= NRF24L01P_NG_PX_NUM_OF) {
         return -EINVAL;
@@ -75,8 +69,7 @@ int nrf24l01p_ng_set_enable_pipe(nrf24l01p_ng_t *dev, nrf24l01p_ng_pipe_t pipe,
 }
 
 int nrf24l01p_ng_get_enable_pipe(nrf24l01p_ng_t *dev, nrf24l01p_ng_pipe_t pipe,
-                                 bool* enable)
-{
+                                 bool* enable) {
     assert(dev);
     if (pipe >= NRF24L01P_NG_PX_NUM_OF) {
         return -EINVAL;
@@ -90,8 +83,7 @@ int nrf24l01p_ng_get_enable_pipe(nrf24l01p_ng_t *dev, nrf24l01p_ng_pipe_t pipe,
 }
 
 int nrf24l01p_ng_set_air_data_rate(nrf24l01p_ng_t *dev,
-                                   nrf24l01p_ng_rfdr_t data_rate)
-{
+                                   nrf24l01p_ng_rfdr_t data_rate) {
     assert(dev);
     if (data_rate >= NRF24L01P_NG_RF_DR_NUM_OF) {
         return -EINVAL;
@@ -114,8 +106,7 @@ int nrf24l01p_ng_set_air_data_rate(nrf24l01p_ng_t *dev,
 }
 
 uint16_t nrf24l01p_ng_get_air_data_rate(const nrf24l01p_ng_t *dev,
-                                        nrf24l01p_ng_rfdr_t *data_rate)
-{
+                                        nrf24l01p_ng_rfdr_t *data_rate) {
     assert(dev);
     if (data_rate) {
         *data_rate = dev->params.config.cfg_data_rate;
@@ -123,8 +114,7 @@ uint16_t nrf24l01p_ng_get_air_data_rate(const nrf24l01p_ng_t *dev,
     return nrf24l01p_ng_etoval_rfdr(dev->params.config.cfg_data_rate);
 }
 
-int nrf24l01p_ng_set_crc(nrf24l01p_ng_t *dev, nrf24l01p_ng_crc_t crc)
-{
+int nrf24l01p_ng_set_crc(nrf24l01p_ng_t *dev, nrf24l01p_ng_crc_t crc) {
     assert(dev);
     if (crc > NRF24L01P_NG_CRC_2BYTE) {
         return -EINVAL;
@@ -150,8 +140,7 @@ int nrf24l01p_ng_set_crc(nrf24l01p_ng_t *dev, nrf24l01p_ng_crc_t crc)
 }
 
 uint8_t nrf24l01p_ng_get_crc(const nrf24l01p_ng_t *dev,
-                             nrf24l01p_ng_crc_t *crc)
-{
+                             nrf24l01p_ng_crc_t *crc) {
     assert(dev);
     if (crc) {
         *crc = dev->params.config.cfg_crc;
@@ -160,8 +149,7 @@ uint8_t nrf24l01p_ng_get_crc(const nrf24l01p_ng_t *dev,
 }
 
 int nrf24l01p_ng_set_tx_power(nrf24l01p_ng_t *dev,
-                              nrf24l01p_ng_tx_power_t power)
-{
+                              nrf24l01p_ng_tx_power_t power) {
     assert(dev);
     if (power >= NRF24L01P_NG_TX_POWER_NUM_OF) {
         return -EINVAL;
@@ -184,8 +172,7 @@ int nrf24l01p_ng_set_tx_power(nrf24l01p_ng_t *dev,
 }
 
 int8_t nrf24l01p_ng_get_tx_power(const nrf24l01p_ng_t *dev,
-                                 nrf24l01p_ng_tx_power_t *power)
-{
+                                 nrf24l01p_ng_tx_power_t *power) {
     assert(dev);
     if (power) {
         *power = dev->params.config.cfg_tx_power;
@@ -193,8 +180,7 @@ int8_t nrf24l01p_ng_get_tx_power(const nrf24l01p_ng_t *dev,
     return nrf24l01p_ng_etoval_tx_power(dev->params.config.cfg_tx_power);
 }
 
-int nrf24l01p_ng_set_channel(nrf24l01p_ng_t *dev, uint8_t channel)
-{
+int nrf24l01p_ng_set_channel(nrf24l01p_ng_t *dev, uint8_t channel) {
     assert(dev);
     if (channel >= NRF24L01P_NG_NUM_CHANNELS) {
         return -EINVAL;
@@ -216,15 +202,13 @@ int nrf24l01p_ng_set_channel(nrf24l01p_ng_t *dev, uint8_t channel)
     return 0;
 }
 
-uint8_t nrf24l01p_ng_get_channel(const nrf24l01p_ng_t *dev)
-{
+uint8_t nrf24l01p_ng_get_channel(const nrf24l01p_ng_t *dev) {
     assert(dev);
     return dev->params.config.cfg_channel;
 }
 
 int nrf24l01p_ng_set_rx_address(nrf24l01p_ng_t *dev, const uint8_t *addr,
-                                nrf24l01p_ng_pipe_t pipe)
-{
+                                nrf24l01p_ng_pipe_t pipe) {
     assert(dev);
     assert(addr);
     if (pipe >= NRF24L01P_NG_PX_NUM_OF) {
@@ -259,8 +243,7 @@ int nrf24l01p_ng_set_rx_address(nrf24l01p_ng_t *dev, const uint8_t *addr,
 }
 
 int nrf24l01p_ng_get_rx_address(const nrf24l01p_ng_t *dev, uint8_t *addr,
-                                nrf24l01p_ng_pipe_t pipe)
-{
+                                nrf24l01p_ng_pipe_t pipe) {
     assert(dev);
     assert(addr);
     if (pipe >= NRF24L01P_NG_PX_NUM_OF) {
@@ -279,8 +262,7 @@ int nrf24l01p_ng_get_rx_address(const nrf24l01p_ng_t *dev, uint8_t *addr,
     return NRF24L01P_NG_ADDR_WIDTH;
 }
 
-int nrf24l01p_ng_set_max_retransm(nrf24l01p_ng_t *dev, uint8_t max_rt)
-{
+int nrf24l01p_ng_set_max_retransm(nrf24l01p_ng_t *dev, uint8_t max_rt) {
     assert(dev);
     if (max_rt > NRF24L01P_NG_MAX_RETRANSMISSIONS) {
         return -EINVAL;
@@ -302,15 +284,13 @@ int nrf24l01p_ng_set_max_retransm(nrf24l01p_ng_t *dev, uint8_t max_rt)
     return 0;
 }
 
-uint8_t nrf24l01p_ng_get_max_retransm(const nrf24l01p_ng_t *dev)
-{
+uint8_t nrf24l01p_ng_get_max_retransm(const nrf24l01p_ng_t *dev) {
     assert(dev);
     return dev->params.config.cfg_max_retr;
 }
 
 int nrf24l01p_ng_set_retransm_delay(nrf24l01p_ng_t *dev,
-                                    nrf24l01p_ng_ard_t rt_delay)
-{
+                                    nrf24l01p_ng_ard_t rt_delay) {
     assert(dev);
     if (rt_delay >= NRF24L01P_NG_ARD_NUM_OF) {
         return -EINVAL;
@@ -333,8 +313,7 @@ int nrf24l01p_ng_set_retransm_delay(nrf24l01p_ng_t *dev,
 }
 
 uint16_t nrf24l01p_ng_get_retransm_delay(const nrf24l01p_ng_t *dev,
-                                         nrf24l01p_ng_ard_t *rt_delay)
-{
+                                         nrf24l01p_ng_ard_t *rt_delay) {
     assert(dev);
     if (rt_delay) {
         *rt_delay = dev->params.config.cfg_retr_delay;
@@ -342,8 +321,7 @@ uint16_t nrf24l01p_ng_get_retransm_delay(const nrf24l01p_ng_t *dev,
     return nrf24l01p_ng_etoval_ard(dev->params.config.cfg_retr_delay);
 }
 
-int nrf24l01p_ng_set_state(nrf24l01p_ng_t *dev, nrf24l01p_ng_state_t state)
-{
+int nrf24l01p_ng_set_state(nrf24l01p_ng_t *dev, nrf24l01p_ng_state_t state) {
     switch (dev->state) {
         case NRF24L01P_NG_STATE_POWER_DOWN:
         case NRF24L01P_NG_STATE_STANDBY_1:
@@ -380,22 +358,19 @@ int nrf24l01p_ng_set_state(nrf24l01p_ng_t *dev, nrf24l01p_ng_state_t state)
     return (int)old;
 }
 
-nrf24l01p_ng_state_t nrf24l01p_ng_get_state(const nrf24l01p_ng_t *dev)
-{
+nrf24l01p_ng_state_t nrf24l01p_ng_get_state(const nrf24l01p_ng_t *dev) {
     assert(dev);
     return dev->state;
 }
 
 #if IS_USED(MODULE_NRF24L01P_NG_DIAGNOSTICS)
-void nrf24l01p_ng_print_all_regs(nrf24l01p_ng_t *dev)
-{
+void nrf24l01p_ng_print_all_regs(nrf24l01p_ng_t *dev) {
     nrf24l01p_ng_acquire(dev);
     nrf24l01p_ng_diagnostics_print_all_regs(dev);
     nrf24l01p_ng_release(dev);
 }
 
-void nrf24l01p_ng_print_dev_info(const nrf24l01p_ng_t *dev)
-{
+void nrf24l01p_ng_print_dev_info(const nrf24l01p_ng_t *dev) {
     nrf24l01p_ng_diagnostics_print_dev_info(dev);
 }
 #endif

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_serpente
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped PWM channels
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- */
+/// @ingroup     boards_serpente
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped PWM channels
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -40,4 +36,4 @@ static const saul_pwm_rgb_params_t saul_pwm_rgb_params[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Martin Landsmann <martin.landsmann@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Martin Landsmann <martin.landsmann@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     unittests
- * @{
- *
- * @file
- * @brief       testcases for the sha256-chain implementation
- *
- * @author      Martin Landsmann <martin.landsmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     unittests
+/// @{
+///
+/// @file
+/// @brief       testcases for the sha256-chain implementation
+///
+/// @author      Martin Landsmann <martin.landsmann@haw-hamburg.de>
+///
+/// @}
 
 #include <limits.h>
 #include <string.h>
@@ -26,33 +22,32 @@
 
 #include "tests-hashes.h"
 
-static void test_sha256_hash_chain(void)
-{
+static void test_sha256_hash_chain(void) {
     static const char strSeed[] = "My cool secret seed, you'll never guess it ;) 12345";
     static unsigned char tail_hash_chain_element[SHA256_DIGEST_LENGTH];
 
-    /* we produce a sha256-chain of 257 elements */
+    // we produce a sha256-chain of 257 elements
     size_t elements = 257;
 
     memset(tail_hash_chain_element, 0, SHA256_DIGEST_LENGTH);
     TEST_ASSERT(sha256_chain((unsigned char*)strSeed, strlen(strSeed),
                              elements, tail_hash_chain_element) != NULL);
 
-    /* we check if the first element is part of the chain */
+    // we check if the first element is part of the chain
     unsigned char element_one[SHA256_DIGEST_LENGTH];
     sha256((unsigned char*)strSeed, strlen(strSeed), element_one);
     TEST_ASSERT(sha256_chain_verify_element(element_one, 0,
                                             tail_hash_chain_element, elements) == 0);
 
-    /* now we check if the test fails if the index is wrong */
+    // now we check if the test fails if the index is wrong
     TEST_ASSERT(sha256_chain_verify_element(element_one, 2,
                                             tail_hash_chain_element, elements) == 1);
 
-    /* now we check if other elements are also part of the chain */
+    // now we check if other elements are also part of the chain
     unsigned char tmp_element[SHA256_DIGEST_LENGTH];
     memcpy((void*)tmp_element, (void*)element_one, SHA256_DIGEST_LENGTH);
 
-    /* since we know the seed we build every element and test if its in the chain */
+    // since we know the seed we build every element and test if its in the chain
     for (size_t i = 1; i < elements; ++i) {
         sha256_context_t ctx;
         sha256_init(&ctx);
@@ -64,19 +59,18 @@ static void test_sha256_hash_chain(void)
     }
 }
 
-static void test_sha256_hash_chain_with_waypoints(void)
-{
+static void test_sha256_hash_chain_with_waypoints(void) {
     static const char strSeed[] = "My cool secret seed, you'll never guess it ;P 123456!";
     static unsigned char tail_hash_chain_element[SHA256_DIGEST_LENGTH];
 
-    /* we produce a sha256-chain of 257 elements */
+    // we produce a sha256-chain of 257 elements
     size_t elements = 257;
 
-    /* the first element of the hash chain */
+    // the first element of the hash chain
     unsigned char element_one[SHA256_DIGEST_LENGTH];
     sha256((unsigned char*)strSeed, strlen(strSeed), element_one);
 
-    /* now we check storing some waypoints, lets say 10 */
+    // now we check storing some waypoints, lets say 10
     size_t waypoints_length = 10;
     sha256_chain_idx_elm_t waypoints[waypoints_length];
     memset(tail_hash_chain_element, 0, SHA256_DIGEST_LENGTH);
@@ -88,11 +82,11 @@ static void test_sha256_hash_chain_with_waypoints(void)
                                 waypoints,
                                 &waypoints_length);
 
-    /* we test if the chain has been computed properly */
+    // we test if the chain has been computed properly
     TEST_ASSERT(sha256_chain_verify_element(element_one, 0,
                                             tail_hash_chain_element, elements) == 0);
 
-    /* and we check if our waypoints are properly stored */
+    // and we check if our waypoints are properly stored
     for (size_t i = 0; i < (waypoints_length + 1); ++i) {
         TEST_ASSERT(sha256_chain_verify_element(waypoints[i].element,
                                                 waypoints[i].index,
@@ -100,17 +94,15 @@ static void test_sha256_hash_chain_with_waypoints(void)
     }
 }
 
-static void test_sha256_hash_chain_store_whole(void)
-{
+static void test_sha256_hash_chain_store_whole(void) {
     static const char strSeed[] = "My cool secret seed, you'll never guess it ;P 123456!";
     static unsigned char tail_hash_chain_element[SHA256_DIGEST_LENGTH];
 
-    /* now we check storing the whole chain
-     * not a too large one though to remain inside the stack bounds
-     */
+    // now we check storing the whole chain
+    // not a too large one though to remain inside the stack bounds
     size_t elements = 17;
 
-    /* the first element of the hash chain */
+    // the first element of the hash chain
     unsigned char element_one[SHA256_DIGEST_LENGTH];
     sha256((unsigned char*)strSeed, strlen(strSeed), element_one);
 
@@ -126,11 +118,11 @@ static void test_sha256_hash_chain_store_whole(void)
                                 waypoints_whole_chain,
                                 &whole_chain_length);
 
-    /* we test again if the chain has been computed properly */
+    // we test again if the chain has been computed properly
     TEST_ASSERT(sha256_chain_verify_element(element_one, 0,
                                             tail_hash_chain_element, elements) == 0);
 
-    /* and we check if our complete chain has been properly stored */
+    // and we check if our complete chain has been properly stored
     TEST_ASSERT( (whole_chain_length + 1) == elements );
 
     for (size_t i = 0; i < (whole_chain_length + 1); ++i) {
@@ -140,8 +132,7 @@ static void test_sha256_hash_chain_store_whole(void)
     }
 }
 
-Test *tests_hashes_sha256_chain_tests(void)
-{
+Test *tests_hashes_sha256_chain_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_sha256_hash_chain),
         new_TestFixture(test_sha256_hash_chain_with_waypoints),

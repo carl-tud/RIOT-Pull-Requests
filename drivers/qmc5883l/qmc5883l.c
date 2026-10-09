@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_qmc5883l
- * @{
- *
- * @file
- * @brief       Implementation of the QMC5883L device driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_qmc5883l
+/// @{
+///
+/// @file
+/// @brief       Implementation of the QMC5883L device driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <limits.h>
 
@@ -22,12 +18,11 @@
 #include "qmc5883l.h"
 #include "qmc5883l_internal.h"
 
-/* shortcut to the i2c device address */
+// shortcut to the i2c device address
 #define ADDR        QMC5883L_ADDR
 
 static int _reg_read(const qmc5883l_t *dev, uint8_t reg,
-                     uint8_t *val, int acquire, int release)
-{
+                     uint8_t *val, int acquire, int release) {
     if (acquire) {
         i2c_acquire(dev->i2c);
     }
@@ -39,8 +34,7 @@ static int _reg_read(const qmc5883l_t *dev, uint8_t reg,
 }
 
 static int _reg_write(const qmc5883l_t *dev, uint8_t reg,
-                      uint8_t val, int acquire, int release)
-{
+                      uint8_t val, int acquire, int release) {
     if (acquire) {
         i2c_acquire(dev->i2c);
     }
@@ -51,8 +45,7 @@ static int _reg_write(const qmc5883l_t *dev, uint8_t reg,
     return (res == 0) ? QMC5883L_OK : QMC5883L_BUSERR;
 }
 
-int qmc5883l_init(qmc5883l_t *dev, const qmc5883l_params_t *params)
-{
+int qmc5883l_init(qmc5883l_t *dev, const qmc5883l_params_t *params) {
     assert(dev);
     assert(params);
     int res;
@@ -61,13 +54,13 @@ int qmc5883l_init(qmc5883l_t *dev, const qmc5883l_params_t *params)
     dev->pin_drdy = params->pin_drdy;
     dev->cfg = (params->odr | params->rng | params->osr | QMC5883L_CONT);
 
-    /* lets start with a soft reset */
+    // lets start with a soft reset
     res = _reg_write(dev, QMC5883L_CTRL2, QMC5883L_SOFT_RST, 1, 0);
     if (res != QMC5883L_OK) {
         return res;
     }
 
-    /* verify the reset by reading the status register, should be all zeros */
+    // verify the reset by reading the status register, should be all zeros
     uint8_t tmp;
     if (i2c_read_reg(dev->i2c, ADDR, QMC5883L_STATUS, &tmp, 0) != 0) {
         i2c_release(dev->i2c);
@@ -78,7 +71,7 @@ int qmc5883l_init(qmc5883l_t *dev, const qmc5883l_params_t *params)
         return QMC5883L_NOCFG;
     }
 
-    /* write the actual device configuration */
+    // write the actual device configuration
     res = _reg_write(dev, QMC5883L_SETRESET, 0x01, 0, 0);
     if (res != QMC5883L_OK) {
         return res;
@@ -90,8 +83,7 @@ int qmc5883l_init(qmc5883l_t *dev, const qmc5883l_params_t *params)
     return _reg_write(dev, QMC5883L_CTRL1, (dev->cfg | QMC5883L_CONT), 0, 1);
 }
 
-int qmc5883l_data_ready(const qmc5883l_t *dev)
-{
+int qmc5883l_data_ready(const qmc5883l_t *dev) {
     assert(dev);
     uint8_t status;
 
@@ -102,8 +94,7 @@ int qmc5883l_data_ready(const qmc5883l_t *dev)
     return (status & QMC5883L_DRDY) ? QMC5883L_OK : QMC5883L_NODATA;
 }
 
-int qmc5883l_read(const qmc5883l_t *dev, int16_t *data_out)
-{
+int qmc5883l_read(const qmc5883l_t *dev, int16_t *data_out) {
     assert(data_out);
     int16_t tmp[3];
 
@@ -118,8 +109,7 @@ int qmc5883l_read(const qmc5883l_t *dev, int16_t *data_out)
     return res;
 }
 
-int qmc5883l_read_raw(const qmc5883l_t *dev, int16_t *data_out)
-{
+int qmc5883l_read_raw(const qmc5883l_t *dev, int16_t *data_out) {
     assert(dev);
     assert(data_out);
 
@@ -143,7 +133,7 @@ int qmc5883l_read_raw(const qmc5883l_t *dev, int16_t *data_out)
         goto done;
     }
 
-    /* convert data to host byte order */
+    // convert data to host byte order
     data_out[0] = (int16_t)tmp[1] << 8 | tmp[0];
     data_out[1] = (int16_t)tmp[3] << 8 | tmp[2];
     data_out[2] = (int16_t)tmp[5] << 8 | tmp[4];
@@ -153,21 +143,18 @@ done:
     return res;
 }
 
-int qmc5883l_poweron(const qmc5883l_t *dev)
-{
+int qmc5883l_poweron(const qmc5883l_t *dev) {
     assert(dev);
     return _reg_write(dev, QMC5883L_CTRL1, dev->cfg, 1, 1);
 }
 
-int qmc5883l_poweroff(const qmc5883l_t *dev)
-{
+int qmc5883l_poweroff(const qmc5883l_t *dev) {
     assert(dev);
     return _reg_write(dev, QMC5883L_CTRL1, 0, 1, 1);
 }
 
 #ifdef MODULE_QMC5883L_INT
-int qmc5883l_init_int(const qmc5883l_t *dev, gpio_cb_t cb, void *arg)
-{
+int qmc5883l_init_int(const qmc5883l_t *dev, gpio_cb_t cb, void *arg) {
     assert(dev);
     assert(cb);
 
@@ -180,17 +167,15 @@ int qmc5883l_init_int(const qmc5883l_t *dev, gpio_cb_t cb, void *arg)
     return _reg_write(dev, QMC5883L_CTRL2, 0, 1, 1);
 }
 
-int qmc5883l_irq_enable(const qmc5883l_t *dev)
-{
+int qmc5883l_irq_enable(const qmc5883l_t *dev) {
     assert(dev);
     gpio_irq_enable(dev->pin_drdy);
     return _reg_write(dev, QMC5883L_CTRL2, 0, 1, 1);
 }
 
-int qmc5883l_irq_disable(const qmc5883l_t *dev)
-{
+int qmc5883l_irq_disable(const qmc5883l_t *dev) {
     assert(dev);
     gpio_irq_disable(dev->pin_drdy);
     return _reg_write(dev, QMC5883L_CTRL2, QMC5883L_INT_ENB, 1, 1);
 }
-#endif /* MODULE_QMC5883L_INT */
+#endif // MODULE_QMC5883L_INT

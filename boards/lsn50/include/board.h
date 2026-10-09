@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_lsn50
- * @{
- *
- * @file
- * @brief       Board specific definitions for the LSN50 board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_lsn50
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the LSN50 board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include <stdint.h>
 
@@ -23,17 +19,13 @@
 extern "C" {
 #endif
 
-/**
- * @name    xtimer configuration
- * @{
- */
+/// @name    xtimer configuration
+/// @{
 #define XTIMER_WIDTH        (16)
-/** @} */
+/// @}
 
-/**
- * @name    sx1276 configuration
- * @{
- */
+/// @name    sx1276 configuration
+/// @{
 #define SX127X_PARAM_SPI                    SPI_DEV(0)
 #define SX127X_PARAM_SPI_NSS                GPIO_PIN(PORT_A, 15)
 
@@ -45,10 +37,10 @@ extern "C" {
 #define SX127X_PARAM_DIO4                   GPIO_PIN(PORT_B, 9)
 #define SX127X_PARAM_DIO5                   GPIO_PIN(PORT_B, 1)
 #define SX127X_PARAM_PASELECT               (SX127X_PA_BOOST)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

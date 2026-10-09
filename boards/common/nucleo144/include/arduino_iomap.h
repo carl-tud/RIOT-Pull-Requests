@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_nucleo144
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Arduino pins
- *
- * You can use the defines in this file for simplified interaction with the
- * Arduino specific pin numbers.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_common_nucleo144
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Arduino pins
+///
+/// You can use the defines in this file for simplified interaction with the
+/// Arduino specific pin numbers.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "periph/gpio.h"
 #include "periph/adc.h"
@@ -25,42 +21,30 @@
 extern "C" {
 #endif
 
-/**
- * @name    Arduino's UART devices
- * @{
- */
+/// @name    Arduino's UART devices
+/// @{
 #define ARDUINO_UART_D0D1       UART_DEV(1)
-/** @} */
+/// @}
 
-/**
- * @name    Arduino's SPI buses
- * @{
- */
+/// @name    Arduino's SPI buses
+/// @{
 #if !defined(ARDUINO_SPI_D11D12D13) && defined(SPI_NUMOF)
-/**
- * @brief   SPI_DEV(0) is connected to D11/D12/D13 for most Nucleo-144 boards
- *
- * This can be overwritten in `boards/nucleo-<foobar>/include/periph_conf.h` by
- * providing a custom `ARDUINO_SPI_D11D12D13`.
- */
+/// @brief   SPI_DEV(0) is connected to D11/D12/D13 for most Nucleo-144 boards
+///
+/// This can be overwritten in `boards/nucleo-<foobar>/include/periph_conf.h` by
+/// providing a custom `ARDUINO_SPI_D11D12D13`.
 #  define ARDUINO_SPI_D11D12D13 SPI_DEV(0)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    Arduino's I2C buses
- * @{
- */
-/**
- * @brief   The first I2C bus is where shields for the Arduino UNO expect it
- */
+/// @name    Arduino's I2C buses
+/// @{
+/// @brief   The first I2C bus is where shields for the Arduino UNO expect it
 #define ARDUINO_I2C_UNO         I2C_DEV(0)
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of MCU pins to Arduino pins
- * @{
- */
+/// @name    Mapping of MCU pins to Arduino pins
+/// @{
 #if defined(CPU_MODEL_STM32F303ZE)
 #  define ARDUINO_PIN_0         GPIO_PIN(PORT_C, 5)
 #  define ARDUINO_PIN_1         GPIO_PIN(PORT_C, 4)
@@ -119,24 +103,20 @@ extern "C" {
 #endif
 
 #define ARDUINO_PIN_LAST        21
-/** @} */
+/// @}
 
-/**
- * @name    Aliases for analog pins
- * @{
- */
+/// @name    Aliases for analog pins
+/// @{
 #define ARDUINO_PIN_A0          ARDUINO_PIN_16
 #define ARDUINO_PIN_A1          ARDUINO_PIN_17
 #define ARDUINO_PIN_A2          ARDUINO_PIN_18
 #define ARDUINO_PIN_A3          ARDUINO_PIN_19
 #define ARDUINO_PIN_A4          ARDUINO_PIN_20
 #define ARDUINO_PIN_A5          ARDUINO_PIN_21
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino analog pins to RIOT ADC lines
- * @{
- */
+/// @name    Mapping of Arduino analog pins to RIOT ADC lines
+/// @{
 #define ARDUINO_A0              ADC_LINE(0)
 #define ARDUINO_A1              ADC_LINE(1)
 #define ARDUINO_A2              ADC_LINE(2)
@@ -145,10 +125,10 @@ extern "C" {
 #define ARDUINO_A5              ADC_LINE(5)
 
 #define ARDUINO_ANALOG_PIN_LAST 5
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

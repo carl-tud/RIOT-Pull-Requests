@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2023 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf5x_common
- * @{
- *
- * @file
- * @brief       Shared IRQ handling between UART, SPI and TWI peripherals
- *              on the nRF53/9160 devices
- *
- *              I2C is called TWI (Two Wire Interface) in Nordic's documentation
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup     cpu_nrf5x_common
+/// @{
+///
+/// @file
+/// @brief       Shared IRQ handling between UART, SPI and TWI peripherals
+///              on the nRF53/9160 devices
+///
+///              I2C is called TWI (Two Wire Interface) in Nordic's documentation
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include <assert.h>
 
@@ -30,9 +26,8 @@ static void *_irq_arg[SPIM_COUNT];
 
 static mutex_t _locks[SPIM_COUNT];
 
-/* UART, I2C and SPI share peripheral addresses */
-static size_t _spi_dev2num(void *dev)
-{
+// UART, I2C and SPI share peripheral addresses
+static size_t _spi_dev2num(void *dev) {
     if (dev == NRF_SPIM0_S) {
         return 0;
     }
@@ -56,8 +51,7 @@ static size_t _spi_dev2num(void *dev)
     }
 }
 
-static inline size_t _i2c_dev2num(void *dev)
-{
+static inline size_t _i2c_dev2num(void *dev) {
     if (dev == NRF_SPIM0_S) {
         return 0;
     }
@@ -76,9 +70,8 @@ static inline size_t _i2c_dev2num(void *dev)
     }
 }
 
-static inline size_t _uart_dev2num(void *dev)
-{
-    /* I2C and UART have the same amount of instances */
+static inline size_t _uart_dev2num(void *dev) {
+    // I2C and UART have the same amount of instances
     return _i2c_dev2num(dev);
 }
 
@@ -111,8 +104,7 @@ UARTE3_SPIM3_SPIS3_TWIM3_TWIS3_IRQn
 #endif
 
 void shared_irq_register_spi(NRF_SPIM_Type *bus,
-                              shared_irq_cb_t cb, void *arg)
-{
+                              shared_irq_cb_t cb, void *arg) {
     size_t num = _spi_dev2num(bus);
 
     _irq[num] = cb;
@@ -121,8 +113,7 @@ void shared_irq_register_spi(NRF_SPIM_Type *bus,
 }
 
 void shared_irq_register_i2c(NRF_TWIM_Type *bus,
-                              shared_irq_cb_t cb, void *arg)
-{
+                              shared_irq_cb_t cb, void *arg) {
     size_t num = _i2c_dev2num(bus);
 
     _irq[num] = cb;
@@ -132,8 +123,7 @@ void shared_irq_register_i2c(NRF_TWIM_Type *bus,
 }
 
 void shared_irq_register_uart(NRF_UARTE_Type *bus,
-                              shared_irq_cb_t cb, void *arg)
-{
+                              shared_irq_cb_t cb, void *arg) {
     size_t num = _uart_dev2num(bus);
 
     _irq[num] = cb;
@@ -143,8 +133,7 @@ void shared_irq_register_uart(NRF_UARTE_Type *bus,
 }
 
 void nrf5x_i2c_acquire(NRF_TWIM_Type *bus,
-                       shared_irq_cb_t cb, void *arg)
-{
+                       shared_irq_cb_t cb, void *arg) {
     size_t num = _i2c_dev2num(bus);
     mutex_lock(&_locks[num]);
     _irq[num] = cb;
@@ -152,54 +141,46 @@ void nrf5x_i2c_acquire(NRF_TWIM_Type *bus,
 }
 
 void nrf5x_spi_acquire(NRF_SPIM_Type *bus,
-                       shared_irq_cb_t cb, void *arg)
-{
+                       shared_irq_cb_t cb, void *arg) {
     size_t num = _spi_dev2num(bus);
     mutex_lock(&_locks[num]);
     _irq[num] = cb;
     _irq_arg[num] = arg;
 }
 
-void nrf5x_i2c_release(NRF_TWIM_Type *bus)
-{
+void nrf5x_i2c_release(NRF_TWIM_Type *bus) {
     size_t num = _i2c_dev2num(bus);
     mutex_unlock(&_locks[num]);
 }
 
-void nrf5x_spi_release(NRF_SPIM_Type *bus)
-{
+void nrf5x_spi_release(NRF_SPIM_Type *bus) {
     size_t num = _spi_dev2num(bus);
     mutex_unlock(&_locks[num]);
 }
 
-/* ISR Routines */
-void SERIAL0_ISR(void)
-{
+// ISR Routines
+void SERIAL0_ISR(void) {
     _irq[0](_irq_arg[0]);
     cortexm_isr_end();
 }
 
-void SERIAL1_ISR(void)
-{
+void SERIAL1_ISR(void) {
     _irq[1](_irq_arg[1]);
     cortexm_isr_end();
 }
 
-void SERIAL2_ISR(void)
-{
+void SERIAL2_ISR(void) {
     _irq[2](_irq_arg[2]);
     cortexm_isr_end();
 }
 
-void SERIAL3_ISR(void)
-{
+void SERIAL3_ISR(void) {
     _irq[3](_irq_arg[3]);
     cortexm_isr_end();
 }
 
 #ifdef SERIAL4_ISR
-void serial4_isr(void)
-{
+void serial4_isr(void) {
     _irq[4](_irq_arg[4]);
     cortexm_isr_end();
 }

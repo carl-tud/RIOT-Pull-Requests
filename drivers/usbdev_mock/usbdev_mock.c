@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2019 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author      Koen Zandberg <koen@bergzand.net>
- */
+/// @{
+///
+/// @file
+/// @author      Koen Zandberg <koen@bergzand.net>
 
 #include <errno.h>
 #include <stdio.h>
@@ -23,29 +19,26 @@
 #include "debug.h"
 
 static usbdev_mock_t _usbdev_mock;
-static uint8_t _in_buf[256];    /* "host" in */
-static uint8_t _out_buf[64];    /* "host" out */
+static uint8_t _in_buf[256];    // "host" in
+static uint8_t _out_buf[64];    // "host" out
 
 static const usbdev_driver_t testdriver;
 
-static usbdev_mock_t *_ep2dev(usbdev_ep_t *ep)
-{
+static usbdev_mock_t *_ep2dev(usbdev_ep_t *ep) {
     return (usbdev_mock_t *)ep->dev;
 }
 
 void usbdev_init_lowlevel(void)
 {}
 
-usbdev_t *usbdev_get_ctx(unsigned num)
-{
+usbdev_t *usbdev_get_ctx(unsigned num) {
     (void)num;
     return &_usbdev_mock.usbdev;
 }
 
 void usbdev_mock_setup(usbdev_mock_esr_cb_t esr_cb,
                        usbdev_mock_ep_esr_cb_t ep_esr_cb,
-                       usbdev_mock_ready_cb_t ready_cb)
-{
+                       usbdev_mock_ready_cb_t ready_cb) {
     memset(&_usbdev_mock, 0, sizeof(_usbdev_mock));
     _usbdev_mock.usbdev.driver = &testdriver;
 
@@ -54,17 +47,15 @@ void usbdev_mock_setup(usbdev_mock_esr_cb_t esr_cb,
     _usbdev_mock.ready_cb = ready_cb;
 }
 
-static void _init(usbdev_t *usbdev)
-{
+static void _init(usbdev_t *usbdev) {
     usbdev_mock_t *dev = (usbdev_mock_t *)usbdev;
 
-    /* Throw first event to start the test sequence */
+    // Throw first event to start the test sequence
     dev->usbdev.cb(usbdev, USBDEV_EVENT_ESR);
 }
 
 usbdev_ep_t *_new_ep(usbdev_t *dev, usb_ep_type_t type, usb_ep_dir_t dir,
-                     size_t buf_len)
-{
+                     size_t buf_len) {
     usbdev_mock_t *testdev = (usbdev_mock_t *)dev;
     usbdev_mock_ep_t *res = NULL;
 
@@ -94,8 +85,7 @@ usbdev_ep_t *_new_ep(usbdev_t *dev, usb_ep_type_t type, usb_ep_dir_t dir,
 }
 
 int _get(usbdev_t *usbdev, usbopt_t opt,
-         void *value, size_t max_len)
-{
+         void *value, size_t max_len) {
     (void)usbdev;
     (void)opt;
     (void)value;
@@ -105,8 +95,7 @@ int _get(usbdev_t *usbdev, usbopt_t opt,
 }
 
 int _set(usbdev_t *usbdev, usbopt_t opt,
-         const void *value, size_t value_len)
-{
+         const void *value, size_t value_len) {
     usbdev_mock_t *testdev = (usbdev_mock_t *)usbdev;
 
     (void)value_len;
@@ -128,21 +117,18 @@ int _set(usbdev_t *usbdev, usbopt_t opt,
     return res;
 }
 
-static void _esr(usbdev_t *dev)
-{
+static void _esr(usbdev_t *dev) {
     usbdev_mock_t *usbdev_mock = (usbdev_mock_t *)dev;
 
     usbdev_mock->esr_cb(usbdev_mock);
 }
 
-void _ep_init(usbdev_ep_t *ep)
-{
+void _ep_init(usbdev_ep_t *ep) {
     (void)ep;
 }
 
 int _ep_get(usbdev_ep_t *ep, usbopt_ep_t opt,
-            void *value, size_t max_len)
-{
+            void *value, size_t max_len) {
     usbdev_mock_ep_t *testep = (usbdev_mock_ep_t *)ep;
 
     (void)max_len;
@@ -158,8 +144,7 @@ int _ep_get(usbdev_ep_t *ep, usbopt_ep_t opt,
 }
 
 int _ep_set(usbdev_ep_t *ep, usbopt_ep_t opt,
-            const void *value, size_t value_len)
-{
+            const void *value, size_t value_len) {
     (void)ep;
     (void)value;
     (void)value_len;
@@ -179,8 +164,7 @@ int _ep_set(usbdev_ep_t *ep, usbopt_ep_t opt,
     return res;
 }
 
-void _ep_esr(usbdev_ep_t *ep)
-{
+void _ep_esr(usbdev_ep_t *ep) {
     usbdev_mock_t *dev = _ep2dev(ep);
 
     DEBUG("[mock]: ESR EP %u, dir %s\n",
@@ -196,8 +180,7 @@ void _ep_esr(usbdev_ep_t *ep)
     }
 }
 
-int _xmit(usbdev_ep_t *ep, uint8_t *buf, size_t len)
-{
+int _xmit(usbdev_ep_t *ep, uint8_t *buf, size_t len) {
     DEBUG("[mock]: Readying EP %u, dir %s, len %" PRIuSIZE "\n",
           ep->num, ep->dir == USB_EP_DIR_OUT ? "out" : "in", len);
     if (ep->num == 0) {

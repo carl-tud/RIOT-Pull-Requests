@@ -1,27 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2023 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the PSA Cryptography API
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the PSA Cryptography API
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "embUnit.h"
 #include "compiler_hints.h"
 #include "psa/crypto.h"
 
-void addFailurePSA(const char *func, psa_status_t errcode, long line, const char *file)
-{
+void addFailurePSA(const char *func, psa_status_t errcode, long line, const char *file) {
     static char msg[128];
     strncpy(msg, func, sizeof(msg));
     strcat(msg, ": ");
@@ -35,11 +30,8 @@ void addFailurePSA(const char *func, psa_status_t errcode, long line, const char
 #define TEST_ASSERT_PSA_RETURN(func_) TEST_ASSERT_PSA(func_, return)
 #define TEST_ASSERT_PSA_CONTINUE(func_) TEST_ASSERT_PSA(func_, )
 
-/*
- * A second call to psa_crypto_init() should not reset key data.
- */
-static void test_init_twice(void)
-{
+// A second call to psa_crypto_init() should not reset key data.
+static void test_init_twice(void) {
     const psa_key_type_t key_type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_TWISTED_EDWARDS);
     const size_t key_bits = 255;
     const psa_algorithm_t key_alg = PSA_ALG_PURE_EDDSA;
@@ -65,11 +57,8 @@ cleanup:
     TEST_ASSERT_PSA_CONTINUE(psa_destroy_key(key_id));
 }
 
-/*
- * Several interleaved hash operations shouldn't collide.
- */
-static void test_hash_interleaved(void)
-{
+// Several interleaved hash operations shouldn't collide.
+static void test_hash_interleaved(void) {
     const psa_algorithm_t alg = PSA_ALG_SHA_256;
 
     NONSTRING
@@ -112,13 +101,10 @@ cleanup:
     TEST_ASSERT_PSA_CONTINUE(psa_hash_abort(&op2));
 }
 
-/**
- * Importing keys with the usage flags PSA_KEY_USAGE_SIGN_HASH/PSA_KEY_USAGE_VERIFY_HASH
- * should automatically set the usage flags PSA_KEY_USAGE_SIGN_MESSAGE/PSA_KEY_USAGE_VERIFY_MESSAGE
- * on the key.
- */
-static void test_key_import_usage_flags(void)
-{
+/// Importing keys with the usage flags PSA_KEY_USAGE_SIGN_HASH/PSA_KEY_USAGE_VERIFY_HASH
+/// should automatically set the usage flags PSA_KEY_USAGE_SIGN_MESSAGE/PSA_KEY_USAGE_VERIFY_MESSAGE
+/// on the key.
+static void test_key_import_usage_flags(void) {
     psa_key_attributes_t attributes = psa_key_attributes_init();
     psa_key_attributes_t key_attrs;
     const uint8_t key[32] = { 0 };
@@ -147,13 +133,10 @@ cleanup:
     TEST_ASSERT_PSA_CONTINUE(psa_destroy_key(key_id));
 }
 
-/**
- * Generating keys with the usage flags PSA_KEY_USAGE_SIGN_HASH/PSA_KEY_USAGE_VERIFY_HASH
- * should automatically set the usage flags PSA_KEY_USAGE_SIGN_MESSAGE/PSA_KEY_USAGE_VERIFY_MESSAGE
- * on the key.
- */
-static void test_key_generate_usage_flags(void)
-{
+/// Generating keys with the usage flags PSA_KEY_USAGE_SIGN_HASH/PSA_KEY_USAGE_VERIFY_HASH
+/// should automatically set the usage flags PSA_KEY_USAGE_SIGN_MESSAGE/PSA_KEY_USAGE_VERIFY_MESSAGE
+/// on the key.
+static void test_key_generate_usage_flags(void) {
     psa_key_attributes_t attributes = psa_key_attributes_init();
     psa_key_attributes_t key_attrs;
     psa_key_usage_t key_usage;
@@ -181,11 +164,8 @@ cleanup:
     TEST_ASSERT_PSA_CONTINUE(psa_destroy_key(key_id));
 }
 
-/**
- * Exporting and re-importing a private Ed25519 key should result in the same public key and signature.
- */
-static void test_exported_key_is_identical_when_imported_again_ed25519(void)
-{
+/// Exporting and re-importing a private Ed25519 key should result in the same public key and signature.
+static void test_exported_key_is_identical_when_imported_again_ed25519(void) {
     const psa_key_type_t key_type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_TWISTED_EDWARDS);
     const size_t key_bits = 255;
     const psa_algorithm_t key_alg = PSA_ALG_PURE_EDDSA;
@@ -241,11 +221,8 @@ cleanup:
     TEST_ASSERT_PSA_CONTINUE(psa_destroy_key(key_id));
 }
 
-/**
- * psa_export_key() is an alias for psa_export_public_key() if the given key is a public key
- */
-static void test_export_public_key_ed25519(void)
-{
+/// psa_export_key() is an alias for psa_export_public_key() if the given key is a public key
+static void test_export_public_key_ed25519(void) {
     const psa_key_type_t key_type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_TWISTED_EDWARDS);
     const psa_key_type_t key_type2 = PSA_KEY_TYPE_ECC_PUBLIC_KEY(PSA_ECC_FAMILY_TWISTED_EDWARDS);
     const size_t key_bits = 255;
@@ -292,8 +269,7 @@ cleanup:
     TEST_ASSERT_PSA_CONTINUE(psa_destroy_key(key_id2));
 }
 
-static Test *tests_psa_crypto(void)
-{
+static Test *tests_psa_crypto(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_init_twice),
         new_TestFixture(test_hash_interleaved),
@@ -307,8 +283,7 @@ static Test *tests_psa_crypto(void)
     return (Test *)&tests;
 }
 
-int main(void)
-{
+int main(void) {
     puts("psa_crypto test");
     TESTS_START();
     TESTS_RUN(tests_psa_crypto());

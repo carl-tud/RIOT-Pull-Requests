@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Puhang Ding
- * SPDX-FileCopyrightText: 2020 Jan Schlichter
- * SPDX-FileCopyrightText: 2020 Nishchay Agrawal
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Puhang Ding
+// SPDX-FileCopyrightText: 2020 Jan Schlichter
+// SPDX-FileCopyrightText: 2020 Nishchay Agrawal
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_scd30
- * @{
- * @file
- * @brief       Sensirion SCD30 sensor driver implementation
- *
- * @author      Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
- * @author      Puhang Ding      <czarsir@gmail.com>
- * @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
- * @}
- */
+/// @ingroup     drivers_scd30
+/// @{
+/// @file
+/// @brief       Sensirion SCD30 sensor driver implementation
+///
+/// @author      Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
+/// @author      Puhang Ding      <czarsir@gmail.com>
+/// @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
+/// @}
 
 #include <string.h>
 #include "periph/i2c.h"
@@ -39,15 +35,14 @@ static bool _is_valid_press_comp(uint16_t *apc);
 static inline float _reinterpret_float(uint32_t raw_val);
 static float _raw_val_to_float(const uint8_t *buffer);
 
-int8_t scd30_init(scd30_t *dev, const scd30_params_t *params)
-{
+int8_t scd30_init(scd30_t *dev, const scd30_params_t *params) {
     DEBUG("[scd30] init\n");
     int ret = 0;
     uint16_t version;
 
     dev->params = *params;
 
-    /* Soft reset sensor */
+    // Soft reset sensor
     ret = scd30_reset(dev);
     if (ret < 0) {
         DEBUG("[scd30] Failed to reset sensor in init\n");
@@ -66,8 +61,7 @@ int8_t scd30_init(scd30_t *dev, const scd30_params_t *params)
     return SCD30_OK;
 }
 
-int8_t scd30_set_param(const scd30_t *dev, uint16_t param, uint16_t val)
-{
+int8_t scd30_set_param(const scd30_t *dev, uint16_t param, uint16_t val) {
     uint8_t buffer[5];
     int ret = 0;
 
@@ -88,8 +82,7 @@ int8_t scd30_set_param(const scd30_t *dev, uint16_t param, uint16_t val)
     }
 }
 
-int8_t scd30_get_param(scd30_t *dev, uint16_t param, uint16_t *val)
-{
+int8_t scd30_get_param(scd30_t *dev, uint16_t param, uint16_t *val) {
     uint8_t buffer[3];
     int ret = 0;
 
@@ -120,8 +113,7 @@ int8_t scd30_get_param(scd30_t *dev, uint16_t param, uint16_t *val)
     return SCD30_OK;
 }
 
-int8_t scd30_read_triggered(scd30_t *dev, scd30_measurement_t *result)
-{
+int8_t scd30_read_triggered(scd30_t *dev, scd30_measurement_t *result) {
     uint16_t state = 0;
     uint16_t curr_interval;
     uint32_t initial_time;
@@ -139,9 +131,8 @@ int8_t scd30_read_triggered(scd30_t *dev, scd30_measurement_t *result)
         }
     }
 
-    /* Doing this to reduce the traffic on the I2C bus as
-     * compared when constantly polling the device for status
-     */
+    // Doing this to reduce the traffic on the I2C bus as
+    // compared when constantly polling the device for status
     xtimer_sleep(SCD30_MIN_INTERVAL);
 
     initial_time = xtimer_now_usec();
@@ -173,8 +164,7 @@ int8_t scd30_read_triggered(scd30_t *dev, scd30_measurement_t *result)
     return SCD30_OK;
 }
 
-uint8_t scd30_read_periodic(scd30_t *dev, scd30_measurement_t *result)
-{
+uint8_t scd30_read_periodic(scd30_t *dev, scd30_measurement_t *result) {
     uint16_t state = 0;
     uint32_t initial_time;
     int ret = 0;
@@ -202,11 +192,10 @@ uint8_t scd30_read_periodic(scd30_t *dev, scd30_measurement_t *result)
 }
 
 int scd30_start_periodic_measurement(scd30_t *dev, uint16_t *interval,
-                                     uint16_t *apc)
-{
+                                     uint16_t *apc) {
     int ret = 0;
 
-    /* Check if input is valid */
+    // Check if input is valid
     if (!_is_valid_interval(interval)) {
         DEBUG("[scd30] Interval value out of range\n");
         return SCD30_INVALID_VALUE;
@@ -227,8 +216,7 @@ int scd30_start_periodic_measurement(scd30_t *dev, uint16_t *interval,
     return SCD30_OK;
 }
 
-int8_t scd30_stop_measurements(const scd30_t *dev)
-{
+int8_t scd30_stop_measurements(const scd30_t *dev) {
     const uint16_t cmd = htons(SCD30_STOP);
     int ret;
 
@@ -241,8 +229,7 @@ int8_t scd30_stop_measurements(const scd30_t *dev)
     return SCD30_OK;
 }
 
-int8_t scd30_reset(scd30_t *dev)
-{
+int8_t scd30_reset(scd30_t *dev) {
     const uint16_t cmd = htons(SCD30_SOFT_RESET);
     int ret;
 
@@ -258,15 +245,12 @@ int8_t scd30_reset(scd30_t *dev)
     return SCD30_OK;
 }
 
-/**
- *      intern function to read data
- *
- *      @param  dev      device
- *      @param  result   struct in which data read is stored
- *      @return          SCD30_OK on success
- */
-static int8_t _scd30_read_data(scd30_t *dev, scd30_measurement_t *result)
-{
+///      intern function to read data
+///
+///      @param  dev      device
+///      @param  result   struct in which data read is stored
+///      @return          SCD30_OK on success
+static int8_t _scd30_read_data(scd30_t *dev, scd30_measurement_t *result) {
     uint8_t buffer[18];
     int ret = 0;
     const uint16_t cmd = htons(SCD30_DATA);
@@ -311,41 +295,32 @@ static int8_t _scd30_read_data(scd30_t *dev, scd30_measurement_t *result)
     return SCD30_OK;
 }
 
-/**
- *      check if crc is valid (Assuming crc value to compare with is stored at
- *      end of buffer)
- *
- *      @param  buff  buffer of which crc value has to be checked
- *      @param  len   length of buffer
- *      @return       true on success
- */
-static bool _scd30_crc_check(uint8_t *buff, uint8_t len)
-{
+///      check if crc is valid (Assuming crc value to compare with is stored at
+///      end of buffer)
+///
+///      @param  buff  buffer of which crc value has to be checked
+///      @param  len   length of buffer
+///      @return       true on success
+static bool _scd30_crc_check(uint8_t *buff, uint8_t len) {
     return crc8(buff, len, SCD30_CRC_FUNC, SCD30_CRC_START_VAL) == buff[len];
 }
 
-/**
- *      check if interval is within bounds
- *
- *      @param  interval   Pointer to interval to check
- *      @return            true if interval within bounds
- */
-static bool _is_valid_interval(uint16_t *interval)
-{
+///      check if interval is within bounds
+///
+///      @param  interval   Pointer to interval to check
+///      @return            true if interval within bounds
+static bool _is_valid_interval(uint16_t *interval) {
     if (*interval < SCD30_MIN_INTERVAL || *interval > SCD30_MAX_INTERVAL) {
         return false;
     }
     return true;
 }
 
-/**
- *      check if pressure compensation is within allowed values
- *
- *      @param  apc        Pointer to Pressure compensation to check
- *      @return            true if value within bounds
- */
-static bool _is_valid_press_comp(uint16_t *apc)
-{
+///      check if pressure compensation is within allowed values
+///
+///      @param  apc        Pointer to Pressure compensation to check
+///      @return            true if value within bounds
+static bool _is_valid_press_comp(uint16_t *apc) {
     if ((*apc < SCD30_MIN_PRESSURE_COMP || *apc > SCD30_MAX_PRESSURE_COMP) &&
         *apc != 0) {
         return false;
@@ -353,14 +328,11 @@ static bool _is_valid_press_comp(uint16_t *apc)
     return true;
 }
 
-/**
- *      convert IEEE754 stored in uint32_t to actual float value
- *
- *      @param  raw_val   Value to convert
- *      @return           Converted value
- */
-static inline float _reinterpret_float(uint32_t raw_val)
-{
+///      convert IEEE754 stored in uint32_t to actual float value
+///
+///      @param  raw_val   Value to convert
+///      @return           Converted value
+static inline float _reinterpret_float(uint32_t raw_val) {
     union {
         float float_val;
         uint32_t int_val;
@@ -369,15 +341,12 @@ static inline float _reinterpret_float(uint32_t raw_val)
     return to_float.float_val;
 }
 
-/**
- *      convert value from buffer storing IEEE754 represented
- *      float to actual float value
- *
- *      @param  buffer   buffer with value
- *      @return          Converted value
- */
-static float _raw_val_to_float(const uint8_t *buffer)
-{
+///      convert value from buffer storing IEEE754 represented
+///      float to actual float value
+///
+///      @param  buffer   buffer with value
+///      @return          Converted value
+static float _raw_val_to_float(const uint8_t *buffer) {
     uint32_t tmp = byteorder_bebuftohl(buffer);
 
     return _reinterpret_float(tmp);

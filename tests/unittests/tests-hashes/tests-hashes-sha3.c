@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017-2018 Mathias Tausig <mathias.tausig@fh-campsuwien.ac.at>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017-2018 Mathias Tausig <mathias.tausig@fh-campsuwien.ac.at>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     unittests
- * @{
- *
- * @file
- * @brief       Test cases for the SHA-3 hash implementation
- *
- * @author      Mathias Tausig <mathias.tausig@fh-campsuwien.ac.at>
- *
- * @}
- */
+/// @ingroup     unittests
+/// @{
+///
+/// @file
+/// @brief       Test cases for the SHA-3 hash implementation
+///
+/// @author      Mathias Tausig <mathias.tausig@fh-campsuwien.ac.at>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -22,27 +18,25 @@
 #include "hashes/sha3.h"
 #include "embUnit/embUnit.h"
 
-/**
- * @brief expected SHA3-256 hash for test 01
- *
- * All test values taken from the Keccak code package:
- * https://github.com/gvanas/KeccakCodePackage
- * Files: TestVectors/ShortMsgKAT_SHA3-256.txt, TestVectors/ShortMsgKAT_SHA3-384.txt,
- *        TestVectors/ShortMsgKAT_SHA3-512.txt
- *
- * * converted using:
- * s=$(echo '<hash string>' | sed -e 's/../0x&, /g' | sed 's/, $//'); echo {$s}\;
- *
- * where <hash string> is the above sequence of characters A7...4A
- *
- *  msg = ''
- *  md_256 = A7FFC6F8BF1ED76651C14756A061D662F580FF4DE43B49FA82D80A4B80F8434A
- *  md_384 = 0C63A75B845E4F7D01107D852E4C2485C51A50AAAA94FC61995E71BBEE983A2A
- *           C3713831264ADB47FB6BD1E058D5F004
- *  md_512 = A69F73CCA23A9AC5C8B567DC185A756E97C982164FE25859E0D1DCC1475C80A6
- *           15B2123AF1F5F94C11E3E9402C3AC558F500199D95B6D3E301758586281DCD26
- *
- */
+/// @brief expected SHA3-256 hash for test 01
+///
+/// All test values taken from the Keccak code package:
+/// https://github.com/gvanas/KeccakCodePackage
+/// Files: TestVectors/ShortMsgKAT_SHA3-256.txt, TestVectors/ShortMsgKAT_SHA3-384.txt,
+///        TestVectors/ShortMsgKAT_SHA3-512.txt
+///
+/// * converted using:
+/// s=$(echo '<hash string>' | sed -e 's/../0x&, /g' | sed 's/, $//'); echo {$s}\;
+///
+/// where <hash string> is the above sequence of characters A7...4A
+///
+///  msg = ''
+///  md_256 = A7FFC6F8BF1ED76651C14756A061D662F580FF4DE43B49FA82D80A4B80F8434A
+///  md_384 = 0C63A75B845E4F7D01107D852E4C2485C51A50AAAA94FC61995E71BBEE983A2A
+///           C3713831264ADB47FB6BD1E058D5F004
+///  md_512 = A69F73CCA23A9AC5C8B567DC185A756E97C982164FE25859E0D1DCC1475C80A6
+///           15B2123AF1F5F94C11E3E9402C3AC558F500199D95B6D3E301758586281DCD26
+///
 static const uint8_t m01[1];
 size_t m01_len = 0;
 static const uint8_t m01_1[1];
@@ -68,15 +62,13 @@ static const uint8_t h01_512[] = { 0xA6, 0x9F, 0x73, 0xCC, 0xA2, 0x3A, 0x9A, 0xC
                                    0xF5, 0x00, 0x19, 0x9D, 0x95, 0xB6, 0xD3, 0xE3,
                                    0x01, 0x75, 0x85, 0x86, 0x28, 0x1D, 0xCD, 0x26 };
 
-/**
- * @brief expected SHA3-256 hash for test 02
-   msg = '4A4F202484512526'
-   md_256 = BA4FB009D57A5CEB85FC64D54E5C55A55854B41CC47AD15294BC41F32165DFBA
-   md_384 = 89DBF4C39B8FB46FDF0A6926CEC0355A4BDBF9C6A446E140B7C8BD08FF6F489F
-            205DAF8EFFE160F437F67491EF897C23
-   md_512 = 150D787D6EB49670C2A4CCD17E6CCE7A04C1FE30FCE03D1EF2501752D92AE04C
-            B345FD42E51038C83B2B4F8FD438D1B4B55CC588C6B913132F1A658FB122CB52
- */
+/// @brief expected SHA3-256 hash for test 02
+///    msg = '4A4F202484512526'
+///    md_256 = BA4FB009D57A5CEB85FC64D54E5C55A55854B41CC47AD15294BC41F32165DFBA
+///    md_384 = 89DBF4C39B8FB46FDF0A6926CEC0355A4BDBF9C6A446E140B7C8BD08FF6F489F
+///             205DAF8EFFE160F437F67491EF897C23
+///    md_512 = 150D787D6EB49670C2A4CCD17E6CCE7A04C1FE30FCE03D1EF2501752D92AE04C
+///             B345FD42E51038C83B2B4F8FD438D1B4B55CC588C6B913132F1A658FB122CB52
 static const uint8_t m02[] = { 0x4A, 0x4F, 0x20, 0x24, 0x84, 0x51, 0x25, 0x26 };
 size_t m02_len = sizeof(m02);
 static const uint8_t m02_1[] = { 0x4A, 0x4F };
@@ -102,17 +94,16 @@ static const uint8_t h02_512[] = { 0x15, 0x0D, 0x78, 0x7D, 0x6E, 0xB4, 0x96, 0x7
                                    0xB5, 0x5C, 0xC5, 0x88, 0xC6, 0xB9, 0x13, 0x13,
                                    0x2F, 0x1A, 0x65, 0x8F, 0xB1, 0x22, 0xCB, 0x52 };
 
-/* @brief expected SHA3-256 hash for test 03
-   msg = '2B6DB7CED8665EBE9DEB080295218426BDAA7C6DA9ADD2088932CDFFBAA1C14129
-          BCCDD70F369EFB149285858D2B1D155D14DE2FDB680A8B027284055182A0CAE275
-          234CC9C92863C1B4AB66F304CF0621CD54565F5BFF461D3B461BD40DF28198E373
-          2501B4860EADD503D26D6E69338F4E0456E9E9BAF3D827AE685FB1D817'
-   md_256 = B7D031AA69B7B4D26A35B896D761314F1D61EB12DCC1E72AAF61B9CD48003AF9
-   md_384 = 8FD01909381EB713803419361D8E82E92476A08EDCC225BB8A135D215CB48D07
-            B074624FCF2E73E666DBA59334719839
-   md_512 = 4FAB45806B4628068458B5D0A2D4BF101B8BFC9276EF86AD5D883765C43F72CE
-            8A5F7B4C5B535A915130BB185E699AB62228014E54DF790C0E93AADBE7E39E19
- */
+// @brief expected SHA3-256 hash for test 03
+//    msg = '2B6DB7CED8665EBE9DEB080295218426BDAA7C6DA9ADD2088932CDFFBAA1C14129
+//           BCCDD70F369EFB149285858D2B1D155D14DE2FDB680A8B027284055182A0CAE275
+//           234CC9C92863C1B4AB66F304CF0621CD54565F5BFF461D3B461BD40DF28198E373
+//           2501B4860EADD503D26D6E69338F4E0456E9E9BAF3D827AE685FB1D817'
+//    md_256 = B7D031AA69B7B4D26A35B896D761314F1D61EB12DCC1E72AAF61B9CD48003AF9
+//    md_384 = 8FD01909381EB713803419361D8E82E92476A08EDCC225BB8A135D215CB48D07
+//             B074624FCF2E73E666DBA59334719839
+//    md_512 = 4FAB45806B4628068458B5D0A2D4BF101B8BFC9276EF86AD5D883765C43F72CE
+//             8A5F7B4C5B535A915130BB185E699AB62228014E54DF790C0E93AADBE7E39E19
 static const uint8_t m03[] = { 0x2B, 0x6D, 0xB7, 0xCE, 0xD8, 0x66, 0x5E, 0xBE, 0x9D,
                                0xEB, 0x08, 0x02, 0x95, 0x21, 0x84, 0x26, 0xBD, 0xAA,
                                0x7C, 0x6D, 0xA9, 0xAD, 0xD2, 0x08, 0x89, 0x32, 0xCD,
@@ -166,21 +157,20 @@ static const uint8_t h03_512[] = { 0x4F, 0xAB, 0x45, 0x80, 0x6B, 0x46, 0x28, 0x0
                                    0x22, 0x28, 0x01, 0x4E, 0x54, 0xDF, 0x79, 0x0C,
                                    0x0E, 0x93, 0xAA, 0xDB, 0xE7, 0xE3, 0x9E, 0x19 };
 
-/* @brief expected SHA3-256 hash for test 04
-   msg = '3A3A819C48EFDE2AD914FBF00E18AB6BC4F14513AB27D0C178A188B61431E7F562
-          3CB66B23346775D386B50E982C493ADBBFC54B9A3CD383382336A1A0B2150A1535
-          8F336D03AE18F666C7573D55C4FD181C29E6CCFDE63EA35F0ADF5885CFC0A3D84A
-          2B2E4DD24496DB789E663170CEF74798AA1BBCD4574EA0BBA40489D764B2F83AAD
-          C66B148B4A0CD95246C127D5871C4F11418690A5DDF01246A0C80A43C70088B618
-          3639DCFDA4125BD113A8F49EE23ED306FAAC576C3FB0C1E256671D817FC2534A52
-          F5B439F72E424DE376F4C565CCA82307DD9EF76DA5B7C4EB7E085172E328807C02
-          D011FFBF33785378D79DC266F6A5BE6BB0E4A92ECEEBAEB1'
-   md_256 = C11F3522A8FB7B3532D80B6D40023A92B489ADDAD93BF5D64B23F35E9663521C
-   md_384 = 128DC611762BE9B135B3739484CFAADCA7481D68514F3DFD6F5D78BB1863AE68
-            130835CDC7061A7ED964B32F1DB75EE1
-   md_512 = 6E8B8BD195BDD560689AF2348BDC74AB7CD05ED8B9A57711E9BE71E9726FDA45
-            91FEE12205EDACAF82FFBBAF16DFF9E702A708862080166C2FF6BA379BC7FFC2
- */
+// @brief expected SHA3-256 hash for test 04
+//    msg = '3A3A819C48EFDE2AD914FBF00E18AB6BC4F14513AB27D0C178A188B61431E7F562
+//           3CB66B23346775D386B50E982C493ADBBFC54B9A3CD383382336A1A0B2150A1535
+//           8F336D03AE18F666C7573D55C4FD181C29E6CCFDE63EA35F0ADF5885CFC0A3D84A
+//           2B2E4DD24496DB789E663170CEF74798AA1BBCD4574EA0BBA40489D764B2F83AAD
+//           C66B148B4A0CD95246C127D5871C4F11418690A5DDF01246A0C80A43C70088B618
+//           3639DCFDA4125BD113A8F49EE23ED306FAAC576C3FB0C1E256671D817FC2534A52
+//           F5B439F72E424DE376F4C565CCA82307DD9EF76DA5B7C4EB7E085172E328807C02
+//           D011FFBF33785378D79DC266F6A5BE6BB0E4A92ECEEBAEB1'
+//    md_256 = C11F3522A8FB7B3532D80B6D40023A92B489ADDAD93BF5D64B23F35E9663521C
+//    md_384 = 128DC611762BE9B135B3739484CFAADCA7481D68514F3DFD6F5D78BB1863AE68
+//             130835CDC7061A7ED964B32F1DB75EE1
+//    md_512 = 6E8B8BD195BDD560689AF2348BDC74AB7CD05ED8B9A57711E9BE71E9726FDA45
+//             91FEE12205EDACAF82FFBBAF16DFF9E702A708862080166C2FF6BA379BC7FFC2
 static const uint8_t m04[] = { 0x3A, 0x3A, 0x81, 0x9C, 0x48, 0xEF, 0xDE, 0x2A,
                                0xD9, 0x14, 0xFB, 0xF0, 0x0E, 0x18, 0xAB, 0x6B,
                                0xC4, 0xF1, 0x45, 0x13, 0xAB, 0x27, 0xD0, 0xC1,
@@ -290,8 +280,7 @@ static const uint8_t hfail_512[] = { 0x15, 0x0D, 0x78, 0x7D, 0x6E, 0xB4, 0x96, 0
                                      0xB5, 0x5C, 0xC5, 0x88, 0xC6, 0xB9, 0x13, 0x13,
                                      0x2F, 0x1A, 0x65, 0x8F, 0xB1, 0x22, 0xCB, 0x52 };
 
-static int calc_and_compare_hash_256(const uint8_t *msg, size_t msg_len, const uint8_t *expected)
-{
+static int calc_and_compare_hash_256(const uint8_t *msg, size_t msg_len, const uint8_t *expected) {
     static unsigned char hash[SHA3_256_DIGEST_LENGTH];
 
     sha3_256(hash, msg, msg_len);
@@ -301,8 +290,7 @@ static int calc_and_compare_hash_256(const uint8_t *msg, size_t msg_len, const u
 
 static int calc_steps_and_compare_hash_256(const uint8_t *msg1, size_t msg1_len,
                                            const uint8_t *msg2, size_t msg2_len,
-                                           const uint8_t *expected)
-{
+                                           const uint8_t *expected) {
     static unsigned char hash[SHA3_256_DIGEST_LENGTH];
     keccak_state_t state;
 
@@ -314,8 +302,7 @@ static int calc_steps_and_compare_hash_256(const uint8_t *msg1, size_t msg1_len,
     return (memcmp(expected, hash, sizeof(hash)) == 0);
 }
 
-static int calc_and_compare_hash_384(const uint8_t *msg, size_t msg_len, const uint8_t *expected)
-{
+static int calc_and_compare_hash_384(const uint8_t *msg, size_t msg_len, const uint8_t *expected) {
     static unsigned char hash[SHA3_384_DIGEST_LENGTH];
 
     sha3_384(hash, msg, msg_len);
@@ -325,8 +312,7 @@ static int calc_and_compare_hash_384(const uint8_t *msg, size_t msg_len, const u
 
 static int calc_steps_and_compare_hash_384(const uint8_t *msg1, size_t msg1_len,
                                            const uint8_t *msg2, size_t msg2_len,
-                                           const uint8_t *expected)
-{
+                                           const uint8_t *expected) {
     static unsigned char hash[SHA3_384_DIGEST_LENGTH];
     keccak_state_t state;
 
@@ -338,8 +324,7 @@ static int calc_steps_and_compare_hash_384(const uint8_t *msg1, size_t msg1_len,
     return (memcmp(expected, hash, sizeof(hash)) == 0);
 }
 
-static int calc_and_compare_hash_512(const uint8_t *msg, size_t msg_len, const uint8_t *expected)
-{
+static int calc_and_compare_hash_512(const uint8_t *msg, size_t msg_len, const uint8_t *expected) {
     static unsigned char hash[SHA3_512_DIGEST_LENGTH];
 
     sha3_512(hash, msg, msg_len);
@@ -349,8 +334,7 @@ static int calc_and_compare_hash_512(const uint8_t *msg, size_t msg_len, const u
 
 static int calc_steps_and_compare_hash_512(const uint8_t *msg1, size_t msg1_len,
                                            const uint8_t *msg2, size_t msg2_len,
-                                           const uint8_t *expected)
-{
+                                           const uint8_t *expected) {
     static unsigned char hash[SHA3_512_DIGEST_LENGTH];
     keccak_state_t state;
 
@@ -362,8 +346,7 @@ static int calc_steps_and_compare_hash_512(const uint8_t *msg1, size_t msg1_len,
     return (memcmp(expected, hash, sizeof(hash)) == 0);
 }
 
-static void test_hashes_sha3_hash_sequence_01(void)
-{
+static void test_hashes_sha3_hash_sequence_01(void) {
     TEST_ASSERT(calc_and_compare_hash_256(m01, m01_len, h01_256));
     TEST_ASSERT(calc_steps_and_compare_hash_256(m01_1, m01_1_len, m01_2, m01_2_len, h01_256));
     TEST_ASSERT(calc_and_compare_hash_384(m01, m01_len, h01_384));
@@ -371,8 +354,7 @@ static void test_hashes_sha3_hash_sequence_01(void)
     TEST_ASSERT(calc_and_compare_hash_512(m01, m01_len, h01_512));
     TEST_ASSERT(calc_steps_and_compare_hash_512(m01_1, m01_1_len, m01_2, m01_2_len, h01_512));
 }
-static void test_hashes_sha3_hash_sequence_02(void)
-{
+static void test_hashes_sha3_hash_sequence_02(void) {
     TEST_ASSERT(calc_and_compare_hash_256(m02, m02_len, h02_256));
     TEST_ASSERT(calc_steps_and_compare_hash_256(m02_1, m02_1_len, m02_2, m02_2_len, h02_256));
     TEST_ASSERT(calc_and_compare_hash_384(m02, m02_len, h02_384));
@@ -381,8 +363,7 @@ static void test_hashes_sha3_hash_sequence_02(void)
     TEST_ASSERT(calc_steps_and_compare_hash_512(m02_1, m02_1_len, m02_2, m02_2_len, h02_512));
 }
 
-static void test_hashes_sha3_hash_sequence_03(void)
-{
+static void test_hashes_sha3_hash_sequence_03(void) {
     TEST_ASSERT(calc_and_compare_hash_256(m03, m03_len, h03_256));
     TEST_ASSERT(calc_steps_and_compare_hash_256(m03_1, m03_1_len, m03_2, m03_2_len, h03_256));
     TEST_ASSERT(calc_and_compare_hash_384(m03, m03_len, h03_384));
@@ -391,8 +372,7 @@ static void test_hashes_sha3_hash_sequence_03(void)
     TEST_ASSERT(calc_steps_and_compare_hash_512(m03_1, m03_1_len, m03_2, m03_2_len, h03_512));
 }
 
-static void test_hashes_sha3_hash_sequence_04(void)
-{
+static void test_hashes_sha3_hash_sequence_04(void) {
     TEST_ASSERT(calc_and_compare_hash_256(m04, m04_len, h04_256));
     TEST_ASSERT(calc_steps_and_compare_hash_256(m04_1, m04_1_len, m04_2, m04_2_len, h04_256));
     TEST_ASSERT(calc_and_compare_hash_384(m04, m04_len, h04_384));
@@ -401,16 +381,14 @@ static void test_hashes_sha3_hash_sequence_04(void)
     TEST_ASSERT(calc_steps_and_compare_hash_512(m04_1, m04_1_len, m04_2, m04_2_len, h04_512));
 }
 
-static void test_hashes_sha3_hash_sequence_failing_compare(void)
-{
-    /* failing compare (message from testcase 02 alterered slightly) */
+static void test_hashes_sha3_hash_sequence_failing_compare(void) {
+    // failing compare (message from testcase 02 alterered slightly)
     TEST_ASSERT(!calc_and_compare_hash_256(mfail, mfail_len, hfail_256));
     TEST_ASSERT(!calc_and_compare_hash_384(mfail, mfail_len, hfail_384));
     TEST_ASSERT(!calc_and_compare_hash_512(mfail, mfail_len, hfail_512));
 }
 
-Test *tests_hashes_sha3_tests(void)
-{
+Test *tests_hashes_sha3_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_hashes_sha3_hash_sequence_01),
         new_TestFixture(test_hashes_sha3_hash_sequence_02),

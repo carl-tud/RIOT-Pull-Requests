@@ -1,41 +1,35 @@
-/*
- * Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
- *               2020 Freie Universität Berlin
- *               2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
- */
-/**
- * @ingroup     sys_ztimer_periph_rtc
- * @{
- *
- * @file
- * @brief       ztimer periph/rtc backend implementation
- *
- * This implementation simply converts an integer time to split RTC values and
- * back, which is rather inefficient. If available, use ztimer_periph_rtt.
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+// Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
+//               2020 Freie Universität Berlin
+//               2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for more
+// details.
+/// @ingroup     sys_ztimer_periph_rtc
+/// @{
+///
+/// @file
+/// @brief       ztimer periph/rtc backend implementation
+///
+/// This implementation simply converts an integer time to split RTC values and
+/// back, which is rather inefficient. If available, use ztimer_periph_rtt.
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 #include "periph/rtc.h"
 #include "ztimer/periph_rtc.h"
 
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* this algorithm and the one from _timestamp_to_gmt_civil() have been adapted from
- * http://ptspts.blogspot.com/2009/11/how-to-convert-unix-timestamp-to-civil.html.
- *
- * "The algorithmic solution above is part of the programming folklore."
- */
+// this algorithm and the one from _timestamp_to_gmt_civil() have been adapted from
+// http://ptspts.blogspot.com/2009/11/how-to-convert-unix-timestamp-to-civil.html.
+//
+// "The algorithmic solution above is part of the programming folklore."
 static uint32_t _gmt_civil_to_timestamp(unsigned y, unsigned m, unsigned d,
-                                        unsigned h, unsigned mi, unsigned s)
-{
-    /* struct tm counts months from 0 to 11 */
+                                        unsigned h, unsigned mi, unsigned s) {
+    // struct tm counts months from 0 to 11
     m += 1;
 
     if (m <= 2) {
@@ -46,8 +40,7 @@ static uint32_t _gmt_civil_to_timestamp(unsigned y, unsigned m, unsigned d,
             719561) * 86400 + 3600 * h + 60 * mi + s;
 }
 
-static void _timestamp_to_gmt_civil(struct tm *_tm, uint32_t epoch)
-{
+static void _timestamp_to_gmt_civil(struct tm *_tm, uint32_t epoch) {
     uint32_t s = epoch % 86400;
 
     epoch /= 86400;
@@ -75,17 +68,15 @@ static void _timestamp_to_gmt_civil(struct tm *_tm, uint32_t epoch)
         *_tm = tmp;
     }
 
-    /* struct tm counts months starting from 0 */
+    // struct tm counts months starting from 0
     _tm->tm_mon -= 1;
 }
 
-static void _ztimer_periph_rtc_callback(void *arg)
-{
+static void _ztimer_periph_rtc_callback(void *arg) {
     ztimer_handler((ztimer_clock_t *)arg);
 }
 
-static uint32_t _ztimer_periph_rtc_now(ztimer_clock_t *clock)
-{
+static uint32_t _ztimer_periph_rtc_now(ztimer_clock_t *clock) {
     (void)clock;
 
     struct tm time = { .tm_year = 0 };
@@ -97,15 +88,14 @@ static uint32_t _ztimer_periph_rtc_now(ztimer_clock_t *clock)
                                    time.tm_sec);
 }
 
-static void _ztimer_periph_rtc_set(ztimer_clock_t *clock, uint32_t val)
-{
+static void _ztimer_periph_rtc_set(ztimer_clock_t *clock, uint32_t val) {
     unsigned state = irq_disable();
 
     uint32_t now = _ztimer_periph_rtc_now(NULL);
     uint32_t target;
 
     do {
-        /* make sure there's no pending ISR */
+        // make sure there's no pending ISR
         rtc_clear_alarm();
 
         target = now + val;
@@ -113,18 +103,17 @@ static void _ztimer_periph_rtc_set(ztimer_clock_t *clock, uint32_t val)
         struct tm _tm = { .tm_year = 0 };
         _timestamp_to_gmt_civil(&_tm, target);
 
-        /* TODO: ensure this doesn't underflow */
+        // TODO: ensure this doesn't underflow
         rtc_set_alarm(&_tm, _ztimer_periph_rtc_callback, clock);
 
         if (val > 1) {
-            /* If val <= 1, it is possible that the RTC second flips somewhere
-             * between getting the current value and adding 1, resulting in
-             * setting the current time as target, which in turn would make the
-             * RTC never trigger. In that case, check the target that as been
-             * set is still in the future at the end of the loop body.
-             *
-             * Skip that if val was more than a second away.
-             */
+            // If val <= 1, it is possible that the RTC second flips somewhere
+            // between getting the current value and adding 1, resulting in
+            // setting the current time as target, which in turn would make the
+            // RTC never trigger. In that case, check the target that as been
+            // set is still in the future at the end of the loop body.
+            //
+            // Skip that if val was more than a second away.
             break;
         }
     } while (target <= (now = _ztimer_periph_rtc_now(NULL)));
@@ -132,25 +121,22 @@ static void _ztimer_periph_rtc_set(ztimer_clock_t *clock, uint32_t val)
     irq_restore(state);
 }
 
-static void _ztimer_periph_rtc_cancel(ztimer_clock_t *clock)
-{
+static void _ztimer_periph_rtc_cancel(ztimer_clock_t *clock) {
     (void)clock;
     rtc_clear_alarm();
 }
 
 #if MODULE_ZTIMER_ONDEMAND_RTC
-static void _ztimer_periph_rtc_start(ztimer_clock_t *clock)
-{
+static void _ztimer_periph_rtc_start(ztimer_clock_t *clock) {
     (void)clock;
     rtc_poweron();
 }
 
-static void _ztimer_periph_rtc_stop(ztimer_clock_t *clock)
-{
+static void _ztimer_periph_rtc_stop(ztimer_clock_t *clock) {
     (void)clock;
     rtc_poweroff();
 }
-#endif /* MODULE_ZTIMER_ONDEMAND_RTC */
+#endif // MODULE_ZTIMER_ONDEMAND_RTC
 
 static const ztimer_ops_t _ztimer_periph_rtc_ops = {
     .set = _ztimer_periph_rtc_set,
@@ -162,8 +148,7 @@ static const ztimer_ops_t _ztimer_periph_rtc_ops = {
 #endif
 };
 
-void ztimer_periph_rtc_init(ztimer_periph_rtc_t *clock)
-{
+void ztimer_periph_rtc_init(ztimer_periph_rtc_t *clock) {
     clock->ops = &_ztimer_periph_rtc_ops;
     clock->max_value = UINT32_MAX;
     rtc_init();

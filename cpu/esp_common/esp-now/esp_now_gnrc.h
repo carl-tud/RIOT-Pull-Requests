@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Timo Rothenpieler
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Timo Rothenpieler
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp_common_esp_now
- * @{
- *
- * @file
- * @brief       ESP-NOW adaption for @ref net_gnrc_netif
- *
- * @author      Timo Rothenpieler <timo.rothenpieler@uni-bremen.de>
- */
+/// @ingroup     cpu_esp_common_esp_now
+/// @{
+///
+/// @file
+/// @brief       ESP-NOW adaption for @ref net_gnrc_netif
+///
+/// @author      Timo Rothenpieler <timo.rothenpieler@uni-bremen.de>
 
 #include "net/gnrc/netif.h"
 
@@ -21,19 +17,17 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Creates the ESP-NOW network interface
- * @see     gnrc_netif_create
- * @param   [out]   netif       The interface. May not be `NULL`.
- * @param   [in]    stack       The stack for the network interface's thread.
- * @param   [in]    stacksize   Size of stack.
- * @param   [in]    priority    Priority for the network interface's thread.
- * @param   [in]    name        Name for the network interface. May be NULL.
- * @param   [in]    dev         Device for the interface.
- *
- * @return  0 on success
- * @return  negative number on error
- */
+/// @brief   Creates the ESP-NOW network interface
+/// @see     gnrc_netif_create
+/// @param   [out]   netif       The interface. May not be `NULL`.
+/// @param   [in]    stack       The stack for the network interface's thread.
+/// @param   [in]    stacksize   Size of stack.
+/// @param   [in]    priority    Priority for the network interface's thread.
+/// @param   [in]    name        Name for the network interface. May be NULL.
+/// @param   [in]    dev         Device for the interface.
+///
+/// @return  0 on success
+/// @return  negative number on error
 int gnrc_netif_esp_now_create(gnrc_netif_t *netif, char *stack, int stacksize, char priority,
                               char *name, netdev_t *dev);
 
@@ -41,4 +35,4 @@ int gnrc_netif_esp_now_create(gnrc_netif_t *netif, char *stack, int stacksize, c
 }
 #endif
 
-/** @} */
+/// @}

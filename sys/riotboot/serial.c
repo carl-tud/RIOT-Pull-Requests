@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2020 Benjamin Valentin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Benjamin Valentin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_riotboot_serial
- * @{
- *
- * @file
- * @brief       Serial Bootloader
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_riotboot_serial
+/// @{
+///
+/// @file
+/// @brief       Serial Bootloader
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -47,19 +43,17 @@
 
 #define RX_BUF_LEN              (40)
 
-/* we send a characters each iteration -> 8 bit + start & stop bit */
+// we send a characters each iteration -> 8 bit + start & stop bit
 #define RIOTBOOT_DELAY (RIOTBOOT_DELAY_MS * RIOTBOOT_UART_BAUDRATE / 10000)
 
-static inline void uart_write_byte(uart_t uart, uint8_t data)
-{
+static inline void uart_write_byte(uart_t uart, uint8_t data) {
     uart_write(uart, &data, 1);
 }
 
-static inline bool _boot_pin(void)
-{
+static inline bool _boot_pin(void) {
 #if defined (BTN_BOOTLOADER_PIN) && defined(BTN_BOOTLOADER_MODE)
-    /* Reverts the logic if the button has an internal or external pullup and
-       thus, is an active-low button */
+    // Reverts the logic if the button has an internal or external pullup and
+    //    thus, is an active-low button
     if (BTN_BOOTLOADER_EXT_PULLUP || BTN_BOOTLOADER_MODE == GPIO_IN_PU ||
         BTN_BOOTLOADER_MODE == GPIO_OD_PU ) {
         return !gpio_read(BTN_BOOTLOADER_PIN);
@@ -72,8 +66,7 @@ static inline bool _boot_pin(void)
 #endif
 }
 
-static inline void _boot_led_toggle(void)
-{
+static inline void _boot_led_toggle(void) {
 #ifdef LED_BOOTLOADER_PIN
     static unsigned count = RIOTBOOT_DELAY / 10;
 
@@ -84,9 +77,8 @@ static inline void _boot_led_toggle(void)
 #endif
 }
 
-/* send 'hello' byte until we get enter bootloader byte or timeout */
-static bool _bootdelay(unsigned tries, volatile bool *boot_default)
-{
+// send 'hello' byte until we get enter bootloader byte or timeout
+static bool _bootdelay(unsigned tries, volatile bool *boot_default) {
     uint32_t *magic = (void *)(uintptr_t)RIOTBOOT_MAGIC_ADDR;
 
     if (*magic == RIOTBOOT_MAGIC) {
@@ -111,28 +103,25 @@ static bool _bootdelay(unsigned tries, volatile bool *boot_default)
 
 __attribute__ ((aligned(4)))
 static struct {
-    uint8_t pos;                /* current pos in rx buffer */
-    uint8_t remaining;          /* remaining bytes to read  */
+    uint8_t pos;                // current pos in rx buffer
+    uint8_t remaining;          // remaining bytes to read
     union {
-        uint8_t u8[RX_BUF_LEN]; /* rx buffer */
+        uint8_t u8[RX_BUF_LEN]; // rx buffer
         struct {
-            uint8_t type;       /* command type */
-            uint8_t len;        /* length of data (without checksum) */
-            uint8_t data[];     /* data is aligned at word boundary  */
+            uint8_t type;       // command type
+            uint8_t len;        // length of data (without checksum)
+            uint8_t data[];     // data is aligned at word boundary
         } val;
     } rx;
 } ctx;
 
-/**
- * Format:
- * [ Type (1 byte) | Length (1 byte) | value (n bytes) | checksum (1 byte) ]
- */
-static void _uart_rx_cmd(void *arg, uint8_t data)
-{
+/// Format:
+/// [ Type (1 byte) | Length (1 byte) | value (n bytes) | checksum (1 byte) ]
+static void _uart_rx_cmd(void *arg, uint8_t data) {
     bool *reading = arg;
     uint8_t crc;
 
-    /* ignore RX while processing buffer */
+    // ignore RX while processing buffer
     if (!reading) {
         return;
     }
@@ -148,7 +137,7 @@ static void _uart_rx_cmd(void *arg, uint8_t data)
         case RIOTBOOT_CMD_GET_PAGE:
             ctx.remaining = 1;
             break;
-        /* re-create initial sync handshake if already in bootloader */
+        // re-create initial sync handshake if already in bootloader
         case RIOTBOOT_PROBE:
             uart_write_byte(RIOTBOOT_UART_DEV, RIOTBOOT_STAT_WAITING);
             return;
@@ -162,41 +151,41 @@ static void _uart_rx_cmd(void *arg, uint8_t data)
 
         break;
     case 1:
-        /* data length + checksum byte + dummy byte for fall-through */
+        // data length + checksum byte + dummy byte for fall-through
         ctx.remaining = data + 2;
 
-        /* boot command needs no checksum */
+        // boot command needs no checksum
         if (ctx.rx.val.type == RIOTBOOT_CMD_BOOT) {
             *reading = false;
             return;
         }
 
-        /* bail out early if the buffer would not fit */
-        /* data len + sizeof(type, len) */
+        // bail out early if the buffer would not fit
+        // data len + sizeof(type, len)
         if (ctx.remaining + 2 >= RX_BUF_LEN) {
             crc = 0;
             goto error;
         }
 
-    /* fall-through */
+    // fall-through
     default:
 
-        /* end of data block not reached */
+        // end of data block not reached
         if (--ctx.remaining) {
             break;
         }
 
-    /* fall-through */
+    // fall-through
     case (RX_BUF_LEN - 1):
 
-        /* calculate checksum */
+        // calculate checksum
         crc = crc8(ctx.rx.u8, ctx.pos, RIOTBOOT_CRC8_POLY, 0xFF);
 
 error:
         ctx.remaining = 0;
         ctx.pos = 0;
 
-        /* checksum error */
+        // checksum error
         if (crc != data) {
             uart_write_byte(RIOTBOOT_UART_DEV, RIOTBOOT_STAT_BAD_CRC);
             break;
@@ -213,17 +202,15 @@ error:
     return;
 }
 
-static void _get_page(uintptr_t addr)
-{
+static void _get_page(uintptr_t addr) {
     uint32_t page = flashpage_page((void *)addr);
 
     uart_write_byte(RIOTBOOT_UART_DEV, RIOTBOOT_STAT_OK);
     uart_write(RIOTBOOT_UART_DEV, (void *)&page, sizeof(page));
 }
 
-static void _erase(uint16_t sector)
-{
-    /* don't erase bootloader */
+static void _erase(uint16_t sector) {
+    // don't erase bootloader
     if ((uintptr_t)flashpage_addr(sector) < SLOT0_OFFSET) {
         uart_write_byte(RIOTBOOT_UART_DEV, RIOTBOOT_STAT_ILLEGAL);
         return;
@@ -234,9 +221,8 @@ static void _erase(uint16_t sector)
     uart_write_byte(RIOTBOOT_UART_DEV, RIOTBOOT_STAT_OK);
 }
 
-static void _write(uint32_t addr, uint8_t len, const uint8_t *data)
-{
-    /* don't overwrite bootloader */
+static void _write(uint32_t addr, uint8_t len, const uint8_t *data) {
+    // don't overwrite bootloader
     if (addr < SLOT0_OFFSET) {
         uart_write_byte(RIOTBOOT_UART_DEV, RIOTBOOT_STAT_ILLEGAL);
         return;
@@ -247,8 +233,7 @@ static void _write(uint32_t addr, uint8_t len, const uint8_t *data)
     uart_write_byte(RIOTBOOT_UART_DEV, RIOTBOOT_STAT_OK);
 }
 
-int riotboot_serial_loader(void)
-{
+int riotboot_serial_loader(void) {
     volatile bool reading = true;
 
 #ifdef BTN_BOOTLOADER_PIN
@@ -262,7 +247,7 @@ int riotboot_serial_loader(void)
     uart_init(RIOTBOOT_UART_DEV, RIOTBOOT_UART_BAUDRATE,
               _uart_rx_cmd, (void *)&reading);
 
-    /* give the user some time to interrupt auto boot */
+    // give the user some time to interrupt auto boot
     if (_bootdelay(RIOTBOOT_DELAY, &reading)) {
         return -1;
     }
@@ -273,7 +258,7 @@ int riotboot_serial_loader(void)
 
     while (1) {
 
-        /* we can't use mutex in riotboot */
+        // we can't use mutex in riotboot
         while (reading) {}
 
         switch (ctx.rx.val.type) {
@@ -302,9 +287,9 @@ int riotboot_serial_loader(void)
             _erase(unaligned_get_u16(ctx.rx.val.data));
             break;
         case RIOTBOOT_CMD_WRITE:
-            _write(unaligned_get_u32(ctx.rx.val.data),  /* address */
-                   ctx.rx.val.len - sizeof(uint32_t),   /* sizeof(data) - sizeof(address) */
-                   &ctx.rx.val.data[4]);                /* data */
+            _write(unaligned_get_u32(ctx.rx.val.data),  // address
+                   ctx.rx.val.len - sizeof(uint32_t),   // sizeof(data) - sizeof(address)
+                   &ctx.rx.val.data[4]);                // data
             break;
         }
 

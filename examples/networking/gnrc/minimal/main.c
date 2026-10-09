@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Showing minimum memory footprint of gnrc network stack
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Showing minimum memory footprint of gnrc network stack
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -23,16 +19,15 @@
 #include "net/gnrc/netif.h"
 #include "net/netif.h"
 
-int main(void)
-{
+int main(void) {
 
     puts("RIOT network stack example application");
 
-    /* print all IPv6 addresses */
+    // print all IPv6 addresses
     printf("{\"IPv6 addresses\": [\"");
     netifs_print_ipv6("\", \"");
     puts("\"]}");
 
-    /* main thread exits */
+    // main thread exits
     return 0;
 }

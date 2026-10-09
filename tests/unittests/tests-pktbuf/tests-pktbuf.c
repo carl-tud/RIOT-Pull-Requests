@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mail@martine-lenders.eu>
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mail@martine-lenders.eu>
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 #include <stdint.h>
 #include <sys/uio.h>
@@ -36,13 +32,11 @@ typedef struct __attribute__((packed)) {
 }
 test_pktbuf_struct_t;
 
-static void set_up(void)
-{
+static void set_up(void) {
     gnrc_pktbuf_init();
 }
 
-static void test_pktbuf_init(void)
-{
+static void test_pktbuf_init(void) {
     TEST_ASSERT(gnrc_pktbuf_is_empty());
     TEST_ASSERT_NOT_NULL(gnrc_pktbuf_add(NULL, TEST_STRING4, sizeof(TEST_STRING4),
                                          GNRC_NETTYPE_TEST));
@@ -56,8 +50,7 @@ static void test_pktbuf_init(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_add__pkt_NULL__data_NULL__size_0(void)
-{
+static void test_pktbuf_add__pkt_NULL__data_NULL__size_0(void) {
     gnrc_pktsnip_t *pkt;
 
     TEST_ASSERT_NOT_NULL((pkt = gnrc_pktbuf_add(NULL, NULL, 0, GNRC_NETTYPE_TEST)));
@@ -69,8 +62,7 @@ static void test_pktbuf_add__pkt_NULL__data_NULL__size_0(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_add__pkt_NOT_NULL__data_NULL__size_0(void)
-{
+static void test_pktbuf_add__pkt_NOT_NULL__data_NULL__size_0(void) {
     gnrc_pktsnip_t *pkt;
     gnrc_pktsnip_t *next = gnrc_pktbuf_add(NULL, TEST_STRING4, sizeof(TEST_STRING4),
                                            GNRC_NETTYPE_TEST);
@@ -90,8 +82,7 @@ static void test_pktbuf_add__pkt_NOT_NULL__data_NULL__size_0(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_add__pkt_NULL__data_NOT_NULL__size_0(void)
-{
+static void test_pktbuf_add__pkt_NULL__data_NOT_NULL__size_0(void) {
     gnrc_pktsnip_t *pkt;
 
     TEST_ASSERT_NOT_NULL((pkt = gnrc_pktbuf_add(NULL, TEST_STRING8, 0, GNRC_NETTYPE_TEST)));
@@ -103,8 +94,7 @@ static void test_pktbuf_add__pkt_NULL__data_NOT_NULL__size_0(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_add__pkt_NOT_NULL__data_NOT_NULL__size_0(void)
-{
+static void test_pktbuf_add__pkt_NOT_NULL__data_NOT_NULL__size_0(void) {
     gnrc_pktsnip_t *pkt;
     gnrc_pktsnip_t *next = gnrc_pktbuf_add(NULL, TEST_STRING4, sizeof(TEST_STRING4),
                                            GNRC_NETTYPE_TEST);
@@ -126,8 +116,7 @@ static void test_pktbuf_add__pkt_NOT_NULL__data_NOT_NULL__size_0(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_add__pkt_NULL__data_NULL__size_not_0(void)
-{
+static void test_pktbuf_add__pkt_NULL__data_NULL__size_not_0(void) {
     gnrc_pktsnip_t *pkt;
 
     TEST_ASSERT_NOT_NULL((pkt = gnrc_pktbuf_add(NULL, NULL, sizeof(TEST_STRING8),
@@ -142,8 +131,7 @@ static void test_pktbuf_add__pkt_NULL__data_NULL__size_not_0(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_add__pkt_NOT_NULL__data_NULL__size_not_0(void)
-{
+static void test_pktbuf_add__pkt_NOT_NULL__data_NULL__size_not_0(void) {
     gnrc_pktsnip_t *pkt, *next = gnrc_pktbuf_add(NULL, TEST_STRING4, sizeof(TEST_STRING4),
                                                  GNRC_NETTYPE_TEST);
 
@@ -165,8 +153,7 @@ static void test_pktbuf_add__pkt_NOT_NULL__data_NULL__size_not_0(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_add__pkt_NOT_NULL__data_NOT_NULL__size_not_0(void)
-{
+static void test_pktbuf_add__pkt_NOT_NULL__data_NOT_NULL__size_not_0(void) {
     gnrc_pktsnip_t *pkt, *next = gnrc_pktbuf_add(NULL, TEST_STRING4, sizeof(TEST_STRING4),
                                                  GNRC_NETTYPE_TEST);
 
@@ -189,9 +176,8 @@ static void test_pktbuf_add__pkt_NOT_NULL__data_NOT_NULL__size_not_0(void)
     TEST_ASSERT(!gnrc_pktbuf_is_empty());
 }
 
-#ifndef MODULE_GNRC_PKTBUF_MALLOC   /* to long for standard malloc on native ;-) */
-static void test_pktbuf_add__memfull(void)
-{
+#ifndef MODULE_GNRC_PKTBUF_MALLOC   // to long for standard malloc on native ;-)
+static void test_pktbuf_add__memfull(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, NULL, 1, GNRC_NETTYPE_TEST);
     while (pkt) {
         pkt = gnrc_pktbuf_add(NULL, NULL, 1, GNRC_NETTYPE_TEST);
@@ -202,8 +188,7 @@ static void test_pktbuf_add__memfull(void)
 }
 #endif
 
-static void test_pktbuf_add__success(void)
-{
+static void test_pktbuf_add__success(void) {
     gnrc_pktsnip_t *pkt, *pkt_prev = NULL;
 
     for (int i = 0; i < 9; i++) {
@@ -226,8 +211,7 @@ static void test_pktbuf_add__success(void)
     TEST_ASSERT(gnrc_pktbuf_is_sane());
 }
 
-static void test_pktbuf_add__packed_struct(void)
-{
+static void test_pktbuf_add__packed_struct(void) {
     test_pktbuf_struct_t data = { 0x4d, 0xef43, 0xacdef574, 0x43644305695afde5,
                                   34, -4469, 149699748, -46590430597
                                 };
@@ -246,9 +230,8 @@ static void test_pktbuf_add__packed_struct(void)
     TEST_ASSERT_EQUAL_INT(data.s64, data_cpy->s64);
 }
 
-#ifndef MODULE_GNRC_PKTBUF_MALLOC   /* alignment-handling left to malloc, so no certainty here */
-static void test_pktbuf_add__unaligned_in_aligned_hole(void)
-{
+#ifndef MODULE_GNRC_PKTBUF_MALLOC   // alignment-handling left to malloc, so no certainty here
+static void test_pktbuf_add__unaligned_in_aligned_hole(void) {
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, NULL, ALIGNMENT_SIZE, GNRC_NETTYPE_TEST);
     gnrc_pktsnip_t *pkt2 = gnrc_pktbuf_add(NULL, NULL, ALIGNMENT_SIZE, GNRC_NETTYPE_TEST);
     gnrc_pktsnip_t *pkt3 = gnrc_pktbuf_add(NULL, NULL, ALIGNMENT_SIZE, GNRC_NETTYPE_TEST);
@@ -267,8 +250,7 @@ static void test_pktbuf_add__unaligned_in_aligned_hole(void)
 }
 #endif
 
-static void test_pktbuf_add__0_sized_release(void)
-{
+static void test_pktbuf_add__0_sized_release(void) {
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, NULL, 0, GNRC_NETTYPE_TEST);
     gnrc_pktsnip_t *pkt2 = gnrc_pktbuf_add(NULL, NULL, 8, GNRC_NETTYPE_TEST);
 
@@ -279,18 +261,15 @@ static void test_pktbuf_add__0_sized_release(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_mark__pkt_NULL__size_0(void)
-{
+static void test_pktbuf_mark__pkt_NULL__size_0(void) {
     TEST_ASSERT_NULL(gnrc_pktbuf_mark(NULL, 0, GNRC_NETTYPE_TEST));
 }
 
-static void test_pktbuf_mark__pkt_NULL__size_not_0(void)
-{
+static void test_pktbuf_mark__pkt_NULL__size_not_0(void) {
     TEST_ASSERT_NULL(gnrc_pktbuf_mark(NULL, sizeof(TEST_STRING4), GNRC_NETTYPE_TEST));
 }
 
-static void test_pktbuf_mark__pkt_NOT_NULL__size_0(void)
-{
+static void test_pktbuf_mark__pkt_NOT_NULL__size_0(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, TEST_STRING16, sizeof(TEST_STRING16),
                                           GNRC_NETTYPE_TEST);
 
@@ -304,8 +283,7 @@ static void test_pktbuf_mark__pkt_NOT_NULL__size_0(void)
     TEST_ASSERT_EQUAL_INT(1, pkt->users);
 }
 
-static void test_pktbuf_mark__pkt_NOT_NULL__size_greater_than_pkt_size(void)
-{
+static void test_pktbuf_mark__pkt_NOT_NULL__size_greater_than_pkt_size(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, TEST_STRING16, sizeof(TEST_STRING16),
                                           GNRC_NETTYPE_TEST);
 
@@ -320,8 +298,7 @@ static void test_pktbuf_mark__pkt_NOT_NULL__size_greater_than_pkt_size(void)
     TEST_ASSERT_EQUAL_INT(1, pkt->users);
 }
 
-static void test_pktbuf_mark__pkt_NOT_NULL__pkt_data_NULL(void)
-{
+static void test_pktbuf_mark__pkt_NOT_NULL__pkt_data_NULL(void) {
     gnrc_pktsnip_t pkt = { .size  = sizeof(TEST_STRING16),
                            .type  = GNRC_NETTYPE_TEST,
                            .users = 1,
@@ -336,8 +313,7 @@ static void test_pktbuf_mark__pkt_NOT_NULL__pkt_data_NULL(void)
     TEST_ASSERT_EQUAL_INT(1, pkt.users);
 }
 
-static void test_pktbuf_mark__success_large(void)
-{
+static void test_pktbuf_mark__success_large(void) {
     uint8_t *data = (uint8_t *)(TEST_STRING16);
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, data, sizeof(TEST_STRING16),
                                            GNRC_NETTYPE_TEST);
@@ -365,7 +341,7 @@ static void test_pktbuf_mark__success_large(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_UNDEF, pkt2->type);
     TEST_ASSERT_EQUAL_INT(1, pkt2->users);
 
-    /* check if slightly larger packet would override data */
+    // check if slightly larger packet would override data
     gnrc_pktbuf_remove_snip(pkt1, pkt2);
     pkt2 = gnrc_pktbuf_add(NULL, TEST_STRING12, 12, GNRC_NETTYPE_TEST);
     TEST_ASSERT(gnrc_pktbuf_is_sane());
@@ -376,14 +352,13 @@ static void test_pktbuf_mark__success_large(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_TEST, pkt1->type);
     TEST_ASSERT_EQUAL_INT(1, pkt1->users);
 
-    /* check if everything can be cleaned up */
+    // check if everything can be cleaned up
     gnrc_pktbuf_release(pkt1);
     gnrc_pktbuf_release(pkt2);
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_mark__success_aligned(void)
-{
+static void test_pktbuf_mark__success_aligned(void) {
     uint8_t *data = (uint8_t *)(TEST_STRING16);
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, data, sizeof(TEST_STRING16),
                                            GNRC_NETTYPE_TEST);
@@ -411,7 +386,7 @@ static void test_pktbuf_mark__success_aligned(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_UNDEF, pkt2->type);
     TEST_ASSERT_EQUAL_INT(1, pkt2->users);
 
-    /* check if slightly larger packet would override data */
+    // check if slightly larger packet would override data
     gnrc_pktbuf_remove_snip(pkt1, pkt2);
     pkt2 = gnrc_pktbuf_add(NULL, TEST_STRING12, 12, GNRC_NETTYPE_TEST);
     TEST_ASSERT(gnrc_pktbuf_is_sane());
@@ -422,14 +397,13 @@ static void test_pktbuf_mark__success_aligned(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_TEST, pkt1->type);
     TEST_ASSERT_EQUAL_INT(1, pkt1->users);
 
-    /* check if everything can be cleaned up */
+    // check if everything can be cleaned up
     gnrc_pktbuf_release(pkt1);
     gnrc_pktbuf_release(pkt2);
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_mark__success_small(void)
-{
+static void test_pktbuf_mark__success_small(void) {
     uint8_t *data = (uint8_t *)(TEST_STRING16);
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, data, sizeof(TEST_STRING16),
                                            GNRC_NETTYPE_TEST);
@@ -456,7 +430,7 @@ static void test_pktbuf_mark__success_small(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_UNDEF, pkt2->type);
     TEST_ASSERT_EQUAL_INT(1, pkt2->users);
 
-    /* check if slightly larger packet would override data */
+    // check if slightly larger packet would override data
     gnrc_pktbuf_remove_snip(pkt1, pkt2);
     pkt2 = gnrc_pktbuf_add(NULL, TEST_STRING12, 3, GNRC_NETTYPE_TEST);
     TEST_ASSERT(gnrc_pktbuf_is_sane());
@@ -466,14 +440,13 @@ static void test_pktbuf_mark__success_small(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_TEST, pkt1->type);
     TEST_ASSERT_EQUAL_INT(1, pkt1->users);
 
-    /* check if everything can be cleaned up */
+    // check if everything can be cleaned up
     gnrc_pktbuf_release(pkt1);
     gnrc_pktbuf_release(pkt2);
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_mark__success_equally_sized(void)
-{
+static void test_pktbuf_mark__success_equally_sized(void) {
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, TEST_STRING16, sizeof(TEST_STRING16),
                                            GNRC_NETTYPE_TEST);
     gnrc_pktsnip_t *pkt2;
@@ -494,14 +467,13 @@ static void test_pktbuf_mark__success_equally_sized(void)
     TEST_ASSERT_EQUAL_INT(1, pkt2->users);
     TEST_ASSERT(gnrc_pktbuf_is_sane());
 
-    /* check if everything can be cleaned up */
+    // check if everything can be cleaned up
     gnrc_pktbuf_release(pkt1);
     TEST_ASSERT(gnrc_pktbuf_is_sane());
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_realloc_data__size_0(void)
-{
+static void test_pktbuf_realloc_data__size_0(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, NULL, sizeof(TEST_STRING8), GNRC_NETTYPE_TEST);
 
     TEST_ASSERT_EQUAL_INT(0, gnrc_pktbuf_realloc_data(pkt, 0));
@@ -513,10 +485,9 @@ static void test_pktbuf_realloc_data__size_0(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-#ifndef MODULE_GNRC_PKTBUF_MALLOC   /* CONFIG_GNRC_PKTBUF_SIZE does not*/
-                                    /* apply for gnrc_pktbuf_malloc */
-static void test_pktbuf_realloc_data__memfull(void)
-{
+#ifndef MODULE_GNRC_PKTBUF_MALLOC   // CONFIG_GNRC_PKTBUF_SIZE does not
+                                    // apply for gnrc_pktbuf_malloc
+static void test_pktbuf_realloc_data__memfull(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, NULL, sizeof(TEST_STRING8), GNRC_NETTYPE_TEST);
 
     TEST_ASSERT_EQUAL_INT(ENOMEM, gnrc_pktbuf_realloc_data(pkt, CONFIG_GNRC_PKTBUF_SIZE + 1));
@@ -525,8 +496,7 @@ static void test_pktbuf_realloc_data__memfull(void)
 }
 #endif
 
-static void test_pktbuf_realloc_data__shrink(void)
-{
+static void test_pktbuf_realloc_data__shrink(void) {
     gnrc_pktsnip_t *pkt;
     void *exp_data;
 
@@ -537,12 +507,12 @@ static void test_pktbuf_realloc_data__shrink(void)
     TEST_ASSERT_NOT_NULL(gnrc_pktbuf_add(NULL, NULL, 4, GNRC_NETTYPE_TEST));
 
     TEST_ASSERT_EQUAL_INT(0, gnrc_pktbuf_realloc_data(pkt, 8));
-    /* gnrc_pktbuf_malloc uses `realloc()` to reallocate the data, which is not
-     * guaranteed to keep the buffer in place. And with ASAN enabled, the
-     * memory is always moved, even when `realloc()` is shrinking it.
-     *
-     * If gnrc_pktbuf_static is used, though, we can rely on the data being
-     * kept in place on shrinking. */
+    // gnrc_pktbuf_malloc uses `realloc()` to reallocate the data, which is not
+    // guaranteed to keep the buffer in place. And with ASAN enabled, the
+    // memory is always moved, even when `realloc()` is shrinking it.
+    //
+    // If gnrc_pktbuf_static is used, though, we can rely on the data being
+    // kept in place on shrinking.
     if (IS_USED(MODULE_GNRC_PKTBUF_STATIC)) {
         TEST_ASSERT(exp_data == pkt->data);
     }
@@ -552,8 +522,7 @@ static void test_pktbuf_realloc_data__shrink(void)
     TEST_ASSERT_EQUAL_INT(1, pkt->users);
 }
 
-static void test_pktbuf_realloc_data__memenough(void)
-{
+static void test_pktbuf_realloc_data__memenough(void) {
     gnrc_pktsnip_t *pkt;
 
     pkt = gnrc_pktbuf_add(NULL, NULL, sizeof(TEST_STRING16), GNRC_NETTYPE_TEST);
@@ -566,8 +535,7 @@ static void test_pktbuf_realloc_data__memenough(void)
     TEST_ASSERT_EQUAL_INT(1, pkt->users);
 }
 
-static void test_pktbuf_realloc_data__nomemenough(void)
-{
+static void test_pktbuf_realloc_data__nomemenough(void) {
     gnrc_pktsnip_t *pkt1, *pkt2;
 
     pkt1 = gnrc_pktbuf_add(NULL, TEST_STRING8, sizeof(TEST_STRING8), GNRC_NETTYPE_TEST);
@@ -589,11 +557,10 @@ static void test_pktbuf_realloc_data__nomemenough(void)
     TEST_ASSERT_EQUAL_INT(1, pkt1->users);
 }
 
-static void test_pktbuf_realloc_data__alignment(void)
-{
+static void test_pktbuf_realloc_data__alignment(void) {
     gnrc_pktsnip_t *pkt1, *pkt2, *pkt3;
 
-    /* see: https://github.com/RIOT-OS/RIOT/pull/4602 */
+    // see: https://github.com/RIOT-OS/RIOT/pull/4602
     pkt1 = gnrc_pktbuf_add(NULL, TEST_STRING8, sizeof(TEST_STRING8), GNRC_NETTYPE_TEST);
     pkt2 = gnrc_pktbuf_add(NULL, NULL, 23, GNRC_NETTYPE_TEST);
     pkt3 = gnrc_pktbuf_add(NULL, TEST_STRING16, sizeof(TEST_STRING16), GNRC_NETTYPE_UNDEF);
@@ -610,8 +577,7 @@ static void test_pktbuf_realloc_data__alignment(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_realloc_data__success(void)
-{
+static void test_pktbuf_realloc_data__success(void) {
     char exp_data[] = TEST_STRING16;
     gnrc_pktsnip_t *pkt;
 
@@ -630,8 +596,7 @@ static void test_pktbuf_realloc_data__success(void)
     TEST_ASSERT_EQUAL_INT(1, pkt->users);
 }
 
-static void test_pktbuf_realloc_data__success2(void)
-{
+static void test_pktbuf_realloc_data__success2(void) {
     gnrc_pktsnip_t *pkt;
 
     pkt = gnrc_pktbuf_add(NULL, TEST_STRING8, sizeof(TEST_STRING8), GNRC_NETTYPE_TEST);
@@ -646,8 +611,7 @@ static void test_pktbuf_realloc_data__success2(void)
     TEST_ASSERT_EQUAL_INT(1, pkt->users);
 }
 
-static void test_pktbuf_realloc_data__success3(void)
-{
+static void test_pktbuf_realloc_data__success3(void) {
     gnrc_pktsnip_t *pkt;
 
     pkt = gnrc_pktbuf_add(NULL, NULL, 0, GNRC_NETTYPE_TEST);
@@ -667,8 +631,7 @@ static void test_pktbuf_realloc_data__success3(void)
 }
 
 #ifndef MODULE_GNRC_PKTBUF_MALLOC
-static void test_pktbuf_merge_data__memfull(void)
-{
+static void test_pktbuf_merge_data__memfull(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, NULL, (CONFIG_GNRC_PKTBUF_SIZE / 4),
                                           GNRC_NETTYPE_TEST);
 
@@ -678,10 +641,9 @@ static void test_pktbuf_merge_data__memfull(void)
     gnrc_pktbuf_release(pkt);
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
-#endif /* MODULE_GNRC_PKTBUF_MALLOC */
+#endif // MODULE_GNRC_PKTBUF_MALLOC
 
-static void test_pktbuf_merge_data__success1(void)
-{
+static void test_pktbuf_merge_data__success1(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, NULL, 0, GNRC_NETTYPE_TEST);
 
     TEST_ASSERT_NOT_NULL(pkt);
@@ -692,8 +654,7 @@ static void test_pktbuf_merge_data__success1(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_merge_data__success2(void)
-{
+static void test_pktbuf_merge_data__success2(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, TEST_STRING4,
                                           sizeof(TEST_STRING4),
                                           GNRC_NETTYPE_TEST);
@@ -714,22 +675,19 @@ static void test_pktbuf_merge_data__success2(void)
     TEST_ASSERT(gnrc_pktbuf_is_sane());
 }
 
-static void test_pktbuf_hold__pkt_null(void)
-{
+static void test_pktbuf_hold__pkt_null(void) {
     gnrc_pktbuf_hold(NULL, 1);
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_hold__pkt_external(void)
-{
+static void test_pktbuf_hold__pkt_external(void) {
     gnrc_pktsnip_t pkt = { NULL, (void *)TEST_STRING8, sizeof(TEST_STRING8), 1, GNRC_NETTYPE_TEST };
 
     gnrc_pktbuf_hold(&pkt, 1);
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_hold__success(void)
-{
+static void test_pktbuf_hold__success(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, TEST_STRING16, sizeof(TEST_STRING16),
                                           GNRC_NETTYPE_TEST);
 
@@ -740,8 +698,7 @@ static void test_pktbuf_hold__success(void)
     }
 }
 
-static void test_pktbuf_hold__success2(void)
-{
+static void test_pktbuf_hold__success2(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, TEST_STRING16, sizeof(TEST_STRING16),
                                           GNRC_NETTYPE_TEST);
 
@@ -750,8 +707,7 @@ static void test_pktbuf_hold__success2(void)
     TEST_ASSERT_EQUAL_INT(TEST_UINT8 + 1, pkt->users);
 }
 
-static void test_pktbuf_release__short_pktsnips(void)
-{
+static void test_pktbuf_release__short_pktsnips(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, TEST_STRING8, sizeof(TEST_STRING8),
                                           GNRC_NETTYPE_UNDEF);
     gnrc_pktsnip_t *hdr = gnrc_pktbuf_mark(pkt, sizeof(TEST_STRING8) - 1, GNRC_NETTYPE_TEST);
@@ -765,8 +721,7 @@ static void test_pktbuf_release__short_pktsnips(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_release__success(void)
-{
+static void test_pktbuf_release__success(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, TEST_STRING16, sizeof(TEST_STRING16),
                                           GNRC_NETTYPE_TEST);
 
@@ -789,14 +744,12 @@ static void test_pktbuf_release__success(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_start_write__NULL(void)
-{
+static void test_pktbuf_start_write__NULL(void) {
     gnrc_pktbuf_start_write(NULL);
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_start_write__pkt_users_1(void)
-{
+static void test_pktbuf_start_write__pkt_users_1(void) {
     gnrc_pktsnip_t *pkt_copy, *pkt = gnrc_pktbuf_add(NULL, TEST_STRING16, sizeof(TEST_STRING16),
                                                      GNRC_NETTYPE_TEST);
 
@@ -806,8 +759,7 @@ static void test_pktbuf_start_write__pkt_users_1(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_pktbuf_start_write__pkt_users_2(void)
-{
+static void test_pktbuf_start_write__pkt_users_2(void) {
     gnrc_pktsnip_t *pkt_copy, *pkt = gnrc_pktbuf_add(NULL, TEST_STRING16, sizeof(TEST_STRING16),
                                                      GNRC_NETTYPE_TEST);
 
@@ -827,31 +779,29 @@ static void test_pktbuf_start_write__pkt_users_2(void)
 }
 
 #ifndef MODULE_GNRC_PKTBUF_MALLOC
-static void test_pktbuf_reverse_snips__too_full(void)
-{
+static void test_pktbuf_reverse_snips__too_full(void) {
     gnrc_pktsnip_t *pkt, *pkt_next, *pkt_huge;
     const size_t pkt_huge_size = CONFIG_GNRC_PKTBUF_SIZE - (3 * ALIGNMENT_SIZE) -
                                  (3 * sizeof(gnrc_pktsnip_t)) - 4;
 
     pkt_next = gnrc_pktbuf_add(NULL, TEST_STRING16, ALIGNMENT_SIZE, GNRC_NETTYPE_TEST);
     TEST_ASSERT_NOT_NULL(pkt_next);
-    /* hold to enforce duplication */
+    // hold to enforce duplication
     gnrc_pktbuf_hold(pkt_next, 1);
     pkt = gnrc_pktbuf_add(pkt_next, TEST_STRING16, 8, GNRC_NETTYPE_TEST);
     TEST_ASSERT_NOT_NULL(pkt);
-    /* filling up rest of packet buffer */
+    // filling up rest of packet buffer
     pkt_huge = gnrc_pktbuf_add(NULL, NULL, pkt_huge_size, GNRC_NETTYPE_UNDEF);
     TEST_ASSERT_NOT_NULL(pkt_huge);
     TEST_ASSERT_NULL(gnrc_pktbuf_reverse_snips(pkt));
     gnrc_pktbuf_release(pkt_huge);
-    /* release because of hold above */
+    // release because of hold above
     gnrc_pktbuf_release(pkt_next);
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
-#endif /* MODULE_GNRC_PKTBUF_MALLOC */
+#endif // MODULE_GNRC_PKTBUF_MALLOC
 
-static void test_pktbuf_reverse_snips__success(void)
-{
+static void test_pktbuf_reverse_snips__success(void) {
     gnrc_pktsnip_t *pkt, *pkt_next, *pkt_reversed;
 
     pkt_next = gnrc_pktbuf_add(NULL, TEST_STRING8, 8, GNRC_NETTYPE_TEST);
@@ -865,8 +815,7 @@ static void test_pktbuf_reverse_snips__success(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-Test *tests_pktbuf_tests(void)
-{
+Test *tests_pktbuf_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_pktbuf_init),
         new_TestFixture(test_pktbuf_add__pkt_NULL__data_NULL__size_0),
@@ -907,7 +856,7 @@ Test *tests_pktbuf_tests(void)
         new_TestFixture(test_pktbuf_realloc_data__success3),
 #ifndef MODULE_GNRC_PKTBUF_MALLOC
         new_TestFixture(test_pktbuf_merge_data__memfull),
-#endif /* MODULE_GNRC_PKTBUF_MALLOC */
+#endif // MODULE_GNRC_PKTBUF_MALLOC
         new_TestFixture(test_pktbuf_merge_data__success1),
         new_TestFixture(test_pktbuf_merge_data__success2),
         new_TestFixture(test_pktbuf_hold__pkt_null),
@@ -921,7 +870,7 @@ Test *tests_pktbuf_tests(void)
         new_TestFixture(test_pktbuf_start_write__pkt_users_2),
 #ifndef MODULE_GNRC_PKTBUF_MALLOC
         new_TestFixture(test_pktbuf_reverse_snips__too_full),
-#endif /* MODULE_GNRC_PKTBUF_MALLOC */
+#endif // MODULE_GNRC_PKTBUF_MALLOC
         new_TestFixture(test_pktbuf_reverse_snips__success),
     };
 
@@ -930,8 +879,7 @@ Test *tests_pktbuf_tests(void)
     return (Test *)&gnrc_pktbuf_tests;
 }
 
-void tests_pktbuf(void)
-{
+void tests_pktbuf(void) {
     TESTS_RUN(tests_pktbuf_tests());
 }
-/** @} */
+/// @}

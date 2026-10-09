@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_HELPERMACRO_H
 #define EMBUNIT_HELPERMACRO_H
 
@@ -34,4 +32,4 @@ extern "C" {
 }
 #endif
 
-#endif /* EMBUNIT_HELPERMACRO_H */
+#endif // EMBUNIT_HELPERMACRO_H

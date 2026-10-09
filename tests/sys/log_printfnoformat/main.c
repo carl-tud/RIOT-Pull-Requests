@@ -1,22 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       Test logging with no format gives the expected output
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- */
+/// @file
+/// @brief       Test logging with no format gives the expected output
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
 
 #include <inttypes.h>
 
 #include "log.h"
 
-int main(void)
-{
+int main(void) {
     uint8_t value = 42;
     const char *string = "test";
     const char *format = "Logging value %d and string %s";

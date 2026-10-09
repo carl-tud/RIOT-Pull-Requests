@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 Locha Inc
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Locha Inc
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_cc26x2_cc13x2
- * @{
- *
- * @file
- * @brief           CC26x2/CC13x2 Device setup functions
- */
+/// @ingroup         cpu_cc26x2_cc13x2
+/// @{
+///
+/// @file
+/// @brief           CC26x2/CC13x2 Device setup functions
 
 #include <cc26xx_cc13xx.h>
 
@@ -19,15 +15,11 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Setup API address
- */
+/// @brief   Setup API address
 #define ROM_API_SETUP ((uint32_t *) (ROM_API_TABLE[28]))
 
-/**
- * @brief   Setup API ROM functions
- * @{
- */
+/// @brief   Setup API ROM functions
+/// @{
 #define rom_setup_after_cold_reset_wakeup_from_shutdown_cfg1 \
     ((void (*)(uint32_t mode_conf))ROM_API_SETUP[0])
 
@@ -87,30 +79,28 @@ extern "C" {
 
 #define rom_setup_step_vddr_trim_to \
     ((void (*)(uint32_t tocode))ROM_API_SETUP[19])
-/** @} */
+/// @}
 
-/**
- * @brief   Performs the necessary trim of the device which is not done in ROM
- *          boot code.
- *
- * The following is handled by this function:
- *
- * - Checks if the driverlib variant used by the application is supported by the
- *   device. Execution is halted in case of unsupported driverlib variant.
- * - Configures VIMS cache mode based on setting in CCFG.
- * - Configures functionalities like DCDC and XOSC dependent on startup modes
- *   like cold reset, wakeup from shutdown and wakeup from from powerdown.
- * - Configures VIMS power domain control.
- * - Configures optimal wait time for flash FSM in cases where flash pump wakes
- *   up from sleep.
- *
- * @note It does no damage to execute this function again. It only consumes
- * time.
- */
+/// @brief   Performs the necessary trim of the device which is not done in ROM
+///          boot code.
+///
+/// The following is handled by this function:
+///
+/// - Checks if the driverlib variant used by the application is supported by the
+///   device. Execution is halted in case of unsupported driverlib variant.
+/// - Configures VIMS cache mode based on setting in CCFG.
+/// - Configures functionalities like DCDC and XOSC dependent on startup modes
+///   like cold reset, wakeup from shutdown and wakeup from from powerdown.
+/// - Configures VIMS power domain control.
+/// - Configures optimal wait time for flash FSM in cases where flash pump wakes
+///   up from sleep.
+///
+/// @note It does no damage to execute this function again. It only consumes
+/// time.
 void setup_trim_device(void);
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

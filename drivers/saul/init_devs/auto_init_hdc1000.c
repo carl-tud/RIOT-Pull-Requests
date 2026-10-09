@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization for HDC1000 devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization for HDC1000 devices
+//
+// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,36 +17,25 @@
 #include "hdc1000.h"
 #include "hdc1000_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define HDC1000_NUM    ARRAY_SIZE(hdc1000_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static hdc1000_t hdc1000_devs[HDC1000_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[HDC1000_NUM * 2];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define HDC1000_INFO_NUM    ARRAY_SIZE(hdc1000_saul_info)
 
-/**
- * @name    Reference the driver struct
- * @{
- */
+/// @name    Reference the driver struct
+/// @{
 extern saul_driver_t hdc1000_saul_temp_driver;
 extern saul_driver_t hdc1000_saul_hum_driver;
-/** @} */
+/// @}
 
-void auto_init_hdc1000(void)
-{
+void auto_init_hdc1000(void) {
     assert(HDC1000_NUM == HDC1000_INFO_NUM);
 
     for (unsigned i = 0; i < HDC1000_NUM; i++) {

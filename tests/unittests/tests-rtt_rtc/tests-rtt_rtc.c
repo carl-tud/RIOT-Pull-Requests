@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <string.h>
 #include <errno.h>
 
@@ -19,8 +15,7 @@
 
 void rtt_add_ticks(uint64_t ticks);
 
-static void test_set_time(void)
-{
+static void test_set_time(void) {
     struct tm t1 = {
         .tm_sec  = 42,
         .tm_min  = 37,
@@ -61,8 +56,7 @@ static void test_set_time(void)
     TEST_ASSERT_EQUAL_INT(0, rtc_tm_compare(&t1, &now));
 }
 
-static void _alarm_cb(void *arg)
-{
+static void _alarm_cb(void *arg) {
     struct tm now, *expt = arg;
 
     rtc_get_time(&now);
@@ -71,12 +65,11 @@ static void _alarm_cb(void *arg)
     TEST_ASSERT_EQUAL_INT(expt->tm_min, now.tm_min);
     TEST_ASSERT_EQUAL_INT(0, rtc_tm_compare(expt, &now));
 
-    /* use dst to signal how often cb was called */
+    // use dst to signal how often cb was called
     expt->tm_isdst++;
 }
 
-static void test_set_alarm(void)
-{
+static void test_set_alarm(void) {
     struct tm t1 = {
         .tm_sec  = 42,
         .tm_min  = 37,
@@ -111,8 +104,7 @@ static void test_set_alarm(void)
     TEST_ASSERT_EQUAL_INT(1, alarm.tm_isdst);
 }
 
-static void test_set_alarm_short(void)
-{
+static void test_set_alarm_short(void) {
     struct tm t1 = {
         .tm_sec  = 42,
         .tm_min  = 37,
@@ -147,8 +139,7 @@ static void test_set_alarm_short(void)
     TEST_ASSERT_EQUAL_INT(1, alarm.tm_isdst);
 }
 
-static void test_set_alarm_set_time(void)
-{
+static void test_set_alarm_set_time(void) {
     struct tm t1 = {
         .tm_sec  = 42,
         .tm_min  = 37,
@@ -202,8 +193,7 @@ static void test_set_alarm_set_time(void)
     TEST_ASSERT_EQUAL_INT(2, alarm.tm_isdst);
 }
 
-static void test_rtt_rtc_settimeofday(void)
-{
+static void test_rtt_rtc_settimeofday(void) {
     uint32_t s = 10, sec;
     uint32_t us = US_PER_SEC / 8, micro_sec;
 
@@ -225,8 +215,7 @@ static void test_rtt_rtc_settimeofday(void)
     TEST_ASSERT_EQUAL_INT(us, micro_sec);
 }
 
-Test *tests_rtt_rtt_tests(void)
-{
+Test *tests_rtt_rtt_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_set_time),
         new_TestFixture(test_set_alarm),
@@ -240,10 +229,9 @@ Test *tests_rtt_rtt_tests(void)
     return (Test *)&rtt_rtc_tests;
 }
 
-void tests_rtt_rtc(void)
-{
+void tests_rtt_rtc(void) {
     rtc_init();
     rtt_add_ticks(10);
     TESTS_RUN(tests_rtt_rtt_tests());
 }
-/** @} */
+/// @}

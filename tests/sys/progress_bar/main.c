@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       progress_bar test application
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       progress_bar test application
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -24,17 +20,16 @@
 
 #define PROGRESS_BAR_LIST_NUMOF     (5U)
 
-/* Test single progress bar */
+// Test single progress bar
 static progress_bar_t progress_bar;
 
-/* Test multiple progress bars */
+// Test multiple progress bars
 static progress_bar_t progress_bar_list[PROGRESS_BAR_LIST_NUMOF];
 
-int main(void)
-{
+int main(void) {
     puts("Progress bar test application.");
 
-    /* Test a single progress bar */
+    // Test a single progress bar
     sprintf(progress_bar.prefix, "%s ", "Progress bar 0");
 
     for (uint8_t i = 0; i < 101; ++i) {
@@ -48,7 +43,7 @@ int main(void)
 
     puts("\nDone!");
 
-    /* Prepare enough space for the progress bars */
+    // Prepare enough space for the progress bars
     progress_bar_prepare_multi(PROGRESS_BAR_LIST_NUMOF);
 
     for (uint8_t i = 0; i < PROGRESS_BAR_LIST_NUMOF; ++i) {

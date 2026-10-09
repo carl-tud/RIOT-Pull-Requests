@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @brief       Test application for Microchip MCP47xx DAC with I2C interface
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- *
- * This test application demonstrates the usage of the MCP47xx driver.
- * It can be used to test each MCP47xx DAC channel with shell commands.
- *
- * Functions `init`, `set`, `poweron`, `poweroff` demonstrate the usage of
- * the driver API for one channel of one device using the driver API.
- * The `setall` function shows the iteration over all channels of all
- * devices for setting a value.
- */
+/// @ingroup     tests
+/// @brief       Test application for Microchip MCP47xx DAC with I2C interface
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+///
+/// This test application demonstrates the usage of the MCP47xx driver.
+/// It can be used to test each MCP47xx DAC channel with shell commands.
+///
+/// Functions `init`, `set`, `poweron`, `poweroff` demonstrate the usage of
+/// the driver API for one channel of one device using the driver API.
+/// The `setall` function shows the iteration over all channels of all
+/// devices for setting a value.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,14 +26,13 @@
 
 #define BENCH_RUNS_DEFAULT      (100UL * 100)
 
-/* Number of configured MCP47xx I/O expander devices */
+// Number of configured MCP47xx I/O expander devices
 #define MCP47XX_NUM    (sizeof(mcp47xx_params) / sizeof(mcp47xx_params[0]))
 
-/* MCP47xx devices allocation */
+// MCP47xx devices allocation
 mcp47xx_t mcp47xx_dev[MCP47XX_NUM];
 
-static int init(int argc, char **argv)
-{
+static int init(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <channel>\n", argv[0]);
         return 1;
@@ -54,8 +49,7 @@ static int init(int argc, char **argv)
     return 0;
 }
 
-static int set(int argc, char **argv)
-{
+static int set(int argc, char **argv) {
     if (argc < 4) {
         printf("usage: %s <dev> <channel> <value>\n", argv[0]);
         return 1;
@@ -66,8 +60,7 @@ static int set(int argc, char **argv)
     return 0;
 }
 
-static int setall(int argc, char **argv)
-{
+static int setall(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <value>\n", argv[0]);
         return 1;
@@ -86,8 +79,7 @@ static int setall(int argc, char **argv)
     return 0;
 }
 
-static int poweron(int argc, char **argv)
-{
+static int poweron(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <channel>\n", argv[0]);
         return 1;
@@ -98,8 +90,7 @@ static int poweron(int argc, char **argv)
     return 0;
 }
 
-static int poweroff(int argc, char **argv)
-{
+static int poweroff(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <channel>\n", argv[0]);
         return 1;
@@ -110,8 +101,7 @@ static int poweroff(int argc, char **argv)
     return 0;
 }
 
-static int channels(int argc, char **argv)
-{
+static int channels(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <dev>\n", argv[0]);
         return 1;
@@ -123,8 +113,7 @@ static int channels(int argc, char **argv)
     return 0;
 }
 
-static int saw(int argc, char **argv)
-{
+static int saw(int argc, char **argv) {
     if (argc < 4) {
         printf("usage: %s <dev> <channel> <number>\n", argv[0]);
         return 1;
@@ -143,8 +132,7 @@ static int saw(int argc, char **argv)
     return 0;
 }
 
-static int bench(int argc, char **argv)
-{
+static int bench(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <channel> [# of runs]\n", argv[0]);
         return 1;
@@ -179,12 +167,11 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("MCP47xx DAC peripheral driver test\n");
     puts("Initializing MCP47xx");
 
-    /* initialize configured MCP47xx devices */
+    // initialize configured MCP47xx devices
     for (unsigned i = 0; i < MCP47XX_NUM; i++) {
         if (mcp47xx_init(&mcp47xx_dev[i], &mcp47xx_params[i]) != MCP47XX_OK) {
             puts("[Failed]");
@@ -197,7 +184,7 @@ int main(void)
          "NOTE: make sure the values exist! The\n"
          "      behavior for not existing devices/channels is not defined!");
 
-    /* start the shell */
+    // start the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

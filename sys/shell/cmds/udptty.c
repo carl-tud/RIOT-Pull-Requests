@@ -1,19 +1,15 @@
-/*
- * Copyright (C) 2023 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for
- * more details.
- */
+// Copyright (C) 2023 ML!PA Consulting GmbH
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for
+// more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,8 +28,7 @@
 #define EOT 0x4
 #endif
 
-static void _sock_cb(sock_udp_t *sock, sock_async_flags_t flags, void *arg)
-{
+static void _sock_cb(sock_udp_t *sock, sock_async_flags_t flags, void *arg) {
     (void)arg;
     if ((flags & SOCK_ASYNC_MSG_RECV) == 0) {
         return;
@@ -47,8 +42,7 @@ static void _sock_cb(sock_udp_t *sock, sock_async_flags_t flags, void *arg)
     }
 }
 
-static int _udptty_cmd(int argc, char **argv)
-{
+static int _udptty_cmd(int argc, char **argv) {
     if (argc < 2) {
         goto usage;
     }
@@ -96,12 +90,12 @@ static int _udptty_cmd(int argc, char **argv)
         }
 
 #ifdef CPU_NATIVE
-        /* readline() on native blocks all other threads - see #19002 */
+        // readline() on native blocks all other threads - see #19002
         ztimer_sleep(ZTIMER_MSEC, 100);
 #endif
     } while (res != EOF);
 
-    /* send disconnect */
+    // send disconnect
     const char eot = EOT;
     sock_udp_send(&sock, &eot, sizeof(eot), NULL);
     sock_udp_close(&sock);
@@ -114,4 +108,4 @@ usage:
 }
 
 SHELL_COMMAND(udptty, "UDP remote shell", _udptty_cmd);
-/** @} */
+/// @}

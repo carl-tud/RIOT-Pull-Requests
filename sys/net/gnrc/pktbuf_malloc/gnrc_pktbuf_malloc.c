@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2017 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup net_gnrc_pktbuf
- * @{
- *
- * @file
- *
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @ingroup net_gnrc_pktbuf
+/// @{
+///
+/// @file
+///
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -42,19 +38,17 @@ extern gnrc_pktsnip_t *gnrc_pktbuf_fuzzptr;
 #if defined(TEST_SUITES) || defined(MODULE_FUZZING)
 static unsigned mallocs;
 
-static inline void *_malloc(size_t size)
-{
+static inline void *_malloc(size_t size) {
     mallocs++;
     return malloc(size);
 }
 
-static inline void _free(void *ptr)
-{
+static inline void _free(void *ptr) {
     if (ptr != NULL) {
-        /* The fuzzing module is only enabled when building a fuzzing
-         * application from the fuzzing/ subdirectory. If _free is
-         * called on the crafted fuzzing packet, the setup assumes that
-         * input processing has completed and the application terminates. */
+        // The fuzzing module is only enabled when building a fuzzing
+        // application from the fuzzing/ subdirectory. If _free is
+        // called on the crafted fuzzing packet, the setup assumes that
+        // input processing has completed and the application terminates.
 #if defined(MODULE_FUZZING) && !defined(MODULE_GNRC_SOCK)
         if (ptr == gnrc_pktbuf_fuzzptr) {
            exit(EXIT_SUCCESS);
@@ -69,13 +63,12 @@ static inline void _free(void *ptr)
 #define _free(ptr)      free(ptr)
 #endif
 
-/* internal gnrc_pktbuf functions */
+// internal gnrc_pktbuf functions
 static gnrc_pktsnip_t *_create_snip(gnrc_pktsnip_t *next, const void *data, size_t size,
                                     gnrc_nettype_t type);
 
 static inline void _set_pktsnip(gnrc_pktsnip_t *pkt, gnrc_pktsnip_t *next,
-                                void *data, size_t size, gnrc_nettype_t type)
-{
+                                void *data, size_t size, gnrc_nettype_t type) {
     pkt->next = next;
     pkt->data = data;
     pkt->size = size;
@@ -86,16 +79,14 @@ static inline void _set_pktsnip(gnrc_pktsnip_t *pkt, gnrc_pktsnip_t *next,
 #endif
 }
 
-void gnrc_pktbuf_init(void)
-{
+void gnrc_pktbuf_init(void) {
 #ifdef TEST_SUITES
     mallocs = 0;
 #endif
 }
 
 gnrc_pktsnip_t *gnrc_pktbuf_add(gnrc_pktsnip_t *next, const void *data, size_t size,
-                                gnrc_nettype_t type)
-{
+                                gnrc_nettype_t type) {
     gnrc_pktsnip_t *pkt;
 
     if (size > CONFIG_GNRC_PKTBUF_SIZE) {
@@ -109,8 +100,7 @@ gnrc_pktsnip_t *gnrc_pktbuf_add(gnrc_pktsnip_t *next, const void *data, size_t s
     return pkt;
 }
 
-static gnrc_pktsnip_t *_mark(gnrc_pktsnip_t *pkt, size_t size, gnrc_nettype_t type)
-{
+static gnrc_pktsnip_t *_mark(gnrc_pktsnip_t *pkt, size_t size, gnrc_nettype_t type) {
     gnrc_pktsnip_t *header;
     void *header_data, *payload;
 
@@ -121,7 +111,7 @@ static gnrc_pktsnip_t *_mark(gnrc_pktsnip_t *pkt, size_t size, gnrc_nettype_t ty
               (pkt ? pkt->data : NULL));
         return NULL;
     }
-    /* create new snip descriptor for marked data */
+    // create new snip descriptor for marked data
     header = _malloc(sizeof(gnrc_pktsnip_t));
     if (header == NULL) {
         DEBUG("pktbuf: could not reallocate marked section.\n");
@@ -132,8 +122,8 @@ static gnrc_pktsnip_t *_mark(gnrc_pktsnip_t *pkt, size_t size, gnrc_nettype_t ty
         _set_pktsnip(pkt, header, NULL, 0, pkt->type);
         return header;
     }
-    /* we can not just "snip off" something from the end of a malloc'd section
-     * so we need to realloc for marked snip */
+    // we can not just "snip off" something from the end of a malloc'd section
+    // so we need to realloc for marked snip
     payload = _malloc(pkt->size - size);
     if (payload == NULL) {
         DEBUG("pktbuf: could not reallocate marked section.\n");
@@ -155,8 +145,7 @@ static gnrc_pktsnip_t *_mark(gnrc_pktsnip_t *pkt, size_t size, gnrc_nettype_t ty
     return header;
 }
 
-gnrc_pktsnip_t *gnrc_pktbuf_mark(gnrc_pktsnip_t *pkt, size_t size, gnrc_nettype_t type)
-{
+gnrc_pktsnip_t *gnrc_pktbuf_mark(gnrc_pktsnip_t *pkt, size_t size, gnrc_nettype_t type) {
     gnrc_pktsnip_t *new;
 
     mutex_lock(&gnrc_pktbuf_mutex);
@@ -165,19 +154,18 @@ gnrc_pktsnip_t *gnrc_pktbuf_mark(gnrc_pktsnip_t *pkt, size_t size, gnrc_nettype_
     return new;
 }
 
-static int _realloc_data(gnrc_pktsnip_t *pkt, size_t size)
-{
+static int _realloc_data(gnrc_pktsnip_t *pkt, size_t size) {
     assert(pkt != NULL);
     assert(((pkt->size == 0) && (pkt->data == NULL)) ||
            ((pkt->size > 0) && (pkt->data != NULL)));
-    /* new size and old size are equal */
+    // new size and old size are equal
     if (size == pkt->size) {
-        /* nothing to do */
+        // nothing to do
         return 0;
     }
-    /* new size is 0 and data pointer isn't already NULL */
+    // new size is 0 and data pointer isn't already NULL
     if ((size == 0) && (pkt->data != NULL)) {
-        /* set data pointer to NULL */
+        // set data pointer to NULL
         _free(pkt->data);
         pkt->data = NULL;
     }
@@ -193,8 +181,7 @@ static int _realloc_data(gnrc_pktsnip_t *pkt, size_t size)
     return 0;
 }
 
-int gnrc_pktbuf_realloc_data(gnrc_pktsnip_t *pkt, size_t size)
-{
+int gnrc_pktbuf_realloc_data(gnrc_pktsnip_t *pkt, size_t size) {
     int res;
 
     mutex_lock(&gnrc_pktbuf_mutex);
@@ -203,8 +190,7 @@ int gnrc_pktbuf_realloc_data(gnrc_pktsnip_t *pkt, size_t size)
     return res;
 }
 
-void gnrc_pktbuf_hold(gnrc_pktsnip_t *pkt, unsigned int num)
-{
+void gnrc_pktbuf_hold(gnrc_pktsnip_t *pkt, unsigned int num) {
     mutex_lock(&gnrc_pktbuf_mutex);
     while (pkt) {
         assert(pkt->users + num <= 0xff);
@@ -214,8 +200,7 @@ void gnrc_pktbuf_hold(gnrc_pktsnip_t *pkt, unsigned int num)
     mutex_unlock(&gnrc_pktbuf_mutex);
 }
 
-gnrc_pktsnip_t *gnrc_pktbuf_start_write(gnrc_pktsnip_t *pkt)
-{
+gnrc_pktsnip_t *gnrc_pktbuf_start_write(gnrc_pktsnip_t *pkt) {
     mutex_lock(&gnrc_pktbuf_mutex);
     if (pkt == NULL) {
         mutex_unlock(&gnrc_pktbuf_mutex);
@@ -235,29 +220,25 @@ gnrc_pktsnip_t *gnrc_pktbuf_start_write(gnrc_pktsnip_t *pkt)
 }
 
 #ifdef DEVELHELP
-void gnrc_pktbuf_stats(void)
-{
+void gnrc_pktbuf_stats(void) {
     LOG_INFO("pktbuf: no stat output for gnrc_pktbuf_malloc, use tools like valgrind\n");
 }
 #endif
 
 #ifdef TEST_SUITES
-bool gnrc_pktbuf_is_empty(void)
-{
-    /* assert always true, use valgrind to check */
+bool gnrc_pktbuf_is_empty(void) {
+    // assert always true, use valgrind to check
     return (mallocs == 0);
 }
 
-bool gnrc_pktbuf_is_sane(void)
-{
-    /* assert always true, use valgrind to check */
+bool gnrc_pktbuf_is_sane(void) {
+    // assert always true, use valgrind to check
     return true;
 }
 #endif
 
 static gnrc_pktsnip_t *_create_snip(gnrc_pktsnip_t *next, const void *data, size_t size,
-                                    gnrc_nettype_t type)
-{
+                                    gnrc_nettype_t type) {
     gnrc_pktsnip_t *pkt = _malloc(sizeof(gnrc_pktsnip_t));
     void *_data = NULL;
 
@@ -274,27 +255,25 @@ static gnrc_pktsnip_t *_create_snip(gnrc_pktsnip_t *next, const void *data, size
         }
     }
     _set_pktsnip(pkt, next, _data, size, type);
-    /* If size == 0, _data is NULL. The call `memcpy(NULL, non-NULL, 0)` looks
-     * harmless (as copying no data to NULL should be fine), but is in fact
-     * undefined behavior. We test here explicitly to ensure correctness. */
+    // If size == 0, _data is NULL. The call `memcpy(NULL, non-NULL, 0)` looks
+    // harmless (as copying no data to NULL should be fine), but is in fact
+    // undefined behavior. We test here explicitly to ensure correctness.
     if ((data != NULL) && (_data != NULL)) {
         memcpy(_data, data, size);
     }
     return pkt;
 }
 
-void gnrc_pktbuf_free_internal(void *data, size_t size)
-{
+void gnrc_pktbuf_free_internal(void *data, size_t size) {
     (void)size;
     _free(data);
 }
 
-bool gnrc_pktbuf_contains(void *ptr)
-{
+bool gnrc_pktbuf_contains(void *ptr) {
     (void)ptr;
-    /* tracking the memory areas malloced is to expensive, so this function
-     * only is useful with gnrc_pktbuf_static */
+    // tracking the memory areas malloced is to expensive, so this function
+    // only is useful with gnrc_pktbuf_static
     return true;
 }
 
-/** @} */
+/// @}

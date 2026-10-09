@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   Thread race condition test application to reproduce
- *          https://github.com/RIOT-OS/RIOT/issues/10881
- *
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   Thread race condition test application to reproduce
+///          https://github.com/RIOT-OS/RIOT/issues/10881
+///
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <unistd.h>
@@ -35,39 +31,30 @@ static char _stack[THREAD_STACKSIZE_DEFAULT];
 
 static kernel_pid_t _pid_main = KERNEL_PID_UNDEF;
 
-/**
- * @brief   Schedule next timer event in TIMER_TIMEOUT_MIN to TIMER_TIMEOUT_MAX
- *          ticks.
- */
-static void _sched_next(void)
-{
+/// @brief   Schedule next timer event in TIMER_TIMEOUT_MIN to TIMER_TIMEOUT_MAX
+///          ticks.
+static void _sched_next(void) {
     timer_set(TIMER_DEV(0), 0, random_uint32_range(TIMER_TIMEOUT_MIN,
                                                    TIMER_TIMEOUT_MAX));
 }
 
-/**
- * @brief   The timer interrupt
- */
-static void _timer(void *arg, int channel)
-{
+/// @brief   The timer interrupt
+static void _timer(void *arg, int channel) {
     (void)arg;
     (void)channel;
-    /* just continue rescheduling interrupt triggering at random time */
+    // just continue rescheduling interrupt triggering at random time
     _sched_next();
 }
 
-/**
- * @brief   The sending thread
- */
-static void *_thread(void *arg)
-{
+/// @brief   The sending thread
+static void *_thread(void *arg) {
     (void) arg;
 
     while (1) {
         msg_t msg = { .type = 0U };
 
         write(STDOUT_FILENO, ".", 1U);
-        /* send without blocking */
+        // send without blocking
         msg_try_send(&msg, _pid_main);
         thread_yield();
     }
@@ -75,8 +62,7 @@ static void *_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     kernel_pid_t pid;
 
     timer_init(TIMER_DEV(0), TIMER_FREQ, _timer, NULL);
@@ -98,10 +84,10 @@ int main(void)
     while (1) {
         msg_t msg = { .type = CANARY_TYPE };
 
-        /* receive blocked */
+        // receive blocked
         msg_receive(&msg);
-        /* check msg_receive() returned without blocking (i.e. the sending
-         * thread did not get a chance to copy the message over) */
+        // check msg_receive() returned without blocking (i.e. the sending
+        // thread did not get a chance to copy the message over)
         if (msg.type == CANARY_TYPE) {
             puts("Message was not written");
             return 1;

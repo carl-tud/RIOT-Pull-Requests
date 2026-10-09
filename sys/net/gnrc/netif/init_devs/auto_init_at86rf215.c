@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief   Auto initialization for at86rf215 network interfaces
- *
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief   Auto initialization for at86rf215 network interfaces
+///
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #define USED_BANDS (IS_USED(MODULE_AT86RF215_SUBGHZ) + IS_USED(MODULE_AT86RF215_24GHZ))
 
@@ -24,10 +20,8 @@
 #include "at86rf215.h"
 #include "at86rf215_params.h"
 
-/**
- * @brief   Define stack parameters for the MAC layer thread
- * @{
- */
+/// @brief   Define stack parameters for the MAC layer thread
+/// @{
 #define AT86RF215_MAC_STACKSIZE     (IEEE802154_STACKSIZE_DEFAULT)
 #ifndef AT86RF215_MAC_PRIO
 #define AT86RF215_MAC_PRIO          (GNRC_NETIF_PRIO)
@@ -43,16 +37,14 @@ static gnrc_netif_t _netif[AT86RF215_NUM * USED_BANDS];
 static char _at86rf215_stacks[AT86RF215_NUM * USED_BANDS][AT86RF215_MAC_STACKSIZE];
 
 static inline void _setup_netif(gnrc_netif_t *netif, void* netdev, void* stack,
-                                int prio, const char *name)
-{
+                                int prio, const char *name) {
     if (netif == NULL || netdev == NULL) {
         return;
     }
     gnrc_netif_ieee802154_create(netif, stack, AT86RF215_MAC_STACKSIZE, prio, name, netdev);
 }
 
-void auto_init_at86rf215(void)
-{
+void auto_init_at86rf215(void) {
     unsigned i = 0;
     for (unsigned j = 0; j < AT86RF215_NUM; ++j) {
 
@@ -79,11 +71,11 @@ void auto_init_at86rf215(void)
 
         at86rf215_setup(dev_09, dev_24, &at86rf215_params[j], j);
 
-        /* setup sub-GHz interface */
+        // setup sub-GHz interface
         _setup_netif(netif_09, dev_09, stack_09, AT86RF215_MAC_PRIO_SUBGHZ, "at86rf215 [sub GHz]");
 
-        /* setup 2.4-GHz interface */
+        // setup 2.4-GHz interface
         _setup_netif(netif_24, dev_24, stack_24, AT86RF215_MAC_PRIO, "at86rf215 [2.4 GHz]");
     }
 }
-/** @} */
+/// @}

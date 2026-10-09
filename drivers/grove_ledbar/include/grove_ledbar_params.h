@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_grove_ledbar
- *
- * @{
- * @file
- * @brief       Config for the Grove LED bar based on MY9221 LED controller
- *
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     drivers_grove_ledbar
+///
+/// @{
+/// @file
+/// @brief       Config for the Grove LED bar based on MY9221 LED controller
+///
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "board.h"
 #include "periph/gpio.h"
@@ -27,30 +23,22 @@ extern "C"
 {
 #endif
 
-/**
- * @brief   Clock GPIO pin
- */
+/// @brief   Clock GPIO pin
 #ifndef GROVE_LEDBAR_CLK
 #define GROVE_LEDBAR_CLK        (GPIO_PIN(0, 1))
 #endif
 
-/**
- * @brief   Data GPIO pin
- */
+/// @brief   Data GPIO pin
 #ifndef GROVE_LEDBAR_DAT
 #define GROVE_LEDBAR_DAT        (GPIO_PIN(0, 2))
 #endif
 
-/**
- * @brief   Direction of LEDs
- */
+/// @brief   Direction of LEDs
 #ifndef GROVE_LEDBAR_DIR
 #define GROVE_LEDBAR_DIR        GROVE_LEDBAR_G2R
 #endif
 
-/**
- * @brief   Default parameter settings
- */
+/// @brief   Default parameter settings
 #ifndef GROVE_LEDBAR_PARAMS
 #define GROVE_LEDBAR_PARAMS     { .leds = 10,               \
                                   .dir  = GROVE_LEDBAR_DIR, \
@@ -58,22 +46,16 @@ extern "C"
                                   .dat  = GROVE_LEDBAR_DAT }
 #endif
 
-/**
- * @brief   SAUL info
- */
+/// @brief   SAUL info
 #define GROVE_LEDBAR_SAUL_INFO  { .name = "Grove LED bar" }
 
-/**
- * @brief   Grove LED bar configuration
- */
+/// @brief   Grove LED bar configuration
 static const grove_ledbar_params_t grove_ledbar_params[] =
 {
     GROVE_LEDBAR_PARAMS,
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t grove_ledbar_saul_info[] =
 {
     GROVE_LEDBAR_SAUL_INFO
@@ -83,4 +65,4 @@ static const saul_reg_info_t grove_ledbar_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

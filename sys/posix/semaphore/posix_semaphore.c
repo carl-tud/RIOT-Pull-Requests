@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2017 TriaGnoSys GmbH
- *               2013 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2017 TriaGnoSys GmbH
+//               2013 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- *
- * @file
- *
- * @author  Christian Mehlis <mehlis@inf.fu-berlin.de>
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author  René Kijewski <kijewski@inf.fu-berlin.de>
- * @author  Víctor Ariño <victor.arino@zii.aero>
- */
+/// @{
+///
+/// @file
+///
+/// @author  Christian Mehlis <mehlis@inf.fu-berlin.de>
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author  René Kijewski <kijewski@inf.fu-berlin.de>
+/// @author  Víctor Ariño <victor.arino@zii.aero>
 
 #include <errno.h>
 #include <inttypes.h>
@@ -33,8 +29,7 @@
 
 #include "semaphore.h"
 
-int sem_timedwait(sem_t *sem, const struct timespec *abstime)
-{
+int sem_timedwait(sem_t *sem, const struct timespec *abstime) {
     uint64_t timeout = (((uint64_t)abstime->tv_sec) * US_PER_SEC) +
                        (abstime->tv_nsec / NS_PER_US);
     uint64_t now = ztimer64_now(ZTIMER64_USEC);
@@ -52,4 +47,4 @@ int sem_timedwait(sem_t *sem, const struct timespec *abstime)
     return 0;
 }
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of MAG3110 magnetometers
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of MAG3110 magnetometers
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -22,33 +18,22 @@
 #include "mag3110.h"
 #include "mag3110_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define MAG3110_NUM     ARRAY_SIZE(mag3110_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static mag3110_t mag3110_devs[MAG3110_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[MAG3110_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define MAG3110_INFO_NUM    ARRAY_SIZE(mag3110_saul_info)
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern const saul_driver_t mag3110_saul_driver;
 
-void auto_init_mag3110(void)
-{
+void auto_init_mag3110(void) {
     assert(MAG3110_NUM == MAG3110_INFO_NUM);
 
     for (unsigned i = 0; i < MAG3110_NUM; i++) {

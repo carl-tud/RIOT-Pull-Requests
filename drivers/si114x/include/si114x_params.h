@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_si114x
- *
- * @{
- * @file
- * @brief       Default configuration for SI114x
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_si114x
+///
+/// @{
+/// @file
+/// @brief       Default configuration for SI114x
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "si114x.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the Si114x
- * @{
- */
+/// @name    Set default configuration parameters for the Si114x
+/// @{
 #ifndef SI114X_PARAM_I2C_DEV
 #define SI114X_PARAM_I2C_DEV         I2C_DEV(0)
 #endif
@@ -39,19 +33,15 @@ extern "C" {
 #ifndef SI114X_SAUL_INFO
 #define SI114X_SAUL_INFO             { .name = "si114x" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure Si114x
- */
+/// @brief   Configure Si114x
 static const si114x_params_t si114x_params[] =
 {
     SI114X_PARAMS
 };
 
-/**
- * @brief   Allocate and configure entries to the SAUL registry
- */
+/// @brief   Allocate and configure entries to the SAUL registry
 saul_reg_t si114x_saul_reg_info[] =
 {
     SI114X_SAUL_INFO
@@ -61,4 +51,4 @@ saul_reg_t si114x_saul_reg_info[] =
 }
 #endif
 
-/** @} */
+/// @}

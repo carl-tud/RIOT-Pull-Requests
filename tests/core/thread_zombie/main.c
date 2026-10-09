@@ -1,37 +1,32 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin,
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin,
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Thread test application
- *
- *
- * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
- *
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Thread test application
+///
+///
+/// @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+///
 
 #include <stdio.h>
 #include "thread.h"
 #ifdef MODULE_PS
 #include "ps.h"
-#endif /* MODULE_PS */
+#endif // MODULE_PS
 
 #define TEST_THREAD_STACKSIZE ((2 * THREAD_STACKSIZE_IDLE) + \
                                THREAD_EXTRA_STACKSIZE_PRINTF)
 
-/* stacks for testing threads */
+// stacks for testing threads
 static char t2_stack[TEST_THREAD_STACKSIZE];
 static char t3_stack[TEST_THREAD_STACKSIZE];
 static char t4_stack[TEST_THREAD_STACKSIZE];
 
-/* function for testing threads */
-void *second_thread(void *arg)
-{
+// function for testing threads
+void *second_thread(void *arg) {
     printf("Thread: %" PRIdPTR " is starting\n", (intptr_t)arg);
     printf("Thread: %" PRIdPTR " calls zombify\n", (intptr_t)arg);
     thread_zombify();
@@ -39,15 +34,14 @@ void *second_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
-    /* save thread count on test start */
+int main(void) {
+    // save thread count on test start
     int current_thread_count;
     int start_thread_count = sched_num_threads;
 
     printf("Number of threads before the test = %d\n", start_thread_count);
 
-    /* creating threads for testing */
+    // creating threads for testing
     puts("Creating first thread (sleeping)");
     kernel_pid_t first_pid =  thread_create(
         t2_stack, sizeof(t2_stack),
@@ -58,7 +52,7 @@ int main(void)
     #ifdef MODULE_PS
     ps();
     puts("");
-    #endif /* MODULE_PS */
+    #endif // MODULE_PS
 
     puts("Creating second thread (sleeping)");
     kernel_pid_t second_pid =  thread_create(
@@ -69,7 +63,7 @@ int main(void)
     #ifdef MODULE_PS
     ps();
     puts("");
-    #endif /* MODULE_PS */
+    #endif // MODULE_PS
 
     puts("Creating third thread (sleeping)");
     kernel_pid_t third_pid =  thread_create(
@@ -80,12 +74,12 @@ int main(void)
     #ifdef MODULE_PS
     ps();
     puts("");
-    #endif /* MODULE_PS */
+    #endif // MODULE_PS
 
     current_thread_count = sched_num_threads;
     printf("Current number of threads = %d\n", current_thread_count);
 
-    /* check if all threads got created */
+    // check if all threads got created
     if (start_thread_count + 3 != current_thread_count) {
         puts("Error wrong thread count");
     }
@@ -93,14 +87,14 @@ int main(void)
         puts("OK");
     }
 
-    /* wakeup first thread and check if the thread zombified itself */
+    // wakeup first thread and check if the thread zombified itself
     puts("Waking up first thread");
     thread_wakeup(first_pid);
 
     #ifdef MODULE_PS
     ps();
     puts("");
-    #endif /* MODULE_PS */
+    #endif // MODULE_PS
 
     current_thread_count = sched_num_threads;
     printf("Current number of threads = %d\n", current_thread_count);
@@ -116,14 +110,14 @@ int main(void)
         }
     }
 
-    /* wakeup second thread and check if the thread zombified itself */
+    // wakeup second thread and check if the thread zombified itself
     puts("Waking up second thread");
     thread_wakeup(second_pid);
 
     #ifdef MODULE_PS
     ps();
     puts("");
-    #endif /* MODULE_PS */
+    #endif // MODULE_PS
 
     current_thread_count = sched_num_threads;
     printf("Current number of threads = %d\n", current_thread_count);
@@ -146,7 +140,7 @@ int main(void)
         }
     }
 
-    /* kill first zombie thread and check if the thread still exist (it should not) */
+    // kill first zombie thread and check if the thread still exist (it should not)
     puts("Kill first thread");
 
     if (thread_kill_zombie(first_pid) != 1) {
@@ -156,7 +150,7 @@ int main(void)
     #ifdef MODULE_PS
     ps();
     puts("");
-    #endif /* MODULE_PS */
+    #endif // MODULE_PS
 
     current_thread_count = sched_num_threads;
     printf("Current number of threads = %d\n", current_thread_count);
@@ -178,14 +172,14 @@ int main(void)
         }
     }
 
-    /* wakeup third thread and check if the thread zombified itself */
+    // wakeup third thread and check if the thread zombified itself
     puts("Waking up third thread");
     thread_wakeup(third_pid);
 
     #ifdef MODULE_PS
     ps();
     puts("");
-    #endif /* MODULE_PS */
+    #endif // MODULE_PS
 
     if (thread_getstatus(first_pid) != STATUS_NOT_FOUND) {
         puts("Error first Thread does still exist");
@@ -209,7 +203,7 @@ int main(void)
         }
     }
 
-    /* check if threads are created normally after killing a zombie */
+    // check if threads are created normally after killing a zombie
     puts("Creating fourth thread (sleeping)");
     kernel_pid_t last_pid =  thread_create(
         t2_stack, sizeof(t2_stack),
@@ -220,7 +214,7 @@ int main(void)
     #ifdef MODULE_PS
     ps();
     puts("");
-    #endif /* MODULE_PS */
+    #endif // MODULE_PS
 
     if (thread_getstatus(last_pid) != STATUS_SLEEPING) {
         puts("Error last Thread is not sleeping");
@@ -252,12 +246,12 @@ int main(void)
     #ifdef MODULE_PS
     ps();
     puts("");
-    #endif /* MODULE_PS */
+    #endif // MODULE_PS
 
     current_thread_count = sched_num_threads;
     printf("Current number of threads = %d\n", current_thread_count);
 
-    /* check if all threads got created */
+    // check if all threads got created
     if (start_thread_count + 3 != current_thread_count) {
         puts("Error wrong thread count");
     }

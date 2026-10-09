@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_bmx055
- *
- * @{
- * @file
- * @brief       Default configuration for bmx055 devices
- *
- * @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
- */
+/// @ingroup     drivers_bmx055
+///
+/// @{
+/// @file
+/// @brief       Default configuration for bmx055 devices
+///
+/// @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,10 +17,8 @@ extern "C" {
 
 #include "board.h"
 
-/**
- * @name   Default configuration parameters for device BMX055
- * @{
- */
+/// @name   Default configuration parameters for device BMX055
+/// @{
 #ifndef BMX055_PARAM_I2C
 #define BMX055_PARAM_I2C        I2C_DEV(0)
 #endif
@@ -74,18 +68,14 @@ extern "C" {
         { .name = "Gyroscope (bmx055)"      },  \
     }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   BMX055 configuration
- */
+/// @brief   BMX055 configuration
 static const bmx055_params_t bmx055_params[] = {
     BMX055_PARAMS
 };
 
-/**
- * @brief   SAUL registry entries
- */
+/// @brief   SAUL registry entries
 static const saul_reg_info_t bmx055_saul_info[][3] = {
     BMX055_SAULINFO
 };
@@ -94,4 +84,4 @@ static const saul_reg_info_t bmx055_saul_info[][3] = {
 }
 #endif
 
-/** @} */
+/// @}

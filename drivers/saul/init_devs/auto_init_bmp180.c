@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of BMP180 driver.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of BMP180 driver.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,36 +17,25 @@
 #include "bmp180.h"
 #include "bmp180_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define BMP180_NUM      ARRAY_SIZE(bmp180_params)
 
-/**
- * @brief   Allocation of memory for device descriptors
- */
+/// @brief   Allocation of memory for device descriptors
 static bmp180_t bmp180_devs[BMP180_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[BMP180_NUM * 2];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define BMP180_INFO_NUM ARRAY_SIZE(bmp180_saul_info)
 
-/**
- * @name    Reference the driver structs.
- * @{
- */
+/// @name    Reference the driver structs.
+/// @{
 extern const saul_driver_t bmp180_temperature_saul_driver;
 extern const saul_driver_t bmp180_pressure_saul_driver;
-/** @} */
+/// @}
 
-void auto_init_bmp180(void)
-{
+void auto_init_bmp180(void) {
     assert(BMP180_INFO_NUM == BMP180_NUM);
 
     for (unsigned i = 0; i < BMP180_NUM; i++) {
@@ -62,17 +47,17 @@ void auto_init_bmp180(void)
             continue;
         }
 
-        /* temperature */
+        // temperature
         saul_entries[(i * 2)].dev = &(bmp180_devs[i]);
         saul_entries[(i * 2)].name = bmp180_saul_info[i].name;
         saul_entries[(i * 2)].driver = &bmp180_temperature_saul_driver;
 
-        /* atmospheric pressure */
+        // atmospheric pressure
         saul_entries[(i * 2) + 1].dev = &(bmp180_devs[i]);
         saul_entries[(i * 2) + 1].name = bmp180_saul_info[i].name;
         saul_entries[(i * 2) + 1].driver = &bmp180_pressure_saul_driver;
 
-        /* register to saul */
+        // register to saul
         saul_reg_add(&(saul_entries[(i * 2)]));
         saul_reg_add(&(saul_entries[(i * 2) + 1]));
     }

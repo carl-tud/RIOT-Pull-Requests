@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam0_common
- * @{
- *
- * @file
- * @brief       Low-level DAC driver implementation
- *
- * @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
- *
- * @}
- */
+/// @ingroup     cpu_sam0_common
+/// @{
+///
+/// @file
+/// @brief       Low-level DAC driver implementation
+///
+/// @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
+///
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -42,11 +38,10 @@ static dma_t tx_dma[DAC_NUMOF] = {
 };
 #endif
 
-static void _dac_init_clock(dac_t line)
-{
+static void _dac_init_clock(dac_t line) {
     sam0_gclk_enable(DAC_CLOCK);
 
-    /* GCLK Setup */
+    // GCLK Setup
 #ifdef GCLK_PCHCTRL_CHEN
     GCLK->PCHCTRL[DAC_GCLK_ID].reg = GCLK_PCHCTRL_CHEN
                                    | GCLK_PCHCTRL_GEN(DAC_CLOCK);
@@ -59,13 +54,11 @@ static void _dac_init_clock(dac_t line)
     dac_poweron(line);
 }
 
-uint32_t dac_get_freq(void)
-{
+uint32_t dac_get_freq(void) {
     return sam0_gclk_freq(DAC_CLOCK) / 12;
 }
 
-static inline bool _ext_vref(void)
-{
+static inline bool _ext_vref(void) {
 #ifdef DAC_CTRLB_REFSEL_VREFP
     return DAC_VREF == DAC_CTRLB_REFSEL_VREFP;
 #endif
@@ -75,8 +68,7 @@ static inline bool _ext_vref(void)
 #endif
 }
 
-static inline void _sync(void)
-{
+static inline void _sync(void) {
 #ifdef DAC_SYNCBUSY_MASK
     while (DAC->SYNCBUSY.reg) {}
 #else
@@ -85,8 +77,7 @@ static inline void _sync(void)
 }
 
 #ifdef DAC_DACCTRL_CCTRL_Msk
-static uint32_t _get_CCTRL(uint32_t freq)
-{
+static uint32_t _get_CCTRL(uint32_t freq) {
     if (freq <= KHZ(1200)) {
         return DAC_DACCTRL_CCTRL_CC100K;
     }
@@ -104,17 +95,16 @@ static uint32_t _get_CCTRL(uint32_t freq)
 }
 #endif
 
-int8_t dac_init(dac_t line)
-{
+int8_t dac_init(dac_t line) {
     switch (line) {
     case 0:
-        /* DAC0 is always connected to PA2 */
+        // DAC0 is always connected to PA2
         gpio_init(GPIO_PIN(PA, 2), GPIO_OUT);
         gpio_init_mux(GPIO_PIN(PA, 2), GPIO_MUX_B);
         break;
 #ifdef PIN_PA05B_DAC_VOUT1
     case 1:
-        /* DAC1 is always connected to PA5 */
+        // DAC1 is always connected to PA5
         gpio_init(GPIO_PIN(PA, 5), GPIO_OUT);
         gpio_init_mux(GPIO_PIN(PA, 5), GPIO_MUX_B);
         break;
@@ -124,13 +114,13 @@ int8_t dac_init(dac_t line)
     }
 
     if (_ext_vref()) {
-        /* PA3 is external reference voltage */
+        // PA3 is external reference voltage
         gpio_init_mux(GPIO_PIN(PA, 3), GPIO_MUX_B);
     }
 
     _dac_init_clock(line);
 
-    /* Settings can only be changed when DAC is disabled */
+    // Settings can only be changed when DAC is disabled
     DAC->CTRLA.reg &= ~DAC_CTRLA_ENABLE;
     _sync();
 
@@ -147,18 +137,17 @@ int8_t dac_init(dac_t line)
                            ;
 
 #ifdef DAC_DACCTRL_REFRESH
-    /** The DAC can only maintain its output on the desired value for approximately 100 μs.
-     *  For static voltages the conversion must be refreshed periodically (see e.g.
-     *  '47.6.9.3 Conversion Refresh' in the SAM D5xE5x family data sheet).
-     *
-     *  Note: T_REFRESH = REFRESH * T_OSCULP32K
-     */
+    /// The DAC can only maintain its output on the desired value for approximately 100 μs.
+    ///  For static voltages the conversion must be refreshed periodically (see e.g.
+    ///  '47.6.9.3 Conversion Refresh' in the SAM D5xE5x family data sheet).
+    ///
+    ///  Note: T_REFRESH = REFRESH * T_OSCULP32K
     static_assert(CONFIG_SAM0_DAC_REFRESH != 1, "DACCTRLx.REFRESH = 1 is reserved");
 
     DAC->DACCTRL[line].bit.REFRESH = CONFIG_SAM0_DAC_REFRESH;
 #endif
 
-    /* Set Reference Voltage & enable Output if needed */
+    // Set Reference Voltage & enable Output if needed
     DAC->CTRLB.reg = DAC_VREF
 #ifdef DAC_CTRLB_EOEN
                    | DAC_CTRLB_EOEN
@@ -176,7 +165,7 @@ int8_t dac_init(dac_t line)
     _sync();
 
 #ifdef DAC_STATUS_READY
-    /* wait for DAC startup */
+    // wait for DAC startup
     const uint32_t mask = 1 << (DAC_STATUS_READY_Pos + line);
     while (!(DAC->STATUS.reg & mask)) {}
 #endif
@@ -184,16 +173,15 @@ int8_t dac_init(dac_t line)
     return DAC_OK;
 }
 
-void dac_set(dac_t line, uint16_t value)
-{
+void dac_set(dac_t line, uint16_t value) {
 #ifdef DAC_SYNCBUSY_DATA1
     const uint32_t mask = (1 << (DAC_INTFLAG_EMPTY_Pos + line));
     while (!(DAC->INTFLAG.reg & mask)) {}
 
-    /* DAC has multiple outputs */
+    // DAC has multiple outputs
     DAC->DATA[line].reg = DAC_VAL(value);
 #else
-    /* DAC has only one output */
+    // DAC has only one output
     (void)line;
 
     _sync();
@@ -202,8 +190,7 @@ void dac_set(dac_t line, uint16_t value)
 }
 
 #ifdef MODULE_PERIPH_DAC_PLAY
-int dac_play_setup(dac_t line, dma_cb_t cb, void *arg)
-{
+int dac_play_setup(dac_t line, dma_cb_t cb, void *arg) {
     uint8_t dmac_id;
 #ifdef DAC_DMAC_ID_EMPTY_1
     dmac_id = line ? DAC_DMAC_ID_EMPTY_1 : DAC_DMAC_ID_EMPTY_0;
@@ -225,8 +212,7 @@ int dac_play_setup(dac_t line, dma_cb_t cb, void *arg)
     return 0;
 }
 
-void dac_play_teardown(dac_t line)
-{
+void dac_play_teardown(dac_t line) {
     if (tx_dma[line] == UINT8_MAX) {
         return;
     }
@@ -237,8 +223,7 @@ void dac_play_teardown(dac_t line)
     tx_dma[line] = UINT8_MAX;
 }
 
-void dac_play(dac_t line, const uint16_t *buf, size_t len, uint8_t flags)
-{
+void dac_play(dac_t line, const uint16_t *buf, size_t len, uint8_t flags) {
     void *dst;
 #ifdef DAC_SYNCBUSY_DATA1
     dst = (void *)&DAC->DATA[line].reg;
@@ -246,7 +231,7 @@ void dac_play(dac_t line, const uint16_t *buf, size_t len, uint8_t flags)
     dst = (void *)&DAC->DATA.reg;
 #endif
 
-    /* source buffer will be set by dac_play() */
+    // source buffer will be set by dac_play()
     dma_prepare(tx_dma[line], DMAC_BTCTRL_BEATSIZE_HWORD_Val,
                 buf + len, dst, len, DMA_INCR_SRC);
 
@@ -256,10 +241,9 @@ void dac_play(dac_t line, const uint16_t *buf, size_t len, uint8_t flags)
 
     dma_start(tx_dma[line]);
 }
-#endif /* MODULE_PERIPH_DAC_PLAY */
+#endif // MODULE_PERIPH_DAC_PLAY
 
-void dac_poweron(dac_t line)
-{
+void dac_poweron(dac_t line) {
     (void) line;
 
 #ifdef PM_APBCMASK_DAC
@@ -273,8 +257,7 @@ void dac_poweron(dac_t line)
 #endif
 }
 
-void dac_poweroff(dac_t line)
-{
+void dac_poweroff(dac_t line) {
     (void) line;
 
 #ifdef PM_APBCMASK_DAC

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_dcf77
- * @{
- *
- * @file
- * @brief       Device driver implementation for the dcf 77
- *              longwave time signal and standard-frequency radio station
- *
- * @author      Michel Gerlach <michel.gerlach@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_dcf77
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the dcf 77
+///              longwave time signal and standard-frequency radio station
+///
+/// @author      Michel Gerlach <michel.gerlach@haw-hamburg.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <string.h>
@@ -30,11 +26,11 @@
 #define ENABLE_DEBUG                            0
 #include "debug.h"
 
-/* Persistent level longer than 1200ms starts a new cycle  */
-#define DCF77_PULSE_START_HIGH_THRESHOLD_US     (1200000U)    /*~1200ms*/
-/* Every pulse send by the DCF longer than 130ms is interpreted as 1 */
-#define DCF77_PULSE_WIDTH_THRESHOLD_US          (140000U)    /*~140ms*/
-/* Number of bits in a cycle*/
+// Persistent level longer than 1200ms starts a new cycle
+#define DCF77_PULSE_START_HIGH_THRESHOLD_US     (1200000U)    // ~1200ms
+// Every pulse send by the DCF longer than 130ms is interpreted as 1
+#define DCF77_PULSE_WIDTH_THRESHOLD_US          (140000U)    // ~140ms
+// Number of bits in a cycle
 #define DCF77_READING_CYCLE                     (59)
 
 #define DCF77_MINUTE_MASK                       (0xFE00000ULL)
@@ -45,8 +41,7 @@
 #define DCF77_HOUR_SHIFT                        (29)
 #define DCF77_DATE_SHIFT                        (36)
 
-static void _level_cb_high(dcf77_t *dev)
-{
+static void _level_cb_high(dcf77_t *dev) {
     switch (dev->internal_state) {
         case DCF77_STATE_START:
             DEBUG("[dcf77] EVENT START 1 !\n");
@@ -66,8 +61,7 @@ static void _level_cb_high(dcf77_t *dev)
     }
 }
 
-static void _level_cb_low(dcf77_t *dev)
-{
+static void _level_cb_low(dcf77_t *dev) {
     switch (dev->internal_state) {
         case DCF77_STATE_IDLE:
             DEBUG("[dcf77] EVENT IDLE 0  !\n");
@@ -98,8 +92,7 @@ static void _level_cb_low(dcf77_t *dev)
     }
 }
 
-static void _level_cb(void *arg)
-{
+static void _level_cb(void *arg) {
     dcf77_t *dev = (dcf77_t *)arg;
 
     if (gpio_read(dev->params.pin)) {
@@ -110,11 +103,10 @@ static void _level_cb(void *arg)
     }
 }
 
-int dcf77_init(dcf77_t *dev, const dcf77_params_t *params)
-{
+int dcf77_init(dcf77_t *dev, const dcf77_params_t *params) {
     DEBUG("dcf77_init\n");
 
-    /* check parameters and configuration */
+    // check parameters and configuration
     assert(dev && params);
     dev->tick_cb = NULL;
     dev->params = *params;
@@ -129,8 +121,7 @@ int dcf77_init(dcf77_t *dev, const dcf77_params_t *params)
     }
 }
 
-int dcf77_get_time(dcf77_t *dev, struct tm *time)
-{
+int dcf77_get_time(dcf77_t *dev, struct tm *time) {
     assert(dev);
 
     if (dev->last_bitseq.val.mesz == 2) {
@@ -182,8 +173,7 @@ int dcf77_get_time(dcf77_t *dev, struct tm *time)
     return DCF77_OK;
 }
 
-void dcf77_set_tick_cb(dcf77_t *dev, dcf77_tick_cb_t cb, void *arg)
-{
+void dcf77_set_tick_cb(dcf77_t *dev, dcf77_tick_cb_t cb, void *arg) {
     assert(dev);
 
     dev->tick_cb_args = arg;

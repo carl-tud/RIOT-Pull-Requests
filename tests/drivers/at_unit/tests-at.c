@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2024 ML!PA GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 ML!PA GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "embUnit.h"
 #include <stdio.h>
@@ -21,15 +19,13 @@ static char rp_buf[256];
 #ifdef MODULE_AT_URC
 static unsigned urc_count = 0;
 
-void unit_test_urc_long_handler(void *arg, char const *code)
-{
+void unit_test_urc_long_handler(void *arg, char const *code) {
     TEST_ASSERT(strncmp(UNIT_TEST_LONG_URC, code, strlen(UNIT_TEST_LONG_URC)) == 0);
     unsigned *urc_count = (unsigned *)arg;
     *urc_count += 1;
 }
 
-void unit_test_urc_short_handler(void *arg, char const *code)
-{
+void unit_test_urc_short_handler(void *arg, char const *code) {
     TEST_ASSERT(strncmp(UNIT_TEST_SHORT_URC, code, strlen(UNIT_TEST_SHORT_URC)) == 0);
     unsigned *urc_count = (unsigned *)arg;
     *urc_count += 1;
@@ -50,12 +46,11 @@ at_urc_t urc_short = {
 #ifdef CPU_NATIVE
 #define AT_UNIT_UART_DEV 0
 #else
-/* Most non-native boards have stdout mapped to device 0 */
+// Most non-native boards have stdout mapped to device 0
 #define AT_UNIT_UART_DEV 1
 #endif
 
-static void set_up(void)
-{
+static void set_up(void) {
     at_dev_init_t at_init_params = {
         .baudrate = 115200,
         .rp_buf = rp_buf,
@@ -65,7 +60,7 @@ static void set_up(void)
         .uart = UART_DEV(AT_UNIT_UART_DEV),
     };
     int res = at_dev_init(&at_dev, &at_init_params);
-    /* check the UART initialization return value and respond as needed */
+    // check the UART initialization return value and respond as needed
     if (res == UART_NODEV) {
         TEST_FAIL("Invalid UART device given!");
     }
@@ -73,7 +68,7 @@ static void set_up(void)
         TEST_FAIL("Baudrate is not applicable!");
     }
 
-    /* we don't use the serial device, make sure it doesn't clobber our rx buffer */
+    // we don't use the serial device, make sure it doesn't clobber our rx buffer
     at_dev_poweroff(&at_dev);
     at_drain(&at_dev);
 
@@ -83,16 +78,14 @@ static void set_up(void)
 #endif
 }
 
-static void tear_down(void)
-{
+static void tear_down(void) {
 #ifdef MODULE_AT_URC
     at_remove_urc(&at_dev, &urc_long);
     at_remove_urc(&at_dev, &urc_short);
 #endif
 }
 
-static void assert_urc_count(unsigned expected)
-{
+static void assert_urc_count(unsigned expected) {
 #ifdef MODULE_AT_URC
     TEST_ASSERT_EQUAL_INT(expected, urc_count);
     urc_count = 0;
@@ -105,13 +98,11 @@ int _emb_read_line_or_echo(at_dev_t *dev, char const *cmd, char *resp_buf,
 ssize_t _emb_get_lines(at_dev_t *dev, char *resp_buf, size_t len, uint32_t timeout);
 int _emb_wait_echo(at_dev_t *dev, char const *command, uint32_t timeout);
 
-static void inject_resp_str(at_dev_t *dev, char const *str)
-{
+static void inject_resp_str(at_dev_t *dev, char const *str) {
     isrpipe_write(&dev->isrpipe, (unsigned char const *)str, strlen(str));
 }
 
-void test_readline_or_echo(void)
-{
+void test_readline_or_echo(void) {
     int res;
     char resp_buf[64];
     at_dev_t *dev = &at_dev;
@@ -134,7 +125,7 @@ void test_readline_or_echo(void)
                     AT_RECV_EOL
                     "OK"
                     AT_RECV_EOL);
-    /* Reading in a buffer <= 1 should not read any characters from the RX */
+    // Reading in a buffer <= 1 should not read any characters from the RX
     res = _emb_read_line_or_echo(dev, "AT+COMMAND", resp_buf, 0, 1000);
     TEST_ASSERT(res == -EINVAL);
     res = _emb_read_line_or_echo(dev, "AT+COMMAND", resp_buf, 1, 1000);
@@ -152,7 +143,7 @@ void test_readline_or_echo(void)
     res = _emb_read_line_or_echo(dev, "", resp_buf, sizeof(resp_buf), 1000);
     TEST_ASSERT(res == -EINVAL);
 
-    /* here we should have a rogue CONFIG_AT_SEND_EOL left in the buffer from before */
+    // here we should have a rogue CONFIG_AT_SEND_EOL left in the buffer from before
     inject_resp_str(dev,
                     LONG_COMMAND
                     CONFIG_AT_SEND_EOL
@@ -202,8 +193,7 @@ void test_readline_or_echo(void)
     TEST_ASSERT(res -ETIMEDOUT);
 }
 
-void test_wait_echo(void)
-{
+void test_wait_echo(void) {
     int res;
     char resp_buf[64];
     at_dev_t *dev = &at_dev;
@@ -323,8 +313,7 @@ void test_wait_echo(void)
     assert_urc_count(9);
 }
 
-void test_get_resp_with_prefix(void)
-{
+void test_get_resp_with_prefix(void) {
     int res;
     char resp_buf[64];
     at_dev_t *dev = &at_dev;
@@ -394,8 +383,7 @@ void test_get_resp_with_prefix(void)
     assert_urc_count(5);
 }
 
-void test_read_lines(void)
-{
+void test_read_lines(void) {
     int res;
     char resp_buf[62];
     char *p;
@@ -421,7 +409,7 @@ void test_read_lines(void)
     p = strstr(resp_buf, "OK");
     TEST_ASSERT(p);
 
-    /* inconsistent EOL */
+    // inconsistent EOL
     inject_resp_str(dev,
                     "+R1"
                     AT_RECV_EOL
@@ -439,7 +427,7 @@ void test_read_lines(void)
     p = strstr(resp_buf, "OK");
     TEST_ASSERT(p);
 
-    /* URCs should get handled here */
+    // URCs should get handled here
     inject_resp_str(dev,
                     AT_RECV_EOL
                     UNIT_TEST_SHORT_URC
@@ -453,8 +441,8 @@ void test_read_lines(void)
     res = _emb_get_lines(dev, resp_buf, sizeof(resp_buf), 1000);
     TEST_ASSERT(res == -1);
 
-    /* URCs shouldn't get handled here. DCE answered neither OK nor error,
-     * something went terribly wrong anyway, fine to just drop them. */
+    // URCs shouldn't get handled here. DCE answered neither OK nor error,
+    // something went terribly wrong anyway, fine to just drop them.
     inject_resp_str(dev,
                     AT_RECV_EOL
                     UNIT_TEST_SHORT_URC
@@ -466,7 +454,7 @@ void test_read_lines(void)
     res = _emb_get_lines(dev, resp_buf, sizeof(resp_buf), 1000);
     TEST_ASSERT(res == -ETIMEDOUT);
 
-    /* overflow the input buffer */
+    // overflow the input buffer
     inject_resp_str(dev,
                     AT_RECV_EOL
                     AT_RECV_EOL
@@ -482,8 +470,7 @@ void test_read_lines(void)
     assert_urc_count(2);
 }
 
-void test_wait_prompt(void)
-{
+void test_wait_prompt(void) {
     int res;
     char resp_buf[64];
     at_dev_t *dev = &at_dev;
@@ -535,8 +522,7 @@ void test_wait_prompt(void)
     assert_urc_count(2);
 }
 
-void test_wait_ok(void)
-{
+void test_wait_ok(void) {
     int res;
     unsigned urc_cnt = 5;
     at_dev_t *dev = &at_dev;
@@ -588,7 +574,7 @@ void test_wait_ok(void)
     TEST_ASSERT(res == 0);
 #ifdef CONFIG_AT_SEND_SKIP_ECHO
     if (strcmp(AT_RECV_EOL, CONFIG_AT_SEND_EOL) == 0) {
-        /* Test echo handling when none expected */
+        // Test echo handling when none expected
         urc_cnt += 5;
         at_drain(dev);
 
@@ -644,13 +630,12 @@ void test_wait_ok(void)
         res = at_wait_ok(dev, 1000);
         TEST_ASSERT(res == 0);
     }
-#endif /* CONFIG_AT_SEND_SKIP_ECHO */
+#endif // CONFIG_AT_SEND_SKIP_ECHO
     assert_urc_count(urc_cnt);
 }
 
 #ifdef MODULE_AT_URC
-void test_process_urc(void)
-{
+void test_process_urc(void) {
     at_dev_t *dev = &at_dev;
     at_drain(dev);
 
@@ -668,10 +653,9 @@ void test_process_urc(void)
 
     assert_urc_count(2);
 }
-#endif /* MODULE_AT_URC */
+#endif // MODULE_AT_URC
 
-static Test *tests_at(void)
-{
+static Test *tests_at(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_readline_or_echo),
         #ifndef CONFIG_AT_SEND_SKIP_ECHO
@@ -691,8 +675,7 @@ static Test *tests_at(void)
     return (Test *)&at_tests;
 }
 
-int main(void)
-{
+int main(void) {
 
     puts("AT unit-like test\n");
 

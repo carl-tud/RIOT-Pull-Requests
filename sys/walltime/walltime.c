@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_walltime
- * @{
- *
- * @file
- * @brief       Wall-Clock time access
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_walltime
+/// @{
+///
+/// @file
+/// @brief       Wall-Clock time access
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 #include <errno.h>
 #include <string.h>
 
@@ -40,8 +36,7 @@ static uint32_t _boottime_bkup BACKUP_RAM;
 
 static void *subscriber;
 
-void walltime_change_subscribe(walltime_change_sub_t *sub)
-{
+void walltime_change_subscribe(walltime_change_sub_t *sub) {
     assert(sub->cb);
     sub->next = NULL;
 
@@ -52,8 +47,7 @@ void walltime_change_subscribe(walltime_change_sub_t *sub)
     *tail = sub;
 }
 
-bool walltime_change_unsubscribe(walltime_change_sub_t *sub)
-{
+bool walltime_change_unsubscribe(walltime_change_sub_t *sub) {
     void **tail = &subscriber;
     void **prev = tail;
     while (*tail) {
@@ -68,22 +62,19 @@ bool walltime_change_unsubscribe(walltime_change_sub_t *sub)
     return false;
 }
 
-uint32_t walltime_get_riot(uint16_t *ms)
-{
+uint32_t walltime_get_riot(uint16_t *ms) {
     struct tm now;
     walltime_get(&now, ms);
     return rtc_mktime(&now);
 }
 
-time_t walltime_get_unix(uint16_t *ms)
-{
+time_t walltime_get_unix(uint16_t *ms) {
     struct tm now;
     walltime_get(&now, ms);
     return mktime(&now);
 }
 
-int walltime_set(struct tm *time)
-{
+int walltime_set(struct tm *time) {
     uint32_t now = rtc_mktime(time);
     uint32_t old = walltime_get_riot(NULL);
     int32_t diff = now - old;
@@ -113,8 +104,7 @@ int walltime_set(struct tm *time)
     return res;
 }
 
-int walltime_get(struct tm *time, uint16_t *ms)
-{
+int walltime_get(struct tm *time, uint16_t *ms) {
     uint16_t msec = 0;
     int res = walltime_impl_get(time, &msec);
     if (ms) {
@@ -124,19 +114,16 @@ int walltime_get(struct tm *time, uint16_t *ms)
     return res;
 }
 
-int walltime_set_alarm(struct tm *time, walltime_alarm_cb_t cb, void *arg)
-{
+int walltime_set_alarm(struct tm *time, walltime_alarm_cb_t cb, void *arg) {
     rtc_tm_normalize(time);
     return walltime_impl_alarm_set(time, cb, arg);
 }
 
-int walltime_get_alarm(struct tm *time)
-{
+int walltime_get_alarm(struct tm *time) {
     return walltime_impl_alarm_get(time);
 }
 
-uint32_t walltime_uptime(bool full)
-{
+uint32_t walltime_uptime(bool full) {
     uint32_t now = walltime_get_riot(NULL);
 #ifdef BACKUP_RAM
     if (full) {
@@ -148,11 +135,10 @@ uint32_t walltime_uptime(bool full)
     return now - _boottime;
 }
 
-static void auto_init_uptime(void)
-{
+static void auto_init_uptime(void) {
     walltime_impl_init();
 
-    /* don't allow time < RIOT_EPOCH */
+    // don't allow time < RIOT_EPOCH
     struct tm now;
     walltime_get(&now, NULL);
     if (now.tm_year < RIOT_EPOCH - 1900) {

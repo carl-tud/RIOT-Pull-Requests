@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the TSL4531x Lux sensor
- *
- * @author      Daniel Petry <daniel.petry@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the TSL4531x Lux sensor
+///
+/// @author      Daniel Petry <daniel.petry@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -26,10 +22,9 @@
 #include "tsl4531x.h"
 #include "tsl4531x_params.h"
 
-#define _100ms_in_us   (100 * 1000u) /* 1 second delay between printf */
+#define _100ms_in_us   (100 * 1000u) // 1 second delay between printf
 
-int main(void)
-{
+int main(void) {
     tsl4531x_t dev;
     int err;
 
@@ -49,20 +44,20 @@ int main(void)
         printf("-------------------------------------------------------------");
         printf("-------------------------\n");
 
-        /* Set into high power mode */
+        // Set into high power mode
         tsl4531x_set_low_power_mode(&dev, false);
 
-        /* Test simple read - high power mode */
+        // Test simple read - high power mode
         lux = tsl4531x_simple_read(&dev);
         printf("Illuminance       | High power mode | Synchronous read                 |");
         printf(" [lx] | %u\n", lux);
 
-        /* Determine the actual integration time - how long does it take for a
-           value to change?
-           Note that if the sensor value doesn't change between integration
-           cycles, this will sum the previous integration times. This mostly
-           won't happen, but it's best to let this run for a few cycles and take
-           the minimum. */
+        // Determine the actual integration time - how long does it take for a
+        //    value to change?
+        //    Note that if the sensor value doesn't change between integration
+        //    cycles, this will sum the previous integration times. This mostly
+        //    won't happen, but it's best to let this run for a few cycles and take
+        //    the minimum.
         uint16_t lux_last = lux;
         uint8_t changes = 0;
         uint32_t change_times[2];
@@ -78,11 +73,11 @@ int main(void)
         printf("Sample ready time | High power mode | From device                      |");
         printf(" [us] | %lu\n", (unsigned long)(change_times[1] - change_times[0]));
 
-        /* Set into low power mode */
+        // Set into low power mode
         tsl4531x_set_low_power_mode(&dev, true);
 
-        /* This tests what happens when you read without asking for a sample in
-           low power mode. */
+        // This tests what happens when you read without asking for a sample in
+        //    low power mode.
         lux = tsl4531x_get_sample(&dev);
         printf("Illuminance       | Low power mode  | Immediate read after mode change |");
         printf(" [lx] | %u\n", lux);
@@ -91,15 +86,15 @@ int main(void)
         printf("Illuminance       | Low power mode  | One cycle time after mode change |");
         printf(" [lx] | %u\n", lux);
 
-        /* Test synchronous read - low power mode */
+        // Test synchronous read - low power mode
         lux = tsl4531x_simple_read(&dev);
         printf("Illuminance       | Low power mode  | Synchronous read                 |");
         printf(" [lx] | %u\n", lux);
 
-        /* Test asynchronous read - low power mode */
+        // Test asynchronous read - low power mode
         tsl4531x_start_sample(&dev);
 
-        /* Verify that the stated time until sample ready is reasonable. */
+        // Verify that the stated time until sample ready is reasonable.
         uint32_t t = tsl4531x_time_until_sample_ready(&dev);
         xtimer_usleep(t);
         lux = tsl4531x_get_sample(&dev);

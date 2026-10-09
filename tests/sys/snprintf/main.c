@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2024 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       snprintf test (correctness of standard format specifier
- *              implementation)
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       snprintf test (correctness of standard format specifier
+///              implementation)
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -28,8 +24,7 @@
 
 static bool failed = false;
 
-static void check(const char *expected, const char *got, int retval)
-{
+static void check(const char *expected, const char *got, int retval) {
     if (retval != (int)strlen(expected)) {
         failed = true;
         printf("snprintf() returned %d, but expected %u\n",
@@ -44,13 +39,12 @@ static void check(const char *expected, const char *got, int retval)
     }
 }
 
-static void test_int8(void)
-{
+static void test_int8(void) {
     static uint8_t u8 = 10;
     static int8_t s8 = -3;
 
-    /* memory barrier to prevent the compiler from constant folding on the
-     * snprintf calls */
+    // memory barrier to prevent the compiler from constant folding on the
+    // snprintf calls
     __asm__ volatile ("" ::: "memory");
 
     char buf[32];
@@ -84,13 +78,12 @@ static void test_int8(void)
     check("-3", buf, len);
 }
 
-static void test_int16(void)
-{
+static void test_int16(void) {
     static uint16_t u16 = 45054;
     static int16_t s16 = -1337;
 
-    /* memory barrier to prevent the compiler from constant folding on the
-     * snprintf calls */
+    // memory barrier to prevent the compiler from constant folding on the
+    // snprintf calls
     __asm__ volatile ("" ::: "memory");
 
     char buf[32];
@@ -124,13 +117,12 @@ static void test_int16(void)
     check("-1337", buf, len);
 }
 
-static void test_int32(void)
-{
+static void test_int32(void) {
     static uint32_t u32 = 2952663863;
     static int32_t s32 = -2147483648;
 
-    /* memory barrier to prevent the compiler from constant folding on the
-     * snprintf calls */
+    // memory barrier to prevent the compiler from constant folding on the
+    // snprintf calls
     __asm__ volatile ("" ::: "memory");
 
     char buf[32];
@@ -164,13 +156,12 @@ static void test_int32(void)
     check("-2147483648", buf, len);
 }
 
-static void test_int64(void)
-{
+static void test_int64(void) {
     static uint64_t u64 = 16045690984050070327ULL;
     static int64_t s64 = -9223372036854775807LL;
 
-    /* memory barrier to prevent the compiler from constant folding on the
-     * snprintf calls */
+    // memory barrier to prevent the compiler from constant folding on the
+    // snprintf calls
     __asm__ volatile ("" ::: "memory");
 
     char buf[32];
@@ -204,14 +195,13 @@ static void test_int64(void)
     check("-9223372036854775807", buf, len);
 }
 
-static void test_size(void)
-{
+static void test_size(void) {
     static size_t s = 42;
     static ssize_t ss = -1;
     static ptrdiff_t p = 1337;
 
-    /* memory barrier to prevent the compiler from constant folding on the
-     * snprintf calls */
+    // memory barrier to prevent the compiler from constant folding on the
+    // snprintf calls
     __asm__ volatile ("" ::: "memory");
 
     char buf[32];
@@ -230,13 +220,12 @@ static void test_size(void)
     check("1337", buf, len);
 }
 
-static void test_flags_widths(void)
-{
+static void test_flags_widths(void) {
     static uint16_t u16 = 42;
     static int16_t s16 = -42;
 
-    /* memory barrier to prevent the compiler from constant folding on the
-     * snprintf calls */
+    // memory barrier to prevent the compiler from constant folding on the
+    // snprintf calls
     __asm__ volatile ("" ::: "memory");
 
     char buf[32];
@@ -270,8 +259,7 @@ static void test_flags_widths(void)
     check("-42 ", buf, len);
 }
 
-int main(void)
-{
+int main(void) {
     puts("Testing snprintf() implementation...");
     test_int8();
     test_int16();

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the sx126x/llcc68 radio driver
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the sx126x/llcc68 radio driver
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,8 +41,7 @@ static char message[SX126X_MAX_PAYLOAD_LEN];
 
 static sx126x_t sx126x;
 
-static void _event_cb(netdev_t *dev, netdev_event_t event)
-{
+static void _event_cb(netdev_t *dev, netdev_event_t event) {
     if (event == NETDEV_EVENT_ISR) {
         msg_t msg;
         msg.type = SX126X_MSG_TYPE_ISR;
@@ -91,8 +86,7 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
     }
 }
 
-void *_recv_thread(void *arg)
-{
+void *_recv_thread(void *arg) {
     netdev_t *netdev = arg;
 
     static msg_t _msg_queue[SX126X_MSG_QUEUE];
@@ -111,13 +105,11 @@ void *_recv_thread(void *arg)
     }
 }
 
-static void _get_usage(const char *cmd)
-{
+static void _get_usage(const char *cmd) {
     printf("Usage: %s get <type|freq|bw|sf|cr|random>\n", cmd);
 }
 
-static int sx126x_get_cmd(netdev_t *netdev, int argc, char **argv)
-{
+static int sx126x_get_cmd(netdev_t *netdev, int argc, char **argv) {
     if (argc == 2) {
         _get_usage(argv[0]);
         return -1;
@@ -175,13 +167,11 @@ static int sx126x_get_cmd(netdev_t *netdev, int argc, char **argv)
     return 0;
 }
 
-static void _set_usage(const char *cmd)
-{
+static void _set_usage(const char *cmd) {
     printf("Usage: %s set <freq|bw|sf|cr> <value>\n", cmd);
 }
 
-static int sx126x_set_cmd(netdev_t *netdev, int argc, char **argv)
-{
+static int sx126x_set_cmd(netdev_t *netdev, int argc, char **argv) {
     if (argc != 4) {
         _set_usage(argv[0]);
         return -1;
@@ -232,26 +222,24 @@ static int sx126x_set_cmd(netdev_t *netdev, int argc, char **argv)
     return 0;
 }
 
-static void _rx_usage(const char *cmd)
-{
+static void _rx_usage(const char *cmd) {
     printf("Usage: %s rx <start|stop>\n", cmd);
 }
 
-static int sx126x_rx_cmd(netdev_t *netdev, int argc, char **argv)
-{
+static int sx126x_rx_cmd(netdev_t *netdev, int argc, char **argv) {
     if (argc == 2) {
         _rx_usage(argv[0]);
         return -1;
     }
 
     if (!strcmp("start", argv[2])) {
-        /* Switch to RX state */
+        // Switch to RX state
         netopt_state_t state = NETOPT_STATE_IDLE;
         netdev->driver->set(netdev, NETOPT_STATE, &state, sizeof(state));
         printf("Listen mode started\n");
     }
     else if (!strcmp("stop", argv[2])) {
-        /* Switch to RX state */
+        // Switch to RX state
         netopt_state_t state = NETOPT_STATE_STANDBY;
         netdev->driver->set(netdev, NETOPT_STATE, &state, sizeof(state));
         printf("Listen mode stopped\n");
@@ -264,8 +252,7 @@ static int sx126x_rx_cmd(netdev_t *netdev, int argc, char **argv)
     return 0;
 }
 
-static int sx126x_tx_cmd(netdev_t *netdev, int argc, char **argv)
-{
+static int sx126x_tx_cmd(netdev_t *netdev, int argc, char **argv) {
     if (argc == 2) {
         printf("Usage: %s tx <payload>\n", argv[0]);
         return -1;
@@ -286,8 +273,7 @@ static int sx126x_tx_cmd(netdev_t *netdev, int argc, char **argv)
     return 0;
 }
 
-int sx126x_cmd(int argc, char **argv)
-{
+int sx126x_cmd(int argc, char **argv) {
     if (argc < 2) {
         printf("Usage: %s <get|set|rx|tx>\n", argv[0]);
         return -1;
@@ -316,8 +302,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     sx126x_setup(&sx126x, &sx126x_params[0], 0);
     netdev_t *netdev = &sx126x.netdev;
 
@@ -339,7 +324,7 @@ int main(void)
         return 1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
 

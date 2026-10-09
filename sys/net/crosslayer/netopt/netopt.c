@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- * @ingroup     net_netopt
- * @file
- * @brief       This file contains functionality to map netopt option
- *              numbers to strings
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @}
- */
+/// @{
+/// @ingroup     net_netopt
+/// @file
+/// @brief       This file contains functionality to map netopt option
+///              numbers to strings
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @}
 
 #include "net/netopt.h"
 
@@ -139,8 +135,7 @@ static const char *_netopt_strmap[] = {
     [NETOPT_NUMOF]                 = "NETOPT_NUMOF",
 };
 
-const char *netopt2str(netopt_t opt)
-{
+const char *netopt2str(netopt_t opt) {
     if (opt >= NETOPT_NUMOF) {
         return "unknown";
     }

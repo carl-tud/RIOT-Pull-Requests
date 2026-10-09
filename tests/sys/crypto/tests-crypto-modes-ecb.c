@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2015 Nico von Geyso
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Nico von Geyso
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <limits.h>
 
@@ -14,14 +12,12 @@
 #include "crypto/modes/ecb.h"
 #include "tests-crypto.h"
 
-/*
- * all test vectors are from "Recommendation for Block Cipher Modes of
- * Operation - Methods and Techniques" by Morris Dworkin / NIST
- *
- *   http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf
- */
+// all test vectors are from "Recommendation for Block Cipher Modes of
+// Operation - Methods and Techniques" by Morris Dworkin / NIST
+//
+//   http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf
 
-/* PACKET VECTOR #1 (Page 24) */
+// PACKET VECTOR #1 (Page 24)
 static uint8_t TEST_1_KEY[] = {
     0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
     0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
@@ -91,8 +87,7 @@ static uint8_t TEST_CIPHER_LEN = 64;
 
 static void test_encrypt_op_128(uint8_t *key, uint8_t key_len, uint8_t *input,
                             uint8_t input_len, uint8_t *output,
-                            uint8_t output_len)
-{
+                            uint8_t output_len) {
     cipher_t cipher;
     int len, err, cmp;
     uint8_t data[64];
@@ -111,8 +106,7 @@ static void test_encrypt_op_128(uint8_t *key, uint8_t key_len, uint8_t *input,
 
 static void test_encrypt_op_192(uint8_t *key, uint8_t key_len, uint8_t *input,
                             uint8_t input_len, uint8_t *output,
-                            uint8_t output_len)
-{
+                            uint8_t output_len) {
     cipher_t cipher;
     int len, err, cmp;
     uint8_t data[64];
@@ -131,8 +125,7 @@ static void test_encrypt_op_192(uint8_t *key, uint8_t key_len, uint8_t *input,
 
 static void test_encrypt_op_256(uint8_t *key, uint8_t key_len, uint8_t *input,
                             uint8_t input_len, uint8_t *output,
-                            uint8_t output_len)
-{
+                            uint8_t output_len) {
     cipher_t cipher;
     int len, err, cmp;
     uint8_t data[64];
@@ -151,8 +144,7 @@ static void test_encrypt_op_256(uint8_t *key, uint8_t key_len, uint8_t *input,
 
 static void test_decrypt_op_128(uint8_t *key, uint8_t key_len, uint8_t *input,
                             uint8_t input_len, uint8_t *output,
-                            uint8_t output_len)
-{
+                            uint8_t output_len) {
     cipher_t cipher;
     int len, err, cmp;
     uint8_t data[64];
@@ -171,8 +163,7 @@ static void test_decrypt_op_128(uint8_t *key, uint8_t key_len, uint8_t *input,
 
 static void test_decrypt_op_192(uint8_t *key, uint8_t key_len, uint8_t *input,
                             uint8_t input_len, uint8_t *output,
-                            uint8_t output_len)
-{
+                            uint8_t output_len) {
     cipher_t cipher;
     int len, err, cmp;
     uint8_t data[64];
@@ -191,8 +182,7 @@ static void test_decrypt_op_192(uint8_t *key, uint8_t key_len, uint8_t *input,
 
 static void test_decrypt_op_256(uint8_t *key, uint8_t key_len, uint8_t *input,
                             uint8_t input_len, uint8_t *output,
-                            uint8_t output_len)
-{
+                            uint8_t output_len) {
     cipher_t cipher;
     int len, err, cmp;
     uint8_t data[64];
@@ -209,8 +199,7 @@ static void test_decrypt_op_256(uint8_t *key, uint8_t key_len, uint8_t *input,
 
 }
 
-static void test_crypto_modes_ecb_encrypt(void)
-{
+static void test_crypto_modes_ecb_encrypt(void) {
     test_encrypt_op_128(TEST_1_KEY, TEST_1_KEY_LEN, TEST_PLAIN, TEST_PLAIN_LEN,
                     TEST_1_CIPHER, TEST_CIPHER_LEN);
 
@@ -221,8 +210,7 @@ static void test_crypto_modes_ecb_encrypt(void)
                     TEST_3_CIPHER, TEST_CIPHER_LEN);
 }
 
-static void test_crypto_modes_ecb_decrypt(void)
-{
+static void test_crypto_modes_ecb_decrypt(void) {
     test_decrypt_op_128(TEST_1_KEY, TEST_1_KEY_LEN, TEST_1_CIPHER,
                     TEST_CIPHER_LEN,
                     TEST_PLAIN, TEST_PLAIN_LEN);
@@ -236,8 +224,7 @@ static void test_crypto_modes_ecb_decrypt(void)
                     TEST_PLAIN, TEST_PLAIN_LEN);
 }
 
-Test *tests_crypto_modes_ecb_tests(void)
-{
+Test *tests_crypto_modes_ecb_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_crypto_modes_ecb_encrypt),
         new_TestFixture(test_crypto_modes_ecb_decrypt)

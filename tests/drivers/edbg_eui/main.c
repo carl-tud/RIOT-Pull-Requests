@@ -1,25 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the EDBG EUI driver
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the EDBG EUI driver
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdio.h>
 #include "edbg_eui.h"
 
-static int test_get_eui64(void)
-{
+static int test_get_eui64(void) {
     eui64_t e64;
     if (edbg_get_eui64(&e64) != 0) {
         puts("[FAILED]");
@@ -35,8 +30,7 @@ static int test_get_eui64(void)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     if (test_get_eui64()) {
         return -1;
     }

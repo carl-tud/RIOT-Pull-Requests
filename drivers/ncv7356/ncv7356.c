@@ -1,25 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ncv7356
- * @{
- *
- * @file
- * @brief       generic can transceiver implementation for ncv7356
- *
- * @author      Aurelien GONCE <aurelien.gonce@altran.com>
- * @author      Vincent Dupont <vincent@otakeys.com>
- *
- * @}
- */
+/// @ingroup     drivers_ncv7356
+/// @{
+///
+/// @file
+/// @brief       generic can transceiver implementation for ncv7356
+///
+/// @author      Aurelien GONCE <aurelien.gonce@altran.com>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+///
+/// @}
 
 #include "ncv7356.h"
 
-int ncv7356_trx_set_mode(can_trx_t *dev, can_trx_mode_t mode)
-{
+int ncv7356_trx_set_mode(can_trx_t *dev, can_trx_mode_t mode) {
     ncv7356_trx_t *ncv7356 = (ncv7356_trx_t *)dev;
     int ret;
 
@@ -57,8 +52,7 @@ int ncv7356_trx_set_mode(can_trx_t *dev, can_trx_mode_t mode)
     return ret;
 }
 
-int ncv7356_trx_init(can_trx_t *dev)
-{
+int ncv7356_trx_init(can_trx_t *dev) {
     ncv7356_trx_t *ncv7356 = (ncv7356_trx_t *)dev;
 
     gpio_init(ncv7356->mode0_pin, GPIO_OUT);

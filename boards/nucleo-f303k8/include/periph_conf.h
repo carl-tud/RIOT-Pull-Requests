@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f303k8
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-f303k8 board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nucleo-f303k8
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-f303k8 board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
@@ -23,38 +19,34 @@
 extern "C" {
 #endif
 
-/**
- * @name    ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32F303 order.  Instead, we
- * just define 6 ADC channels, for the Nucleo
- * Arduino header pins A0-A3 and A6 and the internal VBAT channel.
- *
- * @{
- */
+/// @name    ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32F303 order.  Instead, we
+/// just define 6 ADC channels, for the Nucleo
+/// Arduino header pins A0-A3 and A6 and the internal VBAT channel.
+///
+/// @{
 static const adc_conf_t adc_config[] = {
-    { .pin = GPIO_PIN(PORT_A, 0), .dev = 0, .chan = 1 }, /* ADC1_IN1, fast */
-    { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan = 2 }, /* ADC1_IN2, fast */
-    { .pin = GPIO_PIN(PORT_A, 3), .dev = 0, .chan = 4 }, /* ADC1_IN4, fast */
-    { .pin = GPIO_PIN(PORT_A, 4), .dev = 1, .chan = 1 }, /* ADC2_IN1, fast */
-    { .pin = GPIO_PIN(PORT_A, 7), .dev = 1, .chan = 4 }, /* ADC2_IN4, fast */
-    { .pin = GPIO_UNDEF, .dev = 0, .chan = 17 }, /* VBAT */
+    { .pin = GPIO_PIN(PORT_A, 0), .dev = 0, .chan = 1 }, // ADC1_IN1, fast
+    { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan = 2 }, // ADC1_IN2, fast
+    { .pin = GPIO_PIN(PORT_A, 3), .dev = 0, .chan = 4 }, // ADC1_IN4, fast
+    { .pin = GPIO_PIN(PORT_A, 4), .dev = 1, .chan = 1 }, // ADC2_IN1, fast
+    { .pin = GPIO_PIN(PORT_A, 7), .dev = 1, .chan = 4 }, // ADC2_IN4, fast
+    { .pin = GPIO_UNDEF, .dev = 0, .chan = 17 }, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(5) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(5) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 1 },    /* DMA1 Channel 2 - SPI1_RX */
-    { .stream = 2 },    /* DMA1 Channel 3 - SPI1_TX */
-    { .stream = 3 },    /* DMA1 Channel 4 - USART1_TX */
-    { .stream = 6 },    /* DMA1 Channel 7 - USART2_TX */
+    { .stream = 1 },    // DMA1 Channel 2 - SPI1_RX
+    { .stream = 2 },    // DMA1 Channel 3 - SPI1_TX
+    { .stream = 3 },    // DMA1 Channel 4 - USART1_TX
+    { .stream = 6 },    // DMA1 Channel 7 - USART2_TX
 };
 
 #define DMA_0_ISR   isr_dma1_channel2
@@ -63,12 +55,10 @@ static const dma_conf_t dma_config[] = {
 #define DMA_3_ISR   isr_dma1_channel7
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -104,12 +94,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM3,
@@ -134,12 +122,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -163,10 +149,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

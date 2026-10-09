@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2023 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2023 ML!PA Consulting GmbH
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_stdio_udp
- * @{
- *
- * @file
- * @brief       STDIO over UDP implementation
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_stdio_udp
+/// @{
+///
+/// @file
+/// @brief       STDIO over UDP implementation
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -37,8 +33,7 @@
 static sock_udp_t sock;
 static sock_udp_ep_t remote;
 
-static void _sock_cb(sock_udp_t *sock, sock_async_flags_t flags, void *arg)
-{
+static void _sock_cb(sock_udp_t *sock, sock_async_flags_t flags, void *arg) {
     (void)arg;
 
     if ((flags & SOCK_ASYNC_MSG_RECV) == 0) {
@@ -51,7 +46,7 @@ static void _sock_cb(sock_udp_t *sock, sock_async_flags_t flags, void *arg)
     while ((res = sock_udp_recv_buf(sock, &data, &ctx, 0, &remote)) > 0) {
         stdio_rx_write(data, res);
 
-        /* detach remote */
+        // detach remote
         if (res == 1 && *(int8_t *)data == EOT) {
             const char msg[] = "\nremote detached\n";
             sock_udp_send(sock, msg, sizeof(msg), &remote);
@@ -60,8 +55,7 @@ static void _sock_cb(sock_udp_t *sock, sock_async_flags_t flags, void *arg)
     }
 }
 
-static void _init(void)
-{
+static void _init(void) {
     const sock_udp_ep_t local = {
         .family = AF_INET6,
         .netif = SOCK_ADDR_ANY_NETIF,
@@ -72,8 +66,7 @@ static void _init(void)
     sock_udp_set_cb(&sock, _sock_cb, NULL);
 }
 
-static ssize_t _write(const void* buffer, size_t len)
-{
+static ssize_t _write(const void* buffer, size_t len) {
     if (remote.port == 0) {
         return -ENOTCONN;
     }
@@ -84,8 +77,7 @@ static ssize_t _write(const void* buffer, size_t len)
     return sock_udp_send(&sock, buffer, len, &remote);
 }
 
-static void _detach(void)
-{
+static void _detach(void) {
     sock_udp_close(&sock);
     memset(&remote, 0, sizeof(remote));
 }

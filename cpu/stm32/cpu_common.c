@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Shared CPU specific function for the STM32 CPU family
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Joshua DeWeese <jdeweese@primecontrols.com>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Shared CPU specific function for the STM32 CPU family
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Joshua DeWeese <jdeweese@primecontrols.com>
+///
+/// @}
 
 #include "periph/cpu_common.h"
 
@@ -48,15 +44,13 @@
             #endif
 #endif
 
-/**
- * @brief   Timer specific additional bus clock prescaler
- *
- * This prescale factor is dependent on the actual APBx bus clock divider, if
- * the APBx presacler is != 1, it is set to 2, if the APBx prescaler is == 1, it
- * is set to 1.
- *
- * See reference manuals section 'reset and clock control'.
- */
+/// @brief   Timer specific additional bus clock prescaler
+///
+/// This prescale factor is dependent on the actual APBx bus clock divider, if
+/// the APBx presacler is != 1, it is set to 2, if the APBx prescaler is == 1, it
+/// is set to 1.
+///
+/// See reference manuals section 'reset and clock control'.
 static const uint8_t apbmul[] = {
 #if (CLOCK_APB1 < CLOCK_CORECLOCK)
     [APB1] = 2,
@@ -93,8 +87,7 @@ static const uint8_t apbmul[] = {
 #endif
 };
 
-static volatile uint32_t* _rcc_en_reg(bus_t bus)
-{
+static volatile uint32_t* _rcc_en_reg(bus_t bus) {
     switch (bus) {
 #ifdef APB1_PERIPH_EN
     case APB1:
@@ -162,12 +155,11 @@ static volatile uint32_t* _rcc_en_reg(bus_t bus)
     return NULL;
 }
 
-static volatile uint32_t* _rcc_dis_reg(bus_t bus)
-{
-    /* Note this switch case is designed in such a way that a default is only
-       provided when all other cases are *not* provided. This is to ensure that
-       either all cases or no cases are provided. Anything else will cause the
-       compiler to emit a warning. */
+static volatile uint32_t* _rcc_dis_reg(bus_t bus) {
+    // Note this switch case is designed in such a way that a default is only
+    //    provided when all other cases are *not* provided. This is to ensure that
+    //    either all cases or no cases are provided. Anything else will cause the
+    //    compiler to emit a warning.
     switch (bus) {
 #ifdef APB1_PERIPH_DIS
     #define RCC_REG_IS_ATOMIC 1
@@ -235,7 +227,7 @@ static volatile uint32_t* _rcc_dis_reg(bus_t bus)
         return &IOP_PERIPH_DIS;
 #endif
 
-    /* If MCU does not have separate set/clear bits. */
+    // If MCU does not have separate set/clear bits.
 #if RCC_REG_IS_ATOMIC == 0
     default:
         return _rcc_en_reg(bus);
@@ -250,12 +242,11 @@ static volatile uint32_t* _rcc_dis_reg(bus_t bus)
     return NULL;
 }
 
-static volatile uint32_t* _rcc_lp_en_reg(bus_t bus)
-{
-    /* Note this switch case is designed in such a way that a default is only
-       provided when all other cases are *not* provided. This is to ensure that
-       either all cases or no cases are provided. Anything else will cause the
-       compiler to emit a warning. */
+static volatile uint32_t* _rcc_lp_en_reg(bus_t bus) {
+    // Note this switch case is designed in such a way that a default is only
+    //    provided when all other cases are *not* provided. This is to ensure that
+    //    either all cases or no cases are provided. Anything else will cause the
+    //    compiler to emit a warning.
     switch (bus) {
 #ifdef APB1_PERIPH_LP_EN
     #define HAS_LP_MODE 1
@@ -325,7 +316,7 @@ static volatile uint32_t* _rcc_lp_en_reg(bus_t bus)
 
 #if HAS_LP_MODE == 0
     default:
-        /* fall through */
+        // fall through
 #endif
     case BUS_NUMOF:
         assert(false);
@@ -336,8 +327,7 @@ static volatile uint32_t* _rcc_lp_en_reg(bus_t bus)
     return NULL;
 }
 
-static volatile uint32_t* _rcc_lp_dis_reg(bus_t bus)
-{
+static volatile uint32_t* _rcc_lp_dis_reg(bus_t bus) {
 #if RCC_REG_IS_ATOMIC && HAS_LP_MODE
     #error "Atomic disable of periph-in-low-power-mode not implemented yet."
 #endif
@@ -345,8 +335,7 @@ static volatile uint32_t* _rcc_lp_dis_reg(bus_t bus)
     return _rcc_lp_en_reg(bus);
 }
 
-static void _rcc_reg_set(volatile uint32_t *reg, uint32_t mask)
-{
+static void _rcc_reg_set(volatile uint32_t *reg, uint32_t mask) {
     assert(reg);
 
     if (IS_ACTIVE(RCC_REG_IS_ATOMIC)) {
@@ -359,8 +348,7 @@ static void _rcc_reg_set(volatile uint32_t *reg, uint32_t mask)
     }
 }
 
-static void _rcc_reg_clr(volatile uint32_t *reg, uint32_t mask)
-{
+static void _rcc_reg_clr(volatile uint32_t *reg, uint32_t mask) {
     assert(reg);
 
     if (IS_ACTIVE(RCC_REG_IS_ATOMIC)) {
@@ -373,8 +361,7 @@ static void _rcc_reg_clr(volatile uint32_t *reg, uint32_t mask)
     }
 }
 
-uint32_t periph_apb_clk(bus_t bus)
-{
+uint32_t periph_apb_clk(bus_t bus) {
 #ifdef CLOCK_APB2
     if (bus == APB2) {
         return CLOCK_APB2;
@@ -383,60 +370,53 @@ uint32_t periph_apb_clk(bus_t bus)
     if (bus == APB3) {
         return CLOCK_APB3;
     }
-#endif /* CLOCK_APB3 */
+#endif // CLOCK_APB3
 #else
     (void)bus;
-#endif /* CLOCK_APB2 */
+#endif // CLOCK_APB2
     return CLOCK_APB1;
 }
 
-uint32_t periph_timer_clk(bus_t bus)
-{
+uint32_t periph_timer_clk(bus_t bus) {
     return periph_apb_clk(bus) * apbmul[bus];
 }
 
-void periph_clk_en(bus_t bus, uint32_t mask)
-{
+void periph_clk_en(bus_t bus, uint32_t mask) {
     assert(bus < BUS_NUMOF);
 
    _rcc_reg_set(_rcc_en_reg(bus), mask);
 
-    /* stm32xx-errata: Delay after a RCC peripheral clock enable */
+    // stm32xx-errata: Delay after a RCC peripheral clock enable
     __DSB();
 }
 
-void periph_clk_dis(bus_t bus, uint32_t mask)
-{
+void periph_clk_dis(bus_t bus, uint32_t mask) {
     assert(bus < BUS_NUMOF);
     _rcc_reg_clr(_rcc_dis_reg(bus), mask);
 }
 
 MAYBE_UNUSED static inline
-void _periph_lpclk_en(bus_t bus, uint32_t mask)
-{
+void _periph_lpclk_en(bus_t bus, uint32_t mask) {
     assert(bus < BUS_NUMOF);
     _rcc_reg_set(_rcc_lp_en_reg(bus), mask);
 }
 
 MAYBE_UNUSED static inline
-void _periph_lpclk_dis(bus_t bus, uint32_t mask)
-{
+void _periph_lpclk_dis(bus_t bus, uint32_t mask) {
     assert(bus < BUS_NUMOF);
     _rcc_reg_clr(_rcc_lp_dis_reg(bus), mask);
 }
 
 #if HAS_LP_MODE
-void periph_lpclk_en(bus_t bus, uint32_t mask)
-{
-    /* call the function's implementation, which is outside the ifdef */
+void periph_lpclk_en(bus_t bus, uint32_t mask) {
+    // call the function's implementation, which is outside the ifdef
     _periph_lpclk_en(bus, mask);
 }
 #endif
 
 #if HAS_LP_MODE
-void periph_lpclk_dis(bus_t bus, uint32_t mask)
-{
-    /* call the function's implementation, which is outside the ifdef */
+void periph_lpclk_dis(bus_t bus, uint32_t mask) {
+    // call the function's implementation, which is outside the ifdef
     _periph_lpclk_dis(bus, mask);
 }
 #endif

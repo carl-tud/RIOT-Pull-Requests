@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_lsm6dsxx
- * @{
- *
- * @file
- * @brief       Default configuration for LSM6DSXX devices
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Miquel Borrell <miquel.borrell@haw-hamburg.de>
- *
- */
+/// @ingroup     drivers_lsm6dsxx
+/// @{
+///
+/// @file
+/// @brief       Default configuration for LSM6DSXX devices
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Miquel Borrell <miquel.borrell@haw-hamburg.de>
+///
 
 #include "board.h"
 #include "lsm6dsxx.h"
@@ -26,15 +22,13 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef LSM6DSXX_PARAM_I2C
 #define LSM6DSXX_PARAM_I2C            I2C_DEV(0)
 #endif
 #ifndef LSM6DSXX_PARAM_ADDR
-#define LSM6DSXX_PARAM_ADDR           (0x6B) /* (0x6A) */
+#define LSM6DSXX_PARAM_ADDR           (0x6B) // (0x6A)
 #endif
 #ifndef LSM6DSXX_PARAM_ACC_ODR
 #define LSM6DSXX_PARAM_ACC_ODR        (LSM6DSXX_DATA_RATE_52HZ)
@@ -68,19 +62,15 @@ extern "C" {
 #ifndef LSM6DSXX_SAUL_INFO
 #define LSM6DSXX_SAUL_INFO            { .name = "lsm6dsxx" }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const lsm6dsxx_params_t lsm6dsxx_params[] =
 {
     LSM6DSXX_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t lsm6dsxx_saul_info[] =
 {
     LSM6DSXX_SAUL_INFO
@@ -90,4 +80,4 @@ static const saul_reg_info_t lsm6dsxx_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

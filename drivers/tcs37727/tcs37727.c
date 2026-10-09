@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2015 PHYTEC Messtechnik GmbH
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 PHYTEC Messtechnik GmbH
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_tcs37727
- * @{
- *
- * @file
- * @brief       Driver for the AMS TCS37727 Color Light-To-Digital Converter
- *
- * @author      Felix Siebel <f.siebel@phytec.de>
- * @author      Johann Fischer <j.fischer@phytec.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_tcs37727
+/// @{
+///
+/// @file
+/// @brief       Driver for the AMS TCS37727 Color Light-To-Digital Converter
+///
+/// @author      Felix Siebel <f.siebel@phytec.de>
+/// @author      Johann Fischer <j.fischer@phytec.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -32,20 +28,19 @@
 #define BUS             (dev->p.i2c)
 #define ADR             (dev->p.addr)
 
-int tcs37727_init(tcs37727_t *dev, const tcs37727_params_t *params)
-{
+int tcs37727_init(tcs37727_t *dev, const tcs37727_params_t *params) {
     uint8_t tmp;
 
-    /* check parameters */
+    // check parameters
     assert(dev && params);
 
-    /* initialize the device descriptor */
+    // initialize the device descriptor
     dev->p = *params;
 
-    /* setup the I2C bus */
+    // setup the I2C bus
     i2c_acquire(BUS);
 
-    /* check if we can communicate with the device */
+    // check if we can communicate with the device
     i2c_read_reg(BUS, ADR, TCS37727_ID, &tmp, 0);
     if (tmp != TCS37727_ID_VALUE) {
         i2c_release(BUS);
@@ -53,13 +48,13 @@ int tcs37727_init(tcs37727_t *dev, const tcs37727_params_t *params)
         return TCS37727_NODEV;
     }
 
-    /* configure gain and conversion time */
+    // configure gain and conversion time
     i2c_write_reg(BUS, ADR, TCS37727_ATIME,
                   TCS37727_ATIME_TO_REG(dev->p.atime), 0);
     i2c_write_reg(BUS, ADR, TCS37727_CONTROL, TCS37727_CONTROL_AGAIN_4, 0);
     dev->again = 4;
 
-    /* enable the device */
+    // enable the device
     tmp = (TCS37727_ENABLE_AEN | TCS37727_ENABLE_PON);
     i2c_write_reg(BUS, ADR, TCS37727_ENABLE, tmp, 0);
 
@@ -68,8 +63,7 @@ int tcs37727_init(tcs37727_t *dev, const tcs37727_params_t *params)
     return TCS37727_OK;
 }
 
-void tcs37727_set_rgbc_active(const tcs37727_t *dev)
-{
+void tcs37727_set_rgbc_active(const tcs37727_t *dev) {
     uint8_t reg;
 
     assert(dev);
@@ -81,8 +75,7 @@ void tcs37727_set_rgbc_active(const tcs37727_t *dev)
     i2c_release(BUS);
 }
 
-void tcs37727_set_rgbc_standby(const tcs37727_t *dev)
-{
+void tcs37727_set_rgbc_standby(const tcs37727_t *dev) {
     uint8_t reg;
 
     assert(dev);
@@ -97,8 +90,7 @@ void tcs37727_set_rgbc_standby(const tcs37727_t *dev)
     i2c_release(BUS);
 }
 
-static uint8_t tcs37727_trim_gain(tcs37727_t *dev, int32_t rawc)
-{
+static uint8_t tcs37727_trim_gain(tcs37727_t *dev, int32_t rawc) {
     uint8_t reg_again = 0;
     int val_again = dev->again;
 
@@ -168,8 +160,7 @@ static uint8_t tcs37727_trim_gain(tcs37727_t *dev, int32_t rawc)
     return 0;
 }
 
-void tcs37727_read(const tcs37727_t *dev, tcs37727_data_t *data)
-{
+void tcs37727_read(const tcs37727_t *dev, tcs37727_data_t *data) {
     uint8_t buf[8];
 
     assert(dev && data);
@@ -185,22 +176,22 @@ void tcs37727_read(const tcs37727_t *dev, tcs37727_data_t *data)
     DEBUG("rawr: %"PRIi32" rawg %"PRIi32" rawb %"PRIi32" rawc %"PRIi32"\n",
           tmpr, tmpg, tmpb, tmpc);
 
-    /* Remove IR component as described in the DN40.  */
+    // Remove IR component as described in the DN40.
     int32_t ir = (tmpr + tmpg + tmpb - tmpc) >> 1;
     tmpr -= ir;
     tmpg -= ir;
     tmpb -= ir;
 
-    /* Color temperature calculation as described in the DN40. */
+    // Color temperature calculation as described in the DN40.
     int32_t ct = (CT_COEF_IF * tmpb) / tmpr + CT_OFFSET_IF;
 
-    /* Lux calculation as described in the DN40.  */
+    // Lux calculation as described in the DN40.
     int32_t gi = R_COEF_IF * tmpr + G_COEF_IF * tmpg + B_COEF_IF * tmpb;
-    /* TODO: add Glass Attenuation Factor GA compensation */
+    // TODO: add Glass Attenuation Factor GA compensation
     int32_t cpl = (dev->p.atime * dev->again) / DGF_IF;
     int32_t lux = gi / cpl;
 
-    /* Autogain */
+    // Autogain
     tcs37727_trim_gain((tcs37727_t *)dev, tmpc);
 
     data->red = (tmpr < 0) ? 0 : (tmpr * 1000) / cpl;

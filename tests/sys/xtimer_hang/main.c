@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2015 Daniel Krebs <github@daniel-krebs.net>
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Daniel Krebs <github@daniel-krebs.net>
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       xtimer test application
- *
- * This test used to hang many boards.
- *
- * @author      Daniel Krebs <github@daniel-krebs.net>
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Sebastian Meiling <s@mlng.net>
- * @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       xtimer test application
+///
+/// This test used to hang many boards.
+///
+/// @author      Daniel Krebs <github@daniel-krebs.net>
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Sebastian Meiling <s@mlng.net>
+/// @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
+///
+/// @}
 #include <stdio.h>
 
 #include "xtimer.h"
@@ -47,8 +43,7 @@ typedef struct {
 char stack_timer1[TEST_TIMER_STACKSIZE];
 char stack_timer2[TEST_TIMER_STACKSIZE];
 
-void *timer_func(void *arg)
-{
+void *timer_func(void *arg) {
     LOG_DEBUG("run thread %" PRIkernel_pid "\n", thread_getpid());
 
 #if defined(WORKER_THREAD_PIN_1) && defined(WORKER_THREAD_PIN_2)
@@ -64,8 +59,7 @@ void *timer_func(void *arg)
     }
 }
 
-int main(void)
-{
+int main(void) {
 #if defined(MAIN_THREAD_PIN)
     gpio_t main_pin = MAIN_THREAD_PIN;
     gpio_init(main_pin, GPIO_OUT);

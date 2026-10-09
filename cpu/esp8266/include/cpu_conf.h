@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    cpu_esp8266_conf ESP8266 compile configurations
- * @ingroup     cpu_esp8266
- * @ingroup     config
- * @brief       Compile-time configuration macros for ESP8266 modules
- * @{
- *
- * @file
- * @brief       CPU specific configuration options
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @defgroup    cpu_esp8266_conf ESP8266 compile configurations
+/// @ingroup     cpu_esp8266
+/// @ingroup     config
+/// @brief       Compile-time configuration macros for ESP8266 modules
+/// @{
+///
+/// @file
+/// @brief       CPU specific configuration options
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "cpu_conf_common.h"
 #include "xtensa_conf.h"
@@ -25,13 +21,11 @@
 extern "C" {
 #endif
 
-/**
-* @name    Clock configuration
-* @{
-*/
+/// @name    Clock configuration
+/// @{
 
 #ifndef DOXYGEN
-/* Mapping of Kconfig defines to the respective enumeration values */
+// Mapping of Kconfig defines to the respective enumeration values
 #if CONFIG_ESP8266_CPU_FREQUENCY_80
 #define ESP8266_CPU_FREQUENCY   80
 #elif CONFIG_ESP8266_CPU_FREQUENCY_160
@@ -39,25 +33,19 @@ extern "C" {
 #endif
 #endif
 
-/**
- * @brief   Defines the CPU frequency in MHz
- *
- * Possible values are 80 and 160 MHz.
- */
+/// @brief   Defines the CPU frequency in MHz
+///
+/// Possible values are 80 and 160 MHz.
 #ifndef ESP8266_CPU_FREQUENCY
 #define ESP8266_CPU_FREQUENCY   (80)
 #endif
 
-/**
- * @brief   Mapping configured ESP8266 default clock to CLOCK_CORECLOCK define
- */
+/// @brief   Mapping configured ESP8266 default clock to CLOCK_CORECLOCK define
 #define CLOCK_CORECLOCK         (1000000UL * ESP8266_CPU_FREQUENCY)
-/** @} */
+/// @}
 
-/**
- * @name   Stack size configurations
- * @{
- */
+/// @name   Stack size configurations
+/// @{
 #ifndef THREAD_EXTRA_STACKSIZE_PRINTF
 #define THREAD_EXTRA_STACKSIZE_PRINTF (0)
 #endif
@@ -98,19 +86,17 @@ extern "C" {
 #endif
 
 #ifndef ESP_WIFI_STACKSIZE
-/** Stack size for the WiFi thread */
+/// Stack size for the WiFi thread
 #define ESP_WIFI_STACKSIZE            (1536)
 #endif
 
-/** @} */
+/// @}
 
-/**
- * Buffer size used for printf functions (maximum length of formatted output).
- */
+/// Buffer size used for printf functions (maximum length of formatted output).
 #define PRINTF_BUFSIZ 256
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

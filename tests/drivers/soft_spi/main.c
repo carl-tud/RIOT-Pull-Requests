@@ -1,29 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2017 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Application for testing the software SPI driver implementations
- *
- *
- * @author      Markus Blechschmidt <Markus.Blechschmidt@haw-hamburg.de>
- * @author      Peter Kietzmann     <peter.kietzmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Application for testing the software SPI driver implementations
+///
+///
+/// @author      Markus Blechschmidt <Markus.Blechschmidt@haw-hamburg.de>
+/// @author      Peter Kietzmann     <peter.kietzmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
 
 #include "soft_spi.h"
 
-int main(void)
-{
+int main(void) {
     puts("Minimal test application for the software SPI driver");
 
     char string[] = "Soft SPI Test String";
@@ -31,10 +26,10 @@ int main(void)
     soft_spi_t soft_spi = TEST_SOFT_SPI_DEV;
     soft_spi_cs_t cs = TEST_CS_PIN;
 
-    /* Initialize software SPI device  */
+    // Initialize software SPI device
     soft_spi_init(soft_spi);
 
-    /* Initialize CS pin */
+    // Initialize CS pin
     int tmp = soft_spi_init_cs(soft_spi, cs);
     if (tmp != SOFT_SPI_OK) {
         printf("error: unable to initialize the given chip select line %i\n", tmp);

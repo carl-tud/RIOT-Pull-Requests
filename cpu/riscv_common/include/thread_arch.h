@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021 Koen Zandberg <koen@bergzand.net>
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Koen Zandberg <koen@bergzand.net>
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_fe310
- * @{
- *
- * @file
- * @brief       Implementation of the kernels thread interface
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- */
+/// @ingroup     cpu_fe310
+/// @{
+///
+/// @file
+/// @brief       Implementation of the kernels thread interface
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
 
 #include "irq.h"
 
@@ -24,23 +20,21 @@ extern "C" {
 
 #define THREAD_API_INLINED
 
-#ifndef DOXYGEN /* Doxygen is in core/include/thread.h */
+#ifndef DOXYGEN // Doxygen is in core/include/thread.h
 
-static inline void _ecall_dispatch(uint32_t num, void *ctx)
-{
-    /* function arguments are in a0 and a1 as per ABI */
+static inline void _ecall_dispatch(uint32_t num, void *ctx) {
+    // function arguments are in a0 and a1 as per ABI
     __asm__ volatile (
         "add a0, x0, %[num] \n"
         "add a1, x0, %[ctx] \n"
         "ECALL\n"
-        : /* No outputs */
+        : // No outputs
         :[num] "r" (num), [ctx] "r" (ctx)
         : "memory", "a0", "a1"
         );
 }
 
-static inline __attribute__((always_inline)) void thread_yield_higher(void)
-{
+static inline __attribute__((always_inline)) void thread_yield_higher(void) {
     if (irq_is_in()) {
         sched_context_switch_request = 1;
     }
@@ -49,10 +43,10 @@ static inline __attribute__((always_inline)) void thread_yield_higher(void)
     }
 }
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

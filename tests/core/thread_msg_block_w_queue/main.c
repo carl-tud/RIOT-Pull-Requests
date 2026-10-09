@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Thread test application
- *
- * @author Christian Mehlis <mehlis@inf.fu-berlin.de>
- * @author Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Thread test application
+///
+/// @author Christian Mehlis <mehlis@inf.fu-berlin.de>
+/// @author Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -26,8 +22,7 @@ char t1_stack[THREAD_STACKSIZE_MAIN];
 
 kernel_pid_t p_send = KERNEL_PID_UNDEF, p_recv = KERNEL_PID_UNDEF;
 
-void *sender_thread(void *arg)
-{
+void *sender_thread(void *arg) {
     (void) arg;
 
     printf("sender_thread start\n");
@@ -35,15 +30,15 @@ void *sender_thread(void *arg)
     msg_t msg, reply;
     memset(&msg, 1, sizeof(msg_t));
 
-    /* step 1: send non-blocking to fill up the msg_queue of p_recv */
+    // step 1: send non-blocking to fill up the msg_queue of p_recv
     msg_try_send(&msg, p_recv);
 
-    /* step 2: send message. This puts sender_thread into msg_waiters and turns its
-       status into STATUS_REPLY_BLOCKED. It should block forever, since the
-       second message is never read by p_recv. */
+    // step 2: send message. This puts sender_thread into msg_waiters and turns its
+    //    status into STATUS_REPLY_BLOCKED. It should block forever, since the
+    //    second message is never read by p_recv.
     msg_send_receive(&msg, &reply, p_recv);
 
-    /* If this is printed, sender_thread did *not* block as expected. */
+    // If this is printed, sender_thread did *not* block as expected.
     printf("ERROR: sender_thread should be blocking\n");
 
     return NULL;
@@ -51,8 +46,7 @@ void *sender_thread(void *arg)
 
 static msg_t _msg_q[1];
 
-int main(void)
-{
+int main(void) {
     msg_t msg;
     p_recv = thread_getpid();
 
@@ -62,7 +56,7 @@ int main(void)
                        THREAD_CREATE_WOUT_YIELD,
                        sender_thread, NULL, "nr1");
 
-    /* step 3: receive first msg from sender_thread*/
+    // step 3: receive first msg from sender_thread
     msg_receive(&msg);
 
     printf("main thread alive\n");

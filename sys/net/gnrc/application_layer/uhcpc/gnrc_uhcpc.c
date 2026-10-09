@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <kernel_defines.h>
 
@@ -21,8 +19,7 @@
 static kernel_pid_t gnrc_border_interface;
 static kernel_pid_t gnrc_wireless_interface;
 
-static void set_interface_roles(void)
-{
+static void set_interface_roles(void) {
     gnrc_netif_t *netif = NULL;
 
     while ((netif = gnrc_netif_iter(netif))) {
@@ -52,8 +49,7 @@ static void set_interface_roles(void)
 }
 
 void uhcp_handle_prefix(uint8_t *prefix, uint8_t prefix_len, uint16_t lifetime,
-                        uint8_t *src, uhcp_iface_t iface)
-{
+                        uint8_t *src, uhcp_iface_t iface) {
     int idx;
     gnrc_netif_t *wireless;
     (void)src;
@@ -74,9 +70,9 @@ void uhcp_handle_prefix(uint8_t *prefix, uint8_t prefix_len, uint16_t lifetime,
     idx = gnrc_netif_ipv6_add_prefix(wireless, (ipv6_addr_t *)prefix, prefix_len,
                                      lifetime, lifetime);
     if (idx >= 0) {
-        /* start advertising subnet obtained via UHCP */
+        // start advertising subnet obtained via UHCP
         gnrc_ipv6_nib_change_rtr_adv_iface(wireless, true);
-        /* configure this router as RPL root */
+        // configure this router as RPL root
         gnrc_rpl_configure_root(wireless, &wireless->ipv6.addrs[idx]);
     }
 }
@@ -87,8 +83,7 @@ static char _uhcp_client_stack[THREAD_STACKSIZE_DEFAULT +
                                THREAD_EXTRA_STACKSIZE_PRINTF];
 static msg_t _uhcp_msg_queue[4];
 
-static void* uhcp_client_thread(void *arg)
-{
+static void* uhcp_client_thread(void *arg) {
     (void)arg;
 
     msg_init_queue(_uhcp_msg_queue, ARRAY_SIZE(_uhcp_msg_queue));
@@ -96,17 +91,16 @@ static void* uhcp_client_thread(void *arg)
     return NULL;
 }
 
-void auto_init_gnrc_uhcpc(void)
-{
+void auto_init_gnrc_uhcpc(void) {
     set_interface_roles();
 
-    /* only start client if more than one interface is given */
+    // only start client if more than one interface is given
     if (! (gnrc_border_interface && gnrc_wireless_interface)) {
         LOG_WARNING("gnrc_uhcpc: only one interface found, skipping setup.\n");
         return;
     }
 
-    /* initiate uhcp client */
+    // initiate uhcp client
     thread_create(_uhcp_client_stack, sizeof(_uhcp_client_stack),
             THREAD_PRIORITY_MAIN - 1, 0,
             uhcp_client_thread, NULL, "uhcp");

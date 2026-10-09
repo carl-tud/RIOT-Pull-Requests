@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_hm330x
- *
- * @{
- * @file
- * @brief       Default configuration
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- */
+/// @ingroup     drivers_hm330x
+///
+/// @{
+/// @file
+/// @brief       Default configuration
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
 
 #include "board.h"
 #include "saul_reg.h"
@@ -25,72 +21,52 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
-/**
- * @brief   HM330X default I2C bus
- */
+/// @name    Set default configuration parameters
+/// @{
+/// @brief   HM330X default I2C bus
 #ifndef HM330X_PARAM_I2C_DEV
 #define HM330X_PARAM_I2C_DEV       I2C_DEV(0)
 #endif
-/**
- * @brief   HM330X default reset pin
- */
+/// @brief   HM330X default reset pin
 #ifndef HM330X_PARAM_RESET_PIN
 #define HM330X_PARAM_RESET_PIN     GPIO_UNDEF
 #endif
-/**
- * @brief   HM330X default set pin
- */
+/// @brief   HM330X default set pin
 #ifndef HM330X_PARAM_SET_PIN
 #define HM330X_PARAM_SET_PIN       GPIO_UNDEF
 #endif
-/**
- * @brief   HM330X default SAUL information
- */
+/// @brief   HM330X default SAUL information
 #ifndef HM330X_SAUL_INFO
 #define HM330X_SAUL_INFO           { .name = "hm330x" }
 #endif
-/**
- * @brief   HM330X default parameters
- */
+/// @brief   HM330X default parameters
 #ifndef HM330X_PARAMS
 #define HM330X_PARAMS              { .i2c = HM330X_PARAM_I2C_DEV, \
                                      .reset_pin = HM330X_PARAM_RESET_PIN, \
                                      .set_pin = HM330X_PARAM_SET_PIN }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configuration struct
- */
+/// @brief   Configuration struct
 static const hm330x_params_t hm330x_params[] =
 {
     HM330X_PARAMS
 };
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define HM330X_NUMOF     ARRAY_SIZE(hm330x_params)
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t hm330x_saul_info[] =
 {
     HM330X_SAUL_INFO
 };
 
-/**
- * @brief   Number of saul info structs
- */
+/// @brief   Number of saul info structs
 #define HM330X_INFO_NUM ARRAY_SIZE(hm330x_saul_info)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

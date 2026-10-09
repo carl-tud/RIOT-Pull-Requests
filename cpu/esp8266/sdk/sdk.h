@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp8266_sdk
- * @{
- *
- * @file
- * @brief       ESP8266 SDK container
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp8266_sdk
+/// @{
+///
+/// @file
+/// @brief       ESP8266 SDK container
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <stdint.h>
 

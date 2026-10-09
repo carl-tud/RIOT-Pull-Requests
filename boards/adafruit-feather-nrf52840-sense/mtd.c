@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_adafruit-feather-nrf52840-sense
- * @{
- *
- * @file
- * @brief       MTD configuration for the Feather nRF52840 Sense
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     boards_adafruit-feather-nrf52840-sense
+/// @{
+///
+/// @file
+/// @brief       MTD configuration for the Feather nRF52840 Sense
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+///
+/// @}
 
 #ifdef MODULE_MTD
 
@@ -23,7 +19,7 @@
 #include "periph_conf.h"
 #include "timex.h"
 
-/* GD25Q16C */
+// GD25Q16C
 static const mtd_spi_nor_params_t _feather_nrf52840_sense_nor_params = {
     .opcode = &mtd_spi_nor_opcode_default,
     .wait_chip_erase = 15 * US_PER_SEC,

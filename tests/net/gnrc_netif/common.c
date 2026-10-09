@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <errno.h>
 #include <stdio.h>
@@ -35,8 +31,7 @@ static msg_t _main_msg_queue[MSG_QUEUE_SIZE];
 static uint8_t tmp_buffer[ETHERNET_DATA_LEN];
 static size_t tmp_buffer_bytes = 0;
 
-static int _dump_send_packet(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _dump_send_packet(netdev_t *netdev, const iolist_t *iolist) {
     int res;
 
     tmp_buffer_bytes = 0;
@@ -66,8 +61,7 @@ static int _dump_send_packet(netdev_t *netdev, const iolist_t *iolist)
 }
 
 void _test_trigger_recv(gnrc_netif_t *netif, const uint8_t *data,
-                        size_t data_len)
-{
+                        size_t data_len) {
     netdev_t *dev = netif->dev;
 
     expect(data_len <= ETHERNET_DATA_LEN);
@@ -82,8 +76,7 @@ void _test_trigger_recv(gnrc_netif_t *netif, const uint8_t *data,
     netdev_trigger_event_isr(dev);
 }
 
-static int _netdev_recv(netdev_t *dev, char *buf, int len, void *info)
-{
+static int _netdev_recv(netdev_t *dev, char *buf, int len, void *info) {
     int res;
 
     (void)dev;
@@ -102,14 +95,12 @@ static int _netdev_recv(netdev_t *dev, char *buf, int len, void *info)
     return res;
 }
 
-static void _netdev_isr(netdev_t *dev)
-{
+static void _netdev_isr(netdev_t *dev) {
     expect(dev->event_callback);
     dev->event_callback(dev, NETDEV_EVENT_RX_COMPLETE);
 }
 
-static int _get_netdev_device_type(netdev_t *netdev, void *value, size_t max_len)
-{
+static int _get_netdev_device_type(netdev_t *netdev, void *value, size_t max_len) {
     expect(max_len == sizeof(uint16_t));
     (void)max_len;
 
@@ -128,16 +119,14 @@ static int _get_netdev_device_type(netdev_t *netdev, void *value, size_t max_len
     return sizeof(uint16_t);
 }
 
-static int _get_netdev_proto(netdev_t *dev, void *value, size_t max_len)
-{
+static int _get_netdev_proto(netdev_t *dev, void *value, size_t max_len) {
     expect(dev == ieee802154_dev);
     expect(max_len == sizeof(gnrc_nettype_t));
     *((gnrc_nettype_t *)value) = GNRC_NETTYPE_UNDEF;
     return sizeof(gnrc_nettype_t);
 }
 
-static int _get_netdev_max_packet_size(netdev_t *netdev, void *value, size_t max_len)
-{
+static int _get_netdev_max_packet_size(netdev_t *netdev, void *value, size_t max_len) {
     expect(max_len == sizeof(uint16_t));
     (void)max_len;
 
@@ -156,8 +145,7 @@ static int _get_netdev_max_packet_size(netdev_t *netdev, void *value, size_t max
     return sizeof(uint16_t);
 }
 
-void _tests_init(void)
-{
+void _tests_init(void) {
     msg_init_queue(_main_msg_queue, MSG_QUEUE_SIZE);
     netdev_test_setup(&_devs[DEV_ETHERNET], 0);
     netdev_test_set_send_cb(&_devs[DEV_ETHERNET], _dump_send_packet);
@@ -193,4 +181,4 @@ void _tests_init(void)
     gnrc_netreg_register(GNRC_NETTYPE_IPV6, &dumper_ipv6);
 }
 
-/** @} */
+/// @}

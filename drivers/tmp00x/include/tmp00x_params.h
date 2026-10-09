@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017-2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017-2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_tmp00x
- *
- * @{
- * @file
- * @brief       Default configuration for TMP00X (TMP006 and TMP007) devices
- *
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     drivers_tmp00x
+///
+/// @{
+/// @file
+/// @brief       Default configuration for TMP00X (TMP006 and TMP007) devices
+///
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "board.h"
 #include "tmp00x.h"
@@ -23,60 +19,44 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the TMP00X driver
- * @ingroup config
- * @{
- */
+/// @name    Set default configuration parameters for the TMP00X driver
+/// @ingroup config
+/// @{
 #ifndef TMP00X_PARAM_I2C
-/**
- * @brief   The I2C bus the TMP00X device is connected to
- */
+/// @brief   The I2C bus the TMP00X device is connected to
 #define TMP00X_PARAM_I2C           I2C_DEV(0)
 #endif
 
 #ifndef TMP00X_PARAM_ADDR
-/**
- * @brief   The I2C address of the TMP00X device
- */
+/// @brief   The I2C address of the TMP00X device
 #define TMP00X_PARAM_ADDR          (CONFIG_TMP00X_I2C_ADDRESS)
 #endif
 
 #ifndef TMP00X_PARAM_RATE
-/**
- * @brief   The conversion rate to configure the TMP00X device with
- */
+/// @brief   The conversion rate to configure the TMP00X device with
 #define TMP00X_PARAM_RATE           TMP00X_CONFIG_CR_DEF
 #endif
 
 #ifndef TMP00X_PARAMS
-/**
- * @brief   The parameters to initialize the TMP00X device driver with
- */
+/// @brief   The parameters to initialize the TMP00X device driver with
 #define TMP00X_PARAMS              { .i2c  = TMP00X_PARAM_I2C,  \
                                      .addr = TMP00X_PARAM_ADDR, \
                                      .rate = TMP00X_PARAM_RATE }
 #endif
 
 #ifndef TMP00X_SAUL_INFO
-/**
- * @brief   The SAUL info to register the TMP00x device driver instances with
- */
+/// @brief   The SAUL info to register the TMP00x device driver instances with
 #define TMP00X_SAUL_INFO           { .name = "tmp00x" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   TMP00X configuration
- */
+/// @brief   TMP00X configuration
 static const tmp00x_params_t tmp00x_params[] =
 {
     TMP00X_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t tmp00x_saul_info[] =
 {
     TMP00X_SAUL_INFO
@@ -86,4 +66,4 @@ static const saul_reg_info_t tmp00x_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

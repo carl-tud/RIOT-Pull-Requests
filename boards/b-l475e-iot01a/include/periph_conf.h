@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_b-l475e-iot01a
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the B-L475E-IOT01A board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_b-l475e-iot01a
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the B-L475E-IOT01A board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -29,18 +25,16 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 1 },    /* DMA1 Channel 2 - SPI1_RX */
-    { .stream = 2 },    /* DMA1 Channel 3 - SPI1_TX */
-    { .stream = 3 },    /* DMA1 Channel 4 - USART1_TX / SPI2_RX */
-    { .stream = 4 },    /* DMA1 Channel 5 - SPI2_TX */
-    { .stream = 8 },    /* DMA2 Channel 1 - SPI3_RX */
-    { .stream = 9 },    /* DMA2 Channel 2 - SPI3_TX */
-    { .stream = 10 },   /* DMA2 Channel 3 - UART4_TX */
+    { .stream = 1 },    // DMA1 Channel 2 - SPI1_RX
+    { .stream = 2 },    // DMA1 Channel 3 - SPI1_TX
+    { .stream = 3 },    // DMA1 Channel 4 - USART1_TX / SPI2_RX
+    { .stream = 4 },    // DMA1 Channel 5 - SPI2_TX
+    { .stream = 8 },    // DMA2 Channel 1 - SPI3_RX
+    { .stream = 9 },    // DMA2 Channel 2 - SPI3_TX
+    { .stream = 10 },   // DMA2 Channel 3 - UART4_TX
 };
 
 #define DMA_0_ISR  isr_dma1_channel2
@@ -52,12 +46,10 @@ static const dma_conf_t dma_config[] = {
 #define DMA_6_ISR  isr_dma2_channel3
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM5,
@@ -71,12 +63,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_0_ISR         isr_tim5
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -88,7 +78,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
 #ifdef MODULE_PERIPH_DMA
         .dma        = 2,
         .dma_chan   = 2
@@ -104,7 +94,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = UART4_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
 #ifdef MODULE_PERIPH_DMA
         .dma        = 6,
         .dma_chan   = 2
@@ -116,17 +106,15 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_uart4)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM2,
         .rcc_mask = RCC_APB1ENR1_TIM2EN,
-        .chan     = { { .pin = GPIO_PIN(PORT_A, 15), .cc_chan = 0}, /* D9 */
+        .chan     = { { .pin = GPIO_PIN(PORT_A, 15), .cc_chan = 0}, // D9
                       { .pin = GPIO_UNDEF,           .cc_chan = 0},
                       { .pin = GPIO_UNDEF,           .cc_chan = 0},
                       { .pin = GPIO_UNDEF,           .cc_chan = 0} },
@@ -136,12 +124,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -203,12 +189,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -219,7 +203,7 @@ static const i2c_conf_t i2c_config[] = {
         .sda_af         = GPIO_AF4,
         .bus            = APB1,
         .rcc_mask       = RCC_APB1ENR1_I2C1EN,
-        .rcc_sw_mask    = RCC_CCIPR_I2C1SEL_1,          /* HSI (16 MHz) */
+        .rcc_sw_mask    = RCC_CCIPR_I2C1SEL_1,          // HSI (16 MHz)
         .irqn           = I2C1_ER_IRQn,
     },
     {
@@ -231,7 +215,7 @@ static const i2c_conf_t i2c_config[] = {
         .sda_af         = GPIO_AF4,
         .bus            = APB1,
         .rcc_mask       = RCC_APB1ENR1_I2C2EN,
-        .rcc_sw_mask    = RCC_CCIPR_I2C2SEL_1,          /* HSI (16 MHz) */
+        .rcc_sw_mask    = RCC_CCIPR_I2C2SEL_1,          // HSI (16 MHz)
         .irqn           = I2C2_ER_IRQn,
     },
 };
@@ -240,10 +224,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c2_er
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

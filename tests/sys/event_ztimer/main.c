@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       event_timeout application using ztimer
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       event_timeout application using ztimer
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -47,8 +43,7 @@ static event_callback_t event_never = EVENT_CALLBACK_INIT(callback_never, 0);
 static uint32_t before;
 static mutex_t lock = MUTEX_INIT_LOCKED;
 
-static void callback_timed(void *arg)
-{
+static void callback_timed(void *arg) {
     expect(arg == event_timed.arg);
     uint32_t now = ztimer_now(ZTIMER_USEC);
     expect((now - before) >= 1 * US_PER_SEC);
@@ -56,8 +51,7 @@ static void callback_timed(void *arg)
     mutex_unlock(&lock);
 }
 
-static void callback_4times(void *arg)
-{
+static void callback_4times(void *arg) {
     uint8_t *count = (uint8_t *)arg;
 
     *count = *count + 1;
@@ -79,7 +73,7 @@ static void callback_4times(void *arg)
         mutex_unlock(&lock);
     }
     else if (*count > 4) {
-        /* this callback should never be called */
+        // this callback should never be called
         puts("this should only be called 4 times");
         puts("[FAILED]");
         while (1) {
@@ -88,10 +82,9 @@ static void callback_4times(void *arg)
     }
 }
 
-static void callback_never(void *arg)
-{
+static void callback_never(void *arg) {
     (void)arg;
-    /* this callback should never be called */
+    // this callback should never be called
     puts("this should never happen");
     puts("[FAILED]");
     while (1) {
@@ -99,8 +92,7 @@ static void callback_never(void *arg)
     }
 }
 
-int main(void)
-{
+int main(void) {
     iter = 0;
     puts("posting periodic timed callback with timeout 1sec");
     event_periodic_init(&event_periodic, ZTIMER_USEC, EVENT_PRIO_MEDIUM,
@@ -112,7 +104,7 @@ int main(void)
     mutex_lock(&lock);
     puts("posting periodic timed callback with timeout 1sec and no delay");
     event_periodic_set_count(&event_periodic, 4);
-    iter = 0; /* reset callback argument counter to 0 */
+    iter = 0; // reset callback argument counter to 0
     before = ztimer_now(ZTIMER_USEC);
     event_periodic_start_now(&event_periodic, EVENT_TIMEOUT_TIME);
     puts("waiting for periodic callback to be triggered 4 times");

@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf51
- * @ingroup     drivers_periph_spi
- * @{
- *
- * @file
- * @brief       Low-level SPI driver implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Frank Holtz <frank-riot2015@holtznet.de>
- * @author      Jan Wagner <mail@jwagner.eu>
- *
- * @}
- */
+/// @ingroup     cpu_nrf51
+/// @ingroup     drivers_periph_spi
+/// @{
+///
+/// @file
+/// @brief       Low-level SPI driver implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Frank Holtz <frank-riot2015@holtznet.de>
+/// @author      Jan Wagner <mail@jwagner.eu>
+///
+/// @}
 
 #include <assert.h>
 
@@ -25,64 +21,56 @@
 #include "periph/spi.h"
 #include "periph/gpio.h"
 
-/**
- * @brief   array holding one pre-initialized mutex for each SPI device
- */
+/// @brief   array holding one pre-initialized mutex for each SPI device
 static mutex_t locks[SPI_NUMOF];
 
-static inline NRF_SPI_Type *dev(spi_t bus)
-{
+static inline NRF_SPI_Type *dev(spi_t bus) {
     return spi_config[bus].dev;
 }
 
-void spi_init(spi_t bus)
-{
+void spi_init(spi_t bus) {
     assert(bus < SPI_NUMOF);
 
-    /* initialize mutex */
+    // initialize mutex
     mutex_init(&locks[bus]);
-    /* initialize pins */
+    // initialize pins
     spi_init_pins(bus);
 }
 
-void spi_init_pins(spi_t bus)
-{
-    /* set pin direction */
+void spi_init_pins(spi_t bus) {
+    // set pin direction
     gpio_init(spi_config[bus].sclk, GPIO_OUT);
     gpio_init(spi_config[bus].mosi, GPIO_OUT);
     gpio_init(spi_config[bus].miso, GPIO_IN);
-    /* select pins for the SPI device */
+    // select pins for the SPI device
     SPI_SCKSEL  = spi_config[bus].sclk;
     SPI_MOSISEL = spi_config[bus].mosi;
     SPI_MISOSEL = spi_config[bus].miso;
 }
 
-void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
-{
+void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk) {
     (void)cs;
     assert((unsigned)bus < SPI_NUMOF);
 
     mutex_lock(&locks[bus]);
-    /* power on the bus (NRF51 only) */
+    // power on the bus (NRF51 only)
     dev(bus)->POWER = 1;
-    /* configure bus */
+    // configure bus
     dev(bus)->CONFIG = mode;
     dev(bus)->FREQUENCY = clk;
-    /* enable the bus */
+    // enable the bus
     dev(bus)->ENABLE = 1;
 }
 
-void spi_release(spi_t bus)
-{
-    /* power off everything */
+void spi_release(spi_t bus) {
+    // power off everything
     dev(bus)->ENABLE = 0;
     dev(bus)->POWER = 0;
     mutex_unlock(&locks[bus]);
 }
 
 void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
-                        const void *out, void *in, size_t len)
-{
+                        const void *out, void *in, size_t len) {
     const uint8_t *out_buf = out;
     uint8_t *in_buf = in;
 

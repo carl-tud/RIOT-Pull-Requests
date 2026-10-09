@@ -1,37 +1,31 @@
-/*
- * SPDX-FileCopyrightText: 2017 Gilles DOFFE <gdoffe@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Gilles DOFFE <gdoffe@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test for low-level QDEC drivers
- *
- * This test initializes all declared QDEC devices.
- * It displays QDEC counters value each second.
- *
- * @author      Gilles DOFFE <gdoffe@gmail.com>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test for low-level QDEC drivers
+///
+/// This test initializes all declared QDEC devices.
+/// It displays QDEC counters value each second.
+///
+/// @author      Gilles DOFFE <gdoffe@gmail.com>
+///
+/// @}
 
 #include <stdio.h>
 
 #include "periph/qdec.h"
 #include "xtimer.h"
 
-static void handler(void *arg)
-{
+static void handler(void *arg) {
     qdec_t qdec = (qdec_t)(uintptr_t)arg;
     printf("QDEC %u counter overflow : reset counter\n", qdec);
     qdec_read_and_reset(QDEC_DEV(qdec));
 }
 
-int main(void)
-{
+int main(void) {
     unsigned i;
     int32_t value;
     puts("Welcome into Quadrature Decoder (QDEC) test program.");

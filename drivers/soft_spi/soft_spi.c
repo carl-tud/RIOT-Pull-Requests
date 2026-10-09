@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2017 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_soft_spi
- * @{
- *
- * @file
- * @brief       Software SPI implementation
- *
- * @author      Markus Blechschmidt <Markus.Blechschmidt@haw-hamburg.de>
- * @author      Peter Kietzmann     <peter.kietzmann@haw-hamburg.de>
- */
+/// @ingroup     drivers_soft_spi
+/// @{
+///
+/// @file
+/// @brief       Software SPI implementation
+///
+/// @author      Markus Blechschmidt <Markus.Blechschmidt@haw-hamburg.de>
+/// @author      Peter Kietzmann     <peter.kietzmann@haw-hamburg.de>
 
 #include <stdio.h>
 #include <assert.h>
@@ -28,13 +24,10 @@
 #include "debug.h"
 
 #define READ_PADDING_BYTE (0x00)
-/**
- * @brief   Allocate one lock per SPI device
- */
+/// @brief   Allocate one lock per SPI device
 static mutex_t locks[SOFT_SPI_NUMOF];
 
-static inline bool soft_spi_bus_is_valid(soft_spi_t bus)
-{
+static inline bool soft_spi_bus_is_valid(soft_spi_t bus) {
     unsigned int soft_spi_num = (unsigned int) bus;
 
     if (SOFT_SPI_NUMOF <= soft_spi_num) {
@@ -43,35 +36,33 @@ static inline bool soft_spi_bus_is_valid(soft_spi_t bus)
     return true;
 }
 
-void soft_spi_init(soft_spi_t bus)
-{
+void soft_spi_init(soft_spi_t bus) {
     DEBUG("Soft SPI init\n");
 
     assert(soft_spi_bus_is_valid(bus));
 
-    /* initialize device lock */
+    // initialize device lock
     mutex_init(&locks[bus]);
     soft_spi_init_pins(bus);
 }
 
-void soft_spi_init_pins(soft_spi_t bus)
-{
+void soft_spi_init_pins(soft_spi_t bus) {
     DEBUG("Soft SPI soft_spi_init_pins\n");
 
     assert(soft_spi_bus_is_valid(bus));
 
-    /* check that miso is not mosi is not clk*/
+    // check that miso is not mosi is not clk
     assert(!gpio_is_equal(soft_spi_config[bus].mosi_pin, soft_spi_config[bus].miso_pin));
     assert(!gpio_is_equal(soft_spi_config[bus].mosi_pin, soft_spi_config[bus].clk_pin));
     assert(!gpio_is_equal(soft_spi_config[bus].miso_pin, soft_spi_config[bus].clk_pin));
-    /* mandatory pins */
+    // mandatory pins
     assert(gpio_is_valid(soft_spi_config[bus].mosi_pin) ||
            gpio_is_valid(soft_spi_config[bus].miso_pin));
     assert(gpio_is_valid(soft_spi_config[bus].clk_pin));
 
-    /* initialize clock pin */
+    // initialize clock pin
     gpio_init(soft_spi_config[bus].clk_pin, GPIO_OUT);
-    /* initialize optional pins */
+    // initialize optional pins
     if (gpio_is_valid(soft_spi_config[bus].mosi_pin)) {
         gpio_init(soft_spi_config[bus].mosi_pin, GPIO_OUT);
         gpio_clear(soft_spi_config[bus].mosi_pin);
@@ -81,8 +72,7 @@ void soft_spi_init_pins(soft_spi_t bus)
     }
 }
 
-int soft_spi_init_cs(soft_spi_t bus, soft_spi_cs_t cs)
-{
+int soft_spi_init_cs(soft_spi_t bus, soft_spi_cs_t cs) {
     DEBUG("Soft SPI init CS\n");
     if (!soft_spi_bus_is_valid(bus)) {
         DEBUG("Soft SPI bus not valid\n");
@@ -99,8 +89,7 @@ int soft_spi_init_cs(soft_spi_t bus, soft_spi_cs_t cs)
 }
 
 MAYBE_UNUSED
-static inline int soft_spi_mode_is_valid(soft_spi_mode_t mode)
-{
+static inline int soft_spi_mode_is_valid(soft_spi_mode_t mode) {
     if ((mode != SOFT_SPI_MODE_0) && (mode != SOFT_SPI_MODE_1) &&
         (mode != SOFT_SPI_MODE_2) && (mode != SOFT_SPI_MODE_3)) {
         return 0;
@@ -108,43 +97,40 @@ static inline int soft_spi_mode_is_valid(soft_spi_mode_t mode)
     return 1;
 }
 
-void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)
-{
+void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk) {
     (void)cs;
     assert(soft_spi_bus_is_valid(bus));
     assert(soft_spi_mode_is_valid(mode));
 
-    /* lock bus */
+    // lock bus
     mutex_lock(&locks[bus]);
 
     soft_spi_config[bus].soft_spi_mode = mode;
     switch (mode) {
         case SOFT_SPI_MODE_0:
         case SOFT_SPI_MODE_1:
-            /* CPOL=0 */
+            // CPOL=0
             gpio_clear(soft_spi_config[bus].clk_pin);
             break;
         case SOFT_SPI_MODE_2:
         case SOFT_SPI_MODE_3:
-            /* CPOL=1 */
+            // CPOL=1
             gpio_set(soft_spi_config[bus].clk_pin);
             break;
     }
     soft_spi_config[bus].soft_spi_clk = clk;
 }
 
-void soft_spi_release(soft_spi_t bus)
-{
+void soft_spi_release(soft_spi_t bus) {
     assert(soft_spi_bus_is_valid(bus));
     mutex_unlock(&locks[bus]);
 }
 
-static inline uint8_t _transfer_one_byte(soft_spi_t bus, uint8_t out)
-{
+static inline uint8_t _transfer_one_byte(soft_spi_t bus, uint8_t out) {
     uint8_t i = 8;
     if (SOFT_SPI_MODE_1 == soft_spi_config[bus].soft_spi_mode ||
         SOFT_SPI_MODE_3 == soft_spi_config[bus].soft_spi_mode) {
-        /* CPHA = 1*/
+        // CPHA = 1
         gpio_toggle(soft_spi_config[bus].clk_pin);
     }
 
@@ -155,10 +141,10 @@ static inline uint8_t _transfer_one_byte(soft_spi_t bus, uint8_t out)
         xtimer_usleep(soft_spi_config[bus].soft_spi_clk);
         gpio_toggle(soft_spi_config[bus].clk_pin);
 
-        out <<= 1; /*shift transfer register*/
+        out <<= 1; // shift transfer register
 
         bit = gpio_read(soft_spi_config[bus].miso_pin);
-        out = bit ? (out | 0x01) : (out & 0xfe); /*set or delete bit 0*/
+        out = bit ? (out | 0x01) : (out & 0xfe); // set or delete bit 0
 
         xtimer_usleep(soft_spi_config[bus].soft_spi_clk);
         --i;
@@ -169,7 +155,7 @@ static inline uint8_t _transfer_one_byte(soft_spi_t bus, uint8_t out)
 
     if (SOFT_SPI_MODE_0 == soft_spi_config[bus].soft_spi_mode ||
         SOFT_SPI_MODE_2 == soft_spi_config[bus].soft_spi_mode) {
-        /* CPHA = 0 */
+        // CPHA = 0
         xtimer_usleep(soft_spi_config[bus].soft_spi_clk);
         gpio_toggle(soft_spi_config[bus].clk_pin);
     }
@@ -177,14 +163,13 @@ static inline uint8_t _transfer_one_byte(soft_spi_t bus, uint8_t out)
     return out;
 }
 
-uint8_t soft_spi_transfer_byte(soft_spi_t bus, soft_spi_cs_t cs, bool cont, uint8_t out)
-{
+uint8_t soft_spi_transfer_byte(soft_spi_t bus, soft_spi_cs_t cs, bool cont, uint8_t out) {
     DEBUG("Soft SPI soft_spi_transfer_bytes\n");
     assert(soft_spi_bus_is_valid(bus));
 
     uint8_t retval = 0;
 
-    /* activate the given chip select line */
+    // activate the given chip select line
     if (gpio_is_valid(cs) && !gpio_is_equal(cs, SOFT_SPI_CS_UNDEF)) {
         gpio_clear((gpio_t)cs);
     }
@@ -201,17 +186,16 @@ uint8_t soft_spi_transfer_byte(soft_spi_t bus, soft_spi_cs_t cs, bool cont, uint
 }
 
 void soft_spi_transfer_bytes(soft_spi_t bus, soft_spi_cs_t cs, bool cont,
-                             const void *out, void *in, size_t len)
-{
+                             const void *out, void *in, size_t len) {
     DEBUG("Soft SPI soft_spi_transfer_bytes\n");
     assert(soft_spi_bus_is_valid(bus));
-    /* make sure at least one input or one output buffer is given */
+    // make sure at least one input or one output buffer is given
     assert(out || in);
 
     const uint8_t *outbuf = out;
     uint8_t *inbuf = in;
 
-    /* activate the given chip select line */
+    // activate the given chip select line
     if ((cs != GPIO_UNDEF) && (cs != SOFT_SPI_CS_UNDEF)) {
         gpio_clear((gpio_t)cs);
     }

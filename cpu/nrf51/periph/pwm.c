@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf51
- * @ingroup     drivers_periph_pwm
- * @{
- *
- * @file
- * @brief       Low-level PWM driver implementation
- *
- * @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
- * @}
- */
+/// @ingroup     cpu_nrf51
+/// @ingroup     drivers_periph_pwm
+/// @{
+///
+/// @file
+/// @brief       Low-level PWM driver implementation
+///
+/// @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
+/// @}
 
 #include <assert.h>
 #include <stdint.h>
@@ -47,18 +43,17 @@ static const uint32_t divtable[10] = {
 
 static uint32_t init_data[2];
 
-uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
-{
+uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res) {
     assert(dev == 0 && ((mode == PWM_LEFT) || (mode == PWM_RIGHT)));
 
-    /* reset and configure the timer */
+    // reset and configure the timer
     PWM_TIMER->POWER = 1;
     PWM_TIMER->TASKS_STOP = 1;
     PWM_TIMER->BITMODE = TIMER_BITMODE_BITMODE_32Bit;
     PWM_TIMER->MODE = TIMER_MODE_MODE_Timer;
     PWM_TIMER->TASKS_CLEAR = 1;
 
-    /* calculate and set prescaler */
+    // calculate and set prescaler
     uint32_t timer_freq = freq * res;
     uint32_t lower = (timer_freq - (PWM_PERCENT_VAL * (timer_freq / 100)));
     uint32_t upper = (timer_freq + (PWM_PERCENT_VAL * (timer_freq / 100)));
@@ -74,14 +69,14 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
         }
     }
 
-    /* reset timer compare events */
+    // reset timer compare events
     PWM_TIMER->EVENTS_COMPARE[0] = 0;
     PWM_TIMER->EVENTS_COMPARE[1] = 0;
-    /* init timer compare values */
+    // init timer compare values
     PWM_TIMER->CC[0] = 1;
     PWM_TIMER->CC[1] = res;
 
-    /* configure PPI Event (set compare values and pwm width) */
+    // configure PPI Event (set compare values and pwm width)
     if (mode == PWM_LEFT) {
         NRF_GPIOTE->CONFIG[PWM_GPIOTE_CH] = (GPIOTE_CONFIG_MODE_Task     |
                                              (PWM_PIN << 8)              |
@@ -94,7 +89,7 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
                                              GPIOTE_CONFIG_POLARITY_Msk);
     }
 
-    /* configure PPI Channels (connect compare-event and gpiote-task) */
+    // configure PPI Channels (connect compare-event and gpiote-task)
     NRF_PPI->CH[PWM_PPI_A].EEP = (uint32_t)(&PWM_TIMER->EVENTS_COMPARE[0]);
     NRF_PPI->CH[PWM_PPI_B].EEP = (uint32_t)(&PWM_TIMER->EVENTS_COMPARE[1]);
 
@@ -103,13 +98,13 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
     NRF_PPI->CH[PWM_PPI_B].TEP =
         (uint32_t)(&NRF_GPIOTE->TASKS_OUT[PWM_GPIOTE_CH]);
 
-    /* enable configured PPI Channels */
+    // enable configured PPI Channels
     NRF_PPI->CHENSET = PWM_PPI_CHANNELS;
 
-    /* shortcut to reset Counter after CC[1] event */
+    // shortcut to reset Counter after CC[1] event
     PWM_TIMER->SHORTS = TIMER_SHORTS_COMPARE1_CLEAR_Msk;
 
-    /* start pwm with value '0' */
+    // start pwm with value '0'
     pwm_set(dev, 0, 0);
 
     DEBUG("Timer frequency is set to %" PRIu32 "\n", timer_freq);
@@ -117,34 +112,27 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
     return (uint32_t)(timer_freq / res);
 }
 
-void pwm_set(pwm_t dev, uint8_t channel, uint16_t value)
-{
+void pwm_set(pwm_t dev, uint8_t channel, uint16_t value) {
 #ifdef NDEBUG
     (void)dev;
     (void)channel;
 #endif
     assert((dev == 0) && (channel == 0));
 
-    /*
-     * make sure duty cycle is set at the beginning of each period
-     * ensure to stop the timer as soon as possible
-     */
+    // make sure duty cycle is set at the beginning of each period
+    // ensure to stop the timer as soon as possible
     PWM_TIMER->TASKS_STOP = 1;
     PWM_TIMER->EVENTS_COMPARE[1] = 0;
     PWM_TIMER->SHORTS = TIMER_SHORTS_COMPARE1_STOP_Msk;
     PWM_TIMER->TASKS_START = 1;
 
-    /*
-     * waiting for the timer to stop
-     * This loop generates heavy load. This is not optimal therefore a local
-     * sleep function should be implemented.
-     */
+    // waiting for the timer to stop
+    // This loop generates heavy load. This is not optimal therefore a local
+    // sleep function should be implemented.
     while (PWM_TIMER->EVENTS_COMPARE[1] == 0) {};
 
-    /*
-     * checking pwm alignment first
-     * and guarding if duty cycle is 0% / 100%
-     */
+    // checking pwm alignment first
+    // and guarding if duty cycle is 0% / 100%
     if (NRF_GPIOTE->CONFIG[PWM_GPIOTE_CH] & GPIOTE_CONFIG_OUTINIT_Msk) {
         if (value == 0) {
             if (PWM_TIMER->CC[0] != 0) {
@@ -186,14 +174,13 @@ void pwm_set(pwm_t dev, uint8_t channel, uint16_t value)
         }
     }
 
-    /* reconfigure pwm to standard mode */
+    // reconfigure pwm to standard mode
     PWM_TIMER->TASKS_CLEAR = 1;
     PWM_TIMER->SHORTS = TIMER_SHORTS_COMPARE1_CLEAR_Msk;
     PWM_TIMER->TASKS_START = 1;
 }
 
-uint8_t pwm_channels(pwm_t dev)
-{
+uint8_t pwm_channels(pwm_t dev) {
 #ifdef NDEBUG
     (void)dev;
 #endif
@@ -201,36 +188,28 @@ uint8_t pwm_channels(pwm_t dev)
     return 1;
 }
 
-void pwm_poweron(pwm_t dev)
-{
+void pwm_poweron(pwm_t dev) {
     assert(dev == 0);
 
-    /*
-     * reinit pwm with correct alignment
-     */
+    // reinit pwm with correct alignment
     if (NRF_GPIOTE->CONFIG[PWM_GPIOTE_CH] & GPIOTE_CONFIG_OUTINIT_Msk) {
         pwm_init(dev, PWM_LEFT, init_data[1], (init_data[0] >> 16));
     } else {
         pwm_init(dev, PWM_RIGHT, init_data[1], (init_data[0] >> 16));
     }
 
-    /*
-     * reset dutycycle
-     */
+    // reset dutycycle
     pwm_set(dev, 0, (init_data[0] & 0xffff));
 
 }
 
-void pwm_poweroff(pwm_t dev)
-{
+void pwm_poweroff(pwm_t dev) {
     assert(dev == 0);
 
     PWM_TIMER->TASKS_STOP = 1;
 
-    /*
-     * power off function ensures that the inverted CC[0] is cached correctly
-     * when right aligned
-     */
+    // power off function ensures that the inverted CC[0] is cached correctly
+    // when right aligned
     if (((NRF_GPIOTE->CONFIG[PWM_GPIOTE_CH] & GPIOTE_CONFIG_OUTINIT_Msk) == 0) &
         (PWM_TIMER->CC[1] != PWM_TIMER->CC[0]) &
         (PWM_TIMER->CC[0] != 0)) {
@@ -242,9 +221,7 @@ void pwm_poweroff(pwm_t dev)
 
     init_data[1] = (divtable[PWM_TIMER->PRESCALER] / PWM_TIMER->CC[1]);
 
-    /*
-     * make sure the gpio is set to '0' while power is off
-     */
+    // make sure the gpio is set to '0' while power is off
     pwm_set(dev, 0, 0);
 
     PWM_TIMER->POWER = 0;

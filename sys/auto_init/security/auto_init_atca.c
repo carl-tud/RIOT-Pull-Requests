@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- * @file
- * @brief       Initializes cryptoauth devices
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+/// @file
+/// @brief       Initializes cryptoauth devices
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+/// @}
 
 #include "log.h"
 #include "atca.h"
@@ -35,8 +31,7 @@ ATCADevice atca_devs_ptr[ATCA_NUMOF];
 static struct atca_device atca_devs[ATCA_NUMOF];
 
 #if IS_USED(MODULE_PSA_SECURE_ELEMENT_ATECCX08A)
-void auto_init_atca(void)
-{
+void auto_init_atca(void) {
     DEBUG("[auto_init_atca] Number of secure elements: %zu\n", ATCA_NUMOF);
     for (unsigned i = 0; i < ATCA_NUMOF; i++) {
         int status = initATCADevice((ATCAIfaceCfg *)&atca_params[i].cfg, (ATCADevice)&atca_devs[i]);
@@ -61,8 +56,7 @@ void auto_init_atca(void)
     }
 }
 #else
-void auto_init_atca(void)
-{
+void auto_init_atca(void) {
     DEBUG("[auto_init_atca] Number of secure elements: %zu\n", ATCA_NUMOF);
     for (unsigned i = 0; i < ATCA_NUMOF; i++) {
         int status = initATCADevice((ATCAIfaceCfg *)&atca_params[i], (ATCADevice)&atca_devs[i]);

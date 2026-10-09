@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- * @file
- * @brief       Implementation of internal functions for ft5x06
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- * @}
- */
+/// @{
+/// @file
+/// @brief       Implementation of internal functions for ft5x06
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+/// @}
 #include <inttypes.h>
 
 #include "ft5x06.h"

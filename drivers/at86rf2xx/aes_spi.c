@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_at86rf2xx
- * @{
- *
- * @file
- * @brief       Implementation of at86rf2xx SPI security module (AES)
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- * @}
- */
+/// @ingroup     drivers_at86rf2xx
+/// @{
+///
+/// @file
+/// @brief       Implementation of at86rf2xx SPI security module (AES)
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+/// @}
 
 #include <assert.h>
 
@@ -29,20 +25,17 @@
 #define AT86RF2XX_CMD_SRAM_WRITE  (0x40)
 
 static inline
-void at86rf2xx_spi_get_bus(const at86rf2xx_t *dev)
-{
+void at86rf2xx_spi_get_bus(const at86rf2xx_t *dev) {
     spi_acquire(dev->params.spi, dev->params.cs_pin, SPI_MODE_0, dev->params.spi_clk);
 }
 
 static inline
-void at86rf2xx_spi_release_bus(const at86rf2xx_t *dev)
-{
+void at86rf2xx_spi_release_bus(const at86rf2xx_t *dev) {
     spi_release(dev->params.spi);
 }
 
 static inline
-uint8_t _aes_status(at86rf2xx_t *dev)
-{
+uint8_t _aes_status(at86rf2xx_t *dev) {
     spi_transfer_byte(dev->params.spi, dev->params.cs_pin, true,
                       AT86RF2XX_CMD_SRAM_READ);
     spi_transfer_byte(dev->params.spi, dev->params.cs_pin, true,
@@ -51,21 +44,18 @@ uint8_t _aes_status(at86rf2xx_t *dev)
 }
 
 static inline
-void _aes_wait_for_result(at86rf2xx_t *dev)
-{
+void _aes_wait_for_result(at86rf2xx_t *dev) {
     ztimer_sleep(ZTIMER_USEC, AT86RF2XX_AES_DELAY_US);
     uint8_t status = _aes_status(dev);
-    /*
-        If this assert fires, there probably is an implementation error.
-        The error bit is set before the transceiver has processed a data block.
-        There are two cases:
-        1. The delay between initiating an AES operation and sending the next cfg
-           to AT86RF2XX_REG__AES_CTRL was too short. Meaning the transceiver
-           did not have enough time to process the current block.
-        2. Less then 16 bytes of data have been sent to the transceiver.
-
-        Both should not occur in the code.
-     */
+    //     If this assert fires, there probably is an implementation error.
+    //     The error bit is set before the transceiver has processed a data block.
+    //     There are two cases:
+    //     1. The delay between initiating an AES operation and sending the next cfg
+    //        to AT86RF2XX_REG__AES_CTRL was too short. Meaning the transceiver
+    //        did not have enough time to process the current block.
+    //     2. Less then 16 bytes of data have been sent to the transceiver.
+    //
+    //     Both should not occur in the code.
     assert(!(status & AT86RF2XX_AES_STATUS_MASK__AES_ER));
     while (!(status & AT86RF2XX_AES_STATUS_MASK__AES_DONE)) {
         AES_DEBUG("status: %02x\n", status);
@@ -74,8 +64,7 @@ void _aes_wait_for_result(at86rf2xx_t *dev)
 }
 
 static inline
-void _aes_open_read(at86rf2xx_t *dev, uint8_t addr)
-{
+void _aes_open_read(at86rf2xx_t *dev, uint8_t addr) {
     spi_transfer_byte(dev->params.spi, dev->params.cs_pin, true,
                       AT86RF2XX_CMD_SRAM_READ);
     spi_transfer_byte(dev->params.spi, dev->params.cs_pin, true,
@@ -83,8 +72,7 @@ void _aes_open_read(at86rf2xx_t *dev, uint8_t addr)
 }
 
 static inline
-void _aes_open_write(at86rf2xx_t *dev, uint8_t addr)
-{
+void _aes_open_write(at86rf2xx_t *dev, uint8_t addr) {
     spi_transfer_byte(dev->params.spi, dev->params.cs_pin, true,
                       AT86RF2XX_CMD_SRAM_WRITE);
     spi_transfer_byte(dev->params.spi, dev->params.cs_pin, true,
@@ -93,15 +81,13 @@ void _aes_open_write(at86rf2xx_t *dev, uint8_t addr)
 
 static inline
 void _aes_transfer_bytes(at86rf2xx_t *dev, bool cont, const void* out,
-                         void* in, size_t len)
-{
+                         void* in, size_t len) {
     spi_transfer_bytes(dev->params.spi, dev->params.cs_pin, cont, out,
                        in, len);
 }
 
 static inline
-void _aes_save_key(at86rf2xx_t *dev, uint8_t cfg, uint8_t key[AT86RF2XX_AES_BLOCK_SIZE])
-{
+void _aes_save_key(at86rf2xx_t *dev, uint8_t cfg, uint8_t key[AT86RF2XX_AES_BLOCK_SIZE]) {
     _aes_open_write(dev, AT86RF2XX_REG__AES_CTRL);
     _aes_transfer_bytes(dev, false, &cfg, NULL, sizeof(cfg));
     _aes_open_read(dev, AT86RF2XX_REG__AES_KEY_START);
@@ -110,40 +96,36 @@ void _aes_save_key(at86rf2xx_t *dev, uint8_t cfg, uint8_t key[AT86RF2XX_AES_BLOC
 
 static inline
 void _aes_transfer_block(at86rf2xx_t *dev, uint8_t cfg, uint8_t mirror,
-                         const aes_block_t src, aes_block_t dst)
-{
-    /*
-        cfg:
-        value which tells the AES engine what kind of data is coming in
-        mirror:
-        must be the same value as cfg but depending on whether the bit
-        AT86RF2XX_AES_CTRL_MIRROR_MASK__AES_REQUEST is set, the transceiver
-        will process the incoming block, or not
-        src:
-        current data block of 16 bytes to be sent to the AES engine
-        dst:
-        if not NULL, dst stores the processed data block of the
-        block that has been sent to the AES engine most recently
-    */
+                         const aes_block_t src, aes_block_t dst) {
+    //     cfg:
+    //     value which tells the AES engine what kind of data is coming in
+    //     mirror:
+    //     must be the same value as cfg but depending on whether the bit
+    //     AT86RF2XX_AES_CTRL_MIRROR_MASK__AES_REQUEST is set, the transceiver
+    //     will process the incoming block, or not
+    //     src:
+    //     current data block of 16 bytes to be sent to the AES engine
+    //     dst:
+    //     if not NULL, dst stores the processed data block of the
+    //     block that has been sent to the AES engine most recently
 
-    /* access SRAM register AES_CTRL for writing */
+    // access SRAM register AES_CTRL for writing
     _aes_open_write(dev, AT86RF2XX_REG__AES_CTRL);
-    /* MOSI: send configuration to the AES_CTRL register */
+    // MOSI: send configuration to the AES_CTRL register
     _aes_transfer_bytes(dev, true, &cfg, NULL, sizeof(cfg));
-    /* MOSI: send first byte of the current block (block_i) */
+    // MOSI: send first byte of the current block (block_i)
     _aes_transfer_bytes(dev, true, src, NULL, 1);
-    /* MOSI: send the last 15 bytes of block_i */
-    /* MISO: get the first 15 bytes of the most recently processed block (block_i-1) */
+    // MOSI: send the last 15 bytes of block_i
+    // MISO: get the first 15 bytes of the most recently processed block (block_i-1)
     _aes_transfer_bytes(dev, true, src + 1, dst, AT86RF2XX_AES_BLOCK_SIZE - 1);
-    /* MOSI: send the mirrored cfg value and initiate the processing of block_i (or not) */
-    /* MISO: get the last byte of block_i-1 */
+    // MOSI: send the mirrored cfg value and initiate the processing of block_i (or not)
+    // MISO: get the last byte of block_i-1
     _aes_transfer_bytes(dev, false, &mirror,
                         dst ? dst + AT86RF2XX_AES_BLOCK_SIZE - 1 : NULL, 1);
 }
 
 void at86rf2xx_aes_key_read_encrypt(at86rf2xx_t *dev,
-                                    uint8_t key[AT86RF2XX_AES_KEY_LENGTH])
-{
+                                    uint8_t key[AT86RF2XX_AES_KEY_LENGTH]) {
     uint8_t cfg = AT86RF2XX_AES_CTRL_AES_MODE__KEY |
                   AT86RF2XX_AES_CTRL_AES_DIR__ENC;
     at86rf2xx_spi_get_bus(dev);
@@ -152,8 +134,7 @@ void at86rf2xx_aes_key_read_encrypt(at86rf2xx_t *dev,
 }
 
 void at86rf2xx_aes_key_write_encrypt(at86rf2xx_t *dev,
-                                     const uint8_t key[AT86RF2XX_AES_KEY_LENGTH])
-{
+                                     const uint8_t key[AT86RF2XX_AES_KEY_LENGTH]) {
     uint8_t cfg = AT86RF2XX_AES_CTRL_AES_MODE__KEY |
                   AT86RF2XX_AES_CTRL_AES_DIR__ENC;
     at86rf2xx_spi_get_bus(dev);
@@ -164,8 +145,7 @@ void at86rf2xx_aes_key_write_encrypt(at86rf2xx_t *dev,
 }
 
 void at86rf2xx_aes_key_read_decrypt(at86rf2xx_t *dev,
-                                    uint8_t key[AT86RF2XX_AES_KEY_LENGTH])
-{
+                                    uint8_t key[AT86RF2XX_AES_KEY_LENGTH]) {
     uint8_t cfg = AT86RF2XX_AES_CTRL_AES_MODE__KEY |
                   AT86RF2XX_AES_CTRL_AES_DIR__DEC;
     at86rf2xx_spi_get_bus(dev);
@@ -174,8 +154,7 @@ void at86rf2xx_aes_key_read_decrypt(at86rf2xx_t *dev,
 }
 
 void at86rf2xx_aes_key_write_decrypt(at86rf2xx_t *dev,
-                                     const uint8_t key[AT86RF2XX_AES_KEY_LENGTH])
-{
+                                     const uint8_t key[AT86RF2XX_AES_KEY_LENGTH]) {
     uint8_t cfg = AT86RF2XX_AES_CTRL_AES_MODE__KEY |
                   AT86RF2XX_AES_CTRL_AES_DIR__DEC;
     at86rf2xx_spi_get_bus(dev);
@@ -189,8 +168,7 @@ void at86rf2xx_aes_ecb_encrypt(at86rf2xx_t *dev,
                                aes_block_t *cipher,
                                uint8_t key[AT86RF2XX_AES_BLOCK_SIZE],
                                const aes_block_t *plain,
-                               uint8_t nblocks)
-{
+                               uint8_t nblocks) {
     if (!nblocks) {
         return;
     }
@@ -213,7 +191,7 @@ void at86rf2xx_aes_ecb_encrypt(at86rf2xx_t *dev,
         _aes_wait_for_result(dev);
     }
 
-    /* send dummy bytes to get the last block of cipher text */
+    // send dummy bytes to get the last block of cipher text
     mirror &= ~AT86RF2XX_AES_CTRL_MIRROR_MASK__AES_REQUEST;
     _aes_transfer_block(dev, cfg, mirror, plain[0],
                         cipher ? cipher[nblocks - 1] : NULL);
@@ -224,8 +202,7 @@ void at86rf2xx_aes_ecb_decrypt(at86rf2xx_t *dev,
                                aes_block_t *plain,
                                uint8_t key[AT86RF2XX_AES_BLOCK_SIZE],
                                const aes_block_t *cipher,
-                               uint8_t nblocks)
-{
+                               uint8_t nblocks) {
     if (!nblocks) {
         return;
     }
@@ -248,7 +225,7 @@ void at86rf2xx_aes_ecb_decrypt(at86rf2xx_t *dev,
         _aes_wait_for_result(dev);
     }
 
-    /* send dummy bytes to get the last block of plain text */
+    // send dummy bytes to get the last block of plain text
     mirror &= ~AT86RF2XX_AES_CTRL_MIRROR_MASK__AES_REQUEST;
     _aes_transfer_block(dev, cfg, mirror, cipher[0],
                         plain ? plain[nblocks - 1] : NULL);
@@ -260,18 +237,17 @@ void at86rf2xx_aes_cbc_encrypt(at86rf2xx_t *dev,
                                uint8_t key[AT86RF2XX_AES_BLOCK_SIZE],
                                uint8_t iv[AT86RF2XX_AES_BLOCK_SIZE],
                                const aes_block_t *plain,
-                               uint8_t nblocks)
-{
+                               uint8_t nblocks) {
     if (!nblocks) {
         return;
     }
     uint8_t cfg = AT86RF2XX_AES_CTRL_AES_MODE__ECB |
                   AT86RF2XX_AES_CTRL_AES_DIR__ENC;
     uint8_t mirror = cfg | AT86RF2XX_AES_CTRL_MIRROR_AES_REQUEST__START;
-    /* The first block has to be ECB encrypted because there is no
-        cipher result to be XOR´ed from the last round.
-        Instead an "initial vector" is XOR´ed to the first block
-        of plain text. */
+    // The first block has to be ECB encrypted because there is no
+    //     cipher result to be XOR´ed from the last round.
+    //     Instead an "initial vector" is XOR´ed to the first block
+    //     of plain text.
     uint8_t first[AT86RF2XX_AES_BLOCK_SIZE];
     for (unsigned i = 0; i < AT86RF2XX_AES_BLOCK_SIZE; i++) {
         first[i] = plain[0][i] ^ iv[i];
@@ -293,7 +269,7 @@ void at86rf2xx_aes_cbc_encrypt(at86rf2xx_t *dev,
         _aes_wait_for_result(dev);
     }
 
-    /* send dummy bytes to get the last block of cipher text */
+    // send dummy bytes to get the last block of cipher text
     uint8_t *mac = cipher ? cipher[nblocks - 1] : iv;
     mirror &= ~AT86RF2XX_AES_CTRL_MIRROR_MASK__AES_REQUEST;
     _aes_transfer_block(dev, cfg, mirror, plain[0], mac);
@@ -305,8 +281,7 @@ void at86rf2xx_aes_cbc_decrypt(at86rf2xx_t *dev,
                                uint8_t key[AT86RF2XX_AES_BLOCK_SIZE],
                                uint8_t iv[AT86RF2XX_AES_BLOCK_SIZE],
                                const aes_block_t *cipher,
-                               uint8_t nblocks)
-{
+                               uint8_t nblocks) {
     if (!nblocks) {
         return;
     }
@@ -336,7 +311,7 @@ void at86rf2xx_aes_cbc_decrypt(at86rf2xx_t *dev,
         }
     }
 
-    /* send dummy bytes to get the last block of plain text */
+    // send dummy bytes to get the last block of plain text
     uint8_t *mac = plain ? plain[nblocks - 1] : iv;
     mirror &= ~AT86RF2XX_AES_CTRL_MIRROR_MASK__AES_REQUEST;
     _aes_transfer_block(dev, cfg, mirror, cipher[0], mac);

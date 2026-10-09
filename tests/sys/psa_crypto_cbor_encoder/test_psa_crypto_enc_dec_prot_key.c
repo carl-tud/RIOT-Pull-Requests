@@ -1,54 +1,46 @@
-/*
- * SPDX-FileCopyrightText: 2023 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests CBOR encoding of PSA Crypto protected key slots
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests CBOR encoding of PSA Crypto protected key slots
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include "embUnit.h"
 #include "psa/crypto.h"
 #include "psa_crypto_cbor_encoder.h"
 #include "tests_psa_cbor_enc_dec.h"
 
-/**
- * @brief   Testdata has been obtained by manually encoding and decoding keys,
- *          until they fit the desired format and checking the output with
- *          https://cbor.me.
- *
- *          Diagnostic notation:
- *          [
- *              [8, 9216, 128, 2147483648, [768, 71319552]],
- *              [4]
- *          ]
- */
+/// @brief   Testdata has been obtained by manually encoding and decoding keys,
+///          until they fit the desired format and checking the output with
+///          https://cbor.me.
+///
+///          Diagnostic notation:
+///          [
+///              [8, 9216, 128, 2147483648, [768, 71319552]],
+///              [4]
+///          ]
 static uint8_t cbor_encoded_data[] = {
     0x82, 0x85, 0x08, 0x19, 0x24, 0x00, 0x18, 0x80,
     0x1a, 0x80, 0x00, 0x00, 0x00, 0x82, 0x19, 0x03,
     0x00, 0x1a, 0x04, 0x40, 0x40, 0x00, 0x81, 0x04
 };
 
-/**
- * @brief   Testdata has been obtained by manually encoding and decoding keys,
- *          until they fit the desired format and checking the output with
- *          https://cbor.me.
- *
- *          Diagnostic notation:
- *          [
- *              [8, 28946, 256, 2147483648, [12288, 100664841]],
- *              [4, h'0456CB81D1CBDE44F51DCCB12602670D76DDE784ED8D30721CCA5059F920AD62877
- *                    49EC9CB2675C51B69A68956102E8F6F7257B9B993ED8899EAFD53823DCAB641']
- *          ]
- */
+/// @brief   Testdata has been obtained by manually encoding and decoding keys,
+///          until they fit the desired format and checking the output with
+///          https://cbor.me.
+///
+///          Diagnostic notation:
+///          [
+///              [8, 28946, 256, 2147483648, [12288, 100664841]],
+///              [4, h'0456CB81D1CBDE44F51DCCB12602670D76DDE784ED8D30721CCA5059F920AD62877
+///                    49EC9CB2675C51B69A68956102E8F6F7257B9B993ED8899EAFD53823DCAB641']
+///          ]
 static uint8_t cbor_encoded_data_with_pubkey[] = {
     0x82, 0x85, 0x08, 0x19, 0x71, 0x12, 0x19, 0x01,
     0x00, 0x1a, 0x80, 0x00, 0x00, 0x00, 0x82, 0x19,
@@ -64,8 +56,7 @@ static uint8_t cbor_encoded_data_with_pubkey[] = {
     0x3d, 0xca, 0xb6, 0x41
 };
 
-static void _init_key_slot(psa_prot_key_slot_t *slot, int is_pubkey)
-{
+static void _init_key_slot(psa_prot_key_slot_t *slot, int is_pubkey) {
     psa_key_lifetime_t lifetime = PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION
                                       (PSA_KEY_LIFETIME_VOLATILE, PSA_KEY_LOCATION_SE_MIN);
     psa_set_key_lifetime(&slot->attr, lifetime);
@@ -92,11 +83,8 @@ static void _init_key_slot(psa_prot_key_slot_t *slot, int is_pubkey)
     }
 }
 
-/**
- * @brief   CBOR encoding of key pair slot should equal @c cbor_encoded_data
- */
-static void test_encode_protected_key_slot(void)
-{
+/// @brief   CBOR encoding of key pair slot should equal @c cbor_encoded_data
+static void test_encode_protected_key_slot(void) {
     size_t encoded_size;
     uint8_t cbor_enc[sizeof(cbor_encoded_data)];
     psa_prot_key_slot_t slot;
@@ -108,11 +96,8 @@ static void test_encode_protected_key_slot(void)
                                                                 "wrong cbor encoding");
 }
 
-/**
- * @brief   CBOR encoding of key pair slot should equal @c cbor_encoded_data_with_pubkey
- */
-static void test_encode_protected_key_slot_with_pubkey(void)
-{
+/// @brief   CBOR encoding of key pair slot should equal @c cbor_encoded_data_with_pubkey
+static void test_encode_protected_key_slot_with_pubkey(void) {
     size_t encoded_size;
     uint8_t cbor_enc_with_pubkey[sizeof(cbor_encoded_data_with_pubkey)];
     psa_prot_key_slot_t slot;
@@ -124,12 +109,9 @@ static void test_encode_protected_key_slot_with_pubkey(void)
                                      encoded_size), "wrong cbor encoding");
 }
 
-/**
- * @brief   Decoded key slot should equal key slot structure initialized
- *          in @c test_encode_protected_key_slot.
- */
-static void test_decode_protected_key_slot(void)
-{
+/// @brief   Decoded key slot should equal key slot structure initialized
+///          in @c test_encode_protected_key_slot.
+static void test_decode_protected_key_slot(void) {
     psa_prot_key_slot_t slot;
 
     TEST_ASSERT_PSA(psa_decode_key_attributes(&slot.attr, cbor_encoded_data, sizeof(cbor_encoded_data)));
@@ -138,12 +120,9 @@ static void test_decode_protected_key_slot(void)
                                      sizeof(psa_prot_key_slot_t)), "wrong cbor decoding");
 }
 
-/**
- * @brief   Decoded key slot should equal key slot structure initialized
- *          in @c test_encode_protected_key_slot_with_pubkey.
- */
-static void test_decode_protected_key_slot_with_pubkey(void)
-{
+/// @brief   Decoded key slot should equal key slot structure initialized
+///          in @c test_encode_protected_key_slot_with_pubkey.
+static void test_decode_protected_key_slot_with_pubkey(void) {
     psa_prot_key_slot_t slot;
 
     TEST_ASSERT_PSA(psa_decode_key_attributes(&slot.attr, cbor_encoded_data_with_pubkey, sizeof(cbor_encoded_data_with_pubkey)));
@@ -153,8 +132,7 @@ static void test_decode_protected_key_slot_with_pubkey(void)
                                      sizeof(psa_prot_key_slot_t)), "wrong cbor decoding");
 }
 
-Test* tests_psa_crypto_enc_dec_protected_key(void)
-{
+Test* tests_psa_crypto_enc_dec_protected_key(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_encode_protected_key_slot),
         new_TestFixture(test_decode_protected_key_slot),

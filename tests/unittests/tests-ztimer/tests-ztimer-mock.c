@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Unittests for ztimer
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @{
+///
+/// @file
+/// @brief       Unittests for ztimer
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #include "ztimer.h"
 #include "ztimer/mock.h"
@@ -20,24 +16,18 @@
 #include "tests-ztimer.h"
 
 #include <stdio.h>
-/**
- * @brief   Simple callback for counting alarms
- */
-static void cb_incr(void *arg)
-{
+/// @brief   Simple callback for counting alarms
+static void cb_incr(void *arg) {
     uint32_t *ptr = arg;
     *ptr += 1;
 }
 
-/**
- * @brief   Testing 32 bit wide mock clock now functionality
- */
-static void test_ztimer_mock_now32(void)
-{
+/// @brief   Testing 32 bit wide mock clock now functionality
+static void test_ztimer_mock_now32(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
-    /* Basic sanity test of the mock implementation */
+    // Basic sanity test of the mock implementation
     ztimer_mock_init(&zmock, 32);
     uint32_t now = ztimer_now(z);
     TEST_ASSERT_EQUAL_INT(0, now);
@@ -59,15 +49,12 @@ static void test_ztimer_mock_now32(void)
     TEST_ASSERT_EQUAL_INT(0x29999999ul, now);
 }
 
-/**
- * @brief   Testing 16 bit wide mock clock now functionality
- */
-static void test_ztimer_mock_now16(void)
-{
+/// @brief   Testing 16 bit wide mock clock now functionality
+static void test_ztimer_mock_now16(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
-    /* testing a 16 bit counter */
+    // testing a 16 bit counter
     ztimer_mock_init(&zmock, 16);
     uint32_t now = ztimer_now(z);
     TEST_ASSERT_EQUAL_INT(0, now);
@@ -88,15 +75,12 @@ static void test_ztimer_mock_now16(void)
     TEST_ASSERT_EQUAL_INT(30123ul + 0x10000 + 0x8000, now);
 }
 
-/**
- * @brief   Testing 8 bit wide mock clock now functionality
- */
-static void test_ztimer_mock_now8(void)
-{
+/// @brief   Testing 8 bit wide mock clock now functionality
+static void test_ztimer_mock_now8(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
-    /* testing a small counter */
+    // testing a small counter
     ztimer_mock_init(&zmock, 8);
     uint32_t now = ztimer_now(z);
     TEST_ASSERT_EQUAL_INT(0, now);
@@ -114,15 +98,12 @@ static void test_ztimer_mock_now8(void)
     TEST_ASSERT_EQUAL_INT(0x100 + 123 + 180, now);
 }
 
-/**
- * @brief   Testing 3 bit wide mock clock now functionality
- */
-static void test_ztimer_mock_now3(void)
-{
+/// @brief   Testing 3 bit wide mock clock now functionality
+static void test_ztimer_mock_now3(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
-    /* testing a tiny counter */
+    // testing a tiny counter
     ztimer_mock_init(&zmock, 3);
     uint32_t now = ztimer_now(z);
     TEST_ASSERT_EQUAL_INT(0, now);
@@ -140,11 +121,8 @@ static void test_ztimer_mock_now3(void)
     TEST_ASSERT_EQUAL_INT(7 + 8 + 10, now);
 }
 
-/**
- * @brief   Testing 32 bit wide mock clock set functionality
- */
-static void test_ztimer_mock_set32(void)
-{
+/// @brief   Testing 32 bit wide mock clock set functionality
+static void test_ztimer_mock_set32(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
@@ -156,27 +134,27 @@ static void test_ztimer_mock_set32(void)
     ztimer_t alarm = { .callback = cb_incr, .arg = &count, };
     ztimer_set(z, &alarm, 1000);
 
-    ztimer_mock_advance(&zmock,    1);    /* now =    1*/
+    ztimer_mock_advance(&zmock,    1);    // now =    1
     TEST_ASSERT_EQUAL_INT(0, count);
-    ztimer_mock_advance(&zmock,  100);    /* now =  101 */
+    ztimer_mock_advance(&zmock,  100);    // now =  101
     TEST_ASSERT_EQUAL_INT(0, count);
-    ztimer_mock_advance(&zmock,  898);    /* now =  999 */
+    ztimer_mock_advance(&zmock,  898);    // now =  999
     now = ztimer_now(z);
     TEST_ASSERT_EQUAL_INT(999, now);
     TEST_ASSERT_EQUAL_INT(0, count);
-    ztimer_mock_advance(&zmock,    1);    /* now = 1000*/
+    ztimer_mock_advance(&zmock,    1);    // now = 1000
     TEST_ASSERT_EQUAL_INT(1, count);
-    ztimer_mock_advance(&zmock,    1);    /* now = 1001*/
+    ztimer_mock_advance(&zmock,    1);    // now = 1001
     TEST_ASSERT_EQUAL_INT(1, count);
-    ztimer_mock_advance(&zmock, 1000);    /* now = 2001*/
+    ztimer_mock_advance(&zmock, 1000);    // now = 2001
     TEST_ASSERT_EQUAL_INT(1, count);
     ztimer_set(z, &alarm, 3);
-    ztimer_mock_advance(&zmock,  999);    /* now = 3000*/
+    ztimer_mock_advance(&zmock,  999);    // now = 3000
     TEST_ASSERT_EQUAL_INT(2, count);
     ztimer_set(z, &alarm, 4000001000ul);
-    ztimer_mock_advance(&zmock, 1000);    /* now = 4000*/
+    ztimer_mock_advance(&zmock, 1000);    // now = 4000
     TEST_ASSERT_EQUAL_INT(2, count);
-    ztimer_mock_advance(&zmock, 4000000000ul); /* now = 4000004000*/
+    ztimer_mock_advance(&zmock, 4000000000ul); // now = 4000004000
     now = ztimer_now(z);
     TEST_ASSERT_EQUAL_INT(4000004000ul, now);
     TEST_ASSERT_EQUAL_INT(3, count);
@@ -187,17 +165,14 @@ static void test_ztimer_mock_set32(void)
     TEST_ASSERT_EQUAL_INT(3, count);
 }
 
-/**
- * @brief   Testing 16 bit wide mock clock set functionality
- */
-static void test_ztimer_mock_set16(void)
-{
+/// @brief   Testing 16 bit wide mock clock set functionality
+static void test_ztimer_mock_set16(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
     ztimer_mock_init(&zmock, 16);
 
-    /* make sure ztimer stays turned on */
+    // make sure ztimer stays turned on
     ztimer_acquire(z);
 
     uint32_t now = ztimer_now(z);
@@ -228,7 +203,7 @@ static void test_ztimer_mock_set16(void)
     TEST_ASSERT_EQUAL_INT(1, count);
     ztimer_set(z, &alarm, UINT16_MAX);
     ztimer_mock_advance(&zmock, 0x10000ul);
-    /* 1 + 100 + 898 + 1 + 1 + 1000 + 0x10000 = 67537 */
+    // 1 + 100 + 898 + 1 + 1 + 1000 + 0x10000 = 67537
     TEST_ASSERT_EQUAL_INT(67537ul, ztimer_now(z));
     TEST_ASSERT_EQUAL_INT(2, count);
     ztimer_set(z, &alarm, UINT16_MAX);
@@ -246,19 +221,16 @@ static void test_ztimer_mock_set16(void)
     TEST_ASSERT_EQUAL_INT(67537ul + 0x10000000ul + 1 + UINT16_MAX + 1, ztimer_now(z));
     TEST_ASSERT_EQUAL_INT(4, count);
     now = ztimer_now(z);
-    /* 67537ul + 0x10000000ul + 1 + UINT16_MAX + 1 = 0x100207d2 */
+    // 67537ul + 0x10000000ul + 1 + UINT16_MAX + 1 = 0x100207d2
     TEST_ASSERT_EQUAL_INT(0x100207d2, now);
 }
 
-/**
- * @brief   Testing ztimer_is_set()
- */
-static void test_ztimer_mock_is_set(void)
-{
+/// @brief   Testing ztimer_is_set()
+static void test_ztimer_mock_is_set(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
-    /* Basic sanity test of the mock implementation */
+    // Basic sanity test of the mock implementation
     ztimer_mock_init(&zmock, 32);
 
     uint32_t count = 0;
@@ -285,8 +257,7 @@ static void test_ztimer_mock_is_set(void)
     TEST_ASSERT(!ztimer_is_set(z, &alarm2));
 }
 
-static uint32_t calc_target_time(ztimer_mock_t *mock, ztimer_t *t)
-{
+static uint32_t calc_target_time(ztimer_mock_t *mock, ztimer_t *t) {
     ztimer_base_t *target = &t->base;
     ztimer_base_t *head = mock->super.list.next;
 
@@ -306,16 +277,13 @@ static uint32_t calc_target_time(ztimer_mock_t *mock, ztimer_t *t)
     return 0;
 }
 
-/*
- * Testing that removing timers has no unintended site effects on unrelated
- * timers (e.g. that offsets are correctly updated).
- */
-static void test_ztimer_mock_remove(void)
-{
+// Testing that removing timers has no unintended site effects on unrelated
+// timers (e.g. that offsets are correctly updated).
+static void test_ztimer_mock_remove(void) {
     ztimer_mock_t zmock;
     ztimer_clock_t *z = &zmock.super;
 
-    /* Basic sanity test of the mock implementation */
+    // Basic sanity test of the mock implementation
     ztimer_mock_init(&zmock, 32);
 
     uint32_t count = 0;
@@ -332,53 +300,52 @@ static void test_ztimer_mock_remove(void)
         ztimer_set(z, &alarms[i], (i + 1) * offset);
     }
 
-    /* target of first timer should be `offset` and it should be armed */
+    // target of first timer should be `offset` and it should be armed
     TEST_ASSERT(zmock.armed);
     TEST_ASSERT_EQUAL_INT(offset, zmock.target - zmock.now);
 
-    /* relative offset from previous timer to alarm should always  be `offset` */
+    // relative offset from previous timer to alarm should always  be `offset`
     for (unsigned i = 0; i < ARRAY_SIZE(alarms); i++) {
         TEST_ASSERT_EQUAL_INT(offset, alarms[i].base.offset);
         abs_targets[i] = zmock.now + (i + 1) * offset;
     }
 
-    /* check order is correct */
+    // check order is correct
     for (unsigned i = 0; i < ARRAY_SIZE(alarms) - 1; i++) {
         TEST_ASSERT(alarms[i].base.next == &alarms[i + 1].base);
     }
 
-    /* ensure target time for 3rd and 4th timer are correct */
+    // ensure target time for 3rd and 4th timer are correct
     TEST_ASSERT_EQUAL_INT(abs_targets[2], calc_target_time(&zmock, &alarms[2]));
     TEST_ASSERT_EQUAL_INT(abs_targets[3], calc_target_time(&zmock, &alarms[3]));
 
-    /* ensure target times are still correct after 2nd timer is removed */
+    // ensure target times are still correct after 2nd timer is removed
     ztimer_remove(z, &alarms[1]);
     TEST_ASSERT_EQUAL_INT(abs_targets[2], calc_target_time(&zmock, &alarms[2]));
     TEST_ASSERT_EQUAL_INT(abs_targets[3], calc_target_time(&zmock, &alarms[3]));
 
-    /* ensure target times are still correct after 1st timer fired */
+    // ensure target times are still correct after 1st timer fired
     ztimer_mock_advance(&zmock, offset);
     TEST_ASSERT_EQUAL_INT(abs_targets[2], calc_target_time(&zmock, &alarms[2]));
     TEST_ASSERT_EQUAL_INT(abs_targets[3], calc_target_time(&zmock, &alarms[3]));
     TEST_ASSERT_EQUAL_INT(1, count);
 
-    /* ensure that removing an already fired time does not break things */
+    // ensure that removing an already fired time does not break things
     ztimer_remove(z, &alarms[0]);
     TEST_ASSERT_EQUAL_INT(abs_targets[2], calc_target_time(&zmock, &alarms[2]));
     TEST_ASSERT_EQUAL_INT(abs_targets[3], calc_target_time(&zmock, &alarms[3]));
     TEST_ASSERT_EQUAL_INT(1, count);
 
-    /* ensure target time of 3rd timer is still correct after 4th timer is removed */
+    // ensure target time of 3rd timer is still correct after 4th timer is removed
     ztimer_remove(z, &alarms[3]);
     TEST_ASSERT_EQUAL_INT(abs_targets[2], calc_target_time(&zmock, &alarms[2]));
 
-    /* ensure remaining timer still fires */
+    // ensure remaining timer still fires
     ztimer_mock_advance(&zmock, 3 * offset);
     TEST_ASSERT_EQUAL_INT(2, count);
 }
 
-Test *tests_ztimer_mock_tests(void)
-{
+Test *tests_ztimer_mock_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_ztimer_mock_now32),
         new_TestFixture(test_ztimer_mock_now16),
@@ -395,4 +362,4 @@ Test *tests_ztimer_mock_tests(void)
     return (Test *)&ztimer_tests;
 }
 
-/** @} */
+/// @}

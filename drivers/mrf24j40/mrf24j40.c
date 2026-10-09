@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Neo Nenaco <neo@nenaco.de>
- * SPDX-FileCopyrightText: 2017 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Neo Nenaco <neo@nenaco.de>
+// SPDX-FileCopyrightText: 2017 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mrf24j40
- * @{
- *
- * @file
- * @brief       Implementation of public functions for MRF24J40 drivers
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Neo Nenaco <neo@nenaco.de>
- *
- * @}
- */
+/// @ingroup     drivers_mrf24j40
+/// @{
+///
+/// @file
+/// @brief       Implementation of public functions for MRF24J40 drivers
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Neo Nenaco <neo@nenaco.de>
+///
+/// @}
 
 #include "byteorder.h"
 #include "mrf24j40_registers.h"
@@ -26,18 +22,17 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-int mrf24j40_reset(mrf24j40_t *dev)
-{
+int mrf24j40_reset(mrf24j40_t *dev) {
     int res = mrf24j40_init_hw(dev);
 
     if (res < 0) {
         return res;
     }
 
-    /* configure Immediate Sleep and Wake-Up mode */
+    // configure Immediate Sleep and Wake-Up mode
     mrf24j40_reg_write_short(dev, MRF24J40_REG_WAKECON, MRF24J40_WAKECON_IMMWAKE);
 
-    /* set default options */
+    // set default options
     mrf24j40_set_option(dev, NETDEV_IEEE802154_ACK_REQ, true);
     mrf24j40_set_option(dev, MRF24J40_OPT_CSMA, true);
 
@@ -47,8 +42,7 @@ int mrf24j40_reset(mrf24j40_t *dev)
     return 0;
 }
 
-size_t mrf24j40_tx_load(mrf24j40_t *dev, uint8_t *data, size_t len, size_t offset)
-{
+size_t mrf24j40_tx_load(mrf24j40_t *dev, uint8_t *data, size_t len, size_t offset) {
 
     DEBUG("[mrf24j40] TX_load\n");
 

@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <assert.h>
 
@@ -22,7 +18,7 @@
 #include "net/gnrc/sixlowpan/frag/rb.h"
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_SFR
 #include "net/gnrc/sixlowpan/frag/sfr.h"
-#endif  /* MODULE_GNRC_SIXLOWPAN_FRAG_SFR */
+#endif  // MODULE_GNRC_SIXLOWPAN_FRAG_SFR
 #include "net/gnrc/sixlowpan/iphc.h"
 #include "net/gnrc/netif.h"
 #include "net/sixlowpan.h"
@@ -35,15 +31,14 @@ static kernel_pid_t _pid = KERNEL_PID_UNDEF;
 static char _stack[GNRC_SIXLOWPAN_STACK_SIZE + DEBUG_EXTRA_STACKSIZE];
 static msg_t _msg_q[GNRC_SIXLOWPAN_MSG_QUEUE_SIZE];
 
-/* handles GNRC_NETAPI_MSG_TYPE_RCV commands */
+// handles GNRC_NETAPI_MSG_TYPE_RCV commands
 static void _receive(gnrc_pktsnip_t *pkt);
-/* handles GNRC_NETAPI_MSG_TYPE_SND commands */
+// handles GNRC_NETAPI_MSG_TYPE_SND commands
 static void _send(gnrc_pktsnip_t *pkt);
-/* Main event loop for 6LoWPAN */
+// Main event loop for 6LoWPAN
 static void *_event_loop(void *args);
 
-kernel_pid_t gnrc_sixlowpan_init(void)
-{
+kernel_pid_t gnrc_sixlowpan_init(void) {
     if (_pid > KERNEL_PID_UNDEF) {
         return _pid;
     }
@@ -54,14 +49,12 @@ kernel_pid_t gnrc_sixlowpan_init(void)
     return _pid;
 }
 
-kernel_pid_t gnrc_sixlowpan_get_pid(void)
-{
+kernel_pid_t gnrc_sixlowpan_get_pid(void) {
     return _pid;
 }
 
 void gnrc_sixlowpan_dispatch_recv(gnrc_pktsnip_t *pkt, void *context,
-                                  unsigned page)
-{
+                                  unsigned page) {
     gnrc_nettype_t type;
 
     (void)context;
@@ -74,10 +67,10 @@ void gnrc_sixlowpan_dispatch_recv(gnrc_pktsnip_t *pkt, void *context,
             break;
         }
     }
-#else   /* MODULE_GNRC_IPV6 */
-    /* just assume normal IPv6 traffic */
+#else   // MODULE_GNRC_IPV6
+    // just assume normal IPv6 traffic
     type = GNRC_NETTYPE_IPV6;
-#endif  /* MODULE_GNRC_IPV6 */
+#endif  // MODULE_GNRC_IPV6
     if (!gnrc_netapi_dispatch_receive(type,
                                       GNRC_NETREG_DEMUX_CTX_ALL, pkt)) {
         DEBUG("6lo: No receivers for this packet found\n");
@@ -86,8 +79,7 @@ void gnrc_sixlowpan_dispatch_recv(gnrc_pktsnip_t *pkt, void *context,
 }
 
 void gnrc_sixlowpan_dispatch_send(gnrc_pktsnip_t *pkt, void *context,
-                                  unsigned page)
-{
+                                  unsigned page) {
     (void)context;
     (void)page;
     assert(pkt->type == GNRC_NETTYPE_NETIF);
@@ -102,8 +94,7 @@ void gnrc_sixlowpan_dispatch_send(gnrc_pktsnip_t *pkt, void *context,
 void gnrc_sixlowpan_multiplex_by_size(gnrc_pktsnip_t *pkt,
                                       size_t orig_datagram_size,
                                       gnrc_netif_t *netif,
-                                      unsigned page)
-{
+                                      unsigned page) {
     assert(pkt != NULL);
     assert(netif != NULL);
     size_t datagram_size = gnrc_pkt_len(pkt->next);
@@ -121,9 +112,9 @@ void gnrc_sixlowpan_multiplex_by_size(gnrc_pktsnip_t *pkt,
         gnrc_sixlowpan_frag_fb_t *fbuf;
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_SFR
         bool sfr = gnrc_sixlowpan_frag_sfr_netif(netif);
-#else   /* MODULE_GNRC_SIXLOWPAN_FRAG_SFR */
+#else   // MODULE_GNRC_SIXLOWPAN_FRAG_SFR
         bool sfr = false;
-#endif  /* MODULE_GNRC_SIXLOWPAN_FRAG_SFR */
+#endif  // MODULE_GNRC_SIXLOWPAN_FRAG_SFR
 
         fbuf = gnrc_sixlowpan_frag_fb_get();
         if (fbuf == NULL) {
@@ -135,7 +126,7 @@ void gnrc_sixlowpan_multiplex_by_size(gnrc_pktsnip_t *pkt,
         fbuf->pkt = pkt;
         fbuf->datagram_size = orig_datagram_size;
         fbuf->tag = gnrc_sixlowpan_frag_fb_next_tag();
-        /* Sending the first fragment has an offset==0 */
+        // Sending the first fragment has an offset==0
         fbuf->offset = 0;
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_HINT
         fbuf->hint.fragsz = 0;
@@ -152,9 +143,9 @@ void gnrc_sixlowpan_multiplex_by_size(gnrc_pktsnip_t *pkt,
             fbuf->sfr.frags_sent = 0U;
             gnrc_sixlowpan_frag_sfr_send(pkt, fbuf, page);
         }
-#endif /* MODULE_GNRC_SIXLOWPAN_FRAG_SFR */
+#endif // MODULE_GNRC_SIXLOWPAN_FRAG_SFR
     }
-#endif /* defined(MODULE_GNRC_SIXLOWPAN_FRAG) || defined(MODULE_GNRC_SIXLOWPAN_FRAG_SFR) */
+#endif // defined(MODULE_GNRC_SIXLOWPAN_FRAG) || defined(MODULE_GNRC_SIXLOWPAN_FRAG_SFR)
     else {
         (void)orig_datagram_size;
         DEBUG("6lo: packet too big (%" PRIuSIZE " > %u)\n",
@@ -163,12 +154,11 @@ void gnrc_sixlowpan_multiplex_by_size(gnrc_pktsnip_t *pkt,
     }
 }
 
-static void _receive(gnrc_pktsnip_t *pkt)
-{
+static void _receive(gnrc_pktsnip_t *pkt) {
     gnrc_pktsnip_t *payload;
     uint8_t *dispatch;
 
-    /* seize payload as a temporary variable */
+    // seize payload as a temporary variable
     payload = gnrc_pktbuf_start_write(pkt); /* need to duplicate since pkt->next
                                              * might get replaced */
 
@@ -181,7 +171,7 @@ static void _receive(gnrc_pktsnip_t *pkt)
         return;
     }
 
-    pkt = payload;  /* reset pkt from temporary variable */
+    pkt = payload;  // reset pkt from temporary variable
 
     payload = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_SIXLOWPAN);
 
@@ -207,7 +197,7 @@ static void _receive(gnrc_pktsnip_t *pkt)
             return;
         }
 
-        /* packet is uncompressed: just mark and remove the dispatch */
+        // packet is uncompressed: just mark and remove the dispatch
         sixlowpan = gnrc_pktbuf_mark(payload, sizeof(uint8_t), GNRC_NETTYPE_SIXLOWPAN);
 
         if (sixlowpan == NULL) {
@@ -238,7 +228,7 @@ static void _receive(gnrc_pktsnip_t *pkt)
         gnrc_sixlowpan_frag_sfr_recv(pkt, NULL, 0);
         return;
     }
-#endif /* MODULE_GNRC_SIXLOWPAN_FRAG_SFR */
+#endif // MODULE_GNRC_SIXLOWPAN_FRAG_SFR
 #ifdef MODULE_GNRC_SIXLOWPAN_IPHC
     else if (sixlowpan_iphc_is(dispatch)) {
         DEBUG("6lo: received 6LoWPAN IPHC compressed datagram\n");
@@ -254,8 +244,7 @@ static void _receive(gnrc_pktsnip_t *pkt)
     gnrc_sixlowpan_dispatch_recv(pkt, NULL, 0);
 }
 
-static inline bool _add_uncompr_disp(gnrc_pktsnip_t *pkt)
-{
+static inline bool _add_uncompr_disp(gnrc_pktsnip_t *pkt) {
     gnrc_pktsnip_t *sixlowpan;
     uint8_t *disp;
 
@@ -273,11 +262,10 @@ static inline bool _add_uncompr_disp(gnrc_pktsnip_t *pkt)
     return true;
 }
 
-static void _send(gnrc_pktsnip_t *pkt)
-{
+static void _send(gnrc_pktsnip_t *pkt) {
     gnrc_pktsnip_t *tmp;
     gnrc_netif_t *netif;
-    /* datagram_size: pure IPv6 packet without 6LoWPAN dispatches or compression */
+    // datagram_size: pure IPv6 packet without 6LoWPAN dispatches or compression
     size_t datagram_size;
 
     if ((pkt == NULL) || (pkt->size < sizeof(gnrc_netif_hdr_t))) {
@@ -317,17 +305,17 @@ static void _send(gnrc_pktsnip_t *pkt)
 
         if (IS_USED(MODULE_GNRC_SIXLOWPAN_FRAG_HINT) &&
             IS_USED(MODULE_GNRC_SIXLOWPAN_FRAG_MINFWD)) {
-            /* prepare for sending with IPHC slack in first fragment */
+            // prepare for sending with IPHC slack in first fragment
             fbuf = gnrc_sixlowpan_frag_fb_get();
             if (fbuf != NULL) {
                 fbuf->pkt = pkt;
                 fbuf->datagram_size = datagram_size;
                 fbuf->tag = gnrc_sixlowpan_frag_fb_next_tag();
                 fbuf->offset = 0;
-                /* fbuf->hint only exists with the `gnrc_sixlowpan_frag_hint`
-                 * module, so despite already specifying that this `if` block
-                 * only works with `IS_USED(MODULE_GNRC_SIXLOWPAN_FRAG_HINT)`
-                 * above, we need to add a pre-processor `#if` here */
+                // fbuf->hint only exists with the `gnrc_sixlowpan_frag_hint`
+                // module, so despite already specifying that this `if` block
+                // only works with `IS_USED(MODULE_GNRC_SIXLOWPAN_FRAG_HINT)`
+                // above, we need to add a pre-processor `#if` here
 #if IS_USED(MODULE_GNRC_SIXLOWPAN_FRAG_HINT)
                 fbuf->hint.fragsz = 0;
 #endif
@@ -346,7 +334,7 @@ static void _send(gnrc_pktsnip_t *pkt)
         return;
     }
     if (!_add_uncompr_disp(pkt)) {
-        /* adding uncompressed dispatch failed */
+        // adding uncompressed dispatch failed
         DEBUG("6lo: no space left in packet buffer\n");
         gnrc_pktbuf_release(pkt);
         return;
@@ -355,11 +343,10 @@ static void _send(gnrc_pktsnip_t *pkt)
 }
 
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_FB
-static void _continue_fragmenting(gnrc_sixlowpan_frag_fb_t *fbuf)
-{
+static void _continue_fragmenting(gnrc_sixlowpan_frag_fb_t *fbuf) {
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_SFR
     if (fbuf->pkt == NULL) {
-        /* In case the timer fired before the entry was removed */
+        // In case the timer fired before the entry was removed
         return;
     }
 
@@ -369,19 +356,18 @@ static void _continue_fragmenting(gnrc_sixlowpan_frag_fb_t *fbuf)
         gnrc_sixlowpan_frag_sfr_send(NULL, fbuf, 0);
         return;
     }
-#endif  /* MODULE_GNRC_SIXLOWPAN_FRAG_SFR */
+#endif  // MODULE_GNRC_SIXLOWPAN_FRAG_SFR
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG
     gnrc_sixlowpan_frag_send(NULL, fbuf, 0);
-#else   /* MODULE_GNRC_SIXLOWPAN_FRAG */
+#else   // MODULE_GNRC_SIXLOWPAN_FRAG
     (void)fbuf;
     DEBUG("6lo: No fragmentation implementation available to sent\n");
     assert(false);
-#endif  /* MODULE_GNRC_SIXLOWPAN_FRAG */
+#endif  // MODULE_GNRC_SIXLOWPAN_FRAG
 }
-#endif  /* MODULE_GNRC_SIXLOWPAN_FRAG_FB */
+#endif  // MODULE_GNRC_SIXLOWPAN_FRAG_FB
 
-static void *_event_loop(void *args)
-{
+static void *_event_loop(void *args) {
     msg_t msg, reply;
     gnrc_netreg_entry_t me_reg = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX_CTX_ALL,
                                                             thread_getpid());
@@ -389,17 +375,17 @@ static void *_event_loop(void *args)
     (void)args;
     msg_init_queue(_msg_q, GNRC_SIXLOWPAN_MSG_QUEUE_SIZE);
 
-    /* register interest in all 6LoWPAN packets */
+    // register interest in all 6LoWPAN packets
     gnrc_netreg_register(GNRC_NETTYPE_SIXLOWPAN, &me_reg);
 
-    /* preinitialize ACK */
+    // preinitialize ACK
     reply.type = GNRC_NETAPI_MSG_TYPE_ACK;
 
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_SFR
     gnrc_sixlowpan_frag_sfr_init();
 #endif
 
-    /* start event loop */
+    // start event loop
     while (1) {
         DEBUG("6lo: waiting for incoming message.\n");
         msg_receive(&msg);
@@ -426,7 +412,7 @@ static void *_event_loop(void *args)
                 DEBUG("6lo: send fragmented event received\n");
                 _continue_fragmenting(msg.content.ptr);
                 break;
-#endif  /* MODULE_GNRC_SIXLOWPAN_FRAG_FB */
+#endif  // MODULE_GNRC_SIXLOWPAN_FRAG_FB
 #ifdef MODULE_GNRC_SIXLOWPAN_FRAG_RB
             case GNRC_SIXLOWPAN_FRAG_RB_GC_MSG:
                 DEBUG("6lo: garbage collect reassembly buffer event received\n");
@@ -453,4 +439,4 @@ static void *_event_loop(void *args)
     return NULL;
 }
 
-/** @} */
+/// @}

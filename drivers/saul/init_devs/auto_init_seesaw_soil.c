@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Viktor Gal
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Viktor Gal
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization for Adafruit Seesaw Soil devices
- *
- * @author      Viktor Gal <viktor.gal@maeth.com>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization for Adafruit Seesaw Soil devices
+//
+// @author      Viktor Gal <viktor.gal@maeth.com>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,35 +17,24 @@
 #include "seesaw_soil.h"
 #include "seesaw_soil_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define SEESAW_SOIL_NUM    ARRAY_SIZE(seesaw_soil_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static seesaw_soil_t seesaw_soil_devs[SEESAW_SOIL_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[SEESAW_SOIL_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define SEESAW_SOIL_INFO_NUM    ARRAY_SIZE(seesaw_soil_saul_info)
 
-/**
- * @name    Reference the driver struct
- * @{
- */
+/// @name    Reference the driver struct
+/// @{
 extern saul_driver_t seesaw_soil_saul_temp_driver;
-/** @} */
+/// @}
 
-void auto_init_seesaw_soil(void)
-{
+void auto_init_seesaw_soil(void) {
     assert(SEESAW_SOIL_NUM == SEESAW_SOIL_INFO_NUM);
 
     for (unsigned i = 0; i < SEESAW_SOIL_NUM; i++) {

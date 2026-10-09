@@ -1,36 +1,30 @@
-/*
- * SPDX-FileCopyrightText: 2023 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests CBOR encoding of a PSA Crypto key slot containing one single key
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests CBOR encoding of a PSA Crypto key slot containing one single key
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include "embUnit.h"
 #include "psa/crypto.h"
 #include "psa_crypto_cbor_encoder.h"
 #include "tests_psa_cbor_enc_dec.h"
 
-/**
- * @brief   Data has been obtained by manually encoding and decoding keys,
- *          until they fit the desired format and checking the output with
- *          https://cbor.me.
- *
- *          Diagnostic notation:
- *          [
- *              [268435459, 9216, 128, 1, [256, 71319552]],
- *              h'2B7E151628AED218ABF7158809CF4F3C'
- *          ]
- */
+/// @brief   Data has been obtained by manually encoding and decoding keys,
+///          until they fit the desired format and checking the output with
+///          https://cbor.me.
+///
+///          Diagnostic notation:
+///          [
+///              [268435459, 9216, 128, 1, [256, 71319552]],
+///              h'2B7E151628AED218ABF7158809CF4F3C'
+///          ]
 static uint8_t cbor_encoded_data[] = {
     0x82, 0x85, 0x1a, 0x10, 0x00, 0x00, 0x03, 0x19,
     0x24, 0x00, 0x18, 0x80, 0x01, 0x82, 0x19, 0x01,
@@ -39,8 +33,7 @@ static uint8_t cbor_encoded_data[] = {
     0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
 };
 
-static void _init_key_slot(psa_key_slot_t *slot)
-{
+static void _init_key_slot(psa_key_slot_t *slot) {
     psa_set_key_type(&slot->attr, PSA_KEY_TYPE_AES);
     psa_set_key_algorithm(&slot->attr, PSA_ALG_CBC_NO_PADDING);
     psa_set_key_bits(&slot->attr, PSA_BYTES_TO_BITS(sizeof(AES_KEY)));
@@ -52,11 +45,8 @@ static void _init_key_slot(psa_key_slot_t *slot)
     slot->key.data_len = sizeof(AES_KEY);
 }
 
-/**
- * @brief   CBOR encoding of key pair slot should equal @c cbor_encoded_data
- */
-static void test_encode_single_key_slot(void)
-{
+/// @brief   CBOR encoding of key pair slot should equal @c cbor_encoded_data
+static void test_encode_single_key_slot(void) {
     size_t encoded_size;
     uint8_t cbor_enc[sizeof(cbor_encoded_data)];
     psa_key_slot_t slot;
@@ -68,12 +58,9 @@ static void test_encode_single_key_slot(void)
                                      encoded_size), "wrong cbor encoding");
 }
 
-/**
- * @brief   Decoded key slot should equal key slot structure initialized
- *          in @c test_encode_single_key_slot.
- */
-static void test_decode_single_key_slot(void)
-{
+/// @brief   Decoded key slot should equal key slot structure initialized
+///          in @c test_encode_single_key_slot.
+static void test_decode_single_key_slot(void) {
     psa_key_slot_t slot;
 
     TEST_ASSERT_PSA(psa_decode_key_attributes(&(slot.attr), cbor_encoded_data, sizeof(cbor_encoded_data)));
@@ -82,8 +69,7 @@ static void test_decode_single_key_slot(void)
                                      sizeof(psa_key_slot_t)), "wrong cbor decoding");
 }
 
-Test* tests_psa_crypto_enc_dec_single_key(void)
-{
+Test* tests_psa_crypto_enc_dec_single_key(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_encode_single_key_slot),
         new_TestFixture(test_decode_single_key_slot),

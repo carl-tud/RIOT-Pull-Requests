@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include "net/ipv6/addr.h"
 #include "net/gnrc/ipv6/hdr.h"
@@ -22,7 +18,7 @@
 static char addr_str[IPV6_ADDR_MAX_STR_LEN];
 #endif
 
-/* For independent testing */
+// For independent testing
 #ifdef MODULE_GNRC_NETTYPE_IPV6
 #define HDR_NETTYPE (GNRC_NETTYPE_IPV6)
 #else
@@ -30,8 +26,7 @@ static char addr_str[IPV6_ADDR_MAX_STR_LEN];
 #endif
 
 gnrc_pktsnip_t *gnrc_ipv6_hdr_build(gnrc_pktsnip_t *payload, const ipv6_addr_t *src,
-                                    const ipv6_addr_t *dst)
-{
+                                    const ipv6_addr_t *dst) {
     gnrc_pktsnip_t *ipv6;
     ipv6_hdr_t *hdr;
 
@@ -70,11 +65,11 @@ gnrc_pktsnip_t *gnrc_ipv6_hdr_build(gnrc_pktsnip_t *payload, const ipv6_addr_t *
         ipv6_addr_set_loopback(&hdr->dst);
     }
 
-    hdr->v_tc_fl = byteorder_htonl(0x60000000); /* set version, tc and fl in one go*/
+    hdr->v_tc_fl = byteorder_htonl(0x60000000); // set version, tc and fl in one go
     hdr->nh = PROTNUM_RESERVED;
     hdr->hl = 0;
 
     return ipv6;
 }
 
-/** @} */
+/// @}

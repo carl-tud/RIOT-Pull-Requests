@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Zolertia SL
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Zolertia SL
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_remote-pa
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the Re-Mote board prototype A
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Antonio Lignan <alinan@zolertia.com>
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     boards_remote-pa
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the Re-Mote board prototype A
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Antonio Lignan <alinan@zolertia.com>
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "periph_cpu.h"
 #include "cfg_clk_default.h"
@@ -27,27 +23,23 @@
  extern "C" {
 #endif
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 #define I2C_IRQ_PRIO            1
 
 static const i2c_conf_t i2c_config[] = {
     {
-        .speed = I2C_SPEED_FAST,    /**< bus speed */
-        .scl_pin = GPIO_PIN(1, 1),  /**< GPIO_PB1 */
-        .sda_pin = GPIO_PIN(1, 0)   /**< GPIO_PB0 */
+        .speed = I2C_SPEED_FAST,    ///< bus speed
+        .scl_pin = GPIO_PIN(1, 1),  ///< GPIO_PB1
+        .sda_pin = GPIO_PIN(1, 0)   ///< GPIO_PB0
     },
 };
 
 #define I2C_NUMOF               ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .num      = 0,
@@ -66,24 +58,22 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name ADC configuration
- * @{
- */
+/// @name ADC configuration
+/// @{
 #define SOC_ADC_ADCCON3_EREF  SOC_ADC_ADCCON3_EREF_AVDD5
 
 static const adc_conf_t adc_config[] = {
-    GPIO_PIN(0, 6), /**< GPIO_PA6 = ADC2_PIN */
-    GPIO_PIN(0, 7), /**< GPIO_PA7 = ADC3_PIN */
+    GPIO_PIN(0, 6), ///< GPIO_PA6 = ADC2_PIN
+    GPIO_PIN(0, 7), ///< GPIO_PA7 = ADC3_PIN
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 /**
  * @ingroup     tests
@@ -127,34 +125,31 @@
 
 #define BENCH_RUNS_DEFAULT  (100UL * 100)
 
-/* Number of configured MCP23x17 I/O expander devices */
+// Number of configured MCP23x17 I/O expander devices
 #define MCP23X17_NUM        ARRAY_SIZE(mcp23x17_params)
 
-/* Port number of the first MCP23x17 I/O expander device */
+// Port number of the first MCP23x17 I/O expander device
 #ifndef MCP23X17_PORT_0
 #define MCP23X17_PORT_0     (16)
 #endif
 
-/* Maps a port number to MCP23x17 device address */
+// Maps a port number to MCP23x17 device address
 #define MCP23X17_DEV(port)  (&mcp23x17_dev[po - MCP23X17_PORT_0])
 
-/* MCP23x17 devices allocation */
+// MCP23x17 devices allocation
 mcp23x17_t mcp23x17_dev[MCP23X17_NUM];
 
 #if IS_USED(MODULE_MCP23X17_IRQ)
-static void gpio_cb(void *arg)
-{
+static void gpio_cb(void *arg) {
     printf("INT: external interrupt from GPIO pin %i\n", (int)arg);
 }
 
-static void mcp23x17_cb(void *arg)
-{
+static void mcp23x17_cb(void *arg) {
     printf("INT: external interrupt from MCP23x17 pin %i\n", (int)arg);
 }
 #endif
 
-static int _init_pin(int argc, char **argv, gpio_mode_t mode)
-{
+static int _init_pin(int argc, char **argv, gpio_mode_t mode) {
     if (argc < 3) {
         printf("usage: %s <dev> <pin>\n", argv[0]);
         return 1;
@@ -174,34 +169,28 @@ static int _init_pin(int argc, char **argv, gpio_mode_t mode)
     return 0;
 }
 
-static int _init_out(int argc, char **argv)
-{
+static int _init_out(int argc, char **argv) {
     return _init_pin(argc, argv, GPIO_OUT);
 }
 
-static int _init_in(int argc, char **argv)
-{
+static int _init_in(int argc, char **argv) {
     return _init_pin(argc, argv, GPIO_IN);
 }
 
-static int _init_in_pu(int argc, char **argv)
-{
+static int _init_in_pu(int argc, char **argv) {
     return _init_pin(argc, argv, GPIO_IN_PU);
 }
 
-static int _init_od(int argc, char **argv)
-{
+static int _init_od(int argc, char **argv) {
     return _init_pin(argc, argv, GPIO_OD);
 }
 
-static int _init_od_pu(int argc, char **argv)
-{
+static int _init_od_pu(int argc, char **argv) {
     return _init_pin(argc, argv, GPIO_OD_PU);
 }
 
 #if IS_USED(MODULE_MCP23X17_IRQ)
-static int _init_int(int argc, char **argv)
-{
+static int _init_int(int argc, char **argv) {
     gpio_mode_t mode = GPIO_IN;
     gpio_flank_t flank;
     int fl;
@@ -248,8 +237,7 @@ static int _init_int(int argc, char **argv)
     return 0;
 }
 
-static int _init_int_pu(int argc, char **argv)
-{
+static int _init_int_pu(int argc, char **argv) {
     gpio_mode_t mode = GPIO_IN_PU;
     gpio_flank_t flank;
     int fl;
@@ -295,8 +283,7 @@ static int _init_int_pu(int argc, char **argv)
     return 0;
 }
 
-static int _enable_int(int argc, char **argv)
-{
+static int _enable_int(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <pin>\n", argv[0]);
         return 1;
@@ -314,8 +301,7 @@ static int _enable_int(int argc, char **argv)
     return 0;
 }
 
-static int _disable_int(int argc, char **argv)
-{
+static int _disable_int(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <pin>\n", argv[0]);
         return 1;
@@ -332,10 +318,9 @@ static int _disable_int(int argc, char **argv)
     }
     return 0;
 }
-#endif /* MODULE_MCP23X17_IRQ */
+#endif // MODULE_MCP23X17_IRQ
 
-static int _read(int argc, char **argv)
-{
+static int _read(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <pin>\n", argv[0]);
         return 1;
@@ -363,8 +348,7 @@ static int _read(int argc, char **argv)
     return 0;
 }
 
-static int _set(int argc, char **argv)
-{
+static int _set(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <pin>\n", argv[0]);
         return 1;
@@ -383,8 +367,7 @@ static int _set(int argc, char **argv)
     return 0;
 }
 
-static int _clear(int argc, char **argv)
-{
+static int _clear(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <pin>\n", argv[0]);
         return 1;
@@ -403,8 +386,7 @@ static int _clear(int argc, char **argv)
     return 0;
 }
 
-static int _toggle(int argc, char **argv)
-{
+static int _toggle(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <pin>\n", argv[0]);
         return 1;
@@ -423,8 +405,7 @@ static int _toggle(int argc, char **argv)
     return 0;
 }
 
-static int _bench(int argc, char **argv)
-{
+static int _bench(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <dev> <pin> [# of runs]\n", argv[0]);
         return 1;
@@ -487,12 +468,11 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("MCP23x17 I/O expander GPIO peripheral driver test\n");
     puts("Initializing MCP23x17");
 
-    /* initialize configured MCP23x17 devices */
+    // initialize configured MCP23x17 devices
     for (unsigned i = 0; i < MCP23X17_NUM; i++) {
         if (mcp23x17_init(&mcp23x17_dev[i],
                           &mcp23x17_params[i]) != MCP23X17_OK) {
@@ -507,7 +487,7 @@ int main(void)
          "NOTE: make sure the values you use exist! The\n"
          "      behavior for not existing device/pins is not defined!");
 
-    /* start the shell */
+    // start the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

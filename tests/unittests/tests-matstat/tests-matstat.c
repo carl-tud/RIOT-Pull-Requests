@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <string.h>
 #include "embUnit.h"
@@ -12,11 +10,10 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* White box testing of matstat library */
+// White box testing of matstat library
 
-static void test_matstat_basic(void)
-{
-    /* nothing special, only verifying the basic functionality */
+static void test_matstat_basic(void) {
+    // nothing special, only verifying the basic functionality
     matstat_state_t state = MATSTAT_STATE_INIT;
     matstat_add(&state, 10);
     TEST_ASSERT_EQUAL_INT(10, state.min);
@@ -42,12 +39,11 @@ static void test_matstat_basic(void)
     TEST_ASSERT_EQUAL_INT(0, state.count);
 }
 
-static void test_matstat_var_stability(void)
-{
-    /* This test is designed to detect stability errors where the values are
-     * located very close together, which should yield a very low variance. */
-    /* The initial implementation of the variance algorithm resulted in a very
-     * large variance in this test, due to cancellation problems */
+static void test_matstat_var_stability(void) {
+    // This test is designed to detect stability errors where the values are
+    // located very close together, which should yield a very low variance.
+    // The initial implementation of the variance algorithm resulted in a very
+    // large variance in this test, due to cancellation problems
     matstat_state_t state = MATSTAT_STATE_INIT;
     matstat_add(&state,  999999);
     matstat_add(&state, 1000000);
@@ -66,11 +62,10 @@ static void test_matstat_var_stability(void)
     TEST_ASSERT(var <= 1);
 }
 
-static void test_matstat_negative_variance(void)
-{
-    /* This is a regression test for two related problems where the truncation
-     * in the mean computation (integer division) causes the sum_sq value to become
-     * negative, or the variance itself to become negative */
+static void test_matstat_negative_variance(void) {
+    // This is a regression test for two related problems where the truncation
+    // in the mean computation (integer division) causes the sum_sq value to become
+    // negative, or the variance itself to become negative
     matstat_state_t state = MATSTAT_STATE_INIT;
     matstat_add(&state, -1);
     matstat_add(&state, 0);
@@ -93,9 +88,8 @@ static void test_matstat_negative_variance(void)
     TEST_ASSERT_EQUAL_INT(0, var);
 }
 
-static void test_matstat_merge_basic(void)
-{
-    /* This is a basic test of the merging functionality without any "special" cases */
+static void test_matstat_merge_basic(void) {
+    // This is a basic test of the merging functionality without any "special" cases
     matstat_state_t state1 = MATSTAT_STATE_INIT;
     matstat_state_t state2 = MATSTAT_STATE_INIT;
     matstat_state_t state_ref = MATSTAT_STATE_INIT;
@@ -125,9 +119,8 @@ static void test_matstat_merge_basic(void)
     TEST_ASSERT_EQUAL_INT(mean_ref, mean);
 }
 
-static void test_matstat_merge_empty(void)
-{
-    /* Testing merging with one or more empty states */
+static void test_matstat_merge_empty(void) {
+    // Testing merging with one or more empty states
     matstat_state_t state1 = MATSTAT_STATE_INIT;
     matstat_state_t state2 = MATSTAT_STATE_INIT;
     matstat_merge(&state1, &state2);
@@ -157,10 +150,9 @@ static void test_matstat_merge_empty(void)
     TEST_ASSERT_EQUAL_INT(3, state1.count);
 }
 
-static void test_matstat_merge_variance(void)
-{
-    /* This test should ensure that merging states from separate sequences will
-     * yield correct results for the variance computation */
+static void test_matstat_merge_variance(void) {
+    // This test should ensure that merging states from separate sequences will
+    // yield correct results for the variance computation
     matstat_state_t state1 = MATSTAT_STATE_INIT;
     matstat_state_t state2 = MATSTAT_STATE_INIT;
     matstat_state_t state_ref = MATSTAT_STATE_INIT;
@@ -184,19 +176,18 @@ static void test_matstat_merge_variance(void)
     uint64_t var = matstat_variance(&state1);
     uint64_t var_ref = matstat_variance(&state_ref);
     int64_t var_diff = var - var_ref;
-    /* There will invariably be some loss of accuracy because of the integer
-     * operations involved in the variance computation. */
+    // There will invariably be some loss of accuracy because of the integer
+    // operations involved in the variance computation.
     TEST_ASSERT(var_diff <  1000);
     TEST_ASSERT(var_diff > -1000);
     TEST_ASSERT_EQUAL_INT(state_ref.mean, state1.mean);
 }
 
-static void test_matstat_merge_variance_regr1(void)
-{
-    /* This is a regression check for an issue where the sum_sq variable became
-     * negative after merging a sequence of states with different means, and
-     * small but non-zero sum_sq values. */
-    /* Numbers were taken from a stats dump from the bench_timers application */
+static void test_matstat_merge_variance_regr1(void) {
+    // This is a regression check for an issue where the sum_sq variable became
+    // negative after merging a sequence of states with different means, and
+    // small but non-zero sum_sq values.
+    // Numbers were taken from a stats dump from the bench_timers application
     matstat_state_t inputs[] = {
         { .count = 2686, .sum = 5414, .sum_sq = 1380, .min = 1, .max = 3, .mean = 2 },
         { .count = 2643, .sum = 5272, .sum_sq = 3263, .min = 1, .max = 3, .mean = 1 },
@@ -213,34 +204,30 @@ static void test_matstat_merge_variance_regr1(void)
         matstat_merge(&merged, &inputs[k]);
     }
     int64_t var = (int64_t)matstat_variance(&merged);
-    /* Expected variance for this input is 0, because of integer truncation of the result.
-     * The bug gave the following result instead:
-     * count = 23364, sum = 46806, sum_sq = 18446744073709540510, mean = 2, var = 789570863061659
-     */
-    /* Left here for debugging test case failures: */
-    /* printf("\nmerged: count = %" PRIu32 ", sum = %" PRId64 ", sum_sq = %" PRIu64 ", "
-        "mean = %" PRId32 ", var = %" PRIu64 "\n", merged.count, merged.sum,
-        merged.sum_sq, merged.mean, var); */
+    // Expected variance for this input is 0, because of integer truncation of the result.
+    // The bug gave the following result instead:
+    // count = 23364, sum = 46806, sum_sq = 18446744073709540510, mean = 2, var = 789570863061659
+    // Left here for debugging test case failures:
+    // printf("\nmerged: count = %" PRIu32 ", sum = %" PRId64 ", sum_sq = %" PRIu64 ", "
+    //     "mean = %" PRId32 ", var = %" PRIu64 "\n", merged.count, merged.sum,
+    //     merged.sum_sq, merged.mean, var);
     TEST_ASSERT((int64_t)merged.sum_sq > 0);
     TEST_ASSERT(var >= 0);
 }
 
-static void test_matstat_accuracy(void)
-{
-    /* This test verifies that the numeric accuracy is "good enough" */
+static void test_matstat_accuracy(void) {
+    // This test verifies that the numeric accuracy is "good enough"
     matstat_state_t state = MATSTAT_STATE_INIT;
-    /*
-     * The test values below were sampled from a normal distribution with
-     * mean = 12345
-     * standard deviation = 10000 => variance = 100000000
-     *
-     * The sample distribution, when computed with double precision floating
-     * point values, is:
-     * sample variance = 115969073.207895
-     * sample mean = 12293.05
-     */
-    /* This test will fail unless the library adaptively adjusts the offset to
-     * reduce the error in the variance */
+    // The test values below were sampled from a normal distribution with
+    // mean = 12345
+    // standard deviation = 10000 => variance = 100000000
+    //
+    // The sample distribution, when computed with double precision floating
+    // point values, is:
+    // sample variance = 115969073.207895
+    // sample mean = 12293.05
+    // This test will fail unless the library adaptively adjusts the offset to
+    // reduce the error in the variance
     matstat_add(&state,    -9228);
     matstat_add(&state,     6225);
     matstat_add(&state,    15935);
@@ -269,8 +256,7 @@ static void test_matstat_accuracy(void)
     TEST_ASSERT_EQUAL_INT(12293, mean);
 }
 
-Test *tests_matstat_tests(void)
-{
+Test *tests_matstat_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_matstat_basic),
         new_TestFixture(test_matstat_var_stability),
@@ -287,7 +273,6 @@ Test *tests_matstat_tests(void)
     return (Test *)&matstat_tests;
 }
 
-void tests_matstat(void)
-{
+void tests_matstat(void) {
     TESTS_RUN(tests_matstat_tests());
 }

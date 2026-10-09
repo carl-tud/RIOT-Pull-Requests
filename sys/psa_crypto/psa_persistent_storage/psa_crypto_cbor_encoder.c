@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2023 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2023 HAW Hamburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_psa_crypto sys_psa_crypto_slot_mgmt
- * @{
- *
- * @file
- * @brief       API to encode PSA Crypto keys to CBOR for persistent storage
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     sys_psa_crypto sys_psa_crypto_slot_mgmt
+/// @{
+///
+/// @file
+/// @brief       API to encode PSA Crypto keys to CBOR for persistent storage
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include "nanocbor/nanocbor.h"
 #include "psa_crypto_slot_management.h"
@@ -24,14 +20,11 @@
 #define ENABLE_DEBUG    0
 #include "debug.h"
 
-/**
- * @brief   Convert a nanocbor error to a string for debugging
- *
- * @param   res Nanocbor error value
- * @return  const char*
- */
-static const char *nanocbor_error_to_string(int res)
-{
+/// @brief   Convert a nanocbor error to a string for debugging
+///
+/// @param   res Nanocbor error value
+/// @return  const char*
+static const char *nanocbor_error_to_string(int res) {
     switch (res) {
         case NANOCBOR_ERR_OVERFLOW:
             return "NANOCBOR_ERR_OVERFLOW";
@@ -48,14 +41,11 @@ static const char *nanocbor_error_to_string(int res)
     }
 }
 
-/**
- * @brief   Convert nanocbor error to PSA Crypto status value
- *
- * @param   res Nanocbor error value
- * @return  psa_status_t
- */
-static psa_status_t nanocbor_error_to_psa_status(int res)
-{
+/// @brief   Convert nanocbor error to PSA Crypto status value
+///
+/// @param   res Nanocbor error value
+/// @return  psa_status_t
+static psa_status_t nanocbor_error_to_psa_status(int res) {
     switch (res) {
         case NANOCBOR_ERR_END:
             return PSA_ERROR_BUFFER_TOO_SMALL;
@@ -66,15 +56,12 @@ static psa_status_t nanocbor_error_to_psa_status(int res)
     }
 }
 
-/**
- * @brief   Encode a set of key attributes in CBOR
- *
- * @param   enc     Active nanocbor encoder
- * @param   attr    Pointer to key attributes to encode
- * @return  psa_status_t
- */
-static psa_status_t psa_encode_key_attributes(nanocbor_encoder_t *enc, psa_key_attributes_t *attr)
-{
+/// @brief   Encode a set of key attributes in CBOR
+///
+/// @param   enc     Active nanocbor encoder
+/// @param   attr    Pointer to key attributes to encode
+/// @return  psa_status_t
+static psa_status_t psa_encode_key_attributes(nanocbor_encoder_t *enc, psa_key_attributes_t *attr) {
     int res;
 
     res = nanocbor_fmt_array(enc, 5);
@@ -98,7 +85,7 @@ static psa_status_t psa_encode_key_attributes(nanocbor_encoder_t *enc, psa_key_a
         goto error;
     }
 
-    /* Policy */
+    // Policy
     res = nanocbor_fmt_array(enc, 2);
     if (res < 0) {
         goto error;
@@ -121,15 +108,12 @@ static psa_status_t psa_encode_key_attributes(nanocbor_encoder_t *enc, psa_key_a
 }
 
 #if PSA_PROTECTED_KEY_COUNT
-/**
- * @brief   Encode contents of a PSA key slot containing a protected key
- *
- * @param   enc     Active nanocbor encoder
- * @param   slot    Pointer to key slot to encode
- * @return  psa_status_t
- */
-static psa_status_t psa_encode_protected_key_slot(nanocbor_encoder_t *enc, psa_key_slot_t *slot)
-{
+/// @brief   Encode contents of a PSA key slot containing a protected key
+///
+/// @param   enc     Active nanocbor encoder
+/// @param   slot    Pointer to key slot to encode
+/// @return  psa_status_t
+static psa_status_t psa_encode_protected_key_slot(nanocbor_encoder_t *enc, psa_key_slot_t *slot) {
     int res;
     int key_array_size = 1;
     psa_key_slot_number_t *slot_no = psa_key_slot_get_slot_number(slot);
@@ -138,7 +122,7 @@ static psa_status_t psa_encode_protected_key_slot(nanocbor_encoder_t *enc, psa_k
     if (PSA_KEY_TYPE_IS_KEY_PAIR(slot->attr.type)) {
         key_array_size = 2;
     }
-#endif /* MODULE_PSA_ASYMMETRIC */
+#endif // MODULE_PSA_ASYMMETRIC
 
     res = nanocbor_fmt_array(enc, key_array_size);
     if (res < 0) {
@@ -161,7 +145,7 @@ static psa_status_t psa_encode_protected_key_slot(nanocbor_encoder_t *enc, psa_k
             goto error;
         }
     }
-#endif /* MODULE_PSA_ASYMMETRIC */
+#endif // MODULE_PSA_ASYMMETRIC
 
     return PSA_SUCCESS;
 
@@ -170,18 +154,15 @@ error:
                                                 nanocbor_error_to_string(res));
     return nanocbor_error_to_psa_status(res);
 }
-#endif /* PSA_PROTECTED_KEY_COUNT */
+#endif // PSA_PROTECTED_KEY_COUNT
 
 #if PSA_ASYMMETRIC_KEYPAIR_COUNT
-/**
- * @brief   Encode contents of a PSA key slot containing an asymmetric key pair
- *
- * @param   enc     Active nanocbor encoder
- * @param   slot    Pointer to key slot to encode
- * @return  psa_status_t
- */
-static psa_status_t psa_encode_asymmetric_key_pair(nanocbor_encoder_t *enc, psa_key_slot_t *slot)
-{
+/// @brief   Encode contents of a PSA key slot containing an asymmetric key pair
+///
+/// @param   enc     Active nanocbor encoder
+/// @param   slot    Pointer to key slot to encode
+/// @return  psa_status_t
+static psa_status_t psa_encode_asymmetric_key_pair(nanocbor_encoder_t *enc, psa_key_slot_t *slot) {
     int res;
     size_t *privkey_data_len;
     size_t *pubkey_data_len;
@@ -191,7 +172,7 @@ static psa_status_t psa_encode_asymmetric_key_pair(nanocbor_encoder_t *enc, psa_
     psa_get_key_data_from_key_slot(slot, &privkey_data, &privkey_data_len);
     psa_get_public_key_data_from_key_slot(slot, &pubkey_data, &pubkey_data_len);
 
-    res = nanocbor_fmt_array(enc, 2); /* Contains private and public key*/
+    res = nanocbor_fmt_array(enc, 2); // Contains private and public key
     if (res < 0) {
         goto error;
     }
@@ -213,18 +194,15 @@ error:
                                                 nanocbor_error_to_string(res));
     return nanocbor_error_to_psa_status(res);
 }
-#endif /* PSA_ASYMMETRIC_KEYPAIR_COUNT */
+#endif // PSA_ASYMMETRIC_KEYPAIR_COUNT
 
 #if PSA_SINGLE_KEY_COUNT
-/**
- * @brief   Encode contents of a PSA key slot containing a single key
- *
- * @param   enc     Active nanocbor encoder
- * @param   slot    Pointer to key slot to encode
- * @return  psa_status_t
- */
-static psa_status_t psa_encode_single_key(nanocbor_encoder_t *enc, psa_key_slot_t *slot)
-{
+/// @brief   Encode contents of a PSA key slot containing a single key
+///
+/// @param   enc     Active nanocbor encoder
+/// @param   slot    Pointer to key slot to encode
+/// @return  psa_status_t
+static psa_status_t psa_encode_single_key(nanocbor_encoder_t *enc, psa_key_slot_t *slot) {
     size_t *key_data_len;
     uint8_t *key_data;
     psa_get_key_data_from_key_slot(slot, &key_data, &key_data_len);
@@ -237,18 +215,17 @@ static psa_status_t psa_encode_single_key(nanocbor_encoder_t *enc, psa_key_slot_
     }
     return PSA_SUCCESS;
 }
-#endif /* PSA_SINGLE_KEY_COUNT */
+#endif // PSA_SINGLE_KEY_COUNT
 
 psa_status_t psa_encode_key_slot(psa_key_slot_t *slot, uint8_t *output,
-                                     size_t output_len, size_t *output_size)
-{
+                                     size_t output_len, size_t *output_size) {
     int res;
     psa_status_t status;
     nanocbor_encoder_t enc;
     nanocbor_encoder_init(&enc, output, output_len);
     *output_size = 0;
 
-    /* Key Struct */
+    // Key Struct
     res = nanocbor_fmt_array(&enc, 2);
     if (res < 0) {
         goto error;
@@ -267,7 +244,7 @@ psa_status_t psa_encode_key_slot(psa_key_slot_t *slot, uint8_t *output,
         }
         goto done;
     }
-#endif /* PSA_PROTECTED_KEY_COUNT */
+#endif // PSA_PROTECTED_KEY_COUNT
 
 #if PSA_ASYMMETRIC_KEYPAIR_COUNT
     if (PSA_KEY_TYPE_IS_KEY_PAIR(slot->attr.type)) {
@@ -277,7 +254,7 @@ psa_status_t psa_encode_key_slot(psa_key_slot_t *slot, uint8_t *output,
         }
         goto done;
     }
-#endif /* PSA_ASYMMETRIC_KEYPAIR_COUNT */
+#endif // PSA_ASYMMETRIC_KEYPAIR_COUNT
 
 #if PSA_SINGLE_KEY_COUNT
     status = psa_encode_single_key(&enc, slot);
@@ -287,7 +264,7 @@ psa_status_t psa_encode_key_slot(psa_key_slot_t *slot, uint8_t *output,
     goto done;
 #else
     return PSA_ERROR_NOT_SUPPORTED;
-#endif /* PSA_SINGLE_KEY_COUNT */
+#endif // PSA_SINGLE_KEY_COUNT
 
 done:
     *output_size = nanocbor_encoded_len(&enc);
@@ -310,8 +287,7 @@ error:
 }
 
 psa_status_t psa_decode_key_attributes(psa_key_attributes_t *attr,
-                                       uint8_t *cbor_buf, size_t cbor_buf_size)
-{
+                                       uint8_t *cbor_buf, size_t cbor_buf_size) {
     int res = 0;
 
     nanocbor_value_t dec;
@@ -377,17 +353,14 @@ error:
     return nanocbor_error_to_psa_status(res);
 }
 
-/**
- * @brief   Decode CBOR encoded key data
- *
- * @param   key             Nanocbor value object containing CBOR encoding of the key data
- * @param   key_data        Output buffer to write key value
- * @param   key_len         Pointer to write actual key size
- * @return  psa_status_t
- */
+/// @brief   Decode CBOR encoded key data
+///
+/// @param   key             Nanocbor value object containing CBOR encoding of the key data
+/// @param   key_data        Output buffer to write key value
+/// @param   key_len         Pointer to write actual key size
+/// @return  psa_status_t
 static psa_status_t psa_decode_key_data(nanocbor_value_t *key, uint8_t *key_data,
-                                        size_t key_data_size, size_t *key_len)
-{
+                                        size_t key_data_size, size_t *key_len) {
     size_t len = 0;
     const uint8_t *buf;
     int res = nanocbor_get_bstr(key, &buf, &len);
@@ -414,15 +387,12 @@ static psa_status_t psa_decode_key_data(nanocbor_value_t *key, uint8_t *key_data
 }
 
 #if PSA_PROTECTED_KEY_COUNT
-/**
- * @brief   Decode CBOR encoded protected key
- *
- * @param   key     Nanocbor value object containing CBOR encoded key data
- * @param   slot    Key slot to write decoded key to
- * @return  psa_status_t
- */
-static psa_status_t psa_decode_protected_key_slot(nanocbor_value_t *key, psa_key_slot_t *slot)
-{
+/// @brief   Decode CBOR encoded protected key
+///
+/// @param   key     Nanocbor value object containing CBOR encoded key data
+/// @param   slot    Key slot to write decoded key to
+/// @return  psa_status_t
+static psa_status_t psa_decode_protected_key_slot(nanocbor_value_t *key, psa_key_slot_t *slot) {
     int res = 0;
 
     nanocbor_value_t key_arr;
@@ -447,7 +417,7 @@ static psa_status_t psa_decode_protected_key_slot(nanocbor_value_t *key, psa_key
         return psa_decode_key_data(&key_arr, pubkey_data,
                                    PSA_EXPORT_PUBLIC_KEY_MAX_SIZE, pubkey_data_len);
     }
-#endif /* MODULE_PSA_ASYMMETRIC */
+#endif // MODULE_PSA_ASYMMETRIC
 
     return PSA_SUCCESS;
 
@@ -456,18 +426,15 @@ error:
                                                 nanocbor_error_to_string(res));
     return nanocbor_error_to_psa_status(res);
 }
-#endif /* PSA_PROTECTED_KEY_COUNT */
+#endif // PSA_PROTECTED_KEY_COUNT
 
 #if PSA_ASYMMETRIC_KEYPAIR_COUNT
-/**
- * @brief   Decode CBOR encoded asymmetric key pair
- *
- * @param   key     Nanocbor value object containing CBOR encoded key data
- * @param   slot    Key slot to write decoded key to
- * @return  psa_status_t
- */
-static psa_status_t psa_decode_asymmetric_keypair_slot(nanocbor_value_t *key, psa_key_slot_t *slot)
-{
+/// @brief   Decode CBOR encoded asymmetric key pair
+///
+/// @param   key     Nanocbor value object containing CBOR encoded key data
+/// @param   slot    Key slot to write decoded key to
+/// @return  psa_status_t
+static psa_status_t psa_decode_asymmetric_keypair_slot(nanocbor_value_t *key, psa_key_slot_t *slot) {
     int res = 0;
     psa_status_t status;
     size_t *privkey_data_len;
@@ -497,10 +464,9 @@ error:
                                                 nanocbor_error_to_string(res));
     return nanocbor_error_to_psa_status(res);
 }
-#endif /* PSA_ASYMMETRIC_KEYPAIR_COUNT */
+#endif // PSA_ASYMMETRIC_KEYPAIR_COUNT
 
-psa_status_t psa_decode_key_slot_data(psa_key_slot_t *slot, uint8_t *cbor_buf, size_t cbor_buf_size)
-{
+psa_status_t psa_decode_key_slot_data(psa_key_slot_t *slot, uint8_t *cbor_buf, size_t cbor_buf_size) {
     int res = 0;
     psa_status_t status = PSA_ERROR_GENERIC_ERROR;
 
@@ -513,20 +479,20 @@ psa_status_t psa_decode_key_slot_data(psa_key_slot_t *slot, uint8_t *cbor_buf, s
         goto error;
     }
 
-    /* We should have decoded the attributes before, so we can skip them here */
+    // We should have decoded the attributes before, so we can skip them here
     nanocbor_skip(&key_slot);
 
 #if PSA_PROTECTED_KEY_COUNT
     if (psa_key_lifetime_is_external(slot->attr.lifetime)) {
         return psa_decode_protected_key_slot(&key_slot, slot);
     }
-#endif /* PSA_PROTECTED_KEY_COUNT */
+#endif // PSA_PROTECTED_KEY_COUNT
 
 #if PSA_ASYMMETRIC_KEYPAIR_COUNT
     if (PSA_KEY_TYPE_IS_KEY_PAIR(slot->attr.type)) {
         return psa_decode_asymmetric_keypair_slot(&key_slot, slot);
     }
-#endif /* PSA_ASYMMETRIC_KEYPAIR_COUNT */
+#endif // PSA_ASYMMETRIC_KEYPAIR_COUNT
 
 #if PSA_SINGLE_KEY_COUNT
     size_t *key_data_len;
@@ -535,7 +501,7 @@ psa_status_t psa_decode_key_slot_data(psa_key_slot_t *slot, uint8_t *cbor_buf, s
     psa_get_key_data_from_key_slot(slot, &key_data, &key_data_len);
 
     return psa_decode_key_data(&key_slot, key_data, PSA_MAX_KEY_DATA_SIZE, key_data_len);
-#endif /* PSA_SINGLE_KEY_COUNT */
+#endif // PSA_SINGLE_KEY_COUNT
 
     return status;
 

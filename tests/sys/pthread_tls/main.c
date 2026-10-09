@@ -1,27 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences (HAW)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences (HAW)
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief pthread tls test application
- *
- * @author Martin Landsmann <martin.landsmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief pthread tls test application
+///
+/// @author Martin Landsmann <martin.landsmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "pthread.h"
 
 #define NUMBER_OF_TLS (20)
 
-void *run(void *parameter)
-{
+void *run(void *parameter) {
     pthread_key_t aKeys[NUMBER_OF_TLS];
     int aTLS_values[NUMBER_OF_TLS];
 
@@ -129,8 +124,7 @@ void *run(void *parameter)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("START");
     pthread_t th_id;
     pthread_attr_t th_attr;

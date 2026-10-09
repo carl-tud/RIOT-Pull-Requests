@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_msba2
- * @{
- *
- * @file
- * @brief       MSB-A2 peripheral configuration
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_msba2
+/// @{
+///
+/// @file
+/// @brief       MSB-A2 peripheral configuration
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "periph_cpu.h"
 #include "kernel_defines.h"
@@ -22,34 +18,28 @@
 extern "C" {
 #endif
 
-/**
- * @name    Clock configuration
- * @{
- */
-#define XTAL_HZ             (16000000U)         /* the board provides a 16 MHz XTAL */
+/// @name    Clock configuration
+/// @{
+#define XTAL_HZ             (16000000U)         // the board provides a 16 MHz XTAL
 
-#define CLOCK_CORECLOCK     (72000000U)         /* the msba2 runs with 72MHz */
+#define CLOCK_CORECLOCK     (72000000U)         // the msba2 runs with 72MHz
 
 #define CLOCK_PCLK          (CLOCK_CORECLOCK)
-/** @} */
+/// @}
 
-/**
- * @name    Timer configuration, select a number from 1 to 4
- * @{
- */
+/// @name    Timer configuration, select a number from 1 to 4
+/// @{
 #define TIMER_NUMOF         (1U)
-/** @} */
+/// @}
 
-/**
- * @name    PWM device and pinout configuration
- *
- * Currently, we only support a single device and 3 channels, the implementation
- * is fixed on PWM1.
- * @{
- */
+/// @name    PWM device and pinout configuration
+///
+/// Currently, we only support a single device and 3 channels, the implementation
+/// is fixed on PWM1.
+/// @{
 #define PWM_NUMOF           (1U)
 
-/* PWM_0 device configuration */
+// PWM_0 device configuration
 #define PWM_CHANNELS      (3)
 #define PWM_CH0           (3)
 #define PWM_CH0_MR        PWM1MR3
@@ -57,18 +47,16 @@ extern "C" {
 #define PWM_CH1_MR        PWM1MR4
 #define PWM_CH2           (5)
 #define PWM_CH2_MR        PWM1MR5
-/* PWM_0 pin configuration */
+// PWM_0 pin configuration
 #define PWM_PORT          PINSEL4
 #define PWM_CH0_PIN       (2)
 #define PWM_CH1_PIN       (3)
 #define PWM_CH2_PIN       (4)
 #define PWM_FUNC          (1)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev = UART0,
@@ -105,12 +93,10 @@ static const uart_conf_t uart_config[] = {
 };
 
 #define UART_NUMOF          (4)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev = SPI0,
@@ -124,24 +110,22 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           (1)
-/** @} */
+/// @}
 
-/**
- * @name ADC configuration
- * @{
- */
+/// @name ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
-    {   /* P0.23 */
+    {   // P0.23
         .chan       = 0,
         .pinsel     = 1,
         .pinsel_msk = BIT14,
     },
-    {   /* P0.24 */
+    {   // P0.24
         .chan       = 1,
         .pinsel     = 1,
         .pinsel_msk = BIT16,
     },
-    {   /* P0.25 */
+    {   // P0.25
         .chan       = 2,
         .pinsel     = 1,
         .pinsel_msk = BIT18,
@@ -149,30 +133,28 @@ static const adc_conf_t adc_config[] = {
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
-    {   /* JP3 */
+    {   // JP3
         .dev        = I2C2,
         .speed      = I2C_SPEED_NORMAL,
         .irq_prio   = 5,
         .pinsel_sda = 0,
         .pinsel_scl = 0,
-        .pinsel_msk_sda = BIT21, /* P0.10 */
-        .pinsel_msk_scl = BIT23, /* P0.11 */
+        .pinsel_msk_sda = BIT21, // P0.10
+        .pinsel_msk_scl = BIT23, // P0.11
     },
 };
 
-/* used in arithmetic preprocessor expression, so no ARRAY_SIZE() */
+// used in arithmetic preprocessor expression, so no ARRAY_SIZE()
 #define I2C_NUMOF           (1)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

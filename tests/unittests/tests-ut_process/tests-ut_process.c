@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <errno.h>
 
@@ -21,8 +17,8 @@
 
 static char _res_buf[128U];
 static const ut_process_var_t _test_vec[] = {
-    /* Taken from https://datatracker.ietf.org/doc/html/rfc6570#section-3.2
-     * minus the level 4 variables */
+    // Taken from https://datatracker.ietf.org/doc/html/rfc6570#section-3.2
+    // minus the level 4 variables
      { .name = "dub",   .value = "me/too", },
      { .name = "hello", .value = "Hello World!", },
      { .name = "half",  .value = "50%", },
@@ -37,15 +33,13 @@ static const ut_process_var_t _test_vec[] = {
      { .name = "undef", .value = NULL },
 };
 
-static void _setup(void)
-{
+static void _setup(void) {
     memset(_res_buf, 0, sizeof(_res_buf));
 }
 
-static void test_expand_str__overview_example(void)
-{
-    /* Tests example from
-     * https://datatracker.ietf.org/doc/html/rfc6570#section-1.1 */
+static void test_expand_str__overview_example(void) {
+    // Tests example from
+    // https://datatracker.ietf.org/doc/html/rfc6570#section-1.1
     static const char *ut = "http://www.example.com/foo{?query,number}";
     static const ut_process_var_t vars[] = {
         { .name = "number", .value = "100", },
@@ -97,12 +91,11 @@ static void test_expand_str__overview_example(void)
     )); \
     TEST_ASSERT_EQUAL_STRING(expansion, _res_buf)
 
-static void test_expand_str__simple(void)
-{
+static void test_expand_str__simple(void) {
     size_t res_buf_len;
 
-    /* see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.2
-     * except level 4 expansions */
+    // see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.2
+    // except level 4 expansions
     ASSERT_EXPANSION("{var}", "value");
     ASSERT_EXPANSION("{hello}", "Hello%20World%21");
     ASSERT_EXPANSION("{half}", "50%25");
@@ -115,12 +108,11 @@ static void test_expand_str__simple(void)
     ASSERT_EXPANSION("?{undef,y}", "?768");
 }
 
-static void test_expand_str__reserved(void)
-{
+static void test_expand_str__reserved(void) {
     size_t res_buf_len;
 
-    /* see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.3
-     * except level 4 expansions */
+    // see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.3
+    // except level 4 expansions
     ASSERT_EXPANSION("{+var}", "value");
     ASSERT_EXPANSION("{+hello}", "Hello%20World!");
     ASSERT_EXPANSION("{+half}", "50%25");
@@ -135,12 +127,11 @@ static void test_expand_str__reserved(void)
     ASSERT_EXPANSION("{+path,x}/here", "/foo/bar,1024/here");
 }
 
-static void test_expand_str__fragment(void)
-{
+static void test_expand_str__fragment(void) {
     size_t res_buf_len;
 
-    /* see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.4
-     * except level 4 expansions */
+    // see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.4
+    // except level 4 expansions
     ASSERT_EXPANSION("{#var}", "#value");
     ASSERT_EXPANSION("{#hello}", "#Hello%20World!");
     ASSERT_EXPANSION("{#half}", "#50%25");
@@ -150,12 +141,11 @@ static void test_expand_str__fragment(void)
     ASSERT_EXPANSION("{#path,x}/here", "#/foo/bar,1024/here");
 }
 
-static void test_expand_str__label(void)
-{
+static void test_expand_str__label(void) {
     size_t res_buf_len;
 
-    /* see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.5
-     * except level 4 expansions */
+    // see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.5
+    // except level 4 expansions
     ASSERT_EXPANSION("{.who}", ".fred");
     ASSERT_EXPANSION("{.who,who}", ".fred.fred");
     ASSERT_EXPANSION("{.half,who}", ".50%25.fred");
@@ -163,17 +153,16 @@ static void test_expand_str__label(void)
     ASSERT_EXPANSION("X{.empty}", "X.");
     ASSERT_EXPANSION("X{.undef}", "X");
 
-    /* unreserved set is not really tested with provided set, so add a test for
-     * that */
+    // unreserved set is not really tested with provided set, so add a test for
+    // that
     ASSERT_EXPANSION("{.hello}", ".Hello%20World%21");
 }
 
-static void test_expand_str__path(void)
-{
+static void test_expand_str__path(void) {
     size_t res_buf_len;
 
-    /* see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.6
-     * except level 4 expansions */
+    // see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.6
+    // except level 4 expansions
     ASSERT_EXPANSION("{/who}", "/fred");
     ASSERT_EXPANSION("{/who,who}", "/fred/fred");
     ASSERT_EXPANSION("{/half,who}", "/50%25/fred");
@@ -183,17 +172,16 @@ static void test_expand_str__path(void)
     ASSERT_EXPANSION("{/var,undef}", "/value");
     ASSERT_EXPANSION("{/var,x}/here", "/value/1024/here");
 
-    /* unreserved set is not really tested with provided set, so add a test for
-     * that */
+    // unreserved set is not really tested with provided set, so add a test for
+    // that
     ASSERT_EXPANSION("{/hello}", "/Hello%20World%21");
 }
 
-static void test_expand_str__path_param(void)
-{
+static void test_expand_str__path_param(void) {
     size_t res_buf_len;
 
-    /* see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.7
-     * except level 4 expansions */
+    // see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.7
+    // except level 4 expansions
     ASSERT_EXPANSION("{;who}", ";who=fred");
     ASSERT_EXPANSION("{;half}", ";half=50%25");
     ASSERT_EXPANSION("{;empty}", ";empty");
@@ -203,47 +191,44 @@ static void test_expand_str__path_param(void)
     ASSERT_EXPANSION("{;x,y,empty}", ";x=1024;y=768;empty");
     ASSERT_EXPANSION("{;x,y,undef}", ";x=1024;y=768");
 
-    /* unreserved set is not really tested with provided set, so add a test for
-     * that */
+    // unreserved set is not really tested with provided set, so add a test for
+    // that
     ASSERT_EXPANSION("{;hello}", ";hello=Hello%20World%21");
 }
 
-static void test_expand_str__query(void)
-{
+static void test_expand_str__query(void) {
     size_t res_buf_len;
 
-    /* see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.8
-     * except level 4 expansions */
+    // see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.8
+    // except level 4 expansions
     ASSERT_EXPANSION("{?who}", "?who=fred");
     ASSERT_EXPANSION("{?half}", "?half=50%25");
     ASSERT_EXPANSION("{?x,y}", "?x=1024&y=768");
     ASSERT_EXPANSION("{?x,y,empty}", "?x=1024&y=768&empty=");
     ASSERT_EXPANSION("{?x,y,undef}", "?x=1024&y=768");
 
-    /* unreserved set is not really tested with provided set, so add a test for
-     * that */
+    // unreserved set is not really tested with provided set, so add a test for
+    // that
     ASSERT_EXPANSION("{?hello}", "?hello=Hello%20World%21");
 }
 
-static void test_expand_str__query_cont(void)
-{
+static void test_expand_str__query_cont(void) {
     size_t res_buf_len;
 
-    /* see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.8
-     * except level 4 expansions */
+    // see https://datatracker.ietf.org/doc/html/rfc6570#section-3.2.8
+    // except level 4 expansions
     ASSERT_EXPANSION("{&who}", "&who=fred");
     ASSERT_EXPANSION("{&half}", "&half=50%25");
     ASSERT_EXPANSION("?fixed=yes{&x}", "?fixed=yes&x=1024");
     ASSERT_EXPANSION("{&x,y,empty}", "&x=1024&y=768&empty=");
     ASSERT_EXPANSION("{&x,y,undef}", "&x=1024&y=768");
 
-    /* unreserved set is not really tested with provided set, so add a test for
-     * that */
+    // unreserved set is not really tested with provided set, so add a test for
+    // that
     ASSERT_EXPANSION("{&hello}", "&hello=Hello%20World%21");
 }
 
-static void test_expand_str__dup_open(void)
-{
+static void test_expand_str__dup_open(void) {
     size_t res_buf_len;
 
     ASSERT_EXPANSION("{half{who}", "{halffred");
@@ -251,8 +236,7 @@ static void test_expand_str__dup_open(void)
     ASSERT_EXPANSION("half{who}{{", "halffred{{");
 }
 
-static void test_expand_str__dup_close(void)
-{
+static void test_expand_str__dup_close(void) {
     size_t res_buf_len;
 
     ASSERT_EXPANSION("{half{who}}", "{halffred}");
@@ -265,8 +249,7 @@ static void test_expand_str__dup_close(void)
         template, _test_vec, ARRAY_SIZE(_test_vec), _res_buf, &res_buf_len \
     ))
 
-static void test_expand_str__enobufs(void)
-{
+static void test_expand_str__enobufs(void) {
     size_t res_buf_len;
 
     ASSERT_ENOBUFS_EXPANSION("{half{who}}", sizeof("{half") - 1);
@@ -286,8 +269,7 @@ static void test_expand_str__enobufs(void)
         template, _test_vec, ARRAY_SIZE(_test_vec), _res_buf, &res_buf_len \
     ))
 
-static void test_expand_str__einval(void)
-{
+static void test_expand_str__einval(void) {
     size_t res_buf_len;
 
     ASSERT_EINVAL_EXPANSION("{?x,,empty}");
@@ -295,8 +277,7 @@ static void test_expand_str__einval(void)
     ASSERT_EINVAL_EXPANSION("{?x,$,empty}");
 }
 
-static Test *_ut_process_tests(void)
-{
+static Test *_ut_process_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_expand_str__overview_example),
         new_TestFixture(test_expand_str__simple),
@@ -318,9 +299,8 @@ static Test *_ut_process_tests(void)
     return (Test *)&ut_process_tests;
 }
 
-void tests_ut_process(void)
-{
+void tests_ut_process(void) {
     TESTS_RUN(_ut_process_tests());
 }
 
-/** @} */
+/// @}

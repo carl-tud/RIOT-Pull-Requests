@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_stm32f3discovery
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the STM32F3discovery board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_stm32f3discovery
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the STM32F3discovery board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -27,21 +23,17 @@
 extern "C" {
 #endif
 
-/**
- * @name   DAC configuration
- * @{
- */
+/// @name   DAC configuration
+/// @{
 static const dac_conf_t dac_config[] = {
     { .pin = GPIO_PIN(PORT_A,  4), .chan = 0 }
 };
 
 #define DAC_NUMOF           ARRAY_SIZE(dac_config)
-/** @} */
+/// @}
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -55,12 +47,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_0_ISR         isr_tim2
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -99,12 +89,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart3)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM3,
@@ -129,12 +117,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name SPI configuration
- * @{
- */
+/// @name SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -165,12 +151,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -202,10 +186,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c2_er
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

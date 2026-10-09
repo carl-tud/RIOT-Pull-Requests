@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 OTA keys S.A.
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 OTA keys S.A.
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief    AT module test application
- *
- * @author   Vincent Dupont <vincent@otakeys.com>
- * @author   Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief    AT module test application
+///
+/// @author   Vincent Dupont <vincent@otakeys.com>
+/// @author   Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -35,8 +31,7 @@ static char rp_buf[256];
 static bool initialized = false;
 static bool is_power_on = false;
 
-static int init(int argc, char **argv)
-{
+static int init(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -62,7 +57,7 @@ static int init(int argc, char **argv)
         .uart = UART_DEV(uart),
     };
     int res = at_dev_init(&at_dev, &at_init_params);
-    /* check the UART initialization return value and respond as needed */
+    // check the UART initialization return value and respond as needed
     if (res == UART_NODEV) {
         puts("Invalid UART device given!");
         return 1;
@@ -77,8 +72,7 @@ static int init(int argc, char **argv)
     return res;
 }
 
-static int send(int argc, char **argv)
-{
+static int send(int argc, char **argv) {
     if (argc < 2) {
         printf("Usage: %s <command>\n", argv[0]);
         return 1;
@@ -107,8 +101,7 @@ static int send(int argc, char **argv)
     return 0;
 }
 
-static int send_ok(int argc, char **argv)
-{
+static int send_ok(int argc, char **argv) {
     if (argc < 2) {
         printf("Usage: %s <command>\n", argv[0]);
         return 1;
@@ -136,8 +129,7 @@ static int send_ok(int argc, char **argv)
     return 0;
 }
 
-static int send_lines(int argc, char **argv)
-{
+static int send_lines(int argc, char **argv) {
     if (argc < 2) {
         printf("Usage: %s <command>\n", argv[0]);
         return 1;
@@ -167,8 +159,7 @@ static int send_lines(int argc, char **argv)
     return 0;
 }
 
-static int send_recv_bytes(int argc, char **argv)
-{
+static int send_recv_bytes(int argc, char **argv) {
     char buffer[64];
 
     if (argc < 3) {
@@ -198,8 +189,7 @@ static int send_recv_bytes(int argc, char **argv)
     return 0;
 }
 
-static int send_recv_bytes_until_string(int argc, char **argv)
-{
+static int send_recv_bytes_until_string(int argc, char **argv) {
     char buffer[128];
     size_t len = sizeof(buffer);
 
@@ -238,8 +228,7 @@ static int send_recv_bytes_until_string(int argc, char **argv)
     return 0;
 }
 
-static int drain(int argc, char **argv)
-{
+static int drain(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -248,8 +237,7 @@ static int drain(int argc, char **argv)
     return 0;
 }
 
-static int power_on(int argc, char **argv)
-{
+static int power_on(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -261,8 +249,7 @@ static int power_on(int argc, char **argv)
     return 0;
 }
 
-static int power_off(int argc, char **argv)
-{
+static int power_off(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -287,14 +274,12 @@ static at_urc_t urc_list[MAX_URC_NB];
 static char urc_str[MAX_URC_NB][MAX_URC_LEN];
 static bool urc_used[MAX_URC_NB];
 
-static void _urc_cb(void *arg, const char *urc)
-{
+static void _urc_cb(void *arg, const char *urc) {
     (void)arg;
     printf("urc received: %s\n", urc);
 }
 
-static int add_urc(int argc, char **argv)
-{
+static int add_urc(int argc, char **argv) {
     if (argc < 2) {
         printf("Usage: %s <urc>\n", argv[0]);
         return 1;
@@ -322,8 +307,7 @@ static int add_urc(int argc, char **argv)
     return 1;
 }
 
-static int process_urc(int argc, char **argv)
-{
+static int process_urc(int argc, char **argv) {
     if (argc < 2) {
         printf("Usage: %s <timeout>\n", argv[0]);
         return 1;
@@ -337,8 +321,7 @@ static int process_urc(int argc, char **argv)
     return 0;
 }
 
-static int remove_urc(int argc, char **argv)
-{
+static int remove_urc(int argc, char **argv) {
     if (argc < 2) {
         printf("Usage: %s <urc>\n", argv[0]);
         return 1;
@@ -358,8 +341,7 @@ static int remove_urc(int argc, char **argv)
 }
 #endif
 
-static int emulate_dce(int argc, char **argv)
-{
+static int emulate_dce(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -484,11 +466,10 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL },
 };
 
-int main(void)
-{
+int main(void) {
     puts("AT command test app");
 
-    /* run the shell */
+    // run the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
     return 0;

@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2022 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_cst816s
- * @{
- *
- * @file
- * @brief       Driver adaption to touch_dev generic interface
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     drivers_cst816s
+/// @{
+///
+/// @file
+/// @brief       Driver adaption to touch_dev generic interface
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include <stddef.h>
 #include <stdint.h>
@@ -36,28 +32,25 @@
 #define CST816S_YMAX    240
 #endif
 
-static uint16_t _cst816s_height(const touch_dev_t *touch_dev)
-{
+static uint16_t _cst816s_height(const touch_dev_t *touch_dev) {
     const cst816s_t *dev = (const cst816s_t *)touch_dev;
 
     assert(dev);
-    (void)dev;  /* avoid compilation problems with NDEBUG */
+    (void)dev;  // avoid compilation problems with NDEBUG
 
     return CST816S_YMAX;
 }
 
-static uint16_t _cst816s_width(const touch_dev_t *touch_dev)
-{
+static uint16_t _cst816s_width(const touch_dev_t *touch_dev) {
     const cst816s_t *dev = (const cst816s_t *)touch_dev;
 
     assert(dev);
-    (void)dev;  /* avoid compilation problems with NDEBUG */
+    (void)dev;  // avoid compilation problems with NDEBUG
 
     return CST816S_XMAX;
 }
 
-uint8_t _cst816s_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t len)
-{
+uint8_t _cst816s_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t len) {
     (void)len;
 
     cst816s_t *dev = (cst816s_t *)touch_dev;
@@ -65,7 +58,7 @@ uint8_t _cst816s_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t 
 
     cst816s_touch_data_t data;
     if (cst816s_read(dev, &data) < 0) {
-        return 0;   /* No data from device, assume no touch points */
+        return 0;   // No data from device, assume no touch points
     }
     if (!data.valid) {
         return 0;
@@ -81,8 +74,7 @@ uint8_t _cst816s_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t 
     return data.valid;
 }
 
-void _cst816s_set_event_callback(const touch_dev_t *touch_dev, touch_event_cb_t cb, void *arg)
-{
+void _cst816s_set_event_callback(const touch_dev_t *touch_dev, touch_event_cb_t cb, void *arg) {
     cst816s_t *dev = (cst816s_t *)touch_dev;
 
     assert(dev);

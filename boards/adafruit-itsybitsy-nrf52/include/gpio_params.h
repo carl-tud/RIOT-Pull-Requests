@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2020 Bruno Chianca <brunobcf@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Bruno Chianca <brunobcf@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_adafruit-itsybitsy-nrf52
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins for the Adafruit
- *              ItsyBitsy nRF52840
- *
- * @author      Bruno Chianca <brunobcf@gmail.com>
- */
+/// @ingroup     boards_adafruit-itsybitsy-nrf52
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins for the Adafruit
+///              ItsyBitsy nRF52840
+///
+/// @author      Bruno Chianca <brunobcf@gmail.com>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -23,9 +19,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    LED and button configuration for SAUL
- */
+/// @brief    LED and button configuration for SAUL
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -46,4 +40,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

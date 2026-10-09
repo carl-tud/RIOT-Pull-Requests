@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    sys_checksum_crc32 CRC32
- * @ingroup     sys_checksum
- *
- * @brief       CRC32 checksum algorithm implementation according to IEEE standards
- * @{
- *
- * @file
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @defgroup    sys_checksum_crc32 CRC32
+/// @ingroup     sys_checksum
+///
+/// @brief       CRC32 checksum algorithm implementation according to IEEE standards
+/// @{
+///
+/// @file
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -25,19 +21,17 @@
 extern "C" {
 #endif
 
-/**
- * @brief   CRC-32 checksum
- *
- * Uses the `0xedb88320` polynomial
- *
- * @note Enable the `crc32_fast` module for a look-up table based implementation
- *       that trades code size for speed.
- *
- * @param[in] buf   The data to checksum
- * @param[in] size  Length of the data in bytes
- *
- * @return 32 bit sized hash in the interval [0..2^32-1]
- */
+/// @brief   CRC-32 checksum
+///
+/// Uses the `0xedb88320` polynomial
+///
+/// @note Enable the `crc32_fast` module for a look-up table based implementation
+///       that trades code size for speed.
+///
+/// @param[in] buf   The data to checksum
+/// @param[in] size  Length of the data in bytes
+///
+/// @return 32 bit sized hash in the interval [0..2^32-1]
 ACCESS(read_only, 1, 2)
 uint32_t crc32(const void *buf, size_t size);
 
@@ -45,4 +39,4 @@ uint32_t crc32(const void *buf, size_t size);
 }
 #endif
 
-/** @} */
+/// @}

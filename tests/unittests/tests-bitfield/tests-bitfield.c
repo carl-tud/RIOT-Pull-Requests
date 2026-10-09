@@ -1,8 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdint.h>
 #include <string.h>
@@ -11,78 +9,74 @@
 
 #include "bitfield.h"
 
-static void test_bf_set(void)
-{
+static void test_bf_set(void) {
     BITFIELD(field, 32U);
 
     memset(field, 0x00, sizeof(field));
     bf_set(field, 3);
-    /* bit idx:  3/8 +   01234567
-     *      0x10    == 0b00010000 */
+    // bit idx:  3/8 +   01234567
+    //      0x10    == 0b00010000
     TEST_ASSERT_EQUAL_INT(0x10, field[3 / 8]);
     bf_set(field, 1);
-    /* bit idx:  1/8 +   01234567
-     *      0x50    == 0b01010000 */
+    // bit idx:  1/8 +   01234567
+    //      0x50    == 0b01010000
     TEST_ASSERT_EQUAL_INT(0x50, field[1 / 8]);
     bf_set(field, 25);
-    /* bit idx: 25/8 +   01234567
-     *      0x40    == 0b01000000 */
+    // bit idx: 25/8 +   01234567
+    //      0x40    == 0b01000000
     TEST_ASSERT_EQUAL_INT(0x40, field[25 / 8]);
 }
 
-static void test_bf_unset(void)
-{
+static void test_bf_unset(void) {
     BITFIELD(field, 32U);
 
     memset(field, 0xff, sizeof(field));
     bf_unset(field, 5);
-    /* bit idx:  5/8 +   01234567
-     *      0xfb    == 0b11111011 */
+    // bit idx:  5/8 +   01234567
+    //      0xfb    == 0b11111011
     TEST_ASSERT_EQUAL_INT(0xfb, field[5 / 8]);
     bf_unset(field, 8);
-    /* cppcheck-suppress duplicateExpression
-     * reason: intentionally dividing 8 by itself to make test more readable
-     * bit idx:  8/8 +   01234567
-     *      0x7f    == 0b01111111 */
+    // cppcheck-suppress duplicateExpression
+    // reason: intentionally dividing 8 by itself to make test more readable
+    // bit idx:  8/8 +   01234567
+    //      0x7f    == 0b01111111
     TEST_ASSERT_EQUAL_INT(0x7f, field[8 / 8]);
     bf_unset(field, 10);
-    /* bit idx: 10/8 +   01234567
-     *      0x5f    == 0b01011111 */
+    // bit idx: 10/8 +   01234567
+    //      0x5f    == 0b01011111
     TEST_ASSERT_EQUAL_INT(0x5f, field[10 / 8]);
 }
 
-static void test_bf_toggle(void)
-{
+static void test_bf_toggle(void) {
     BITFIELD(field, 32U);
 
     memset(field, 0xff, sizeof(field));
     bf_toggle(field, 7);
-    /* bit idx:  7/8 +   01234567
-     *      0xfe    == 0b11111110 */
+    // bit idx:  7/8 +   01234567
+    //      0xfe    == 0b11111110
     TEST_ASSERT_EQUAL_INT(0xfe, field[7 / 8]);
     bf_toggle(field, 0);
-    /* bit idx:  0/8 +   01234567
-     *      0x7e    == 0b01111110 */
+    // bit idx:  0/8 +   01234567
+    //      0x7e    == 0b01111110
     TEST_ASSERT_EQUAL_INT(0x7e, field[0 / 8]);
     bf_toggle(field, 7);
-    /* bit idx:  7/8 +   01234567
-     *      0x7f    == 0b01111111 */
+    // bit idx:  7/8 +   01234567
+    //      0x7f    == 0b01111111
     TEST_ASSERT_EQUAL_INT(0x7f, field[7 / 8]);
     bf_toggle(field, 0);
-    /* bit idx:  0/8 +   01234567
-     *      0xff    == 0b11111111 */
+    // bit idx:  0/8 +   01234567
+    //      0xff    == 0b11111111
     TEST_ASSERT_EQUAL_INT(0xff, field[0 / 8]);
     bf_toggle(field, 28);
-    /* bit idx: 28/8 +   01234567
-     *      0xf7    == 0b11110111 */
+    // bit idx: 28/8 +   01234567
+    //      0xf7    == 0b11110111
     TEST_ASSERT_EQUAL_INT(0xf7, field[28 / 8]);
 }
 
-static void test_bf_isset(void)
-{
+static void test_bf_isset(void) {
     BITFIELD(field, 32U);
 
-    /* bf_set / bf_unset tested above */
+    // bf_set / bf_unset tested above
     memset(field, 0x00, sizeof(field));
     TEST_ASSERT(!bf_isset(field, 25));
     bf_set(field, 25);
@@ -91,8 +85,7 @@ static void test_bf_isset(void)
     TEST_ASSERT(!bf_isset(field, 25));
 }
 
-static void test_bf_get_unset_empty(void)
-{
+static void test_bf_get_unset_empty(void) {
     int res = 0;
     uint8_t field[5];
 
@@ -121,8 +114,7 @@ static void test_bf_get_unset_empty(void)
     TEST_ASSERT_EQUAL_INT(0, res);
 }
 
-static void test_bf_get_unset_firstbyte(void)
-{
+static void test_bf_get_unset_firstbyte(void) {
     int res = 0;
     uint8_t field[5];
     memset(field, 0xff, sizeof(field));
@@ -148,8 +140,7 @@ static void test_bf_get_unset_firstbyte(void)
     TEST_ASSERT_EQUAL_INT(-1, res);
 }
 
-static void test_bf_get_unset_middle(void)
-{
+static void test_bf_get_unset_middle(void) {
     int res = 0;
     uint8_t field[5];
     memset(field, 0xff, sizeof(field));
@@ -171,8 +162,7 @@ static void test_bf_get_unset_middle(void)
     TEST_ASSERT_EQUAL_INT(23, res);
 }
 
-static void test_bf_get_unset_lastbyte(void)
-{
+static void test_bf_get_unset_lastbyte(void) {
     int res = 0;
     uint8_t field[5];
     memset(field, 0xff, sizeof(field));
@@ -194,8 +184,7 @@ static void test_bf_get_unset_lastbyte(void)
     TEST_ASSERT_EQUAL_INT(39, res);
 }
 
-static void test_bf_ops(void)
-{
+static void test_bf_ops(void) {
     const uint8_t zero[3] = {0};
     const uint8_t set[3] = { 0xFF, 0xFF, 0xFF };
 
@@ -219,8 +208,7 @@ static void test_bf_ops(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(c, b, sizeof(c)));
 }
 
-static void test_bf_find_first_set(void)
-{
+static void test_bf_find_first_set(void) {
     int res;
     uint8_t field[5];
     memset(field, 0, sizeof(field));
@@ -245,8 +233,7 @@ static void test_bf_find_first_set(void)
     TEST_ASSERT_EQUAL_INT(3, res);
 }
 
-static void test_bf_find_first_unset(void)
-{
+static void test_bf_find_first_unset(void) {
     int res;
     uint8_t field[5];
     memset(field, 0xff, sizeof(field));
@@ -271,8 +258,7 @@ static void test_bf_find_first_unset(void)
     TEST_ASSERT_EQUAL_INT(3, res);
 }
 
-static void test_bf_set_all(void)
-{
+static void test_bf_set_all(void) {
     uint8_t field[5];
 
     memset(field, 0, sizeof(field));
@@ -296,8 +282,7 @@ static void test_bf_set_all(void)
     TEST_ASSERT_EQUAL_INT(0, field[4]);
 }
 
-static void test_bf_clear_all(void)
-{
+static void test_bf_clear_all(void) {
     uint8_t field[5];
 
     memset(field, 0xFF, sizeof(field));
@@ -306,8 +291,7 @@ static void test_bf_clear_all(void)
     TEST_ASSERT_EQUAL_INT(0xFF, field[1]);
 }
 
-static void test_bf_popcnt(void)
-{
+static void test_bf_popcnt(void) {
     uint8_t field[5];
 
     memset(field, 0xff, sizeof(field));
@@ -350,7 +334,6 @@ Test *tests_bitfield_tests(void) {
     return (Test *)&bitfield_tests;
 }
 
-void tests_bitfield(void)
-{
+void tests_bitfield(void) {
     TESTS_RUN(tests_bitfield_tests());
 }

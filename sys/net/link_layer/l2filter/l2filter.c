@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_l2filter
- * @{
- *
- * @file
- * @brief       Link layer address filter implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     net_l2filter
+/// @{
+///
+/// @file
+/// @brief       Link layer address filter implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -24,14 +20,12 @@
 #include "debug.h"
 
 static inline bool match(const l2filter_t *filter,
-                         const void *addr, size_t addr_len)
-{
+                         const void *addr, size_t addr_len) {
     return ((filter->addr_len == addr_len) &&
             (memcmp(filter->addr, addr, addr_len) == 0));
 }
 
-void l2filter_init(l2filter_t *list)
-{
+void l2filter_init(l2filter_t *list) {
     assert(list);
 
     for (unsigned i = 0; i < CONFIG_L2FILTER_LISTSIZE; i++) {
@@ -39,8 +33,7 @@ void l2filter_init(l2filter_t *list)
     }
 }
 
-int l2filter_add(l2filter_t *list, const void *addr, size_t addr_len)
-{
+int l2filter_add(l2filter_t *list, const void *addr, size_t addr_len) {
     assert(list && addr);
     if (addr_len > CONFIG_L2FILTER_ADDR_MAXLEN) {
         assert(0);
@@ -61,8 +54,7 @@ int l2filter_add(l2filter_t *list, const void *addr, size_t addr_len)
     return res;
 }
 
-int l2filter_rm(l2filter_t *list, const void *addr, size_t addr_len)
-{
+int l2filter_rm(l2filter_t *list, const void *addr, size_t addr_len) {
     assert(list && addr && (addr_len <= CONFIG_L2FILTER_ADDR_MAXLEN));
 
     int res = -ENOENT;
@@ -78,8 +70,7 @@ int l2filter_rm(l2filter_t *list, const void *addr, size_t addr_len)
     return res;
 }
 
-bool l2filter_pass(const l2filter_t *list, const void *addr, size_t addr_len)
-{
+bool l2filter_pass(const l2filter_t *list, const void *addr, size_t addr_len) {
     assert(list && addr && (addr_len <= CONFIG_L2FILTER_ADDR_MAXLEN));
 
 #ifdef MODULE_L2FILTER_WHITELIST

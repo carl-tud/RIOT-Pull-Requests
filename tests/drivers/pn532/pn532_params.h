@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 TriaGnoSys GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 TriaGnoSys GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup   tests
- * @{
- *
- * @file
- * @brief     PN532 board configuration example
- *
- * @author    Víctor Ariño <victor.arino@triagnosys.com>
- */
+/// @ingroup   tests
+/// @{
+///
+/// @file
+/// @brief     PN532 board configuration example
+///
+/// @author    Víctor Ariño <victor.arino@triagnosys.com>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,4 +37,4 @@ static const pn532_params_t pn532_conf[] = {
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,27 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2020 Viktor Gal
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Viktor Gal
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_seesaw_soil
- * @{
- *
- * @file
- * @brief       Seesaw Soil adaption to the RIOT actuator/sensor interface
- *
- * @author      Viktor Gal <viktor.gal@maeth.com>
- *
- * @}
- */
+/// @ingroup     drivers_seesaw_soil
+/// @{
+///
+/// @file
+/// @brief       Seesaw Soil adaption to the RIOT actuator/sensor interface
+///
+/// @author      Viktor Gal <viktor.gal@maeth.com>
+///
+/// @}
 
 #include <string.h>
 
 #include "saul.h"
 #include "seesaw_soil.h"
 
-static int read_temp(const void *dev, phydat_t *res)
-{
+static int read_temp(const void *dev, phydat_t *res) {
     if (seesaw_soil_temperature((const seesaw_soil_t *)dev, &(res->val[0])) != SEESAW_SOIL_OK) {
         return -ECANCELED;
     }

@@ -1,27 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_hdc1000
- * @{
- *
- * @file
- * @brief       HDC1000 adaption to the RIOT actuator/sensor interface
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_hdc1000
+/// @{
+///
+/// @file
+/// @brief       HDC1000 adaption to the RIOT actuator/sensor interface
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
 #include "saul.h"
 #include "hdc1000.h"
 
-static int read_temp(const void *dev, phydat_t *res)
-{
+static int read_temp(const void *dev, phydat_t *res) {
     if (hdc1000_read_cached((const hdc1000_t *)dev, &(res->val[0]), NULL) != HDC1000_OK) {
         return -ECANCELED;
     }
@@ -33,8 +28,7 @@ static int read_temp(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int read_hum(const void *dev, phydat_t *res)
-{
+static int read_hum(const void *dev, phydat_t *res) {
     if (hdc1000_read_cached((const hdc1000_t *)dev, NULL, &(res->val[0])) != HDC1000_OK) {
         return -ECANCELED;
     }

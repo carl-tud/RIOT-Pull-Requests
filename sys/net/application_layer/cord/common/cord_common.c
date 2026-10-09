@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_cord_common
- * @{
- *
- * @file
- * @brief       Implementation of common functions for CoRE RD clients
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     net_cord_common
+/// @{
+///
+/// @file
+/// @brief       Implementation of common functions for CoRE RD clients
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include "fmt.h"
 #include "luid.h"
@@ -25,16 +21,15 @@
 #include "debug.h"
 
 #ifdef CONFIG_CORD_EP
-#define BUFSIZE         (sizeof(CONFIG_CORD_EP))   /* contains \0 termination char */
+#define BUFSIZE         (sizeof(CONFIG_CORD_EP))   // contains \0 termination char
 #else
-#define PREFIX_LEN      (sizeof(CORD_EP_PREFIX))        /* contains \0 char */
+#define PREFIX_LEN      (sizeof(CORD_EP_PREFIX))        // contains \0 char
 #define BUFSIZE         (PREFIX_LEN + CORD_EP_SUFFIX_LEN)
 #endif
 
 char cord_common_ep[BUFSIZE];
 
-void cord_common_init(void)
-{
+void cord_common_init(void) {
 #ifdef CONFIG_CORD_EP
     memcpy(cord_common_ep, CONFIG_CORD_EP, BUFSIZE);
 #else
@@ -50,15 +45,14 @@ void cord_common_init(void)
 #endif
 }
 
-int cord_common_add_qstring(coap_pkt_t *pkt)
-{
-    /* extend the url with some query string options */
+int cord_common_add_qstring(coap_pkt_t *pkt) {
+    // extend the url with some query string options
     int res = coap_opt_add_uri_query(pkt, "ep", cord_common_ep);
     if (res < 0) {
         return res;
     }
 
-    /* [optional] set the lifetime parameter */
+    // [optional] set the lifetime parameter
 #if CONFIG_CORD_LT
     char lt[11];
     lt[fmt_u32_dec(lt, CONFIG_CORD_LT)] = '\0';
@@ -68,7 +62,7 @@ int cord_common_add_qstring(coap_pkt_t *pkt)
     }
 #endif
 
-    /* [optional] set the domain parameter */
+    // [optional] set the domain parameter
 #ifdef CORD_D
     res = coap_opt_add_uri_query(pkt, "d", CORD_D);
     if (res < 0) {

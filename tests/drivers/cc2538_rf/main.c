@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for CC2538_RF IEEE 802.15.4 device driver
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for CC2538_RF IEEE 802.15.4 device driver
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -33,14 +29,14 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
     netdev_register(netdev, NETDEV_CC2538, 0);
     netdev_ieee802154_submac_init(&cc2538_rf);
 
-    /* set the application-provided callback */
+    // set the application-provided callback
     netdev->event_callback = cb;
 
-    /* setup and initialize the specific driver */
+    // setup and initialize the specific driver
     cc2538_rf_hal_setup(&cc2538_rf.submac.dev);
     cc2538_init();
 
-    /* initialize the device driver */
+    // initialize the device driver
     int res = netdev->driver->init(netdev);
     if (res != 0) {
         return -1;
@@ -49,8 +45,7 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Test application for CC2538_RF IEEE 802.15.4 device driver");
 
     int res = netdev_ieee802154_minimal_init();
@@ -59,7 +54,7 @@ int main(void)
         return 1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

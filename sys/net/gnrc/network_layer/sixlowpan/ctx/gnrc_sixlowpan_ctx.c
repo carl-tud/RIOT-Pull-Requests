@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <stdbool.h>
 #include <inttypes.h>
@@ -33,14 +29,12 @@ static void _update_lifetime(uint8_t id);
 
 static char ipv6str[IPV6_ADDR_MAX_STR_LEN];
 
-static inline bool _valid(uint8_t id)
-{
+static inline bool _valid(uint8_t id) {
     _update_lifetime(id);
     return (_ctxs[id].prefix_len > 0);
 }
 
-gnrc_sixlowpan_ctx_t *gnrc_sixlowpan_ctx_lookup_addr(const ipv6_addr_t *addr)
-{
+gnrc_sixlowpan_ctx_t *gnrc_sixlowpan_ctx_lookup_addr(const ipv6_addr_t *addr) {
     uint8_t best = 0;
     gnrc_sixlowpan_ctx_t *res = NULL;
 
@@ -72,8 +66,7 @@ gnrc_sixlowpan_ctx_t *gnrc_sixlowpan_ctx_lookup_addr(const ipv6_addr_t *addr)
     return res;
 }
 
-gnrc_sixlowpan_ctx_t *gnrc_sixlowpan_ctx_lookup_id(uint8_t id)
-{
+gnrc_sixlowpan_ctx_t *gnrc_sixlowpan_ctx_lookup_id(uint8_t id) {
     if (id >= GNRC_SIXLOWPAN_CTX_SIZE) {
         return NULL;
     }
@@ -95,8 +88,7 @@ gnrc_sixlowpan_ctx_t *gnrc_sixlowpan_ctx_lookup_id(uint8_t id)
 
 gnrc_sixlowpan_ctx_t *gnrc_sixlowpan_ctx_update(uint8_t id, const ipv6_addr_t *prefix,
                                                 uint8_t prefix_len, uint16_t ltime,
-                                                bool comp)
-{
+                                                bool comp) {
     if ((id >= GNRC_SIXLOWPAN_CTX_SIZE) || (prefix_len == 0)) {
         return NULL;
     }
@@ -131,8 +123,7 @@ gnrc_sixlowpan_ctx_t *gnrc_sixlowpan_ctx_update(uint8_t id, const ipv6_addr_t *p
     return &(_ctxs[id]);
 }
 
-static uint32_t _current_minute(void)
-{
+static uint32_t _current_minute(void) {
 #if IS_USED(MODULE_ZTIMER_MSEC)
     return ztimer_now(ZTIMER_MSEC) / (MS_PER_SEC * SEC_PER_MIN);
 #else
@@ -140,8 +131,7 @@ static uint32_t _current_minute(void)
 #endif
 }
 
-static void _update_lifetime(uint8_t id)
-{
+static void _update_lifetime(uint8_t id) {
     uint32_t now;
 
     if (_ctxs[id].ltime == 0) {
@@ -164,10 +154,9 @@ static void _update_lifetime(uint8_t id)
 #ifdef TEST_SUITES
 #include <string.h>
 
-void gnrc_sixlowpan_ctx_reset(void)
-{
+void gnrc_sixlowpan_ctx_reset(void) {
     memset(_ctxs, 0, sizeof(_ctxs));
 }
 #endif
 
-/** @} */
+/// @}

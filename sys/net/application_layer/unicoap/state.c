@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2026 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2026 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2026 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup net_unicoap
- * @brief   Core functionality
- * @author  Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @ingroup net_unicoap
+/// @brief   Core functionality
+/// @author  Carl Seifert <carl.seifert@tu-dresden.de>
 
 #include <errno.h>
 #include "container.h"
@@ -27,13 +23,13 @@
 UNICOAP_DECL_RECEIVER_STORAGE;
 
 #if IS_USED(MODULE_UNICOAP_SERVER)
-/* Internal variables */
+// Internal variables
 const unicoap_resource_t _unicoap_default_resources[] = {
 #  if CONFIG_UNICOAP_WELL_KNOWN_CORE
     /* (unicoap_resource_t) */ { .path = UNICOAP_PATH_RESOURCE_DISCOVERY,
                                  .handler = unicoap_resource_handle_well_known_core,
                                  .methods = UNICOAP_METHODS(UNICOAP_METHOD_GET) }
-#  endif /* CONFIG_UNICOAP_WELL_KNOWN_CORE */
+#  endif // CONFIG_UNICOAP_WELL_KNOWN_CORE
 };
 
 static unicoap_listener_t _default_listener = {
@@ -43,7 +39,7 @@ static unicoap_listener_t _default_listener = {
     .link_encoder = unicoap_resource_encode_link,
     .next = NULL,
 };
-#endif /* IS_USED(MODULE_UNICOAP_SERVER) */
+#endif // IS_USED(MODULE_UNICOAP_SERVER)
 
 #if IS_USED(MODULE_UNICOAP_SERVER_RESOURCE_DECLARATIONS)
 XFA_INIT_CONST(unicoap_resource_t, unicoap_resources_xfa);
@@ -74,7 +70,7 @@ void unicoap_state_unlock(void) {
     _unlock();
 }
 
-/* MARK: - Event Scheduling on Internal Queue */
+// MARK: - Event Scheduling on Internal Queue
 
 static void _scheduled_event_callback(void* scheduled_event) {
     event_post(&_queue, (event_t*)scheduled_event);
@@ -84,22 +80,22 @@ void unicoap_event_schedule(unicoap_scheduled_event_t* event, unicoap_event_call
                             uint32_t duration) {
     event->ztimer.callback = _scheduled_event_callback;
     event->ztimer.arg = (void*)event;
-    /* This cast is fine because (a) the return types are identical and the function argument is
-     * a pointer to a struct, too. */
+    // This cast is fine because (a) the return types are identical and the function argument is
+    // a pointer to a struct, too.
     event->super.handler = (event_handler_t)callback;
     ztimer_set(UNICOAP_CLOCK, &event->ztimer, duration);
 }
 
 void unicoap_event_cancel(unicoap_scheduled_event_t* event) {
     if (ztimer_is_set(UNICOAP_CLOCK, &event->ztimer)) {
-        /* event cancel runs in O(n), so we really only want to call
-         * event_cancel if the event has already been posted */
+        // event cancel runs in O(n), so we really only want to call
+        // event_cancel if the event has already been posted
         event_cancel(&_queue, &event->super);
     }
     ztimer_remove(UNICOAP_CLOCK, &event->ztimer);
 }
 
-/* MARK: - Lifecycle */
+// MARK: - Lifecycle
 
 static inline int _init_drivers(event_queue_t* queue) {
     (void)queue;
@@ -123,7 +119,7 @@ static inline int _init_drivers(event_queue_t* queue) {
         return -1;
     }
 #endif
-    /* MARK: unicoap_driver_extension_point */
+    // MARK: unicoap_driver_extension_point
     return 0;
 }
 
@@ -142,14 +138,14 @@ static inline int _deinit_drivers(event_queue_t* queue) {
 #if IS_USED(MODULE_UNICOAP_DRIVER_SLIPMUX)
     res += unicoap_deinit_slipmux(queue);
 #endif
-    /* MARK: unicoap_driver_extension_point */
+    // MARK: unicoap_driver_extension_point
     return res;
 }
 
 void* _unicoap_loop_run(void* arg) {
     (void)arg;
-    /* Now we set the already-initialized queue's waiter thread. See unicoap_init below. */
-    /* _queue.waiter == NULL is asserted by event_queue_claim */
+    // Now we set the already-initialized queue's waiter thread. See unicoap_init below.
+    // _queue.waiter == NULL is asserted by event_queue_claim
     event_queue_claim(&_queue);
     _unicoap_pid = thread_getpid();
     event_loop(&_queue);
@@ -169,7 +165,7 @@ kernel_pid_t unicoap_init(void) {
     mutex_init(&_state.lock);
 
 #if IS_USED(MODULE_UNICOAP_SERVER_RESOURCE_DECLARATIONS)
-    /* add CoAP resources from XFA */
+    // add CoAP resources from XFA
     XFA_USE_CONST(unicoap_resource_t, unicoap_resources_xfa);
     static unicoap_listener_t _xfa_listener = {
         .resources = unicoap_resources_xfa,
@@ -178,7 +174,7 @@ kernel_pid_t unicoap_init(void) {
     _xfa_listener.resource_count = XFA_LEN(unicoap_resource_t, unicoap_resources_xfa);
     unicoap_listener_register(&_xfa_listener);
     _SERVER_DEBUG("registered %" PRIuSIZE " XFA resources\n", _xfa_listener.resource_count);
-#endif /* UNICOAP_SERVER_RESOURCE_DECLARATIONS */
+#endif // UNICOAP_SERVER_RESOURCE_DECLARATIONS
 
     event_queue_init_detached(&_queue);
 
@@ -214,8 +210,8 @@ int unicoap_deinit(void) {
 
 void unicoap_listener_register(unicoap_listener_t* listener) {
     assert(listener);
-    /* That item will be overridden, ensure that the user expecting different
-     * behavior will notice this. */
+    // That item will be overridden, ensure that the user expecting different
+    // behavior will notice this.
     assert(listener->next == NULL);
 
     listener->next = unicoap_get_listeners(&_state);
@@ -238,7 +234,7 @@ void unicoap_listener_register(unicoap_listener_t* listener) {
                                FIXIT("Set .methods"));
             }
 
-            /* TODO: Advanced features: emit warnings */
+            // TODO: Advanced features: emit warnings
         }
     }
 }
@@ -262,7 +258,7 @@ int unicoap_listener_deregister(unicoap_listener_t* listener) {
     return -ENOENT;
 }
 
-/* MARK: - Intersection with messaging */
+// MARK: - Intersection with messaging
 
 void unicoap_generate_token(uint8_t* token) {
     for (size_t i = 0; i < CONFIG_UNICOAP_GENERATED_TOKEN_LENGTH; i += 4) {
@@ -306,7 +302,7 @@ int unicoap_messaging_send(unicoap_packet_t* packet, unicoap_messaging_flags_t f
     case UNICOAP_PROTO_SLIPMUX:
         return unicoap_messaging_send_rfc7252(packet, flags);
 #endif
-    /* MARK: unicoap_driver_extension_point */
+    // MARK: unicoap_driver_extension_point
     default:
         _MESSAGING_DEBUG("missing driver for proto %s\n",
                         unicoap_string_from_proto(unicoap_packet_proto(packet)));
@@ -354,11 +350,11 @@ unicoap_preprocessing_result_t unicoap_exchange_preprocess(unicoap_packet_t* pac
     case UNICOAP_CODE_CLASS_RESPONSE_SUCCESS:
     case UNICOAP_CODE_CLASS_RESPONSE_CLIENT_FAILURE:
     case UNICOAP_CODE_CLASS_RESPONSE_SERVER_FAILURE:
-        /* TODO: Client: Process response */
+        // TODO: Client: Process response
         return UNICOAP_PREPROCESSING_ERROR_RESPONSE_UNEXPECTED;
 
     case UNICOAP_CODE_CLASS_SIGNAL:
-        /* TODO: Signaling */
+        // TODO: Signaling
         return UNICOAP_PREPROCESSING_ERROR_UNSUPPORTED;
 
     default:
@@ -375,11 +371,11 @@ int unicoap_exchange_process(unicoap_packet_t* packet, unicoap_exchange_arg_t ar
     case UNICOAP_CODE_CLASS_RESPONSE_SUCCESS:
     case UNICOAP_CODE_CLASS_RESPONSE_CLIENT_FAILURE:
     case UNICOAP_CODE_CLASS_RESPONSE_SERVER_FAILURE:
-        /* TODO: Client: Process response */
+        // TODO: Client: Process response
         return -1;
 
     case UNICOAP_CODE_CLASS_SIGNAL:
-        /* TODO: Signaling */
+        // TODO: Signaling
         return -1;
 
     default:
@@ -390,12 +386,12 @@ int unicoap_exchange_process(unicoap_packet_t* packet, unicoap_exchange_arg_t ar
 
 int unicoap_exchange_release_endpoint_state(const unicoap_endpoint_t* endpoint) {
     (void)endpoint;
-    /* TODO: Client and advanced server features: Elaborate state management */
-    /* TODO: Observe: Remove potential registrations */
+    // TODO: Client and advanced server features: Elaborate state management
+    // TODO: Observe: Remove potential registrations
     return -ENOENT;
 }
 
-/* These must be in state.c as it reads the _state object. */
+// These must be in state.c as it reads the _state object.
 
 ssize_t unicoap_resource_core_link_format_build(char* buffer, size_t capacity,
                                                 unicoap_proto_t proto) {
@@ -406,11 +402,11 @@ ssize_t unicoap_resource_core_link_format_build(char* buffer, size_t capacity,
 
     unicoap_link_encoder_ctx_t ctx = {
         .content_format = UNICOAP_FORMAT_LINK,
-        /* indicate initial link for the list */
+        // indicate initial link for the list
         .uninitialized = true,
     };
 
-    /* write payload */
+    // write payload
     for (; listener != NULL; listener = listener->next) {
         if (!listener->link_encoder) {
             continue;
@@ -466,13 +462,13 @@ int unicoap_resource_find(const unicoap_packet_t* packet, const unicoap_resource
             res = listener->request_matcher(listener, &resource, packet->message, packet->remote);
             switch (res) {
                 case UNICOAP_STATUS_PATH_NOT_FOUND:
-                    /* check next resource on mismatch */
+                    // check next resource on mismatch
                     continue;
                 case UNICOAP_STATUS_METHOD_NOT_ALLOWED:
                     *resource_ptr = resource;
                     *listener_ptr = listener;
                     ret = res;
-                    /* found a resource, but method/proto do not match */
+                    // found a resource, but method/proto do not match
                     continue;
                 case 0:
                     *resource_ptr = resource;
@@ -488,8 +484,8 @@ int unicoap_resource_find(const unicoap_packet_t* packet, const unicoap_resource
                     return 0;
                 default:
                     _SERVER_DEBUG("error: resource matcher failed\n");
-                    /* res is probably UNICOAP_RESOURCE_ERROR or some other
-                     * unhandled error */
+                    // res is probably UNICOAP_RESOURCE_ERROR or some other
+                    // unhandled error
                     return res;
             }
         }

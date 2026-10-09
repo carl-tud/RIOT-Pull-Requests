@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization for INA2XX power/current monitors
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization for INA2XX power/current monitors
+//
+// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,37 +17,26 @@
 #include "ina2xx_params.h"
 #include "ina2xx.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define INA2XX_NUM      ARRAY_SIZE(ina2xx_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static ina2xx_t ina2xx_devs[INA2XX_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[INA2XX_NUM * 3];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define INA2XX_INFO_NUM ARRAY_SIZE(ina2xx_saul_info)
 
-/**
- * @name    Import SAUL endpoints
- * @{
- */
+/// @name    Import SAUL endpoints
+/// @{
 extern const saul_driver_t ina2xx_saul_current_driver;
 extern const saul_driver_t ina2xx_saul_power_driver;
 extern const saul_driver_t ina2xx_saul_voltage_driver;
-/** @} */
+/// @}
 
-void auto_init_ina2xx(void)
-{
+void auto_init_ina2xx(void) {
     assert(INA2XX_INFO_NUM == 3 * INA2XX_NUM);
 
     for (unsigned int i = 0; i < INA2XX_NUM; i++) {

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2021 Franz Freitag, Justus Krebs, Nick Weiler
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Franz Freitag, Justus Krebs, Nick Weiler
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_seeeduino_xiao
- * @{
- *
- * @file
- * @brief       Board specific configuration of direct mapped GPIOs
- *
- * @author      Franz Freitag <franz.freitag@st.ovgu.de>
- * @author      Justus Krebs <justus.krebs@st.ovgu.de>
- * @author      Nick Weiler <nick.weiler@st.ovgu.de>
- */
+/// @ingroup     boards_seeeduino_xiao
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration of direct mapped GPIOs
+///
+/// @author      Franz Freitag <franz.freitag@st.ovgu.de>
+/// @author      Justus Krebs <justus.krebs@st.ovgu.de>
+/// @author      Nick Weiler <nick.weiler@st.ovgu.de>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -24,9 +20,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    GPIO pin configuration
- */
+/// @brief    GPIO pin configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -53,4 +47,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

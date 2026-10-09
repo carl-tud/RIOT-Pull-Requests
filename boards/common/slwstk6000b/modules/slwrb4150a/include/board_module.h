@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2018 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_slwstk6000b
- * @{
- *
- * @file
- * @brief       Specific definitions for SLWRB4150A module.
- *
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- */
+/// @ingroup     boards_common_slwstk6000b
+/// @{
+///
+/// @file
+/// @brief       Specific definitions for SLWRB4150A module.
+///
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
 
 #include "periph/gpio.h"
 
@@ -22,13 +18,11 @@
 extern "C" {
 #endif
 
-/**
- * @name Pins on the SLWRB4150A module.
- *
- * @note The pin numbers refer to the board module, not the base board.
- *
- * @{
- */
+/// @name Pins on the SLWRB4150A module.
+///
+/// @note The pin numbers refer to the board module, not the base board.
+///
+/// @{
 #define MODULE_PIN_F0       GPIO_PIN(PF, 1)
 #define MODULE_PIN_F1       GPIO_PIN(PF, 0)
 #define MODULE_PIN_F2       GPIO_PIN(PF, 2)
@@ -97,10 +91,10 @@ extern "C" {
 #define MODULE_PIN_P43      GPIO_UNDEF
 #define MODULE_PIN_P44      GPIO_UNDEF
 #define MODULE_PIN_P45      GPIO_UNDEF
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

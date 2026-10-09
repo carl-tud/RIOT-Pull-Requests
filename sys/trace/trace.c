@@ -1,24 +1,20 @@
-/*
- * Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
- *                    Freie Universität Berlin
- *                    Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
+//                    Freie Universität Berlin
+//                    Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys
- * @{
- *
- * @file
- * @brief       Execution tracing module implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     sys
+/// @{
+///
+/// @file
+/// @brief       Execution tracing module implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -38,8 +34,7 @@ typedef struct {
 static tracebuf_entry_t tracebuf[CONFIG_TRACE_BUFSIZE];
 static size_t tracebuf_pos;
 
-void trace(uint32_t val)
-{
+void trace(uint32_t val) {
     unsigned state = irq_disable();
 
     tracebuf[tracebuf_pos % CONFIG_TRACE_BUFSIZE] =
@@ -48,8 +43,7 @@ void trace(uint32_t val)
     irq_restore(state);
 }
 
-void trace_dump(void)
-{
+void trace_dump(void) {
     size_t n = tracebuf_pos >
                CONFIG_TRACE_BUFSIZE ? CONFIG_TRACE_BUFSIZE : tracebuf_pos;
     uint32_t t_last = 0;
@@ -62,8 +56,7 @@ void trace_dump(void)
     }
 }
 
-void trace_reset(void)
-{
+void trace_reset(void) {
     unsigned state = irq_disable();
 
     tracebuf_pos = 0;

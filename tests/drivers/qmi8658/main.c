@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the QMI8658 IMU driver
- *
- * @author      Yahia Abdella <yahia.abdella@tuhh.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the QMI8658 IMU driver
+///
+/// @author      Yahia Abdella <yahia.abdella@tuhh.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -24,8 +20,7 @@
 
 #define SLEEP_MSEC              (500UL)
 
-static void _print_datarate(uint8_t odr)
-{
+static void _print_datarate(uint8_t odr) {
     switch (odr) {
     case QMI8658_DATA_RATE_8KHZ:
         puts("8kHz");
@@ -71,8 +66,7 @@ static void _print_datarate(uint8_t odr)
     }
 }
 
-int main(void)
-{
+int main(void) {
     qmi8658_t dev;
     int16_t temp_value;
     qmi8658_3d_data_t acc_value;

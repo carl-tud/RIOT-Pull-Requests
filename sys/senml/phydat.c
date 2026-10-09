@@ -1,10 +1,8 @@
-/*
- * Copyright (C) 2021 Silke Hofstra
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2021 Silke Hofstra
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #include <stdint.h>
 
@@ -12,10 +10,9 @@
 #include "senml.h"
 #include "senml/phydat.h"
 
-static uint8_t phydat_unit_to_senml_unit(uint8_t unit)
-{
+static uint8_t phydat_unit_to_senml_unit(uint8_t unit) {
     switch (unit) {
-    /* Compatible units */
+    // Compatible units
     case UNIT_TEMP_C:  return SENML_UNIT_CELSIUS;
     case UNIT_TEMP_K:  return SENML_UNIT_KELVIN;
     case UNIT_LUX:     return SENML_UNIT_LUX;
@@ -34,35 +31,33 @@ static uint8_t phydat_unit_to_senml_unit(uint8_t unit)
     case UNIT_PA:      return SENML_UNIT_PASCAL;
     case UNIT_CD:      return SENML_UNIT_CANDELA;
 
-    /* Compatible Secondary units */
+    // Compatible Secondary units
     case UNIT_DBM:     return SENML_UNIT_DECIBEL_MILLIWATT;
     case UNIT_PERCENT: return SENML_UNIT_PERCENT;
     case UNIT_PERMILL: return SENML_UNIT_PERMILLE;
     case UNIT_PPM:     return SENML_UNIT_PARTS_PER_MILLION;
     case UNIT_PPB:     return SENML_UNIT_PARTS_PER_BILLION;
 
-    /* Incompatible units */
-    case UNIT_TEMP_F:  return SENML_UNIT_NONE;      /* use K or Cel instead */
-    case UNIT_GAUSS:   return SENML_UNIT_NONE;      /* use T instead */
-    case UNIT_G_FORCE: return SENML_UNIT_NONE;      /* use m/s2 instead */
-    case UNIT_BAR:     return SENML_UNIT_NONE;      /* use Pa or hPa instead */
-    case UNIT_TIME:    return SENML_UNIT_NONE;      /* split into second/minute/hour */
-    case UNIT_DATE:    return SENML_UNIT_NONE;      /* split into day/month/year */
-    case UNIT_GPM3:    return SENML_UNIT_NONE;      /* use kg/m3 instead */
-    case UNIT_DPS:     return SENML_UNIT_NONE;      /* no alternative */
-    case UNIT_CPM3:    return SENML_UNIT_NONE;      /* no alternative */
+    // Incompatible units
+    case UNIT_TEMP_F:  return SENML_UNIT_NONE;      // use K or Cel instead
+    case UNIT_GAUSS:   return SENML_UNIT_NONE;      // use T instead
+    case UNIT_G_FORCE: return SENML_UNIT_NONE;      // use m/s2 instead
+    case UNIT_BAR:     return SENML_UNIT_NONE;      // use Pa or hPa instead
+    case UNIT_TIME:    return SENML_UNIT_NONE;      // split into second/minute/hour
+    case UNIT_DATE:    return SENML_UNIT_NONE;      // split into day/month/year
+    case UNIT_GPM3:    return SENML_UNIT_NONE;      // use kg/m3 instead
+    case UNIT_DPS:     return SENML_UNIT_NONE;      // no alternative
+    case UNIT_CPM3:    return SENML_UNIT_NONE;      // no alternative
     default:           return SENML_UNIT_NONE;
     }
 }
 
-void phydat_to_senml_bool(senml_bool_value_t *senml, const phydat_t *phydat, const uint8_t dim)
-{
+void phydat_to_senml_bool(senml_bool_value_t *senml, const phydat_t *phydat, const uint8_t dim) {
     senml->value = phydat->val[dim] == 1;
     senml->attr.unit = SENML_UNIT_NONE;
 }
 
-void phydat_to_senml_float(senml_value_t *senml, const phydat_t *phydat, const uint8_t dim)
-{
+void phydat_to_senml_float(senml_value_t *senml, const phydat_t *phydat, const uint8_t dim) {
     float value = (float)(phydat->val[dim]);
 
     if (phydat->scale) {
@@ -70,7 +65,7 @@ void phydat_to_senml_float(senml_value_t *senml, const phydat_t *phydat, const u
     }
 
     switch (phydat->unit) {
-    /* time conversion */
+    // time conversion
     case UNIT_TIME:
         senml->attr.unit = (dim == 0)
                           ? SENML_UNIT_SECOND
@@ -79,14 +74,14 @@ void phydat_to_senml_float(senml_value_t *senml, const phydat_t *phydat, const u
                             : SENML_UNIT_HOUR;
         break;
 
-    /* simple conversions */
+    // simple conversions
     case UNIT_TEMP_F:
-        /* convert fahrenheit to kelvin */
+        // convert fahrenheit to kelvin
         value = (value + 459.67) * (5. / 9.);
         senml->attr.unit = SENML_UNIT_KELVIN;
         break;
     case UNIT_G_FORCE:
-        /* convert gravitational acceleration to acceleration */
+        // convert gravitational acceleration to acceleration
         value *= 9.80665;
         senml->attr.unit = SENML_UNIT_METER_PER_SQUARE_SECOND;
         break;
@@ -103,7 +98,7 @@ void phydat_to_senml_float(senml_value_t *senml, const phydat_t *phydat, const u
         senml->attr.unit = SENML_UNIT_TESLA;
         break;
 
-    /* compatible (or not converted) */
+    // compatible (or not converted)
     default:
         senml->attr.unit = phydat_unit_to_senml_unit(phydat->unit);
         break;
@@ -112,13 +107,12 @@ void phydat_to_senml_float(senml_value_t *senml, const phydat_t *phydat, const u
     senml->value = senml_float(value);
 }
 
-void phydat_to_senml_decimal(senml_value_t *senml, const phydat_t *phydat, const uint8_t dim)
-{
+void phydat_to_senml_decimal(senml_value_t *senml, const phydat_t *phydat, const uint8_t dim) {
     int32_t m = phydat->val[dim];
     int32_t e = phydat->scale;
 
     switch (phydat->unit) {
-    /* time conversion */
+    // time conversion
     case UNIT_TIME:
         senml->attr.unit = (dim == 0)
                           ? SENML_UNIT_SECOND
@@ -127,7 +121,7 @@ void phydat_to_senml_decimal(senml_value_t *senml, const phydat_t *phydat, const
                             : SENML_UNIT_HOUR;
         break;
 
-    /* simple conversions */
+    // simple conversions
     case UNIT_BAR:
         e += 5;
         senml->attr.unit = SENML_UNIT_PASCAL;
@@ -141,7 +135,7 @@ void phydat_to_senml_decimal(senml_value_t *senml, const phydat_t *phydat, const
         senml->attr.unit = SENML_UNIT_TESLA;
         break;
 
-    /* compatible, or not converted */
+    // compatible, or not converted
     default:
         senml->attr.unit = phydat_unit_to_senml_unit(phydat->unit);
         break;

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp_common
- * @{
- *
- * @file
- * @brief       Log module to realize consistent log messages for ESP SoCs
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     cpu_esp_common
+/// @{
+///
+/// @file
+/// @brief       Log module to realize consistent log messages for ESP SoCs
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +25,7 @@ static inline void log_write(unsigned level, const char *format, ...) {
     puts(format);
 }
 
-#else /* MODULE_LOG_PRINTFNOFORMAT */
+#else // MODULE_LOG_PRINTFNOFORMAT
 
 #define log_write(level, ...) \
                 do { \
@@ -47,9 +43,9 @@ static inline void log_write(unsigned level, const char *format, ...) {
                     } \
                 } while (0U)
 
-#endif /* MODULE_LOG_PRINTFNOFORMAT */
+#endif // MODULE_LOG_PRINTFNOFORMAT
 
 #ifdef __cplusplus
 }
 #endif
-/**@}*/
+/// @}

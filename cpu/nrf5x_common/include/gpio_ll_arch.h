@@ -1,29 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2015 Jan Wagner <mail@jwagner.eu>
- * SPDX-FileCopyrightText: 2015-2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Jan Wagner <mail@jwagner.eu>
+// SPDX-FileCopyrightText: 2015-2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_nrf5x_common
- * @ingroup     drivers_periph_gpio_ll
- * @{
- *
- * @file
- * @brief       CPU specific part of the Peripheral GPIO Low-Level API
- *
- * @note        This GPIO driver implementation supports only one pin to be
- *              defined as external interrupt.
- *
- * @author      Christian Kühling <kuehling@zedat.fu-berlin.de>
- * @author      Timo Ziegler <timo.ziegler@fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Jan Wagner <mail@jwagner.eu>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     cpu_nrf5x_common
+/// @ingroup     drivers_periph_gpio_ll
+/// @{
+///
+/// @file
+/// @brief       CPU specific part of the Peripheral GPIO Low-Level API
+///
+/// @note        This GPIO driver implementation supports only one pin to be
+///              defined as external interrupt.
+///
+/// @author      Christian Kühling <kuehling@zedat.fu-berlin.de>
+/// @author      Timo Ziegler <timo.ziegler@fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Jan Wagner <mail@jwagner.eu>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include <assert.h>
 
@@ -35,13 +31,13 @@
 extern "C" {
 #endif
 
-#ifndef DOXYGEN /* hide implementation specific details from Doxygen */
+#ifndef DOXYGEN // hide implementation specific details from Doxygen
 
 #define PORT_BIT            (1 << 5)
 #define PIN_MASK            (0x1f)
 #define NRF5X_IO_AREA_START (0x40000000UL)
 
-/* Compatibility wrapper defines for nRF53 and nRF9160 */
+// Compatibility wrapper defines for nRF53 and nRF9160
 #if defined(CPU_FAM_NRF53) || defined(CPU_FAM_NRF9160)
 #  ifdef NRF_TRUSTZONE_NONSECURE
 #    define NRF_P0 NRF_P0_NS
@@ -59,8 +55,7 @@ extern "C" {
 #  define GPIO_PORT_0       ((gpio_port_t)NRF_P0)
 #endif
 
-static inline gpio_port_t gpio_port(uword_t num)
-{
+static inline gpio_port_t gpio_port(uword_t num) {
     (void)num;
 #ifdef GPIO_PORT_1
     if (num == 1) {
@@ -71,8 +66,7 @@ static inline gpio_port_t gpio_port(uword_t num)
     return GPIO_PORT_0;
 }
 
-static inline uword_t gpio_port_num(gpio_port_t port)
-{
+static inline uword_t gpio_port_num(gpio_port_t port) {
     (void)port;
 #ifdef GPIO_PORT_1
     if (port == GPIO_PORT_1) {
@@ -82,46 +76,39 @@ static inline uword_t gpio_port_num(gpio_port_t port)
     return 0;
 }
 
-static inline uword_t gpio_ll_read(gpio_port_t port)
-{
+static inline uword_t gpio_ll_read(gpio_port_t port) {
     NRF_GPIO_Type *p = (NRF_GPIO_Type *)port;
     return p->IN;
 }
 
-static inline uword_t gpio_ll_read_output(gpio_port_t port)
-{
+static inline uword_t gpio_ll_read_output(gpio_port_t port) {
     NRF_GPIO_Type *p = (NRF_GPIO_Type *)port;
     return p->OUT;
 }
 
-static inline void gpio_ll_set(gpio_port_t port, uword_t mask)
-{
+static inline void gpio_ll_set(gpio_port_t port, uword_t mask) {
     NRF_GPIO_Type *p = (NRF_GPIO_Type *)port;
     p->OUTSET = mask;
 }
 
-static inline void gpio_ll_clear(gpio_port_t port, uword_t mask)
-{
+static inline void gpio_ll_clear(gpio_port_t port, uword_t mask) {
     NRF_GPIO_Type *p = (NRF_GPIO_Type *)port;
     p->OUTCLR = mask;
 }
 
-static inline void gpio_ll_toggle(gpio_port_t port, uword_t mask)
-{
+static inline void gpio_ll_toggle(gpio_port_t port, uword_t mask) {
     NRF_GPIO_Type *p = (NRF_GPIO_Type *)port;
     unsigned state = irq_disable();
     p->OUT ^= mask;
     irq_restore(state);
 }
 
-static inline void gpio_ll_write(gpio_port_t port, uword_t value)
-{
+static inline void gpio_ll_write(gpio_port_t port, uword_t value) {
     NRF_GPIO_Type *p = (NRF_GPIO_Type *)port;
     p->OUT = value;
 }
 
-static inline gpio_port_t gpio_get_port(gpio_t pin)
-{
+static inline gpio_port_t gpio_get_port(gpio_t pin) {
 #if defined(NRF_P1)
     return gpio_port(pin >> 5);
 #else
@@ -130,8 +117,7 @@ static inline gpio_port_t gpio_get_port(gpio_t pin)
 #endif
 }
 
-static inline uint8_t gpio_get_pin_num(gpio_t pin)
-{
+static inline uint8_t gpio_get_pin_num(gpio_t pin) {
 #if defined(NRF_P1)
     return pin & PIN_MASK;
 #else
@@ -139,16 +125,14 @@ static inline uint8_t gpio_get_pin_num(gpio_t pin)
 #endif
 }
 
-static inline gpio_port_t gpio_port_pack_addr(void *addr)
-{
+static inline gpio_port_t gpio_port_pack_addr(void *addr) {
     return (gpio_port_t)addr;
 }
 
-static inline void * gpio_port_unpack_addr(gpio_port_t port)
-{
-    /* NRF5X_IO_AREA_START is the start of the memory mapped I/O area. Both data
-     * and flash are mapped before it. So if it is an I/O address, it
-     * cannot be a packed data address and (hopefully) is a GPIO port */
+static inline void * gpio_port_unpack_addr(gpio_port_t port) {
+    // NRF5X_IO_AREA_START is the start of the memory mapped I/O area. Both data
+    // and flash are mapped before it. So if it is an I/O address, it
+    // cannot be a packed data address and (hopefully) is a GPIO port
     if (port >= NRF5X_IO_AREA_START) {
         return NULL;
     }
@@ -156,8 +140,7 @@ static inline void * gpio_port_unpack_addr(gpio_port_t port)
     return (void *)port;
 }
 
-static inline bool is_gpio_port_num_valid(uint_fast8_t num)
-{
+static inline bool is_gpio_port_num_valid(uint_fast8_t num) {
     switch (num) {
     default:
         return false;
@@ -169,9 +152,9 @@ static inline bool is_gpio_port_num_valid(uint_fast8_t num)
     }
 }
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

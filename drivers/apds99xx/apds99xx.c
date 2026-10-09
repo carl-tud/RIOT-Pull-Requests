@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_apds99xx
- * @{
- * @brief       Device driver for the Broadcom APDS99XX proximity and ambient light sensor
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @}
- */
+/// @ingroup     drivers_apds99xx
+/// @{
+/// @brief       Device driver for the Broadcom APDS99XX proximity and ambient light sensor
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -33,7 +29,7 @@
         LOG_ERROR("[apds99xx] %s i2c dev=%d addr=%02x: " f "\n", \
                   __func__, d->params.dev, APDS99XX_I2C_ADDRESS, ## __VA_ARGS__);
 
-/** Forward declaration of functions for internal use */
+/// Forward declaration of functions for internal use
 
 static int _is_available(const apds99xx_t *dev);
 static void _set_reg_bit(uint8_t *byte, uint8_t mask, uint8_t bit);
@@ -41,9 +37,8 @@ static int _reg_read(const apds99xx_t *dev, uint8_t reg, uint8_t *data, uint16_t
 static int _reg_write(const apds99xx_t *dev, uint8_t reg, uint8_t *data, uint16_t len);
 static int _update_reg(const apds99xx_t *dev, uint8_t reg, uint8_t mask, uint8_t val);
 
-int apds99xx_init(apds99xx_t *dev, const apds99xx_params_t *params)
-{
-    /* some parameter sanity checks */
+int apds99xx_init(apds99xx_t *dev, const apds99xx_params_t *params) {
+    // some parameter sanity checks
     assert(dev != NULL);
     assert(params != NULL);
     assert(params->als_steps <= 256);
@@ -54,7 +49,7 @@ int apds99xx_init(apds99xx_t *dev, const apds99xx_params_t *params)
 
     DEBUG_DEV("params=%p", dev, params);
 
-    /* init sensor data structure */
+    // init sensor data structure
     dev->params = *params;
 
 #if MODULE_APDS99XX_FULL
@@ -63,10 +58,8 @@ int apds99xx_init(apds99xx_t *dev, const apds99xx_params_t *params)
     dev->gpio_init = false;
 #endif
 
-    /*
-     * the sensor should be operational 5.7 ms after power on; try to check
-     * its availability for some time (maximum 500 times/I2C address writes)
-     */
+    // the sensor should be operational 5.7 ms after power on; try to check
+    // its availability for some time (maximum 500 times/I2C address writes)
     int res = 0;
     int count = 500;
     while (count--) {
@@ -81,22 +74,22 @@ int apds99xx_init(apds99xx_t *dev, const apds99xx_params_t *params)
 
     uint8_t reg;
 
-    /* disable and power down the sensor */
+    // disable and power down the sensor
     reg = 0;
     if (_reg_write(dev, APDS99XX_REG_ENABLE, &reg, 1) != APDS99XX_OK) {
         return -APDS99XX_ERROR_I2C;
     }
 
-    /* write ALS integration time and gain parameter */
+    // write ALS integration time and gain parameter
     uint8_t atime = 256 - dev->params.als_steps;
     if (_reg_write(dev, APDS99XX_REG_ATIME, &atime, 1) ||
         _update_reg(dev, APDS99XX_REG_CONTROL,
                          APDS99XX_REG_AGAIN, dev->params.als_gain)) {
         return -APDS99XX_ERROR_I2C;
     }
-    /* write PRX LED pulses LED drive strength and gain parameter */
+    // write PRX LED pulses LED drive strength and gain parameter
 #if MODULE_APDS9900 || MODULE_APDS9901 || MODULE_APDS9930
-    uint8_t ptime = 0xff; /* PTIME is always 0xff as recommended in datasheet */
+    uint8_t ptime = 0xff; // PTIME is always 0xff as recommended in datasheet
     if (_reg_write(dev, APDS99XX_REG_PTIME, &ptime, 1) != APDS99XX_OK) {
         return -APDS99XX_ERROR_I2C;
     }
@@ -121,17 +114,17 @@ int apds99xx_init(apds99xx_t *dev, const apds99xx_params_t *params)
         return -APDS99XX_ERROR_I2C;
     }
 
-    /* write the waiting time */
+    // write the waiting time
     uint8_t wtime = 256 - dev->params.wait_steps;
     if (_reg_write(dev, APDS99XX_REG_WTIME, &wtime, 1) != APDS99XX_OK) {
         return -APDS99XX_ERROR_I2C;
     }
 
     reg = 0;
-    _set_reg_bit(&reg, APDS99XX_REG_PON, 1);                           /* power on */
-    _set_reg_bit(&reg, APDS99XX_REG_AEN, dev->params.als_steps != 0);  /* enable ALS */
-    _set_reg_bit(&reg, APDS99XX_REG_PEN, dev->params.prx_pulses != 0); /* enable PRX */
-    _set_reg_bit(&reg, APDS99XX_REG_WEN, dev->params.wait_steps != 0); /* enable Wait */
+    _set_reg_bit(&reg, APDS99XX_REG_PON, 1);                           // power on
+    _set_reg_bit(&reg, APDS99XX_REG_AEN, dev->params.als_steps != 0);  // enable ALS
+    _set_reg_bit(&reg, APDS99XX_REG_PEN, dev->params.prx_pulses != 0); // enable PRX
+    _set_reg_bit(&reg, APDS99XX_REG_WEN, dev->params.wait_steps != 0); // enable Wait
     if (_reg_write(dev, APDS99XX_REG_ENABLE, &reg, 1) != APDS99XX_OK) {
         return -APDS99XX_ERROR_I2C;
     }
@@ -144,8 +137,7 @@ int apds99xx_init(apds99xx_t *dev, const apds99xx_params_t *params)
     return APDS99XX_OK;
 }
 
-int apds99xx_data_ready_als (const apds99xx_t *dev)
-{
+int apds99xx_data_ready_als (const apds99xx_t *dev) {
     assert(dev != NULL);
     DEBUG_DEV("", dev);
 
@@ -157,8 +149,7 @@ int apds99xx_data_ready_als (const apds99xx_t *dev)
     return (reg & APDS99XX_REG_AVALID) ? APDS99XX_OK : -APDS99XX_ERROR_NO_DATA;
 }
 
-int apds99xx_read_als_raw(const apds99xx_t *dev, uint16_t *raw)
-{
+int apds99xx_read_als_raw(const apds99xx_t *dev, uint16_t *raw) {
     assert(dev != NULL);
     assert(raw != NULL);
     DEBUG_DEV("raw=%p", dev, raw);
@@ -169,7 +160,7 @@ int apds99xx_read_als_raw(const apds99xx_t *dev, uint16_t *raw)
         return -APDS99XX_ERROR_RAW_DATA;
     }
 
-    /* data LSB @ lower address */
+    // data LSB @ lower address
     *raw = (data[1] << 8) | data[0];
 
     return APDS99XX_OK;
@@ -178,8 +169,7 @@ int apds99xx_read_als_raw(const apds99xx_t *dev, uint16_t *raw)
 #if MODULE_APDS9900 || MODULE_APDS9901 || MODULE_APDS9930
 static uint8_t apds99xx_gains[] = { 1, 8, 16, 120 };
 
-int apds99xx_read_illuminance(const apds99xx_t *dev, uint16_t *lux)
-{
+int apds99xx_read_illuminance(const apds99xx_t *dev, uint16_t *lux) {
     assert(dev != NULL);
     assert(lux != NULL);
     DEBUG_DEV("lux=%p", dev, lux);
@@ -190,30 +180,30 @@ int apds99xx_read_illuminance(const apds99xx_t *dev, uint16_t *lux)
         return -APDS99XX_ERROR_RAW_DATA;
     }
 
-    /* data LSB @ lower address */
+    // data LSB @ lower address
     uint16_t ch0 = (data[1] << 8) | data[0];
     uint16_t ch1 = (data[3] << 8) | data[2];
 
-    /* define some device dependent constants */
+    // define some device dependent constants
     double df = 52;
 #if MODULE_APDS9900 || MODULE_APDS9901
-    double ga = 0.48;   /* glas or lens attenuation factor */
+    double ga = 0.48;   // glas or lens attenuation factor
     double b = 2.23;
     double c = 0.7;
     double d = 1.42;
 #else
-    /* APDS_9930 */
-    double ga = 0.49;   /* glas or lens attenuation factor */
+    // APDS_9930
+    double ga = 0.49;   // glas or lens attenuation factor
     double b = 1.862;
     double c = 0.746;
     double d = 1.291;
 #endif
 
-    /* algorithm from datasheet */
+    // algorithm from datasheet
     double iac1 = ch0 - b * ch1;
     double iac2 = c * ch0 - d * ch1;
 
-    /* iac = max(iac1, iac2, 0); */
+    // iac = max(iac1, iac2, 0);
     double iac = 0;
     iac = (iac1 > iac) ? iac1 : iac;
     iac = (iac2 > iac) ? iac2 : iac;
@@ -225,32 +215,30 @@ int apds99xx_read_illuminance(const apds99xx_t *dev, uint16_t *lux)
 
     return APDS99XX_OK;
 }
-#endif /* MODULE_APDS9900 || MODULE_APDS9901 || MODULE_APDS9930 */
+#endif // MODULE_APDS9900 || MODULE_APDS9901 || MODULE_APDS9930
 
 #if MODULE_APDS9950 || MODULE_APDS9960
-int apds99xx_read_rgb_raw(const apds99xx_t *dev, apds99xx_rgb_t *rgb)
-{
+int apds99xx_read_rgb_raw(const apds99xx_t *dev, apds99xx_rgb_t *rgb) {
     assert(dev != NULL);
     assert(rgb != NULL);
     DEBUG_DEV("rgb=%p", dev, rgb);
 
-    uint8_t data[6] = { }; /* initialize with 0 */
+    uint8_t data[6] = { }; // initialize with 0
 
     if (_reg_read(dev, APDS99XX_REG_RDATAL, data, 6) != APDS99XX_OK) {
         return -APDS99XX_ERROR_RAW_DATA;
     }
 
-    /* data LSB @ lower address */
+    // data LSB @ lower address
     rgb->val[0] = (data[1] << 8) | data[0];
     rgb->val[1] = (data[3] << 8) | data[2];
     rgb->val[2] = (data[5] << 8) | data[4];
 
     return APDS99XX_OK;
 }
-#endif /* MODULE_APDS9950 || MODULE_APDS9960 */
+#endif // MODULE_APDS9950 || MODULE_APDS9960
 
-int apds99xx_data_ready_prx (const apds99xx_t *dev)
-{
+int apds99xx_data_ready_prx (const apds99xx_t *dev) {
     assert(dev != NULL);
     DEBUG_DEV("", dev);
 
@@ -262,13 +250,12 @@ int apds99xx_data_ready_prx (const apds99xx_t *dev)
     return (reg & APDS99XX_REG_PVALID) ? APDS99XX_OK : -APDS99XX_ERROR_NO_DATA;
 }
 
-int apds99xx_read_prx_raw (const apds99xx_t *dev, uint16_t *prox)
-{
+int apds99xx_read_prx_raw (const apds99xx_t *dev, uint16_t *prox) {
     assert(dev != NULL);
     assert(prox != NULL);
     DEBUG_DEV("prox=%p", dev, prox);
 
-    uint8_t data[2] = { }; /* initialize with 0 */
+    uint8_t data[2] = { }; // initialize with 0
 
 #if MODULE_APDS9900 || MODULE_APDS9901 || MODULE_APDS9930 || MODULE_APDS9950
     if (_reg_read(dev, APDS99XX_REG_PDATAL, data, 2) != APDS99XX_OK) {
@@ -281,32 +268,29 @@ int apds99xx_read_prx_raw (const apds99xx_t *dev, uint16_t *prox)
     }
 #endif
 
-    /* data LSB @ lower address */
+    // data LSB @ lower address
     *prox = (data[1] << 8) | data[0];
 
      return APDS99XX_OK;
 }
 
-int apds99xx_power_down(const apds99xx_t *dev)
-{
+int apds99xx_power_down(const apds99xx_t *dev) {
     return _update_reg(dev, APDS99XX_REG_ENABLE, APDS99XX_REG_PON, 0);
 }
 
-int apds99xx_power_up(const apds99xx_t *dev)
-{
+int apds99xx_power_up(const apds99xx_t *dev) {
     return _update_reg(dev, APDS99XX_REG_ENABLE, APDS99XX_REG_PON, 1);
 }
 
 #if MODULE_APDS99XX_FULL
 
-void _apds99xx_isr(void *arg)
-{
+void _apds99xx_isr(void *arg) {
     apds99xx_t* dev =  (apds99xx_t*)arg;
     unsigned state = irq_disable();
 
     DEBUG_DEV("", dev);
 
-    /* call registered interrupt service routine */
+    // call registered interrupt service routine
     if (dev->isr) {
         dev->isr(dev->isr_arg);
     }
@@ -314,24 +298,23 @@ void _apds99xx_isr(void *arg)
     irq_restore (state);
 }
 
-int apds99xx_int_source(apds99xx_t *dev, apds99xx_int_source_t* source)
-{
+int apds99xx_int_source(apds99xx_t *dev, apds99xx_int_source_t* source) {
     assert(dev != NULL);
     assert(source != NULL);
     DEBUG_DEV("", dev);
 
     uint8_t reg;
 
-    /* get interrupt status */
+    // get interrupt status
     if (_reg_read(dev, APDS99XX_REG_STATUS, &reg, 1) != APDS99XX_OK) {
         return -APDS99XX_ERROR_I2C;
     }
 
-    /* set triggered interrupts */
+    // set triggered interrupts
     source->als_int = reg & APDS99XX_REG_AINT;
     source->prx_int = reg & APDS99XX_REG_PINT;
 
-    /* clear interrupt status */
+    // clear interrupt status
     if (_reg_write(dev, APDS99XX_REG_CLI_CMD, 0, 0) != APDS99XX_OK) {
         return -APDS99XX_ERROR_I2C;
     }
@@ -340,8 +323,7 @@ int apds99xx_int_source(apds99xx_t *dev, apds99xx_int_source_t* source)
 }
 
 int apds99xx_int_config(apds99xx_t *dev, apds99xx_int_config_t* cfg,
-                        apds99xx_isr_t isr, void *isr_arg)
-{
+                        apds99xx_isr_t isr, void *isr_arg) {
     assert(dev != NULL);
     assert(cfg != NULL);
     assert(gpio_is_valid(dev->params.int_pin));
@@ -356,11 +338,11 @@ int apds99xx_int_config(apds99xx_t *dev, apds99xx_int_config_t* cfg,
                       _apds99xx_isr, dev);
     }
 
-    /* LSB @ lower address */
+    // LSB @ lower address
     uint8_t ailtx[2] = { cfg->als_thresh_low & 0xff, cfg->als_thresh_low >> 8 };
     uint8_t aihtx[2] = { cfg->als_thresh_high & 0xff, cfg->als_thresh_high >> 8 };
 #if MODULE_APDS9960
-    /* for APDS9960 the one byte thresholds is used for APDS99XX_REG_PIxTH */
+    // for APDS9960 the one byte thresholds is used for APDS99XX_REG_PIxTH
     uint8_t pilth = cfg->prx_thresh_low & 0xff;
     uint8_t pihth = cfg->prx_thresh_high & 0xff;
 #else
@@ -392,20 +374,17 @@ int apds99xx_int_config(apds99xx_t *dev, apds99xx_int_config_t* cfg,
     return APDS99XX_OK;
 }
 
-#endif /* MODULE_APDS99XX_FULL */
+#endif // MODULE_APDS99XX_FULL
 
-/** Functions for internal use only */
+/// Functions for internal use only
 
-/**
- * @brief   Check the chip ID to test whether sensor is available
- */
-static int _is_available(const apds99xx_t *dev)
-{
+/// @brief   Check the chip ID to test whether sensor is available
+static int _is_available(const apds99xx_t *dev) {
     DEBUG_DEV("", dev);
 
     uint8_t reg;
 
-    /* read the chip id from APDS99XX_REG_ID_X */
+    // read the chip id from APDS99XX_REG_ID_X
     if (_reg_read(dev, APDS99XX_REG_ID, &reg, 1) != APDS99XX_OK) {
         return -APDS99XX_ERROR_I2C;
     }
@@ -419,8 +398,7 @@ static int _is_available(const apds99xx_t *dev)
     return APDS99XX_OK;
 }
 
-static void _set_reg_bit(uint8_t *byte, uint8_t mask, uint8_t bit)
-{
+static void _set_reg_bit(uint8_t *byte, uint8_t mask, uint8_t bit) {
     assert(byte != NULL);
 
     uint8_t shift = 0;
@@ -430,8 +408,7 @@ static void _set_reg_bit(uint8_t *byte, uint8_t mask, uint8_t bit)
     *byte = ((*byte & ~mask) | ((bit << shift) & mask));
 }
 
-static int _update_reg(const apds99xx_t *dev, uint8_t reg, uint8_t mask, uint8_t val)
-{
+static int _update_reg(const apds99xx_t *dev, uint8_t reg, uint8_t mask, uint8_t val) {
     DEBUG_DEV("reg=%02x mask=%02x val=%02x", dev, reg, mask, val);
 
     uint8_t reg_val;
@@ -441,15 +418,15 @@ static int _update_reg(const apds99xx_t *dev, uint8_t reg, uint8_t mask, uint8_t
         shift++;
     }
 
-    /* read current register value */
+    // read current register value
     if (_reg_read(dev, reg, &reg_val, 1) != APDS99XX_OK) {
         return -APDS99XX_ERROR_I2C;
     }
 
-    /* set masked bits to the given value  */
+    // set masked bits to the given value
     reg_val = (reg_val & ~mask) | ((val << shift) & mask);
 
-    /* write back new register value */
+    // write back new register value
     if (_reg_write(dev, reg, &reg_val, 1) != APDS99XX_OK) {
         return -APDS99XX_ERROR_I2C;
     }
@@ -457,8 +434,7 @@ static int _update_reg(const apds99xx_t *dev, uint8_t reg, uint8_t mask, uint8_t
     return APDS99XX_OK;
 }
 
-static int _reg_read(const apds99xx_t *dev, uint8_t reg, uint8_t *data, uint16_t len)
-{
+static int _reg_read(const apds99xx_t *dev, uint8_t reg, uint8_t *data, uint16_t len) {
     assert(dev != NULL);
     assert(data != NULL);
     assert(len != 0);
@@ -486,8 +462,7 @@ static int _reg_read(const apds99xx_t *dev, uint8_t reg, uint8_t *data, uint16_t
     return res;
 }
 
-static int _reg_write(const apds99xx_t *dev, uint8_t reg, uint8_t *data, uint16_t len)
-{
+static int _reg_write(const apds99xx_t *dev, uint8_t reg, uint8_t *data, uint16_t len) {
     assert(dev != NULL);
 
     if (IS_ACTIVE(ENABLE_DEBUG)) {

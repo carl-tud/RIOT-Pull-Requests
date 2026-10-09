@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -22,9 +18,8 @@ const uint8_t ieee802154_addr_bcast[IEEE802154_ADDR_BCAST_LEN] = IEEE802154_ADDR
 size_t ieee802154_set_frame_hdr(uint8_t *buf, const uint8_t *src, size_t src_len,
                                 const uint8_t *dst, size_t dst_len,
                                 le_uint16_t src_pan, le_uint16_t dst_pan,
-                                uint8_t flags, uint8_t seq)
-{
-    int pos = 3;    /* 0-1: FCS, 2: seq */
+                                uint8_t flags, uint8_t seq) {
+    int pos = 3;    // 0-1: FCS, 2: seq
     uint8_t type = (flags & IEEE802154_FCF_TYPE_MASK);
 
     buf[0] = flags;
@@ -35,13 +30,13 @@ size_t ieee802154_set_frame_hdr(uint8_t *buf, const uint8_t *src, size_t src_len
         return 0;
     }
 
-    /* Frame type is not beacon or ACK, but both address modes are zero */
+    // Frame type is not beacon or ACK, but both address modes are zero
     if ((type != IEEE802154_FCF_TYPE_BEACON) && (type != IEEE802154_FCF_TYPE_ACK) &&
         (src_len == 0) && (dst_len == 0)) {
         return 0;
     }
 
-    /* set sequence number */
+    // set sequence number
     buf[2] = seq;
 
     if (dst_len != 0) {
@@ -49,7 +44,7 @@ size_t ieee802154_set_frame_hdr(uint8_t *buf, const uint8_t *src, size_t src_len
         buf[pos++] = dst_pan.u8[1];
     }
 
-    /* fill in destination address */
+    // fill in destination address
     switch (dst_len) {
         case 0:
             buf[1] |= IEEE802154_FCF_DST_ADDR_VOID;
@@ -57,7 +52,7 @@ size_t ieee802154_set_frame_hdr(uint8_t *buf, const uint8_t *src, size_t src_len
         case 2:
             if (memcmp(dst, ieee802154_addr_bcast,
                        sizeof(ieee802154_addr_bcast)) == 0) {
-                /* do not request ACKs for broadcast address */
+                // do not request ACKs for broadcast address
                 buf[0] &= ~IEEE802154_FCF_ACK_REQ;
             }
             buf[1] |= IEEE802154_FCF_DST_ADDR_SHORT;
@@ -74,19 +69,19 @@ size_t ieee802154_set_frame_hdr(uint8_t *buf, const uint8_t *src, size_t src_len
             return 0;
     }
 
-    /* fill in source PAN ID (if applicable) */
+    // fill in source PAN ID (if applicable)
     if (src_len != 0) {
         if ((dst_len != 0) && (src_pan.u16 == dst_pan.u16)) {
             buf[0] |= IEEE802154_FCF_PAN_COMP;
         }
         else {
-            /* (little endian) */
+            // (little endian)
             buf[pos++] = src_pan.u8[0];
             buf[pos++] = src_pan.u8[1];
         }
     }
 
-    /* fill in source address */
+    // fill in source address
     switch (src_len) {
         case 0:
             buf[1] |= IEEE802154_FCF_SRC_ADDR_VOID;
@@ -106,45 +101,44 @@ size_t ieee802154_set_frame_hdr(uint8_t *buf, const uint8_t *src, size_t src_len
             return 0;
     }
 
-    /* return actual header length */
+    // return actual header length
     return pos;
 }
 
-size_t ieee802154_get_frame_hdr_len(const uint8_t *mhr)
-{
-    /* TODO: include security header implications */
+size_t ieee802154_get_frame_hdr_len(const uint8_t *mhr) {
+    // TODO: include security header implications
     uint8_t tmp, has_dst = 0;
-    size_t len = 3; /* 2 byte FCF, 1 byte sequence number */
+    size_t len = 3; // 2 byte FCF, 1 byte sequence number
 
     tmp = (mhr[0] & IEEE802154_FCF_TYPE_MASK);
     if (tmp == IEEE802154_FCF_TYPE_ACK) {
-        /* ACK contains no other fields */
+        // ACK contains no other fields
         return len;
     } else if (tmp != IEEE802154_FCF_TYPE_BEACON) {
-        /* Beacon contains no dst address */
+        // Beacon contains no dst address
         tmp = (mhr[1] & IEEE802154_FCF_DST_ADDR_MASK);
         if (tmp == IEEE802154_FCF_DST_ADDR_SHORT) {
-            len += 4;   /* 2 byte dst PAN + 2 byte dst short address */
+            len += 4;   // 2 byte dst PAN + 2 byte dst short address
             has_dst = 1;
         }
         else if (tmp == IEEE802154_FCF_DST_ADDR_LONG) {
-            len += 10;  /* 2 byte dst PAN + 8 byte dst long address */
+            len += 10;  // 2 byte dst PAN + 8 byte dst long address
             has_dst = 1;
         }
         else if (tmp != IEEE802154_FCF_DST_ADDR_VOID) {
             return 0;
         }
         else if (mhr[0] & IEEE802154_FCF_PAN_COMP) {
-            /* PAN compression, but no destination address => illegal state */
+            // PAN compression, but no destination address => illegal state
             return 0;
         }
     } else if (mhr[0] & IEEE802154_FCF_PAN_COMP) {
-        /* Beacon can't use PAN compression */
+        // Beacon can't use PAN compression
         return 0;
     }
     tmp = (mhr[1] & IEEE802154_FCF_SRC_ADDR_MASK);
     if (tmp == IEEE802154_FCF_SRC_ADDR_VOID) {
-        /* One of dst or src address must be present */
+        // One of dst or src address must be present
         return has_dst ? len : 0;
     }
     else {
@@ -161,8 +155,7 @@ size_t ieee802154_get_frame_hdr_len(const uint8_t *mhr)
     return 0;
 }
 
-uint8_t ieee802154_get_dst_len(const uint8_t *mhr)
-{
+uint8_t ieee802154_get_dst_len(const uint8_t *mhr) {
     uint8_t tmp = (mhr[1] & IEEE802154_FCF_DST_ADDR_MASK);
     if (tmp == IEEE802154_FCF_DST_ADDR_SHORT) {
         return IEEE802154_SHORT_ADDRESS_LEN;
@@ -173,8 +166,7 @@ uint8_t ieee802154_get_dst_len(const uint8_t *mhr)
     return 0;
 }
 
-uint8_t ieee802154_get_src_len(const uint8_t *mhr)
-{
+uint8_t ieee802154_get_src_len(const uint8_t *mhr) {
     uint8_t tmp = (mhr[1] & IEEE802154_FCF_SRC_ADDR_MASK);
     if (tmp == IEEE802154_FCF_SRC_ADDR_SHORT) {
         return IEEE802154_SHORT_ADDRESS_LEN;
@@ -185,78 +177,73 @@ uint8_t ieee802154_get_src_len(const uint8_t *mhr)
     return 0;
 }
 
-const uint8_t *ieee802154_get_dst_ptr(const uint8_t *mhr)
-{
-    size_t offset = 3; /* FCF: 0-1, Seq: 2 */
-    /* Destination PAN must be present for 2003/2006 standard */
+const uint8_t *ieee802154_get_dst_ptr(const uint8_t *mhr) {
+    size_t offset = 3; // FCF: 0-1, Seq: 2
+    // Destination PAN must be present for 2003/2006 standard
     return (mhr[1] & IEEE802154_FCF_DST_ADDR_MASK) != IEEE802154_FCF_DST_ADDR_RESV
-        ? &mhr[offset + 2] : NULL; /* skip src PAN */
+        ? &mhr[offset + 2] : NULL; // skip src PAN
 }
 
-const uint8_t *ieee802154_get_src_ptr(const uint8_t *mhr)
-{
-    size_t offset = 3; /* FCF: 0-1, Seq: 2 */
+const uint8_t *ieee802154_get_src_ptr(const uint8_t *mhr) {
+    size_t offset = 3; // FCF: 0-1, Seq: 2
     uint8_t tmp = mhr[1] & IEEE802154_FCF_DST_ADDR_MASK;
     if (tmp == IEEE802154_FCF_DST_ADDR_SHORT) {
-        offset += 4; /* skip destination short address and PAN ID */
+        offset += 4; // skip destination short address and PAN ID
     }
     else if (tmp == IEEE802154_FCF_DST_ADDR_LONG) {
-        offset += 10; /* skip destination long address and PAN ID */
+        offset += 10; // skip destination long address and PAN ID
     }
     else if (tmp != IEEE802154_FCF_DST_ADDR_VOID) {
-        return NULL; /* reserved */
+        return NULL; // reserved
     }
     else if (mhr[0] & IEEE802154_FCF_PAN_COMP) {
-        return NULL; /* PAN compression, but no destination address => illegal state */
+        return NULL; // PAN compression, but no destination address => illegal state
     }
     if (!(mhr[0] & IEEE802154_FCF_PAN_COMP)) {
-        offset += 2; /* skip source PAN */
+        offset += 2; // skip source PAN
     }
     return (mhr[1] & IEEE802154_FCF_SRC_ADDR_MASK) != IEEE802154_FCF_SRC_ADDR_RESV
         ? &mhr[offset] : NULL;
 }
 
-const uint8_t *ieee802154_get_dst_pan_ptr(const uint8_t *mhr)
-{
-    size_t offset = 3; /* FCF: 0-1, Seq: 2 */
-    /* Destination PAN must be present for 2003/2006 standard */
+const uint8_t *ieee802154_get_dst_pan_ptr(const uint8_t *mhr) {
+    size_t offset = 3; // FCF: 0-1, Seq: 2
+    // Destination PAN must be present for 2003/2006 standard
     return ieee802154_get_dst_len(mhr) ? &mhr[offset] : NULL;
 }
 
-const uint8_t *ieee802154_get_src_pan_ptr(const uint8_t *mhr)
-{
-    size_t offset = 3; /* FCF: 0-1, Seq: 2 */
+const uint8_t *ieee802154_get_src_pan_ptr(const uint8_t *mhr) {
+    size_t offset = 3; // FCF: 0-1, Seq: 2
     uint8_t tmp = mhr[1] & IEEE802154_FCF_DST_ADDR_MASK;
-    /* skip destination address */
+    // skip destination address
     if (tmp == IEEE802154_FCF_DST_ADDR_SHORT) {
-        offset += 4; /* skip destination short address and PAN ID */
+        offset += 4; // skip destination short address and PAN ID
     }
     else if (tmp == IEEE802154_FCF_DST_ADDR_LONG) {
-        offset += 10; /* skip destination long address and PAN ID */
+        offset += 10; // skip destination long address and PAN ID
     }
     else if (tmp != IEEE802154_FCF_DST_ADDR_VOID) {
-        return NULL; /* reserved */
+        return NULL; // reserved
     }
     else if (mhr[0] & IEEE802154_FCF_PAN_COMP) {
-        return NULL; /* PAN compression, but no destination address => illegal state */
+        return NULL; // PAN compression, but no destination address => illegal state
     }
     if (ieee802154_get_src_len(mhr)) {
         if (!(mhr[0] & IEEE802154_FCF_PAN_COMP)) {
             return &mhr[offset];
         }
     }
-    /* Note: Test checks that destination PAN is returned, if source address is void */
+    // Note: Test checks that destination PAN is returned, if source address is void
     return ieee802154_get_dst_pan_ptr(mhr);
 }
 
-int ieee802154_get_src(const uint8_t *mhr, uint8_t *src, le_uint16_t *src_pan)
-{
+int ieee802154_get_src(const uint8_t *mhr, uint8_t *src, le_uint16_t *src_pan) {
     assert(src != NULL && src_pan != NULL);
     const uint8_t *src_addr_ptr = ieee802154_get_src_ptr(mhr);
     const uint8_t *src_pan_ptr  = ieee802154_get_src_pan_ptr(mhr);
     size_t len = ieee802154_get_src_len(mhr);
     if (!src_addr_ptr) {
-        return -EINVAL; /* No source address */
+        return -EINVAL; // No source address
     }
     if (src_pan_ptr) {
         memcpy(src_pan->u8, src_pan_ptr, sizeof(src_pan->u8));
@@ -265,14 +252,13 @@ int ieee802154_get_src(const uint8_t *mhr, uint8_t *src, le_uint16_t *src_pan)
     return (int)len;
 }
 
-int ieee802154_get_dst(const uint8_t *mhr, uint8_t *dst, le_uint16_t *dst_pan)
-{
+int ieee802154_get_dst(const uint8_t *mhr, uint8_t *dst, le_uint16_t *dst_pan) {
     assert(dst != NULL && dst_pan != NULL);
     const uint8_t *dst_addr_ptr = ieee802154_get_dst_ptr(mhr);
     const uint8_t *dst_pan_ptr  = ieee802154_get_dst_pan_ptr(mhr);
     size_t len = ieee802154_get_dst_len(mhr);
     if (!dst_addr_ptr) {
-        return -EINVAL; /* No destination address */
+        return -EINVAL; // No destination address
     }
     if (dst_pan_ptr) {
         memcpy(dst_pan->u8, dst_pan_ptr, sizeof(dst_pan->u8));
@@ -282,24 +268,23 @@ int ieee802154_get_dst(const uint8_t *mhr, uint8_t *dst, le_uint16_t *dst_pan)
 }
 
 int ieee802154_dst_filter(const uint8_t *mhr, uint16_t pan,
-                          network_uint16_t short_addr, const eui64_t *ext_addr)
-{
+                          network_uint16_t short_addr, const eui64_t *ext_addr) {
     uint8_t dst_addr[IEEE802154_LONG_ADDRESS_LEN];
     le_uint16_t dst_pan = { 0 };
     uint8_t pan_bcast[] = IEEE802154_PANID_BCAST;
 
     int addr_len = ieee802154_get_dst(mhr, dst_addr, &dst_pan);
     if (addr_len <= 0) {
-        return 1; /* No destination address */
+        return 1; // No destination address
     }
 
-    /* filter PAN ID */
+    // filter PAN ID
     if ((memcmp(pan_bcast, dst_pan.u8, 2) != 0) &&
         (memcmp(&pan, dst_pan.u8, 2) != 0)) {
         return 1;
     }
 
-    /* check destination address */
+    // check destination address
     if (((addr_len == IEEE802154_SHORT_ADDRESS_LEN) &&
           (memcmp(&short_addr.u8, dst_addr, addr_len) == 0 ||
            memcmp(ieee802154_addr_bcast, dst_addr, addr_len) == 0)) ||
@@ -311,4 +296,4 @@ int ieee802154_dst_filter(const uint8_t *mhr, uint16_t pan,
     return 1;
 }
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Oliver Hahm <oliver.hahm@inria.fr>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Oliver Hahm <oliver.hahm@inria.fr>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     unittests
- * @{
- *
- * @file
- * @brief       Test cases for the HMAC-SHA-1 implementation
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- *
- * @}
- */
+/// @ingroup     unittests
+/// @{
+///
+/// @file
+/// @brief       Test cases for the HMAC-SHA-1 implementation
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -72,33 +68,30 @@ static const char *_resultarray_hmac[TEST_CASES_HMAC_NUM] =
 };
 
 static int calc_and_compare_hash_hmac(const char *str, const char *expected,
-                                      const uint8_t *key, size_t key_len)
-{
+                                      const uint8_t *key, size_t key_len) {
     sha1_context ctx;
 
     uint8_t hash[SHA1_DIGEST_LENGTH];
     char tmp[(3 * SHA1_DIGEST_LENGTH) + 1];
 
-    /* calculate hash */
+    // calculate hash
     sha1_init_hmac(&ctx, key, key_len);
     sha1_update(&ctx, (unsigned char*) str, strlen(str));
 
     sha1_final_hmac(&ctx, hash);
-    /* copy hash to string */
+    // copy hash to string
     for (size_t i = 0; i < SHA1_DIGEST_LENGTH; i++) {
         sprintf(&(tmp[i * 3]), "%02X ", (unsigned) hash[i]);
     }
     tmp[SHA1_DIGEST_LENGTH* 2] = '\0';
 
-    /* compare with result string */
+    // compare with result string
     return strncmp(tmp, expected, strlen((char*) tmp));
 }
 
-/* test cases from RFC 2202
- * https://tools.ietf.org/html/rfc2202
- */
-static void test_hashes_sha1_hmac(void)
-{
+// test cases from RFC 2202
+// https://tools.ietf.org/html/rfc2202
+static void test_hashes_sha1_hmac(void) {
     TEST_ASSERT(calc_and_compare_hash_hmac(TEST1_HMAC, _resultarray_hmac[0],
                                            _hmac_key1, sizeof(_hmac_key1)) == 0);
     TEST_ASSERT(calc_and_compare_hash_hmac(TEST2_HMAC, _resultarray_hmac[1],
@@ -111,8 +104,7 @@ static void test_hashes_sha1_hmac(void)
                                            _hmac_key5, sizeof(_hmac_key5)) == 0);
 }
 
-static void test_hashes_sha1_hmac_wipe(void)
-{
+static void test_hashes_sha1_hmac_wipe(void) {
     sha1_context ctx;
     uint8_t digest[SHA1_DIGEST_LENGTH];
     static const uint8_t zeros_key[SHA1_BLOCK_LENGTH];
@@ -126,8 +118,7 @@ static void test_hashes_sha1_hmac_wipe(void)
     TEST_ASSERT(memcmp(ctx.inner_hash, zeros_hash, sizeof(ctx.inner_hash)) == 0);
 }
 
-Test *tests_hashes_sha1_hmac_tests(void)
-{
+Test *tests_hashes_sha1_hmac_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_hashes_sha1_hmac),
         new_TestFixture(test_hashes_sha1_hmac_wipe),

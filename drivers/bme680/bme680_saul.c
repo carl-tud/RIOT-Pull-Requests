@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_bme680
- * @brief       SAUL adaption for BME680 devices
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- */
+/// @ingroup     drivers_bme680
+/// @brief       SAUL adaption for BME680 devices
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
 
 #include <errno.h>
 #include <stdio.h>
@@ -22,12 +18,10 @@
 
 extern bme680_t bme680_devs_saul[BME680_NUMOF];
 
-/**
- * Temperature, pressure, humidity and gas sensor values are fetched by separate
- * saul functions. To avoid multiple waiting for the sensor, we read all sensor
- * values once, if necessary, and store them in local variables to provide them
- * in the separate saul read functions.
- */
+/// Temperature, pressure, humidity and gas sensor values are fetched by separate
+/// saul functions. To avoid multiple waiting for the sensor, we read all sensor
+/// values once, if necessary, and store them in local variables to provide them
+/// in the separate saul read functions.
 static bool _temp_valid[BME680_NUMOF] = { false };
 static bool _press_valid[BME680_NUMOF] = { false };
 static bool _hum_valid[BME680_NUMOF] = { false };
@@ -37,12 +31,9 @@ static int16_t _press[BME680_NUMOF];
 static int16_t _hum[BME680_NUMOF];
 static uint32_t _gas[BME680_NUMOF];
 
-static unsigned _dev2index (const bme680_t *dev)
-{
-    /*
-     * returns the index of the device in bme680_devs_saul[] or BME680_NUMOF
-     * if not found
-     */
+static unsigned _dev2index (const bme680_t *dev) {
+    // returns the index of the device in bme680_devs_saul[] or BME680_NUMOF
+    // if not found
     for (unsigned i = 0; i < BME680_NUMOF; i++) {
         if (dev == &bme680_devs_saul[i]) {
             return i;
@@ -51,9 +42,8 @@ static unsigned _dev2index (const bme680_t *dev)
     return BME680_NUMOF;
 }
 
-static int _read(int dev)
-{
-    /* measure and read sensor values */
+static int _read(int dev) {
+    // measure and read sensor values
     int res;
     if ((res = bme680_force_measurement(&bme680_devs_saul[dev])) != BME680_OK) {
         return res;
@@ -80,7 +70,7 @@ static int _read(int dev)
 #endif
     _gas[dev] = (data.status & BME680_GASM_VALID_MSK) ? data.gas_resistance : 0;
 
-    /* mark sensor values as valid */
+    // mark sensor values as valid
     _temp_valid[dev] = true;
     _press_valid[dev] = true;
     _hum_valid[dev] = true;
@@ -88,18 +78,17 @@ static int _read(int dev)
     return BME680_OK;
 }
 
-static int read_temp(const void *dev, phydat_t *data)
-{
-    /* find the device index */
+static int read_temp(const void *dev, phydat_t *data) {
+    // find the device index
     unsigned dev_index = _dev2index((const bme680_t *)dev);
     if (dev_index == BME680_NUMOF) {
-        /* return with error if device index could not be found */
+        // return with error if device index could not be found
         return -ECANCELED;
     }
 
-    /* either local variable is valid or fetching it was successful */
+    // either local variable is valid or fetching it was successful
     if (_temp_valid[dev_index] || _read(dev_index) == BME680_OK) {
-        /* mark local variable as invalid */
+        // mark local variable as invalid
         _temp_valid[dev_index] = false;
 
         data->val[0] = _temp[dev_index];
@@ -110,18 +99,17 @@ static int read_temp(const void *dev, phydat_t *data)
     return -ECANCELED;
 }
 
-static int read_press(const void *dev, phydat_t *data)
-{
-    /* find the device index */
+static int read_press(const void *dev, phydat_t *data) {
+    // find the device index
     unsigned dev_index = _dev2index((const bme680_t *)dev);
     if (dev_index == BME680_NUMOF) {
-        /* return with error if device index could not be found */
+        // return with error if device index could not be found
         return -ECANCELED;
     }
 
-    /* either local variable is valid or fetching it was successful */
+    // either local variable is valid or fetching it was successful
     if (_press_valid[dev_index] || _read(dev_index) == BME680_OK) {
-        /* mark local variable as invalid */
+        // mark local variable as invalid
         _press_valid[dev_index] = false;
 
         data->val[0] = _press[dev_index];
@@ -132,18 +120,17 @@ static int read_press(const void *dev, phydat_t *data)
     return -ECANCELED;
 }
 
-static int read_hum(const void *dev, phydat_t *data)
-{
-    /* find the device index */
+static int read_hum(const void *dev, phydat_t *data) {
+    // find the device index
     unsigned dev_index = _dev2index((const bme680_t *)dev);
     if (dev_index == BME680_NUMOF) {
-        /* return with error if device index could not be found */
+        // return with error if device index could not be found
         return -ECANCELED;
     }
 
-    /* either local variable is valid or fetching it was successful */
+    // either local variable is valid or fetching it was successful
     if (_hum_valid[dev_index] || _read(dev_index) == BME680_OK) {
-        /* mark local variable as invalid */
+        // mark local variable as invalid
         _hum_valid[dev_index] = false;
 
         data->val[0] = _hum[dev_index];
@@ -154,18 +141,17 @@ static int read_hum(const void *dev, phydat_t *data)
     return -ECANCELED;
 }
 
-static int read_gas(const void *dev, phydat_t *data)
-{
-    /* find the device index */
+static int read_gas(const void *dev, phydat_t *data) {
+    // find the device index
     unsigned dev_index = _dev2index((const bme680_t *)dev);
     if (dev_index == BME680_NUMOF) {
-        /* return with error if device index could not be found */
+        // return with error if device index could not be found
         return -ECANCELED;
     }
 
-    /* either local variable is valid or fetching it was successful */
+    // either local variable is valid or fetching it was successful
     if (_gas_valid[dev_index] || _read(dev_index) == BME680_OK) {
-        /* mark local variable as invalid */
+        // mark local variable as invalid
         _gas_valid[dev_index] = false;
 
         if (_gas[dev_index] > INT16_MAX) {

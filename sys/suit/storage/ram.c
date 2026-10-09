@@ -1,23 +1,19 @@
-/*
- * Copyright (C) 2020 Koen Zandberg
- *               2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Koen Zandberg
+//               2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_suit_storage
- * @{
- *
- * @file
- * @brief       SUIT ram storage module implementation
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     sys_suit_storage
+/// @{
+///
+/// @file
+/// @brief       SUIT ram storage module implementation
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 #include <string.h>
 #include <inttypes.h>
 
@@ -32,39 +28,35 @@
 
 XFA_USE(suit_storage_t, suit_storage_reg);
 
-static inline suit_storage_ram_t *_get_ram(suit_storage_t *storage)
-{
+static inline suit_storage_ram_t *_get_ram(suit_storage_t *storage) {
     return container_of(storage, suit_storage_ram_t, storage);
 }
 
 static inline const suit_storage_ram_t *_get_ram_const(
-    const suit_storage_t *storage)
-{
+    const suit_storage_t *storage) {
     return container_of(storage, suit_storage_ram_t, storage);
 }
 
 static inline suit_storage_ram_region_t *_get_active_region(
-    suit_storage_ram_t *ram)
-{
+    suit_storage_ram_t *ram) {
     return &ram->regions[ram->active_region];
 }
 
-static bool _get_region_by_string(const char *location, uint32_t *val)
-{
-    /* Matching on .ram.### */
+static bool _get_region_by_string(const char *location, uint32_t *val) {
+    // Matching on .ram.###
     static const char prefix[] = CONFIG_SUIT_STORAGE_RAM_LOCATION_PREFIX;
     static const size_t prefix_len = sizeof(prefix) - 1;
 
-    /* Check for prefix */
+    // Check for prefix
     if (strncmp(prefix, location, prefix_len) == 0 &&
         location[prefix_len] != '\n') {
-        /* Advance to the number */
+        // Advance to the number
         location += prefix_len;
-        /* Check if the rest of the string is a number */
+        // Check if the rest of the string is a number
         if (fmt_is_number(location)) {
-            /* grab the number */
+            // grab the number
             *val = scn_u32_dec(location, 5);
-            /* Number must be smaller than the number of regions */
+            // Number must be smaller than the number of regions
             if (*val < CONFIG_SUIT_STORAGE_RAM_REGIONS) {
                 return true;
             }
@@ -74,20 +66,18 @@ static bool _get_region_by_string(const char *location, uint32_t *val)
     return false;
 }
 
-static int _ram_init(suit_storage_t *storage)
-{
+static int _ram_init(suit_storage_t *storage) {
 
     suit_storage_ram_t *ram = _get_ram(storage);
 
-    /* Clear the ram regions */
+    // Clear the ram regions
     memset(ram->regions, 0,
            sizeof(suit_storage_ram_region_t) * CONFIG_SUIT_STORAGE_RAM_REGIONS);
     return SUIT_OK;
 }
 
 static int _ram_start(suit_storage_t *storage, const suit_manifest_t *manifest,
-                      size_t len)
-{
+                      size_t len) {
     (void)manifest;
     suit_storage_ram_t *ram = _get_ram(storage);
     suit_storage_ram_region_t *region = _get_active_region(ram);
@@ -101,8 +91,7 @@ static int _ram_start(suit_storage_t *storage, const suit_manifest_t *manifest,
 }
 
 static int _ram_write(suit_storage_t *storage, const suit_manifest_t *manifest,
-                      const uint8_t *buf, size_t offset, size_t len)
-{
+                      const uint8_t *buf, size_t offset, size_t len) {
     (void)manifest;
     suit_storage_ram_t *ram = _get_ram(storage);
     suit_storage_ram_region_t *region = _get_active_region(ram);
@@ -116,21 +105,18 @@ static int _ram_write(suit_storage_t *storage, const suit_manifest_t *manifest,
     return SUIT_OK;
 }
 
-static int _ram_finish(suit_storage_t *storage, const suit_manifest_t *manifest)
-{
+static int _ram_finish(suit_storage_t *storage, const suit_manifest_t *manifest) {
     (void)storage;
     (void)manifest;
     return SUIT_OK;
 }
 
-static int _ram_install(suit_storage_t *storage, const suit_manifest_t *manifest)
-{
+static int _ram_install(suit_storage_t *storage, const suit_manifest_t *manifest) {
     suit_storage_set_seq_no(storage, manifest->seq_number);
     return SUIT_OK;
 }
 
-static int _ram_erase(suit_storage_t *storage)
-{
+static int _ram_erase(suit_storage_t *storage) {
     suit_storage_ram_t *ram = _get_ram(storage);
     suit_storage_ram_region_t *region = _get_active_region(ram);
 
@@ -139,8 +125,7 @@ static int _ram_erase(suit_storage_t *storage)
 }
 
 static int _ram_read(suit_storage_t *storage, uint8_t *buf, size_t offset,
-                     size_t len)
-{
+                     size_t len) {
     suit_storage_ram_t *ram = _get_ram(storage);
     suit_storage_ram_region_t *region = _get_active_region(ram);
 
@@ -154,8 +139,7 @@ static int _ram_read(suit_storage_t *storage, uint8_t *buf, size_t offset,
 }
 
 static int _ram_read_ptr(suit_storage_t *storage,
-                         const uint8_t **buf, size_t *len)
-{
+                         const uint8_t **buf, size_t *len) {
     suit_storage_ram_t *ram = _get_ram(storage);
     suit_storage_ram_region_t *region = _get_active_region(ram);
 
@@ -165,8 +149,7 @@ static int _ram_read_ptr(suit_storage_t *storage,
 }
 
 static bool _ram_has_location(const suit_storage_t *storage,
-                              const char *location)
-{
+                              const char *location) {
     (void)storage;
     uint32_t val;
 
@@ -174,8 +157,7 @@ static bool _ram_has_location(const suit_storage_t *storage,
 }
 
 static int _ram_set_active_location(suit_storage_t *storage,
-                                    const char *location)
-{
+                                    const char *location) {
     suit_storage_ram_t *ram = _get_ram(storage);
     uint32_t region = 0;
 
@@ -187,8 +169,7 @@ static int _ram_set_active_location(suit_storage_t *storage,
     return SUIT_OK;
 }
 
-static int _ram_get_seq_no(const suit_storage_t *storage, uint32_t *seq_no)
-{
+static int _ram_get_seq_no(const suit_storage_t *storage, uint32_t *seq_no) {
     const suit_storage_ram_t *ram = _get_ram_const(storage);
 
     *seq_no = ram->sequence_no;
@@ -196,8 +177,7 @@ static int _ram_get_seq_no(const suit_storage_t *storage, uint32_t *seq_no)
     return SUIT_OK;
 }
 
-static int _ram_set_seq_no(suit_storage_t *storage, uint32_t seq_no)
-{
+static int _ram_set_seq_no(suit_storage_t *storage, uint32_t seq_no) {
     suit_storage_ram_t *ram = _get_ram(storage);
 
     if (ram->sequence_no < seq_no) {

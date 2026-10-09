@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2024 BISSELL Homecare, Inc.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 BISSELL Homecare, Inc.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Implementation of STM32 clock configuration for the C0 family
- *
- * @author      Jason Parker <Jason.Parker@bissell.com>
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Implementation of STM32 clock configuration for the C0 family
+///
+/// @author      Jason Parker <Jason.Parker@bissell.com>
+/// @}
 
 #include "cpu.h"
 #include "stmclk.h"
@@ -54,35 +50,35 @@
 #elif CONFIG_CLOCK_APB1_DIV == 16
 #define CLOCK_APB1_DIV              (RCC_CFGR_PPRE_2 | RCC_CFGR_PPRE_1 | RCC_CFGR_PPRE_0)
 #endif
-#endif /* CPU_FAM_STM32C0 */
+#endif // CPU_FAM_STM32C0
 
-/* Configure MCO */
+// Configure MCO
 #ifndef CONFIG_CLOCK_ENABLE_MCO
-#define CONFIG_CLOCK_ENABLE_MCO     0   /* Don't enable MCO by default */
+#define CONFIG_CLOCK_ENABLE_MCO     0   // Don't enable MCO by default
 #endif
 
-/* Configure the MCO clock source: options are HSE, HSI (default), LSE, LSI or SYSCLK*/
+// Configure the MCO clock source: options are HSE, HSI (default), LSE, LSI or SYSCLK
 #define CONFIG_CLOCK_MCO_USE_PLLCLK 0   // PLL not supported in STM32C0
 
 #ifndef CONFIG_CLOCK_MCO_USE_HSE
 #define CONFIG_CLOCK_MCO_USE_HSE    0
-#endif /* CONFIG_CLOCK_MCO_USE_HSE */
+#endif // CONFIG_CLOCK_MCO_USE_HSE
 
 #ifndef CONFIG_CLOCK_MCO_USE_HSI
 #define CONFIG_CLOCK_MCO_USE_HSI    1
-#endif /* CONFIG_CLOCK_MCO_USE_HSI */
+#endif // CONFIG_CLOCK_MCO_USE_HSI
 
 #ifndef CONFIG_CLOCK_MCO_USE_LSE
 #define CONFIG_CLOCK_MCO_USE_LSE    0
-#endif /* CONFIG_CLOCK_MCO_USE_LSE */
+#endif // CONFIG_CLOCK_MCO_USE_LSE
 
 #ifndef CONFIG_CLOCK_MCO_USE_LSI
 #define CONFIG_CLOCK_MCO_USE_LSI    0
-#endif /* CONFIG_CLOCK_MCO_USE_LSI */
+#endif // CONFIG_CLOCK_MCO_USE_LSI
 
 #ifndef CONFIG_CLOCK_MCO_USE_SYSCLK
 #define CONFIG_CLOCK_MCO_USE_SYSCLK 0
-#endif /* CONFIG_CLOCK_MCO_USE_SYSCLK */
+#endif // CONFIG_CLOCK_MCO_USE_SYSCLK
 
 #if IS_ACTIVE(CONFIG_CLOCK_MCO_USE_HSE) && \
     (IS_ACTIVE(CONFIG_CLOCK_MCO_USE_HSI) || IS_ACTIVE(CONFIG_CLOCK_MCO_USE_LSE) || \
@@ -128,12 +124,12 @@
 #error "Invalid MCO clock source selection"
 #endif
 
-/* Configure the MCO prescaler */
+// Configure the MCO prescaler
 #ifndef CONFIG_CLOCK_MCO_PRE
 #define CONFIG_CLOCK_MCO_PRE        (1)
 #endif
 
-/* Define MCO prescalers */
+// Define MCO prescalers
 #if CONFIG_CLOCK_MCO_PRE == 1
 #define CLOCK_MCO_PRE               (0)
 #elif CONFIG_CLOCK_MCO_PRE == 2
@@ -154,13 +150,12 @@
 #error "Invalid MCO prescaler"
 #endif
 
-/* PLL not supported in STM32C0 */
+// PLL not supported in STM32C0
 #define CLOCK_ENABLE_PLL            0
 
-/* Check whether HSE is required:
-  - When HSE is used as SYSCLK
-  - When HSE is used as MCO clock source
-*/
+// Check whether HSE is required:
+//   - When HSE is used as SYSCLK
+//   - When HSE is used as MCO clock source
 #if IS_ACTIVE(CONFIG_USE_CLOCK_HSE) || \
     (IS_ACTIVE(CONFIG_CLOCK_ENABLE_MCO) && IS_ACTIVE(CONFIG_CLOCK_MCO_USE_HSE))
 #define CLOCK_ENABLE_HSE            1
@@ -168,10 +163,9 @@
 #define CLOCK_ENABLE_HSE            0
 #endif
 
-/* Check whether HSI is required:
-  - When HSI is used as SYSCLK
-  - When HSI is used as MCO clock source
-*/
+// Check whether HSI is required:
+//   - When HSI is used as SYSCLK
+//   - When HSI is used as MCO clock source
 #if IS_ACTIVE(CONFIG_USE_CLOCK_HSI) || \
     (IS_ACTIVE(CONFIG_CLOCK_ENABLE_MCO) && IS_ACTIVE(CONFIG_CLOCK_MCO_USE_HSI))
 #define CLOCK_ENABLE_HSI            1
@@ -179,62 +173,61 @@
 #define CLOCK_ENABLE_HSI            0
 #endif
 
-/* Check whether LSE must be enabled */
+// Check whether LSE must be enabled
 #if IS_ACTIVE(CONFIG_CLOCK_ENABLE_MCO) && IS_ACTIVE(CONFIG_CLOCK_MCO_USE_LSE)
 #define CLOCK_ENABLE_LSE            1
 #else
 #define CLOCK_ENABLE_LSE            0
 #endif
 
-/* Check whether LSI must be enabled */
+// Check whether LSI must be enabled
 #if IS_ACTIVE(CONFIG_CLOCK_ENABLE_MCO) && IS_ACTIVE(CONFIG_CLOCK_MCO_USE_LSI)
 #define CLOCK_ENABLE_LSI            1
 #else
 #define CLOCK_ENABLE_LSI            0
 #endif
 
-/** Determine the required flash wait states from the core clock frequency */
+/// Determine the required flash wait states from the core clock frequency
 #if CLOCK_CORECLOCK >= 24000000
-#define FLASH_WAITSTATES            (FLASH_ACR_LATENCY_0)   /* 1 wait states */
+#define FLASH_WAITSTATES            (FLASH_ACR_LATENCY_0)   // 1 wait states
 #else
-#define FLASH_WAITSTATES            (0)                     /* 0 wait states */
+#define FLASH_WAITSTATES            (0)                     // 0 wait states
 #endif
 
-void stmclk_init_sysclk(void)
-{
-    /* disable any interrupts. Global interrupts could be enabled if this is
-     * called from some kind of bootloader...  */
+void stmclk_init_sysclk(void) {
+    // disable any interrupts. Global interrupts could be enabled if this is
+    // called from some kind of bootloader...
     unsigned is = irq_disable();
-    /* enable HSI clock for the duration of initialization */
+    // enable HSI clock for the duration of initialization
     stmclk_enable_hsi();
 
     RCC->CIER = 0;
 
-    /* use HSI as system clock while we do any further configuration and
-     * configure the AHB and APB clock dividers as configured by the board */
+    // use HSI as system clock while we do any further configuration and
+    // configure the AHB and APB clock dividers as configured by the board
     RCC->CFGR = (RCC_CFGR_SW_HSI | CLOCK_AHB_DIV | CLOCK_APB1_DIV);
 
     while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI) {}
 
-    /* we enable instruction cache, pre-fetch, and we set the required flash wait states */
+    // we enable instruction cache, pre-fetch, and we set the required flash wait states
     FLASH->ACR |= (FLASH_ACR_ICEN | FLASH_ACR_PRFTEN | FLASH_WAITSTATES);
 
-    /* disable all active clocks except HSI -> resets the clk configuration */
+    // disable all active clocks except HSI -> resets the clk configuration
     RCC->CR = RCC_CR_HSION;
 
     if (IS_ACTIVE(CONFIG_USE_CLOCK_HSI) && CONFIG_CLOCK_HSISYS_DIV != 1) {
-        /* configure HSISYS divider */
+        // configure HSISYS divider
         RCC->CR |= CLOCK_HSI_DIV;
         while (!(RCC->CR & RCC_CR_HSIRDY)) {}
     }
 
-    /* Enable HSE if required */
+    // Enable HSE if required
     if (IS_ACTIVE(CLOCK_ENABLE_HSE)) {
         RCC->CR |= RCC_CR_HSEON;
         while (!(RCC->CR & RCC_CR_HSERDY)) {}
     }
 
-    /* Configure SYSCLK */
+    // Configure SYSCLK
     if (IS_ACTIVE(CONFIG_USE_CLOCK_HSE)) {
         RCC->CFGR = (RCC_CFGR_SW_HSE | CLOCK_AHB_DIV | CLOCK_APB1_DIV);
 
@@ -243,14 +236,14 @@ void stmclk_init_sysclk(void)
     }
 
     if (!IS_ACTIVE(CLOCK_ENABLE_HSI)) {
-        /* Disable HSI only if not used */
+        // Disable HSI only if not used
         stmclk_disable_hsi();
     }
 
-    /* Enable the LSE if required for MCO
-     * If available on the board, LSE might also be initialized for RTT/RTC
-     * peripherals. For the monent, this initialization is done in the
-     * corresponding peripheral drivers. */
+    // Enable the LSE if required for MCO
+    // If available on the board, LSE might also be initialized for RTT/RTC
+    // peripherals. For the monent, this initialization is done in the
+    // corresponding peripheral drivers.
     if (IS_ACTIVE(CLOCK_ENABLE_LSE)) {
         stmclk_dbp_unlock();
         RCC->CSR1 |= RCC_CSR1_LSEON;
@@ -258,29 +251,29 @@ void stmclk_init_sysclk(void)
         stmclk_dbp_lock();
     }
 
-    /* Enable the LSI if required for MCO
-     * If no LSE is available on the board, LSI might also be initialized for
-     * RTT/RTC peripherals. For the monent, this initialization is done in the
-     * corresponding peripheral drivers. */
+    // Enable the LSI if required for MCO
+    // If no LSE is available on the board, LSI might also be initialized for
+    // RTT/RTC peripherals. For the monent, this initialization is done in the
+    // corresponding peripheral drivers.
     if (IS_ACTIVE(CLOCK_ENABLE_LSI)) {
         RCC->CSR2 |= RCC_CSR2_LSION;
         while (!(RCC->CSR2 & RCC_CSR2_LSIRDY)) {}
     }
 
-    /* Configure MCO */
+    // Configure MCO
     if (IS_ACTIVE(CONFIG_CLOCK_ENABLE_MCO)) {
-        /* As stated in the manual, it is highly recommended to change the MCO
-           prescaler before enabling the MCO */
+        // As stated in the manual, it is highly recommended to change the MCO
+        //    prescaler before enabling the MCO
         RCC->CFGR |= CLOCK_MCO_PRE;
         RCC->CFGR |= CLOCK_MCO_SRC;
 
-        /* Configure MCO pin (PA8 with AF0) */
+        // Configure MCO pin (PA8 with AF0)
         gpio_init(GPIO_PIN(PORT_A, 8), GPIO_OUT);
         gpio_init_af(GPIO_PIN(PORT_A, 8), GPIO_AF0);
     }
 
 #if IS_USED(MODULE_PERIPH_HWRNG)
-    /* HWRNG is clocked by HSI48 so enable this clock when the peripheral is used */
+    // HWRNG is clocked by HSI48 so enable this clock when the peripheral is used
     RCC->CRRCR |= RCC_CRRCR_HSI48ON;
     while (!(RCC->CRRCR & RCC_CRRCR_HSI48RDY)) {}
 #endif

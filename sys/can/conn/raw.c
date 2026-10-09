@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_can_conn
- * @{
- * @file
- * @brief       Implementation of raw CAN connection
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @}
- */
+/// @ingroup     sys_can_conn
+/// @{
+/// @file
+/// @brief       Implementation of raw CAN connection
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -37,8 +33,7 @@
 #endif
 
 int conn_can_raw_create(conn_can_raw_t *conn, const struct can_filter *filter, size_t count,
-                        int ifnum, int flags)
-{
+                        int ifnum, int flags) {
     assert(conn != NULL);
     if (ifnum < 0 || ifnum >= CAN_DLL_NUMOF) {
         memset(conn, 0, sizeof (*conn));
@@ -68,8 +63,7 @@ int conn_can_raw_create(conn_can_raw_t *conn, const struct can_filter *filter, s
     return conn_can_raw_set_filter(conn, filter, count);
 }
 
-int conn_can_raw_set_filter(conn_can_raw_t *conn, const struct can_filter *filter, size_t count)
-{
+int conn_can_raw_set_filter(conn_can_raw_t *conn, const struct can_filter *filter, size_t count) {
     assert(conn != NULL);
     assert(filter != NULL || count == 0);
 
@@ -78,7 +72,7 @@ int conn_can_raw_set_filter(conn_can_raw_t *conn, const struct can_filter *filte
     DEBUG("conn_can_raw_set_filter: conn->filter=%p, conn->count=%" PRIuSIZE "\n",
           (void *)conn->filter, conn->count);
 
-    /* unset previous filters */
+    // unset previous filters
     if (conn->count) {
         for (size_t i = 0; i < conn->count; i++) {
             DEBUG("conn_can_raw_set_filter: unsetting filter=0x%" PRIx32 ", mask=0x%" PRIx32 "\n",
@@ -108,8 +102,7 @@ int conn_can_raw_set_filter(conn_can_raw_t *conn, const struct can_filter *filte
     return 0;
 }
 
-static void _tx_conf_timeout(void *arg)
-{
+static void _tx_conf_timeout(void *arg) {
     conn_can_raw_t *conn = arg;
     msg_t msg;
 
@@ -119,8 +112,7 @@ static void _tx_conf_timeout(void *arg)
     mbox_try_put(&conn->mbox, &msg);
 }
 
-int conn_can_raw_send(conn_can_raw_t *conn, const can_frame_t *frame, int flags)
-{
+int conn_can_raw_send(conn_can_raw_t *conn, const can_frame_t *frame, int flags) {
     assert(conn != NULL);
 
     if (conn->ifnum < 0 || conn->ifnum >= CAN_DLL_NUMOF) {
@@ -192,8 +184,7 @@ int conn_can_raw_send(conn_can_raw_t *conn, const can_frame_t *frame, int flags)
     return ret;
 }
 
-static void _rx_timeout(void *arg)
-{
+static void _rx_timeout(void *arg) {
     conn_can_raw_t *conn = arg;
     msg_t msg;
 
@@ -203,8 +194,7 @@ static void _rx_timeout(void *arg)
     mbox_try_put(&conn->mbox, &msg);
 }
 
-int conn_can_raw_recv(conn_can_raw_t *conn, can_frame_t *frame, uint32_t timeout)
-{
+int conn_can_raw_recv(conn_can_raw_t *conn, can_frame_t *frame, uint32_t timeout) {
     assert(conn != NULL);
 
     if (conn->ifnum < 0 || conn->ifnum >= CAN_DLL_NUMOF) {
@@ -262,8 +252,7 @@ int conn_can_raw_recv(conn_can_raw_t *conn, can_frame_t *frame, uint32_t timeout
     return ret;
 }
 
-int conn_can_raw_close(conn_can_raw_t *conn)
-{
+int conn_can_raw_close(conn_can_raw_t *conn) {
     assert(conn != NULL);
 
     if (conn->ifnum < 0 || conn->ifnum >= CAN_DLL_NUMOF) {

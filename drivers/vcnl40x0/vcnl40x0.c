@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_vcnl40x0
- * @{
- *
- * @file
- * @brief       Device driver implementation for VCNL40X0 Proximity and Ambient Light devices.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_vcnl40x0
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for VCNL40X0 Proximity and Ambient Light devices.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "vcnl40x0.h"
 #include "vcnl40x0_internals.h"
@@ -26,9 +22,8 @@
 #define DEV_I2C             (dev->params.i2c_dev)
 #define DEV_ADDR            (dev->params.i2c_addr)
 
-/* Internal functions */
-static int _set_command_reg(const vcnl40x0_t *dev, uint8_t reg)
-{
+// Internal functions
+static int _set_command_reg(const vcnl40x0_t *dev, uint8_t reg) {
     if (i2c_write_reg(DEV_I2C, DEV_ADDR, VCNL40X0_REG_COMMAND, reg, 0) != 0) {
         return -1;
     }
@@ -36,8 +31,7 @@ static int _set_command_reg(const vcnl40x0_t *dev, uint8_t reg)
     return 0;
 }
 
-static int _get_command_reg(const vcnl40x0_t *dev, uint8_t *reg)
-{
+static int _get_command_reg(const vcnl40x0_t *dev, uint8_t *reg) {
     if (i2c_read_reg(DEV_I2C, DEV_ADDR, VCNL40X0_REG_COMMAND, reg, 0) != 0) {
         return -1;
     }
@@ -45,18 +39,17 @@ static int _get_command_reg(const vcnl40x0_t *dev, uint8_t *reg)
     return 0;
 }
 
-/*---------------------------------------------------------------------------*
- *                          VCNL40X0 Core API                                *
- *---------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------*
+//                          VCNL40X0 Core API                                *
+// ---------------------------------------------------------------------------
 
-int vcnl40x0_init(vcnl40x0_t *dev, const vcnl40x0_params_t *params)
-{
+int vcnl40x0_init(vcnl40x0_t *dev, const vcnl40x0_params_t *params) {
     dev->params = *params;
 
-    /* Acquire exclusive access */
+    // Acquire exclusive access
     i2c_acquire(DEV_I2C);
 
-    /* Check sensor ID */
+    // Check sensor ID
     uint8_t checkid;
     i2c_read_reg(DEV_I2C, DEV_ADDR, VCNL40X0_REG_PRODUCT_ID,
                   &checkid, 0);
@@ -67,7 +60,7 @@ int vcnl40x0_init(vcnl40x0_t *dev, const vcnl40x0_params_t *params)
         return -VCNL40X0_ERR_NODEV;
     }
 
-    /* LED current cannot be above 20 */
+    // LED current cannot be above 20
     if (dev->params.led_current > 20) {
         dev->params.led_current = 20;
     }
@@ -101,7 +94,7 @@ int vcnl40x0_init(vcnl40x0_t *dev, const vcnl40x0_params_t *params)
         return -VCNL40X0_ERR_I2C;
     }
 
-    /* Release I2C device */
+    // Release I2C device
     i2c_release(DEV_I2C);
 
     DEBUG("[vcnl40x0] info: vcnl40x0 sensor initialized with success\n");
@@ -109,8 +102,7 @@ int vcnl40x0_init(vcnl40x0_t *dev, const vcnl40x0_params_t *params)
     return VCNL40X0_OK;
 }
 
-uint16_t vcnl40x0_read_proximity(const vcnl40x0_t *dev)
-{
+uint16_t vcnl40x0_read_proximity(const vcnl40x0_t *dev) {
     i2c_acquire(DEV_I2C);
 
     _set_command_reg(dev,
@@ -135,8 +127,7 @@ uint16_t vcnl40x0_read_proximity(const vcnl40x0_t *dev)
     return 0;
 }
 
-uint16_t vcnl40x0_read_ambient_light(const vcnl40x0_t *dev)
-{
+uint16_t vcnl40x0_read_ambient_light(const vcnl40x0_t *dev) {
     i2c_acquire(DEV_I2C);
 
     _set_command_reg(dev,
@@ -163,7 +154,6 @@ uint16_t vcnl40x0_read_ambient_light(const vcnl40x0_t *dev)
     return 0;
 }
 
-uint16_t vcnl40x0_read_illuminance(const vcnl40x0_t *dev)
-{
+uint16_t vcnl40x0_read_illuminance(const vcnl40x0_t *dev) {
     return vcnl40x0_read_ambient_light(dev) >> 2;
 }

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the LPD8808 LED strip driver
- *
- * Refer to the accompanying README.md for more information.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the LPD8808 LED strip driver
+///
+/// Refer to the accompanying README.md for more information.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -25,51 +21,44 @@
 #include "lpd8808.h"
 #include "lpd8808_params.h"
 
-/**
- * @brief   Switch to the next LED every 10ms
- */
+/// @brief   Switch to the next LED every 10ms
 #define STEP_MS     (10 * 1000U)
 
-/**
- * @brief   Allocate the device descriptor
- */
+/// @brief   Allocate the device descriptor
 static lpd8808_t dev;
 
-/**
- * @brief   Allocate a color_rgb_t struct for each LED on the strip
- */
+/// @brief   Allocate a color_rgb_t struct for each LED on the strip
 static color_rgb_t leds[LPD8808_PARAM_LED_CNT];
 
-int main(void)
-{
+int main(void) {
     xtimer_ticks32_t now = xtimer_now();
     int pos = 0;
     int step = 1;
     color_hsv_t col = { 0.0, 1.0, 1.0 };
 
-    /* initialize all LED color values to black (off) */
+    // initialize all LED color values to black (off)
     memset(leds, 0, sizeof(color_rgb_t) * LPD8808_PARAM_LED_CNT);
 
-    /* initialize the driver */
+    // initialize the driver
     lpd8808_init(&dev, &lpd8808_params[0]);
 
     while (1) {
 
-        /* change the active color by running around the hue circle */
+        // change the active color by running around the hue circle
         col.h += 1.0;
         if (col.h > 360.0) {
             col.h = 0;
         }
 
-        /* set the active LED to the active color value */
+        // set the active LED to the active color value
         memset(&leds[pos], 0, sizeof(color_rgb_t));
         pos += step;
         color_hsv2rgb(&col, &leds[pos]);
 
-        /* apply the values to the LED strip */
+        // apply the values to the LED strip
         lpd8808_load_rgb(&dev, leds);
 
-        /* switch direction once reaching an end of the strip */
+        // switch direction once reaching an end of the strip
         if ((pos == (LPD8808_PARAM_LED_CNT - 1)) || (pos == 0)) {
             step *= -1;
         }

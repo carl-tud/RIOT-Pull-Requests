@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for MRF24J40 IEEE 802.15.4 device driver
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for MRF24J40 IEEE 802.15.4 device driver
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -27,8 +23,7 @@
 
 static netdev_ieee802154_submac_t mrf24j40_netdev[MRF24J40_NUM];
 
-static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque)
-{
+static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque) {
     if (type != IEEE802154_DEV_TYPE_MRF24J40) {
         assert(false);
     }
@@ -40,7 +35,7 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
     puts("Initializing MRF24J40 devices");
 
     int c = 0;
-    /* This function will iterate through all kw2xrf radios */
+    // This function will iterate through all kw2xrf radios
     ieee802154_hal_test_init_devs(_reg_callback, &c);
 
     for (unsigned i = 0; i < MRF24J40_NUM; i++) {
@@ -48,10 +43,10 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
         netdev_register(&mrf24j40_netdev[i].dev.netdev, NETDEV_MRF24J40, 0);
         netdev_ieee802154_submac_init(&mrf24j40_netdev[i]);
 
-        /* set the application-provided callback */
+        // set the application-provided callback
         mrf24j40_netdev[i].dev.netdev.event_callback = cb;
 
-        /* initialize the device driver */
+        // initialize the device driver
         int res = mrf24j40_netdev[i].dev.netdev.driver->init(&mrf24j40_netdev[i].dev.netdev);
         if (res != 0) {
             return -1;
@@ -61,8 +56,7 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Test application for MRF24J40 IEEE 802.15.4 device driver");
 
     int res = netdev_ieee802154_minimal_init();
@@ -71,7 +65,7 @@ int main(void)
         return 1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

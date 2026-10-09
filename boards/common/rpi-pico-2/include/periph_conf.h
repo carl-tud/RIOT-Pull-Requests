@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2025 Tom Hert <git@annsann.eu>
- * SPDX-FileCopyrightText: 2025 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Tom Hert <git@annsann.eu>
+// SPDX-FileCopyrightText: 2025 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         boards_rpi_pico_2
- * @{
- *
- * @file
- * @brief           Board periph definitions for the Raspberry Pi Pico 2
- *
- * @author          Tom Hert <git@annsann.eu>
- */
+/// @ingroup         boards_rpi_pico_2
+/// @{
+///
+/// @file
+/// @brief           Board periph definitions for the Raspberry Pi Pico 2
+///
+/// @author          Tom Hert <git@annsann.eu>
 
 #include <stdint.h>
 
@@ -25,14 +21,12 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Configuration details for an UART interface
- */
+/// @brief   Configuration details for an UART interface
 typedef struct {
-    UART0_Type *dev;    /**< Base address of the I/O registers of the device */
-    gpio_t rx_pin;      /**< GPIO pin to use for RX */
-    gpio_t tx_pin;      /**< GPIO pin to use for TX */
-    IRQn_Type irqn;     /**< IRQ number of the UART interface */
+    UART0_Type *dev;    ///< Base address of the I/O registers of the device
+    gpio_t rx_pin;      ///< GPIO pin to use for RX
+    gpio_t tx_pin;      ///< GPIO pin to use for TX
+    IRQn_Type irqn;     ///< IRQ number of the UART interface
 } uart_conf_t;
 
 static const uart_conf_t uart_config[] = {
@@ -59,4 +53,4 @@ static const uart_conf_t uart_config[] = {
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_nanocoap
- * @{
- *
- * @file
- * @brief       nanoCoAP VFS backend
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     net_nanocoap
+/// @{
+///
+/// @file
+/// @brief       nanoCoAP VFS backend
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <fcntl.h>
 
@@ -29,8 +25,7 @@
 
 static char _dirent_buf[CONFIG_NANOCOAP_QS_MAX];
 
-static int nanocoap_fs_mount(vfs_mount_t *mountp)
-{
+static int nanocoap_fs_mount(vfs_mount_t *mountp) {
     nanocoap_fs_t *fs = mountp->private_data;
 
     static_assert(VFS_FILE_BUFFER_SIZE >= sizeof(nanocoap_fs_file_t),
@@ -41,8 +36,7 @@ static int nanocoap_fs_mount(vfs_mount_t *mountp)
     return nanocoap_sock_url_connect(fs->url, &fs->sock);
 }
 
-static int nanocoap_fs_umount(vfs_mount_t *mountp)
-{
+static int nanocoap_fs_umount(vfs_mount_t *mountp) {
     nanocoap_fs_t *fs = mountp->private_data;
 
     nanocoap_sock_close(&fs->sock);
@@ -50,9 +44,8 @@ static int nanocoap_fs_umount(vfs_mount_t *mountp)
 }
 
 static int _fill_urlbuf(nanocoap_fs_t *fs, char dst[CONFIG_SOCK_URLPATH_MAXLEN],
-                        const char *name, bool dir)
-{
-    name += 1; /* skip leading '/' */
+                        const char *name, bool dir) {
+    name += 1; // skip leading '/'
 
     const char *extra = "";
     if (dir) {
@@ -72,8 +65,7 @@ static int _fill_urlbuf(nanocoap_fs_t *fs, char dst[CONFIG_SOCK_URLPATH_MAXLEN],
     return 0;
 }
 
-static int nanocoap_fs_unlink(vfs_mount_t *mountp, const char *name)
-{
+static int nanocoap_fs_unlink(vfs_mount_t *mountp, const char *name) {
     nanocoap_fs_t *fs = mountp->private_data;
 
     mutex_lock(&fs->lock);
@@ -91,15 +83,14 @@ out:
     return res;
 }
 
-static int nanocoap_fs_open(vfs_file_t *filp, const char *name, int flags, mode_t mode)
-{
+static int nanocoap_fs_open(vfs_file_t *filp, const char *name, int flags, mode_t mode) {
     nanocoap_fs_t *fs = filp->mp->private_data;
     nanocoap_fs_file_t *file = (void *)filp->private_data.buffer;
 
     (void)mode;
 
     if (flags != O_RDONLY) {
-        /* so far only read is implemented */
+        // so far only read is implemented
         return -ENOSYS;
     }
 
@@ -115,8 +106,7 @@ static int nanocoap_fs_open(vfs_file_t *filp, const char *name, int flags, mode_
     return 0;
 }
 
-static ssize_t nanocoap_fs_read(vfs_file_t *filp, void *dest, size_t nbytes)
-{
+static ssize_t nanocoap_fs_read(vfs_file_t *filp, void *dest, size_t nbytes) {
     nanocoap_fs_t *fs = filp->mp->private_data;
     nanocoap_fs_file_t *file = (void *)filp->private_data.buffer;
     int res;
@@ -132,8 +122,7 @@ static ssize_t nanocoap_fs_read(vfs_file_t *filp, void *dest, size_t nbytes)
     return res;
 }
 
-static off_t nanocoap_fs_lseek(vfs_file_t *filp, off_t off, int whence)
-{
+static off_t nanocoap_fs_lseek(vfs_file_t *filp, off_t off, int whence) {
     nanocoap_fs_file_t *file = (void *)filp->private_data.buffer;
 
     switch (whence) {
@@ -151,8 +140,7 @@ static off_t nanocoap_fs_lseek(vfs_file_t *filp, off_t off, int whence)
     return file->offset;
 }
 
-static int _block_cb(void *arg, coap_pkt_t *pkt)
-{
+static int _block_cb(void *arg, coap_pkt_t *pkt) {
     struct stat *restrict buf = arg;
 
     if (coap_get_code_class(pkt) != COAP_CLASS_SUCCESS) {
@@ -169,8 +157,7 @@ static int _block_cb(void *arg, coap_pkt_t *pkt)
 }
 
 static int _query_server(nanocoap_sock_t *sock, const char *path,
-                         struct stat *restrict arg)
-{
+                         struct stat *restrict arg) {
     coap_builder_t state;
     int res = nanocoap_sock_builder_init(sock, &state,
                                          COAP_TYPE_CON, COAP_METHOD_GET);
@@ -194,8 +181,7 @@ static int _query_server(nanocoap_sock_t *sock, const char *path,
 }
 
 static int nanocoap_fs_stat(vfs_mount_t *mountp, const char *restrict path,
-                            struct stat *restrict buf)
-{
+                            struct stat *restrict buf) {
     nanocoap_fs_t *fs = mountp->private_data;
     int res = 0;
 
@@ -222,8 +208,7 @@ out:
     return res;
 }
 
-static int nanocoap_fs_opendir(vfs_DIR *dirp, const char *dirname)
-{
+static int nanocoap_fs_opendir(vfs_DIR *dirp, const char *dirname) {
     nanocoap_fs_t *fs = dirp->mp->private_data;
     nanocoap_fs_dir_t *dir = (void *)dirp->private_data.buffer;
     int res;
@@ -244,8 +229,7 @@ struct _dir_ctx {
     size_t offset;
 };
 
-static int _dir_cb(char *entry, void *arg)
-{
+static int _dir_cb(char *entry, void *arg) {
     struct _dir_ctx *ctx = arg;
 
     if (ctx->offset) {
@@ -274,8 +258,7 @@ static int _dir_cb(char *entry, void *arg)
     return -EINTR;
 }
 
-static int nanocoap_fs_readdir(vfs_DIR *dirp, vfs_dirent_t *entry)
-{
+static int nanocoap_fs_readdir(vfs_DIR *dirp, vfs_dirent_t *entry) {
     nanocoap_fs_t *fs = dirp->mp->private_data;
     nanocoap_fs_dir_t *dir = (void *)dirp->private_data.buffer;
     int res;
@@ -290,7 +273,7 @@ static int nanocoap_fs_readdir(vfs_DIR *dirp, vfs_dirent_t *entry)
     res = nanocoap_link_format_get(&fs->sock, dir->urlbuf, _dir_cb, &ctx,
                                    _dirent_buf, sizeof(_dirent_buf));
     if (res == -EINTR) {
-        /* we use this to abort listing early */
+        // we use this to abort listing early
         res = 1;
     }
 

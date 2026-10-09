@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam0_common
- * @ingroup     drivers_periph_pwm
- * @{
- *
- * @file
- * @brief       Low-level PWM driver implementation
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     cpu_sam0_common
+/// @ingroup     drivers_periph_pwm
+/// @{
+///
+/// @file
+/// @brief       Low-level PWM driver implementation
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <assert.h>
 
@@ -26,15 +22,15 @@
 #include "periph/gpio.h"
 #include "periph/pwm.h"
 
-/* default to using TCC if nothing else is defined */
+// default to using TCC if nothing else is defined
 #if !defined(PWM_USE_TC) && !defined(PWM_USE_TCC) && defined(REV_TCC)
 #define PWM_USE_TCC 1
-/* use TC if no TCC is available */
+// use TC if no TCC is available
 #elif !defined(PWM_USE_TC) && !defined(PWM_USE_TCC) && defined(REV_TC)
 #define PWM_USE_TC  1
 #endif
 
-/* dummy defines to not litter the code with ifdefs if no TCC is available */
+// dummy defines to not litter the code with ifdefs if no TCC is available
 #ifndef REV_TCC
 typedef TcCount8 Tcc;
 #define TCC_CTRLA_ENABLE TC_CTRLA_ENABLE
@@ -43,10 +39,9 @@ typedef TcCount8 Tcc;
 #ifdef TC_SYNCBUSY_MASK
 #define TCC_SYNCBUSY_MASK TC_SYNCBUSY_MASK
 #endif
-#endif /* !REV_TCC */
+#endif // !REV_TCC
 
-static inline Tc *_tc(pwm_t dev)
-{
+static inline Tc *_tc(pwm_t dev) {
 #ifdef REV_TC
     return pwm_config[dev].tim.dev.tc;
 #else
@@ -55,8 +50,7 @@ static inline Tc *_tc(pwm_t dev)
 #endif
 }
 
-static inline Tcc *_tcc(pwm_t dev)
-{
+static inline Tcc *_tcc(pwm_t dev) {
 #ifdef REV_TCC
     return pwm_config[dev].tim.dev.tcc;
 #else
@@ -65,25 +59,21 @@ static inline Tcc *_tcc(pwm_t dev)
 #endif
 }
 
-static inline uint8_t _chan(pwm_t dev, int chan)
-{
+static inline uint8_t _chan(pwm_t dev, int chan) {
     return pwm_config[dev].chan[chan].chan;
 }
 
-static inline bool _use_tc(pwm_t dev)
-{
+static inline bool _use_tc(pwm_t dev) {
     return IS_ACTIVE(PWM_USE_TC) &&
            pwm_config[dev].tim.type == TIMER_TYPE_TC;
 }
 
-static inline bool _use_tcc(pwm_t dev)
-{
+static inline bool _use_tcc(pwm_t dev) {
     return IS_ACTIVE(PWM_USE_TCC) &&
            pwm_config[dev].tim.type == TIMER_TYPE_TCC;
 }
 
-static inline void _check_defines(void)
-{
+static inline void _check_defines(void) {
 #ifdef TCC_CTRLA_PRESCALER_DIV1024_Val
     static_assert(TCC_CTRLA_PRESCALER_DIV1024_Val == TC_CTRLA_PRESCALER_DIV1024_Val,
                   "TCC and TC prescaler not equal");
@@ -110,8 +100,7 @@ static inline void _check_defines(void)
 #endif
 }
 
-static uint8_t _get_prescaler(unsigned int target, int *scale)
-{
+static uint8_t _get_prescaler(unsigned int target, int *scale) {
     _check_defines();
 
     if (target == 0) {
@@ -147,8 +136,7 @@ static uint8_t _get_prescaler(unsigned int target, int *scale)
     return target - 1;
 }
 
-static uint8_t _tcc_get_cc_numof(Tcc *tcc)
-{
+static uint8_t _tcc_get_cc_numof(Tcc *tcc) {
     switch ((uintptr_t) tcc) {
 #ifdef TCC0_CC_NUM
     case (uintptr_t)TCC0:
@@ -180,8 +168,7 @@ static uint8_t _tcc_get_cc_numof(Tcc *tcc)
     return 0;
 }
 
-static void poweron(pwm_t dev)
-{
+static void poweron(pwm_t dev) {
     const pwm_conf_t *cfg = &pwm_config[dev];
 
     sam0_gclk_enable(cfg->gclk_src);
@@ -197,8 +184,7 @@ static void poweron(pwm_t dev)
 #endif
 }
 
-static void poweroff(pwm_t dev)
-{
+static void poweroff(pwm_t dev) {
     const pwm_conf_t *cfg = &pwm_config[dev];
 
 #ifdef MCLK
@@ -211,27 +197,26 @@ static void poweroff(pwm_t dev)
 #endif
 }
 
-static void _tc_init(Tc *tc, pwm_mode_t mode, uint8_t prescaler, uint8_t res)
-{
-    /* reset TC module */
+static void _tc_init(Tc *tc, pwm_mode_t mode, uint8_t prescaler, uint8_t res) {
+    // reset TC module
     tc->COUNT8.CTRLA.reg |= TC_CTRLA_SWRST;
     while (tc->COUNT8.CTRLA.reg & TC_CTRLA_SWRST) {}
 
-    /* set PWM mode */
+    // set PWM mode
     switch (mode) {
         case PWM_LEFT:
-            tc->COUNT8.CTRLBCLR.reg = TC_CTRLBCLR_DIR;     /* count up */
+            tc->COUNT8.CTRLBCLR.reg = TC_CTRLBCLR_DIR;     // count up
             break;
         case PWM_RIGHT:
-            tc->COUNT8.CTRLBSET.reg = TC_CTRLBSET_DIR;     /* count down */
+            tc->COUNT8.CTRLBSET.reg = TC_CTRLBSET_DIR;     // count down
             break;
-        case PWM_CENTER:        /* currently not supported */
+        case PWM_CENTER:        // currently not supported
         default:
             assert(0);
             return;
     }
 
-    /* configure the TC device */
+    // configure the TC device
     tc->COUNT8.CTRLA.reg = TC_CTRLA_PRESCSYNC_GCLK_Val
                           | TC_CTRLA_PRESCALER(prescaler)
                           | TC_CTRLA_MODE_COUNT8
@@ -240,11 +225,11 @@ static void _tc_init(Tc *tc, pwm_mode_t mode, uint8_t prescaler, uint8_t res)
 #else
                           ;
 
-    /* select the waveform generation mode -> normal PWM */
+    // select the waveform generation mode -> normal PWM
     tc->COUNT8.WAVE.reg = (TC_WAVE_WAVEGEN_NPWM);
 #endif
 
-    /* set the selected period */
+    // set the selected period
     tc->COUNT8.PER.reg = (res - 1);
 
 #ifdef TC_STATUS_SYNCBUSY
@@ -253,56 +238,54 @@ static void _tc_init(Tc *tc, pwm_mode_t mode, uint8_t prescaler, uint8_t res)
     while (tc->COUNT8.SYNCBUSY.reg) {}
 #endif
 
-    /* start PWM operation */
+    // start PWM operation
     tc->COUNT8.CTRLA.reg |= TC_CTRLA_ENABLE;
 }
 
-static void _tcc_init(Tcc *tcc, pwm_mode_t mode, uint8_t prescaler, uint16_t res)
-{
+static void _tcc_init(Tcc *tcc, pwm_mode_t mode, uint8_t prescaler, uint16_t res) {
 #ifndef REV_TCC
     (void) tcc;
     (void) mode;
     (void) prescaler;
     (void) res;
 #else
-    /* reset TCC module */
+    // reset TCC module
     tcc->CTRLA.reg = TCC_CTRLA_SWRST;
     while (tcc->SYNCBUSY.reg & TCC_SYNCBUSY_SWRST) {}
 
-    /* set PWM mode */
+    // set PWM mode
     switch (mode) {
         case PWM_LEFT:
-            tcc->CTRLBCLR.reg = TCC_CTRLBCLR_DIR;     /* count up */
+            tcc->CTRLBCLR.reg = TCC_CTRLBCLR_DIR;     // count up
             break;
         case PWM_RIGHT:
-            tcc->CTRLBSET.reg = TCC_CTRLBSET_DIR;     /* count down */
+            tcc->CTRLBSET.reg = TCC_CTRLBSET_DIR;     // count down
             break;
-        case PWM_CENTER:        /* currently not supported */
+        case PWM_CENTER:        // currently not supported
         default:
             assert(0);
             return;
     }
     while (tcc->SYNCBUSY.reg & TCC_SYNCBUSY_CTRLB) {}
 
-    /* configure the TCC device */
+    // configure the TCC device
     tcc->CTRLA.reg = TCC_CTRLA_PRESCSYNC_GCLK_Val
                    | TCC_CTRLA_PRESCALER(prescaler);
 
-    /* select the waveform generation mode -> normal PWM */
+    // select the waveform generation mode -> normal PWM
     tcc->WAVE.reg = (TCC_WAVE_WAVEGEN_NPWM);
     while (tcc->SYNCBUSY.reg & TCC_SYNCBUSY_WAVE) {}
 
-    /* set the selected period */
+    // set the selected period
     tcc->PER.reg = (res - 1);
     while (tcc->SYNCBUSY.reg & TCC_SYNCBUSY_PER) {}
 
-    /* start PWM operation */
+    // start PWM operation
     tcc->CTRLA.reg |= TCC_CTRLA_ENABLE;
 #endif
 }
 
-uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
-{
+uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res) {
     uint8_t prescaler;
     int scale = 1;
     uint32_t f_real;
@@ -311,21 +294,21 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
         return 0;
     }
 
-    /* TC only supports Period in 8-bit mode */
+    // TC only supports Period in 8-bit mode
     if (pwm_config[dev].tim.type == TIMER_TYPE_TC && res > 255) {
         res = 0xff;
     }
 
     const uint32_t f_src = sam0_gclk_freq(pwm_config[dev].gclk_src);
 
-    /* calculate the closest possible clock presacler */
+    // calculate the closest possible clock presacler
     prescaler = _get_prescaler(f_src / (freq * res), &scale);
     if (prescaler == 0xff) {
         return 0;
     }
     f_real = f_src / (scale * res);
 
-    /* configure the used pins */
+    // configure the used pins
     for (unsigned i = 0; i < pwm_config[dev].chan_numof; i++) {
         if (pwm_config[dev].chan[i].pin != GPIO_UNDEF) {
             gpio_init(pwm_config[dev].chan[i].pin, GPIO_OUT);
@@ -333,7 +316,7 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
         }
     }
 
-    /* power on the device */
+    // power on the device
     poweron(dev);
 
     if (_use_tc(dev)) {
@@ -343,18 +326,16 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
         _tcc_init(_tcc(dev), mode, prescaler, res);
     }
 
-    /* return the actual frequency the PWM is running at */
+    // return the actual frequency the PWM is running at
     return f_real;
 }
 
-uint8_t pwm_channels(pwm_t dev)
-{
+uint8_t pwm_channels(pwm_t dev) {
     return pwm_config[dev].chan_numof;
 }
 
-static void _tc_set(Tc *tc, uint8_t chan, uint16_t value)
-{
-    /* TC only ever has two channels */
+static void _tc_set(Tc *tc, uint8_t chan, uint16_t value) {
+    // TC only ever has two channels
     chan %= 2;
     tc->COUNT8.CC[chan].reg = value;
 
@@ -365,9 +346,8 @@ static void _tc_set(Tc *tc, uint8_t chan, uint16_t value)
 #endif
 }
 
-static void _tcc_set(Tcc *tcc, uint8_t chan, uint16_t value)
-{
-    /* TODO: use OTMX for pin remapping */
+static void _tcc_set(Tcc *tcc, uint8_t chan, uint16_t value) {
+    // TODO: use OTMX for pin remapping
     chan %= _tcc_get_cc_numof(tcc);
     tcc->CC[chan].reg = value;
 #ifdef TCC_SYNCBUSY_MASK
@@ -377,8 +357,7 @@ static void _tcc_set(Tcc *tcc, uint8_t chan, uint16_t value)
 #endif
 }
 
-void pwm_set(pwm_t dev, uint8_t channel, uint16_t value)
-{
+void pwm_set(pwm_t dev, uint8_t channel, uint16_t value) {
     if ((channel >= pwm_config[dev].chan_numof) ||
         (pwm_config[dev].chan[channel].pin == GPIO_UNDEF)) {
         return;
@@ -392,8 +371,7 @@ void pwm_set(pwm_t dev, uint8_t channel, uint16_t value)
     }
 }
 
-void pwm_poweron(pwm_t dev)
-{
+void pwm_poweron(pwm_t dev) {
     poweron(dev);
 
     if (_use_tc(dev)) {
@@ -404,8 +382,7 @@ void pwm_poweron(pwm_t dev)
     }
 }
 
-void pwm_poweroff(pwm_t dev)
-{
+void pwm_poweroff(pwm_t dev) {
     if (_use_tc(dev)) {
         _tc(dev)->COUNT8.CTRLA.reg &= ~(TC_CTRLA_ENABLE);
     }

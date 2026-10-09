@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 Matthew Blue <matthew.blue.neuro@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 Matthew Blue <matthew.blue.neuro@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_mega-xplained
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Matthew Blue <matthew.blue.neuro@gmail.com>
- */
+/// @ingroup     boards_mega-xplained
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Matthew Blue <matthew.blue.neuro@gmail.com>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -24,9 +20,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   GPIO configuration
- */
+/// @brief   GPIO configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -41,7 +35,7 @@ static const  saul_gpio_params_t saul_gpio_params[] =
         .mode = BTN1_MODE,
         .flags = SAUL_GPIO_INVERTED,
     },
-    /* BTN2, LED0,2 currently unsupported due to lack of GPIO_OD support */
+    // BTN2, LED0,2 currently unsupported due to lack of GPIO_OD support
     {
         .name = "LED 1",
         .pin = LED1_PIN,
@@ -60,4 +54,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

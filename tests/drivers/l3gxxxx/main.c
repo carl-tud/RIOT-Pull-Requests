@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 /**
  * @ingroup     tests
@@ -93,14 +91,13 @@
 #include "l3gxxxx.h"
 #include "l3gxxxx_params.h"
 
-#define TESTS_DRIVER_L3GXXXX_SLEEP (200)    /* 200 ms */
+#define TESTS_DRIVER_L3GXXXX_SLEEP (200)    // 200 ms
 
 #if IS_USED(MODULE_L3GXXXX_IRQ)
-int handle_event(const l3gxxxx_t *dev, l3gxxxx_int_event_src_t source)
-{
+int handle_event(const l3gxxxx_t *dev, l3gxxxx_int_event_src_t source) {
     (void)dev;
 
-    /* display the event */
+    // display the event
     if (!source.active) {
         return -1;
     }
@@ -126,10 +123,9 @@ int handle_event(const l3gxxxx_t *dev, l3gxxxx_int_event_src_t source)
 
     return 0;
 }
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ)
 
-int read_data(const l3gxxxx_t *dev)
-{
+int read_data(const l3gxxxx_t *dev) {
 #if IS_USED(MODULE_L3GXXXX_FIFO)
 
     l3gxxxx_data_fifo_t data;
@@ -144,7 +140,7 @@ int read_data(const l3gxxxx_t *dev)
 
     return num;
 
-#else /* IS_USED(MODULE_L3GXXXX_FIFO) */
+#else // IS_USED(MODULE_L3GXXXX_FIFO)
 
     l3gxxxx_data_t data;
     l3gxxxx_read(dev, &data);
@@ -154,17 +150,16 @@ int read_data(const l3gxxxx_t *dev)
 
     return 1;
 
-#endif /* IS_USED(MODULE_L3GXXXX_FIFO) */
+#endif // IS_USED(MODULE_L3GXXXX_FIFO)
 }
 
-int main(void)
-{
+int main(void) {
     l3gxxxx_t dev;
 
     puts("L3GXXXX gyroscope driver test application\n");
     puts("Initializing L3GXXXX sensor");
 
-    /* initialize the sensor with default configuration parameters */
+    // initialize the sensor with default configuration parameters
     if (l3gxxxx_init(&dev, &l3gxxxx_params[0]) == L3GXXXX_OK) {
         puts("[OK]\n");
     }
@@ -174,21 +169,21 @@ int main(void)
     }
 
 #if IS_USED(MODULE_L3GXXXX_CONFIG)
-    /* select LPF2 and HPF, configure HPF and reset REFERENCE by dummy read */
+    // select LPF2 and HPF, configure HPF and reset REFERENCE by dummy read
     int8_t ref;
     l3gxxxx_select_output_filter(&dev, L3GXXXX_HPF_ONLY);
     l3gxxxx_config_hpf(&dev, L3GXXXX_HPF_NORMAL, 0);
     l3gxxxx_get_hpf_ref(&dev, &ref);
-#endif /* IS_USED(MODULE_L3GXXXX_CONFIG) */
+#endif // IS_USED(MODULE_L3GXXXX_CONFIG)
 
 #if IS_USED(MODULE_L3GXXXX_FIFO)  && IS_USED(MODULE_L3GXXXX_CONFIG)
-    /* clear FIFO and activate FIFO Stream mode */
+    // clear FIFO and activate FIFO Stream mode
     l3gxxxx_set_fifo_mode(&dev, L3GXXXX_BYPASS, 0);
     l3gxxxx_set_fifo_mode(&dev, L3GXXXX_STREAM, 10);
 #endif
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_EVENT) && IS_USED(MODULE_L3GXXXX_CONFIG)
-    /* enable event interrupts (axis movement and wake-up) */
+    // enable event interrupts (axis movement and wake-up)
     l3gxxxx_int_event_cfg_t int_cfg;
 
     l3gxxxx_get_int_event_cfg(&dev, &int_cfg);
@@ -209,26 +204,26 @@ int main(void)
     int_cfg.latch = true;
 
     l3gxxxx_set_int_event_cfg(&dev, &int_cfg);
-#endif /* IS_USED(MODULE_L3GXXXX_CONFIG) && IS_USED(MODULE_L3GXXXX_IRQ_EVENT) */
+#endif // IS_USED(MODULE_L3GXXXX_CONFIG) && IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
 
     while (1) {
 
 #if IS_USED(MODULE_L3GXXXX_IRQ)
-        /* wait for next interrupt */
+        // wait for next interrupt
         l3gxxxx_int_src_t int_src = l3gxxxx_wait_int(&dev);
         (void)int_src;
 
-        /* in case of event we determine the source */
+        // in case of event we determine the source
         if (int_src.event.active) {
             handle_event(&dev, int_src.event);
         }
-        /* read and print data in any case */
+        // read and print data in any case
         read_data(&dev);
 #else
-        /* read and print data */
+        // read and print data
         read_data(&dev);
         ztimer_sleep(ZTIMER_MSEC, TESTS_DRIVER_L3GXXXX_SLEEP);
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ)
     }
 
     return 0;

@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sht3x
- * @brief       SAUL adaption for Sensirion SHT30/SHT31/SHT35 devices
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- */
+/// @ingroup     drivers_sht3x
+/// @brief       SAUL adaption for Sensirion SHT30/SHT31/SHT35 devices
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
 
 #include <errno.h>
 #include <stdio.h>
@@ -22,24 +18,19 @@
 #define SHT3X_NUM      ARRAY_SIZE(sht3x_params)
 extern sht3x_dev_t sht3x_devs[SHT3X_NUM];
 
-/**
- * Humidity and temperature sensor values are fetched by separate saul
- * functions. To avoid double waiting for the sensor and readout of the
- * sensor values, we read both sensor values once, if necessary, and
- * store them in local variables to provide them in the separate saul
- * read functions.
- */
+/// Humidity and temperature sensor values are fetched by separate saul
+/// functions. To avoid double waiting for the sensor and readout of the
+/// sensor values, we read both sensor values once, if necessary, and
+/// store them in local variables to provide them in the separate saul
+/// read functions.
 static bool _temp_valid[SHT3X_NUM] = { false };
 static bool _hum_valid[SHT3X_NUM] = { false };
 static int16_t _temp[SHT3X_NUM];
 static int16_t _hum[SHT3X_NUM];
 
-static unsigned _dev2index (const sht3x_dev_t *dev)
-{
-    /*
-     * returns the index of the device in sht3x_devs[] or SHT3_NUM
-     * if not found
-     */
+static unsigned _dev2index (const sht3x_dev_t *dev) {
+    // returns the index of the device in sht3x_devs[] or SHT3_NUM
+    // if not found
     for (unsigned i = 0; i < SHT3X_NUM; i++) {
         if (dev == &sht3x_devs[i]) {
             return i;
@@ -48,31 +39,29 @@ static unsigned _dev2index (const sht3x_dev_t *dev)
     return SHT3X_NUM;
 }
 
-static int _read(int dev)
-{
-    /* read both sensor values */
+static int _read(int dev) {
+    // read both sensor values
     unsigned res = sht3x_read(&sht3x_devs[dev], &_temp[dev], &_hum[dev]);
     if (res != SHT3X_OK) {
         return res;
     }
-    /* mark both sensor values as valid */
+    // mark both sensor values as valid
     _temp_valid[dev] = true;
     _hum_valid[dev] = true;
     return SHT3X_OK;
 }
 
-static int read_temp(const void *dev, phydat_t *data)
-{
-    /* find the device index */
+static int read_temp(const void *dev, phydat_t *data) {
+    // find the device index
     unsigned dev_index = _dev2index((const sht3x_dev_t *)dev);
     if (dev_index == SHT3X_NUM) {
-        /* return with error if device index could not be found */
+        // return with error if device index could not be found
         return -ECANCELED;
     }
 
-    /* either local variable is valid or fetching it was successful */
+    // either local variable is valid or fetching it was successful
     if (_temp_valid[dev_index] || _read(dev_index) == SHT3X_OK) {
-        /* mark local variable as invalid */
+        // mark local variable as invalid
         _temp_valid[dev_index] = false;
 
         data->val[0] = _temp[dev_index];
@@ -83,18 +72,17 @@ static int read_temp(const void *dev, phydat_t *data)
     return -ECANCELED;
 }
 
-static int read_hum(const void *dev, phydat_t *data)
-{
-    /* find the device index */
+static int read_hum(const void *dev, phydat_t *data) {
+    // find the device index
     unsigned dev_index = _dev2index((const sht3x_dev_t *)dev);
     if (dev_index == SHT3X_NUM) {
-        /* return with error if device index could not be found */
+        // return with error if device index could not be found
         return -ECANCELED;
     }
 
-    /* either local variable is valid or fetching it was successful */
+    // either local variable is valid or fetching it was successful
     if (_hum_valid[dev_index] || _read(dev_index) == SHT3X_OK) {
-        /* mark local variable as invalid */
+        // mark local variable as invalid
         _hum_valid[dev_index] = false;
 
         data->val[0] = _hum[dev_index];

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_gnrc_pktshark
- * @{
- *
- * @file
- * @brief       Pretty-printer for packages sent/received via netapi
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     net_gnrc_pktshark
+/// @{
+///
+/// @file
+/// @brief       Pretty-printer for packages sent/received via netapi
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -41,60 +37,47 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief   Default message queue size for the pktshark thread (as exponent of
- *          2^n).
- *
- *          As the queue size ALWAYS needs to be power of two, this option
- *          represents the exponent of 2^n, which will be used as the size of
- *          the queue.
- */
+/// @brief   Default message queue size for the pktshark thread (as exponent of
+///          2^n).
+///
+///          As the queue size ALWAYS needs to be power of two, this option
+///          represents the exponent of 2^n, which will be used as the size of
+///          the queue.
 #ifndef CONFIG_GNRC_PKTSHARK_MSG_QUEUE_SIZE_EXP
 #define CONFIG_GNRC_PKTSHARK_MSG_QUEUE_SIZE_EXP  3
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   Message queue size for the pktshark thread
- */
+/// @brief   Message queue size for the pktshark thread
 #ifndef GNRC_PKTSHARK_MSG_QUEUE_SIZE
 #define GNRC_PKTSHARK_MSG_QUEUE_SIZE  (1 << CONFIG_GNRC_PKTSHARK_MSG_QUEUE_SIZE_EXP)
 #endif
 
-/**
- * @brief   Priority of the pktshark thread
- */
+/// @brief   Priority of the pktshark thread
 #ifndef GNRC_PKTSHARK_PRIO
 #define GNRC_PKTSHARK_PRIO               (THREAD_PRIORITY_MAIN - 1)
 #endif
 
-/**
- * @brief   Stack size used for the pktshark thread
- */
+/// @brief   Stack size used for the pktshark thread
 #ifndef GNRC_PKTSHARK_STACKSIZE
 #define GNRC_PKTSHARK_STACKSIZE          THREAD_STACKSIZE_MAIN
 #endif
 
-/**
- * @brief   PID of the pktshark thread
- */
+/// @brief   PID of the pktshark thread
 static kernel_pid_t gnrc_pktshark_pid = KERNEL_PID_UNDEF;
 
-/**
- * @brief   Stack for the pktshark thread
- */
+/// @brief   Stack for the pktshark thread
 static char _stack[GNRC_PKTSHARK_STACKSIZE];
 static msg_t _msg_queue[GNRC_PKTSHARK_MSG_QUEUE_SIZE];
 
-/* Iterator for NDP options in a packet */
+// Iterator for NDP options in a packet
 #define FOREACH_OPT(ndp_pkt, opt, icmpv6_len) \
     for (opt = (ndp_opt_t *)(ndp_pkt + 1); \
          icmpv6_len > 0; \
          icmpv6_len -= (opt->len << 3), \
          opt = (ndp_opt_t *)(((uint8_t *)opt) + (opt->len << 3)))
 
-static void _dump_rtr_sol(const ndp_rtr_sol_t *rtr_sol, size_t payload_len)
-{
+static void _dump_rtr_sol(const ndp_rtr_sol_t *rtr_sol, size_t payload_len) {
     print_str("Router Sol");
 
     ndp_opt_t *opt;
@@ -110,8 +93,7 @@ static void _dump_rtr_sol(const ndp_rtr_sol_t *rtr_sol, size_t payload_len)
     }
 }
 
-static void _dump_rtr_adv(const ndp_rtr_adv_t *rtr_adv, size_t payload_len)
-{
+static void _dump_rtr_adv(const ndp_rtr_adv_t *rtr_adv, size_t payload_len) {
     print_str("Router Adv");
 
     ndp_opt_t *opt;
@@ -186,8 +168,7 @@ static void _dump_rtr_adv(const ndp_rtr_adv_t *rtr_adv, size_t payload_len)
     }
 }
 
-static void _dump_nbr_sol(const ndp_nbr_sol_t *nbr_sol, size_t payload_len)
-{
+static void _dump_nbr_sol(const ndp_nbr_sol_t *nbr_sol, size_t payload_len) {
     print_str("Neighbor Sol (");
     ipv6_addr_print(&nbr_sol->tgt);
     print_str(")");
@@ -208,8 +189,7 @@ static void _dump_nbr_sol(const ndp_nbr_sol_t *nbr_sol, size_t payload_len)
     }
 }
 
-static void _dump_nbr_adv(const ndp_nbr_adv_t *nbr_adv, size_t payload_len)
-{
+static void _dump_nbr_adv(const ndp_nbr_adv_t *nbr_adv, size_t payload_len) {
     print_str("Neighbor Adv (");
     if (nbr_adv->flags & NDP_NBR_ADV_FLAGS_R) {
         print_str("R");
@@ -242,8 +222,7 @@ static void _dump_nbr_adv(const ndp_nbr_adv_t *nbr_adv, size_t payload_len)
     }
 }
 
-static void _dump_icmpv6_echo(const icmpv6_echo_t *echo, size_t payload_len)
-{
+static void _dump_icmpv6_echo(const icmpv6_echo_t *echo, size_t payload_len) {
     print_str(" seq=");
     print_u32_dec(byteorder_ntohs(echo->seq));
     print_str(" (");
@@ -251,8 +230,7 @@ static void _dump_icmpv6_echo(const icmpv6_echo_t *echo, size_t payload_len)
     print_str(" bytes)\n");
 }
 
-static void _dump_icmpv6(const icmpv6_hdr_t *hdr, size_t payload_len)
-{
+static void _dump_icmpv6(const icmpv6_hdr_t *hdr, size_t payload_len) {
     print_str("\n\tICMPv6 ");
 
     if (!IS_USED(MODULE_GNRC_PKTSHARK_ICMPV6)) {
@@ -303,8 +281,7 @@ static void _dump_icmpv6(const icmpv6_hdr_t *hdr, size_t payload_len)
     print_str("\n");
 }
 
-static void _print_coap_block(coap_pkt_t *pkt, uint16_t option)
-{
+static void _print_coap_block(coap_pkt_t *pkt, uint16_t option) {
     coap_block1_t block;
     coap_get_block(pkt, &block, option);
 
@@ -324,8 +301,7 @@ static void _print_coap_block(coap_pkt_t *pkt, uint16_t option)
     print_str("]");
 }
 
-static void _print_coap_format(unsigned format)
-{
+static void _print_coap_format(unsigned format) {
     print_str(" ");
     switch (format) {
     case COAP_FORMAT_TEXT:
@@ -350,8 +326,7 @@ static void _print_coap_format(unsigned format)
     }
 }
 
-static bool _dump_coap(const void *buf, size_t len)
-{
+static bool _dump_coap(const void *buf, size_t len) {
     if (!IS_USED(MODULE_GNRC_PKTSHARK_COAP)) {
         return false;
     }
@@ -393,7 +368,7 @@ static bool _dump_coap(const void *buf, size_t len)
         print_bytes_hex(coap_get_token(&pkt), coap_get_token_len(&pkt));
     }
 
-    /* parse CoAP options */
+    // parse CoAP options
     coap_optpos_t opt = {
         .offset = coap_get_total_hdr_len(&pkt)
     };
@@ -460,8 +435,7 @@ static bool _dump_coap(const void *buf, size_t len)
     return true;
 }
 
-static bool _try_parse_udp(uint16_t port, const void *payload, size_t payload_len)
-{
+static bool _try_parse_udp(uint16_t port, const void *payload, size_t payload_len) {
     switch (port) {
     case COAP_PORT:
         if (_dump_coap(payload, payload_len)) {
@@ -473,8 +447,7 @@ static bool _try_parse_udp(uint16_t port, const void *payload, size_t payload_le
     return false;
 }
 
-static void _dump_udp(const udp_hdr_t *hdr, size_t payload_len, gnrc_pktsnip_t *next)
-{
+static void _dump_udp(const udp_hdr_t *hdr, size_t payload_len, gnrc_pktsnip_t *next) {
     const void *payload;
 
     if (next) {
@@ -490,7 +463,7 @@ static void _dump_udp(const udp_hdr_t *hdr, size_t payload_len, gnrc_pktsnip_t *
     print_u32_dec(byteorder_ntohs(hdr->dst_port));
     print_str("]\n");
 
-    /* we can be either client or server */
+    // we can be either client or server
     if (_try_parse_udp(byteorder_ntohs(hdr->src_port), payload, payload_len) ||
         _try_parse_udp(byteorder_ntohs(hdr->dst_port), payload, payload_len)) {
         return;
@@ -501,23 +474,21 @@ static void _dump_udp(const udp_hdr_t *hdr, size_t payload_len, gnrc_pktsnip_t *
     print_str(" bytes)\n");
 }
 
-static void _dump_tcp(const tcp_hdr_t *hdr, size_t payload_len)
-{
+static void _dump_tcp(const tcp_hdr_t *hdr, size_t payload_len) {
     print_str("  TCP [");
     print_u32_dec(byteorder_ntohs(hdr->src_port));
     print_str(" -> ");
     print_u32_dec(byteorder_ntohs(hdr->dst_port));
     print_str("]\n");
 
-    /* TODO: parse TCP protocols */
+    // TODO: parse TCP protocols
 
     printf("\t(");
     print_u32_dec(payload_len);
     print_str(" bytes)\n");
 }
 
-static bool _is_extopt(uint8_t next_header)
-{
+static bool _is_extopt(uint8_t next_header) {
     switch (next_header) {
     case PROTNUM_IPV6_EXT_HOPOPT:
         print_str(" hopopt");
@@ -545,8 +516,7 @@ static bool _is_extopt(uint8_t next_header)
     return false;
 }
 
-static void _dump_ipv4(const ipv4_hdr_t *hdr, size_t payload_len, bool rx)
-{
+static void _dump_ipv4(const ipv4_hdr_t *hdr, size_t payload_len, bool rx) {
     const ipv4_addr_t *me = rx ? &hdr->dst : &hdr->src;
     const ipv4_addr_t *they = rx ? &hdr->src : &hdr->dst;
     const void *payload = hdr + 1;
@@ -571,8 +541,7 @@ static void _dump_ipv4(const ipv4_hdr_t *hdr, size_t payload_len, bool rx)
     }
 }
 
-static void _dump_ipv6(const ipv6_hdr_t *hdr, size_t payload_len, bool rx)
-{
+static void _dump_ipv6(const ipv6_hdr_t *hdr, size_t payload_len, bool rx) {
     const ipv6_addr_t *me = rx ? &hdr->dst : &hdr->src;
     const ipv6_addr_t *they = rx ? &hdr->src : &hdr->dst;
 
@@ -584,7 +553,7 @@ static void _dump_ipv6(const ipv6_hdr_t *hdr, size_t payload_len, bool rx)
         const void *payload = hdr + 1;
         uint8_t next_header = hdr->nh;
 
-        /* skip IPv6 extension headers */
+        // skip IPv6 extension headers
         while (_is_extopt(next_header)) {
             const struct {
                 uint8_t nh;
@@ -608,12 +577,12 @@ static void _dump_ipv6(const ipv6_hdr_t *hdr, size_t payload_len, bool rx)
             break;
         case PROTNUM_IPV4:
             if (IS_USED(MODULE_GNRC_PKTSHARK_4IN6)) {
-                /* 4in6 */
+                // 4in6
                 print_str("\n\t");
                 _dump_ipv4(payload, payload_len - sizeof(ipv4_hdr_t), rx);
                 break;
             }
-            /* fall-through */
+            // fall-through
         default:
             print_str("\tunknown next header type ");
             print_u32_dec(next_header);
@@ -622,8 +591,7 @@ static void _dump_ipv6(const ipv6_hdr_t *hdr, size_t payload_len, bool rx)
     }
 }
 
-static void _dump_snip(gnrc_pktsnip_t *pkt, bool rx)
-{
+static void _dump_snip(gnrc_pktsnip_t *pkt, bool rx) {
     if (pkt->type <= 0) {
         return;
     }
@@ -655,8 +623,7 @@ static void _dump_snip(gnrc_pktsnip_t *pkt, bool rx)
     }
 }
 
-static void _dump(gnrc_pktsnip_t *pkt, bool rx)
-{
+static void _dump(gnrc_pktsnip_t *pkt, bool rx) {
     gnrc_pktsnip_t *snip = pkt;
     gnrc_pktsnip_t *netif = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_NETIF);
 
@@ -675,12 +642,11 @@ static void _dump(gnrc_pktsnip_t *pkt, bool rx)
     gnrc_pktbuf_release(pkt);
 }
 
-static void *_eventloop(void *arg)
-{
+static void *_eventloop(void *arg) {
     (void)arg;
     msg_t msg, reply;
 
-    /* setup the message queue */
+    // setup the message queue
     msg_init_queue(_msg_queue, GNRC_PKTSHARK_MSG_QUEUE_SIZE);
 
     reply.content.value = (uint32_t)(-ENOTSUP);
@@ -706,12 +672,11 @@ static void *_eventloop(void *arg)
         }
     }
 
-    /* never reached */
+    // never reached
     return NULL;
 }
 
-static void _set_capture(bool enable)
-{
+static void _set_capture(bool enable) {
     static gnrc_netreg_entry_t dump;
 
     assume(gnrc_pktshark_pid != KERNEL_PID_UNDEF);
@@ -729,8 +694,7 @@ static void _set_capture(bool enable)
     }
 }
 
-static void gnrc_pktshark_init(void)
-{
+static void gnrc_pktshark_init(void) {
     gnrc_pktshark_pid = thread_create(_stack, sizeof(_stack), GNRC_PKTSHARK_PRIO, 0,
                                       _eventloop, NULL, "pktshark");
     if (IS_USED(MODULE_AUTO_INIT_GNRC_PKTSHARK)) {
@@ -740,8 +704,7 @@ static void gnrc_pktshark_init(void)
 AUTO_INIT(gnrc_pktshark_init, AUTO_INIT_PRIO_MOD_GNRC_PKTSHARK);
 
 #ifdef MODULE_SHELL_CMD_GNRC_PKTSHARK
-static int cmd_pktshark(int argc, char **argv)
-{
+static int cmd_pktshark(int argc, char **argv) {
     if (argc < 2) {
         goto usage;
     }

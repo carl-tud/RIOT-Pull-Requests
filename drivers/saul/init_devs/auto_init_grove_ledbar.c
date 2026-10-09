@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of Grove LED bar
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of Grove LED bar
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -22,33 +18,22 @@
 #include "grove_ledbar.h"
 #include "grove_ledbar_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define GROVE_LEDBAR_NUM     ARRAY_SIZE(grove_ledbar_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static grove_ledbar_t grove_ledbar_devs[GROVE_LEDBAR_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[GROVE_LEDBAR_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define GROVE_LEDBAR_INFO_NUM ARRAY_SIZE(grove_ledbar_saul_info)
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern const saul_driver_t grove_ledbar_saul_driver;
 
-void auto_init_grove_ledbar(void)
-{
+void auto_init_grove_ledbar(void) {
     assert(GROVE_LEDBAR_NUM == GROVE_LEDBAR_INFO_NUM);
 
     for (unsigned i = 0; i < GROVE_LEDBAR_NUM; i++) {

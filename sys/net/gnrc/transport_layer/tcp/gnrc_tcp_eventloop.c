@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Simon Brummer
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Simon Brummer
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_gnrc
- * @{
- *
- * @file
- * @brief       Implementation of internal/eventloop.h
- *
- * @author      Simon Brummer <simon.brummer@posteo.de>
- * @}
- */
+/// @ingroup     net_gnrc
+/// @{
+///
+/// @file
+/// @brief       Implementation of internal/eventloop.h
+///
+/// @author      Simon Brummer <simon.brummer@posteo.de>
+/// @}
 
 #include <assert.h>
 #include <utlist.h>
@@ -36,37 +32,28 @@
 
 static msg_t _eventloop_msg_queue[TCP_EVENTLOOP_MSG_QUEUE_SIZE];
 
-/**
- * @brief Allocate memory for GNRC TCP thread stack.
- */
+/// @brief Allocate memory for GNRC TCP thread stack.
 static char _stack[TCP_EVENTLOOP_STACK_SIZE + DEBUG_EXTRA_STACKSIZE];
 
-/**
- * @brief Central evtimer for gnrc_tcp event loop
- */
+/// @brief Central evtimer for gnrc_tcp event loop
 static evtimer_t _tcp_msg_timer;
 
-/**
- * @brief TCPs eventloop pid
- */
+/// @brief TCPs eventloop pid
 static kernel_pid_t _tcp_eventloop_pid = KERNEL_PID_UNDEF;
 
-/**
- * @brief Send function, pass packet down the network stack.
- *
- * @param[in] pkt   Packet to send.
- *
- * @returns   Zero on success.
- *            Negative value on error.
- * @returns  -EBADMSG if required header is missing in @p pkt.
- */
-static int _send(gnrc_pktsnip_t *pkt)
-{
+/// @brief Send function, pass packet down the network stack.
+///
+/// @param[in] pkt   Packet to send.
+///
+/// @returns   Zero on success.
+///            Negative value on error.
+/// @returns  -EBADMSG if required header is missing in @p pkt.
+static int _send(gnrc_pktsnip_t *pkt) {
     TCP_DEBUG_ENTER;
     assert(pkt != NULL);
 
-    /* NOTE: In sending direction: pkt = nw, nw->next = tcp, tcp->next = payload */
-    /* Search for TCP header */
+    // NOTE: In sending direction: pkt = nw, nw->next = tcp, tcp->next = payload
+    // Search for TCP header
     gnrc_pktsnip_t *tcp = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_TCP);
     gnrc_pktsnip_t *nw = NULL;
 
@@ -77,9 +64,9 @@ static int _send(gnrc_pktsnip_t *pkt)
         return -EBADMSG;
     }
 
-    /* Search for network layer */
+    // Search for network layer
 #ifdef MODULE_GNRC_IPV6
-    /* Get IPv6 header, discard packet if doesn't contain an ipv6 header */
+    // Get IPv6 header, discard packet if doesn't contain an ipv6 header
     nw = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_IPV6);
     if (nw == NULL) {
         gnrc_pktbuf_release(pkt);
@@ -88,7 +75,7 @@ static int _send(gnrc_pktsnip_t *pkt)
         return -EBADMSG;
     }
 #endif
-    /* Dispatch packet to network layer */
+    // Dispatch packet to network layer
     assert(nw != NULL);
     if (!gnrc_netapi_dispatch_send(nw->type, GNRC_NETREG_DEMUX_CTX_ALL, pkt)) {
         gnrc_pktbuf_release(pkt);
@@ -98,24 +85,21 @@ static int _send(gnrc_pktsnip_t *pkt)
     return 0;
 }
 
-/**
- * @brief Receive function, receive packet from network layer.
- *
- * @param[in] pkt   Incoming packet.
- *
- * @returns   Zero on success.
- *            Negative value on error.
- *            -EBADMSG if required header is missing or invalid in @p pkt.
- *            -EACCES if write access to packet was not acquired.
- *            -ERANGE if segment offset value is less than 5.
- *            -ENOMSG if packet couldn't be marked.
- *            -EINVAL if checksum was invalid.
- *            -ENOTCONN if no TCB is interested in @p pkt.
- */
-static int _receive(gnrc_pktsnip_t *pkt)
-{
+/// @brief Receive function, receive packet from network layer.
+///
+/// @param[in] pkt   Incoming packet.
+///
+/// @returns   Zero on success.
+///            Negative value on error.
+///            -EBADMSG if required header is missing or invalid in @p pkt.
+///            -EACCES if write access to packet was not acquired.
+///            -ERANGE if segment offset value is less than 5.
+///            -ENOMSG if packet couldn't be marked.
+///            -EINVAL if checksum was invalid.
+///            -ENOTCONN if no TCB is interested in @p pkt.
+static int _receive(gnrc_pktsnip_t *pkt) {
     TCP_DEBUG_ENTER;
-    /* NOTE: In receiving direction: pkt = payload, payload->next = tcp, tcp->next = nw */
+    // NOTE: In receiving direction: pkt = payload, payload->next = tcp, tcp->next = nw
     uint16_t ctl = 0;
     uint16_t src = 0;
     uint16_t dst = 0;
@@ -126,7 +110,7 @@ static int _receive(gnrc_pktsnip_t *pkt)
     gnrc_tcp_tcb_t *tcb = NULL;
     tcp_hdr_t *hdr;
 
-    /* Get write access to the TCP header */
+    // Get write access to the TCP header
     gnrc_pktsnip_t *tcp = gnrc_pktbuf_start_write(pkt);
     if (tcp == NULL) {
         gnrc_pktbuf_release(pkt);
@@ -137,7 +121,7 @@ static int _receive(gnrc_pktsnip_t *pkt)
     pkt = tcp;
 
 #ifdef MODULE_GNRC_IPV6
-    /* Get IPv6 header, discard packet if doesn't contain an ip header */
+    // Get IPv6 header, discard packet if doesn't contain an ip header
     ip = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_IPV6);
     if (ip == NULL) {
         gnrc_pktbuf_release(pkt);
@@ -147,7 +131,7 @@ static int _receive(gnrc_pktsnip_t *pkt)
     }
 #endif
 
-    /* Get TCP header */
+    // Get TCP header
     tcp = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_TCP);
     if (tcp == NULL) {
         gnrc_pktbuf_release(pkt);
@@ -163,14 +147,14 @@ static int _receive(gnrc_pktsnip_t *pkt)
         return -EBADMSG;
     }
 
-    /* Extract control bits, src and dst ports and check if SYN is set (not SYN+ACK) */
+    // Extract control bits, src and dst ports and check if SYN is set (not SYN+ACK)
     hdr = (tcp_hdr_t *)tcp->data;
     ctl = byteorder_ntohs(hdr->off_ctl);
     src = byteorder_ntohs(hdr->src_port);
     dst = byteorder_ntohs(hdr->dst_port);
     syn = ((ctl & MSK_SYN_ACK) == MSK_SYN);
 
-    /* Validate offset */
+    // Validate offset
     if (GET_OFFSET(ctl) < TCP_HDR_OFFSET_MIN) {
         gnrc_pktbuf_release(pkt);
         TCP_DEBUG_ERROR("-ERANGE: Invalid TCP header offset.");
@@ -178,10 +162,10 @@ static int _receive(gnrc_pktsnip_t *pkt)
         return -ERANGE;
     }
 
-    /* Calculate TCP header size */
+    // Calculate TCP header size
     hdr_size = GET_OFFSET(ctl) * 4;
 
-    /* Mark TCP header if it contains any payload */
+    // Mark TCP header if it contains any payload
     if ((pkt->type == GNRC_NETTYPE_TCP) && (pkt->size != hdr_size)) {
         tcp = gnrc_pktbuf_mark(pkt, hdr_size, GNRC_NETTYPE_TCP);
         if (tcp == NULL) {
@@ -194,7 +178,7 @@ static int _receive(gnrc_pktsnip_t *pkt)
         hdr = (tcp_hdr_t *)tcp->data;
     }
 
-    /* Validate checksum */
+    // Validate checksum
     if (byteorder_ntohs(hdr->checksum) != _gnrc_tcp_pkt_calc_csum(tcp, ip, pkt)) {
 #ifndef MODULE_FUZZING
         gnrc_pktbuf_release(pkt);
@@ -204,19 +188,19 @@ static int _receive(gnrc_pktsnip_t *pkt)
 #endif
     }
 
-    /* Find TCB to for this packet */
+    // Find TCB to for this packet
     _gnrc_tcp_common_tcb_list_t *list = _gnrc_tcp_common_get_tcb_list();
     mutex_lock(&list->lock);
     tcb = list->head;
     while (tcb) {
 #ifdef MODULE_GNRC_IPV6
-        /* Check if current TCB is fitting for the incoming packet */
+        // Check if current TCB is fitting for the incoming packet
         if (ip->type == GNRC_NETTYPE_IPV6 && tcb->address_family == AF_INET6) {
-            /* If SYN is set, a connection is listening on that port ... */
+            // If SYN is set, a connection is listening on that port ...
             ipv6_addr_t *tmp_addr = NULL;
             _gnrc_tcp_fsm_state_t state = _gnrc_tcp_fsm_get_state(tcb);
             if (syn && tcb->local_port == dst && state == FSM_STATE_LISTEN) {
-                /* ... and local addr is unspec or pre configured */
+                // ... and local addr is unspec or pre configured
                 tmp_addr = &((ipv6_hdr_t *)ip->data)->dst;
                 if (ipv6_addr_equal((ipv6_addr_t *) tcb->local_addr, (ipv6_addr_t *) tmp_addr) ||
                     ipv6_addr_is_unspecified((ipv6_addr_t *) tcb->local_addr)) {
@@ -224,9 +208,9 @@ static int _receive(gnrc_pktsnip_t *pkt)
                 }
             }
 
-            /* If SYN is not set and the ports match ... */
+            // If SYN is not set and the ports match ...
             if (!syn && tcb->local_port == dst && tcb->peer_port == src) {
-                /* .. and the IPv6 addresses match */
+                // .. and the IPv6 addresses match
                 tmp_addr = &((ipv6_hdr_t * )ip->data)->src;
                 if (ipv6_addr_equal((ipv6_addr_t *) tcb->peer_addr, (ipv6_addr_t *) tmp_addr)) {
                     break;
@@ -234,7 +218,7 @@ static int _receive(gnrc_pktsnip_t *pkt)
             }
         }
 #else
-        /* Suppress compiler warnings if TCP is built without network layer */
+        // Suppress compiler warnings if TCP is built without network layer
         TCP_DEBUG_ERROR("Missing network layer. Add module to makefile.");
         (void) syn;
         (void) src;
@@ -244,14 +228,13 @@ static int _receive(gnrc_pktsnip_t *pkt)
     }
     mutex_unlock(&list->lock);
 
-    /* Call FSM with event RCVD_PKT if a fitting TCB was found */
-    /* cppcheck-suppress knownConditionTrueFalse
-     * (reason: tcb can be NULL at runtime)
-     */
+    // Call FSM with event RCVD_PKT if a fitting TCB was found
+    // cppcheck-suppress knownConditionTrueFalse
+    // (reason: tcb can be NULL at runtime)
     if (tcb != NULL) {
         _gnrc_tcp_fsm(tcb, FSM_EVENT_RCVD_PKT, pkt, NULL, 0);
     }
-    /* No fitting TCB has been found. Respond with reset */
+    // No fitting TCB has been found. Respond with reset
     else {
         if ((ctl & MSK_RST) != MSK_RST) {
             _gnrc_tcp_pkt_build_reset_from_pkt(&reset, pkt);
@@ -270,65 +253,64 @@ static int _receive(gnrc_pktsnip_t *pkt)
     return 0;
 }
 
-static void *_eventloop(__attribute__((unused)) void *arg)
-{
+static void *_eventloop(__attribute__((unused)) void *arg) {
     TCP_DEBUG_ENTER;
     msg_t msg;
     msg_t reply;
 
-    /* Store pid */
+    // Store pid
     _tcp_eventloop_pid = thread_getpid();
 
-    /* Setup reply message */
+    // Setup reply message
     reply.type = GNRC_NETAPI_MSG_TYPE_ACK;
     reply.content.value = (uint32_t)-ENOTSUP;
 
-    /* Init message queue */
+    // Init message queue
     msg_init_queue(_eventloop_msg_queue, TCP_EVENTLOOP_MSG_QUEUE_SIZE);
 
-    /* Register GNRC TCPs handling thread in netreg */
+    // Register GNRC TCPs handling thread in netreg
     gnrc_netreg_entry_t entry;
     gnrc_netreg_entry_init_pid(&entry, GNRC_NETREG_DEMUX_CTX_ALL, _tcp_eventloop_pid);
     gnrc_netreg_register(GNRC_NETTYPE_TCP, &entry);
 
-    /* dispatch NETAPI messages */
+    // dispatch NETAPI messages
     while (1) {
         msg_receive(&msg);
         switch (msg.type) {
-            /* Pass message up the network stack */
+            // Pass message up the network stack
             case GNRC_NETAPI_MSG_TYPE_RCV:
                 TCP_DEBUG_INFO("Received GNRC_NETAPI_MSG_TYPE_RCV.");
                 _receive((gnrc_pktsnip_t *)msg.content.ptr);
                 break;
 
-            /* Pass message down the network stack */
+            // Pass message down the network stack
             case GNRC_NETAPI_MSG_TYPE_SND:
                 TCP_DEBUG_INFO("Received GNRC_NETAPI_MSG_TYPE_SND.");
                 _send((gnrc_pktsnip_t *)msg.content.ptr);
                 break;
 
-            /* Reply to option set and set messages*/
+            // Reply to option set and set messages
             case GNRC_NETAPI_MSG_TYPE_SET:
             case GNRC_NETAPI_MSG_TYPE_GET:
                 msg_reply(&msg, &reply);
                 break;
 
-            /* Retransmission timer expired: Call FSM with retransmission event */
+            // Retransmission timer expired: Call FSM with retransmission event
             case MSG_TYPE_RETRANSMISSION:
                 TCP_DEBUG_INFO("Received MSG_TYPE_RETRANSMISSION.");
                 _gnrc_tcp_fsm((gnrc_tcp_tcb_t *)msg.content.ptr,
                               FSM_EVENT_TIMEOUT_RETRANSMIT, NULL, NULL, 0);
                 break;
 
-            /* Timewait timer expired: Call FSM with timewait event */
+            // Timewait timer expired: Call FSM with timewait event
             case MSG_TYPE_TIMEWAIT:
                 TCP_DEBUG_INFO("Received MSG_TYPE_TIMEWAIT.");
                 _gnrc_tcp_fsm((gnrc_tcp_tcb_t *)msg.content.ptr,
                               FSM_EVENT_TIMEOUT_TIMEWAIT, NULL, NULL, 0);
                 break;
 
-           /* A connection opening attempt from a TCB in listening mode failed.
-            * Clear retransmission and re-open for next attempt */
+           // A connection opening attempt from a TCB in listening mode failed.
+           // Clear retransmission and re-open for next attempt
             case MSG_TYPE_CONNECTION_TIMEOUT:
                 TCP_DEBUG_INFO("Received MSG_TYPE_CONNECTION_TIMEOUT.");
                 _gnrc_tcp_fsm((gnrc_tcp_tcb_t *)msg.content.ptr,
@@ -341,15 +323,14 @@ static void *_eventloop(__attribute__((unused)) void *arg)
                 TCP_DEBUG_ERROR("Received unexpected message.");
         }
     }
-    /* Never reached */
+    // Never reached
     TCP_DEBUG_ERROR("This function should never exit.");
     TCP_DEBUG_LEAVE;
     return NULL;
 }
 
 void _gnrc_tcp_eventloop_sched(evtimer_msg_event_t *event, uint32_t offset,
-                               uint16_t type, void *context)
-{
+                               uint16_t type, void *context) {
     TCP_DEBUG_ENTER;
     event->event.offset = offset;
     event->msg.type = type;
@@ -358,24 +339,22 @@ void _gnrc_tcp_eventloop_sched(evtimer_msg_event_t *event, uint32_t offset,
     TCP_DEBUG_LEAVE;
 }
 
-void _gnrc_tcp_eventloop_unsched(evtimer_msg_event_t *event)
-{
+void _gnrc_tcp_eventloop_unsched(evtimer_msg_event_t *event) {
     TCP_DEBUG_ENTER;
     evtimer_del(&_tcp_msg_timer, (evtimer_event_t *)event);
     TCP_DEBUG_LEAVE;
 }
 
-int _gnrc_tcp_eventloop_init(void)
-{
+int _gnrc_tcp_eventloop_init(void) {
     TCP_DEBUG_ENTER;
-    /* Guard: Check if thread is already running */
+    // Guard: Check if thread is already running
     if (_tcp_eventloop_pid != KERNEL_PID_UNDEF) {
         TCP_DEBUG_ERROR("-EEXIST: TCP eventloop already running.");
         TCP_DEBUG_LEAVE;
         return -EEXIST;
     }
 
-    /* Initialize timers */
+    // Initialize timers
     evtimer_init_msg(&_tcp_msg_timer);
 
     kernel_pid_t pid = thread_create(_stack, sizeof(_stack), TCP_EVENTLOOP_PRIO,

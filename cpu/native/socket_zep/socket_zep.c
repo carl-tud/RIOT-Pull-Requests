@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @author Martine Lenders <m.lenders@fu-berlin.de>
- * @author Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @file
+/// @author Martine Lenders <m.lenders@fu-berlin.de>
+/// @author Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <assert.h>
 #include <err.h>
@@ -34,17 +30,17 @@
 #include "debug.h"
 
 #define _UNIX_NTP_ERA_OFFSET    (2208988800U)
-/* can't use timex.h's US_PER_SEC as timeval's tv_usec is signed long
- * (https://pubs.opengroup.org/onlinepubs/9699919799.2016edition/basedefs/time.h.html) */
+// can't use timex.h's US_PER_SEC as timeval's tv_usec is signed long
+// (https://pubs.opengroup.org/onlinepubs/9699919799.2016edition/basedefs/time.h.html)
 #define TV_USEC_PER_SEC         (1000000L)
 
-/* IEEE 802.15.4 ACK delay */
+// IEEE 802.15.4 ACK delay
 #define ACK_DELAY_US            (IEEE802154_SYMBOL_TIME_US * IEEE802154_ATURNAROUNDTIME_IN_SYMBOLS)
 
-/* dummy packet to register with ZEP dispatcher */
+// dummy packet to register with ZEP dispatcher
 #define SOCKET_ZEP_V2_TYPE_HELLO   (255)
 
-/* simulate RSSI by calculating error function of LQI */
+// simulate RSSI by calculating error function of LQI
 static const uint8_t lqi_to_rssi[256] = {
      74,  74,  74,  74,  74,  74,  74,  74,  74,  75,  75,  75,  75,  75,  75,  75,
      75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,
@@ -65,8 +61,7 @@ static const uint8_t lqi_to_rssi[256] = {
 };
 
 static size_t _zep_hdr_fill_v2_data(socket_zep_t *dev, zep_v2_data_hdr_t *hdr,
-                                    size_t payload_len)
-{
+                                    size_t payload_len) {
     struct timeval tv;
 
     real_gettimeofday(&tv, NULL);
@@ -75,7 +70,7 @@ static size_t _zep_hdr_fill_v2_data(socket_zep_t *dev, zep_v2_data_hdr_t *hdr,
     hdr->chan = dev->chan;
     hdr->dev = byteorder_htons((uint16_t)((((intptr_t)dev)) & 0xffff));
     hdr->lqi_mode = 1;
-    hdr->lqi_val = 0xff;                /* set by ZEP dispatcher */
+    hdr->lqi_val = 0xff;                // set by ZEP dispatcher
     hdr->time.seconds = byteorder_htonl(tv.tv_sec + _UNIX_NTP_ERA_OFFSET);
     assert(tv.tv_usec < TV_USEC_PER_SEC);
     hdr->time.fraction = byteorder_htonl(
@@ -89,26 +84,24 @@ static size_t _zep_hdr_fill_v2_data(socket_zep_t *dev, zep_v2_data_hdr_t *hdr,
 }
 
 static inline size_t _zep_hdr_fill(socket_zep_t *dev, zep_hdr_t *hdr,
-                                   size_t payload_len)
-{
+                                   size_t payload_len) {
     hdr->preamble[0] = 'E';
     hdr->preamble[1] = 'X';
 
-    /* keep possibility for ZEPv1 open */
+    // keep possibility for ZEPv1 open
     return _zep_hdr_fill_v2_data(dev, (zep_v2_data_hdr_t *)hdr,
                                  payload_len);
 }
 
-static void _continue_reading(socket_zep_t *dev)
-{
-    /* work around lost signals */
+static void _continue_reading(socket_zep_t *dev) {
+    // work around lost signals
     fd_set rfds;
     struct timeval t;
     memset(&t, 0, sizeof(t));
     FD_ZERO(&rfds);
     FD_SET(dev->sock_fd, &rfds);
 
-    _native_pending_syscalls_up(); /* no switching here */
+    _native_pending_syscalls_up(); // no switching here
 
     dev->state = ZEPDEV_STATE_RX_ON;
 
@@ -125,26 +118,25 @@ static void _continue_reading(socket_zep_t *dev)
     _native_pending_syscalls_down();
 }
 
-static inline bool _dst_not_me(socket_zep_t *dev, const void *buf)
-{
+static inline bool _dst_not_me(socket_zep_t *dev, const void *buf) {
     uint8_t dst_addr[IEEE802154_LONG_ADDRESS_LEN] = { 0 };
     int dst_len;
     le_uint16_t dst_pan = { .u16 = 0 };
     bool is_ack = *(uint8_t *)buf & IEEE802154_FCF_TYPE_ACK;
 
-    /* no need to check address if we are in promiscuous mode */
+    // no need to check address if we are in promiscuous mode
     if (dev->filter_mode == IEEE802154_FILTER_PROMISC ||
         dev->filter_mode == IEEE802154_FILTER_SNIFFER) {
         return false;
     }
 
-    /* ignore everything but ACK frames */
+    // ignore everything but ACK frames
     if ((dev->filter_mode == IEEE802154_FILTER_ACK_ONLY) && !is_ack) {
         DEBUG("socket_zep::dst_not_me: ignoring non-ACK frame\n");
         return true;
     }
 
-    /* ACKs carry no address */
+    // ACKs carry no address
     if (is_ack) {
         DEBUG("socket_zep::dst_not_me: got ACK\n");
         return false;
@@ -164,12 +156,11 @@ static inline bool _dst_not_me(socket_zep_t *dev, const void *buf)
         return memcmp(dst_addr, ieee802154_addr_bcast, dst_len) &&
                memcmp(dst_addr, dev->addr_short, dst_len);
     default:
-        return false;    /* better safe than sorry ;-) */
+        return false;    // better safe than sorry ;-)
     }
 }
 
-static int _bind_local(const socket_zep_params_t *params)
-{
+static int _bind_local(const socket_zep_params_t *params) {
     int res;
     static const struct addrinfo hints = { .ai_family = AF_UNSPEC,
                                            .ai_socktype = SOCK_DGRAM };
@@ -179,7 +170,7 @@ static int _bind_local(const socket_zep_params_t *params)
         return -1;
     }
 
-    /* bind and connect socket */
+    // bind and connect socket
     if ((res = real_getaddrinfo(params->local_addr, params->local_port, &hints,
                                 &ai)) < 0) {
         errx(EXIT_FAILURE, "ZEP: unable to get local address: %s\n",
@@ -192,7 +183,7 @@ static int _bind_local(const socket_zep_params_t *params)
             continue;
         }
         if (real_bind(res, local->ai_addr, local->ai_addrlen) == 0) {
-            break;  /* successfully bound */
+            break;  // successfully bound
         }
     }
     real_freeaddrinfo(ai);
@@ -204,8 +195,7 @@ static int _bind_local(const socket_zep_params_t *params)
     return res;
 }
 
-static int _connect_remote(socket_zep_t *dev, const socket_zep_params_t *params)
-{
+static int _connect_remote(socket_zep_t *dev, const socket_zep_params_t *params) {
     int res;
     static const struct addrinfo hints = { .ai_family = AF_UNSPEC,
                                            .ai_socktype = SOCK_DGRAM };
@@ -223,7 +213,7 @@ static int _connect_remote(socket_zep_t *dev, const socket_zep_params_t *params)
 
     for (remote = ai; remote != NULL; remote = remote->ai_next) {
         if (real_connect(dev->sock_fd, remote->ai_addr, remote->ai_addrlen) == 0) {
-            break;  /* successfully connected */
+            break;  // successfully connected
         }
     }
 
@@ -236,10 +226,9 @@ static int _connect_remote(socket_zep_t *dev, const socket_zep_params_t *params)
     return res;
 }
 
-static void _send_zep_hello(socket_zep_t *dev)
-{
+static void _send_zep_hello(socket_zep_t *dev) {
     if (IS_USED(MODULE_SOCKET_ZEP_HELLO) && dev->send_hello) {
-        /* dummy packet */
+        // dummy packet
         zep_v2_data_hdr_t hdr = {
             .hdr.preamble = "EX",
             .hdr.version  = 2,
@@ -248,14 +237,13 @@ static void _send_zep_hello(socket_zep_t *dev)
             .length = sizeof(dev->addr_long),
         };
 
-        /* append HW addr */
+        // append HW addr
         real_send(dev->sock_fd, &hdr, sizeof(hdr), MSG_MORE);
         real_send(dev->sock_fd, dev->addr_long, sizeof(dev->addr_long), 0);
     }
 }
 
-static void _send_frame(void *arg)
-{
+static void _send_frame(void *arg) {
     ieee802154_dev_t *dev = arg;
     socket_zep_t *zepdev = dev->priv;
 
@@ -268,8 +256,7 @@ static void _send_frame(void *arg)
     dev->cb(dev, IEEE802154_RADIO_CONFIRM_TX_DONE);
 }
 
-static void _socket_isr(int fd, void *arg)
-{
+static void _socket_isr(int fd, void *arg) {
     ieee802154_dev_t *dev = arg;
     socket_zep_t *zepdev = dev->priv;
     int res;
@@ -309,7 +296,7 @@ static void _socket_isr(int fd, void *arg)
         goto out;
     }
 
-    /* we received a valid ZEP frame */
+    // we received a valid ZEP frame
     zep_v2_data_hdr_t *zep = (zep_v2_data_hdr_t *)tmp;
 
     if (zep->chan != zepdev->chan) {
@@ -332,8 +319,7 @@ out:
     _continue_reading(zepdev);
 }
 
-void socket_zep_setup(socket_zep_t *dev, const socket_zep_params_t *params)
-{
+void socket_zep_setup(socket_zep_t *dev, const socket_zep_params_t *params) {
     DEBUG("socket_zep_setup(%p, %p)\n", (void *)dev, (void *)params);
     assert((params->remote_addr != NULL) && (params->remote_port != NULL));
 
@@ -342,18 +328,16 @@ void socket_zep_setup(socket_zep_t *dev, const socket_zep_params_t *params)
     native_async_read_setup();
 }
 
-void socket_zep_cleanup(socket_zep_t *dev)
-{
+void socket_zep_cleanup(socket_zep_t *dev) {
     assert(dev != NULL);
-    /* cleanup signal handling */
+    // cleanup signal handling
     native_async_read_cleanup();
-    /* close the socket */
+    // close the socket
     close(dev->sock_fd);
     dev->sock_fd = 0;
 }
 
-static int _request_on(ieee802154_dev_t *dev)
-{
+static int _request_on(ieee802154_dev_t *dev) {
     socket_zep_t *zepdev = dev->priv;
 
     DEBUG("socket_zep::request_on()\n");
@@ -373,20 +357,18 @@ static int _request_on(ieee802154_dev_t *dev)
 
     native_async_read_add_handler(zepdev->sock_fd, dev, _socket_isr);
 
-    /* only send hello if we are connected to a remote */
+    // only send hello if we are connected to a remote
     zepdev->send_hello = !_connect_remote(zepdev, zepdev->params);
 
     return 0;
 }
 
-static int _confirm_on(ieee802154_dev_t *dev)
-{
+static int _confirm_on(ieee802154_dev_t *dev) {
     (void) dev;
     return 0;
 }
 
-static int _off(ieee802154_dev_t *dev)
-{
+static int _off(ieee802154_dev_t *dev) {
     socket_zep_t *zepdev = dev->priv;
 
     DEBUG("socket_zep::off()\n");
@@ -396,39 +378,34 @@ static int _off(ieee802154_dev_t *dev)
     return 0;
 }
 
-static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
-{
+static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode) {
     (void) dev;
     (void) mode;
     return 0;
 }
 
-static int _set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold)
-{
+static int _set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold) {
     (void) dev;
     (void) threshold;
     return 0;
 }
 
 static int _set_csma_params(ieee802154_dev_t *dev, const ieee802154_csma_be_t *bd,
-                            int8_t retries)
-{
+                            int8_t retries) {
     (void) dev;
     (void) bd;
     (void) retries;
     return 0;
 }
 
-static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf)
-{
+static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf) {
     socket_zep_t *zepdev = dev->priv;
 
     zepdev->chan = conf->channel;
     return 0;
 }
 
-static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value)
-{
+static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value) {
     socket_zep_t *zepdev = dev->priv;
 
     switch (cmd) {
@@ -450,33 +427,29 @@ static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, c
 }
 
 static int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t cmd,
-                                  const void *value)
-{
+                                  const void *value) {
     (void) dev;
     (void) cmd;
     (void) value;
     return -ENOTSUP;
 }
 
-static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t mode)
-{
+static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t mode) {
     socket_zep_t *zepdev = dev->priv;
     zepdev->filter_mode = mode;
     return 0;
 }
 
-static int _get_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t *mode)
-{
+static int _get_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t *mode) {
     socket_zep_t *zepdev = dev->priv;
     *mode = zepdev->filter_mode;
     return 0;
 }
 
-static int _write(ieee802154_dev_t *dev, const iolist_t *iolist)
-{
+static int _write(ieee802154_dev_t *dev, const iolist_t *iolist) {
     socket_zep_t *zepdev = dev->priv;
     unsigned n = iolist_count(iolist);
-    size_t bytes = iolist_size(iolist) + sizeof(uint16_t); /* FCS field */
+    size_t bytes = iolist_size(iolist) + sizeof(uint16_t); // FCS field
     uint8_t *out = zepdev->snd_buf;
     uint16_t chksum = 0;
 
@@ -484,7 +457,7 @@ static int _write(ieee802154_dev_t *dev, const iolist_t *iolist)
 
     out += _zep_hdr_fill(zepdev, (void *)out, bytes);
 
-    /* make sure we are not overflowing the TX buffer */
+    // make sure we are not overflowing the TX buffer
     if (out + bytes > zepdev->snd_buf + sizeof(zepdev->snd_buf)) {
         return -ENOBUFS;
     }
@@ -504,26 +477,25 @@ static int _write(ieee802154_dev_t *dev, const iolist_t *iolist)
     return 0;
 }
 
-static int _request_transmit(ieee802154_dev_t *dev)
-{
+static int _request_transmit(ieee802154_dev_t *dev) {
     socket_zep_t *zepdev = dev->priv;
 
     zepdev->state = ZEPDEV_STATE_TX;
 
-    /* 8 bit are mapped to 2 symbols */
+    // 8 bit are mapped to 2 symbols
     unsigned time_tx = 2 * (zepdev->snd_len - sizeof(zep_v2_data_hdr_t)) * IEEE802154_SYMBOL_TIME_US;
     DEBUG("socket_zep::request_transmit(%u bytes, %u µs)\n", zepdev->snd_len, time_tx);
 
     dev->cb(dev, IEEE802154_RADIO_INDICATION_TX_START);
 
-    /* native overhead prevents short timers from triggering in time,
-       send directly if delay is less than 200 µs */
+    // native overhead prevents short timers from triggering in time,
+    //    send directly if delay is less than 200 µs
     if (time_tx <= 200) {
         _send_frame(zepdev->ack_timer.arg);
     }
     else {
         time_tx -= 200;
-        /* delay transmission to simulate airtime */
+        // delay transmission to simulate airtime
         zepdev->ack_timer.callback = _send_frame;
         ztimer_set(ZTIMER_USEC, &zepdev->ack_timer, time_tx);
     }
@@ -531,15 +503,14 @@ static int _request_transmit(ieee802154_dev_t *dev)
     return 0;
 }
 
-static int _confirm_transmit(ieee802154_dev_t *dev, ieee802154_tx_info_t *info)
-{
+static int _confirm_transmit(ieee802154_dev_t *dev, ieee802154_tx_info_t *info) {
     (void) dev;
 
     socket_zep_t *zepdev = dev->priv;
 
     if (zepdev->state == ZEPDEV_STATE_TX) {
         DEBUG("socket_zep::confirm_transmit: still in TX state\n");
-        return -EAGAIN; /* TX is still in progress */
+        return -EAGAIN; // TX is still in progress
     }
     if (info) {
         DEBUG("socket_zep::confirm_transmit: success\n");
@@ -549,21 +520,19 @@ static int _confirm_transmit(ieee802154_dev_t *dev, ieee802154_tx_info_t *info)
     return 0;
 }
 
-int _len(ieee802154_dev_t *dev)
-{
+int _len(ieee802154_dev_t *dev) {
     socket_zep_t *zepdev = dev->priv;
 
     zep_v2_data_hdr_t *hdr = (zep_v2_data_hdr_t *)zepdev->rcv_buf;
 
     DEBUG("socket_zep::len: %u\n", hdr->length - IEEE802154_FCS_LEN);
 
-    /* report size without ZEP header and checksum */
+    // report size without ZEP header and checksum
     return hdr->length - IEEE802154_FCS_LEN;
 }
 
 static int _read(ieee802154_dev_t *dev, void *buf, size_t max_size,
-                 ieee802154_rx_info_t *info)
-{
+                 ieee802154_rx_info_t *info) {
     socket_zep_t *zepdev = dev->priv;
     size_t res;
 
@@ -586,17 +555,17 @@ static int _read(ieee802154_dev_t *dev, void *buf, size_t max_size,
     if (info) {
         info->lqi = zep->lqi_val;
         info->rssi = lqi_to_rssi[zep->lqi_val]
-                   /* slightly randomize simulated RSSI */
+                   // slightly randomize simulated RSSI
                    + ((random_uint32() & 0x3) - 2);
     }
 
-    /* return payload size without frame checksum */
+    // return payload size without frame checksum
     res = zep->length - IEEE802154_FCS_LEN;
     if (res > max_size) {
         return -ENOBUFS;
     }
 
-    /* skip the ZEP header, just copy payload without FCS */
+    // skip the ZEP header, just copy payload without FCS
     const void *payload = zep + 1;
     memcpy(buf, payload, res);
 
@@ -609,12 +578,11 @@ static int _read(ieee802154_dev_t *dev, void *buf, size_t max_size,
     return res;
 }
 
-static int _peek(ieee802154_dev_t *dev, void *buf, size_t offset, size_t size)
-{
+static int _peek(ieee802154_dev_t *dev, void *buf, size_t offset, size_t size) {
     socket_zep_t *zepdev = dev->priv;
     zep_v2_data_hdr_t *zep = (zep_v2_data_hdr_t *)zepdev->rcv_buf;
 
-    /* report size without ZEP header and checksum */
+    // report size without ZEP header and checksum
     size_t len = zep->length - IEEE802154_FCS_LEN;
 
     DEBUG("socket_zep::peek: %zu bytes at offset %zu\n", size, offset);
@@ -623,15 +591,14 @@ static int _peek(ieee802154_dev_t *dev, void *buf, size_t offset, size_t size)
         return -EINVAL;
     }
 
-    /* skip the ZEP header, just copy payload without FCS */
+    // skip the ZEP header, just copy payload without FCS
     const void *payload = zep + 1;
     memcpy(buf, (const uint8_t *)payload + offset, size);
 
     return size;
 }
 
-static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
-{
+static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx) {
     socket_zep_t *zepdev = dev->priv;
     int res = -ENOTSUP;
     (void) ctx;
@@ -685,8 +652,7 @@ static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
     return res;
 }
 
-static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
-{
+static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx) {
     socket_zep_t *zepdev = dev->priv;
     int res = -EAGAIN;
 
@@ -695,17 +661,17 @@ static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
         res = _confirm_transmit(dev, ctx);
         break;
     case IEEE802154_HAL_OP_SET_RX:
-        /* we are still in RX state while ACK is being sent */
+        // we are still in RX state while ACK is being sent
         if (zepdev->state != ZEPDEV_STATE_RX_ON &&
             zepdev->state != ZEPDEV_STATE_RX_RECV) {
             break;
         }
-        /* fall-through */
+        // fall-through
     case IEEE802154_HAL_OP_SET_IDLE:
         res = 0;
         break;
     case IEEE802154_HAL_OP_CCA:
-        /* This shouldn't happen! */
+        // This shouldn't happen!
         assert(false);
         break;
     }
@@ -741,8 +707,7 @@ static const ieee802154_radio_ops_t socket_zep_rf_ops = {
     .get_frame_filter_mode = _get_frame_filter_mode,
 };
 
-void socket_zep_hal_setup(socket_zep_t *dev, ieee802154_dev_t *hal)
-{
+void socket_zep_hal_setup(socket_zep_t *dev, ieee802154_dev_t *hal) {
     hal->driver = &socket_zep_rf_ops;
     hal->priv = dev;
 

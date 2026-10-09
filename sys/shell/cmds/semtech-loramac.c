@@ -1,22 +1,18 @@
-/*
- * Copyright 2018 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright 2018 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell command implementation for Semtech loramac stack
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell command implementation for Semtech loramac stack
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -28,12 +24,11 @@
 
 extern semtech_loramac_t loramac;
 
-/* Application key is 16 bytes long (e.g. 32 hex chars), and thus the longest
-   possible size (with application session and network session keys) */
+// Application key is 16 bytes long (e.g. 32 hex chars), and thus the longest
+//    possible size (with application session and network session keys)
 static char print_buf[LORAMAC_APPKEY_LEN * 2 + 1];
 
-static void _loramac_usage(void)
-{
+static void _loramac_usage(void) {
     puts("Usage: loramac <get|set|join|tx"
 #ifdef MODULE_SEMTECH_LORAMAC_RX
          "|link_check"
@@ -44,30 +39,25 @@ static void _loramac_usage(void)
          ">");
 }
 
-static void _loramac_join_usage(void)
-{
+static void _loramac_join_usage(void) {
     puts("Usage: loramac join <otaa|abp>");
 }
 
-static void _loramac_tx_usage(void)
-{
+static void _loramac_tx_usage(void) {
     puts("Usage: loramac tx <payload> [<cnf|uncnf>] [port]");
 }
 
-static void _loramac_set_usage(void)
-{
+static void _loramac_set_usage(void) {
     puts("Usage: loramac set <deveui|appeui|appkey|appskey|nwkskey|devaddr|"
          "class|dr|adr|public|netid|tx_power|rx2_freq|rx2_dr|ul_cnt|ch_mask> <value>");
 }
 
-static void _loramac_get_usage(void)
-{
+static void _loramac_get_usage(void) {
     puts("Usage: loramac get <deveui|appeui|appkey|appskey|nwkskey|devaddr|"
          "class|dr|adr|public|netid|tx_power|rx2_freq|rx2_dr|ul_cnt|ch_mask>");
 }
 
-static int _loramac_handler(int argc, char **argv)
-{
+static int _loramac_handler(int argc, char **argv) {
     if (argc < 2) {
         _loramac_usage();
         return 1;
@@ -365,7 +355,7 @@ static int _loramac_handler(int argc, char **argv)
             uint8_t tmp[LORAMAC_CHANNELS_MASK_LEN*2];
             fmt_hex_bytes(tmp, argv[3]);
             for (size_t i = 0, j = 0; i < LORAMAC_CHANNELS_MASK_LEN; i++, j+=2) {
-                /* copy over to span a 16-bit -wide unsigned integer */
+                // copy over to span a 16-bit -wide unsigned integer
                 mask[i] |= tmp[j] << 8;
                 mask[i] |= tmp[j+1];
             }
@@ -410,7 +400,7 @@ static int _loramac_handler(int argc, char **argv)
             case SEMTECH_LORAMAC_JOIN_SUCCEEDED:
                 puts("Join procedure succeeded!");
                 break;
-            default: /* should not happen */
+            default: // should not happen
                 break;
         }
         return 0;
@@ -421,9 +411,9 @@ static int _loramac_handler(int argc, char **argv)
             return 1;
         }
 
-        uint8_t cnf = CONFIG_LORAMAC_DEFAULT_TX_MODE;  /* Default: confirmable */
-        uint8_t port = CONFIG_LORAMAC_DEFAULT_TX_PORT; /* Default: 2 */
-        /* handle optional parameters */
+        uint8_t cnf = CONFIG_LORAMAC_DEFAULT_TX_MODE;  // Default: confirmable
+        uint8_t port = CONFIG_LORAMAC_DEFAULT_TX_PORT; // Default: 2
+        // handle optional parameters
         if (argc > 3) {
             if (strcmp(argv[3], "cnf") == 0) {
                 cnf = LORAMAC_TX_CNF;

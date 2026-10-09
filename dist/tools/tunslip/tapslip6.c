@@ -1,38 +1,36 @@
-/*
- * Copyright (c) 2001, Adam Dunkels.
- * Copyright (c) 2009, Joakim Eriksson, Niclas Finne.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior
- *    written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * This file is part of the uIP TCP/IP stack.
- *
- *
- */
+// Copyright (c) 2001, Adam Dunkels.
+// Copyright (c) 2009, Joakim Eriksson, Niclas Finne.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+// 3. The name of the author may not be used to endorse or promote
+//    products derived from this software without specific prior
+//    written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+// OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+// GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// This file is part of the uIP TCP/IP stack.
+//
+//
 
-/* for cfmakeraw on Linux */
+// for cfmakeraw on Linux
 #define _BSD_SOURCE 1
 #define _DEFAULT_SOURCE 1
 
@@ -71,8 +69,7 @@ void write_to_serial(int outfd, void *inbuf, int len);
 char tundev[1024] = "tap0";
 
 int
-ssystem(const char *fmt, ...)
-{
+ssystem(const char *fmt, ...) {
     char cmd[128];
     va_list ap;
     va_start(ap, fmt);
@@ -92,8 +89,7 @@ ssystem(const char *fmt, ...)
 __attribute__((unused))
 #endif
 static void
-print_packet(u_int8_t *p, int len)
-{
+print_packet(u_int8_t *p, int len) {
     int i;
 
     for (i = 0; i < len; i++) {
@@ -112,8 +108,7 @@ print_packet(u_int8_t *p, int len)
 }
 
 int
-is_sensible_string(const unsigned char *s, int len)
-{
+is_sensible_string(const unsigned char *s, int len) {
     int i;
 
     for (i = 1; i < len; i++) {
@@ -129,13 +124,10 @@ is_sensible_string(const unsigned char *s, int len)
     return 1;
 }
 
-/*
- * Read from serial, when we have a packet write it to tun. No output
- * buffering, input buffered by stdio.
- */
+// Read from serial, when we have a packet write it to tun. No output
+// buffering, input buffered by stdio.
 void
-serial_to_tun(FILE *inslip, int outfd)
-{
+serial_to_tun(FILE *inslip, int outfd) {
     static union {
         unsigned char inbuf[2000];
     } uip;
@@ -176,13 +168,13 @@ after_fread:
         exit(1);
     }
 
-    /*  fprintf(stderr, ".");*/
+    // fprintf(stderr, ".");
     switch (c) {
         case SLIP_END:
             if (inbufptr > 0) {
                 if (uip.inbuf[0] == '!') {
                     if (uip.inbuf[1] == 'M') {
-                        /* Read gateway MAC address and autoconfigure tap0 interface */
+                        // Read gateway MAC address and autoconfigure tap0 interface
                         char macs[24];
                         int i, pos;
 
@@ -213,7 +205,7 @@ after_fread:
                 else {
                     printf("Writing to tun  len: %d\n", inbufptr);
 
-                    /*	print_packet(uip.inbuf, inbufptr);*/
+                    // print_packet(uip.inbuf, inbufptr);
                     if (write(outfd, uip.inbuf, inbufptr) != inbufptr) {
                         err(1, "serial_to_tun: write");
                     }
@@ -227,7 +219,7 @@ after_fread:
         case SLIP_ESC:
             if (fread(&c, 1, 1, inslip) != 1) {
                 clearerr(inslip);
-                /* Put ESC back and give up! */
+                // Put ESC back and give up!
                 ungetc(SLIP_ESC, inslip);
                 return;
             }
@@ -242,7 +234,7 @@ after_fread:
                     break;
             }
 
-            /* FALLTHROUGH */
+            // FALLTHROUGH
         default:
             uip.inbuf[inbufptr++] = c;
             break;
@@ -255,8 +247,7 @@ static unsigned char slip_buf[2000];
 static int slip_end, slip_begin;
 
 void
-slip_send(int fd, unsigned char c)
-{
+slip_send(int fd, unsigned char c) {
     (void)fd;
     assert(slip_end >= 0);
     if ((size_t)slip_end >= sizeof(slip_buf)) {
@@ -268,14 +259,12 @@ slip_send(int fd, unsigned char c)
 }
 
 int
-slip_empty(void)
-{
+slip_empty(void) {
     return slip_end == 0;
 }
 
 void
-slip_flushbuf(int fd)
-{
+slip_flushbuf(int fd) {
     ssize_t n;
 
     if (slip_empty()) {
@@ -288,7 +277,7 @@ slip_flushbuf(int fd)
         err(1, "slip_flushbuf write failed");
     }
     else if (n == -1) {
-        PROGRESS("Q");		/* Outqueueis full! */
+        PROGRESS("Q");		// Outqueueis full!
     }
     else {
         slip_begin += (int)n;
@@ -300,19 +289,17 @@ slip_flushbuf(int fd)
 }
 
 void
-write_to_serial(int outfd, void *inbuf, int len)
-{
+write_to_serial(int outfd, void *inbuf, int len) {
     u_int8_t *p = inbuf;
     int i;
 
-    /*  printf("Got packet of length %d - write SLIP\n", len);*/
-    /*  print_packet(p, len);*/
+    // printf("Got packet of length %d - write SLIP\n", len);
+    // print_packet(p, len);
 
-    /* It would be ``nice'' to send a SLIP_END here but it's not
-     * really necessary.
-     */
-    /* slip_send(outfd, SLIP_END); */
-    /*  printf("writing packet to serial!!!%d\n", len);*/
+    // It would be ``nice'' to send a SLIP_END here but it's not
+    // really necessary.
+    // slip_send(outfd, SLIP_END);
+    // printf("writing packet to serial!!!%d\n", len);
     for (i = 0; i < len; i++) {
         switch (p[i]) {
             case SLIP_END:
@@ -336,12 +323,9 @@ write_to_serial(int outfd, void *inbuf, int len)
     PROGRESS("t");
 }
 
-/*
- * Read from tun, write to slip.
- */
+// Read from tun, write to slip.
 void
-tun_to_serial(int infd, int outfd)
-{
+tun_to_serial(int infd, int outfd) {
     struct {
         unsigned char inbuf[2000];
     } uip;
@@ -361,8 +345,7 @@ tun_to_serial(int infd, int outfd)
 speed_t b_rate = BAUDRATE;
 
 void
-stty_telos(int fd)
-{
+stty_telos(int fd) {
     struct termios tty;
     speed_t speed = b_rate;
     int i;
@@ -377,7 +360,7 @@ stty_telos(int fd)
 
     cfmakeraw(&tty);
 
-    /* Nonblocking read. */
+    // Nonblocking read.
     tty.c_cc[VTIME] = 0;
     tty.c_cc[VMIN] = 0;
     tty.c_cflag &= ~CRTSCTS;
@@ -392,8 +375,8 @@ stty_telos(int fd)
     }
 
 #if 1
-    /* Nonblocking read and write. */
-    /* if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) err(1, "fcntl"); */
+    // Nonblocking read and write.
+    // if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) err(1, "fcntl");
 
     tty.c_cflag |= CLOCAL;
 
@@ -409,23 +392,22 @@ stty_telos(int fd)
 
 #endif
 
-    usleep(10 * 1000);		/* Wait for hardware 10ms. */
+    usleep(10 * 1000);		// Wait for hardware 10ms.
 
-    /* Flush input and output buffers. */
+    // Flush input and output buffers.
     if (tcflush(fd, TCIOFLUSH) == -1) {
         err(1, "tcflush");
     }
 }
 
 int
-devopen(const char *dev, int flags)
-{
+devopen(const char *dev, int flags) {
     char t[1024];
     size_t len = strlen(dev);
 
     if (len >= sizeof(t) - strlen("/dev/")) {
-        /* Caller expects error reporting as if open() had been called,
-         * so just provide a sensible errno. */
+        // Caller expects error reporting as if open() had been called,
+        // so just provide a sensible errno.
         errno = EINVAL;
         return -1;
     }
@@ -440,8 +422,7 @@ devopen(const char *dev, int flags)
 #include <linux/if_tun.h>
 
 int
-tun_alloc(char *dev)
-{
+tun_alloc(char *dev) {
     struct ifreq ifr;
     int fd = open("/dev/net/tun", O_RDWR);
 
@@ -451,11 +432,10 @@ tun_alloc(char *dev)
 
     memset(&ifr, 0, sizeof(ifr));
 
-    /* Flags: IFF_TUN   - TUN device (no Ethernet headers)
-     *        IFF_TAP   - TAP device
-     *
-     *        IFF_NO_PI - Do not provide packet information
-     */
+    // Flags: IFF_TUN   - TUN device (no Ethernet headers)
+    //        IFF_TAP   - TAP device
+    //
+    //        IFF_NO_PI - Do not provide packet information
     ifr.ifr_flags = IFF_TAP | IFF_NO_PI;
 
     if (*dev != 0) {
@@ -473,8 +453,7 @@ tun_alloc(char *dev)
 }
 #else
 int
-tun_alloc(char *dev)
-{
+tun_alloc(char *dev) {
     return devopen(dev, O_RDWR);
 }
 #endif
@@ -483,13 +462,12 @@ const char *ipaddr;
 const char *netmask;
 
 void
-cleanup(void)
-{
+cleanup(void) {
     ssystem("ifconfig %s down", tundev);
 #ifndef __linux__
     ssystem("sysctl -w net.ipv6.conf.all.forwarding=1");
 #endif
-    /* ssystem("arp -d %s", ipaddr); */
+    // ssystem("arp -d %s", ipaddr);
     ssystem("netstat -nr"
             " | awk '{ if ($2 == \"%s\") print \"route delete -net \"$1; }'"
             " | sh",
@@ -497,26 +475,23 @@ cleanup(void)
 }
 
 void
-sigcleanup(int signo)
-{
+sigcleanup(int signo) {
     fprintf(stderr, "signal %d\n", signo);
-    exit(0);			/* exit(0) will call cleanup() */
+    exit(0);			// exit(0) will call cleanup()
 }
 
 static int got_sigalarm;
 static int request_mac;
 
 void
-sigalarm(int signo)
-{
+sigalarm(int signo) {
     (void)signo;
     got_sigalarm = 1;
     return;
 }
 
 void
-sigalarm_reset()
-{
+sigalarm_reset() {
 #ifdef __linux__
 #define TIMEOUT (997*1000)
 #else
@@ -527,8 +502,7 @@ sigalarm_reset()
 }
 
 void
-ifconf(const char *tundev, const char *ipaddr, const char *netmask)
-{
+ifconf(const char *tundev, const char *ipaddr, const char *netmask) {
     struct in_addr netname;
     netname.s_addr = inet_addr(ipaddr) & inet_addr(netmask);
 
@@ -549,14 +523,13 @@ ifconf(const char *tundev, const char *ipaddr, const char *netmask)
     }
 
     ssystem("sysctl -w net.inet.ip.forwarding=1");
-#endif /* !linux */
+#endif // !linux
 
     ssystem("ifconfig %s\n", tundev);
 }
 
 int
-main(int argc, char **argv)
-{
+main(int argc, char **argv) {
     int c;
     int tunfd, slipfd;
     fd_set rset, wset;
@@ -564,7 +537,7 @@ main(int argc, char **argv)
     const char *siodev = NULL;
     int baudrate = -2;
     request_mac = 1;
-    setvbuf(stdout, NULL, _IOLBF, 0); /* Line buffered output. */
+    setvbuf(stdout, NULL, _IOLBF, 0); // Line buffered output.
 
     while ((c = getopt(argc, argv, "B:D:hs:t:")) != -1) {
         switch (c) {
@@ -614,7 +587,7 @@ main(int argc, char **argv)
 
     switch (baudrate) {
         case -2:
-            break;			/* Use default. */
+            break;			// Use default.
 
         case 9600:
             b_rate = B9600;
@@ -650,7 +623,7 @@ main(int argc, char **argv)
     }
     else {
         static const char *siodevs[] = {
-            "ttyUSB0", "cuaU0", "ucom0" /* linux, fbsd6, fbsd5 */
+            "ttyUSB0", "cuaU0", "ucom0" // linux, fbsd6, fbsd5
         };
         int i;
 
@@ -698,8 +671,8 @@ main(int argc, char **argv)
         FD_ZERO(&rset);
         FD_ZERO(&wset);
 
-        /* request mac address from gateway node for autoconfiguration of
-           ethernet interface tap0 */
+        // request mac address from gateway node for autoconfiguration of
+        //    ethernet interface tap0
         if (request_mac) {
             slip_send(slipfd, '?');
             slip_send(slipfd, 'M');
@@ -708,7 +681,7 @@ main(int argc, char **argv)
         }
 
         if (got_sigalarm) {
-            /* Send "?IPA". */
+            // Send "?IPA".
             slip_send(slipfd, '?');
             slip_send(slipfd, 'I');
             slip_send(slipfd, 'P');
@@ -717,17 +690,17 @@ main(int argc, char **argv)
             got_sigalarm = 0;
         }
 
-        if (!slip_empty()) {		/* Anything to flush? */
+        if (!slip_empty()) {		// Anything to flush?
             FD_SET(slipfd, &wset);
         }
 
-        FD_SET(slipfd, &rset);	/* Read from slip ASAP! */
+        FD_SET(slipfd, &rset);	// Read from slip ASAP!
 
         if (slipfd > maxfd) {
             maxfd = slipfd;
         }
 
-        /* We only have one packet at a time queued for slip output. */
+        // We only have one packet at a time queued for slip output.
         if (slip_empty()) {
             FD_SET(tunfd, &rset);
 

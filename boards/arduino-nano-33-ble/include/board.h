@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_arduino-nano-33-ble
- * @{
- *
- * @file
- * @brief       Board specific configuration for the Arduino Nano 33 BLE
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_arduino-nano-33-ble
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration for the Arduino Nano 33 BLE
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "cpu.h"
 #include "board_common.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LEDs pin configuration
- * @{
- */
+/// @name    LEDs pin configuration
+/// @{
 #define LED0_PIN            GPIO_PIN(0, 13)
 #define LED0_MASK           (1 << 13)
 #define LED0_ON             (NRF_P0->OUTCLR = LED0_MASK)
@@ -55,10 +49,10 @@ extern "C" {
 #define LED4_ON             (NRF_P1->OUTCLR = LED4_MASK)
 #define LED4_OFF            (NRF_P1->OUTSET = LED4_MASK)
 #define LED4_TOGGLE         (NRF_P1->OUT   ^= LED4_MASK)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

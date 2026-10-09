@@ -1,20 +1,16 @@
-/*
- * Copyright (C) 2022 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for
- * more details.
- */
+// Copyright (C) 2022 HAW Hamburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for
+// more details.
 
-/**
- * @ingroup     test_utils_netdev_eth_minimal
- * @{
- *
- * @file
- * @brief       Implementation of netdev Eth minimal test utility module
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- */
+/// @ingroup     test_utils_netdev_eth_minimal
+/// @{
+///
+/// @file
+/// @brief       Implementation of netdev Eth minimal test utility module
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
 
 #include <stdio.h>
 
@@ -30,15 +26,14 @@
 #include "test_utils/netdev_eth_minimal.h"
 #include "netdev_eth_minimal_internal.h"
 
-/* provided by the test application */
+// provided by the test application
 #include "init_dev.h"
 
 device_reg_entry_t _devices[NETDEV_ETH_MINIMAL_NUMOF];
 static uint8_t _buffer[ETHERNET_MAX_LEN];
 static char _addr_str[ETHERNET_ADDR_LEN * 3];
 
-void _recv(netdev_t *dev)
-{
+void _recv(netdev_t *dev) {
     ssize_t data_len;
     netdev_eth_rx_info_t rx_info = { 0 };
     ethernet_hdr_t *header = (ethernet_hdr_t *)_buffer;
@@ -67,16 +62,14 @@ void _recv(netdev_t *dev)
     od_hex_dump(payload, data_len, 0);
 }
 
-static void _isr_event_handler(event_t *event)
-{
-    /* recover the netdev from the event */
+static void _isr_event_handler(event_t *event) {
+    // recover the netdev from the event
     device_reg_entry_t *netdev_event = container_of(event, device_reg_entry_t, event);
     netdev_t *netdev = netdev_event->dev;
     netdev->driver->isr(netdev);
 }
 
-static void _event_cb(netdev_t *dev, netdev_event_t event)
-{
+static void _event_cb(netdev_t *dev, netdev_event_t event) {
     device_reg_entry_t *device = dev->context;
 
     switch (event) {
@@ -93,11 +86,9 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
     }
 }
 
-/* Implement netdev_register_signal hook to associate registered devices to specific event
- * structures.
- */
-void netdev_register_signal(struct netdev *dev, netdev_type_t type, uint8_t index)
-{
+// Implement netdev_register_signal hook to associate registered devices to specific event
+// structures.
+void netdev_register_signal(struct netdev *dev, netdev_type_t type, uint8_t index) {
     (void) type;
 
     if (index >= NETDEV_ETH_MINIMAL_NUMOF) {
@@ -109,9 +100,8 @@ void netdev_register_signal(struct netdev *dev, netdev_type_t type, uint8_t inde
     _devices[index].event.handler = _isr_event_handler;
 }
 
-int netdev_eth_minimal_init(void)
-{
+int netdev_eth_minimal_init(void) {
     return netdev_eth_minimal_init_devs(_event_cb);
 }
 
-/** @} */
+/// @}

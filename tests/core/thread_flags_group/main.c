@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   thread flags group test application
- *
- * @author  Mihai Renea <mihai.renea@ml-pa.com>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   thread flags group test application
+///
+/// @author  Mihai Renea <mihai.renea@ml-pa.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -41,8 +37,7 @@ static uint8_t woken_up = 0;
 static uint8_t last_prio = 0;
 static thread_flags_group_t group = THREAD_FLAGS_GROUP_INIT;
 
-static void _print_waiting(char const *what_who, kernel_pid_t pid)
-{
+static void _print_waiting(char const *what_who, kernel_pid_t pid) {
 #ifdef CPU_NATIVE
     printf("%s %d\n", what_who, pid);
 #else
@@ -51,15 +46,13 @@ static void _print_waiting(char const *what_who, kernel_pid_t pid)
 #endif
 }
 
-static void *forever_waiter(void *arg)
-{
+static void *forever_waiter(void *arg) {
     _print_waiting("waiting forever-waiter", (kernel_pid_t)(uintptr_t)arg);
     thread_flags_wait_any(GOOD_FLAG | BAD_FLAG);
     expect(false);
 }
 
-static void *waiter(void *arg)
-{
+static void *waiter(void *arg) {
     thread_flags_group_join(&group);
 
     _print_waiting("waiting waiter", (kernel_pid_t)(uintptr_t)arg);
@@ -75,8 +68,7 @@ static void *waiter(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("START");
     unsigned waiters_cnt = 0;
     for (unsigned i = 0; i < WAITER_THREADS_CNT; i++) {
@@ -92,7 +84,7 @@ int main(void)
         expect(res >= 0);
     }
 
-    /* this shouldn't wake up */
+    // this shouldn't wake up
     thread_flags_group_set(&group, BAD_FLAG);
     expect(atomic_load_u8(&woken_up) == 0);
 
@@ -100,7 +92,7 @@ int main(void)
 
     thread_flags_group_set(&group, GOOD_FLAG);
 
-    /* waiters have higher prio, so they must have finished */
+    // waiters have higher prio, so they must have finished
     expect(atomic_load_u8(&woken_up) == waiters_cnt);
 
     puts("SUCCESS");

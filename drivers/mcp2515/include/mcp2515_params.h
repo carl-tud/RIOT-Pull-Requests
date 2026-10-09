@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_mcp2515
- * @{
- *
- * @file
- * @brief       Parameters for the CAN driver implementation
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Wouter Symons <wosym@airsantelmo.com>
- */
+/// @ingroup     drivers_mcp2515
+/// @{
+///
+/// @file
+/// @brief       Parameters for the CAN driver implementation
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Wouter Symons <wosym@airsantelmo.com>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,10 +21,8 @@ extern "C" {
 
 #include "board.h"
 
-/**
- * @name    Set default configuration parameters for the MCP2515
- * @{
- */
+/// @name    Set default configuration parameters for the MCP2515
+/// @{
 #ifndef MCP2515_PARAM_SPI
 #define MCP2515_PARAM_SPI SPI_DEV(0)
 #endif
@@ -54,7 +48,7 @@ extern "C" {
 #endif
 
 #ifndef MCP2515_PARAM_CLK
-#define MCP2515_PARAM_CLK (8000000ul)       /**< External clock frequency */
+#define MCP2515_PARAM_CLK (8000000ul)       ///< External clock frequency
 
 #endif
 
@@ -68,18 +62,14 @@ extern "C" {
     .int_pin = MCP2515_PARAM_INT, \
     .clk = MCP2515_PARAM_CLK, \
 }
-/** @} */
+/// @}
 
-/**
- * @brief   Set default configuration
- */
+/// @brief   Set default configuration
 static const candev_mcp2515_conf_t candev_mcp2515_conf[] = {
     MCP2515_DEFAULT_CONFIG
 };
 
-/**
- * @brief   set candev parameters
- */
+/// @brief   set candev parameters
 static const candev_params_t candev_mcp2515_params[] = {
     {
         .name = "can_mcp2515_0",
@@ -90,4 +80,4 @@ static const candev_params_t candev_mcp2515_params[] = {
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ltc4150
- * @{
- *
- * @file
- * @brief       SAUL adaption for LTC4150 devices
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_ltc4150
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption for LTC4150 devices
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -23,8 +19,7 @@
 #include "saul.h"
 #include "ltc4150.h"
 
-static int read_charge(const void *_dev, phydat_t *res)
-{
+static int read_charge(const void *_dev, phydat_t *res) {
     ltc4150_dev_t *dev = (ltc4150_dev_t *)_dev;
     int32_t temp[3];
 
@@ -40,8 +35,7 @@ static int read_charge(const void *_dev, phydat_t *res)
     return -ECANCELED;
 }
 
-static int read_current(const void *dev, phydat_t *res)
-{
+static int read_current(const void *dev, phydat_t *res) {
     if (ltc4150_avg_current((ltc4150_dev_t *)dev, res->val) == 0) {
         res->unit = UNIT_A;
         res->scale = -4;

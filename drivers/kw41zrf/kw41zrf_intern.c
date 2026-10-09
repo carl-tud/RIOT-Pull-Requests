@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2017 SKF AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 SKF AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_kw41zrf
- * @{
- * @file
- * @brief       Internal function of kw41zrf driver
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @}
- */
+/// @ingroup     drivers_kw41zrf
+/// @{
+/// @file
+/// @brief       Internal function of kw41zrf driver
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @}
 
 #include <assert.h>
 #include "log.h"
@@ -24,88 +20,82 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief Delay before entering deep sleep mode, in DSM_TIMER ticks (32.768 kHz)
- *
- * @attention must be >= 4 according to SoC ref. manual
- */
+/// @brief Delay before entering deep sleep mode, in DSM_TIMER ticks (32.768 kHz)
+///
+/// @attention must be >= 4 according to SoC ref. manual
 #define KW41ZRF_DSM_ENTER_DELAY 5
 
-/**
- * @brief Delay before leaving deep sleep mode, in DSM_TIMER ticks (32.768 kHz)
- *
- * @attention must be >= 4 according to SoC ref. manual
- */
+/// @brief Delay before leaving deep sleep mode, in DSM_TIMER ticks (32.768 kHz)
+///
+/// @attention must be >= 4 according to SoC ref. manual
 #define KW41ZRF_DSM_EXIT_DELAY 5
 
 struct {
-    void (*cb)(void *arg); /**< Callback function called from radio ISR */
-    void *arg;             /**< Argument to callback */
+    void (*cb)(void *arg); ///< Callback function called from radio ISR
+    void *arg;             ///< Argument to callback
 } isr_config;
 
-void kw41zrf_set_irq_callback(void (*cb)(void *arg), void *arg)
-{
+void kw41zrf_set_irq_callback(void (*cb)(void *arg), void *arg) {
     unsigned int mask = irq_disable();
     isr_config.cb = cb;
     isr_config.arg = arg;
     irq_restore(mask);
 }
 
-void kw41zrf_set_power_mode(kw41zrf_t *dev, kw41zrf_powermode_t pm)
-{
+void kw41zrf_set_power_mode(kw41zrf_t *dev, kw41zrf_powermode_t pm) {
     DEBUG("[kw41zrf] set power mode to %u\n", pm);
     unsigned state = irq_disable();
     switch (pm) {
         case KW41ZRF_POWER_IDLE:
         {
-            /* Disable some CPU power management if we need to be active, otherwise the
-             * radio will be stuck in state retention mode. */
+            // Disable some CPU power management if we need to be active, otherwise the
+            // radio will be stuck in state retention mode.
             if (!dev->pm_blocked) {
                 PM_BLOCK(KW41ZRF_PM_BLOCKER);
                 dev->pm_blocked = 1;
             }
-            /* Restore saved RF oscillator settings, enable oscillator in RUN mode
-             * to allow register access */
-            /* This is also where the oscillator is enabled during kw41zrf_init:
-             * kw41zrf_init -> kw41zrf_reset_phy -> kw41zrf_set_power_mode
-             * => Do not return before this line during init */
+            // Restore saved RF oscillator settings, enable oscillator in RUN mode
+            // to allow register access
+            // This is also where the oscillator is enabled during kw41zrf_init:
+            // kw41zrf_init -> kw41zrf_reset_phy -> kw41zrf_set_power_mode
+            // => Do not return before this line during init
             RSIM->CONTROL |= RSIM_CONTROL_RF_OSC_EN(1);
-            /* Assume DSM timer has been running since we entered sleep mode */
-            /* In case it was not already running, however, we still set the
-             * enable flag here. */
-            /* RSIM_DSM_CONTROL_ZIG_SYSCLK_REQUEST_EN lets the link layer
-             * request the RF oscillator to remain on during STOP and VLPS, to
-             * allow stopping the CPU core without affecting TX or RX operations */
+            // Assume DSM timer has been running since we entered sleep mode
+            // In case it was not already running, however, we still set the
+            // enable flag here.
+            // RSIM_DSM_CONTROL_ZIG_SYSCLK_REQUEST_EN lets the link layer
+            // request the RF oscillator to remain on during STOP and VLPS, to
+            // allow stopping the CPU core without affecting TX or RX operations
             RSIM->DSM_CONTROL = (RSIM_DSM_CONTROL_DSM_TIMER_EN_MASK |
                                 RSIM_DSM_CONTROL_ZIG_SYSCLK_REQUEST_EN_MASK);
-            /* Wait for oscillator ready signal before attempting to recover from DSM */
+            // Wait for oscillator ready signal before attempting to recover from DSM
             while ((RSIM->CONTROL & RSIM_CONTROL_RF_OSC_READY_MASK) == 0) {}
             KW41ZRF_LED_NDSM_ON;
-            /* If we are already awake we can just return now. */
+            // If we are already awake we can just return now.
             if (!(kw41zrf_is_dsm())) {
-                /* Already awake */
+                // Already awake
                 break;
             }
-            /* The wake target must be at least (4 + RSIM_DSM_OSC_OFFSET) ticks
-             * into the future, to let the oscillator stabilize before switching
-             * on the clocks */
+            // The wake target must be at least (4 + RSIM_DSM_OSC_OFFSET) ticks
+            // into the future, to let the oscillator stabilize before switching
+            // on the clocks
             RSIM->ZIG_WAKE = KW41ZRF_DSM_EXIT_DELAY + RSIM->DSM_TIMER + RSIM->DSM_OSC_OFFSET;
-            /* Wait to come out of DSM */
+            // Wait to come out of DSM
             while (kw41zrf_is_dsm()) {}
 
-            /* Convert DSM ticks (32.768 kHz) to event timer ticks (1 MHz) */
+            // Convert DSM ticks (32.768 kHz) to event timer ticks (1 MHz)
             uint64_t tmp = (uint64_t)(RSIM->ZIG_WAKE - RSIM->ZIG_SLEEP) * 15625ul;
-            uint32_t usec = (tmp >> 9); /* equivalent to (usec / 512) */
-            /* Add the offset */
+            uint32_t usec = (tmp >> 9); // equivalent to (usec / 512)
+            // Add the offset
             ZLL->EVENT_TMR = ZLL_EVENT_TMR_EVENT_TMR_ADD_MASK |
                 ZLL_EVENT_TMR_EVENT_TMR(usec);
 
-            /* Clear IRQ flags */
+            // Clear IRQ flags
             uint32_t irqsts = ZLL->IRQSTS;
             DEBUG("[kw41zrf] wake IRQSTS=%" PRIx32 "\n", irqsts);
             ZLL->IRQSTS = irqsts;
 
-            /* Disable DSM timer triggered sleep */
+            // Disable DSM timer triggered sleep
             ZLL->DSM_CTRL = 0;
 
             break;
@@ -113,20 +103,20 @@ void kw41zrf_set_power_mode(kw41zrf_t *dev, kw41zrf_powermode_t pm)
         case KW41ZRF_POWER_DSM:
         {
             if (kw41zrf_is_dsm()) {
-                /* Already asleep */
+                // Already asleep
                 break;
             }
             if (dev->pm_blocked) {
                 PM_UNBLOCK(KW41ZRF_PM_BLOCKER);
                 dev->pm_blocked = 0;
             }
-            /* Race condition: if sleep is re-triggered after wake before the
-             * DSM_ZIG_FINISHED flag has been switched off, then the RSIM
-             * becomes stuck and never enters DSM.
-             * The time from ZIG_WAKE until DSM_ZIG_FINISHED is turned off seem
-             * to be constant at 2 DSM ticks */
+            // Race condition: if sleep is re-triggered after wake before the
+            // DSM_ZIG_FINISHED flag has been switched off, then the RSIM
+            // becomes stuck and never enters DSM.
+            // The time from ZIG_WAKE until DSM_ZIG_FINISHED is turned off seem
+            // to be constant at 2 DSM ticks
             while (RSIM->DSM_CONTROL & RSIM_DSM_CONTROL_DSM_ZIG_FINISHED_MASK) {}
-            /* Clear IRQ flags */
+            // Clear IRQ flags
             uint32_t irqsts = RSIM->DSM_CONTROL;
             RSIM->DSM_CONTROL = irqsts;
             irqsts = ZLL->IRQSTS;
@@ -134,30 +124,30 @@ void kw41zrf_set_power_mode(kw41zrf_t *dev, kw41zrf_powermode_t pm)
             ZLL->IRQSTS = irqsts;
             NVIC_ClearPendingIRQ(Radio_1_IRQn);
 
-            /* Enable timer triggered sleep */
+            // Enable timer triggered sleep
             ZLL->DSM_CTRL = ZLL_DSM_CTRL_ZIGBEE_SLEEP_EN_MASK;
-            /* The device will automatically wake up 8.5 minutes from now if not
-             * awoken sooner by software */
-            /* TODO handle automatic wake in the ISR if it becomes an issue */
+            // The device will automatically wake up 8.5 minutes from now if not
+            // awoken sooner by software
+            // TODO handle automatic wake in the ISR if it becomes an issue
             RSIM->ZIG_WAKE = RSIM->DSM_TIMER - KW41ZRF_DSM_EXIT_DELAY - RSIM->DSM_OSC_OFFSET;
-            /* Set sleep start time */
-            /* The target time must be at least 4 DSM_TIMER ticks into the future */
+            // Set sleep start time
+            // The target time must be at least 4 DSM_TIMER ticks into the future
             RSIM->ZIG_SLEEP = RSIM->DSM_TIMER + KW41ZRF_DSM_ENTER_DELAY;
-            /* Start the 32.768 kHz DSM timer in case it was not already running */
-            /* If ZIG_SYSCLK_REQUEST_EN is not set then the hardware will not
-             * enter DSM and we get stuck in the while() below */
+            // Start the 32.768 kHz DSM timer in case it was not already running
+            // If ZIG_SYSCLK_REQUEST_EN is not set then the hardware will not
+            // enter DSM and we get stuck in the while() below
             RSIM->DSM_CONTROL = (RSIM_DSM_CONTROL_DSM_TIMER_EN_MASK |
                                 RSIM_DSM_CONTROL_ZIG_SYSCLK_REQUEST_EN_MASK);
             while (!(kw41zrf_is_dsm())) {}
             KW41ZRF_LED_NDSM_OFF;
-            /* Restore saved RF_OSC_EN bits (from kw41zrf_init)
-             * This will disable the RF oscillator unless the system was
-             * configured to use the RF oscillator before kw41zrf_init() was
-             * called, for example when using the RF oscillator for the CPU core
-             * clock. */
+            // Restore saved RF_OSC_EN bits (from kw41zrf_init)
+            // This will disable the RF oscillator unless the system was
+            // configured to use the RF oscillator before kw41zrf_init() was
+            // called, for example when using the RF oscillator for the CPU core
+            // clock.
             RSIM->CONTROL = (RSIM->CONTROL & ~RSIM_CONTROL_RF_OSC_EN_MASK) |
                 dev->rf_osc_en_idle;
-            /* Let the DSM timer run until we exit deep sleep mode */
+            // Let the DSM timer run until we exit deep sleep mode
             break;
         }
         default:
@@ -167,8 +157,7 @@ void kw41zrf_set_power_mode(kw41zrf_t *dev, kw41zrf_powermode_t pm)
     irq_restore(state);
 }
 
-void kw41zrf_set_sequence(kw41zrf_t *dev, uint32_t seq)
-{
+void kw41zrf_set_sequence(kw41zrf_t *dev, uint32_t seq) {
     (void) dev;
     DEBUG("[kw41zrf] set sequence to %x\n", (unsigned)seq);
     assert(!kw41zrf_is_dsm());
@@ -194,8 +183,7 @@ void kw41zrf_set_sequence(kw41zrf_t *dev, uint32_t seq)
     }
 }
 
-int kw41zrf_can_switch_to_idle(kw41zrf_t *dev)
-{
+int kw41zrf_can_switch_to_idle(kw41zrf_t *dev) {
     (void) dev;
     if (!kw41zrf_is_dsm()) {
         uint8_t seq = (ZLL->PHY_CTRL & ZLL_PHY_CTRL_XCVSEQ_MASK) >> ZLL_PHY_CTRL_XCVSEQ_SHIFT;
@@ -203,13 +191,12 @@ int kw41zrf_can_switch_to_idle(kw41zrf_t *dev)
         DEBUG("[kw41zrf] XCVSEQ=0x%x, SEQ_STATE=0x%" PRIx32 ", SEQ_CTRL_STS=0x%" PRIx32 "\n", seq,
             ZLL->SEQ_STATE, ZLL->SEQ_CTRL_STS);
 
-        switch (seq)
-        {
+        switch (seq) {
             case XCVSEQ_TRANSMIT:
             case XCVSEQ_TX_RX:
             case XCVSEQ_CCA:
-                /* We should wait until TX or CCA has finished before moving to
-                 * another mode */
+                // We should wait until TX or CCA has finished before moving to
+                // another mode
                 return 0;
             default:
                 break;
@@ -219,8 +206,7 @@ int kw41zrf_can_switch_to_idle(kw41zrf_t *dev)
     return 1;
 }
 
-void isr_radio_1(void)
-{
+void isr_radio_1(void) {
     DEBUG("[kw41zrf] INT1\n");
     if (isr_config.cb != NULL) {
         isr_config.cb(isr_config.arg);

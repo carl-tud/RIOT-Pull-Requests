@@ -1,28 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-FileCopyrightText: 2023 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-FileCopyrightText: 2023 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @brief   Low-level SDIO/SD/MMC driver for SD Host Controller peripherals
- *
- * The module implements a the low-level SDIO/SD/MMC driver for peripherals
- * that are compliant with the SD Host Controller Simplified Specification,
- * Version 3.00 [[sdcard.org](https://www.sdcard.org)]. It is intended
- * exclusively for use as a low-level driver for the SDIO/SD/MMC API
- * (module `sdmmc`).
- *
- * @note The driver uses the definition of the SD Host Controller interface
- *       from the Atmel SAME54 Series Device Support Package (1.1.134)
- *       [http://packs.download.atmel.com/].
- *
- * @note Some parts of the driver were inspired by the implementation in
- *       https://github.com/alkgrove/initmaker/blob/master/samd5x/src/sd.c.
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @brief   Low-level SDIO/SD/MMC driver for SD Host Controller peripherals
+///
+/// The module implements a the low-level SDIO/SD/MMC driver for peripherals
+/// that are compliant with the SD Host Controller Simplified Specification,
+/// Version 3.00 [[sdcard.org](https://www.sdcard.org)]. It is intended
+/// exclusively for use as a low-level driver for the SDIO/SD/MMC API
+/// (module `sdmmc`).
+///
+/// @note The driver uses the definition of the SD Host Controller interface
+///       from the Atmel SAME54 Series Device Support Package (1.1.134)
+///       [http://packs.download.atmel.com/].
+///
+/// @note Some parts of the driver were inspired by the implementation in
+///       https://github.com/alkgrove/initmaker/blob/master/samd5x/src/sd.c.
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <errno.h>
 #include <inttypes.h>
@@ -57,7 +53,7 @@
 #  error "CPU not supported"
 #endif
 
-/* limit the Default and High Speed clock rates for debugging */
+// limit the Default and High Speed clock rates for debugging
 #if CONFIG_SDMMC_CLK_MAX_400KHZ
 #  define CONFIG_SDMMC_CLK_MAX        KHZ(400)
 #elif CONFIG_SDMMC_CLK_MAX_1MHZ
@@ -74,7 +70,7 @@
 #  define CONFIG_SDMMC_CLK_MAX        MHZ(50)
 #endif
 
-/* millisecond timer definitions dependent on active ztimer backend */
+// millisecond timer definitions dependent on active ztimer backend
 #if IS_USED(MODULE_ZTIMER_MSEC)
 #  define _ZTIMER_CLOCK           ZTIMER_MSEC
 #  define _ZTIMER_TICKS_PER_MS    1
@@ -91,29 +87,29 @@
 #define _ZTIMER_NOW()           (ztimer_now(_ZTIMER_CLOCK) / _ZTIMER_TICKS_PER_MS)
 #define _ZTIMER_SLEEP_MS(n)     ztimer_sleep(_ZTIMER_CLOCK, n * _ZTIMER_TICKS_PER_MS)
 
-/* Monitor card insertion and removal */
+// Monitor card insertion and removal
 #define SDHC_NISTR_CARD_DETECT   (SDHC_NISTR_CREM | SDHC_NISTR_CINS)
 #define SDHC_NISTER_CARD_DETECT  (SDHC_NISTER_CREM | SDHC_NISTER_CINS)
 #define SDHC_NISIER_CARD_DETECT  (SDHC_NISIER_CREM | SDHC_NISIER_CINS)
 
-  /* 2s timeout for IRQ wait */
+  // 2s timeout for IRQ wait
 #define SDHC_IRQ_TIMEOUT_MS     (2000 * _ZTIMER_TICKS_PER_MS)
 
 #include "board.h"
 
-/* forward declaration of _driver */
+// forward declaration of _driver
 static const sdmmc_driver_t _driver;
 
-/* SDHC device context */
+// SDHC device context
 typedef struct {
-    sdmmc_dev_t sdmmc_dev;      /**< Inherited sdmmc_dev_t struct */
-    const sdhc_conf_t *conf;    /**< SDHC peripheral config reference */
-    mutex_t irq_wait;           /**< ISR mutex */
-    uint16_t error;             /**< last SDHC error status (EISTR) */
-    bool data_transfer;         /**< Transfer active */
+    sdmmc_dev_t sdmmc_dev;      ///< Inherited sdmmc_dev_t struct
+    const sdhc_conf_t *conf;    ///< SDHC peripheral config reference
+    mutex_t irq_wait;           ///< ISR mutex
+    uint16_t error;             ///< last SDHC error status (EISTR)
+    bool data_transfer;         ///< Transfer active
 } sdhc_dev_t;
 
-/* SDHC device context array */
+// SDHC device context array
 static sdhc_dev_t _sdhc_devs[] = {
     {
         .sdmmc_dev = {
@@ -133,13 +129,13 @@ static sdhc_dev_t _sdhc_devs[] = {
 #endif
 };
 
-/* sanity check of configuration */
+// sanity check of configuration
 static_assert(SDHC_CONFIG_NUMOF == ARRAY_SIZE(sdhc_config),
               "SDHC_CONFIG_NUMOF and the number of elements in sdhc_config differ");
 static_assert(SDHC_CONFIG_NUMOF == ARRAY_SIZE(_sdhc_devs),
               "SDHC_CONFIG_NUMOF and the number of elements in sdhc_devs differ");
 
-/* check that the number of devices does not exhaust the number of available devices */
+// check that the number of devices does not exhaust the number of available devices
 #ifdef SDHC1
 static_assert(SDHC_CONFIG_NUMOF < 3, "MCU supports only 2 SDHC peripherals");
 #else
@@ -153,7 +149,7 @@ XFA_CONST(sdmmc_dev_t * const, sdmmc_devs, 0) _sdmmc_1 = (sdmmc_dev_t * const)&_
 
 static int _set_clock_rate(sdmmc_dev_t *dev, sdmmc_clock_rate_t rate);
 
-/* forward declaration of internal functions */
+// forward declaration of internal functions
 static void _core_init(sdhc_dev_t *sdhc_dev);
 static void _init_pins(sdhc_dev_t *sdhc_dev);
 
@@ -172,8 +168,7 @@ static sdhc_dev_t *isr_ctx_0;
 static sdhc_dev_t *isr_ctx_1;
 #endif
 
-static void _init(sdmmc_dev_t *dev)
-{
+static void _init(sdmmc_dev_t *dev) {
     sdhc_dev_t *sdhc_dev = container_of(dev, sdhc_dev_t, sdmmc_dev);
 
     assert(sdhc_dev);
@@ -190,10 +185,10 @@ static void _init(sdmmc_dev_t *dev)
 
     _core_init(sdhc_dev);
 
-    /* pins have to initialized after enabling the clock for the SDHC core */
+    // pins have to initialized after enabling the clock for the SDHC core
     _init_pins(sdhc_dev);
 
-    /* Enable all the status bits in NISTR and EISTR */
+    // Enable all the status bits in NISTR and EISTR
     sdhc->NISTER.reg = SDHC_NISTER_MASK;
     sdhc->EISTER.reg = SDHC_EISTER_MASK;
 
@@ -215,25 +210,24 @@ static void _init(sdmmc_dev_t *dev)
     }
 #endif
 
-    sdhc->TCR.reg = 14;                         /* max timeout is 14 or about 1sec */
+    sdhc->TCR.reg = 14;                         // max timeout is 14 or about 1sec
     sdhc->PCR.reg = SDHC_PCR_SDBVSEL_3V3;
 
-    sdhc->NISTER.reg = SDHC_NISTER_MASK;        /* enable all normal interrupt status flags */
-    sdhc->EISTER.reg = SDHC_EISTER_MASK;        /* enable all error interrupt status flags */
+    sdhc->NISTER.reg = SDHC_NISTER_MASK;        // enable all normal interrupt status flags
+    sdhc->EISTER.reg = SDHC_EISTER_MASK;        // enable all error interrupt status flags
 
-    sdhc->NISIER.reg = SDHC_NISIER_CARD_DETECT; /* enable card detection interrupt signals */
+    sdhc->NISIER.reg = SDHC_NISIER_CARD_DETECT; // enable card detection interrupt signals
 
-    /* set the clock rate to enable the internal clock of the SDHC which is
-     * needed for card detection interrupts. */
+    // set the clock rate to enable the internal clock of the SDHC which is
+    // needed for card detection interrupts.
     _set_clock_rate(dev, SDMMC_CLK_400K);
 
     dev->present = true;
 }
 
 static int _send_cmd(sdmmc_dev_t *dev, uint8_t cmd_idx, uint32_t arg,
-                     uint8_t resp_type, uint32_t *resp)
-{
-    /* ensure that `sdmmc_send_acmd` is used for application specific commands */
+                     uint8_t resp_type, uint32_t *resp) {
+    // ensure that `sdmmc_send_acmd` is used for application specific commands
     assert((cmd_idx & SDMMC_ACMD_PREFIX) == 0);
 
     sdhc_dev_t *sdhc_dev = container_of(dev, sdhc_dev_t, sdmmc_dev);
@@ -248,26 +242,26 @@ static int _send_cmd(sdmmc_dev_t *dev, uint8_t cmd_idx, uint32_t arg,
 
     uint32_t cmd;
 
-    /* since the SD bus power is automatically turned off when the card is
-     * removed, it has to be turned on when a command is sent if needed */
+    // since the SD bus power is automatically turned off when the card is
+    // removed, it has to be turned on when a command is sent if needed
     if (!(sdhc->PCR.reg & SDHC_PCR_SDBPWR)) {
         sdhc->PCR.reg |= SDHC_PCR_SDBPWR;
     }
 
-    /* enable the clock to the card if needed */
+    // enable the clock to the card if needed
     if (IS_USED(MODULE_PERIPH_SDMMC_AUTO_CLK) && _enable_sd_clk(sdhc_dev)) {
         return -EIO;
     }
 
-    /* wait if card is still busy */
+    // wait if card is still busy
     if (_wait_sdhc_busy(sdhc)) {
-        /* if timeout occurs, there is a serious situation, in this case
-         * reset the entire peripheral */
+        // if timeout occurs, there is a serious situation, in this case
+        // reset the entire peripheral
         _reset_sdhc(sdhc_dev, SDHC_SRR_SWRSTALL);
         return -ETIMEDOUT;
     }
 
-    /* clear command related normal interrupt status flags */
+    // clear command related normal interrupt status flags
     sdhc->NISTR.reg = SDHC_NISTR_TRFC | SDHC_NISTR_CMDC;
 
     cmd = SDHC_CR_CMDIDX(cmd_idx) | SDHC_CR_CMDTYP_NORMAL;
@@ -287,19 +281,19 @@ static int _send_cmd(sdmmc_dev_t *dev, uint8_t cmd_idx, uint32_t arg,
     }
 
     if (sdhc_dev->data_transfer) {
-        /* command is part of a data transfer, TMR and BCR are already
-         * prepared in _xfer_prepare and must not be overwritten */
+        // command is part of a data transfer, TMR and BCR are already
+        // prepared in _xfer_prepare and must not be overwritten
         cmd |= SDHC_CR_DPSEL_DATA;
     }
     else {
-        /* reset TMR and BCR otherwise */
+        // reset TMR and BCR otherwise
         sdhc->TMR.reg = 0;
         sdhc->BCR.reg = 0;
     }
 
 #if defined(CPU_SAMD5X) || defined(CPU_SAME5X)
     Sdhc *sam0_sdhc = (Sdhc *)sdhc;
-    /* CMD0, CMD1, CMD2, CMD3 and CMD8 are broadcast commands */
+    // CMD0, CMD1, CMD2, CMD3 and CMD8 are broadcast commands
     if ((cmd_idx <= SDMMC_CMD3) || (cmd_idx == SDMMC_CMD8)) {
         sam0_sdhc->MC1R.reg |= SDHC_MC1R_OPD;
     }
@@ -310,27 +304,27 @@ static int _send_cmd(sdmmc_dev_t *dev, uint8_t cmd_idx, uint32_t arg,
 
     sdhc_dev->error = 0;
 
-    /* used error interrupts */
+    // used error interrupts
     uint16_t eis = SDHC_EISTR_CMDTEO | SDHC_EISTR_CMDEND | SDHC_EISTR_CMDIDX;
 
     eis |= (resp_type & SDMMC_RESP_CRC) ? SDHC_EISTR_CMDCRC : 0;
     eis |= (resp_type & SDMMC_RESP_BUSY) ? SDHC_EISTR_DATTEO : 0;
 
     if (sdhc_dev->data_transfer) {
-        /* if command is starts a data transfer, also DAT related
-         * error interrupts are used */
+        // if command is starts a data transfer, also DAT related
+        // error interrupts are used
         eis |= SDHC_EISTR_DATTEO | SDHC_EISTR_DATEND | SDHC_EISTR_DATCRC;
     }
 
-    /* use TRFC (Transfer Complete) interrupt in case of R1b response with busy
-     * and CMDC (Command Complete) otherwise */
+    // use TRFC (Transfer Complete) interrupt in case of R1b response with busy
+    // and CMDC (Command Complete) otherwise
     uint16_t nis = (resp_type == SDMMC_R1B) ? SDHC_NISTR_TRFC
                                             : SDHC_NISTR_CMDC;
 
-    sdhc->ARG1R.reg = arg;      /* setup the argument register */
-    sdhc->CR.reg = cmd;         /* send command */
+    sdhc->ARG1R.reg = arg;      // setup the argument register
+    sdhc->CR.reg = cmd;         // send command
 
-    /* wait until the command is completed or an error occurred */
+    // wait until the command is completed or an error occurred
     if (!_wait_for_event(sdhc_dev, nis, eis, SDHC_SRR_SWRSTCMD)) {
         return _sdhc_to_sdmmc_err_code(sdhc_dev->error);
     }
@@ -354,8 +348,7 @@ static int _send_cmd(sdmmc_dev_t *dev, uint8_t cmd_idx, uint32_t arg,
     return 0;
 }
 
-static int _set_bus_width(sdmmc_dev_t *dev, sdmmc_bus_width_t width)
-{
+static int _set_bus_width(sdmmc_dev_t *dev, sdmmc_bus_width_t width) {
     sdhc_dev_t *sdhc_dev = container_of(dev, sdhc_dev_t, sdmmc_dev);
 
     assert(sdhc_dev);
@@ -395,8 +388,7 @@ static int _set_bus_width(sdmmc_dev_t *dev, sdmmc_bus_width_t width)
     return 0;
 }
 
-static int _set_clock_rate(sdmmc_dev_t *dev, sdmmc_clock_rate_t rate)
-{
+static int _set_clock_rate(sdmmc_dev_t *dev, sdmmc_clock_rate_t rate) {
     sdhc_dev_t *sdhc_dev = container_of(dev, sdhc_dev_t, sdmmc_dev);
 
     assert(sdhc_dev);
@@ -408,15 +400,15 @@ static int _set_clock_rate(sdmmc_dev_t *dev, sdmmc_clock_rate_t rate)
                                                    : rate;
     if (IS_USED(MODULE_SDMMC_MMC) &&
         (dev->type == SDMMC_CARD_TYPE_MMC) && (fsdhc > MHZ(25))) {
-        /* maximum frequency supported for MMCs */
+        // maximum frequency supported for MMCs
         fsdhc = MHZ(25);
     }
     else if (fsdhc > MHZ(50)) {
-        /* maximum frequency supported for SD/SDIO High Speed */
+        // maximum frequency supported for SD/SDIO High Speed
         fsdhc = MHZ(50);
     }
 
-    /* disable the clock to the card if already active */
+    // disable the clock to the card if already active
     if (_disable_sd_clk(sdhc_dev)) {
         return -EIO;
     }
@@ -425,33 +417,33 @@ static int _set_clock_rate(sdmmc_dev_t *dev, sdmmc_clock_rate_t rate)
     uint32_t clk_mult = sdhc->CA1R.bit.CLKMULT;
 
 #if defined(CPU_SAMD5X) || defined(CPU_SAME5X)
-    /* if CA1R.CLKMULT is 0, programmable clock is not supported */
+    // if CA1R.CLKMULT is 0, programmable clock is not supported
     assert(clk_mult);
     base_clk = (base_clk == 0) ? sam0_gclk_freq(SDHC_CLOCK) / 2 : MHZ(base_clk);
 #endif
 
     uint32_t div;
 
-    /* divider for programmable clock: f_sdclk = f_baseclk / (div + 1) */
+    // divider for programmable clock: f_sdclk = f_baseclk / (div + 1)
     div = DIV_ROUND_UP(base_clk * (clk_mult + 1), fsdhc);
     div = (div) ? div - 1 : div;
 
-    /* enable programmable clock if multiplier is defined */
+    // enable programmable clock if multiplier is defined
     if (clk_mult) {
         sdhc->CCR.reg |= SDHC_CCR_CLKGSEL;
     }
 
-    /* write the 10 bit clock divider */
+    // write the 10 bit clock divider
     sdhc->CCR.reg &= ~(SDHC_CCR_USDCLKFSEL_Msk | SDHC_CCR_SDCLKFSEL_Msk);
     sdhc->CCR.reg |= SDHC_CCR_SDCLKFSEL(div) | SDHC_CCR_USDCLKFSEL(div >> 8);
-    sdhc->CCR.reg |= SDHC_CCR_INTCLKEN;  /* enable internal clock       */
-    while (!sdhc->CCR.bit.INTCLKS) {}    /* wait for clock to be stable */
+    sdhc->CCR.reg |= SDHC_CCR_INTCLKEN;  // enable internal clock
+    while (!sdhc->CCR.bit.INTCLKS) {}    // wait for clock to be stable
 
 #if 0
-    /* for testing purposes if it is necessary to enable the SD clock when
-     * the clock rate is changed */
+    // for testing purposes if it is necessary to enable the SD clock when
+    // the clock rate is changed
     if (!IS_USED(MODULE_PERIPH_SDMMC_AUTO_CLK)) {
-        /* if periph_sdmmc_auto_clk is not used, enable the clock to the card here */
+        // if periph_sdmmc_auto_clk is not used, enable the clock to the card here
         if (_enable_sd_clk(sdhc_dev)) {
             return -EIO;
         }
@@ -462,8 +454,7 @@ static int _set_clock_rate(sdmmc_dev_t *dev, sdmmc_clock_rate_t rate)
 }
 
 #if !IS_USED(MODULE_PERIPH_SDMMC_AUTO_CLK)
-int _enable_clock(sdmmc_dev_t *dev, bool enable)
-{
+int _enable_clock(sdmmc_dev_t *dev, bool enable) {
     DEBUG("[sdmmc] %s clock\n", enable ? "enable" : "disable");
 
     sdhc_dev_t *sdhc_dev = container_of(dev, sdhc_dev_t, sdmmc_dev);
@@ -473,8 +464,7 @@ int _enable_clock(sdmmc_dev_t *dev, bool enable)
 }
 #endif
 
-static int _xfer_prepare(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer)
-{
+static int _xfer_prepare(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer) {
     sdhc_dev_t *sdhc_dev = container_of(dev, sdhc_dev_t, sdmmc_dev);
 
     assert(sdhc_dev);
@@ -482,11 +472,11 @@ static int _xfer_prepare(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer)
 
     sdhc_t *sdhc = sdhc_dev->conf->sdhc;
 
-    /* SDHC uses 32-bit words */
-    /* TODO: at the moment only 32-bit words supported */
+    // SDHC uses 32-bit words
+    // TODO: at the moment only 32-bit words supported
     assert((xfer->block_size % sizeof(uint32_t)) == 0);
 
-    /* indicate that a data transfer is prepared */
+    // indicate that a data transfer is prepared
     sdhc_dev->data_transfer = true;
 
     uint32_t tmr;
@@ -510,8 +500,7 @@ static int _xfer_prepare(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer)
 
 static int _xfer_execute(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer,
                          const void *data_wr, void *data_rd,
-                         uint16_t *done)
-{
+                         uint16_t *done) {
     assert(xfer);
     assert((xfer->write && data_wr) || (!xfer->write && data_rd));
 
@@ -534,7 +523,7 @@ static int _xfer_execute(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer,
     if (xfer->write) {
         const uint32_t *data_to_write = data_wr;
         do {
-            /* wait until there is space in the write buffer */
+            // wait until there is space in the write buffer
             if (!_wait_for_event(sdhc_dev, SDHC_NISIER_BWRRDY,
                                  SDHC_EISTR_DATTEO | SDHC_EISTR_DATEND | SDHC_EISTR_DATCRC,
                                  SDHC_SRR_SWRSTDAT)) {
@@ -542,7 +531,7 @@ static int _xfer_execute(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer,
                 goto out;
             }
 
-            /* write data to the buffer as long there is space */
+            // write data to the buffer as long there is space
             while (sdhc->PSR.bit.BUFWREN && num_words && !sdhc->EISTR.reg) {
                 sdhc->BDPR.reg = *data_to_write++;
                 num_words--;
@@ -552,7 +541,7 @@ static int _xfer_execute(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer,
     else {
         uint32_t *data_to_read = data_rd;
         do {
-            /* wait until there is data in the read buffer */
+            // wait until there is data in the read buffer
             if (!_wait_for_event(sdhc_dev, SDHC_NISIER_BRDRDY,
                                  SDHC_EISTR_DATTEO | SDHC_EISTR_DATEND | SDHC_EISTR_DATCRC,
                                  SDHC_SRR_SWRSTDAT)) {
@@ -560,7 +549,7 @@ static int _xfer_execute(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer,
                 goto out;
             }
 
-            /* read all data that is available */
+            // read all data that is available
             while (sdhc->PSR.bit.BUFRDEN && num_words /* && !sdhc->EISTR.reg */) {
                 *data_to_read++ = sdhc->BDPR.reg;
                 num_words--;
@@ -568,7 +557,7 @@ static int _xfer_execute(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer,
         } while (num_words);
     }
 
-    /* wait for transfer complete */
+    // wait for transfer complete
     if (!_wait_for_event(sdhc_dev, SDHC_NISTR_TRFC,
                          SDHC_EISTR_DATTEO | SDHC_EISTR_DATEND | SDHC_EISTR_DATCRC,
                          SDHC_SRR_SWRSTALL)) {
@@ -587,8 +576,7 @@ out:
     return ret;
 }
 
-static int _xfer_finish(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer)
-{
+static int _xfer_finish(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer) {
     (void)xfer;
 
     sdhc_dev_t *sdhc_dev = container_of(dev, sdhc_dev_t, sdmmc_dev);
@@ -600,18 +588,17 @@ static int _xfer_finish(sdmmc_dev_t *dev, sdmmc_xfer_desc_t *xfer)
     sdhc->NISTR.reg = (SDHC_NISTR_BWRRDY | SDHC_NISTR_BRDRDY);
 
     if (IS_USED(MODULE_PERIPH_SDMMC_AUTO_CLK)) {
-        /* disable the clock to the card */
+        // disable the clock to the card
         return _disable_sd_clk(sdhc_dev);
     }
 
     return 0;
 }
 
-/* Internal functions */
+// Internal functions
 #if defined(CPU_SAMD5X) || defined(CPU_SAME5X)
 
-void _core_init(sdhc_dev_t *sdhc_dev)
-{
+void _core_init(sdhc_dev_t *sdhc_dev) {
     sam0_gclk_enable(SDHC_CLOCK_SLOW);
     sam0_gclk_enable(SDHC_CLOCK);
 
@@ -630,11 +617,10 @@ void _core_init(sdhc_dev_t *sdhc_dev)
                                               | GCLK_PCHCTRL_GEN(SDHC_CLOCK_SLOW);
         MCLK->AHBMASK.bit.SDHC1_ = 1;
     }
-#endif /* SDHC1 */
+#endif // SDHC1
 }
 
-static void _init_pins(sdhc_dev_t *sdhc_dev)
-{
+static void _init_pins(sdhc_dev_t *sdhc_dev) {
     const sdhc_conf_t *conf = sdhc_dev->conf;
 
     if (gpio_is_valid(conf->cd)) {
@@ -649,7 +635,7 @@ static void _init_pins(sdhc_dev_t *sdhc_dev)
     }
 
     if (conf->sdhc == SDHC0) {
-        /* data pins are fixed */
+        // data pins are fixed
         gpio_init_mux(SAM0_SDHC0_PIN_SDDAT0, SAM0_SDHC_MUX);
         gpio_init_mux(SAM0_SDHC0_PIN_SDDAT1, SAM0_SDHC_MUX);
         gpio_init_mux(SAM0_SDHC0_PIN_SDDAT2, SAM0_SDHC_MUX);
@@ -660,7 +646,7 @@ static void _init_pins(sdhc_dev_t *sdhc_dev)
 
 #ifdef SDHC1
     if (conf->sdhc == SDHC1) {
-        /* data pins are fixed */
+        // data pins are fixed
         gpio_init_mux(SAM0_SDHC1_PIN_SDDAT0, SAM0_SDHC_MUX);
         gpio_init_mux(SAM0_SDHC1_PIN_SDDAT1, SAM0_SDHC_MUX);
         gpio_init_mux(SAM0_SDHC1_PIN_SDDAT2, SAM0_SDHC_MUX);
@@ -668,19 +654,16 @@ static void _init_pins(sdhc_dev_t *sdhc_dev)
         gpio_init_mux(SAM0_SDHC1_PIN_SDCMD, SAM0_SDHC_MUX);
         gpio_init_mux(SAM0_SDHC1_PIN_SDCK, SAM0_SDHC_MUX);
     }
-#endif /* SDHC1 */
+#endif // SDHC1
 
     sdhc_dev->sdmmc_dev.bus_width = SDMMC_BUS_WIDTH_4BIT;
 }
 
-#endif /* defined(CPU_SAMD5X) || defined(CPU_SAME5X) */
+#endif // defined(CPU_SAMD5X) || defined(CPU_SAME5X)
 
-/**
- * @brief   Reset the entire SDHC peripheral or a part of it
- * @param   type  SDHC_SRR_SWRSTALL | SDHC_SRR_SWRSTCMD | SDHC_SRR_SWRSTDAT
- */
-static void _reset_sdhc(sdhc_dev_t *sdhc_dev, uint8_t type)
-{
+/// @brief   Reset the entire SDHC peripheral or a part of it
+/// @param   type  SDHC_SRR_SWRSTALL | SDHC_SRR_SWRSTCMD | SDHC_SRR_SWRSTDAT
+static void _reset_sdhc(sdhc_dev_t *sdhc_dev, uint8_t type) {
     sdhc_t *sdhc = sdhc_dev->conf->sdhc;
 
     sdhc->SRR.reg = type;
@@ -689,23 +672,22 @@ static void _reset_sdhc(sdhc_dev_t *sdhc_dev, uint8_t type)
     if (type == SDHC_SRR_SWRSTALL) {
         sdmmc_dev_t *sdmmc_dev = &sdhc_dev->sdmmc_dev;
 
-        /* peripheral needs a complete re-initialization */
+        // peripheral needs a complete re-initialization
         sdmmc_dev->driver->init(sdmmc_dev);
-        /* trigger card_init */
+        // trigger card_init
         sdmmc_dev->init_done = false;
     }
 
     sdhc_dev->data_transfer = 0;
 
-    sdhc->NISIER.reg = SDHC_NISIER_CARD_DETECT;  /* enable card detection interrupt signals */
+    sdhc->NISIER.reg = SDHC_NISIER_CARD_DETECT;  // enable card detection interrupt signals
     sdhc->EISIER.reg = 0;
 }
 
-#define SDHC_BUSY_TIMEOUT   500     /* limit SDHC busy time to 500 ms */
+#define SDHC_BUSY_TIMEOUT   500     // limit SDHC busy time to 500 ms
 
-static int _wait_sdhc_busy(sdhc_t *sdhc)
-{
-    uint32_t start = _ZTIMER_NOW(); /* waiting start time in msec */
+static int _wait_sdhc_busy(sdhc_t *sdhc) {
+    uint32_t start = _ZTIMER_NOW(); // waiting start time in msec
     uint32_t now = start;
 
     _ZTIMER_ACQUIRE();
@@ -717,21 +699,18 @@ static int _wait_sdhc_busy(sdhc_t *sdhc)
     return ((now - start) >= SDHC_BUSY_TIMEOUT) ? -ETIMEDOUT : 0;
 }
 
-/**
- * @brief   Wait for a given event while checking for errors
- *
- * @param   sdhc_dev    SDHC device generating the event
- * @param   event       Event to wait for [SDHC_NISTR_*]
- * @param   error_mask  Mask of errors to be checked [SDHC_EISTR_*]
- * @param   reset       Reset type in case of errors
- *                      [SDHC_SRR_SWRSTALL | SDHC_SRR_SWRSTCMD | SDHC_SRR_SWRSTDAT]
- *
- * @return  true if the given event has occurred, or false if an error has occurred.
- */
+/// @brief   Wait for a given event while checking for errors
+///
+/// @param   sdhc_dev    SDHC device generating the event
+/// @param   event       Event to wait for [SDHC_NISTR_*]
+/// @param   error_mask  Mask of errors to be checked [SDHC_EISTR_*]
+/// @param   reset       Reset type in case of errors
+///                      [SDHC_SRR_SWRSTALL | SDHC_SRR_SWRSTCMD | SDHC_SRR_SWRSTDAT]
+///
+/// @return  true if the given event has occurred, or false if an error has occurred.
 static bool _wait_for_event(sdhc_dev_t *sdhc_dev,
                             uint16_t event, uint16_t error_mask,
-                            uint8_t reset)
-{
+                            uint8_t reset) {
     sdhc_t *sdhc = sdhc_dev->conf->sdhc;
 
     sdhc_dev->error = 0;
@@ -739,7 +718,7 @@ static bool _wait_for_event(sdhc_dev_t *sdhc_dev,
     sdhc->NISIER.reg |= event;
     sdhc->EISIER.reg |= error_mask;
 
-    /* block IDLE so that the CPU clock does not stop */
+    // block IDLE so that the CPU clock does not stop
 
 #if defined(CPU_SAMD5X) || defined(CPU_SAME5X)
     pm_block(SAM0_PM_IDLE);
@@ -783,16 +762,15 @@ static bool _wait_for_event(sdhc_dev_t *sdhc_dev,
     return true;
 }
 
-static int _enable_sd_clk(sdhc_dev_t *sdhc_dev)
-{
+static int _enable_sd_clk(sdhc_dev_t *sdhc_dev) {
     sdhc_t *sdhc = sdhc_dev->conf->sdhc;
 
     if (!(sdhc->CCR.reg & SDHC_CCR_SDCLKEN)) {
         DEBUG("[sdmmc] enable SDCLK\n");
-        /* TODO timeout handling */
-        sdhc->CCR.reg |= SDHC_CCR_SDCLKEN;   /* enable clock to card        */
+        // TODO timeout handling
+        sdhc->CCR.reg |= SDHC_CCR_SDCLKEN;   // enable clock to card
 
-        /* a very small delay is required after clock changing */
+        // a very small delay is required after clock changing
         volatile unsigned count = (CLOCK_CORECLOCK / US_PER_SEC) * 10;
         while (--count) {}
     }
@@ -800,25 +778,23 @@ static int _enable_sd_clk(sdhc_dev_t *sdhc_dev)
     return 0;
 }
 
-static int _disable_sd_clk(sdhc_dev_t *sdhc_dev)
-{
+static int _disable_sd_clk(sdhc_dev_t *sdhc_dev) {
     sdhc_t *sdhc = sdhc_dev->conf->sdhc;
 
     if (sdhc->CCR.bit.SDCLKEN) {
         DEBUG("[sdmmc] disable SDCLK\n");
-        /* wait for command/data to go inactive */
+        // wait for command/data to go inactive
         if (_wait_sdhc_busy(sdhc)) {
             _reset_sdhc(sdhc_dev, SDHC_SRR_SWRSTALL);
         }
-        /* disable the clock to card */
+        // disable the clock to card
         sdhc->CCR.reg &= ~SDHC_CCR_SDCLKEN;
     }
     return 0;
 
 }
 
-static int _sdhc_to_sdmmc_err_code(uint16_t code)
-{
+static int _sdhc_to_sdmmc_err_code(uint16_t code) {
     if (code & SDHC_EISTR_CMDIDX) {
         DEBUG("[sdmmc] CMD index error\n");
         return -ENOTSUP;
@@ -837,8 +813,7 @@ static int _sdhc_to_sdmmc_err_code(uint16_t code)
     }
 }
 
-static void _isr(sdhc_dev_t *sdhc_dev)
-{
+static void _isr(sdhc_dev_t *sdhc_dev) {
     sdhc_t *sdhc = sdhc_dev->conf->sdhc;
 
     if (sdhc->NISTR.reg & SDHC_NISTR_CARD_DETECT) {
@@ -877,21 +852,19 @@ static void _isr(sdhc_dev_t *sdhc_dev)
 #endif
 }
 
-void isr_sdhc0(void)
-{
+void isr_sdhc0(void) {
     _isr(isr_ctx_0);
 }
 
 #ifdef SDHC1
-void isr_sdhc1(void)
-{
+void isr_sdhc1(void) {
     _isr(isr_ctx_1);
 }
 #endif
 
 static const sdmmc_driver_t _driver = {
     .init = _init,
-    .card_init = NULL,  /* no own card init function */
+    .card_init = NULL,  // no own card init function
     .send_cmd = _send_cmd,
     .set_bus_width = _set_bus_width,
     .set_clock_rate = _set_clock_rate,

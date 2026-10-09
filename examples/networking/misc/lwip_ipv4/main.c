@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2025 Krzysztof Cabaj <kcabaj@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Krzysztof Cabaj <kcabaj@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       lwip_ipv4 - sample application for demonstrating basic LWIP
- *              IPv4 client/server functions.
- *
- * @author      Krzysztof Cabaj <kcabaj@gmail.com>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       lwip_ipv4 - sample application for demonstrating basic LWIP
+///              IPv4 client/server functions.
+///
+/// @author      Krzysztof Cabaj <kcabaj@gmail.com>
+///
+/// @}
 #include "stdio.h"
 #include "stdlib.h"
 #include "shell.h"
@@ -43,8 +39,7 @@ static char server_stack[THREAD_STACKSIZE_DEFAULT];
 
 #define SERVER_PORT 4444
 
-static int _client_cmd(int argc, char **argv)
-{
+static int _client_cmd(int argc, char **argv) {
     uint32_t dest_ip;
 
     if (argc < 4) {
@@ -92,8 +87,7 @@ out:
 
 SHELL_COMMAND(client, "Send UDP datagram", _client_cmd);
 
-void *server_thread(void *arg)
-{
+void *server_thread(void *arg) {
     (void)arg;
     sock_udp_t sock;
     sock_udp_ep_t local = { .family = AF_INET,
@@ -135,13 +129,12 @@ void *server_thread(void *arg)
 #define _TEST_ADDR4_LOCAL  IP4_ADDR_INIT(192, 168, 100, 11)
 #define _TEST_ADDR4_MASK   IP4_ADDR_INIT(255, 255, 255, 0)
 
-int main(void)
-{
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
 
     sys_lock_tcpip_core();
 
-    /* According to the RFC 3493 interfaces are indexed from 1 */
+    // According to the RFC 3493 interfaces are indexed from 1
     struct netif *iface = netif_get_by_index(1);
 
     if (iface == NULL) {
@@ -163,7 +156,7 @@ int main(void)
     puts("Waiting for DHCP address autoconfiguration ...");
     ztimer_sleep(ZTIMER_MSEC, CONFIG_DHCP_TIMEOUT_SEC * MS_PER_SEC);
 #endif
-    /* print network addresses */
+    // print network addresses
     printf("{\"IPv4 addresses\": [\"");
     char buffer[16];
     inet_ntop(AF_INET, netif_ip_addr4(iface), buffer, 16);

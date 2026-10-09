@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the LIS3MDL 3-axis magnetometer
- *
- * @author      René Herthel <rene-herthel@outlook.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the LIS3MDL 3-axis magnetometer
+///
+/// @author      René Herthel <rene-herthel@outlook.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -24,8 +20,7 @@
 
 #define SLEEP_MS    (640U)
 
-int main(void)
-{
+int main(void) {
     lis3mdl_t dev;
 
     puts("LIS3MDL test application");

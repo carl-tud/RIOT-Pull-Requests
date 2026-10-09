@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -9,16 +7,12 @@
 extern "C" {
 #endif
 
-/**
- * @file
- * @ingroup     examples
- * @brief       PSK and RPK keys for the unicoap_server example.
- * @author      Raul Fuentes <raul.fuentes-samaniego@inria.fr>
- */
+/// @file
+/// @ingroup     examples
+/// @brief       PSK and RPK keys for the unicoap_server example.
+/// @author      Raul Fuentes <raul.fuentes-samaniego@inria.fr>
 
-/*
- *  Default keys examples for tinyDTLS (for RIOT, Linux and Contiki)
- */
+//  Default keys examples for tinyDTLS (for RIOT, Linux and Contiki)
 #define PSK_DEFAULT_IDENTITY "Client_identity"
 #define PSK_DEFAULT_KEY "secretPSK"
 #define PSK_OPTIONS "i:k:"
@@ -46,7 +40,7 @@ static const unsigned char ecdsa_pub_key_y[] = {
     0xE9, 0x3F, 0x98, 0x72, 0x09, 0xDA, 0xED, 0x0B,
     0x4F, 0xAB, 0xC3, 0x6F, 0xC7, 0x72, 0xF8, 0x29
 };
-#endif /* CONFIG_DTLS_ECC */
+#endif // CONFIG_DTLS_ECC
 #ifdef __cplusplus
 }
 #endif

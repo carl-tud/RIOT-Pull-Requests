@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       Default SDK configuration for the ESP32-C3 SoC bootloader
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       Default SDK configuration for the ESP32-C3 SoC bootloader
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #ifndef DOXYGEN
 
@@ -42,5 +38,5 @@ extern "C" {
 }
 #endif
 
-#endif /* DOXYGEN */
-/** @} */
+#endif // DOXYGEN
+/// @}

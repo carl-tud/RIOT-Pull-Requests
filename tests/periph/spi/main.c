@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Application for testing low-level SPI driver implementations
- *
- * This implementation covers both, master and slave configurations.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Application for testing low-level SPI driver implementations
+///
+/// This implementation covers both, master and slave configurations.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -27,16 +23,12 @@
 #include "schedstatistics.h"
 #include "thread.h"
 
-/**
- * @brief   Default port number used for the CS pin if unassigned
- */
+/// @brief   Default port number used for the CS pin if unassigned
 #ifndef DEFAULT_SPI_CS_PORT
 #define DEFAULT_SPI_CS_PORT 0
 #endif
 
-/**
- * @brief   Default port number used for the CS pin if unassigned
- */
+/// @brief   Default port number used for the CS pin if unassigned
 #ifndef DEFAULT_SPI_CS_PIN
 #define DEFAULT_SPI_CS_PIN 0
 #endif
@@ -52,27 +44,21 @@
 #define BUF_SIZE                (128U)
 
 #if ENABLE_BENCHMARK
-/**
- * @brief   Some parameters used for benchmarking
- */
+/// @brief   Some parameters used for benchmarking
 #define BENCH_REDOS             (1000)
 #define BENCH_SMALL             (2)
 #define BENCH_LARGE             (100)
 #define BENCH_PAYLOAD           ('b')
 #define BENCH_REGADDR           (0x23)
 
-/**
- * @brief   Benchmark buffers
- */
+/// @brief   Benchmark buffers
 static uint8_t bench_wbuf[BENCH_LARGE];
 static uint8_t bench_rbuf[BENCH_LARGE];
 
 extern void sched_statistics_cb(kernel_pid_t active_thread, kernel_pid_t next_thread);
 #endif
 
-/**
- * @brief   Generic buffer used for receiving
- */
+/// @brief   Generic buffer used for receiving
 static uint8_t buf[BUF_SIZE];
 
 static struct {
@@ -83,30 +69,24 @@ static struct {
 } spiconf;
 
 #if ENABLE_BENCHMARK
-/*
- * @brief Trigger an update of the scheduler runtime statistics.
- *
- * Increases the number of context switches by one as a side effect
- */
-static void _sched_statistics_trigger(void)
-{
+// @brief Trigger an update of the scheduler runtime statistics.
+//
+// Increases the number of context switches by one as a side effect
+static void _sched_statistics_trigger(void) {
     sched_statistics_cb(thread_getpid(), thread_getpid());
 }
 
-static uint32_t _sched_us(void)
-{
+static uint32_t _sched_us(void) {
     _sched_statistics_trigger();
     return sched_pidlist[thread_getpid()].runtime_us;
 }
 
-static uint32_t _ztimer_diff_usec(uint32_t stop, uint32_t start)
-{
+static uint32_t _ztimer_diff_usec(uint32_t stop, uint32_t start) {
     return stop - start;
 }
 #endif
 
-static void print_bytes(const char *title, const uint8_t *data, size_t len)
-{
+static void print_bytes(const char *title, const uint8_t *data, size_t len) {
     printf("%4s\n", title);
     for (size_t i = 0; i < len; i++) {
         printf("  %2" PRIuSIZE " ", i);
@@ -127,8 +107,7 @@ static void print_bytes(const char *title, const uint8_t *data, size_t len)
     printf("\n\n");
 }
 
-static int cmd_init(int argc, char **argv)
-{
+static int cmd_init(int argc, char **argv) {
     int dev, mode, clk, port, pin, tmp;
 
     if (argc < 4) {
@@ -158,7 +137,7 @@ static int cmd_init(int argc, char **argv)
         return 1;
     }
 
-    /* parse the given SPI device */
+    // parse the given SPI device
     dev = atoi(argv[1]);
     if (dev < 0 || dev >= (int)SPI_NUMOF) {
         puts("error: invalid SPI device specified");
@@ -166,7 +145,7 @@ static int cmd_init(int argc, char **argv)
     }
     spiconf.dev = SPI_DEV(dev);
 
-    /* parse the SPI mode */
+    // parse the SPI mode
     mode = atoi(argv[2]);
     switch (mode) {
         case 0: spiconf.mode = SPI_MODE_0; break;
@@ -178,7 +157,7 @@ static int cmd_init(int argc, char **argv)
             return 1;
     }
 
-    /* parse the targeted clock speed */
+    // parse the targeted clock speed
     clk = atoi(argv[3]);
     switch (clk) {
         case 0: spiconf.clk = SPI_CLK_100KHZ; break;
@@ -191,7 +170,7 @@ static int cmd_init(int argc, char **argv)
             return 1;
     }
 
-    /* parse chip select port and pin */
+    // parse chip select port and pin
     if (argc > 5) {
         pin = atoi(argv[5]);
     }
@@ -209,14 +188,14 @@ static int cmd_init(int argc, char **argv)
     if (pin < 0 || port < -1) {
         puts("error: invalid CS port/pin combination specified");
     }
-    if (port == -1) {                    /* hardware chip select line */
+    if (port == -1) {                    // hardware chip select line
         spiconf.cs = SPI_HWCS(pin);
     }
     else {
         spiconf.cs = (spi_cs_t)GPIO_PIN(port, pin);
     }
 
-    /* test setup */
+    // test setup
     tmp = spi_init_cs(spiconf.dev, spiconf.cs);
     if (tmp != SPI_OK) {
         puts("error: unable to initialize the given chip select line");
@@ -239,8 +218,7 @@ static int cmd_init(int argc, char **argv)
 }
 SHELL_COMMAND(init, "Setup a particular SPI configuration", cmd_init);
 
-static int cmd_transfer(int argc, char **argv)
-{
+static int cmd_transfer(int argc, char **argv) {
     size_t len;
 
     if (argc < 2) {
@@ -253,18 +231,18 @@ static int cmd_transfer(int argc, char **argv)
         return 1;
     }
 
-    /* get bus access */
+    // get bus access
     spi_acquire(spiconf.dev, spiconf.cs, spiconf.mode, spiconf.clk);
 
-    /* transfer data */
+    // transfer data
     len = strlen(argv[1]);
     memset(buf, 0, sizeof(buf));
     spi_transfer_bytes(spiconf.dev, spiconf.cs, false, argv[1], buf, len);
 
-    /* release the bus */
+    // release the bus
     spi_release(spiconf.dev);
 
-    /* print results */
+    // print results
     print_bytes("Sent bytes", (uint8_t *)argv[1], len);
     print_bytes("Received bytes", buf, len);
 
@@ -273,8 +251,7 @@ static int cmd_transfer(int argc, char **argv)
 SHELL_COMMAND(send, "Transfer string to slave", cmd_transfer);
 
 #if ENABLE_BENCHMARK
-int cmd_bench(int argc, char **argv)
-{
+int cmd_bench(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -291,16 +268,16 @@ int cmd_bench(int argc, char **argv)
         return 1;
     }
 
-    /* prepare buffer */
+    // prepare buffer
     memset(bench_wbuf, BENCH_PAYLOAD, BENCH_LARGE);
 
-    /* get access to the bus */
+    // get access to the bus
     spi_acquire(spiconf.dev, spiconf.cs, spiconf.mode, spiconf.clk);
 
     puts("### Running some benchmarks, all values in [us] ###");
     puts("### Test\t\t\t\tTransfer time\tuser time\n");
 
-    /* 1 - write 1000 times 1 byte */
+    // 1 - write 1000 times 1 byte
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -315,7 +292,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 2 - write 1000 times 2 byte */
+    // 2 - write 1000 times 2 byte
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -330,7 +307,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 3 - write 1000 times 100 byte */
+    // 3 - write 1000 times 100 byte
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -345,7 +322,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 4 - write 1000 times 1 byte to register */
+    // 4 - write 1000 times 1 byte to register
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -360,7 +337,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 5 - write 1000 times 2 byte to register */
+    // 5 - write 1000 times 2 byte to register
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -375,7 +352,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 6 - write 1000 times 100 byte to register */
+    // 6 - write 1000 times 100 byte to register
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -390,7 +367,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 7 - read 1000 times 2 byte */
+    // 7 - read 1000 times 2 byte
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -405,7 +382,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 8 - read 1000 times 100 byte */
+    // 8 - read 1000 times 100 byte
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -420,7 +397,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 9 - read 1000 times 2 byte from register */
+    // 9 - read 1000 times 2 byte from register
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -435,7 +412,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 10 - read 1000 times 100 byte from register */
+    // 10 - read 1000 times 100 byte from register
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -450,7 +427,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 11 - transfer 1000 times 2 byte */
+    // 11 - transfer 1000 times 2 byte
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -465,7 +442,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 12 - transfer 1000 times 100 byte */
+    // 12 - transfer 1000 times 100 byte
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -480,7 +457,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 13 - transfer 1000 times 2 byte from/to register */
+    // 13 - transfer 1000 times 2 byte from/to register
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -495,7 +472,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 14 - transfer 1000 times 100 byte from/to register */
+    // 14 - transfer 1000 times 100 byte from/to register
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -510,7 +487,7 @@ int cmd_bench(int argc, char **argv)
     sum += (stop - start);
     sched_sum += sched_diff_us;
 
-    /* 15 - release & acquire the bus 1000 times */
+    // 15 - release & acquire the bus 1000 times
     sched_start = _sched_us();
     start = ztimer_now(ZTIMER_USEC);
     for (int i = 0; i < BENCH_REDOS; i++) {
@@ -538,11 +515,10 @@ SHELL_COMMAND(bench, "Runs some benchmarks", cmd_bench);
 #endif
 
 #ifdef MODULE_PERIPH_SPI_RECONFIGURE
-int cmd_spi_gpio(int argc, char **argv)
-{
+int cmd_spi_gpio(int argc, char **argv) {
     int dev = -1;
 
-    /* parse the given SPI device */
+    // parse the given SPI device
     if (argc > 1) {
         dev = atoi(argv[1]);
     }
@@ -584,17 +560,16 @@ int cmd_spi_gpio(int argc, char **argv)
 SHELL_COMMAND(spi_gpio, "Re-configures MISO & MOSI pins to GPIO mode and back.", cmd_spi_gpio);
 #endif
 
-int main(void)
-{
+int main(void) {
     puts("Manual SPI peripheral driver test (see README.md)");
 
     printf("There are %i SPI devices configured for your platform.\n",
            (int)SPI_NUMOF);
 
-    /* reset local SPI configuration */
+    // reset local SPI configuration
     spiconf.dev = SPI_UNDEF;
 
-    /* run the shell */
+    // run the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 

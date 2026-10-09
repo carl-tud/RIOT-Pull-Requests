@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -15,14 +11,13 @@
 #include "net/gnrc/netif.h"
 #include "net/gnrc/netif/hdr.h"
 
-void gnrc_netif_hdr_print(gnrc_netif_hdr_t *hdr)
-{
+void gnrc_netif_hdr_print(gnrc_netif_hdr_t *hdr) {
     char addr_str[GNRC_NETIF_HDR_L2ADDR_PRINT_LEN];
 
     printf("if_pid: %u  ", (unsigned) hdr->if_pid);
     printf("rssi: %d  ", (signed) hdr->rssi);
 #if IS_USED(MODULE_GNRC_NETIF_TIMESTAMP)
-    /* Only last 32 bits are printed due to printf from avg-libc doesn't support 64-bit values */
+    // Only last 32 bits are printed due to printf from avg-libc doesn't support 64-bit values
     printf(" timestamp: %" PRIu32 ".%09" PRIu32 " ", (uint32_t)(hdr->timestamp / NS_PER_SEC),
                                                      (uint32_t)(hdr->timestamp % NS_PER_SEC));
 #endif
@@ -66,4 +61,4 @@ void gnrc_netif_hdr_print(gnrc_netif_hdr_t *hdr)
     }
 }
 
-/** @} */
+/// @}

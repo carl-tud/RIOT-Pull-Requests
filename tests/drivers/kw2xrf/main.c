@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for KW2XRF IEEE 802.15.4 device driver
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for KW2XRF IEEE 802.15.4 device driver
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -28,9 +24,8 @@
 
 static netdev_ieee802154_submac_t kw2xrf_netdev[KW2XRF_NUM];
 
-/* utility functions */
-static void _set_test_mode(int argc, char **argv, uint8_t mode)
-{
+// utility functions
+static void _set_test_mode(int argc, char **argv, uint8_t mode) {
     (void) argc;
     if (fmt_is_number(argv[1])) {
         int idx = atoi(argv[1]);
@@ -47,74 +42,62 @@ static void _set_test_mode(int argc, char **argv, uint8_t mode)
     return;
 }
 
-static int _tm_idle(int argc, char **argv)
-{
+static int _tm_idle(int argc, char **argv) {
     _set_test_mode(argc, argv, NETOPT_RF_TESTMODE_IDLE);
     return 0;
 }
 
-static int _tm_crx(int argc, char **argv)
-{
+static int _tm_crx(int argc, char **argv) {
     _set_test_mode(argc, argv, NETOPT_RF_TESTMODE_CRX);
     return 0;
 }
 
-static int _tm_ctx_cw(int argc, char **argv)
-{
+static int _tm_ctx_cw(int argc, char **argv) {
     _set_test_mode(argc, argv, NETOPT_RF_TESTMODE_CTX_CW);
     return 0;
 }
 
-static int _tm_ctx_prbs9(int argc, char **argv)
-{
+static int _tm_ctx_prbs9(int argc, char **argv) {
     _set_test_mode(argc, argv, NETOPT_RF_TESTMODE_CTX_PRBS9);
     return 0;
 }
 
-static int _tm_ctx_preamble(int argc, char **argv)
-{
+static int _tm_ctx_preamble(int argc, char **argv) {
     _set_test_mode(argc, argv, KW2XRF_TM_CTX_PREAMBLE);
     return 0;
 }
 
-static int _tm_ctx_2mhz(int argc, char **argv)
-{
+static int _tm_ctx_2mhz(int argc, char **argv) {
     _set_test_mode(argc, argv, KW2XRF_TM_CTX_2MHZ);
     return 0;
 }
 
-static int _tm_ctx_200khz(int argc, char **argv)
-{
+static int _tm_ctx_200khz(int argc, char **argv) {
     _set_test_mode(argc, argv, KW2XRF_TM_CTX_200KHZ);
     return 0;
 }
 
-static int _tm_ctx_1mbps_prbs9(int argc, char **argv)
-{
+static int _tm_ctx_1mbps_prbs9(int argc, char **argv) {
     _set_test_mode(argc, argv, KW2XRF_TM_CTX_1MBPS_PRBS9);
     return 0;
 }
 
-static int _tm_ctx_ext(int argc, char **argv)
-{
+static int _tm_ctx_ext(int argc, char **argv) {
     _set_test_mode(argc, argv, KW2XRF_TM_CTX_EXT);
     return 0;
 }
 
-static int _tm_ctx_nm0(int argc, char **argv)
-{
+static int _tm_ctx_nm0(int argc, char **argv) {
     _set_test_mode(argc, argv, KW2XRF_TM_CTX_NM0);
     return 0;
 }
 
-static int _tm_ctx_nm1(int argc, char **argv)
-{
+static int _tm_ctx_nm1(int argc, char **argv) {
     _set_test_mode(argc, argv, KW2XRF_TM_CTX_NM1);
     return 0;
 }
 
-static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque)
-{
+static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque) {
     if (type != IEEE802154_DEV_TYPE_KW2XRF) {
         assert(false);
     }
@@ -126,7 +109,7 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
     puts("Initializing KW2XRF devices");
 
     int c = 0;
-    /* This function will iterate through all kw2xrf radios */
+    // This function will iterate through all kw2xrf radios
     ieee802154_hal_test_init_devs(_reg_callback, &c);
 
     for (unsigned i = 0; i < KW2XRF_NUM; i++) {
@@ -134,10 +117,10 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
         netdev_register(&kw2xrf_netdev[i].dev.netdev, NETDEV_KW2XRF, 0);
         netdev_ieee802154_submac_init(&kw2xrf_netdev[i]);
 
-        /* set the application-provided callback */
+        // set the application-provided callback
         kw2xrf_netdev[i].dev.netdev.event_callback = cb;
 
-        /* initialize the device driver */
+        // initialize the device driver
         int res = kw2xrf_netdev[i].dev.netdev.driver->init(&kw2xrf_netdev[i].dev.netdev);
         if (res != 0) {
             return -1;
@@ -162,8 +145,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("Test application for KW2XRF IEEE 802.15.4 device driver");
 
     int res = netdev_ieee802154_minimal_init();
@@ -172,7 +154,7 @@ int main(void)
         return 1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief   Functions that are based around a network interface's device type.
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @brief   Functions that are based around a network interface's device type.
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -31,8 +27,7 @@
 #include "net/sixlowpan.h"
 #endif
 
-netopt_t gnrc_netif_get_l2addr_opt(const gnrc_netif_t *netif)
-{
+netopt_t gnrc_netif_get_l2addr_opt(const gnrc_netif_t *netif) {
     netopt_t res = NETOPT_ADDRESS;
 
     switch (netif->device_type) {
@@ -67,15 +62,14 @@ netopt_t gnrc_netif_get_l2addr_opt(const gnrc_netif_t *netif)
 
 int gnrc_netif_eui64_from_addr(const gnrc_netif_t *netif,
                                const uint8_t *addr, size_t addr_len,
-                               eui64_t *eui64)
-{
+                               eui64_t *eui64) {
 #if GNRC_NETIF_L2ADDR_MAXLEN > 0
     if (netif->flags & GNRC_NETIF_FLAGS_HAS_L2ADDR) {
         switch (netif->device_type) {
 #if defined(MODULE_NETDEV_IEEE802154) || defined(MODULE_XBEE)
             case NETDEV_TYPE_IEEE802154:
-                /* try getting EUI-64 from device if short address is
-                 * provided */
+                // try getting EUI-64 from device if short address is
+                // provided
                 switch (addr_len) {
                     case IEEE802154_SHORT_ADDRESS_LEN: {
                         netdev_t *dev = netif->dev;
@@ -85,32 +79,31 @@ int gnrc_netif_eui64_from_addr(const gnrc_netif_t *netif,
                     default:
                         break;
                 }
-#endif  /* defined(MODULE_NETDEV_IEEE802154) || defined(MODULE_XBEE) */
-                /* Intentionally falls through */
+#endif  // defined(MODULE_NETDEV_IEEE802154) || defined(MODULE_XBEE)
+                // Intentionally falls through
             default:
                 return l2util_eui64_from_addr(netif->device_type, addr,
                                               addr_len, eui64);
         }
     }
-#endif /* GNRC_NETIF_L2ADDR_MAXLEN > 0 */
+#endif // GNRC_NETIF_L2ADDR_MAXLEN > 0
     return -ENOTSUP;
 }
 
-void gnrc_netif_init_6ln(gnrc_netif_t *netif)
-{
+void gnrc_netif_init_6ln(gnrc_netif_t *netif) {
     switch (netif->device_type) {
         case NETDEV_TYPE_IEEE802154: {
-            /* see https://tools.ietf.org/html/rfc6775#section-5.2 */
+            // see https://tools.ietf.org/html/rfc6775#section-5.2
             uint16_t src_len = IEEE802154_LONG_ADDRESS_LEN;
             gnrc_netapi_opt_t opt = { .opt = NETOPT_SRC_LEN,
                                       .data = &src_len,
                                       .data_len = sizeof(src_len) };
 
-            /* XXX we are supposed to be in interface context here, so use driver
-             * directly everything else would deadlock anyway */
+            // XXX we are supposed to be in interface context here, so use driver
+            // directly everything else would deadlock anyway
             netif->ops->set(netif, &opt);
         }
-        /* intentionally falls through */
+        // intentionally falls through
         case NETDEV_TYPE_BLE:
 #ifdef MODULE_GNRC_SIXLOENC
         case NETDEV_TYPE_ETHERNET:
@@ -127,16 +120,15 @@ void gnrc_netif_init_6ln(gnrc_netif_t *netif)
         case NETDEV_TYPE_NRFMIN:
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_6LN)
             netif->flags |= GNRC_NETIF_FLAGS_6LN;
-#endif  /* CONFIG_GNRC_IPV6_NIB_6LN */
-            /* intentionally falls through */
+#endif  // CONFIG_GNRC_IPV6_NIB_6LN
+            // intentionally falls through
         default:
             break;
     }
 }
 
 #if IS_USED(MODULE_GNRC_NETIF_IPV6)
-void gnrc_netif_ipv6_init_mtu(gnrc_netif_t *netif)
-{
+void gnrc_netif_ipv6_init_mtu(gnrc_netif_t *netif) {
     netdev_t *dev = netif->dev;
     int res;
     uint16_t tmp;
@@ -153,7 +145,7 @@ void gnrc_netif_ipv6_init_mtu(gnrc_netif_t *netif)
 #ifdef MODULE_GNRC_SIXLOWPAN_IPHC
             netif->flags |= GNRC_NETIF_FLAGS_6LO_HC;
 #endif
-            /* intentionally falls through */
+            // intentionally falls through
         case NETDEV_TYPE_ESP_NOW:
             res = dev->driver->get(dev, NETOPT_MAX_PDU_SIZE,
                                    &tmp, sizeof(tmp));
@@ -161,21 +153,21 @@ void gnrc_netif_ipv6_init_mtu(gnrc_netif_t *netif)
 #if IS_USED(MODULE_GNRC_NETIF_6LO)
 #if IS_ACTIVE(CONFIG_GNRC_NETIF_NONSTANDARD_6LO_MTU)
             netif->ipv6.mtu = MAX(IPV6_MIN_MTU, tmp);
-#else /* IS_ACTIVE(CONFIG_GNRC_NETIF_NONSTANDARD_6LO_MTU) */
+#else // IS_ACTIVE(CONFIG_GNRC_NETIF_NONSTANDARD_6LO_MTU)
             netif->ipv6.mtu = IPV6_MIN_MTU;
-#endif /* IS_ACTIVE(CONFIG_GNRC_NETIF_NONSTANDARD_6LO_MTU) */
+#endif // IS_ACTIVE(CONFIG_GNRC_NETIF_NONSTANDARD_6LO_MTU)
             if (tmp >= netif->ipv6.mtu) {
-                /* When the L2-PDU is higher or equal to the IPv6 MTU, disable
-                 * 6Lo fragmentation, this generally applies to 802.15.4g
-                 * devices with a big L2-PDU */
+                // When the L2-PDU is higher or equal to the IPv6 MTU, disable
+                // 6Lo fragmentation, this generally applies to 802.15.4g
+                // devices with a big L2-PDU
                 netif->sixlo.max_frag_size = 0;
             }
             else {
                 netif->sixlo.max_frag_size = MIN(SIXLOWPAN_FRAG_MAX_LEN, tmp);
             }
-#else   /* IS_USED(MODULE_GNRC_NETIF_6LO) */
+#else   // IS_USED(MODULE_GNRC_NETIF_6LO)
             netif->ipv6.mtu = tmp;
-#endif  /* IS_USED(MODULE_GNRC_NETIF_6LO) */
+#endif  // IS_USED(MODULE_GNRC_NETIF_6LO)
             break;
 #endif  /* defined(MODULE_NETDEV_IEEE802154) || defined(MODULE_NRFMIN) || \
          * defined(MODULE_XBEE) || defined(MODULE_ESP_NOW) */
@@ -206,7 +198,7 @@ void gnrc_netif_ipv6_init_mtu(gnrc_netif_t *netif)
             res = dev->driver->get(dev, NETOPT_MAX_PDU_SIZE,
                                    &tmp, sizeof(tmp));
             if (res < 0) {
-                /* assume maximum possible transition unit */
+                // assume maximum possible transition unit
                 netif->ipv6.mtu = UINT16_MAX;
             }
             else {
@@ -218,17 +210,16 @@ void gnrc_netif_ipv6_init_mtu(gnrc_netif_t *netif)
 
 int gnrc_netif_ipv6_iid_from_addr(const gnrc_netif_t *netif,
                                   const uint8_t *addr, size_t addr_len,
-                                  eui64_t *iid)
-{
+                                  eui64_t *iid) {
 #if GNRC_NETIF_L2ADDR_MAXLEN > 0
     if (netif->flags & GNRC_NETIF_FLAGS_HAS_L2ADDR) {
         return l2util_ipv6_iid_from_addr(netif->device_type,
                                          addr, addr_len, iid);
     }
-#endif /* GNRC_NETIF_L2ADDR_MAXLEN > 0 */
+#endif // GNRC_NETIF_L2ADDR_MAXLEN > 0
     return -ENOTSUP;
 }
 
-#endif /* IS_USED(MODULE_GNRC_NETIF_IPV6) */
+#endif // IS_USED(MODULE_GNRC_NETIF_IPV6)
 
-/** @} */
+/// @}

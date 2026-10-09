@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_checksum_crc16_ccitt
- * @{
- *
- * @file
- * @brief       CRC16 implementation
- *
- * @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_checksum_crc16_ccitt
+/// @{
+///
+/// @file
+/// @brief       CRC16 implementation
+///
+/// @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -92,8 +88,7 @@ static const uint16_t _crc16_ccitt_false_lookuptable[256] = {
     0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-uint16_t crc16_ccitt_kermit_update(uint16_t crc, const unsigned char *buf, size_t len)
-{
+uint16_t crc16_ccitt_kermit_update(uint16_t crc, const unsigned char *buf, size_t len) {
     while (len--) {
         uint8_t e = crc ^= *buf++;
         if (IS_USED(MODULE_CRC16_FAST)) {
@@ -110,33 +105,27 @@ uint16_t crc16_ccitt_kermit_update(uint16_t crc, const unsigned char *buf, size_
     return crc;
 }
 
-uint16_t crc16_ccitt_kermit_calc(const unsigned char *buf, size_t len)
-{
+uint16_t crc16_ccitt_kermit_calc(const unsigned char *buf, size_t len) {
     return crc16_ccitt_kermit_update(0x0000, buf, len);
 }
 
-uint16_t crc16_ccitt_mcrf4xx_calc(const unsigned char *buf, size_t len)
-{
+uint16_t crc16_ccitt_mcrf4xx_calc(const unsigned char *buf, size_t len) {
     return crc16_ccitt_kermit_update(0xFFFF, buf, len);
 }
 
-uint16_t crc16_ccitt_fcs_start(const unsigned char *buf, size_t len)
-{
+uint16_t crc16_ccitt_fcs_start(const unsigned char *buf, size_t len) {
     return crc16_ccitt_kermit_update(0xFFFF, buf, len);
 }
 
-uint16_t crc16_ccitt_fcs_finish(uint16_t crc, const unsigned char *buf, size_t len)
-{
+uint16_t crc16_ccitt_fcs_finish(uint16_t crc, const unsigned char *buf, size_t len) {
     return crc16_ccitt_kermit_update(crc, buf, len) ^ 0xFFFFU;
 }
 
-uint16_t crc16_ccitt_fcs_calc(const unsigned char *buf, size_t len)
-{
+uint16_t crc16_ccitt_fcs_calc(const unsigned char *buf, size_t len) {
     return crc16_ccitt_fcs_start(buf, len) ^ 0xFFFFU;
 }
 
-uint16_t crc16_ccitt_false_update(uint16_t crc, const unsigned char *buf, size_t len)
-{
+uint16_t crc16_ccitt_false_update(uint16_t crc, const unsigned char *buf, size_t len) {
     while (len--) {
         crc = byteorder_swaps(crc) ^ *buf++;
         if (IS_USED(MODULE_CRC16_FAST)) {
@@ -151,12 +140,10 @@ uint16_t crc16_ccitt_false_update(uint16_t crc, const unsigned char *buf, size_t
     return crc;
 }
 
-uint16_t crc16_ccitt_aug_calc(const unsigned char *buf, size_t len)
-{
+uint16_t crc16_ccitt_aug_calc(const unsigned char *buf, size_t len) {
     return crc16_ccitt_false_update(0x1D0F, buf, len);
 }
 
-uint16_t crc16_ccitt_false_calc(const unsigned char *buf, size_t len)
-{
+uint16_t crc16_ccitt_false_calc(const unsigned char *buf, size_t len) {
     return crc16_ccitt_false_update(0xFFFF, buf, len);
 }

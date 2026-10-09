@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_servo_pwm
- * @{
- *
- * @file
- * @brief       Servo motor driver implementation using PWM
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_servo_pwm
+/// @{
+///
+/// @file
+/// @brief       Servo motor driver implementation using PWM
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -32,22 +28,18 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief   Calculate the duty cycle corresponding to the given duration of the
- *          "on duration"
- * @param   freq            frequency of the PWM peripheral
- * @param   res             resolution of the PWM peripheral
- * @param   duration_us     duration of the "on phase" in microseconds
- *
- * @note    Scientific rounding is used
- */
-static uint16_t duty_cycle(uint32_t freq, uint16_t res, uint16_t duration_us)
-{
+/// @brief   Calculate the duty cycle corresponding to the given duration of the
+///          "on duration"
+/// @param   freq            frequency of the PWM peripheral
+/// @param   res             resolution of the PWM peripheral
+/// @param   duration_us     duration of the "on phase" in microseconds
+///
+/// @note    Scientific rounding is used
+static uint16_t duty_cycle(uint32_t freq, uint16_t res, uint16_t duration_us) {
     return DIV_ROUND((uint64_t)duration_us * freq * res, US_PER_SEC);
 }
 
-int servo_init(servo_t *dev, const servo_params_t *params)
-{
+int servo_init(servo_t *dev, const servo_params_t *params) {
     memset(dev, 0, sizeof(*dev));
     const servo_pwm_params_t *pwm_params = params->pwm;
     DEBUG("[servo] trying to initialize PWM %u with frequency %u Hz "
@@ -55,20 +47,19 @@ int servo_init(servo_t *dev, const servo_params_t *params)
           (unsigned)pwm_params->pwm, (unsigned)pwm_params->freq,
           (unsigned)pwm_params->res);
 
-    /* Note: This may initialize the PWM dev over and over again if multiple
-     *       servos are connected to the same PWM. But other than wasting CPU
-     *       cycles, this does no harm. And it greatly simplifies the API, so
-     *       we willfully accept this inefficiency here.
-     */
+    // Note: This may initialize the PWM dev over and over again if multiple
+    //       servos are connected to the same PWM. But other than wasting CPU
+    //       cycles, this does no harm. And it greatly simplifies the API, so
+    //       we willfully accept this inefficiency here.
     uint32_t freq = pwm_init(pwm_params->pwm, PWM_LEFT, pwm_params->freq,
                              pwm_params->res);
     DEBUG("[servo] initialized PWM %u with frequency %" PRIu32 " Hz\n",
           (unsigned)pwm_params->pwm, freq);
 
-    /* assert successful initialization with frequency roughly matching
-     * requested frequency. A 50 Hz MG90S servo controlled by a 100 Hz PWM
-     * worked just fine for me, so we are really lax here and accept
-     * everything in the range of [0.5f; 2f] */
+    // assert successful initialization with frequency roughly matching
+    // requested frequency. A 50 Hz MG90S servo controlled by a 100 Hz PWM
+    // worked just fine for me, so we are really lax here and accept
+    // everything in the range of [0.5f; 2f]
     assert((freq != 0)
             && (freq >= pwm_params->freq - pwm_params->freq / 2U)
             && (freq <= pwm_params->freq * 2));
@@ -84,8 +75,7 @@ int servo_init(servo_t *dev, const servo_params_t *params)
     return 0;
 }
 
-void servo_set(servo_t *dev, uint8_t pos)
-{
+void servo_set(servo_t *dev, uint8_t pos) {
     const servo_params_t *par = dev->params;
     uint32_t duty = dev->max - dev->min;
     duty *= pos;

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_sodaq-autonomo
- * @{
- *
- * @file
- * @brief       Default timer configuration for SODAQ boards
- *
- * @author      Kees Bakker <kees@sodaq.com>
- */
+/// @ingroup     boards_sodaq-autonomo
+/// @{
+///
+/// @file
+/// @brief       Default timer configuration for SODAQ boards
+///
+/// @author      Kees Bakker <kees@sodaq.com>
 
 #include <stdint.h>
 
@@ -24,12 +20,10 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer peripheral configuration
- * @{
- */
+/// @name    Timer peripheral configuration
+/// @{
 static const tc32_conf_t timer_config[] = {
-    {   /* Timer 0 - System Clock */
+    {   // Timer 0 - System Clock
         .dev            = TC3,
         .irq            = TC3_IRQn,
         .pm_mask        = PM_APBCMASK_TC3,
@@ -41,7 +35,7 @@ static const tc32_conf_t timer_config[] = {
 #endif
         .flags          = TC_CTRLA_MODE_COUNT16,
     },
-    {   /* Timer 1 */
+    {   // Timer 1
         .dev            = TC4,
         .irq            = TC4_IRQn,
         .pm_mask        = PM_APBCMASK_TC4 | PM_APBCMASK_TC5,
@@ -57,15 +51,15 @@ static const tc32_conf_t timer_config[] = {
 
 #define TIMER_0_MAX_VALUE   0xffff
 
-/* interrupt function name mapping */
+// interrupt function name mapping
 #define TIMER_0_ISR         isr_tc3
 #define TIMER_1_ISR         isr_tc4
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

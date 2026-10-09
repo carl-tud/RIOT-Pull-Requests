@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of DS75LX driver.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of DS75LX driver.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,35 +17,24 @@
 #include "ds75lx.h"
 #include "ds75lx_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define DS75LX_NUM      ARRAY_SIZE(ds75lx_params)
 
-/**
- * @brief   Allocation of memory for device descriptors
- */
+/// @brief   Allocation of memory for device descriptors
 static ds75lx_t ds75lx_devs[DS75LX_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[DS75LX_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define DS75LX_INFO_NUM ARRAY_SIZE(ds75lx_saul_info)
 
-/**
- * @name    Reference the driver structs.
- * @{
- */
+/// @name    Reference the driver structs.
+/// @{
 extern const saul_driver_t ds75lx_temperature_saul_driver;
-/** @} */
+/// @}
 
-void auto_init_ds75lx(void)
-{
+void auto_init_ds75lx(void) {
     assert(DS75LX_INFO_NUM == DS75LX_NUM);
 
     for (unsigned i = 0; i < DS75LX_NUM; i++) {
@@ -65,7 +50,7 @@ void auto_init_ds75lx(void)
         saul_entries[i].name = ds75lx_saul_info[i].name;
         saul_entries[i].driver = &ds75lx_temperature_saul_driver;
 
-        /* register to saul */
+        // register to saul
         saul_reg_add(&(saul_entries[i]));
     }
 }

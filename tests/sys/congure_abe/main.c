@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine S. Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine S. Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -23,15 +19,13 @@
 
 static congure_abe_snd_t _congure_state;
 
-int main(void)
-{
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
     return 0;
 }
 
-congure_test_snd_t *congure_test_get_state(void)
-{
+congure_test_snd_t *congure_test_get_state(void) {
     return &_congure_state;
 }
 
@@ -45,8 +39,7 @@ congure_test_snd_t *congure_test_get_state(void)
     print_u32_dec((obj).field); \
     print_str(",")
 
-static void _print_congure_abe_consts(const congure_abe_snd_consts_t *consts)
-{
+static void _print_congure_abe_consts(const congure_abe_snd_consts_t *consts) {
     print_str("\"consts\":");
 
     if (consts) {
@@ -70,8 +63,7 @@ static void _print_congure_abe_consts(const congure_abe_snd_consts_t *consts)
     }
 }
 
-static int _json_statham(int argc, char **argv)
-{
+static int _json_statham(int argc, char **argv) {
     (void)argc;
     (void)argv;
     print_str("{");
@@ -92,8 +84,7 @@ static int _json_statham(int argc, char **argv)
 
 SHELL_COMMAND(state, "Prints current CongURE state object as JSON", _json_statham );
 
-static int _set_cwnd(int argc, char **argv)
-{
+static int _set_cwnd(int argc, char **argv) {
     uint32_t tmp;
 
     if (argc < 2) {
@@ -110,8 +101,7 @@ static int _set_cwnd(int argc, char **argv)
 
 SHELL_COMMAND(set_cwnd, "Set cwnd member for CongURE state object", _set_cwnd );
 
-static int _get_fr_calls(int argc, char **argv)
-{
+static int _get_fr_calls(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -124,8 +114,7 @@ static int _get_fr_calls(int argc, char **argv)
 SHELL_COMMAND(get_ff_calls, "Get the number of calls to fast_retransmit"
     "callback of CongURE state object", _get_fr_calls);
 
-static int _set_same_wnd_adv_res(int argc, char **argv)
-{
+static int _set_same_wnd_adv_res(int argc, char **argv) {
     if (argc < 2) {
         print_str("{\"error\":\"`value` argument expected\"}");
         return 1;
@@ -139,4 +128,4 @@ static int _set_same_wnd_adv_res(int argc, char **argv)
 SHELL_COMMAND(set_same_wnd_adv, "Set the result for the same_window_advertised"
     "callback of CongURE state object", _set_same_wnd_adv_res);
 
-/** @} */
+/// @}

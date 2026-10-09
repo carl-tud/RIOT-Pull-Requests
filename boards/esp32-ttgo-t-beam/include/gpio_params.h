@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 Yegor Yefremov
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Yegor Yefremov
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_esp32_ttgo-t-beam
- * @brief       Board specific configuration of direct mapped GPIOs
- * @file
- * @author      Yegor Yefremov <yegorslists@googlemail.com>
- * @{
- */
+/// @ingroup     boards_esp32_ttgo-t-beam
+/// @brief       Board specific configuration of direct mapped GPIOs
+/// @file
+/// @author      Yegor Yefremov <yegorslists@googlemail.com>
+/// @{
 
 #include "board.h"
 #include "saul/periph.h"
@@ -20,9 +16,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   LED configuration
- */
+/// @brief   LED configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
 #ifndef MODULE_ESP32_TTGO_T_BEAM_V1_0
@@ -45,4 +39,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

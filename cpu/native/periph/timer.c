@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_timer
- * @brief   Native CPU periph/timer.h implementation
- * @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- * @{
- *
- * Uses POSIX realtime clock and POSIX itimer to mimic hardware.
- * This is done with the timer_settime(3), timer_create(3)  interfaces, which are
- * sometimes found only in the -lrt library, and not in glibc.
- *
- * This is based on native's hwtimer implementation by Ludwig Knüpfer.
- * I removed the multiplexing, as ztimer does the same. (kaspar)
- *
- * @}
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_timer
+/// @brief   Native CPU periph/timer.h implementation
+/// @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+/// @{
+///
+/// Uses POSIX realtime clock and POSIX itimer to mimic hardware.
+/// This is done with the timer_settime(3), timer_create(3)  interfaces, which are
+/// sometimes found only in the -lrt library, and not in glibc.
+///
+/// This is based on native's hwtimer implementation by Ludwig Knüpfer.
+/// I removed the multiplexing, as ztimer does the same. (kaspar)
+///
+/// @}
 
 #include <signal.h>
 #include <stdint.h>
@@ -51,29 +47,22 @@ static struct itimerspec its;
 
 static timer_t itimer_monotonic;
 
-/**
- * returns ticks for give timespec
- */
-static unsigned long ts2ticks(struct timespec *tp)
-{
-    /* TODO: check for overflow */
+/// returns ticks for give timespec
+static unsigned long ts2ticks(struct timespec *tp) {
+    // TODO: check for overflow
     return (((unsigned long)tp->tv_sec * NATIVE_TIMER_SPEED) + (tp->tv_nsec / 1000));
 }
 
-/**
- * native timer signal handler
- *
- * set new system timer, call timer interrupt handler
- */
-void native_isr_timer(void)
-{
+/// native timer signal handler
+///
+/// set new system timer, call timer interrupt handler
+void native_isr_timer(void) {
     DEBUG("%s\n", __func__);
 
     _callback(_cb_arg, 0);
 }
 
-uword_t timer_query_freqs_numof(tim_t dev)
-{
+uword_t timer_query_freqs_numof(tim_t dev) {
     (void)dev;
 
     assert(TIMER_DEV(dev) < TIMER_NUMOF);
@@ -81,8 +70,7 @@ uword_t timer_query_freqs_numof(tim_t dev)
     return 1;
 }
 
-uint32_t timer_query_freqs(tim_t dev, uword_t index)
-{
+uint32_t timer_query_freqs(tim_t dev, uword_t index) {
     (void)dev;
 
     assert(TIMER_DEV(dev) < TIMER_NUMOF);
@@ -94,8 +82,7 @@ uint32_t timer_query_freqs(tim_t dev, uword_t index)
     return NATIVE_TIMER_SPEED;
 }
 
-int timer_init(tim_t dev, uint32_t freq, timer_cb_t cb, void *arg)
-{
+int timer_init(tim_t dev, uint32_t freq, timer_cb_t cb, void *arg) {
     DEBUG("%s\n", __func__);
     if (dev >= TIMER_NUMOF) {
         return -1;
@@ -104,7 +91,7 @@ int timer_init(tim_t dev, uint32_t freq, timer_cb_t cb, void *arg)
         return -1;
     }
 
-    /* initialize time delta */
+    // initialize time delta
     time_null = 0;
     time_null = timer_read(0);
 
@@ -125,8 +112,7 @@ int timer_init(tim_t dev, uint32_t freq, timer_cb_t cb, void *arg)
     return 0;
 }
 
-static void do_timer_set(unsigned int offset, bool periodic)
-{
+static void do_timer_set(unsigned int offset, bool periodic) {
     DEBUG("%s\n", __func__);
 
     if (offset && offset < NATIVE_TIMER_MIN_RES) {
@@ -144,8 +130,7 @@ static void do_timer_set(unsigned int offset, bool periodic)
           (unsigned long)its.it_value.tv_nsec);
 }
 
-int timer_set(tim_t dev, int channel, unsigned int offset)
-{
+int timer_set(tim_t dev, int channel, unsigned int offset) {
     DEBUG("%s\n", __func__);
 
     if (channel != 0) {
@@ -162,14 +147,12 @@ int timer_set(tim_t dev, int channel, unsigned int offset)
     return 0;
 }
 
-int timer_set_absolute(tim_t dev, int channel, unsigned int value)
-{
+int timer_set_absolute(tim_t dev, int channel, unsigned int value) {
     unsigned int now = timer_read(dev);
     return timer_set(dev, channel, value - now);
 }
 
-int timer_set_periodic(tim_t dev, int channel, unsigned int value, uint8_t flags)
-{
+int timer_set_periodic(tim_t dev, int channel, unsigned int value, uint8_t flags) {
     if (channel != 0) {
         return -1;
     }
@@ -183,8 +166,7 @@ int timer_set_periodic(tim_t dev, int channel, unsigned int value, uint8_t flags
     return 0;
 }
 
-int timer_clear(tim_t dev, int channel)
-{
+int timer_clear(tim_t dev, int channel) {
     (void)channel;
 
     do_timer_set(0, false);
@@ -193,8 +175,7 @@ int timer_clear(tim_t dev, int channel)
     return 0;
 }
 
-void timer_start(tim_t dev)
-{
+void timer_start(tim_t dev) {
     (void)dev;
     DEBUG("%s\n", __func__);
 
@@ -205,8 +186,7 @@ void timer_start(tim_t dev)
     _native_syscall_leave();
 }
 
-void timer_stop(tim_t dev)
-{
+void timer_stop(tim_t dev) {
     (void)dev;
     DEBUG("%s\n", __func__);
 
@@ -220,8 +200,7 @@ void timer_stop(tim_t dev)
     DEBUG("time left: %lu.%09lu\n", (unsigned long)its.it_value.tv_sec, its.it_value.tv_nsec);
 }
 
-unsigned int timer_read(tim_t dev)
-{
+unsigned int timer_read(tim_t dev) {
     if (dev >= TIMER_NUMOF) {
         return 0;
     }

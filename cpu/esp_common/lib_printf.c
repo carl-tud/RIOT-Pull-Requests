@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp_common
- * @{
- *
- * @file
- * @brief       printf functions for SDK libraries
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * This file contains library-specific printf functions used by ESP SDK
- * libraries. These functions are used to intercept the output generated
- * by the SDK libraries and redirect it to RIOT's LOG macros.
- *
- * @}
- */
+/// @ingroup     cpu_esp_common
+/// @{
+///
+/// @file
+/// @brief       printf functions for SDK libraries
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// This file contains library-specific printf functions used by ESP SDK
+/// libraries. These functions are used to intercept the output generated
+/// by the SDK libraries and redirect it to RIOT's LOG macros.
+///
+/// @}
 
 #include <stdarg.h>
 
@@ -35,8 +31,7 @@
 
 static char _printf_buf[PRINTF_BUFSIZ];
 
-static int _lib_printf(int level, const char* tag, const char* format, va_list arg)
-{
+static int _lib_printf(int level, const char* tag, const char* format, va_list arg) {
     if (level > LOG_LEVEL) {
         return 0;
     }
@@ -48,15 +43,13 @@ static int _lib_printf(int level, const char* tag, const char* format, va_list a
         return 0;
     }
 
-    /* Did the output get truncated? */
+    // Did the output get truncated?
     if ((unsigned) len > PRINTF_BUFSIZ - 1) {
         len = PRINTF_BUFSIZ - 1;
     }
 
-    /*
-     * Since ESP_EARLY_LOG macros add a line break at the end, a terminating
-     * line break in the output must be removed if there is one.
-     */
+    // Since ESP_EARLY_LOG macros add a line break at the end, a terminating
+    // line break in the output must be removed if there is one.
     _printf_buf[PRINTF_BUFSIZ - 1] = 0;
     int i;
     for (i = len - 1; i >= 0; --i) {
@@ -79,7 +72,7 @@ LIB_PRINTF(net80211, LOG_DEBUG, "net80211")
 LIB_PRINTF(phy, LOG_DEBUG, "phy")
 LIB_PRINTF(pp, LOG_DEBUG, "pp")
 LIB_PRINTF(sc, LOG_DEBUG, "smartconfig")
-/* The ESP8266 SDK uses smartconfig_printf but the ESP32 one uses sc_printf. */
+// The ESP8266 SDK uses smartconfig_printf but the ESP32 one uses sc_printf.
 int smartconfig_printf(const char *format, ...)
     __attribute__((alias("sc_printf")));
 LIB_PRINTF(ssc, LOG_DEBUG, "ssc")
@@ -92,8 +85,7 @@ LIB_PRINTF(espnow_ets, LOG_DEBUG, "espnow")
 LIB_PRINTF(pp_ets, LOG_DEBUG, "pp")
 LIB_PRINTF(wpa_ets, LOG_DEBUG, "wpa")
 
-int rtc_printf(const char* format, ...)
-{
-    /* librtc.a printf temporary disabled due to UART baud rate switching bug. */
+int rtc_printf(const char* format, ...) {
+    // librtc.a printf temporary disabled due to UART baud rate switching bug.
     return 0;
 }

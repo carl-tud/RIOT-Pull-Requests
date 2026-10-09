@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016-2017 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2017 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_pwm
- * @{
- *
- * @file
- * @brief       Low-level PWM peripheral driver implementation
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_pwm
+/// @{
+///
+/// @file
+/// @brief       Low-level PWM peripheral driver implementation
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
 
 #include <assert.h>
 
@@ -26,21 +22,20 @@
 #include "em_timer.h"
 #include "em_timer_utils.h"
 
-uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
-{
-    /* check if device is valid */
+uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res) {
+    // check if device is valid
     if (dev >= PWM_NUMOF) {
         return 0;
     }
 
-    /* enable clocks */
+    // enable clocks
     CMU_ClockEnable(cmuClock_HFPER, true);
     CMU_ClockEnable(pwm_config[dev].cmu, true);
 
-    /* in up/down counting mode a full period takes twice the number of ticks */
+    // in up/down counting mode a full period takes twice the number of ticks
     uint32_t ticks = (mode == PWM_CENTER) ? ((uint32_t)res * 2) : (uint32_t)res;
 
-    /* calculate the prescaler by determining the best prescaler */
+    // calculate the prescaler by determining the best prescaler
     uint32_t freq_timer = CMU_ClockFreqGet(pwm_config[dev].cmu);
     TIMER_Prescale_TypeDef prescaler = TIMER_PrescalerCalc(freq * ticks,
                                                            freq_timer);
@@ -49,7 +44,7 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
         return 0;
     }
 
-    /* reset and initialize peripheral */
+    // reset and initialize peripheral
     TIMER_Init_TypeDef init = TIMER_INIT_DEFAULT;
 
     init.enable = false;
@@ -60,15 +55,15 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
     TIMER_Init(pwm_config[dev].dev, &init);
     TIMER_TopSet(pwm_config[dev].dev, res);
 
-    /* initialize channels */
+    // initialize channels
     TIMER_InitCC_TypeDef init_channel = TIMER_INITCC_DEFAULT;
 
     init_channel.mode = timerCCModePWM;
 
     if (mode == PWM_RIGHT) {
-        /* down counting sets the output at the start of the period and clears
-         * it on compare match, so the output has to be inverted to obtain a
-         * right aligned pulse with the requested duty cycle. */
+        // down counting sets the output at the start of the period and clears
+        // it on compare match, so the output has to be inverted to obtain a
+        // right aligned pulse with the requested duty cycle.
         init_channel.coist = true;
         init_channel.outInvert = true;
     }
@@ -76,10 +71,10 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
     for (int i = 0; i < pwm_config[dev].channels; i++) {
         pwm_chan_conf_t channel = pwm_config[dev].channel[i];
 
-        /* configure the pin */
+        // configure the pin
         gpio_init(channel.pin, GPIO_OUT);
 
-        /* configure pin function */
+        // configure pin function
 #if defined(_SILICON_LABS_32B_SERIES_0)
         pwm_config[dev].dev->ROUTE |= (channel.loc |
                                        TIMER_Channel2Route(channel.index));
@@ -88,50 +83,44 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
         pwm_config[dev].dev->ROUTEPEN |= TIMER_Channel2Route(channel.index);
 #endif
 
-        /* setup channel */
+        // setup channel
         TIMER_InitCC(pwm_config[dev].dev, channel.index, &init_channel);
     }
 
-    /* enable peripheral */
+    // enable peripheral
     TIMER_Enable(pwm_config[dev].dev, true);
 
     return freq_timer / TIMER_Prescaler2Div(prescaler) / ticks;
 }
 
-uint8_t pwm_channels(pwm_t dev)
-{
+uint8_t pwm_channels(pwm_t dev) {
     assert(dev < PWM_NUMOF);
     return pwm_config[dev].channels;
 }
 
-void pwm_set(pwm_t dev, uint8_t channel, uint16_t value)
-{
+void pwm_set(pwm_t dev, uint8_t channel, uint16_t value) {
     assert(dev < PWM_NUMOF);
     TIMER_CompareBufSet(pwm_config[dev].dev,
                         pwm_config[dev].channel[channel].index,
                         value);
 }
 
-void pwm_start(pwm_t dev)
-{
+void pwm_start(pwm_t dev) {
     assert(dev < PWM_NUMOF);
     TIMER_Enable(pwm_config[dev].dev, true);
 }
 
-void pwm_stop(pwm_t dev)
-{
+void pwm_stop(pwm_t dev) {
     assert(dev < PWM_NUMOF);
     TIMER_Enable(pwm_config[dev].dev, false);
 }
 
-void pwm_poweron(pwm_t dev)
-{
+void pwm_poweron(pwm_t dev) {
     assert(dev < PWM_NUMOF);
     CMU_ClockEnable(pwm_config[dev].cmu, true);
 }
 
-void pwm_poweroff(pwm_t dev)
-{
+void pwm_poweroff(pwm_t dev) {
     assert(dev < PWM_NUMOF);
     CMU_ClockEnable(pwm_config[dev].cmu, false);
 }

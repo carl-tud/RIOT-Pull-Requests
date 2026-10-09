@@ -1,36 +1,30 @@
-/*
- * Copyright 2017, RWTH Aachen. All rights reserved.
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright 2017, RWTH Aachen. All rights reserved.
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #pragma once
 
-/**
- * @ingroup     drivers_lc709203f
- * @name        Default parameters for the SHTC1 Temperature and humidity sensor
- * @{
- *
- * @file
- * @brief       Default parameters for the SHTC1 Temperature and humidity sensor
- *
- * @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
- * @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
- */
+/// @ingroup     drivers_lc709203f
+/// @name        Default parameters for the SHTC1 Temperature and humidity sensor
+/// @{
+///
+/// @file
+/// @brief       Default parameters for the SHTC1 Temperature and humidity sensor
+///
+/// @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
+/// @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "board.h"  /* THIS INCLUDE IS MANDATORY */
+#include "board.h"  // THIS INCLUDE IS MANDATORY
 #include "lc709203f.h"
 
-/**
- * @brief   Default configuration parameters for LC709203F sensors
- * @{
- */
+/// @brief   Default configuration parameters for LC709203F sensors
+/// @{
 #ifndef LC709203F_PARAMS_I2C
 #define LC709203F_PARAMS_I2C            (I2C_DEV(0))
 #endif
@@ -46,11 +40,9 @@ extern "C" {
                                       .bus  = LC709203F_PARAMS_I2C, \
                                       .addr = LC709203F_PARAMS_ADDR }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   Allocation of LC709203f configuration
- */
+/// @brief   Allocation of LC709203f configuration
 static const lc709203f_params_t params_default[] = {
     #ifdef LC709203F_PARAMS_BOARD
         LC709203F_PARAMS_BOARD
@@ -62,4 +54,4 @@ static const lc709203f_params_t params_default[] = {
 #ifdef __cplusplus
 }
 #endif
-/** @} */
+/// @}

@@ -1,17 +1,14 @@
-/*
- * Copyright (C) 2021 Silke Hofstra
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2021 Silke Hofstra
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #include "senml.h"
 #include "senml/cbor.h"
 #include "nanocbor/nanocbor.h"
 
-static int senml_encode_numeric_cbor(nanocbor_encoder_t *enc, const senml_numeric_t *v)
-{
+static int senml_encode_numeric_cbor(nanocbor_encoder_t *enc, const senml_numeric_t *v) {
     switch (v->type) {
     case SENML_TYPE_NUMERIC_FLOAT:
         return nanocbor_fmt_float(enc, v->value.f);
@@ -29,8 +26,7 @@ static int senml_encode_numeric_cbor(nanocbor_encoder_t *enc, const senml_numeri
 }
 
 static int senml_encode_start_cbor(nanocbor_encoder_t *enc, const senml_attr_t *attr,
-                                   bool sum_value)
-{
+                                   bool sum_value) {
     int n = nanocbor_fmt_map(enc, !sum_value
                              + (attr->base_name != NULL)
                              + (attr->base_time.value.u != 0)
@@ -120,35 +116,30 @@ static int senml_encode_start_cbor(nanocbor_encoder_t *enc, const senml_attr_t *
 }
 
 #if IS_ACTIVE(CONFIG_SENML_ATTR_SUM)
-int senml_encode_sum_cbor(nanocbor_encoder_t *enc, const senml_attr_t *attr)
-{
+int senml_encode_sum_cbor(nanocbor_encoder_t *enc, const senml_attr_t *attr) {
     return senml_encode_start_cbor(enc, attr, true);
 }
 #endif
 
-int senml_encode_bool_cbor(nanocbor_encoder_t *enc, const senml_bool_value_t *val)
-{
+int senml_encode_bool_cbor(nanocbor_encoder_t *enc, const senml_bool_value_t *val) {
     return senml_encode_start_cbor(enc, &val->attr, false) +
            nanocbor_fmt_int(enc, SENML_LABEL_BOOLEAN_VALUE) +
            nanocbor_fmt_bool(enc, val->value);
 }
 
-int senml_encode_value_cbor(nanocbor_encoder_t *enc, const senml_value_t *val)
-{
+int senml_encode_value_cbor(nanocbor_encoder_t *enc, const senml_value_t *val) {
     return senml_encode_start_cbor(enc, &val->attr, false) +
            nanocbor_fmt_int(enc, SENML_LABEL_VALUE) +
            senml_encode_numeric_cbor(enc, &val->value);
 }
 
-int senml_encode_string_cbor(nanocbor_encoder_t *enc, const senml_string_value_t *val)
-{
+int senml_encode_string_cbor(nanocbor_encoder_t *enc, const senml_string_value_t *val) {
     return senml_encode_start_cbor(enc, &val->attr, false) +
            nanocbor_fmt_int(enc, SENML_LABEL_STRING_VALUE) +
            nanocbor_put_tstrn(enc, val->value, val->len);
 }
 
-int senml_encode_data_cbor(nanocbor_encoder_t *enc, const senml_data_value_t *val)
-{
+int senml_encode_data_cbor(nanocbor_encoder_t *enc, const senml_data_value_t *val) {
     return senml_encode_start_cbor(enc, &val->attr, false) +
            nanocbor_fmt_int(enc, SENML_LABEL_DATA_VALUE) +
            nanocbor_put_bstr(enc, val->value, val->len);

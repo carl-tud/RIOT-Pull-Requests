@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @defgroup    net_telnet_stdio    STDIO via telnet
- * @ingroup     sys_stdio
- * @{
- *
- * @file
- * @brief       STDIO over Telnet implementation
- *
- * This file implements STDIO via a Telnet server with fallback UART output
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @defgroup    net_telnet_stdio    STDIO via telnet
+/// @ingroup     sys_stdio
+/// @{
+///
+/// @file
+/// @brief       STDIO over Telnet implementation
+///
+/// This file implements STDIO via a Telnet server with fallback UART output
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <errno.h>
 

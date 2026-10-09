@@ -1,31 +1,27 @@
-/*
- * SPDX-FileCopyrightText: 2015 TriaGnoSys GmbH
- * SPDX-FileCopyrightText: 2017 Alexander Kurth, Sören Tempel, Tristan Bruns
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 TriaGnoSys GmbH
+// SPDX-FileCopyrightText: 2017 Alexander Kurth, Sören Tempel, Tristan Bruns
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_blxxxpill
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the bluepill/blackpill boards
- *
- * @author      Víctor Ariño <victor.arino@triagnosys.com>
- * @author      Sören Tempel <tempel@uni-bremen.de>
- * @author      Tristan Bruns <tbruns@uni-bremen.de>
- * @author      Alexander Kurth <kurth1@uni-bremen.de>
- *
- */
+/// @ingroup     boards_common_blxxxpill
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the bluepill/blackpill boards
+///
+/// @author      Víctor Ariño <victor.arino@triagnosys.com>
+/// @author      Sören Tempel <tempel@uni-bremen.de>
+/// @author      Tristan Bruns <tbruns@uni-bremen.de>
+/// @author      Alexander Kurth <kurth1@uni-bremen.de>
+///
 
-/* blxxxpill boards provide an LSE */
+// blxxxpill boards provide an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* blxxxpill boards provide an HSE */
+// blxxxpill boards provide an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -37,19 +33,15 @@
 extern "C" {
 #endif
 
-/**
- * @name    Real time counter configuration
- * @{
- */
+/// @name    Real time counter configuration
+/// @{
 #ifndef RTT_FREQUENCY
-#define RTT_FREQUENCY       (16384)      /* in Hz */
+#define RTT_FREQUENCY       (16384)      // in Hz
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { .pin = GPIO_PIN(PORT_A, 0), .dev = 0, .chan = 0 },
     { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan = 1 },
@@ -57,16 +49,16 @@ static const adc_conf_t adc_config[] = {
     { .pin = GPIO_PIN(PORT_A, 5), .dev = 0, .chan = 5 },
     { .pin = GPIO_PIN(PORT_A, 6), .dev = 0, .chan = 6 },
     { .pin = GPIO_PIN(PORT_A, 7), .dev = 0, .chan = 7 },
-    /* ADC Temperature channel */
+    // ADC Temperature channel
     { .pin = GPIO_UNDEF, .dev = 0, .chan = 16 },
-    /* ADC VREF channel */
+    // ADC VREF channel
     { .pin = GPIO_UNDEF, .dev = 0, .chan = 17 },
-    /* The blackpill has a few pins less. PB0 and PB1 are among the GPIOs not
-     * exposed due to the lower pincount.
-     *
-     * Also, this conflicts with PWM. We prefer PWM over ADC here to provide
-     * 6 external ADC inputs, and 4 PWM outputs (instead of 8 ADC inputs and
-     * 2 PWM outputs). */
+    // The blackpill has a few pins less. PB0 and PB1 are among the GPIOs not
+    // exposed due to the lower pincount.
+    //
+    // Also, this conflicts with PWM. We prefer PWM over ADC here to provide
+    // 6 external ADC inputs, and 4 PWM outputs (instead of 8 ADC inputs and
+    // 2 PWM outputs).
 #if !defined(BOARD_BLACKPILL_STM32F103C8) \
     && !defined(BOARD_BLACKPILL_STM32F103CB) \
     && !defined(MODULE_PERIPH_PWM)
@@ -76,18 +68,16 @@ static const adc_conf_t adc_config[] = {
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 1 },    /* DMA1 Channel 2 - SPI1_RX / USART3_TX */
-    { .stream = 2 },    /* DMA1 Channel 3 - SPI1_TX */
-    { .stream = 3 },    /* DMA1 Channel 4 - SPI2_RX / USART1_TX */
-    { .stream = 4 },    /* DMA1 Channel 5 - SPI2_TX */
-    { .stream = 6 },    /* DMA1 Channel 7 - USART2_TX */
+    { .stream = 1 },    // DMA1 Channel 2 - SPI1_RX / USART3_TX
+    { .stream = 2 },    // DMA1 Channel 3 - SPI1_TX
+    { .stream = 3 },    // DMA1 Channel 4 - SPI2_RX / USART1_TX
+    { .stream = 4 },    // DMA1 Channel 5 - SPI2_TX
+    { .stream = 6 },    // DMA1 Channel 7 - USART2_TX
 };
 
 #define DMA_0_ISR   isr_dma1_channel2
@@ -97,12 +87,10 @@ static const dma_conf_t dma_config[] = {
 #define DMA_4_ISR   isr_dma1_channel7
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -132,12 +120,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_2_ISR         isr_tim4
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    QDEC configuration
- * @{
- */
+/// @name    QDEC configuration
+/// @{
 
 static const qdec_conf_t qdec_config[] = {
     {
@@ -149,7 +135,7 @@ static const qdec_conf_t qdec_config[] = {
         .bus        = APB1,
         .irqn       = TIM4_IRQn,
     },
-    /* this conflicts with PWM */
+    // this conflicts with PWM
 #ifndef MODULE_PERIPH_PWM
     {
         .dev        = TIM3,
@@ -157,13 +143,13 @@ static const qdec_conf_t qdec_config[] = {
         .rcc_mask   = RCC_APB1ENR_TIM3EN,
         .chan       = { { .pin = GPIO_PIN(PORT_B, 4),   .cc_chan = 0 },
                         { .pin = GPIO_PIN(PORT_B, 5),   .cc_chan = 1 } },
-        /* by default TIM3 is routed to PA6 (cc_chan 0) and PA7 (cc_chan 1) */
+        // by default TIM3 is routed to PA6 (cc_chan 0) and PA7 (cc_chan 1)
         .remap      = AFIO_MAPR_TIM3_REMAP_1,
         .bus        = APB1,
         .irqn       = TIM3_IRQn,
     },
 #endif
-    /* this conflicts with UART_DEV(0) */
+    // this conflicts with UART_DEV(0)
 #ifndef MODULE_PERIPH_UART
     {
         .dev      = TIM1,
@@ -178,12 +164,10 @@ static const qdec_conf_t qdec_config[] = {
 };
 
 #define QDEC_NUMOF           ARRAY_SIZE(qdec_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -228,13 +212,11 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart3)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @note    This board may require external pullup resistors for i2c operation.
- * @{
- */
+/// @name    I2C configuration
+/// @note    This board may require external pullup resistors for i2c operation.
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -262,26 +244,24 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c2_ev
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM3,
         .rcc_mask = RCC_APB1ENR_TIM3EN,
-        /* by default TIM3 is routed to PA6 (cc_chan 0) and PA7 (cc_chan 1) */
+        // by default TIM3 is routed to PA6 (cc_chan 0) and PA7 (cc_chan 1)
         .remap      = AFIO_MAPR_TIM3_REMAP_1,
         .chan     = {
                         { .pin = GPIO_PIN(PORT_B, 4), .cc_chan = 0 },
                         { .pin = GPIO_PIN(PORT_B, 5), .cc_chan = 1 },
 #if !defined(BOARD_BLACKPILL_STM32F103C8) \
     && !defined(BOARD_BLACKPILL_STM32F103CB)
-                        /* The blackpill has a few pins less. PB0 and PB1 are
-                         * among the GPIOs not exposed due to the lower
-                         * pincount */
+                        // The blackpill has a few pins less. PB0 and PB1 are
+                        // among the GPIOs not exposed due to the lower
+                        // pincount
                         { .pin = GPIO_PIN(PORT_B, 0), .cc_chan = 2 },
                         { .pin = GPIO_PIN(PORT_B, 1), .cc_chan = 3 },
 #endif
@@ -292,12 +272,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI2,
@@ -334,11 +312,9 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @brief USB device FS configuration
- */
+/// @brief USB device FS configuration
 static const stm32_usbdev_fs_config_t stm32_usbdev_fs_config[] = {
     {
         .base_addr  = (uintptr_t)USB,
@@ -352,18 +328,14 @@ static const stm32_usbdev_fs_config_t stm32_usbdev_fs_config[] = {
     },
 };
 
-/**
- * @brief Interrupt function name mapping
- */
+/// @brief Interrupt function name mapping
 #define USBDEV_ISR             isr_usb_lp_can1_rx0
 
-/**
- * @brief Number of available USB device FS peripherals
- */
+/// @brief Number of available USB device FS peripherals
 #define USBDEV_NUMOF           ARRAY_SIZE(stm32_usbdev_fs_config)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

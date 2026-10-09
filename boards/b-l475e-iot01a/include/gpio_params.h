@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup   boards_b-l475e-iot01a
- * @{
- *
- * @file
- * @brief     Board specific configuration of direct mapped GPIOs
- *
- * @author    Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup   boards_b-l475e-iot01a
+/// @{
+///
+/// @file
+/// @brief     Board specific configuration of direct mapped GPIOs
+///
+/// @author    Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,14 +18,12 @@
 extern "C" {
 #endif
 
-/**
- * @brief    GPIO pin configuration
- */
+/// @brief    GPIO pin configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
 #ifdef MODULE_PERIPH_INIT_LED0
-    /* The LED pin is also used for SPI, so we enable it
-       only if explicitly wanted by the user */
+    // The LED pin is also used for SPI, so we enable it
+    //    only if explicitly wanted by the user
     {
         .name = "LD1",
         .pin = LED0_PIN,
@@ -53,4 +47,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

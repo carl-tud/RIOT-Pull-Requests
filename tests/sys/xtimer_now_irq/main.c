@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       testing xtimer_now_usec function with irq disabled
- *
- *
- * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
- *
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       testing xtimer_now_usec function with irq disabled
+///
+///
+/// @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+///
 
 #include <stdio.h>
 #include "xtimer.h"
@@ -21,8 +17,7 @@
 
 #define TEST_COUNT 4
 
-int main(void)
-{
+int main(void) {
     if (XTIMER_WIDTH == 32) {
         puts("Nothing to do for 32 bit timers.\n");
     }

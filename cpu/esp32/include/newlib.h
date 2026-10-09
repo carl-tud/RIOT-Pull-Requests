@@ -1,30 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       Wrapper for sys/features.h
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * This file is just a wrapper for `newlib.h` to define `_NANO_FORMATTED_IO`
- * correctly if the `newlib_nano` module is used. In difference to other
- * toolchains, ESP32x toolchains don't use different `newlib.h` versions.
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       Wrapper for sys/features.h
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// This file is just a wrapper for `newlib.h` to define `_NANO_FORMATTED_IO`
+/// correctly if the `newlib_nano` module is used. In difference to other
+/// toolchains, ESP32x toolchains don't use different `newlib.h` versions.
 
 #include "kernel_defines.h"
 
 #ifndef DOXYGEN
 
 #if IS_USED(MODULE_NEWLIB_NANO)
-/* newlib nano formatted io is used */
+// newlib nano formatted io is used
 #define _NANO_FORMATTED_IO  1
 #endif
 
@@ -38,5 +34,5 @@ extern "C" {
 }
 #endif
 
-#endif /* DOXYGEN */
-/** @} */
+#endif // DOXYGEN
+/// @}

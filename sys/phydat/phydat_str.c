@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2015 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2015 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_phydat
- * @{
- *
- * @file
- * @brief       String helper functions for formatting and dumping phydat data
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_phydat
+/// @{
+///
+/// @file
+/// @brief       String helper functions for formatting and dumping phydat data
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdint.h>
@@ -27,8 +23,7 @@
 #include "fmt.h"
 #include "phydat.h"
 
-void phydat_dump(phydat_t *data, uint8_t dim)
-{
+void phydat_dump(phydat_t *data, uint8_t dim) {
     if (data == NULL || dim > PHYDAT_DIM) {
         printf("Unable to display data object\n");
         return;
@@ -60,7 +55,7 @@ void phydat_dump(phydat_t *data, uint8_t dim)
         case UNIT_TEMP_C:
         case UNIT_TEMP_F:
         case UNIT_DBM:
-            /* no string conversion */
+            // no string conversion
             scale_prefix = '\0';
             break;
         default:
@@ -175,8 +170,7 @@ static FLASH_ATTR const char * FLASH_ATTR const _unit_to_str[] = {
     [UNIT_DATE] = _unit_date,
 };
 
-ssize_t phydat_unit_write(char *dest, size_t max_size, uint8_t unit)
-{
+ssize_t phydat_unit_write(char *dest, size_t max_size, uint8_t unit) {
     if ((unit >= ARRAY_SIZE(_unit_to_str)) || (_unit_to_str[unit]) == NULL) {
         return -EINVAL;
     }
@@ -191,15 +185,13 @@ ssize_t phydat_unit_write(char *dest, size_t max_size, uint8_t unit)
     return len;
 }
 
-void phydat_unit_print(uint8_t unit)
-{
+void phydat_unit_print(uint8_t unit) {
     if ((unit < ARRAY_SIZE(_unit_to_str)) && (_unit_to_str[unit]) != NULL) {
         flash_print_str(_unit_to_str[unit]);
     }
 }
 
-char phydat_prefix_from_scale(int8_t scale)
-{
+char phydat_prefix_from_scale(int8_t scale) {
     static FLASH_ATTR const char _prefix[] = {
         'f', '\0', '\0',
         'p', '\0', '\0',

@@ -1,16 +1,12 @@
-/*
- * Copyright (C) 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <stdio.h>
 #include <stdint.h>
@@ -20,8 +16,7 @@
 
 #include "od.h"
 
-void od_hex_dump_ext(const void *data, size_t data_len, uint8_t width, uint32_t offset)
-{
+void od_hex_dump_ext(const void *data, size_t data_len, uint8_t width, uint32_t offset) {
     print_u32_hex(offset);
 
     if (width == 0) {
@@ -36,7 +31,7 @@ void od_hex_dump_ext(const void *data, size_t data_len, uint8_t width, uint32_t 
 
         if ((((i + 1) % width) == 0) || i == (data_len - 1)) {
 #if MODULE_OD_STRING
-            /* fill in whitespace for incomplete hex lines */
+            // fill in whitespace for incomplete hex lines
             for (unsigned j = i; ((j + 1) % width) != 0; ++j) {
                 print_str("    ");
             }
@@ -49,7 +44,7 @@ void od_hex_dump_ext(const void *data, size_t data_len, uint8_t width, uint32_t 
                     putchar('.');
                 }
             }
-            /* safe position for next iteration */
+            // safe position for next iteration
             str_pos = i + 1;
 #endif
             putchar('\n');
@@ -61,4 +56,4 @@ void od_hex_dump_ext(const void *data, size_t data_len, uint8_t width, uint32_t 
     }
 }
 
-/** @} */
+/// @}

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @brief       Tests the PSA cipher configurations
- *              Contents have been copied from `examples/advanced/psa_crypto`
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @brief       Tests the PSA cipher configurations
+///              Contents have been copied from `examples/advanced/psa_crypto`
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -29,8 +25,8 @@ static const uint8_t KEY_128[] = {
     0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
 };
 
-/* certain PSA backends require the data to be in RAM rather than ROM
- * so these values cannot be `const` */
+// certain PSA backends require the data to be in RAM rather than ROM
+// so these values cannot be `const`
 static uint8_t PLAINTEXT[] = {
     0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
     0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
@@ -39,14 +35,11 @@ static uint8_t PLAINTEXT[] = {
 };
 static uint8_t PLAINTEXT_LEN = 32;
 
-/**
- * @brief   Example function to perform an AES-128 CBC encryption and decryption
- *          with the PSA Crypto API.
- *
- * @return  psa_status_t
- */
-psa_status_t example_cipher_aes_128(void)
-{
+/// @brief   Example function to perform an AES-128 CBC encryption and decryption
+///          with the PSA Crypto API.
+///
+/// @return  psa_status_t
+psa_status_t example_cipher_aes_128(void) {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     psa_key_id_t key_id = 0;
     psa_key_attributes_t attr = psa_key_attributes_init();

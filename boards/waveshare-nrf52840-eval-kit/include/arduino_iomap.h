@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_waveshare_nrf52840_eval_kit
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Arduino pins
- *
- * You can use the defines in this file for simplified interaction with the
- * Arduino specific pin numbers.
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     boards_waveshare_nrf52840_eval_kit
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Arduino pins
+///
+/// You can use the defines in this file for simplified interaction with the
+/// Arduino specific pin numbers.
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "periph/gpio.h"
 #include "periph/adc.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Mapping of MCU pins to Arduino pins
- * @{
- */
+/// @name   Mapping of MCU pins to Arduino pins
+/// @{
 #define ARDUINO_PIN_0           GPIO_PIN(1, 1)
 #define ARDUINO_PIN_1           GPIO_PIN(1, 2)
 #define ARDUINO_PIN_2           GPIO_PIN(1, 3)
@@ -55,24 +49,20 @@ extern "C" {
 #define ARDUINO_PIN_23          GPIO_PIN(0, 16)
 
 #define ARDUINO_PIN_LAST        23
-/** @} */
+/// @}
 
-/**
- * @name    Aliases for analog pins
- * @{
- */
+/// @name    Aliases for analog pins
+/// @{
 #define ARDUINO_PIN_A0          ARDUINO_PIN_14
 #define ARDUINO_PIN_A1          ARDUINO_PIN_15
 #define ARDUINO_PIN_A2          ARDUINO_PIN_16
 #define ARDUINO_PIN_A3          ARDUINO_PIN_17
 #define ARDUINO_PIN_A4          ARDUINO_PIN_18
 #define ARDUINO_PIN_A5          ARDUINO_PIN_19
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino analog pins to RIOT ADC lines
- * @{
- */
+/// @name    Mapping of Arduino analog pins to RIOT ADC lines
+/// @{
 #define ARDUINO_A0              ADC_LINE(1)
 #define ARDUINO_A1              ADC_LINE(2)
 #define ARDUINO_A2              ADC_LINE(4)
@@ -81,15 +71,11 @@ extern "C" {
 #define ARDUINO_A5              ADC_LINE(7)
 
 #define ARDUINO_ANALOG_PIN_LAST 5
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino pins to RIOT PWM dev and channel pairs
- * @{
- */
-/**
- * @brief   PWM frequency
- */
+/// @name    Mapping of Arduino pins to RIOT PWM dev and channel pairs
+/// @{
+/// @brief   PWM frequency
 #define ARDUINO_PWM_FREQU       (15625U)
 
 #define ARDUINO_PIN_3_PWM_DEV   PWM_DEV(0)
@@ -115,10 +101,10 @@ extern "C" {
 
 #define ARDUINO_PIN_23_PWM_DEV  PWM_DEV(1)
 #define ARDUINO_PIN_23_PWM_CHAN 3
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

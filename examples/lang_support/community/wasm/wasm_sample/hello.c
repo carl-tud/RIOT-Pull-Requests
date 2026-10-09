@@ -1,10 +1,8 @@
-/*
- * SPDX-FileCopyrightText: 2020-2022 Karl Fessel
- * SPDX-FileCopyrightText: World
- * SPDX-License-Identifier: 0BSD
- */
+// SPDX-FileCopyrightText: 2020-2022 Karl Fessel
+// SPDX-FileCopyrightText: World
+// SPDX-License-Identifier: 0BSD
 
-/* a native printf is provided by the builtin libc of wamr */
+// a native printf is provided by the builtin libc of wamr
 #ifdef __cplusplus
 extern "C" int printf( const char *, ...);
 #  define WASM_EXPORT __attribute__((visibility("default"))) extern "C"
@@ -13,8 +11,7 @@ extern int printf( const char *, ...);
 #  define WASM_EXPORT __attribute__((visibility("default")))
 #endif
 
-WASM_EXPORT int main(int argc, char **argv)
-{
+WASM_EXPORT int main(int argc, char **argv) {
     if (argc > 1) {
         printf("Hello %s %i\n", argv[1], 2001);
     }

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 RWTH Aachen, Steffen Robertz, Josua Arndt
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 RWTH Aachen, Steffen Robertz, Josua Arndt
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_lc709203f
- * @{
- *
- * @file
- * @brief       lc709203f battery fuel gauge device driver
- *
- * @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
- * @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
- * @}
- */
+/// @ingroup     drivers_lc709203f
+/// @{
+///
+/// @file
+/// @brief       lc709203f battery fuel gauge device driver
+///
+/// @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
+/// @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
+/// @}
 
 #include "lc709203f.h"
 #include "assert.h"
@@ -21,11 +17,8 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/*
- * does a crc check and returns the checksum
- */
-static uint8_t _get_crc(uint8_t *rec_values, uint8_t len)
-{
+// does a crc check and returns the checksum
+static uint8_t _get_crc(uint8_t *rec_values, uint8_t len) {
     uint8_t crc = 0x00;
     uint8_t current_byte;
     uint8_t bit;
@@ -44,8 +37,7 @@ static uint8_t _get_crc(uint8_t *rec_values, uint8_t len)
     return crc;
 }
 
-int lc709203f_init(lc709203f_t *dev, const lc709203f_params_t *params)
-{
+int lc709203f_init(lc709203f_t *dev, const lc709203f_params_t *params) {
     assert(dev && params);
     dev->params = *params;
     dev->bus = params->bus;
@@ -54,8 +46,7 @@ int lc709203f_init(lc709203f_t *dev, const lc709203f_params_t *params)
     return LC709203F_OK;
 }
 
-int16_t lc709203f_get_voltage(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_voltage(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -73,8 +64,7 @@ int16_t lc709203f_get_voltage(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_rsoc(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_rsoc(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -93,8 +83,7 @@ int16_t lc709203f_get_rsoc(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_ite(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_ite(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -113,8 +102,7 @@ int16_t lc709203f_get_ite(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_id(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_id(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -133,8 +121,7 @@ int16_t lc709203f_get_id(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_cell_temp(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_cell_temp(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -149,13 +136,12 @@ int16_t lc709203f_get_cell_temp(const lc709203f_t *dev)
         DEBUG("CRC Error \n");
         return 0;
     }
-    /* sensor temperature is given in 0.1K -> -2731.5 would be the correct value
-     * returning in 0.1°C int16_t -> using rounded 2732 */
+    // sensor temperature is given in 0.1K -> -2731.5 would be the correct value
+    // returning in 0.1°C int16_t -> using rounded 2732
     return ((((int16_t)rec_buf[1] << 8) | rec_buf[0]) - 2732);
 }
 
-lc709203f_temp_obtaining_mode_t lc709203f_get_status_bit(const lc709203f_t *dev)
-{
+lc709203f_temp_obtaining_mode_t lc709203f_get_status_bit(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -174,8 +160,7 @@ lc709203f_temp_obtaining_mode_t lc709203f_get_status_bit(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-lc709203f_power_mode_t lc709203f_get_power_mode(const lc709203f_t *dev)
-{
+lc709203f_power_mode_t lc709203f_get_power_mode(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -194,8 +179,7 @@ lc709203f_power_mode_t lc709203f_get_power_mode(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_alarm_low_voltage(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_alarm_low_voltage(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -214,8 +198,7 @@ int16_t lc709203f_get_alarm_low_voltage(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_alarm_low_rsoc(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_alarm_low_rsoc(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -234,8 +217,7 @@ int16_t lc709203f_get_alarm_low_rsoc(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_change_of_parameter(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_change_of_parameter(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -254,8 +236,7 @@ int16_t lc709203f_get_change_of_parameter(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_apt(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_apt(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -274,8 +255,7 @@ int16_t lc709203f_get_apt(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_apa(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_apa(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -294,8 +274,7 @@ int16_t lc709203f_get_apa(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-lc709203f_current_direction_t lc709203f_get_current_direction(const lc709203f_t *dev)
-{
+lc709203f_current_direction_t lc709203f_get_current_direction(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -314,8 +293,7 @@ lc709203f_current_direction_t lc709203f_get_current_direction(const lc709203f_t 
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-int16_t lc709203f_get_thermistor_b(const lc709203f_t *dev)
-{
+int16_t lc709203f_get_thermistor_b(const lc709203f_t *dev) {
     assert(dev);
     uint8_t rec_buf[3];
     i2c_acquire(dev->bus);
@@ -334,8 +312,7 @@ int16_t lc709203f_get_thermistor_b(const lc709203f_t *dev)
     return (((unsigned int)rec_buf[1] << 8) | rec_buf[0]);
 }
 
-void lc709203f_set_rsoc_before(const lc709203f_t *dev)
-{
+void lc709203f_set_rsoc_before(const lc709203f_t *dev) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_BEFORE_RSOC, 0x55, 0xAA };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
@@ -345,8 +322,7 @@ void lc709203f_set_rsoc_before(const lc709203f_t *dev)
     i2c_release(dev->bus);
 }
 
-void lc709203f_set_thermistor_b(const lc709203f_t *dev, const unsigned int value)
-{
+void lc709203f_set_thermistor_b(const lc709203f_t *dev, const unsigned int value) {
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_THERMISTOR, value, value << 8 };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
 
@@ -355,8 +331,7 @@ void lc709203f_set_thermistor_b(const lc709203f_t *dev, const unsigned int value
     i2c_release(dev->bus);
 }
 
-void lc709203f_set_rsoc_initial(const lc709203f_t *dev)
-{
+void lc709203f_set_rsoc_initial(const lc709203f_t *dev) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_INITIAL_RSOC, 0x55, 0xAA };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
@@ -366,8 +341,7 @@ void lc709203f_set_rsoc_initial(const lc709203f_t *dev)
     i2c_release(dev->bus);
 }
 
-int8_t lc709203f_set_cell_temp(const lc709203f_t *dev, const unsigned int value)
-{
+int8_t lc709203f_set_cell_temp(const lc709203f_t *dev, const unsigned int value) {
     assert(dev);
     if (!(value >= 0x9e4 && value <= 0xD04)) {
         DEBUG("gauge_set_cell_temp(): temp outside of range \n");
@@ -381,8 +355,7 @@ int8_t lc709203f_set_cell_temp(const lc709203f_t *dev, const unsigned int value)
     return ret_val;
 }
 
-void lc709203f_set_current_direction(const lc709203f_t *dev, const lc709203f_current_direction_t direction)
-{
+void lc709203f_set_current_direction(const lc709203f_t *dev, const lc709203f_current_direction_t direction) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_CURRENT_DIRECTION, (uint8_t)direction, (uint8_t)direction << 8 };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
@@ -392,8 +365,7 @@ void lc709203f_set_current_direction(const lc709203f_t *dev, const lc709203f_cur
     i2c_release(dev->bus);
 }
 
-void lc709203f_set_apa(const lc709203f_t *dev, const uint8_t value)
-{
+void lc709203f_set_apa(const lc709203f_t *dev, const uint8_t value) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_APA, value, 0 };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
@@ -403,8 +375,7 @@ void lc709203f_set_apa(const lc709203f_t *dev, const uint8_t value)
     i2c_release(dev->bus);
 }
 
-void lc709203f_set_apt(const lc709203f_t *dev, const unsigned int value)
-{
+void lc709203f_set_apt(const lc709203f_t *dev, const unsigned int value) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_APT, value, value << 8 };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
@@ -414,8 +385,7 @@ void lc709203f_set_apt(const lc709203f_t *dev, const unsigned int value)
     i2c_release(dev->bus);
 }
 
-void lc709203f_set_change_of_parameter(const lc709203f_t *dev, const lc709203f_battery_profile_t value)
-{
+void lc709203f_set_change_of_parameter(const lc709203f_t *dev, const lc709203f_battery_profile_t value) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_CHANGE_PARAMETER, (uint8_t) value, (uint8_t) value << 8 };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
@@ -425,8 +395,7 @@ void lc709203f_set_change_of_parameter(const lc709203f_t *dev, const lc709203f_b
     i2c_release(dev->bus);
 }
 
-void lc709203f_set_alarm_low_rsoc(const lc709203f_t *dev, const uint8_t value)
-{
+void lc709203f_set_alarm_low_rsoc(const lc709203f_t *dev, const uint8_t value) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_ALARM_RSOC, value, 0 };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
@@ -436,8 +405,7 @@ void lc709203f_set_alarm_low_rsoc(const lc709203f_t *dev, const uint8_t value)
     i2c_release(dev->bus);
 }
 
-void lc709203f_set_alarm_low_cell_voltage(const lc709203f_t *dev, const unsigned int value)
-{
+void lc709203f_set_alarm_low_cell_voltage(const lc709203f_t *dev, const unsigned int value) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_ALARM_VOLTAGE, value, value << 8 };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
@@ -447,8 +415,7 @@ void lc709203f_set_alarm_low_cell_voltage(const lc709203f_t *dev, const unsigned
     i2c_release(dev->bus);
 }
 
-void lc709203f_set_power_mode(const lc709203f_t *dev, const lc709203f_power_mode_t value)
-{
+void lc709203f_set_power_mode(const lc709203f_t *dev, const lc709203f_power_mode_t value) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_POWER_MODE, (uint8_t) value, 0 };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };
@@ -458,8 +425,7 @@ void lc709203f_set_power_mode(const lc709203f_t *dev, const lc709203f_power_mode
     i2c_release(dev->bus);
 }
 
-void lc709203f_set_status_bit(const lc709203f_t *dev, const lc709203f_temp_obtaining_mode_t value)
-{
+void lc709203f_set_status_bit(const lc709203f_t *dev, const lc709203f_temp_obtaining_mode_t value) {
     assert(dev);
     uint8_t crc_buf[4] = { dev->addr << 1, LC709203F_REG_STATUS, (uint8_t) value, 0 };
     uint8_t send_buf[3] = { crc_buf[2], crc_buf[3], _get_crc(crc_buf, 4) };

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the MY9221 LED controller
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the MY9221 LED controller
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -31,16 +27,15 @@ static my9221_params_t params = {
     .dat        = TEST_MY9221_DAT,
 };
 
-int main(void)
-{
+int main(void) {
     my9221_t dev;
-    /* init display */
+    // init display
     puts("[START]");
     if (my9221_init(&dev, &params) != 0) {
         puts("[FAILED]");
         return 1;
     }
-    /* run some tests */
+    // run some tests
     LOG_INFO("- light up all LEDs one by one.\n");
     for (unsigned i=0; i < dev.params.leds; ++i) {
         my9221_set_led(&dev, i, MY9221_LED_ON);

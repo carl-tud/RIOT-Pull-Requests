@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_sodaq
- * @{
- *
- * @file
- * @brief       Default SPI configuration for SODAQ boards
- *
- * @author      Kees Bakker <kees@sodaq.com>
- */
+/// @ingroup     boards_common_sodaq
+/// @{
+///
+/// @file
+/// @brief       Default SPI configuration for SODAQ boards
+///
+/// @author      Kees Bakker <kees@sodaq.com>
 
 #include <stdint.h>
 
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = &SERCOM3->SPI,
@@ -48,10 +42,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

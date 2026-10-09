@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2020 Mesotic SAS
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Mesotic SAS
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_riotboot_usb_dfu
- * @{
- *
- * @file
- * @brief       USB Device Firmware Upgrade initialization for riotboot
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup     sys_riotboot_usb_dfu
+/// @{
+///
+/// @file
+/// @brief       USB Device Firmware Upgrade initialization for riotboot
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include "cpu.h"
 #include "thread.h"
@@ -31,8 +27,7 @@ static usbus_dfu_device_t dfu;
 static char _stack[USBUS_STACKSIZE];
 static usbus_t usbus;
 
-void riotboot_usb_dfu_init(unsigned forced)
-{
+void riotboot_usb_dfu_init(unsigned forced) {
     uint32_t *reset_addr = (uint32_t *)RIOTBOOT_MAGIC_ADDR;
 
     if (forced == 1 || *reset_addr == RIOTBOOT_MAGIC_NUMBER) {

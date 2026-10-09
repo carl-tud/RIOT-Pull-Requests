@@ -1,26 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_sam0_common
- * @brief           Generic Timer MCLK masks.
- * @{
- *
- * @author          Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup         cpu_sam0_common
+/// @brief           Generic Timer MCLK masks.
+/// @{
+///
+/// @author          Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief   Automatically generated helper defines
- * @{
- */
+/// @brief   Automatically generated helper defines
+/// @{
 #ifdef MCLK_APBAMASK_TC0
 #  define MCLK_TC0        (&MCLK->APBAMASK.reg)
 #  define MCLK_TC0_MASK   (MCLK_APBAMASK_TC0)
@@ -241,10 +235,10 @@ extern "C" {
 #  define MCLK_TCC4        (&MCLK->APBDMASK.reg)
 #  define MCLK_TCC4_MASK   (MCLK_APBDMASK_TCC4)
 #endif
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

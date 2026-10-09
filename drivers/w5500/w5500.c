@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Stefan Schmidt
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Stefan Schmidt
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_w5500
- * @{
- *
- * @file
- * @brief       Device driver implementation for w5500 Ethernet devices
- *
- * @author      Stefan Schmidt <stemschmidt@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_w5500
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for w5500 Ethernet devices
+///
+/// @author      Stefan Schmidt <stemschmidt@gmail.com>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -34,15 +30,14 @@
 #include "debug.h"
 #include "log.h"
 
-/* Socket definitions. */
-#define BSB_SOCKET_BASE         (0x08)      /**< Base for Socket n registers. */
-#define RXBUF_16KB_TO_S0        (0x10)      /**< Receive memory size: 16 kB. */
-#define TXBUF_16KB_TO_S0        (0x10)      /**< Transmit memory size: 16 kB. */
+// Socket definitions.
+#define BSB_SOCKET_BASE         (0x08)      ///< Base for Socket n registers.
+#define RXBUF_16KB_TO_S0        (0x10)      ///< Receive memory size: 16 kB.
+#define TXBUF_16KB_TO_S0        (0x10)      ///< Transmit memory size: 16 kB.
 
 static const netdev_driver_t netdev_driver_w5500;
 
-static uint8_t read_register(w5500_t *dev, uint16_t reg)
-{
+static uint8_t read_register(w5500_t *dev, uint16_t reg) {
     uint16_t address = reg & 0x07ff;
     uint8_t command = (uint8_t)((reg & 0xf800) >> 8u) | CMD_READ;
 
@@ -51,8 +46,7 @@ static uint8_t read_register(w5500_t *dev, uint16_t reg)
     return spi_transfer_byte(dev->p.spi, dev->p.cs, false, 0u);
 }
 
-static void write_register(w5500_t *dev, uint16_t reg, uint8_t data)
-{
+static void write_register(w5500_t *dev, uint16_t reg, uint8_t data) {
     uint16_t address = reg & 0x07ff;
     uint8_t command = (uint8_t)((reg & 0xf800) >> 8u) | CMD_WRITE;
 
@@ -61,8 +55,7 @@ static void write_register(w5500_t *dev, uint16_t reg, uint8_t data)
     spi_transfer_byte(dev->p.spi, dev->p.cs, false, data);
 }
 
-static uint16_t read_addr(w5500_t *dev, uint16_t addr_high, uint16_t addr_low)
-{
+static uint16_t read_addr(w5500_t *dev, uint16_t addr_high, uint16_t addr_low) {
     uint16_t res = (read_register(dev, addr_high) << 8);
 
     res |= read_register(dev, addr_low);
@@ -70,14 +63,12 @@ static uint16_t read_addr(w5500_t *dev, uint16_t addr_high, uint16_t addr_low)
 }
 
 static void write_address(w5500_t *dev,
-                  uint16_t addr_high, uint16_t addr_low, uint16_t val)
-{
+                  uint16_t addr_high, uint16_t addr_low, uint16_t val) {
     write_register(dev, addr_high, (uint8_t)(val >> 8));
     write_register(dev, addr_low, (uint8_t)(val & 0xff));
 }
 
-static void read_chunk(w5500_t *dev, uint16_t addr, uint8_t *data, size_t len)
-{
+static void read_chunk(w5500_t *dev, uint16_t addr, uint8_t *data, size_t len) {
     uint16_t address = addr & 0x07ff;
     uint8_t command = (uint8_t)((addr & 0xf800) >> 8u) | CMD_READ;
 
@@ -86,8 +77,7 @@ static void read_chunk(w5500_t *dev, uint16_t addr, uint8_t *data, size_t len)
     spi_transfer_bytes(dev->p.spi, dev->p.cs, false, NULL, data, len);
 }
 
-static void write_chunk(w5500_t *dev, uint16_t addr, uint8_t *data, size_t len)
-{
+static void write_chunk(w5500_t *dev, uint16_t addr, uint8_t *data, size_t len) {
     uint16_t address = addr & 0x07ff;
     uint8_t command = (uint8_t)((addr & 0xf800) >> 8u) | CMD_WRITE;
 
@@ -96,8 +86,7 @@ static void write_chunk(w5500_t *dev, uint16_t addr, uint8_t *data, size_t len)
     spi_transfer_bytes(dev->p.spi, dev->p.cs, false, data, NULL, len);
 }
 
-static void extint(void *arg)
-{
+static void extint(void *arg) {
     w5500_t *dev = (w5500_t *)arg;
 
     netdev_trigger_event_isr(&dev->netdev);
@@ -105,43 +94,41 @@ static void extint(void *arg)
     ztimer_set(ZTIMER_MSEC, &dev->timerInstance, dev->p.polling_interval_ms);
 }
 
-void w5500_setup(w5500_t *dev, const w5500_params_t *params, uint8_t index)
-{
+void w5500_setup(w5500_t *dev, const w5500_params_t *params, uint8_t index) {
     assert(dev);
     assert(params);
 
-    /* Initialize netdev structure. */
+    // Initialize netdev structure.
     dev->netdev.driver = &netdev_driver_w5500;
     dev->netdev.event_callback = NULL;
     dev->netdev.context = dev;
-    /* Initialize the device descriptor. */
+    // Initialize the device descriptor.
     dev->p = *params;
 
     dev->frame_size = 0u;
     dev->link_up = false;
     dev->frame_sent = false;
 
-    /* Initialize the chip select pin. */
+    // Initialize the chip select pin.
     spi_init_cs(dev->p.spi, dev->p.cs);
     if (gpio_is_valid(dev->p.irq)) {
-        /* Initialize the external interrupt pin. */
+        // Initialize the external interrupt pin.
         gpio_init_int(dev->p.irq, GPIO_IN, GPIO_FALLING, extint, dev);
     }
     netdev_register(&dev->netdev, NETDEV_W5500, index);
 }
 
-static int init(netdev_t *netdev)
-{
+static int init(netdev_t *netdev) {
     w5500_t *dev = (w5500_t *)netdev;
     uint8_t tmp;
 
     spi_acquire(dev->p.spi, dev->p.cs, SPI_CONF, dev->p.clk);
 
-    /* Reset the device. */
+    // Reset the device.
     write_register(dev, REG_MODE, MODE_RESET);
     while (read_register(dev, REG_MODE) & MODE_RESET) {}
 
-    /* Test the SPI connection by reading the value of the version register. */
+    // Test the SPI connection by reading the value of the version register.
     tmp = read_register(dev, REG_VERSIONR);
     if (tmp != CHIP_VERSION) {
         spi_release(dev->p.spi);
@@ -149,16 +136,16 @@ static int init(netdev_t *netdev)
         return -ENODEV;
     }
 
-    /* Write the MAC address. */
+    // Write the MAC address.
     eui48_t address;
     netdev_eui48_get(netdev, &address);
     write_chunk(dev, REG_SHAR0, (uint8_t*)&address, sizeof(eui48_t));
 
-    /* Configure 16 kB memory to be used by socket 0. */
+    // Configure 16 kB memory to be used by socket 0.
     write_register(dev, REG_S0_RXBUF_SIZE, RXBUF_16KB_TO_S0);
     write_register(dev, REG_S0_TXBUF_SIZE, TXBUF_16KB_TO_S0);
 
-    /* Configure remaining RX/TX buffers to 0 kB. */
+    // Configure remaining RX/TX buffers to 0 kB.
     for (uint8_t socket = 1u; socket < 8u; socket++) {
         uint16_t bsb = (socket << 5u) | 0x08 | CMD_WRITE;
         uint16_t Sn_RXBUF_SIZE = Sn_RXBUF_SIZE_BASE | bsb;
@@ -166,11 +153,11 @@ static int init(netdev_t *netdev)
         write_register(dev, Sn_RXBUF_SIZE, 0u);
         write_register(dev, Sn_TXBUF_SIZE, 0u);
     }
-    /* Next we configure socket 0 to work in MACRAW mode with MAC filtering. */
+    // Next we configure socket 0 to work in MACRAW mode with MAC filtering.
     write_register(dev, REG_S0_MR, (MR_MACRAW | ENABLE_MAC_FILTER | ENABLE_MULTICAST_FILTER));
 
-    /* Set the source IP address to something random to prevent the device to do
-     * stupid thing (e.g. answering ICMP echo requests on its own). */
+    // Set the source IP address to something random to prevent the device to do
+    // stupid thing (e.g. answering ICMP echo requests on its own).
     write_register(dev, REG_SIPR0, 0x00);
     write_register(dev, REG_SIPR1, 0x00);
     write_register(dev, REG_SIPR2, 0x00);
@@ -181,10 +168,10 @@ static int init(netdev_t *netdev)
     ztimer_set(ZTIMER_MSEC, &dev->timerInstance, dev->p.polling_interval_ms);
 
     if (gpio_is_valid(dev->p.irq)) {
-        /* Configure interrupt pin to trigger on socket 0 events. */
+        // Configure interrupt pin to trigger on socket 0 events.
         write_register(dev, REG_SIMR, IMR_S0_INT);
     }
-    /* Open socket. */
+    // Open socket.
     write_register(dev, REG_S0_CR, CR_OPEN);
 
     spi_release(dev->p.spi);
@@ -192,22 +179,20 @@ static int init(netdev_t *netdev)
     return 0;
 }
 
-static void write_tx0_buffer(w5500_t *dev, uint16_t address, uint8_t *data, uint16_t size)
-{
+static void write_tx0_buffer(w5500_t *dev, uint16_t address, uint8_t *data, uint16_t size) {
     spi_transfer_u16_be(dev->p.spi, dev->p.cs, true, address);
     spi_transfer_byte(dev->p.spi, dev->p.cs, true, SOCKET0_TX_BUFFER | CMD_WRITE);
 
     spi_transfer_bytes(dev->p.spi, dev->p.cs, false, data, NULL, size);
 }
 
-static uint16_t get_free_size_in_tx_buffer(w5500_t *dev)
-{
+static uint16_t get_free_size_in_tx_buffer(w5500_t *dev) {
     uint16_t tx_free = read_addr(dev, REG_S0_TX_FSR0, REG_S0_TX_FSR1);
     uint16_t tmp = read_addr(dev, REG_S0_TX_FSR0, REG_S0_TX_FSR1);
 
-    /* See Note in the description of Sn_TX_FSR in the datasheet: This is a 16 bit value,
-       so we read it until we get the same value twice. The W5500 will update it
-       while transmitting data. */
+    // See Note in the description of Sn_TX_FSR in the datasheet: This is a 16 bit value,
+    //    so we read it until we get the same value twice. The W5500 will update it
+    //    while transmitting data.
     while (tx_free != tmp) {
         tx_free = tmp;
         tmp = read_addr(dev, REG_S0_TX_FSR0, REG_S0_TX_FSR1);
@@ -216,12 +201,11 @@ static uint16_t get_free_size_in_tx_buffer(w5500_t *dev)
     return tx_free;
 }
 
-static int send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int send(netdev_t *netdev, const iolist_t *iolist) {
     w5500_t *dev = (w5500_t *)netdev;
     int result = -ENODEV;
 
-    /* Get access to the SPI bus for the duration of this function. */
+    // Get access to the SPI bus for the duration of this function.
     spi_acquire(dev->p.spi, dev->p.cs, SPI_CONF, dev->p.clk);
 
     uint8_t tmp = read_register(dev, REG_PHYCFGR);
@@ -230,12 +214,12 @@ static int send(netdev_t *netdev, const iolist_t *iolist)
         uint16_t tx_free = get_free_size_in_tx_buffer(dev);
         uint16_t data_length = (uint16_t)iolist_size(iolist);
 
-        /* Get the write pointer. */
+        // Get the write pointer.
         uint16_t socket0_write_pointer = read_addr(dev, REG_S0_TX_WR0, REG_S0_TX_WR1);
 
-        /* Make sure we can write the full packet. */
+        // Make sure we can write the full packet.
         if (data_length <= tx_free) {
-            /* reset the frame size information */
+            // reset the frame size information
             dev->frame_size = 0u;
 
             for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
@@ -244,10 +228,10 @@ static int send(netdev_t *netdev, const iolist_t *iolist)
                                  iol->iol_base, len);
                 dev->frame_size += len;
             }
-            /* Update the write pointer. */
+            // Update the write pointer.
             write_address(dev, REG_S0_TX_WR0, REG_S0_TX_WR1,
                   socket0_write_pointer + dev->frame_size);
-            /* Trigger the sending process. */
+            // Trigger the sending process.
             write_register(dev, REG_S0_CR, CR_SEND);
 
             DEBUG("[w5500] send: transferred %i byte (at 0x%04x)\n", data_length,
@@ -260,14 +244,13 @@ static int send(netdev_t *netdev, const iolist_t *iolist)
         result = -EIO;
     }
 
-    /* release the SPI bus again */
+    // release the SPI bus again
     spi_release(dev->p.spi);
 
     return result;
 }
 
-static int confirm_send(netdev_t *netdev, void *info)
-{
+static int confirm_send(netdev_t *netdev, void *info) {
     w5500_t *dev = (w5500_t *)netdev;
 
     (void)info;
@@ -280,23 +263,21 @@ static int confirm_send(netdev_t *netdev, void *info)
     }
 }
 
-static void read_rx0_buffer(w5500_t *dev, uint16_t address, uint8_t *data, uint16_t size)
-{
+static void read_rx0_buffer(w5500_t *dev, uint16_t address, uint8_t *data, uint16_t size) {
     spi_transfer_u16_be(dev->p.spi, dev->p.cs, true, address);
     spi_transfer_byte(dev->p.spi, dev->p.cs, true, SOCKET0_RX_BUFFER);
 
     spi_transfer_bytes(dev->p.spi, dev->p.cs, false, NULL, data, size);
 }
 
-static uint16_t get_size_in_rx_buffer(w5500_t *dev)
-{
+static uint16_t get_size_in_rx_buffer(w5500_t *dev) {
     uint16_t received = read_addr(dev, REG_S0_RX_RSR0, REG_S0_RX_RSR1);
     uint16_t tmp = read_addr(dev, REG_S0_RX_RSR0, REG_S0_RX_RSR1);
 
-    /* See Note in the description of Sn_RX_RSR in the datasheet: This is a 16 bit value,
-       so we read it until we get the same value twice. The W5500 will update it
-       while receiving data, when we read the same value again we can assume that
-       the current packet is fully received. */
+    // See Note in the description of Sn_RX_RSR in the datasheet: This is a 16 bit value,
+    //    so we read it until we get the same value twice. The W5500 will update it
+    //    while receiving data, when we read the same value again we can assume that
+    //    the current packet is fully received.
     while (received != tmp) {
         received = tmp;
         tmp = read_addr(dev, REG_S0_RX_RSR0, REG_S0_RX_RSR1);
@@ -305,8 +286,7 @@ static uint16_t get_size_in_rx_buffer(w5500_t *dev)
     return received;
 }
 
-static int receive(netdev_t *netdev, void *buf, size_t max_len, void *info)
-{
+static int receive(netdev_t *netdev, void *buf, size_t max_len, void *info) {
     (void)info;
     w5500_t *dev = (w5500_t *)netdev;
     uint16_t packet_size = 0u;
@@ -318,20 +298,20 @@ static int receive(netdev_t *netdev, void *buf, size_t max_len, void *info)
 
     if (available_bytes > 0u) {
         uint16_t socket0_read_pointer = read_addr(dev, REG_S0_RX_RD0, REG_S0_RX_RD1);
-        /* I could not find a hint in the documentation of the W5500, but different implementations
-           pointed me to the fact that the W5500 stores the size of the packet right in front of the
-           packet data. */
+        // I could not find a hint in the documentation of the W5500, but different implementations
+        //    pointed me to the fact that the W5500 stores the size of the packet right in front of the
+        //    packet data.
         read_rx0_buffer(dev, socket0_read_pointer, (uint8_t*)&packet_size, 2u);
         packet_size = ntohs(packet_size) - 2;
         ret_value = packet_size;
 
-        if (max_len > 0u) { /* max_len > 0u: Client wants to read or drop the packet. */
+        if (max_len > 0u) { // max_len > 0u: Client wants to read or drop the packet.
             if (packet_size > max_len) {
-                buf = NULL; /* Drop the packet. */
+                buf = NULL; // Drop the packet.
                 ret_value = -ENOBUFS;
             }
 
-            socket0_read_pointer += 2u;  /* Add the 2 bytes of the packet_size. */
+            socket0_read_pointer += 2u;  // Add the 2 bytes of the packet_size.
             if (buf != NULL) {
                 read_rx0_buffer(dev, socket0_read_pointer, (uint8_t *)buf, packet_size);
                 DEBUG("[w5500] receive: got packet of %i byte (at 0x%04x)\n", packet_size,
@@ -344,7 +324,7 @@ static int receive(netdev_t *netdev, void *buf, size_t max_len, void *info)
             socket0_read_pointer += packet_size;
         }
 
-        /* Update read pointer. */
+        // Update read pointer.
         write_address(dev, REG_S0_RX_RD0, REG_S0_RX_RD1, socket0_read_pointer);
         write_register(dev, REG_S0_CR, CR_RECV);
         while (read_register(dev, REG_S0_CR)) {}
@@ -355,17 +335,16 @@ static int receive(netdev_t *netdev, void *buf, size_t max_len, void *info)
     return ret_value;
 }
 
-static void isr(netdev_t *netdev)
-{
+static void isr(netdev_t *netdev) {
     w5500_t *dev = (w5500_t *)netdev;
 
     spi_acquire(dev->p.spi, dev->p.cs, SPI_CONF, dev->p.clk);
-    /* Get phy status register. */
+    // Get phy status register.
     uint8_t phy_status = read_register(dev, REG_PHYCFGR);
-    /* Get socket 0 interrupt register. */
+    // Get socket 0 interrupt register.
     uint8_t socket0_interrupt_status = read_register(dev, REG_S0_IR);
 
-    /* Clear interrupts. */
+    // Clear interrupts.
     write_register(dev, REG_S0_IR, socket0_interrupt_status);
     spi_release(dev->p.spi);
 
@@ -391,7 +370,7 @@ static void isr(netdev_t *netdev)
             netdev->event_callback(netdev, NETDEV_EVENT_TX_COMPLETE);
         }
 
-        /* Check interrupt status again. */
+        // Check interrupt status again.
         spi_acquire(dev->p.spi, dev->p.cs, SPI_CONF, dev->p.clk);
         socket0_interrupt_status = read_register(dev, REG_S0_IR);
         write_register(dev, REG_S0_IR, socket0_interrupt_status);
@@ -399,8 +378,7 @@ static void isr(netdev_t *netdev)
     }
 }
 
-static int get(netdev_t *netdev, netopt_t opt, void *value, size_t max_len)
-{
+static int get(netdev_t *netdev, netopt_t opt, void *value, size_t max_len) {
     w5500_t *dev = (w5500_t *)netdev;
     int res = 0;
 

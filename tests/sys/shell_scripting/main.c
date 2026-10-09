@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   Shell Scripting Test Application
- *
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   Shell Scripting Test Application
+///
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include <stdlib.h>
 
@@ -25,8 +21,7 @@
 #define SCRIPT_FILE VFS_DEFAULT_DATA "/script.sh"
 #endif
 
-static int cmd_msleep(int argc, char **argv)
-{
+static int cmd_msleep(int argc, char **argv) {
     if (argc != 2) {
         return -1;
     }
@@ -35,8 +30,7 @@ static int cmd_msleep(int argc, char **argv)
     return 0;
 }
 
-static int cmd_echo(int argc, char **argv)
-{
+static int cmd_echo(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
         printf("%s ", argv[i]);
     }
@@ -45,8 +39,7 @@ static int cmd_echo(int argc, char **argv)
     return 0;
 }
 
-static int cmd_add(int argc, char **argv)
-{
+static int cmd_add(int argc, char **argv) {
     int sum = 0;
 
     for (int i = 1; i < argc; ++i) {
@@ -64,8 +57,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-static int _create_script(void)
-{
+static int _create_script(void) {
     const char file[] = {
         "# this is a comment\n"
         "msleep 500\n"
@@ -78,8 +70,7 @@ static int _create_script(void)
     return vfs_file_from_buffer(SCRIPT_FILE, file, sizeof(file) - 1);
 }
 
-int main(void)
-{
+int main(void) {
     _create_script();
 
     unsigned line;

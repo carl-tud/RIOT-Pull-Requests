@@ -1,32 +1,29 @@
-/*
- * LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
- * Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
- * Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
+// Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the
+// Free Software Foundation; version 2 of the License.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+// Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-/* If this code fails to build, please provide at least the following
- * information when requesting (free) technical support.
- *
- * 1: Complete copy of all messages during the build.
- * 2: Output of "gtk-config --version"
- * 3: Output of "gtk-config --libs"
- * 4: Output of "gtk-config --cflags"
- * 5: Output of "uname -a"
- * 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
- * 7: Other info... which linux distribution, version, other software
- */
+// If this code fails to build, please provide at least the following
+// information when requesting (free) technical support.
+//
+// 1: Complete copy of all messages during the build.
+// 2: Output of "gtk-config --version"
+// 3: Output of "gtk-config --libs"
+// 4: Output of "gtk-config --cflags"
+// 5: Output of "uname -a"
+// 6: Version of GTK installed... eg, type: ls -l /lib/libgtk*
+// 7: Other info... which linux distribution, version, other software
 
 
 #include <stdio.h>
@@ -53,8 +50,7 @@ static char crystal[64] = {DEFAULT_CRYSTAL};
 static char settings_file[256] = {'\0'};
 
 
-void init_settings(void)
-{
+void init_settings(void) {
     const char *home_dir;
     char buf[1024];
 
@@ -131,8 +127,7 @@ void init_settings(void)
     }
 }
 
-void write_settings_file(void)
-{
+void write_settings_file(void) {
     FILE *fp;
 
     if (settings_file[0] == '\0') {
@@ -153,52 +148,44 @@ void write_settings_file(void)
     fclose(fp);
 }
 
-const char *file_setting(void)
-{
+const char *file_setting(void) {
     return file;
 }
 
-const char *port_setting(void)
-{
+const char *port_setting(void) {
     return port;
 }
 
-const char *baud_setting(void)
-{
+const char *baud_setting(void) {
     return baud;
 }
 
-const char *crystal_setting(void)
-{
+const char *crystal_setting(void) {
     return crystal;
 }
 
-void new_file_setting(const char *new_file)
-{
+void new_file_setting(const char *new_file) {
     if (strcmp(file, new_file)) {
         snprintf(file, sizeof(file), "%s", new_file);
         write_settings_file();
     }
 }
 
-void new_port_setting(const char *new_port)
-{
+void new_port_setting(const char *new_port) {
     if (strcmp(port, new_port)) {
         snprintf(port, sizeof(port), "%s", new_port);
         write_settings_file();
     }
 }
 
-void new_baud_setting(const char *new_baud)
-{
+void new_baud_setting(const char *new_baud) {
     if (strcmp(baud, new_baud)) {
         snprintf(baud, sizeof(baud), "%s", new_baud);
         write_settings_file();
     }
 }
 
-void new_crystal_setting(const char *new_xtal)
-{
+void new_crystal_setting(const char *new_xtal) {
     if (strcmp(crystal, new_xtal)) {
         snprintf(crystal, sizeof(crystal), "%s", new_xtal);
         write_settings_file();

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Zolertia SL
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Zolertia SL
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_remote
- * @{
- *
- * @file
- * @brief       LED extended functions
- *
- * @author      Antonio Lignan <alinan@zolertia.com>
- */
+/// @ingroup     boards_common_remote
+/// @{
+///
+/// @file
+/// @brief       LED extended functions
+///
+/// @author      Antonio Lignan <alinan@zolertia.com>
 
 #include "board_common.h"
 
@@ -22,11 +18,9 @@
  extern "C" {
 #endif
 
-/**
- * @name Macro to create blinking and rainbows with the LEDs
- * @{
- */
-/* Take LED_COLOR as argument, i.e LED0 */
+/// @name Macro to create blinking and rainbows with the LEDs
+/// @{
+// Take LED_COLOR as argument, i.e LED0
 #define LED_FADE(led)                         \
   volatile int i;                             \
   int k, j;                                   \
@@ -53,9 +47,9 @@
   LED_FADE_EXPAND(LED4);                      \
   LED_FADE_EXPAND(LED2);                      \
   LED_FADE_EXPAND(LED1);
-/** @} */
+/// @}
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
-/** @} */
+/// @}

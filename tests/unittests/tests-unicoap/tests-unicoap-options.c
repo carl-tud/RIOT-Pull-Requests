@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024-2025 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2025 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2025 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2025 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup unittests
- * @brief   Unit tests for CoAP option accessors
- * @author  Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @ingroup unittests
+/// @brief   Unit tests for CoAP option accessors
+/// @author  Carl Seifert <carl.seifert@tu-dresden.de>
 
 #include <errno.h>
 #include <stdio.h>
@@ -33,17 +29,15 @@ static const char poem[] = "CoAP"
                            "Across the networks, coast to coast."
                            "So here's to networks small and grand,"
                            "Where CoAP's whispers gently land.";
-/* - ChatGPT */
+// - ChatGPT
 
-static void assert_options_data(const unicoap_options_t *options)
-{
-    /* In this order:
-     * Uri-Path: actuators
-     * Uri-Path: leds
-     * Content-Format: JSON
-     * Uri-Query: color=g
-     * Accept: JSON
-     */
+static void assert_options_data(const unicoap_options_t *options) {
+    // In this order:
+    // Uri-Path: actuators
+    // Uri-Path: leds
+    // Content-Format: JSON
+    // Uri-Query: color=g
+    // Accept: JSON
     uint8_t option_data[] = { 0xb9, 0x61, 0x63, 0x74, 0x75, 0x61, 0x74,
                               0x6f, 0x72, 0x73, 0x04, 0x6c, 0x65, 0x64,
                               0x73, 0x11, 0x32, 0x37, 0x63, 0x6f, 0x6c,
@@ -55,8 +49,7 @@ static void assert_options_data(const unicoap_options_t *options)
                              sizeof(option_data));
 }
 
-static void test_in_order(void)
-{
+static void test_in_order(void) {
     UNICOAP_OPTIONS_ALLOC_STATIC(options, 100);
     TEST_ASSERT_EQUAL_INT(0, unicoap_options_add_uri_path_component_string(
                                  &options, "actuators"));
@@ -72,8 +65,7 @@ static void test_in_order(void)
     assert_options_data(&options);
 }
 
-static void test_out_of_order(void)
-{
+static void test_out_of_order(void) {
     UNICOAP_OPTIONS_ALLOC_STATIC(options, 100);
 
     if (!IS_ACTIVE(CONFIG_UNICOAP_OPTIONS_FULL_SUPPORT)) {
@@ -108,8 +100,7 @@ static void test_out_of_order(void)
     assert_options_data(&options);
 }
 
-static void test_idempotent(void)
-{
+static void test_idempotent(void) {
     UNICOAP_OPTIONS_ALLOC_STATIC(options, 100);
 
     if (!IS_ACTIVE(CONFIG_UNICOAP_OPTIONS_FULL_SUPPORT)) {
@@ -142,8 +133,7 @@ static void test_idempotent(void)
     assert_options_data(&options);
 }
 
-static void _populate(unicoap_options_t *options)
-{
+static void _populate(unicoap_options_t *options) {
     TEST_ASSERT_EQUAL_INT(0, unicoap_options_add(options, 50, (uint8_t *)poem,
                                                  _UINT4_MAX + 1));
     TEST_ASSERT_EQUAL_INT(0, unicoap_options_add(options, 12, (uint8_t *)poem,
@@ -166,17 +156,16 @@ static void _populate(unicoap_options_t *options)
                           unicoap_options_set(options, 1, (uint8_t *)poem, 1));
 }
 
-static void test_extended_uint_shifts(void)
-{
+static void test_extended_uint_shifts(void) {
     if (!IS_ACTIVE(CONFIG_UNICOAP_OPTIONS_FULL_SUPPORT)) {
-        /* no shifting supported anyways */
+        // no shifting supported anyways
         return;
     }
 
     UNICOAP_OPTIONS_ALLOC_STATIC(options, 900);
     _populate(&options);
 
-    /* options blob, from nanoCoAP */
+    // options blob, from nanoCoAP
     static const uint8_t options_blob[] = {
         0x11, 0x43, 0x1D, 0x00, 0x43, 0x6F, 0x41, 0x50, 0x49, 0x6E, 0x20, 0x61,
         0x20, 0x77, 0x6F, 0x72, 0x6C, 0x6D, 0xFF, 0x43, 0x6F, 0x41, 0x50, 0x49,
@@ -254,10 +243,9 @@ static void test_extended_uint_shifts(void)
                              sizeof(options_blob));
 }
 
-static void test_remove_leading(void)
-{
+static void test_remove_leading(void) {
     if (!IS_ACTIVE(CONFIG_UNICOAP_OPTIONS_FULL_SUPPORT)) {
-        /* no removal supported anyways */
+        // no removal supported anyways
         return;
     }
 
@@ -266,7 +254,7 @@ static void test_remove_leading(void)
 
     TEST_ASSERT_EQUAL_INT(0, unicoap_options_remove(&options, 1));
 
-    /* options blob, from nanoCoAP */
+    // options blob, from nanoCoAP
     static const uint8_t options_blob[] = {
         0x2D, 0x00, 0x43, 0x6F, 0x41, 0x50, 0x49, 0x6E, 0x20, 0x61, 0x20, 0x77,
         0x6F, 0x72, 0x6C, 0x6D, 0xFF, 0x43, 0x6F, 0x41, 0x50, 0x49, 0x6E, 0x20,
@@ -344,10 +332,9 @@ static void test_remove_leading(void)
                              sizeof(options_blob));
 }
 
-static void test_remove_trailing(void)
-{
+static void test_remove_trailing(void) {
     if (!IS_ACTIVE(CONFIG_UNICOAP_OPTIONS_FULL_SUPPORT)) {
-        /* no removal supported anyways */
+        // no removal supported anyways
         return;
     }
 
@@ -356,7 +343,7 @@ static void test_remove_trailing(void)
 
     TEST_ASSERT_EQUAL_INT(0, unicoap_options_remove(&options, 70));
 
-    /* options blob, from nanoCoAP */
+    // options blob, from nanoCoAP
     static const uint8_t options_blob[] = {
         0x11, 0x43, 0x1D, 0x00, 0x43, 0x6F, 0x41, 0x50, 0x49, 0x6E, 0x20, 0x61,
         0x20, 0x77, 0x6F, 0x72, 0x6C, 0x6D, 0xFF, 0x43, 0x6F, 0x41, 0x50, 0x49,
@@ -434,10 +421,9 @@ static void test_remove_trailing(void)
                              sizeof(options_blob));
 }
 
-static void test_remove_multiple(void)
-{
+static void test_remove_multiple(void) {
     if (!IS_ACTIVE(CONFIG_UNICOAP_OPTIONS_FULL_SUPPORT)) {
-        /* no removal supported anyways */
+        // no removal supported anyways
         return;
     }
 
@@ -446,7 +432,7 @@ static void test_remove_multiple(void)
 
     TEST_ASSERT_EQUAL_INT(0, unicoap_options_remove(&options, 12));
 
-    /* options blob, from nanoCoAP */
+    // options blob, from nanoCoAP
     static const uint8_t options_blob[] = {
         0x11, 0x43, 0x1D, 0x00, 0x43, 0x6F, 0x41, 0x50, 0x49, 0x6E, 0x20, 0x61,
         0x20, 0x77, 0x6F, 0x72, 0x6C, 0x6D, 0xFF, 0x43, 0x6F, 0x41, 0x50, 0x49,
@@ -522,10 +508,9 @@ static void test_remove_multiple(void)
                              sizeof(options_blob));
 }
 
-static void test_remove_multiple_trailing(void)
-{
+static void test_remove_multiple_trailing(void) {
     if (!IS_ACTIVE(CONFIG_UNICOAP_OPTIONS_FULL_SUPPORT)) {
-        /* no removal supported anyways */
+        // no removal supported anyways
         return;
     }
 
@@ -542,8 +527,7 @@ static void test_remove_multiple_trailing(void)
     TEST_ASSERT_EQUAL_INT(2, unicoap_options_size(&options));
 }
 
-static void test_option_value_uses_shortest_possible_representation(void)
-{
+static void test_option_value_uses_shortest_possible_representation(void) {
     static const uint8_t options_blob[] = { 0x00 };
     const unicoap_option_number_t OPTION_NUMBER = 0; // RESERVED
     const uint32_t OPTION_VALUE = 0;
@@ -568,8 +552,7 @@ static void test_option_value_uses_shortest_possible_representation(void)
     TEST_ASSERT_EQUAL_INT(OPTION_VALUE, uint32_val);
 }
 
-Test *tests_unicoap_options(void)
-{
+Test *tests_unicoap_options(void) {
     EMB_UNIT_TESTFIXTURES(fixtures){
         new_TestFixture(test_in_order),
         new_TestFixture(test_out_of_order),

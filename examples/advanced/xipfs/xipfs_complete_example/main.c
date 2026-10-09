@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Université de Lille
- * SPDX-License-Identifier: LGPL-2.1-or-later
- */
+// SPDX-FileCopyrightText: 2024-2026 Université de Lille
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       An application demonstrating xipfs usage from code.
- *
- * @author      Gregory Guche <gregory.guche@univ-lille.fr>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       An application demonstrating xipfs usage from code.
+///
+/// @author      Gregory Guche <gregory.guche@univ-lille.fr>
+///
+/// @}
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -23,38 +19,33 @@
 #include "shell.h"
 #include "vfs.h"
 
-#define PANIC() for (;;) {} /**< This macro handles fatal errors */
+#define PANIC() for (;;) {} ///< This macro handles fatal errors
 
-/*
- * Include a mount point image that has been built on a PC workstation.
- *
- * Please mind the deliberate missing semicolon character after
- * XIPFS_START_PARTITION_INCLUSION(nvme0p0).
- */
+// Include a mount point image that has been built on a PC workstation.
+//
+// Please mind the deliberate missing semicolon character after
+// XIPFS_START_PARTITION_INCLUSION(nvme0p0).
 static
 XIPFS_START_PARTITION_INCLUSION(nvme0p0)
 #include "blob/nvme0p0.flash.h"
 XIPFS_END_PARTITION_INCLUSION(nvme0p0, "/nvme0p0", nvme0p0_flash, nvme0p0_flash_len);
 
-#define NVME0P1_PAGE_NUM 10 /**< The number of flash page for the nvme0p1 file system. */
+#define NVME0P1_PAGE_NUM 10 ///< The number of flash page for the nvme0p1 file system.
 
-/* Allocate a new contiguous space for the nvme0p1 file system. */
+// Allocate a new contiguous space for the nvme0p1 file system.
 XIPFS_NEW_PARTITION(nvme0p1, "/nvme0p1", NVME0P1_PAGE_NUM);
 
 static shell_command_t shell_commands[] = { {NULL, NULL, NULL} };
 
-/**
- * @internal
- *
- * @brief Initialize a VFS XiPFS mountpoint.
- *
- * @param[in]   mp The mountpoint to initialize.
- *
- * @retval <0 on errors
- * @retval >=0 otherwise
- */
-static int init_mount_point(vfs_xipfs_mount_t *mp)
-{
+/// @internal
+///
+/// @brief Initialize a VFS XiPFS mountpoint.
+///
+/// @param[in]   mp The mountpoint to initialize.
+///
+/// @retval <0 on errors
+/// @retval >=0 otherwise
+static int init_mount_point(vfs_xipfs_mount_t *mp) {
     if (vfs_mount(&mp->vfs_mp) < 0) {
         printf("Error: vfs_mount: \"%s\": file system has not been "
             "initialized or is corrupted\n", mp->vfs_mp.mount_point);
@@ -65,13 +56,10 @@ static int init_mount_point(vfs_xipfs_mount_t *mp)
     return 0;
 }
 
-/**
- * @internal
- *
- * @brief Initialize all example mountpoints.
- */
-static void init_mount_points(void)
-{
+/// @internal
+///
+/// @brief Initialize all example mountpoints.
+static void init_mount_points(void) {
     vfs_xipfs_mount_t *mps[2] = {
         [0] = &nvme0p0,
         [1] = &nvme0p1,
@@ -84,28 +72,25 @@ static void init_mount_points(void)
     }
 }
 
-/**
- * @internal
- *
- * @brief XiPFS file copier.
- *
- * XiPFS requires to know both filesize and execution permission when creating
- * a file, which are not reported when using vfs_copy.
- *
- * @param[in] src_filename          The source filename to be copied.
- * @param[in] dst_filename          The destination filename.
- * @param[in] is_executable_file    File execution permission.
- *
- * @remark This function can not be inlined, as it would otherwise allocate a
- *         calculated maximum amount of bytes on stack, and would never
- *         release it when calling shell_run.
- *         This could lead to stack overflow/exhaustion in later shell
- *         commands.
- */
+/// @internal
+///
+/// @brief XiPFS file copier.
+///
+/// XiPFS requires to know both filesize and execution permission when creating
+/// a file, which are not reported when using vfs_copy.
+///
+/// @param[in] src_filename          The source filename to be copied.
+/// @param[in] dst_filename          The destination filename.
+/// @param[in] is_executable_file    File execution permission.
+///
+/// @remark This function can not be inlined, as it would otherwise allocate a
+///         calculated maximum amount of bytes on stack, and would never
+///         release it when calling shell_run.
+///         This could lead to stack overflow/exhaustion in later shell
+///         commands.
 static __attribute__((noinline))
 void copy_file(const char *src_filename, const char *dst_filename,
-               uint32_t is_executable_file)
-{
+               uint32_t is_executable_file) {
     struct stat src_stat;
     if (vfs_stat(src_filename, &src_stat) <  0) {
         printf("Error: failed to retrieve stats for file '%s'.\n", src_filename);
@@ -139,7 +124,7 @@ void copy_file(const char *src_filename, const char *dst_filename,
             PANIC();
         }
         if (read_bytes_count == 0) {
-            /* EOF */
+            // EOF
             break;
         }
 
@@ -164,16 +149,15 @@ void copy_file(const char *src_filename, const char *dst_filename,
            src_filename, dst_filename);
 }
 
-int main(void)
-{
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
 
-    /* Mount both included and allocated filesystems. */
+    // Mount both included and allocated filesystems.
     init_mount_points();
 
     printf("\n");
 
-    /* Create "/nvme0p1/bin" directory */
+    // Create "/nvme0p1/bin" directory
     const char *nvme0p1_bin_directory_name = "/nvme0p1/bin";
     if (vfs_mkdir(nvme0p1_bin_directory_name, 0) < 0) {
         printf("Error: failed to create '%s' directory.\n", nvme0p1_bin_directory_name);
@@ -183,11 +167,11 @@ int main(void)
     const char *src_filename = "/nvme0p0/21.fae";
     const char *dst_filename = "/nvme0p1/bin/twenty-one.fae";
 
-    /* Copy "/nvme0p0/21.fae" to "/nvme0p1/bin/twenty-one.fae". */
+    // Copy "/nvme0p0/21.fae" to "/nvme0p1/bin/twenty-one.fae".
     copy_file(src_filename, dst_filename, 1);
 
-    /* Execute both files, sum up their result and check if it's equal to expected one. */
-    /* Execution WITHOUT memory protection. */
+    // Execute both files, sum up their result and check if it's equal to expected one.
+    // Execution WITHOUT memory protection.
     char *args[] = { (char *)src_filename, NULL };
     int global_result = xipfs_extended_driver_execv(src_filename, args);
     if (global_result < 0) {
@@ -196,7 +180,7 @@ int main(void)
     }
     printf("'%s' has been run and returned '%d'.\n", src_filename, global_result);
 
-    /* Execution WITH memory protection enabled. */
+    // Execution WITH memory protection enabled.
     args[0] = (char *)dst_filename;
     int local_result = xipfs_extended_driver_safe_execv(dst_filename, args);
     if (local_result < 0) {
@@ -205,7 +189,7 @@ int main(void)
     }
     printf("'%s' has been run and returned '%d'.\n", dst_filename, local_result);
 
-    /* Accumulate results and check */
+    // Accumulate results and check
     global_result += local_result;
     if (global_result != 42) {
         printf("Error: the cumulated result of '%s' and '%s'"
@@ -216,14 +200,14 @@ int main(void)
     printf("The cumulated returned value of '%s' and '%s' is equal to %d.\n",
             src_filename, dst_filename, 42);
 
-    /* Remove "/nvme0p1/bin/twenty-one.fae" */
+    // Remove "/nvme0p1/bin/twenty-one.fae"
     if (vfs_unlink(dst_filename) < 0) {
         printf("Error: Failed to delete '%s' file.\n", dst_filename);
         PANIC();
     }
     printf("'%s' file has been erased.\n", dst_filename);
 
-    /* Remove "/nvme0p1/bin" */
+    // Remove "/nvme0p1/bin"
     if (vfs_rmdir(nvme0p1_bin_directory_name) < 0) {
         printf("Error: Failed to delete '%s' directory.\n", nvme0p1_bin_directory_name);
         PANIC();

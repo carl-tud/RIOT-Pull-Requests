@@ -1,11 +1,7 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * FreeRTOS to RIOT-OS adaption module for source code compatibility
- */
+// FreeRTOS to RIOT-OS adaption module for source code compatibility
 
 #pragma once
 
@@ -37,4 +33,4 @@ void *pvTimerGetTimerID(const TimerHandle_t xTimer);
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

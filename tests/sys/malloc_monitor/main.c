@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2024 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for MODULE_MALLOC_MONITOR
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for MODULE_MALLOC_MONITOR
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -33,13 +29,10 @@
 #define TEST_ASSERT_WATERMARK(num_alloc) TEST_ASSERT_EQUAL_INT(water+num_alloc*MALLOC_SIZE, \
                                          malloc_monitor_get_usage_high_watermark());
 
-/*
- * malloc and free should be reflected by `malloc_monitor_get_usage_current()`.
- * `malloc_monitor_get_usage_high_watermark()` should only be decreased on a call to
- * `malloc_monitor_reset_high_watermark()`
- */
-static void test_malloc_free(void)
-{
+// malloc and free should be reflected by `malloc_monitor_get_usage_current()`.
+// `malloc_monitor_get_usage_high_watermark()` should only be decreased on a call to
+// `malloc_monitor_reset_high_watermark()`
+static void test_malloc_free(void) {
     TEST_MALLOC_MONITOR_SAVE
 
     TEST_ASSERT_CURRENT(0);
@@ -77,11 +70,8 @@ static void test_malloc_free(void)
     TEST_ASSERT_CURRENT(0);
     TEST_ASSERT_WATERMARK(0);
 }
-/*
- * using calloc instead of malloc should be reflected correctly
- */
-static void test_calloc(void)
-{
+// using calloc instead of malloc should be reflected correctly
+static void test_calloc(void) {
     TEST_MALLOC_MONITOR_SAVE
 
     TEST_ASSERT_CURRENT(0);
@@ -120,11 +110,8 @@ static void test_calloc(void)
     TEST_ASSERT_WATERMARK(0);
 }
 
-/*
- * using realloc instead of malloc/free should be reflected correctly
- */
-static void test_realloc(void)
-{
+// using realloc instead of malloc/free should be reflected correctly
+static void test_realloc(void) {
     TEST_MALLOC_MONITOR_SAVE
 
     TEST_ASSERT_CURRENT(0);
@@ -163,11 +150,8 @@ static void test_realloc(void)
     TEST_ASSERT_WATERMARK(0);
 }
 
-/*
- * freeing NULL shouldn't change anything
- */
-static void test_free_NULL(void)
-{
+// freeing NULL shouldn't change anything
+static void test_free_NULL(void) {
     TEST_MALLOC_MONITOR_SAVE
 
     free(NULL);
@@ -187,8 +171,7 @@ static void test_free_NULL(void)
     TEST_ASSERT_WATERMARK(1);
 }
 
-static Test *tests_malloc_monitor(void)
-{
+static Test *tests_malloc_monitor(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_malloc_free),
         new_TestFixture(test_calloc),
@@ -200,8 +183,7 @@ static Test *tests_malloc_monitor(void)
     return (Test *)&tests;
 }
 
-int main(void)
-{
+int main(void) {
     puts("malloc_monitor test");
     TESTS_START();
     TESTS_RUN(tests_malloc_monitor());

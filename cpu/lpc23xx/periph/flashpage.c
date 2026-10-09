@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014 INRIA
- * SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 INRIA
+// SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_lpc23xx
- * @ingroup     drivers_periph_flashpage
- * @{
- *
- * @file
- * @brief       Low-level flash page driver implementation
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
- *
- * @}
- */
+/// @ingroup     cpu_lpc23xx
+/// @ingroup     drivers_periph_flashpage
+/// @{
+///
+/// @file
+/// @brief       Low-level flash page driver implementation
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
+///
+/// @}
 
 #include "assert.h"
 #include "cpu.h"
@@ -27,24 +23,23 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* typedefinition for IAP entry function */
+// typedefinition for IAP entry function
 typedef void (*IAP)(unsigned int[], unsigned int[]);
 static const IAP IAP_Entry = (IAP)0x7ffffff1;
 
-static uint32_t iap(uint32_t code, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4)
-{
-    /* contains parameters for IAP command */
+static uint32_t iap(uint32_t code, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4) {
+    // contains parameters for IAP command
     static unsigned int iap_command[5];
-    /* contains results */
+    // contains results
     static unsigned int iap_result[2];
 
-    iap_command[0] = code;      /* set command code */
-    iap_command[1] = p1;        /* set 1st param */
-    iap_command[2] = p2;        /* set 2nd param */
-    iap_command[3] = p3;        /* set 3rd param */
-    iap_command[4] = p4;        /* set 4th param */
+    iap_command[0] = code;      // set command code
+    iap_command[1] = p1;        // set 1st param
+    iap_command[2] = p2;        // set 2nd param
+    iap_command[3] = p3;        // set 3rd param
+    iap_command[4] = p4;        // set 4th param
 
-    IAP_Entry(iap_command, iap_result); /* IAP entry point */
+    IAP_Entry(iap_command, iap_result); // IAP entry point
     return *iap_result;
 }
 
@@ -72,8 +67,7 @@ static uint32_t iap(uint32_t code, uint32_t p1, uint32_t p2, uint32_t p3, uint32
  *              code is SECTOR_NOT_BLANK.
  *              Result1: Contents of non blank wird location.
  *****************************************************************************/
-static uint32_t blank_check_sector(uint32_t sect_start, uint32_t sect_end)
-{
+static uint32_t blank_check_sector(uint32_t sect_start, uint32_t sect_end) {
     return iap(BLANK_CHECK_SECTOR, sect_start, sect_end, 0, 0);
 }
 
@@ -105,8 +99,7 @@ static uint32_t blank_check_sector(uint32_t sect_start, uint32_t sect_end)
  *                      or SECTOR_NOT_PREPARED_FOR_WRITE_OPERATION
  *                      or BUSY
  *****************************************************************************/
-static uint32_t copy_ram_to_flash(void *dst, const void *src, size_t tmp_size)
-{
+static uint32_t copy_ram_to_flash(void *dst, const void *src, size_t tmp_size) {
     return iap(COPY_RAM_TO_FLASH, (uintptr_t)dst, (uintptr_t)src, tmp_size, _XTAL);
 }
 
@@ -131,8 +124,7 @@ static uint32_t copy_ram_to_flash(void *dst, const void *src, size_t tmp_size)
  *                      or BUSY
  *                      or INVALID_SECTOR
  *****************************************************************************/
-static uint32_t prepare_sectors(uint32_t sect_start, uint32_t sect_end)
-{
+static uint32_t prepare_sectors(uint32_t sect_start, uint32_t sect_end) {
     return iap(PREPARE_SECTOR_FOR_WRITE_OPERATION, sect_start, sect_end, 0, 0);
 }
 
@@ -156,8 +148,7 @@ static uint32_t prepare_sectors(uint32_t sect_start, uint32_t sect_end)
  *                      or SECTOR_NOT_PREPARED_FOR_WRITE_OPERATION
  *                      or INVALID_SECTOR
  *****************************************************************************/
-static uint32_t erase_sectors(uint32_t sect_start, uint32_t sect_end)
-{
+static uint32_t erase_sectors(uint32_t sect_start, uint32_t sect_end) {
     return iap(ERASE_SECTOR, sect_start, sect_end, _XTAL, 0);
 }
 
@@ -189,13 +180,11 @@ static uint32_t erase_sectors(uint32_t sect_start, uint32_t sect_end)
  *              Result0: Offset of the first mismatch if the Status Code is COMPARE_ERROR.
  *****************************************************************************/
 __attribute__((unused))
-static uint32_t compare(uint32_t tmp_adr_dst, uint32_t tmp_adr_src, uint32_t tmp_size)
-{
+static uint32_t compare(uint32_t tmp_adr_dst, uint32_t tmp_adr_src, uint32_t tmp_size) {
     return iap(COMPARE, tmp_adr_dst, tmp_adr_src, tmp_size, 0);
 }
 
-size_t flashpage_size(unsigned page)
-{
+size_t flashpage_size(unsigned page) {
     if (page < 8 || page > 21) {
         return 0x1000;
     }
@@ -203,15 +192,14 @@ size_t flashpage_size(unsigned page)
     return 0x8000;
 }
 
-void flashpage_erase(unsigned sec)
-{
-    /* check sector */
+void flashpage_erase(unsigned sec) {
+    // check sector
     if (!blank_check_sector(sec, sec)) {
         DEBUG("Sector %u already blank\n", sec);
         return;
     }
 
-    /* prepare sector */
+    // prepare sector
     if (prepare_sectors(sec, sec)) {
         DEBUG("ERROR: PREPARE_SECTOR_FOR_WRITE_OPERATION\n");
         return;
@@ -219,7 +207,7 @@ void flashpage_erase(unsigned sec)
 
     unsigned state = irq_disable();
 
-    /* erase sector */
+    // erase sector
     if (erase_sectors(sec, sec)) {
         DEBUG("ERROR: ERASE SECTOR\n");
     }
@@ -227,19 +215,18 @@ void flashpage_erase(unsigned sec)
     irq_restore(state);
 }
 
-void flashpage_write(void *target_addr, const void *data, size_t len)
-{
+void flashpage_write(void *target_addr, const void *data, size_t len) {
     char err;
     uint8_t sec = flashpage_page(target_addr);
 
-    /* prepare sector */
+    // prepare sector
     err = prepare_sectors(sec, sec);
     if (err) {
         DEBUG("ERROR: PREPARE_SECTOR_FOR_WRITE_OPERATION: %u\n", err);
         return;
     }
 
-    /*  write flash */
+    // write flash
     unsigned state = irq_disable();
     err = copy_ram_to_flash(target_addr, data, len);
     irq_restore(state);

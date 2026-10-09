@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the DS1307 RTC driver
- *
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the DS1307 RTC driver
+///
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -39,12 +35,11 @@ static struct tm init = {  /* Wed Sep 22 15:10:42 2010 is the author date of
     .tm_year = 110
 };
 
-static int _tm_cmp(struct tm *a, struct tm *b)
-{
+static int _tm_cmp(struct tm *a, struct tm *b) {
     if (a->tm_year == b->tm_year) {
         if (a->tm_mon == b->tm_mon) {
             if (a->tm_mday == b->tm_mday) {
-                /* ignoring week day */
+                // ignoring week day
                 if (a->tm_hour == b->tm_hour) {
                     if (a->tm_min == b->tm_min) {
                         return a->tm_sec - b->tm_sec;
@@ -60,13 +55,11 @@ static int _tm_cmp(struct tm *a, struct tm *b)
     return a->tm_year - b->tm_year;
 }
 
-static void set_up(void)
-{
+static void set_up(void) {
     ds1307_set_time(&dev, &init);
 }
 
-static void test_nvram(void)
-{
+static void test_nvram(void) {
     struct tm time;
     uint8_t buf[DS1307_NVRAM_MAX_SIZE] = { 0 };
 
@@ -92,8 +85,7 @@ static void test_nvram(void)
     TEST_ASSERT_EQUAL_INT(0, _tm_cmp(&init, &time));
 }
 
-static void test_get_time(void)
-{
+static void test_get_time(void) {
     for (int i = 0; i < 5; i++) {
         struct tm time;
 
@@ -103,8 +95,7 @@ static void test_get_time(void)
     }
 }
 
-static void test_halt(void)
-{
+static void test_halt(void) {
     ds1307_halt(&dev);
     for (int i = 0; i < 3; i++) {
         struct tm time;
@@ -115,12 +106,11 @@ static void test_halt(void)
     }
 }
 
-static Test *tests_ds1307(void)
-{
+static Test *tests_ds1307(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_nvram),
         new_TestFixture(test_get_time),
-        /* set tested in set_up */
+        // set tested in set_up
         new_TestFixture(test_halt),
     };
 
@@ -128,13 +118,12 @@ static Test *tests_ds1307(void)
     return (Test *)&tests;
 }
 
-int main(void)
-{
+int main(void) {
     int res;
 
     puts("DS1307 RTC test\n");
 
-    /* initialize the device */
+    // initialize the device
     res = ds1307_init(&dev, (&ds1307_params[0]));
     if (res != 0) {
         puts("error: unable to initialize RTC [I2C initialization error]");

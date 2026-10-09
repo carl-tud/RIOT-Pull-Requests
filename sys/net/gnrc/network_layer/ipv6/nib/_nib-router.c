@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 #include <kernel_defines.h>
@@ -23,7 +19,7 @@
 
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C)
 #include "_nib-6ln.h"
-#endif  /* CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C */
+#endif  // CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C
 #include "_nib-router.h"
 
 #define ENABLE_DEBUG 0
@@ -35,8 +31,7 @@ static char addr_str[IPV6_ADDR_MAX_STR_LEN];
 static void _snd_ra(gnrc_netif_t *netif, const ipv6_addr_t *dst,
                     bool final, _nib_abr_entry_t *abr);
 
-void _handle_reply_rs(_nib_onl_entry_t *host)
-{
+void _handle_reply_rs(_nib_onl_entry_t *host) {
     gnrc_netif_t *netif = gnrc_netif_get_by_pid(_nib_onl_get_if(host));
 
     assert(netif != NULL);
@@ -47,8 +42,7 @@ void _handle_reply_rs(_nib_onl_entry_t *host)
     gnrc_netif_release(netif);
 }
 
-void _handle_snd_mc_ra(gnrc_netif_t *netif)
-{
+void _handle_snd_mc_ra(gnrc_netif_t *netif) {
     gnrc_netif_acquire(netif);
     assert(netif != NULL);
     if (!gnrc_netif_is_6ln(netif)) {
@@ -57,9 +51,9 @@ void _handle_snd_mc_ra(gnrc_netif_t *netif)
                                                     NDP_MAX_RA_INTERVAL_MS);
         uint32_t next_scheduled = _evtimer_lookup(netif, GNRC_IPV6_NIB_SND_MC_RA);
 
-        /* router has router advertising interface or the RA is one of the
-         * (now deactivated) routers final one (and there is no next
-         * scheduled within the possible time for next_ra_time) */
+        // router has router advertising interface or the RA is one of the
+        // (now deactivated) routers final one (and there is no next
+        // scheduled within the possible time for next_ra_time)
         if ((final_ra && (next_scheduled > NDP_MAX_RA_INTERVAL_MS)) ||
             gnrc_netif_is_rtr_adv(netif)) {
             _snd_rtr_advs(netif, NULL, final_ra);
@@ -71,7 +65,7 @@ void _handle_snd_mc_ra(gnrc_netif_t *netif)
                 }
                 netif->ipv6.ra_sent++;
             }
-            /* netif->ipv6.ra_sent overflowed => this was our last final RA */
+            // netif->ipv6.ra_sent overflowed => this was our last final RA
             if (netif->ipv6.ra_sent != 0) {
                 _evtimer_add(netif, GNRC_IPV6_NIB_SND_MC_RA, &netif->ipv6.snd_mc_ra,
                              next_ra_time);
@@ -81,8 +75,7 @@ void _handle_snd_mc_ra(gnrc_netif_t *netif)
     gnrc_netif_release(netif);
 }
 
-void _snd_rtr_advs(gnrc_netif_t *netif, const ipv6_addr_t *dst, bool final)
-{
+void _snd_rtr_advs(gnrc_netif_t *netif, const ipv6_addr_t *dst, bool final) {
     if (IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C) && gnrc_netif_is_6lr(netif)) {
         _nib_abr_entry_t *abr = NULL;
 
@@ -98,8 +91,7 @@ void _snd_rtr_advs(gnrc_netif_t *netif, const ipv6_addr_t *dst, bool final)
 }
 
 static gnrc_pktsnip_t *_offl_to_pio(_nib_offl_entry_t *offl,
-                                    gnrc_pktsnip_t *ext_opts)
-{
+                                    gnrc_pktsnip_t *ext_opts) {
     uint32_t now = evtimer_now_msec();
     gnrc_pktsnip_t *pio;
     gnrc_netif_t *netif = gnrc_netif_get_by_pid(
@@ -109,21 +101,20 @@ static gnrc_pktsnip_t *_offl_to_pio(_nib_offl_entry_t *offl,
     uint32_t valid_ltime = (offl->valid_until == UINT32_MAX) ? UINT32_MAX :
                            ((offl->valid_until - now) / MS_PER_SEC);
     uint32_t pref_ltime = offl->pref_until;
-    if (pref_ltime != UINT32_MAX) { /* reserved for infinite lifetime */
-        if (pref_ltime >= now) { /* avoid overflow */
+    if (pref_ltime != UINT32_MAX) { // reserved for infinite lifetime
+        if (pref_ltime >= now) { // avoid overflow
             pref_ltime = (pref_ltime - now) / MS_PER_SEC;
         } else {
-            pref_ltime = 0; /* deprecated */
+            pref_ltime = 0; // deprecated
         }
     }
 
     DEBUG("nib: Build PIO for %s/%u\n",
           ipv6_addr_to_str(addr_str, &offl->pfx, sizeof(addr_str)),
           offl->pfx_len);
-    /* do not advertise as on-link if 6LN
-     * https://tools.ietf.org/html/rfc6775#section-6.1 otherwise the PIO will be
-     * ignored by other nodes (https://tools.ietf.org/html/rfc6775#section-5.4)
-     */
+    // do not advertise as on-link if 6LN
+    // https://tools.ietf.org/html/rfc6775#section-6.1 otherwise the PIO will be
+    // ignored by other nodes (https://tools.ietf.org/html/rfc6775#section-5.4)
     if ((offl->flags & _PFX_ON_LINK) && !gnrc_netif_is_6ln(netif)) {
         flags |= NDP_OPT_PI_FLAGS_L;
     }
@@ -141,15 +132,13 @@ static gnrc_pktsnip_t *_offl_to_pio(_nib_offl_entry_t *offl,
 }
 
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C)
-static inline uint16_t _nib_abr_entry_valid_offset(const _nib_abr_entry_t *abr)
-{
+static inline uint16_t _nib_abr_entry_valid_offset(const _nib_abr_entry_t *abr) {
     return (abr->valid_until_ms - evtimer_now_msec()) / ( MS_PER_SEC * SEC_PER_MIN);
 }
 #endif
 
-/* check if a different prefix already includes the prefix of the entry */
-static bool _has_better_match(const _nib_offl_entry_t *entry)
-{
+// check if a different prefix already includes the prefix of the entry
+static bool _has_better_match(const _nib_offl_entry_t *entry) {
     _nib_offl_entry_t *candidate = NULL;
 
     while ((candidate = _nib_offl_iter(candidate))) {
@@ -174,8 +163,7 @@ static bool _has_better_match(const _nib_offl_entry_t *entry)
     return false;
 }
 
-static gnrc_pktsnip_t *_add_rio(gnrc_netif_t *netif, gnrc_pktsnip_t *ext_opts, bool offl)
-{
+static gnrc_pktsnip_t *_add_rio(gnrc_netif_t *netif, gnrc_pktsnip_t *ext_opts, bool offl) {
     _nib_offl_entry_t *entry = NULL;
     uint32_t now = evtimer_now_msec();
 
@@ -222,8 +210,7 @@ static gnrc_pktsnip_t *_add_rio(gnrc_netif_t *netif, gnrc_pktsnip_t *ext_opts, b
 }
 
 static gnrc_pktsnip_t *_build_ext_opts(gnrc_netif_t *netif,
-                                       _nib_abr_entry_t *abr)
-{
+                                       _nib_abr_entry_t *abr) {
     gnrc_pktsnip_t *ext_opts = NULL;
     _nib_offl_entry_t *pfx = NULL;
     unsigned id = netif->pid;
@@ -232,7 +219,7 @@ static gnrc_pktsnip_t *_build_ext_opts(gnrc_netif_t *netif,
     uint32_t rdnss_ltime = _evtimer_lookup(&sock_dns_server,
                                            GNRC_IPV6_NIB_RDNSS_TIMEOUT);
 
-    /* with auto_init_sock_dns we always have a valid (static) DNS server */
+    // with auto_init_sock_dns we always have a valid (static) DNS server
     if (((rdnss_ltime < UINT32_MAX) || IS_USED(MODULE_AUTO_INIT_SOCK_DNS)) &&
         (!ipv6_addr_is_link_local((ipv6_addr_t *)sock_dns_server.addr.ipv6))) {
         gnrc_pktsnip_t *rdnsso = gnrc_ndp_opt_rdnss_build(
@@ -241,14 +228,14 @@ static gnrc_pktsnip_t *_build_ext_opts(gnrc_netif_t *netif,
                 1U, ext_opts
             );
         if (rdnsso == NULL) {
-            /* gnrc_ndp_opt_rdnss_build() only returns NULL when pktbuf is full
-             * in this configuration */
+            // gnrc_ndp_opt_rdnss_build() only returns NULL when pktbuf is full
+            // in this configuration
             DEBUG("nib: No space left in packet buffer. Not adding RDNSSO\n");
             return NULL;
         }
         ext_opts = rdnsso;
     }
-#endif  /* CONFIG_GNRC_IPV6_NIB_DNS */
+#endif  // CONFIG_GNRC_IPV6_NIB_DNS
     if (gnrc_netif_is_6lr(netif)) {
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C)
         assert(abr != NULL);
@@ -270,7 +257,7 @@ static gnrc_pktsnip_t *_build_ext_opts(gnrc_netif_t *netif,
                 ext_opts = sixco;
             }
         }
-#endif  /* MODULE_GNRC_SIXLOWPAN_CTX */
+#endif  // MODULE_GNRC_SIXLOWPAN_CTX
         while ((pfx = _nib_abr_iter_pfx(abr, pfx))) {
             if (_nib_onl_get_if(pfx->next_hop) == id) {
                 if ((ext_opts = _offl_to_pio(pfx, ext_opts)) == NULL) {
@@ -281,7 +268,7 @@ static gnrc_pktsnip_t *_build_ext_opts(gnrc_netif_t *netif,
         if (gnrc_netif_is_6lbr(netif)) {
             ltime_min = 0U;
 
-            /* update valid time */
+            // update valid time
             abr->valid_until_ms = evtimer_now_msec() + (
                 SIXLOWPAN_ND_OPT_ABR_LTIME_DEFAULT * MS_PER_SEC * SEC_PER_MIN
             );
@@ -289,7 +276,7 @@ static gnrc_pktsnip_t *_build_ext_opts(gnrc_netif_t *netif,
         else {
             ltime_min = _nib_abr_entry_valid_offset(abr);
         }
-        (void)ltime_min;    /* gnrc_sixlowpan_nd_opt_abr_build might evaluate to NOP */
+        (void)ltime_min;    // gnrc_sixlowpan_nd_opt_abr_build might evaluate to NOP
         abro = gnrc_sixlowpan_nd_opt_abr_build(abr->version, ltime_min, &abr->addr,
                                             ext_opts);
         if (abro == NULL) {
@@ -297,7 +284,7 @@ static gnrc_pktsnip_t *_build_ext_opts(gnrc_netif_t *netif,
             return NULL;
         }
         ext_opts = abro;
-#endif  /* CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C */
+#endif  // CONFIG_GNRC_IPV6_NIB_MULTIHOP_P6C
     }
     else if (!gnrc_netif_is_6ln(netif)) {
         (void)abr;
@@ -310,7 +297,7 @@ static gnrc_pktsnip_t *_build_ext_opts(gnrc_netif_t *netif,
         }
     }
 
-    /* advertise route to off-link subnets */
+    // advertise route to off-link subnets
     if (CONFIG_GNRC_IPV6_NIB_ADD_RIO_IN_RA) {
         DEBUG("nib: add RIO to RA on interface %u\n", netif->pid);
         ext_opts = _add_rio(netif, ext_opts, true);
@@ -319,13 +306,12 @@ static gnrc_pktsnip_t *_build_ext_opts(gnrc_netif_t *netif,
     return ext_opts;
 }
 
-/* Sending a RA with ltime = 0 causes the router to be removed from the
- * default router list, but options are still parsed.
- * This allows us to add downstream subnets that should be routed through
- * this router, but the router is not an upstream / default router for
- * this link. */
-static gnrc_pktsnip_t *_build_final_ext_opts(gnrc_netif_t *netif)
-{
+// Sending a RA with ltime = 0 causes the router to be removed from the
+// default router list, but options are still parsed.
+// This allows us to add downstream subnets that should be routed through
+// this router, but the router is not an upstream / default router for
+// this link.
+static gnrc_pktsnip_t *_build_final_ext_opts(gnrc_netif_t *netif) {
     gnrc_pktsnip_t *ext_opts = NULL;
 
     if (CONFIG_GNRC_IPV6_NIB_ADD_RIO_IN_LAST_RA) {
@@ -336,8 +322,7 @@ static gnrc_pktsnip_t *_build_final_ext_opts(gnrc_netif_t *netif)
     return ext_opts;
 }
 
-void _set_rtr_adv(gnrc_netif_t *netif)
-{
+void _set_rtr_adv(gnrc_netif_t *netif) {
     DEBUG("nib: set RTR_ADV flag for interface %i\n", netif->pid);
     netif->ipv6.ra_sent = 0;
     netif->flags |= GNRC_NETIF_FLAGS_IPV6_RTR_ADV;
@@ -345,8 +330,7 @@ void _set_rtr_adv(gnrc_netif_t *netif)
 }
 
 void _snd_rtr_advs_drop_pfx(gnrc_netif_t *netif, const ipv6_addr_t *dst,
-                            _nib_offl_entry_t *pfx)
-{
+                            _nib_offl_entry_t *pfx) {
     gnrc_pktsnip_t *ext_opts = NULL;
     uint32_t now = evtimer_now_msec();
 
@@ -355,16 +339,15 @@ void _snd_rtr_advs_drop_pfx(gnrc_netif_t *netif, const ipv6_addr_t *dst,
           pfx->pfx_len, netif->pid
     );
 
-    pfx->pref_until  = now + 10;   /* add some safety margin */
-    pfx->valid_until = now + 10;   /* will be rounded to sec */
+    pfx->pref_until  = now + 10;   // add some safety margin
+    pfx->valid_until = now + 10;   // will be rounded to sec
 
     ext_opts = _offl_to_pio(pfx, ext_opts);
     gnrc_ndp_rtr_adv_send(netif, NULL, dst, false, ext_opts);
 }
 
 static void _snd_ra(gnrc_netif_t *netif, const ipv6_addr_t *dst,
-                    bool final, _nib_abr_entry_t *abr)
-{
+                    bool final, _nib_abr_entry_t *abr) {
     gnrc_pktsnip_t *ext_opts = NULL;
 
     if (final) {
@@ -375,8 +358,8 @@ static void _snd_ra(gnrc_netif_t *netif, const ipv6_addr_t *dst,
 
     gnrc_ndp_rtr_adv_send(netif, NULL, dst, final, ext_opts);
 }
-#else  /* CONFIG_GNRC_IPV6_NIB_ROUTER */
+#else  // CONFIG_GNRC_IPV6_NIB_ROUTER
 typedef int dont_be_pedantic;
-#endif /* CONFIG_GNRC_IPV6_NIB_ROUTER */
+#endif // CONFIG_GNRC_IPV6_NIB_ROUTER
 
-/** @} */
+/// @}

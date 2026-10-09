@@ -1,26 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_periph_init
- * @{
- *
- * @file
- * @brief       Init on board Buttons as input
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup     drivers_periph_init
+/// @{
+///
+/// @file
+/// @brief       Init on board Buttons as input
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include "board.h"
 #include "periph/gpio.h"
 #include "kernel_defines.h"
 
 __attribute__ ((weak))
-void button_init(void)
-{
+void button_init(void) {
     if (!IS_USED(MODULE_PERIPH_GPIO)) {
         return;
     }

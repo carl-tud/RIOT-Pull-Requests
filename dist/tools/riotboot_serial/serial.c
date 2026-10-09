@@ -1,13 +1,11 @@
-/*
- * Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * Copyright (C) 2018 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+// Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// Copyright (C) 2018 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
+//
+// @author  Kaspar Schleiser <kaspar@schleiser.de>
+// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -20,8 +18,7 @@
 #define BAUDRATE_DEFAULT    (B115200)
 #define TTY_TIMEOUT_MS      (500U)
 
-static int _set_serial_attribs(int fd, int speed, int parity)
-{
+static int _set_serial_attribs(int fd, int speed, int parity) {
     struct termios tty;
 
     memset(&tty, 0, sizeof(tty));
@@ -33,23 +30,23 @@ static int _set_serial_attribs(int fd, int speed, int parity)
     cfsetospeed(&tty, speed);
     cfsetispeed(&tty, speed);
 
-    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; /* 8-bit chars */
-                                            /* disable IGNBRK for mismatched speed
-                                             * tests; otherwise receive break */
-                                            /* as \000 chars */
-    tty.c_iflag &= ~IGNBRK;                 /* disable break processing */
-    tty.c_lflag = 0;                        /* no signaling chars, no echo, */
-                                            /* no canonical processing */
-    tty.c_oflag = 0;                        /* no remapping, no delays */
-    tty.c_cc[VMIN] = 0;                     /* read doesn't block */
-    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; /* 0.5 seconds read timeout */
-                                            /* in tenths of a second */
+    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; // 8-bit chars
+                                            // disable IGNBRK for mismatched speed
+                                            // tests; otherwise receive break
+                                            // as \000 chars
+    tty.c_iflag &= ~IGNBRK;                 // disable break processing
+    tty.c_lflag = 0;                        // no signaling chars, no echo,
+                                            // no canonical processing
+    tty.c_oflag = 0;                        // no remapping, no delays
+    tty.c_cc[VMIN] = 0;                     // read doesn't block
+    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; // 0.5 seconds read timeout
+                                            // in tenths of a second
 
-    tty.c_iflag &= ~(IXON | IXOFF | IXANY); /* shut off xon/xoff ctrl */
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
 
-    tty.c_cflag |= (CLOCAL | CREAD);        /* ignore modem controls, */
-                                            /* enable reading */
-    tty.c_cflag &= ~(PARENB | PARODD);      /* shut off parity */
+    tty.c_cflag |= (CLOCAL | CREAD);        // ignore modem controls,
+                                            // enable reading
+    tty.c_cflag &= ~(PARENB | PARODD);      // shut off parity
     tty.c_cflag |= parity;
     tty.c_cflag &= ~CSTOPB;
     tty.c_cflag &= ~CRTSCTS;
@@ -62,8 +59,7 @@ static int _set_serial_attribs(int fd, int speed, int parity)
     return 0;
 }
 
-static void _set_blocking(int fd, int should_block)
-{
+static void _set_blocking(int fd, int should_block) {
     struct termios tty;
 
     memset(&tty, 0, sizeof tty);
@@ -73,16 +69,15 @@ static void _set_blocking(int fd, int should_block)
     }
 
     tty.c_cc[VMIN] = should_block ? 1 : 0;
-    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; /* 0.5 seconds read timeout */
-                                            /* in tenths of a second */
+    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; // 0.5 seconds read timeout
+                                            // in tenths of a second
 
     if (tcsetattr(fd, TCSANOW, &tty) != 0) {
         perror("error setting term attributes");
     }
 }
 
-static unsigned _parse_baudrate(char *arg)
-{
+static unsigned _parse_baudrate(char *arg) {
 #define case_baudrate(val)  \
     case val:               \
         return B ## val
@@ -96,7 +91,7 @@ static unsigned _parse_baudrate(char *arg)
         case_baudrate(38400);
         case_baudrate(57600);
         case_baudrate(115200);
-        /* the following baudrates might not be available on all platforms */
+        // the following baudrates might not be available on all platforms
 #ifdef B230400
         case_baudrate(230400);
 #endif
@@ -143,8 +138,7 @@ static unsigned _parse_baudrate(char *arg)
     return 0;
 }
 
-int serial_open(int argc, char **argv)
-{
+int serial_open(int argc, char **argv) {
     unsigned baudrate = BAUDRATE_DEFAULT;
     int fd;
 

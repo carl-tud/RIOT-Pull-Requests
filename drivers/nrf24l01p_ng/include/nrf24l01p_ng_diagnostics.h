@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup drivers_nrf24l01p_ng
- * @{
- *
- * @file
- * @brief   Functions to print NRF24L01+ (NG) debug information
- *
- * @author  Fabian Hüßler <fabian.huessler@ovgu.de>
- */
+/// @ingroup drivers_nrf24l01p_ng
+/// @{
+///
+/// @file
+/// @brief   Functions to print NRF24L01+ (NG) debug information
+///
+/// @author  Fabian Hüßler <fabian.huessler@ovgu.de>
 
 #include "nrf24l01p_ng.h"
 
@@ -21,27 +17,21 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Print all NRF24L01+ register values
- *
- * @param[in] dev           NRF24L01+ device handle
- */
+/// @brief   Print all NRF24L01+ register values
+///
+/// @param[in] dev           NRF24L01+ device handle
 void nrf24l01p_ng_diagnostics_print_all_regs(const nrf24l01p_ng_t *dev);
 
-/**
- * @brief   Print NRF24L01+ device handle information
- *
- * @param[in] dev           NRF24L01+ device handle
- */
+/// @brief   Print NRF24L01+ device handle information
+///
+/// @param[in] dev           NRF24L01+ device handle
 void nrf24l01p_ng_diagnostics_print_dev_info(const nrf24l01p_ng_t *dev);
 
-/**
- * @brief   Print NRF24L01+ frame
- *
- * @param[in] dev           NRF24L01+ device handle
- * @param[in] frame         Frame
- * @param[in] len           Frame length
- */
+/// @brief   Print NRF24L01+ frame
+///
+/// @param[in] dev           NRF24L01+ device handle
+/// @param[in] frame         Frame
+/// @param[in] len           Frame length
 void nrf24l01p_ng_diagnostics_print_frame(const nrf24l01p_ng_t *dev,
                                           const void *frame, size_t len);
 
@@ -49,4 +39,4 @@ void nrf24l01p_ng_diagnostics_print_frame(const nrf24l01p_ng_t *dev,
 }
 #endif
 
-/** @} */
+/// @}

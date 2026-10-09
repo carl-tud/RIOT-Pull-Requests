@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the VEML6070 UV sensor
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the VEML6070 UV sensor
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -23,8 +19,7 @@
 #include "xtimer.h"
 #include "board.h"
 
-int main(void)
-{
+int main(void) {
     veml6070_t dev;
     int result;
 
@@ -45,7 +40,7 @@ int main(void)
                "\n+-------------------------------------+\n",
                veml6070_read_uv(&dev));
 
-        /* 2s delay before next measure*/
+        // 2s delay before next measure
         xtimer_sleep(2);
     }
 

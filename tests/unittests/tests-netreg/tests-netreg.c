@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 
 #include "embUnit.h"
@@ -23,18 +19,15 @@ static gnrc_netreg_entry_t entries[] = {
     GNRC_NETREG_ENTRY_INIT_PID(TEST_UINT16, TEST_UINT8 + 1)
 };
 
-static void set_up(void)
-{
+static void set_up(void) {
     gnrc_netreg_init();
 }
 
-static void test_netreg_register__inval_numof(void)
-{
+static void test_netreg_register__inval_numof(void) {
     TEST_ASSERT_EQUAL_INT(-EINVAL, gnrc_netreg_register(GNRC_NETTYPE_NUMOF, &entries[0]));
 }
 
-static void test_netreg_register__success(void)
-{
+static void test_netreg_register__success(void) {
     gnrc_netreg_acquire_shared();
     gnrc_netreg_entry_t *res = gnrc_netreg_lookup(GNRC_NETTYPE_TEST, TEST_UINT16);
 
@@ -50,8 +43,7 @@ static void test_netreg_register__success(void)
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_unregister__success(void)
-{
+void test_netreg_unregister__success(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_register(GNRC_NETTYPE_TEST, &entries[0]));
 
     gnrc_netreg_acquire_shared();
@@ -65,8 +57,7 @@ void test_netreg_unregister__success(void)
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_unregister__success2(void)
-{
+void test_netreg_unregister__success2(void) {
     gnrc_netreg_entry_t *res = NULL;
 
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_register(GNRC_NETTYPE_TEST, &entries[0]));
@@ -86,8 +77,7 @@ void test_netreg_unregister__success2(void)
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_unregister__success3(void)
-{
+void test_netreg_unregister__success3(void) {
     gnrc_netreg_entry_t *res = NULL;
 
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_register(GNRC_NETTYPE_TEST, &entries[0]));
@@ -107,24 +97,21 @@ void test_netreg_unregister__success3(void)
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_lookup__wrong_type_undef(void)
-{
+void test_netreg_lookup__wrong_type_undef(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_register(GNRC_NETTYPE_TEST, &entries[0]));
     gnrc_netreg_acquire_shared();
     TEST_ASSERT_NULL(gnrc_netreg_lookup(GNRC_NETTYPE_UNDEF, TEST_UINT16));
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_lookup__wrong_type_numof(void)
-{
+void test_netreg_lookup__wrong_type_numof(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_register(GNRC_NETTYPE_TEST, &entries[0]));
     gnrc_netreg_acquire_shared();
     TEST_ASSERT_NULL(gnrc_netreg_lookup(GNRC_NETTYPE_NUMOF, TEST_UINT16));
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_num__empty(void)
-{
+void test_netreg_num__empty(void) {
     gnrc_netreg_acquire_shared();
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_num(GNRC_NETTYPE_TEST, TEST_UINT16));
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_num(GNRC_NETTYPE_TEST, TEST_UINT16 + 1));
@@ -132,24 +119,21 @@ void test_netreg_num__empty(void)
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_num__wrong_type_undef(void)
-{
+void test_netreg_num__wrong_type_undef(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_register(GNRC_NETTYPE_TEST, &entries[0]));
     gnrc_netreg_acquire_shared();
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_num(GNRC_NETTYPE_UNDEF, TEST_UINT16));
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_num__wrong_type_numof(void)
-{
+void test_netreg_num__wrong_type_numof(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_register(GNRC_NETTYPE_TEST, &entries[0]));
     gnrc_netreg_acquire_shared();
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_num(GNRC_NETTYPE_NUMOF, TEST_UINT16));
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_num__2_entries(void)
-{
+void test_netreg_num__2_entries(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_register(GNRC_NETTYPE_TEST, &entries[0]));
 
     gnrc_netreg_acquire_shared();
@@ -163,16 +147,14 @@ void test_netreg_num__2_entries(void)
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_getnext__NULL(void)
-{
+void test_netreg_getnext__NULL(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_netreg_register(GNRC_NETTYPE_TEST, &entries[0]));
     gnrc_netreg_acquire_shared();
     TEST_ASSERT_NULL(gnrc_netreg_getnext(NULL));
     gnrc_netreg_release_shared();
 }
 
-void test_netreg_getnext__2_entries(void)
-{
+void test_netreg_getnext__2_entries(void) {
     gnrc_netreg_entry_t *res = NULL;
 
     test_netreg_num__2_entries();
@@ -182,8 +164,7 @@ void test_netreg_getnext__2_entries(void)
     gnrc_netreg_release_shared();
 }
 
-Test *tests_netreg_tests(void)
-{
+Test *tests_netreg_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_netreg_register__inval_numof),
         new_TestFixture(test_netreg_register__success),
@@ -205,8 +186,7 @@ Test *tests_netreg_tests(void)
     return (Test *)&netreg_tests;
 }
 
-void tests_netreg(void)
-{
+void tests_netreg(void) {
     TESTS_RUN(tests_netreg_tests());
 }
-/** @} */
+/// @}

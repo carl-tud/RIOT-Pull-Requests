@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <stdint.h>
 #include <string.h>
@@ -23,15 +19,13 @@ static gnrc_sixlowpan_frag_fb_t _fbs[CONFIG_GNRC_SIXLOWPAN_FRAG_FB_SIZE];
 static uint16_t _current_tag;
 
 #ifdef TEST_SUITES
-void gnrc_sixlowpan_frag_fb_reset(void)
-{
+void gnrc_sixlowpan_frag_fb_reset(void) {
     memset(_fbs, 0, sizeof(_fbs));
     _current_tag = 0;
 }
 #endif
 
-gnrc_sixlowpan_frag_fb_t *gnrc_sixlowpan_frag_fb_get(void)
-{
+gnrc_sixlowpan_frag_fb_t *gnrc_sixlowpan_frag_fb_get(void) {
     for (unsigned i = 0; i < CONFIG_GNRC_SIXLOWPAN_FRAG_FB_SIZE; i++) {
         if (_fbs[i].pkt == NULL) {
             return &_fbs[i];
@@ -43,8 +37,7 @@ gnrc_sixlowpan_frag_fb_t *gnrc_sixlowpan_frag_fb_get(void)
     return NULL;
 }
 
-gnrc_sixlowpan_frag_fb_t *gnrc_sixlowpan_frag_fb_get_by_tag(uint16_t tag)
-{
+gnrc_sixlowpan_frag_fb_t *gnrc_sixlowpan_frag_fb_get_by_tag(uint16_t tag) {
     for (unsigned i = 0; i < CONFIG_GNRC_SIXLOWPAN_FRAG_FB_SIZE; i++) {
         if ((_fbs[i].pkt != NULL) && (_fbs[i].tag == tag)) {
             return &_fbs[i];
@@ -53,9 +46,8 @@ gnrc_sixlowpan_frag_fb_t *gnrc_sixlowpan_frag_fb_get_by_tag(uint16_t tag)
     return NULL;
 }
 
-uint16_t gnrc_sixlowpan_frag_fb_next_tag(void)
-{
+uint16_t gnrc_sixlowpan_frag_fb_next_tag(void) {
     return (++_current_tag);
 }
 
-/** @} */
+/// @}

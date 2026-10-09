@@ -1,27 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_hts221
- * @{
- *
- * @file
- * @brief       HTS221 adaption to the RIOT SAUL interface
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     drivers_hts221
+/// @{
+///
+/// @file
+/// @brief       HTS221 adaption to the RIOT SAUL interface
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <string.h>
 
 #include "saul.h"
 #include "hts221.h"
 
-static int read_temp(const void *dev, phydat_t *res)
-{
+static int read_temp(const void *dev, phydat_t *res) {
     if (hts221_read_temperature((const hts221_t *)dev, &res->val[0]) != HTS221_OK) {
         return -ECANCELED;
     }
@@ -31,8 +26,7 @@ static int read_temp(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int read_hum(const void *dev, phydat_t *res)
-{
+static int read_hum(const void *dev, phydat_t *res) {
     if (hts221_read_humidity((const hts221_t *)dev, (uint16_t *)&res->val[0]) != HTS221_OK) {
         return -ECANCELED;
     }

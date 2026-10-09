@@ -1,8 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2014 Philipp Rosenkranz
- * SPDX-FileCopyrightText: 2013 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Philipp Rosenkranz
+// SPDX-FileCopyrightText: 2013 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <string.h>
 #include <stdio.h>
@@ -32,43 +30,35 @@ hashfp_t hashes[TESTS_BLOOM_HASHF] = {
                      (hashfp_t) dek_hash,
                     };
 
-static void load_dictionary_fixture(void)
-{
-    for (int i = 0; i < lenB; i++)
-    {
+static void load_dictionary_fixture(void) {
+    for (int i = 0; i < lenB; i++) {
         bloom_add(&bloom, (const uint8_t *) B[i], strlen(B[i]));
     }
 
 }
 
-static void set_up_bloom(void)
-{
+static void set_up_bloom(void) {
     bloom_init(&bloom, TESTS_BLOOM_BITS, bf, hashes, TESTS_BLOOM_HASHF);
 }
 
-static void tear_down_bloom(void)
-{
+static void tear_down_bloom(void) {
     bloom_del(&bloom);
 }
 
-static void test_bloom_parameters_bytes_hashf(void)
-{
+static void test_bloom_parameters_bytes_hashf(void) {
     TEST_ASSERT_EQUAL_INT(TESTS_BLOOM_BITS, bloom.m);
     TEST_ASSERT_EQUAL_INT(TESTS_BLOOM_HASHF, bloom.k);
 }
 
-static void test_bloom_based_on_dictionary_fixture(void)
-{
+static void test_bloom_based_on_dictionary_fixture(void) {
     int in = 0;
     int not_in = 0;
     int false_positive_rate = 0;
 
     load_dictionary_fixture();
 
-    for (int i = 0; i < lenA; i++)
-    {
-        if (bloom_check(&bloom, (const uint8_t *) A[i], strlen(A[i])))
-        {
+    for (int i = 0; i < lenA; i++) {
+        if (bloom_check(&bloom, (const uint8_t *) A[i], strlen(A[i]))) {
             in++;
         }
         else
@@ -83,8 +73,7 @@ static void test_bloom_based_on_dictionary_fixture(void)
     TEST_ASSERT(false_positive_rate < TESTS_BLOOM_FALSE_POS_RATE_THR * 1000);
 }
 
-Test *tests_bloom_tests(void)
-{
+Test *tests_bloom_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_bloom_parameters_bytes_hashf),
         new_TestFixture(test_bloom_based_on_dictionary_fixture),
@@ -95,7 +84,6 @@ Test *tests_bloom_tests(void)
     return (Test *)&bloom_tests;
 }
 
-void tests_bloom(void)
-{
+void tests_bloom(void) {
     TESTS_RUN(tests_bloom_tests());
 }

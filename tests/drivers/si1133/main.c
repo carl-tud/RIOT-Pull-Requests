@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 iosabi
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 iosabi
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the Si1133 UV, IR and visible light sensor.
- *
- * @author      iosabi <iosabi@protonmail.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the Si1133 UV, IR and visible light sensor.
+///
+/// @author      iosabi <iosabi@protonmail.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -24,13 +20,12 @@
 #include "si1133_params.h"
 #include "board.h"
 
-/* Helper macro to define _si1133_strerr */
+// Helper macro to define _si1133_strerr
 #define CASE_SI1133_ERROR_STRING(X)                                            \
     case X:                                                                    \
         return #X;
 
-static const char *_si1133_strerr(si1133_ret_code_t err)
-{
+static const char *_si1133_strerr(si1133_ret_code_t err) {
     switch (err) {
         CASE_SI1133_ERROR_STRING(SI1133_OK);
         CASE_SI1133_ERROR_STRING(SI1133_ERR_PARAMS);
@@ -56,8 +51,7 @@ static const char *_si1133_strerr(si1133_ret_code_t err)
 
 static si1133_t dev;
 
-int main(void)
-{
+int main(void) {
     uint32_t failures = 0;
 
     puts("Testing Si1133 in blocking mode:");
@@ -76,7 +70,7 @@ int main(void)
         SI1133_SENS_UV,
         SI1133_SENS_DEEP_UV,
     };
-    /* Test reading a sample one by one. */
+    // Test reading a sample one by one.
     for (uint32_t i = 0; i < ARRAY_SIZE(sensor_list); i++) {
         EXPECT_RET_CODE(SI1133_OK,
                         si1133_easy_configure(&dev, sensor_list[i], 0, 0));
@@ -90,7 +84,7 @@ int main(void)
         printf(" - sensor 0x%.2x: %" PRId32 "\n", (int)sensor_list[i], value);
     }
 
-    /* Test increasing the sw_gain until we get an overflow. */
+    // Test increasing the sw_gain until we get an overflow.
     for (uint32_t sw_gain = 0; sw_gain <= 7; sw_gain++) {
         uint8_t sensor_mask =
             SI1133_SENS_LARGE_IR |
@@ -107,9 +101,9 @@ int main(void)
         if (ret == SI1133_OK) {
             continue;
         }
-        /* If we didn't get an OK we should have an overflow condition. */
+        // If we didn't get an OK we should have an overflow condition.
         EXPECT_RET_CODE(SI1133_ERR_OVERFLOW, ret);
-        /* One of the values must be in overflow state. */
+        // One of the values must be in overflow state.
         bool overflowed = false;
         for (uint32_t i = 0; i < ARRAY_SIZE(values); i++) {
             overflowed = overflowed || values[i] == 0x7fffff;
@@ -126,21 +120,21 @@ int main(void)
             printf("NOTE: Overflow test OK.\n");
         }
     }
-    /* Reading any sensor after overflowing should not fail. */
+    // Reading any sensor after overflowing should not fail.
     EXPECT_RET_CODE(SI1133_OK,
                     si1133_easy_configure(&dev, SI1133_SENS_SMALL_IR, 1, 0));
     int32_t value;
     EXPECT_RET_CODE(SI1133_OK,
                     si1133_capture_sensors(&dev, &value, 1));
 
-    /* Test reading most sensors at once. The maximum is 6 sensors. */
+    // Test reading most sensors at once. The maximum is 6 sensors.
     uint32_t all = 0;
     for (uint32_t i = 0; i < ARRAY_SIZE(sensor_list); i++) {
         all |= sensor_list[i];
     }
     EXPECT_RET_CODE(SI1133_ERR_PARAMS, si1133_easy_configure(&dev, all, 1, 0));
 
-    /* All except one is lower than the limit of 6. */
+    // All except one is lower than the limit of 6.
     all &= ~SI1133_SENS_WHITE;
     EXPECT_RET_CODE(SI1133_OK, si1133_easy_configure(&dev, all, 1, 0));
     int32_t values[6];

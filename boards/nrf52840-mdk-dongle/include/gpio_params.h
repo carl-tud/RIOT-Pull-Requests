@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf52840-mdk-dongle
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- */
+/// @ingroup     boards_nrf52840-mdk-dongle
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    LED and button configuration for SAUL
- */
+/// @brief    LED and button configuration for SAUL
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
 #ifndef MODULE_SAUL_PWM
@@ -59,4 +53,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

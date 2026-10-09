@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-FileCopyrightText: 2015-2017 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- * SPDX-FileCopyrightText: 2013–2014 INRIA
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-FileCopyrightText: 2015-2017 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
+// SPDX-FileCopyrightText: 2013–2014 INRIA
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- *
- * @author Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+///
+/// @author Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
 
 #include <assert.h>
 #include <string.h>
@@ -52,17 +48,14 @@
 
 static char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
-/**
- * @brief   Checks validity of DIO control messages
- *
- * @param[in]   dio         The DIO control message
- * @param[in]   len         Length of the DIO control message
- *
- * @return  true, if @p dio is valid
- * @return  false, otherwise
- */
-static inline bool gnrc_rpl_validation_DIO(gnrc_rpl_dio_t *dio, uint16_t len)
-{
+/// @brief   Checks validity of DIO control messages
+///
+/// @param[in]   dio         The DIO control message
+/// @param[in]   len         Length of the DIO control message
+///
+/// @return  true, if @p dio is valid
+/// @return  false, otherwise
+static inline bool gnrc_rpl_validation_DIO(gnrc_rpl_dio_t *dio, uint16_t len) {
     uint16_t expected_len = sizeof(*dio) + sizeof(icmpv6_hdr_t);
 
     if (expected_len <= len) {
@@ -74,17 +67,14 @@ static inline bool gnrc_rpl_validation_DIO(gnrc_rpl_dio_t *dio, uint16_t len)
     return false;
 }
 
-/**
- * @brief   Checks validity of DIS control messages
- *
- * @param[in]   dis     The DIS control message
- * @param[in]   len     Length of the DIS control message
- *
- * @return  true, if @p dis is valid
- * @return  false, otherwise
- */
-static inline bool gnrc_rpl_validation_DIS(gnrc_rpl_dis_t *dis, uint16_t len)
-{
+/// @brief   Checks validity of DIS control messages
+///
+/// @param[in]   dis     The DIS control message
+/// @param[in]   len     Length of the DIS control message
+///
+/// @return  true, if @p dis is valid
+/// @return  false, otherwise
+static inline bool gnrc_rpl_validation_DIS(gnrc_rpl_dis_t *dis, uint16_t len) {
     uint16_t expected_len = sizeof(*dis) + sizeof(icmpv6_hdr_t);
 
     if (expected_len <= len) {
@@ -96,17 +86,14 @@ static inline bool gnrc_rpl_validation_DIS(gnrc_rpl_dis_t *dis, uint16_t len)
     return false;
 }
 
-/**
- * @brief   Checks validity of DAO control messages
- *
- * @param[in]   dao         The DAO control message
- * @param[in]   len         Length of the DAO control message
- *
- * @return  true, if @p dao is valid
- * @return  false, otherwise
- */
-static inline bool gnrc_rpl_validation_DAO(gnrc_rpl_dao_t *dao, uint16_t len)
-{
+/// @brief   Checks validity of DAO control messages
+///
+/// @param[in]   dao         The DAO control message
+/// @param[in]   len         Length of the DAO control message
+///
+/// @return  true, if @p dao is valid
+/// @return  false, otherwise
+static inline bool gnrc_rpl_validation_DAO(gnrc_rpl_dao_t *dao, uint16_t len) {
     uint16_t expected_len = sizeof(*dao) + sizeof(icmpv6_hdr_t);
 
     if (expected_len <= len) {
@@ -124,20 +111,17 @@ static inline bool gnrc_rpl_validation_DAO(gnrc_rpl_dao_t *dao, uint16_t len)
     return false;
 }
 
-/**
- * @brief   Checks validity of DAO-ACK control messages
- *
- * @param[in]   dao_ack     The DAO-ACK control message
- * @param[in]   len         Length of the DAO-ACK control message
- * @param[in]   dst         Pointer to the destination address of the IPv6 packet.
- *
- * @return  true, if @p dao_ack is valid
- * @return  false, otherwise
- */
+/// @brief   Checks validity of DAO-ACK control messages
+///
+/// @param[in]   dao_ack     The DAO-ACK control message
+/// @param[in]   len         Length of the DAO-ACK control message
+/// @param[in]   dst         Pointer to the destination address of the IPv6 packet.
+///
+/// @return  true, if @p dao_ack is valid
+/// @return  false, otherwise
 static inline bool gnrc_rpl_validation_DAO_ACK(gnrc_rpl_dao_ack_t *dao_ack,
                                                uint16_t len,
-                                               ipv6_addr_t *dst)
-{
+                                               ipv6_addr_t *dst) {
     uint16_t expected_len = sizeof(*dao_ack) + sizeof(icmpv6_hdr_t);
 
     if (ipv6_addr_is_multicast(dst)) {
@@ -160,8 +144,7 @@ static inline bool gnrc_rpl_validation_DAO_ACK(gnrc_rpl_dao_ack_t *dao_ack,
     return false;
 }
 
-static gnrc_netif_t *_find_interface_with_rpl_mcast(void)
-{
+static gnrc_netif_t *_find_interface_with_rpl_mcast(void) {
     gnrc_netif_t *netif = NULL;
 
     while ((netif = gnrc_netif_iter(netif))) {
@@ -175,8 +158,7 @@ static gnrc_netif_t *_find_interface_with_rpl_mcast(void)
 }
 
 void gnrc_rpl_send(gnrc_pktsnip_t *pkt, kernel_pid_t iface, ipv6_addr_t *src, ipv6_addr_t *dst,
-                   ipv6_addr_t *dodag_id)
-{
+                   ipv6_addr_t *dodag_id) {
     gnrc_netif_t *netif;
 
     (void)dodag_id;
@@ -234,8 +216,7 @@ void gnrc_rpl_send(gnrc_pktsnip_t *pkt, kernel_pid_t iface, ipv6_addr_t *src, ip
     }
 }
 
-static gnrc_pktsnip_t *_dio_dodag_conf_build(gnrc_pktsnip_t *pkt, gnrc_rpl_dodag_t *dodag)
-{
+static gnrc_pktsnip_t *_dio_dodag_conf_build(gnrc_pktsnip_t *pkt, gnrc_rpl_dodag_t *dodag) {
     gnrc_rpl_opt_dodag_conf_t *dodag_conf;
     gnrc_pktsnip_t *opt_snip;
 
@@ -262,8 +243,7 @@ static gnrc_pktsnip_t *_dio_dodag_conf_build(gnrc_pktsnip_t *pkt, gnrc_rpl_dodag
 }
 
 static gnrc_pktsnip_t *_dis_solicited_opt_build(gnrc_pktsnip_t *pkt,
-                                                gnrc_rpl_internal_opt_dis_solicited_t *opt)
-{
+                                                gnrc_rpl_internal_opt_dis_solicited_t *opt) {
     gnrc_pktsnip_t *opt_snip;
     size_t snip_size = sizeof(gnrc_rpl_opt_dis_solicited_t);
 
@@ -290,8 +270,7 @@ static gnrc_pktsnip_t *_dis_solicited_opt_build(gnrc_pktsnip_t *pkt,
 }
 
 static bool _get_pl_entry(unsigned iface, ipv6_addr_t *pfx,
-                          unsigned pfx_len, gnrc_ipv6_nib_pl_t *ple)
-{
+                          unsigned pfx_len, gnrc_ipv6_nib_pl_t *ple) {
     void *state = NULL;
 
     while (gnrc_ipv6_nib_pl_iter(iface, &state, ple)) {
@@ -302,8 +281,7 @@ static bool _get_pl_entry(unsigned iface, ipv6_addr_t *pfx,
     return false;
 }
 
-static gnrc_pktsnip_t *_dio_prefix_info_build(gnrc_pktsnip_t *pkt, gnrc_rpl_dodag_t *dodag)
-{
+static gnrc_pktsnip_t *_dio_prefix_info_build(gnrc_pktsnip_t *pkt, gnrc_rpl_dodag_t *dodag) {
     gnrc_ipv6_nib_pl_t ple;
     gnrc_rpl_opt_prefix_info_t *prefix_info;
     gnrc_pktsnip_t *opt_snip;
@@ -317,7 +295,7 @@ static gnrc_pktsnip_t *_dio_prefix_info_build(gnrc_pktsnip_t *pkt, gnrc_rpl_doda
     prefix_info = opt_snip->data;
     prefix_info->type = GNRC_RPL_OPT_PREFIX_INFO;
     prefix_info->length = GNRC_RPL_OPT_PREFIX_INFO_LEN;
-    /* auto-address configuration */
+    // auto-address configuration
     prefix_info->LAR_flags = GNRC_RPL_PREFIX_AUTO_ADDRESS_BIT;
     prefix_info->prefix_len = 64;
     if (_get_pl_entry(dodag->iface, &dodag->dodag_id, prefix_info->prefix_len,
@@ -348,8 +326,7 @@ static gnrc_pktsnip_t *_dio_prefix_info_build(gnrc_pktsnip_t *pkt, gnrc_rpl_doda
     return opt_snip;
 }
 
-void gnrc_rpl_send_DIO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination)
-{
+void gnrc_rpl_send_DIO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination) {
     if (inst == NULL) {
         DEBUG("RPL: Error - trying to send DIO without being part of a dodag.\n");
         return;
@@ -394,7 +371,7 @@ void gnrc_rpl_send_DIO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination)
     dio = pkt->data;
     dio->instance_id = inst->id;
     dio->version_number = dodag->version;
-    /* a leaf node announces an INFINITE_RANK */
+    // a leaf node announces an INFINITE_RANK
     dio->rank = ((dodag->node_status == GNRC_RPL_LEAF_NODE) ?
                  byteorder_htons(GNRC_RPL_INFINITE_RANK) : byteorder_htons(dodag->my_rank));
     dio->g_mop_prf = (dodag->grounded << GNRC_RPL_GROUNDED_SHIFT) |
@@ -421,22 +398,21 @@ void gnrc_rpl_send_DIO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination)
 }
 
 void gnrc_rpl_send_DIS(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination,
-                       gnrc_rpl_internal_opt_t **options, size_t num_opts)
-{
+                       gnrc_rpl_internal_opt_t **options, size_t num_opts) {
     gnrc_pktsnip_t *pkt = NULL, *tmp;
     gnrc_rpl_dis_t *dis;
 
-    /* No options provided to be attached to the DIS, so we PadN 2 bytes */
+    // No options provided to be attached to the DIS, so we PadN 2 bytes
     if (options == NULL || num_opts == 0) {
         assert(!options);
         gnrc_pktsnip_t *opt_snip;
         size_t snip_size = 0;
-        /* The DIS is too small so that wireshark complains about an incorrect
-         * ethernet frame check sequence.
-         * To trick it we PadN 2 additional bytes, i.e. 4 bytes in sum. */
+        // The DIS is too small so that wireshark complains about an incorrect
+        // ethernet frame check sequence.
+        // To trick it we PadN 2 additional bytes, i.e. 4 bytes in sum.
         uint8_t padding[] = {
-            GNRC_RPL_OPT_PADN,  /* Option Type */
-            0x02,               /* Number of extra padding bytes */
+            GNRC_RPL_OPT_PADN,  // Option Type
+            0x02,               // Number of extra padding bytes
             0x00, 0x00
         };
 
@@ -487,14 +463,13 @@ void gnrc_rpl_send_DIS(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination,
     gnrc_rpl_send(pkt, KERNEL_PID_UNDEF, NULL, destination, (inst? &(inst->dodag.dodag_id) : NULL));
 }
 
-static inline uint32_t _sec_to_ms(uint32_t sec)
-{
+static inline uint32_t _sec_to_ms(uint32_t sec) {
     if (sec == UINT32_MAX) {
-        /* infinite stays infinite */
+        // infinite stays infinite
         return UINT32_MAX;
     }
     else if (sec > ((UINT32_MAX - 1) / MS_PER_SEC)) {
-        /* truncate long intervals to largest possible value */
+        // truncate long intervals to largest possible value
         return UINT32_MAX - 1;
     }
     else {
@@ -502,16 +477,14 @@ static inline uint32_t _sec_to_ms(uint32_t sec)
     }
 }
 
-static inline char *_ip_addr_str(ipv6_addr_t *addr)
-{
+static inline char *_ip_addr_str(ipv6_addr_t *addr) {
     return ipv6_addr_to_str(addr_str, addr, sizeof(addr_str));
 }
 
-/** @todo allow target prefixes in target options to be of variable length */
+/// @todo allow target prefixes in target options to be of variable length
 static bool _parse_options(int msg_type, gnrc_rpl_instance_t *inst, gnrc_rpl_opt_t *opt,
                            uint16_t len,
-                           ipv6_addr_t *src, uint32_t *included_opts)
-{
+                           ipv6_addr_t *src, uint32_t *included_opts) {
     uint16_t len_parsed = 0;
     gnrc_rpl_opt_target_t *first_target = NULL;
     gnrc_rpl_dodag_t *dodag = &inst->dodag;
@@ -573,7 +546,7 @@ static bool _parse_options(int msg_type, gnrc_rpl_instance_t *inst, gnrc_rpl_opt
             }
 
             gnrc_rpl_opt_prefix_info_t *pi = (gnrc_rpl_opt_prefix_info_t *)opt;
-            /* check for the auto address-configuration flag */
+            // check for the auto address-configuration flag
             gnrc_netif_t *netif = gnrc_netif_get_by_pid(dodag->iface);
 
             assert(netif != NULL);
@@ -582,10 +555,10 @@ static bool _parse_options(int msg_type, gnrc_rpl_instance_t *inst, gnrc_rpl_opt
                 break;
             }
             ipv6_addr_set_aiid(&pi->prefix, iid.uint8);
-            /* TODO: find a way to do this with DAD (i.e. state != VALID) */
+            // TODO: find a way to do this with DAD (i.e. state != VALID)
             gnrc_netif_ipv6_addr_add_internal(netif, &pi->prefix, pi->prefix_len,
                                               GNRC_NETIF_IPV6_ADDRS_FLAGS_STATE_VALID);
-            /* set lifetimes */
+            // set lifetimes
             gnrc_ipv6_nib_pl_set(netif->pid, &pi->prefix, pi->prefix_len,
                                  _sec_to_ms(byteorder_ntohl(pi->valid_lifetime)),
                                  _sec_to_ms(byteorder_ntohl(pi->pref_lifetime)));
@@ -596,27 +569,27 @@ static bool _parse_options(int msg_type, gnrc_rpl_instance_t *inst, gnrc_rpl_opt
             bit_set32(included_opts, GNRC_RPL_OPT_SOLICITED_INFO);
             gnrc_rpl_opt_dis_solicited_t *sol = (gnrc_rpl_opt_dis_solicited_t *)opt;
 
-            /* check expected length */
+            // check expected length
             if (sol->length != GNRC_RPL_DIS_SOLICITED_INFO_LENGTH) {
                 DEBUG("RPL: RPL SOLICITED INFO option, unexpected length: %d\n", sol->length);
                 return false;
             }
 
-            /* check the DODAG Version */
+            // check the DODAG Version
             if ((sol->VID_flags & GNRC_RPL_DIS_SOLICITED_INFO_FLAG_V)
                 && (sol->version_number != inst->dodag.version)) {
                 DEBUG("RPL: RPL SOLICITED INFO option, ignore DIS cause: DODAG Version mismatch\n");
                 return false;
             }
 
-            /* check the Instance ID */
+            // check the Instance ID
             if ((sol->VID_flags & GNRC_RPL_DIS_SOLICITED_INFO_FLAG_I)
                 && (sol->instance_id != inst->id)) {
                 DEBUG("RPL: RPL SOLICITED INFO option, ignore DIS cause: InstanceID mismatch\n");
                 return false;
             }
 
-            /* check the DODAG ID */
+            // check the DODAG ID
             if (sol->VID_flags & GNRC_RPL_DIS_SOLICITED_INFO_FLAG_D) {
                 if (!ipv6_addr_equal(&sol->dodag_id, &inst->dodag.dodag_id)) {
                     DEBUG("RPL: RPL SOLICITED INFO option, ignore DIS cause: DODAGID mismatch\n");
@@ -685,8 +658,7 @@ static bool _parse_options(int msg_type, gnrc_rpl_instance_t *inst, gnrc_rpl_opt
 }
 
 void gnrc_rpl_recv_DIS(gnrc_rpl_dis_t *dis, kernel_pid_t iface, ipv6_addr_t *src,
-                       ipv6_addr_t *dst, uint16_t len)
-{
+                       ipv6_addr_t *dst, uint16_t len) {
     (void)iface;
 
 #ifdef MODULE_NETSTATS_RPL
@@ -702,7 +674,7 @@ void gnrc_rpl_recv_DIS(gnrc_rpl_dis_t *dis, kernel_pid_t iface, ipv6_addr_t *src
     if (ipv6_addr_is_multicast(dst)) {
         for (uint8_t i = 0; i < GNRC_RPL_INSTANCES_NUMOF; ++i) {
             if ((gnrc_rpl_instances[i].state != 0)
-                /* a leaf node should only react to unicast DIS */
+                // a leaf node should only react to unicast DIS
                 && (gnrc_rpl_instances[i].dodag.node_status != GNRC_RPL_LEAF_NODE)) {
 #ifdef MODULE_GNRC_RPL_P2P
                 if (gnrc_rpl_instances[i].mop == GNRC_RPL_P2P_MOP) {
@@ -732,27 +704,24 @@ void gnrc_rpl_recv_DIS(gnrc_rpl_dis_t *dis, kernel_pid_t iface, ipv6_addr_t *src
     }
 }
 
-/**
- * @brief   Handles the options from a received DIO packet.
- *
- * @param[in] inst      The @p RPL instance that the DIO belongs to.
- * @param[in] dio       The @p DIO packet.
- * @param[in] src       The address of the sender.
- * @param[in] len       The length of the whole DIO packet.
- * @param[in] is_new    Whether the DIO belongs to an existing or newly created DODAG.
- *
- * @retval              True on success.
- * @retval              False if parsing of the options failed.
- * @retval              False if the DODAG is new and the GNRC_RPL_OPT_DODAG_CONF option
- *                      is required but missing.
- */
+/// @brief   Handles the options from a received DIO packet.
+///
+/// @param[in] inst      The @p RPL instance that the DIO belongs to.
+/// @param[in] dio       The @p DIO packet.
+/// @param[in] src       The address of the sender.
+/// @param[in] len       The length of the whole DIO packet.
+/// @param[in] is_new    Whether the DIO belongs to an existing or newly created DODAG.
+///
+/// @retval              True on success.
+/// @retval              False if parsing of the options failed.
+/// @retval              False if the DODAG is new and the GNRC_RPL_OPT_DODAG_CONF option
+///                      is required but missing.
 static bool _handle_DIO_opts(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *dio, ipv6_addr_t *src,
-                             uint16_t len, bool is_new)
-{
+                             uint16_t len, bool is_new) {
     gnrc_rpl_opt_t *opts = (gnrc_rpl_opt_t *)(dio + 1);
     uint32_t included_opts = 0;
 
-    /* subtract length of ICMPv6 header and DIO base object fields to get length of DIO options */
+    // subtract length of ICMPv6 header and DIO base object fields to get length of DIO options
     size_t opt_len = len - sizeof(gnrc_rpl_dio_t) - sizeof(icmpv6_hdr_t);
 
     if (!_parse_options(GNRC_RPL_ICMPV6_CODE_DIO, inst, opts, opt_len, src, &included_opts)) {
@@ -775,21 +744,18 @@ static bool _handle_DIO_opts(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *dio, ipv
     return true;
 }
 
-/**
- * @brief   Updates a DODAG with the info from a received DIO packet.
- *
- * @param[in] inst      The @p RPL instance of the DODAG that the DIO belongs to.
- * @param[in] dio       The @p DIO packet.
- * @param[in] src       The address of the sender.
- * @param[in] len       The length of the whole DIO packet.
- * @param[in] is_new    Whether the DIO belongs to an existing or newly created DODAG.
- *
- * @retval              True on success.
- * @retval              False otherwise.
- */
+/// @brief   Updates a DODAG with the info from a received DIO packet.
+///
+/// @param[in] inst      The @p RPL instance of the DODAG that the DIO belongs to.
+/// @param[in] dio       The @p DIO packet.
+/// @param[in] src       The address of the sender.
+/// @param[in] len       The length of the whole DIO packet.
+/// @param[in] is_new    Whether the DIO belongs to an existing or newly created DODAG.
+///
+/// @retval              True on success.
+/// @retval              False otherwise.
 static bool _update_dodag_from_DIO(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *dio, ipv6_addr_t *src,
-                                   uint16_t len, bool is_new)
-{
+                                   uint16_t len, bool is_new) {
     gnrc_rpl_dodag_t *dodag = &inst->dodag;
     gnrc_rpl_parent_t *parent = NULL;
 
@@ -798,7 +764,7 @@ static bool _update_dodag_from_DIO(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *di
         return false;
     }
 
-    /* gnrc_rpl_parent_add_by_addr should have set this already */
+    // gnrc_rpl_parent_add_by_addr should have set this already
     assert(parent != NULL);
 
     if (is_new) {
@@ -816,7 +782,7 @@ static bool _update_dodag_from_DIO(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *di
     parent->rank = byteorder_ntohs(dio->rank);
     gnrc_rpl_parent_update(dodag, parent);
 
-    /* sender of incoming DIO is not preferred parent of mine (anymore) */
+    // sender of incoming DIO is not preferred parent of mine (anymore)
     if (parent != dodag->parents) {
         if ((byteorder_ntohs(dio->rank) == GNRC_RPL_INFINITE_RANK)
             && (dodag->my_rank != GNRC_RPL_INFINITE_RANK)) {
@@ -831,8 +797,8 @@ static bool _update_dodag_from_DIO(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *di
     }
 
     if (is_new) {
-        /* if there was no address created manually or by a PIO on the interface,
-         * leave this DODAG */
+        // if there was no address created manually or by a PIO on the interface,
+        // leave this DODAG
         gnrc_netif_t *netif = gnrc_netif_get_by_pid(dodag->iface);
         if (gnrc_netif_ipv6_addr_match(netif, &dodag->dodag_id) < 0) {
             DEBUG("RPL: no IPv6 address configured on interface %i to match the "
@@ -853,18 +819,15 @@ static bool _update_dodag_from_DIO(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *di
     return true;
 }
 
-/**
- * @brief   Handles a received DIO message for a new DODAG.
- *
- * @param[in] inst      The @p RPL instance of the DODAG.
- * @param[in] dio       The received @p DIO packet.
- * @param[in] iface     The interface that the DIO was received on.
- * @param[in] src       The address of the sender.
- * @param[in] len       The length of the whole DIO packet.
- */
+/// @brief   Handles a received DIO message for a new DODAG.
+///
+/// @param[in] inst      The @p RPL instance of the DODAG.
+/// @param[in] dio       The received @p DIO packet.
+/// @param[in] iface     The interface that the DIO was received on.
+/// @param[in] src       The address of the sender.
+/// @param[in] len       The length of the whole DIO packet.
 void _recv_DIO_for_new_dodag(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *dio, kernel_pid_t iface,
-                             ipv6_addr_t *src, uint16_t len)
-{
+                             ipv6_addr_t *src, uint16_t len) {
     gnrc_netif_t *netif;
 
     if (byteorder_ntohs(dio->rank) == GNRC_RPL_INFINITE_RANK) {
@@ -895,25 +858,22 @@ void _recv_DIO_for_new_dodag(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *dio, ker
 
 }
 
-/**
- * @brief   Handles a received DIO message for a DODAG that is different from the
- *          one we currently participate in.
- *
- * @param[in] inst      The @p RPL instance of the current DODAG.
- * @param[in] dio       The @p DIO packet for the other DODAG.
- * @param[in] src       The address of the sender.
- * @param[in] len       The length of the DIO packet.
- */
+/// @brief   Handles a received DIO message for a DODAG that is different from the
+///          one we currently participate in.
+///
+/// @param[in] inst      The @p RPL instance of the current DODAG.
+/// @param[in] dio       The @p DIO packet for the other DODAG.
+/// @param[in] src       The address of the sender.
+/// @param[in] len       The length of the DIO packet.
 static void _recv_DIO_for_different_dodag(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *dio,
                                           kernel_pid_t iface,
-                                          ipv6_addr_t *src, uint16_t len)
-{
-    /* DIO received from a different DODAG */
+                                          ipv6_addr_t *src, uint16_t len) {
+    // DIO received from a different DODAG
     DEBUG("RPL: DIO received from another DODAG, but same instance.\n");
 
     gnrc_rpl_dodag_t *dodag = &inst->dodag;
 
-    /* clear parent from old dodag if present */
+    // clear parent from old dodag if present
     gnrc_rpl_parent_t *parent = dodag->parents;
     while (parent) {
         if (ipv6_addr_equal(&parent->addr, src)) {
@@ -923,7 +883,7 @@ static void _recv_DIO_for_different_dodag(gnrc_rpl_instance_t *inst, gnrc_rpl_di
         parent = parent->next;
     }
 
-    /* decide between old and new dodag */
+    // decide between old and new dodag
     if (gnrc_rpl_get_of0()->which_dodag(dodag, dio) > 0) {
         DEBUG("RPL: switch to new DODAG.\n");
         gnrc_rpl_dodag_remove(dodag);
@@ -931,18 +891,15 @@ static void _recv_DIO_for_different_dodag(gnrc_rpl_instance_t *inst, gnrc_rpl_di
     }
 }
 
-/**
- * @brief   Handles a received DIO message for an existing DODAG.
- *
- * @param[in] inst      The @p RPL instance of the DODAG.
- * @param[in] dio       The received @p DIO packet.
- * @param[in] src       The address of the sender.
- * @param[in] len       The length of the DIO packet.
- */
+/// @brief   Handles a received DIO message for an existing DODAG.
+///
+/// @param[in] inst      The @p RPL instance of the DODAG.
+/// @param[in] dio       The received @p DIO packet.
+/// @param[in] src       The address of the sender.
+/// @param[in] len       The length of the DIO packet.
 static void _recv_DIO_for_existing_dodag(gnrc_rpl_instance_t *inst, gnrc_rpl_dio_t *dio,
                                          ipv6_addr_t *src,
-                                         uint16_t len)
-{
+                                         uint16_t len) {
     gnrc_rpl_dodag_t *dodag = &inst->dodag;
 
     if (inst->mop != ((dio->g_mop_prf >> GNRC_RPL_MOP_SHIFT) & GNRC_RPL_SHIFTED_MOP_MASK)) {
@@ -970,18 +927,15 @@ static void _recv_DIO_for_existing_dodag(gnrc_rpl_instance_t *inst, gnrc_rpl_dio
     _update_dodag_from_DIO(inst, dio, src, len, false);
 }
 
-/**
- * @brief   Handles a received DIO message.
- *
- * @param[in] dio       The received @p DIO packet.
- * @param[in] iface     The interface that the DIO was received on.
- * @param[in] src       The source address of the received packet.
- * @param[in] dst       The destination address of the received packet.
- * @param[in] len       The length of the DIO packet.
- */
+/// @brief   Handles a received DIO message.
+///
+/// @param[in] dio       The received @p DIO packet.
+/// @param[in] iface     The interface that the DIO was received on.
+/// @param[in] src       The source address of the received packet.
+/// @param[in] dst       The destination address of the received packet.
+/// @param[in] len       The length of the DIO packet.
 void gnrc_rpl_recv_DIO(gnrc_rpl_dio_t *dio, kernel_pid_t iface, ipv6_addr_t *src, ipv6_addr_t *dst,
-                       uint16_t len)
-{
+                       uint16_t len) {
     (void)dst;
     gnrc_rpl_instance_t *inst = NULL;
 
@@ -1012,8 +966,7 @@ void gnrc_rpl_recv_DIO(gnrc_rpl_dio_t *dio, kernel_pid_t iface, ipv6_addr_t *src
 }
 
 static gnrc_pktsnip_t *_dao_target_build(gnrc_pktsnip_t *pkt, ipv6_addr_t *addr,
-                                         uint8_t prefix_length)
-{
+                                         uint8_t prefix_length) {
     gnrc_rpl_opt_target_t *target;
     gnrc_pktsnip_t *opt_snip;
 
@@ -1032,8 +985,7 @@ static gnrc_pktsnip_t *_dao_target_build(gnrc_pktsnip_t *pkt, ipv6_addr_t *addr,
     return opt_snip;
 }
 
-static gnrc_pktsnip_t *_dao_transit_build(gnrc_pktsnip_t *pkt, uint8_t lifetime, bool external)
-{
+static gnrc_pktsnip_t *_dao_transit_build(gnrc_pktsnip_t *pkt, uint8_t lifetime, bool external) {
     gnrc_rpl_opt_transit_t *transit;
     gnrc_pktsnip_t *opt_snip;
 
@@ -1054,8 +1006,7 @@ static gnrc_pktsnip_t *_dao_transit_build(gnrc_pktsnip_t *pkt, uint8_t lifetime,
     return opt_snip;
 }
 
-void gnrc_rpl_send_DAO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, uint8_t lifetime)
-{
+void gnrc_rpl_send_DAO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, uint8_t lifetime) {
     gnrc_rpl_dodag_t *dodag;
 
     if (inst == NULL) {
@@ -1087,7 +1038,7 @@ void gnrc_rpl_send_DAO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, uint
     gnrc_pktsnip_t *pkt = NULL, *tmp = NULL;
     gnrc_rpl_dao_t *dao;
 
-    /* find my address */
+    // find my address
     ipv6_addr_t *me = NULL;
     gnrc_netif_t *netif = gnrc_netif_get_by_prefix(&dodag->dodag_id);
     int idx;
@@ -1103,8 +1054,8 @@ void gnrc_rpl_send_DAO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, uint
     }
     me = &netif->ipv6.addrs[idx];
 
-    /* add external and RPL FT entries */
-    /* TODO: nib: dropped support for external transit options for now */
+    // add external and RPL FT entries
+    // TODO: nib: dropped support for external transit options for now
     void *ft_state = NULL;
     gnrc_ipv6_nib_ft_t fte;
     while (gnrc_ipv6_nib_ft_iter(NULL, dodag->iface, &ft_state, &fte)) {
@@ -1126,7 +1077,7 @@ void gnrc_rpl_send_DAO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, uint
         }
     }
 
-    /* add own address */
+    // add own address
     DEBUG("RPL: Send DAO - building target %s/128\n", _ip_addr_str(me));
     if ((pkt = _dao_target_build(pkt, me, IPV6_ADDR_BIT_LEN)) == NULL) {
         DEBUG("RPL: Send DAO - no space left in packet buffer\n");
@@ -1154,14 +1105,14 @@ void gnrc_rpl_send_DAO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, uint
     dao = pkt->data;
     dao->instance_id = inst->id;
     if (local_instance) {
-        /* set the D flag to indicate that a DODAG id is present */
+        // set the D flag to indicate that a DODAG id is present
         dao->k_d_flags = GNRC_RPL_DAO_D_BIT;
     }
     else {
         dao->k_d_flags = 0;
     }
 
-    /* set the K flag to indicate that ACKs are required */
+    // set the K flag to indicate that ACKs are required
     dao->k_d_flags |= GNRC_RPL_DAO_K_BIT;
     dao->dao_sequence = dodag->dao_seq;
     dao->reserved = 0;
@@ -1184,8 +1135,7 @@ void gnrc_rpl_send_DAO(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, uint
     dodag->dao_seq = GNRC_RPL_COUNTER_INCREMENT(dodag->dao_seq);
 }
 
-void gnrc_rpl_send_DAO_ACK(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, uint8_t seq)
-{
+void gnrc_rpl_send_DAO_ACK(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, uint8_t seq) {
     gnrc_rpl_dodag_t *dodag = NULL;
 
     if (inst == NULL) {
@@ -1215,7 +1165,7 @@ void gnrc_rpl_send_DAO_ACK(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, 
 
     dao_ack->instance_id = inst->id;
     if (local_instance) {
-        /* set the D flag to indicate that a DODAG id is present */
+        // set the D flag to indicate that a DODAG id is present
         dao_ack->d_reserved = GNRC_RPL_DAO_ACK_D_BIT;
         memcpy((dao_ack + 1), &dodag->dodag_id, sizeof(ipv6_addr_t));
     }
@@ -1235,8 +1185,7 @@ void gnrc_rpl_send_DAO_ACK(gnrc_rpl_instance_t *inst, ipv6_addr_t *destination, 
 }
 
 void gnrc_rpl_recv_DAO(gnrc_rpl_dao_t *dao, kernel_pid_t iface, ipv6_addr_t *src, ipv6_addr_t *dst,
-                       uint16_t len)
-{
+                       uint16_t len) {
     (void)iface;
     (void)dst;
 
@@ -1264,7 +1213,7 @@ void gnrc_rpl_recv_DAO(gnrc_rpl_dao_t *dao, kernel_pid_t iface, ipv6_addr_t *src
 
     len -= (sizeof(gnrc_rpl_dao_t) + sizeof(icmpv6_hdr_t));
 
-    /* check if the D flag is set before accessing the DODAG id */
+    // check if the D flag is set before accessing the DODAG id
     if ((dao->k_d_flags & GNRC_RPL_DAO_D_BIT)) {
         if (!ipv6_addr_equal(&dodag->dodag_id, (ipv6_addr_t *)(dao + 1))) {
             DEBUG("RPL: DAO with unknown DODAG id (%s)\n", _ip_addr_str((ipv6_addr_t *)(dao + 1)));
@@ -1274,7 +1223,7 @@ void gnrc_rpl_recv_DAO(gnrc_rpl_dao_t *dao, kernel_pid_t iface, ipv6_addr_t *src
         len -= sizeof(ipv6_addr_t);
     }
 
-    /* a leaf node should not parse DAOs */
+    // a leaf node should not parse DAOs
     if (dodag->node_status == GNRC_RPL_LEAF_NODE) {
         return;
     }
@@ -1291,7 +1240,7 @@ void gnrc_rpl_recv_DAO(gnrc_rpl_dao_t *dao, kernel_pid_t iface, ipv6_addr_t *src
         return;
     }
 
-    /* send a DAO-ACK if K flag is set */
+    // send a DAO-ACK if K flag is set
     if (dao->k_d_flags & GNRC_RPL_DAO_K_BIT) {
         gnrc_rpl_send_DAO_ACK(inst, src, dao->dao_sequence);
     }
@@ -1300,8 +1249,7 @@ void gnrc_rpl_recv_DAO(gnrc_rpl_dao_t *dao, kernel_pid_t iface, ipv6_addr_t *src
 }
 
 void gnrc_rpl_recv_DAO_ACK(gnrc_rpl_dao_ack_t *dao_ack, kernel_pid_t iface, ipv6_addr_t *src,
-                           ipv6_addr_t *dst, uint16_t len)
-{
+                           ipv6_addr_t *dst, uint16_t len) {
     (void)iface;
     (void)src;
     (void)dst;
@@ -1327,7 +1275,7 @@ void gnrc_rpl_recv_DAO_ACK(gnrc_rpl_dao_ack_t *dao_ack, kernel_pid_t iface, ipv6
 
     dodag = &inst->dodag;
 
-    /* check if the D flag is set before accessing the DODAG id */
+    // check if the D flag is set before accessing the DODAG id
     if ((dao_ack->d_reserved & GNRC_RPL_DAO_ACK_D_BIT)) {
         if (!ipv6_addr_equal(&dodag->dodag_id, (ipv6_addr_t *)(dao_ack + 1))) {
             DEBUG("RPL: DAO-ACK with unknown DODAG id (%s)\n",
@@ -1346,6 +1294,4 @@ void gnrc_rpl_recv_DAO_ACK(gnrc_rpl_dao_ack_t *dao_ack, kernel_pid_t iface, ipv6
     gnrc_rpl_long_delay_dao(dodag);
 }
 
-/**
- * @}
- */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_tps6274x
- *
- * @{
- * @file
- * @brief       Default configuration for TPS6274x DC-DC Converter
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- */
+/// @ingroup     drivers_tps6274x
+///
+/// @{
+/// @file
+/// @brief       Default configuration for TPS6274x DC-DC Converter
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
 
 #include "board.h"
 #include "tps6274x.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the TPS6274x
- * @{
- */
+/// @name    Set default configuration parameters for the TPS6274x
+/// @{
 #ifndef TPS6274X_PARAMS
 #define TPS6274X_PARAMS { .vsel = { GPIO_PIN(0, 0), \
                                     GPIO_PIN(0, 1), \
@@ -35,11 +29,9 @@ extern "C" {
                          .ctrl_pin = GPIO_PIN(0, 4) \
                         }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure TPS6274X
- */
+/// @brief   Configure TPS6274X
 static const tps6274x_params_t tps6274x_params[] =
 {
     TPS6274X_PARAMS
@@ -49,4 +41,4 @@ static const tps6274x_params_t tps6274x_params[] =
 }
 #endif
 
-/** @} */
+/// @}

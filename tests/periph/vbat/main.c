@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for backup battery monitoring
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for backup battery monitoring
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -22,8 +18,7 @@
 #include "ztimer.h"
 #include "periph/vbat.h"
 
-int main(void)
-{
+int main(void) {
     puts("\nRIOT backup battery monitoring test\n");
     puts("This test will sample the backup battery once a second\n\n");
 

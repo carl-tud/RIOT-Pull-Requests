@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <inttypes.h>
 
@@ -28,8 +24,7 @@
 #define GLOBAL_PREFIX_LEN   (30)
 #define IFACE               (6)
 
-static void set_up(void)
-{
+static void set_up(void) {
     evtimer_event_t *tmp;
 
     for (evtimer_event_t *ptr = _nib_evtimer.events;
@@ -40,26 +35,20 @@ static void set_up(void)
     _nib_init();
 }
 
-/*
- * Tries to create a prefix list entry with the unspecified address (::) as
- * prefix.
- * Expected result: gnrc_ipv6_nib_pl_set() returns -EINVAL
- */
-static void test_nib_pl_set__EINVAL_unspec_addr(void)
-{
+// Tries to create a prefix list entry with the unspecified address (::) as
+// prefix.
+// Expected result: gnrc_ipv6_nib_pl_set() returns -EINVAL
+static void test_nib_pl_set__EINVAL_unspec_addr(void) {
     TEST_ASSERT_EQUAL_INT(-EINVAL, gnrc_ipv6_nib_pl_set(IFACE,
                                                         &ipv6_addr_unspecified,
                                                         GLOBAL_PREFIX_LEN,
                                                         UINT32_MAX, UINT32_MAX));
 }
 
-/*
- * Tries to create a prefix list entry with a link-local prefix (fe80::) as
- * prefix.
- * Expected result: gnrc_ipv6_nib_pl_set() returns -EINVAL
- */
-static void test_nib_pl_set__EINVAL_link_local(void)
-{
+// Tries to create a prefix list entry with a link-local prefix (fe80::) as
+// prefix.
+// Expected result: gnrc_ipv6_nib_pl_set() returns -EINVAL
+static void test_nib_pl_set__EINVAL_link_local(void) {
     TEST_ASSERT_EQUAL_INT(-EINVAL, gnrc_ipv6_nib_pl_set(IFACE,
                                                         &ipv6_addr_link_local_prefix,
                                                         GLOBAL_PREFIX_LEN,
@@ -67,13 +56,10 @@ static void test_nib_pl_set__EINVAL_link_local(void)
                                                         UINT32_MAX));
 }
 
-/*
- * Tries to create a prefix list entry with the multicast address as
- * prefix.
- * Expected result: gnrc_ipv6_nib_pl_set() returns -EINVAL
- */
-static void test_nib_pl_set__EINVAL_mc_addr(void)
-{
+// Tries to create a prefix list entry with the multicast address as
+// prefix.
+// Expected result: gnrc_ipv6_nib_pl_set() returns -EINVAL
+static void test_nib_pl_set__EINVAL_mc_addr(void) {
     TEST_ASSERT_EQUAL_INT(-EINVAL, gnrc_ipv6_nib_pl_set(IFACE,
                                                         &ipv6_addr_all_nodes_link_local,
                                                         GLOBAL_PREFIX_LEN,
@@ -81,12 +67,9 @@ static void test_nib_pl_set__EINVAL_mc_addr(void)
                                                         UINT32_MAX));
 }
 
-/*
- * Tries to create multiple prefix list entries with prefix length 0 and > 128.
- * Expected result: gnrc_ipv6_nib_pl_set() always returns -EINVAL
- */
-static void test_nib_pl_set__EINVAL_pfx_len(void)
-{
+// Tries to create multiple prefix list entries with prefix length 0 and > 128.
+// Expected result: gnrc_ipv6_nib_pl_set() always returns -EINVAL
+static void test_nib_pl_set__EINVAL_pfx_len(void) {
     static const ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX } } };
     TEST_ASSERT_EQUAL_INT(-EINVAL, gnrc_ipv6_nib_pl_set(IFACE, &pfx, 0,
                                                         UINT32_MAX,
@@ -95,17 +78,14 @@ static void test_nib_pl_set__EINVAL_pfx_len(void)
 
 #if CONFIG_GNRC_IPV6_NIB_NUMOF < CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF
 #define MAX_NUMOF   (CONFIG_GNRC_IPV6_NIB_NUMOF)
-#else /* CONFIG_GNRC_IPV6_NIB_NUMOF < CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF */
+#else // CONFIG_GNRC_IPV6_NIB_NUMOF < CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF
 #define MAX_NUMOF   (CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF)
 #endif
 
-/*
- * Creates MAX_NUMOF prefix list entries with different interfaces and then
- * tries to create another one
- * Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
- */
-static void test_nib_pl_set__ENOMEM_diff_iface(void)
-{
+// Creates MAX_NUMOF prefix list entries with different interfaces and then
+// tries to create another one
+// Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
+static void test_nib_pl_set__ENOMEM_diff_iface(void) {
     static const ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                             { .u64 = TEST_UINT64 } } };
     unsigned iface = IFACE;
@@ -122,13 +102,10 @@ static void test_nib_pl_set__ENOMEM_diff_iface(void)
                                                         UINT32_MAX));
 }
 
-/*
- * Creates CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF prefix list entries with different prefix of
- * the same length and then tries to create another one
- * Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
- */
-static void test_nib_pl_set__ENOMEM_diff_pfx(void)
-{
+// Creates CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF prefix list entries with different prefix of
+// the same length and then tries to create another one
+// Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
+static void test_nib_pl_set__ENOMEM_diff_pfx(void) {
     ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                { .u64 = TEST_UINT64 } } };
 
@@ -144,13 +121,10 @@ static void test_nib_pl_set__ENOMEM_diff_pfx(void)
                                                         UINT32_MAX));
 }
 
-/*
- * Creates CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF prefix list entries with different prefix of
- * the same length and different interfaces and then tries to create another one
- * Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
- */
-static void test_nib_pl_set__ENOMEM_diff_iface_pfx(void)
-{
+// Creates CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF prefix list entries with different prefix of
+// the same length and different interfaces and then tries to create another one
+// Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
+static void test_nib_pl_set__ENOMEM_diff_iface_pfx(void) {
     ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                { .u64 = TEST_UINT64 } } };
     unsigned iface = IFACE;
@@ -168,13 +142,10 @@ static void test_nib_pl_set__ENOMEM_diff_iface_pfx(void)
                                                         UINT32_MAX));
 }
 
-/*
- * Creates CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF prefix list entries with prefixes of
- * different length and then tries to create another one
- * Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
- */
-static void test_nib_pl_set__ENOMEM_diff_pfx_len(void)
-{
+// Creates CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF prefix list entries with prefixes of
+// different length and then tries to create another one
+// Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
+static void test_nib_pl_set__ENOMEM_diff_pfx_len(void) {
     static const ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                             { .u64 = TEST_UINT64 } } };
     unsigned pfx_len = GLOBAL_PREFIX_LEN;
@@ -189,13 +160,10 @@ static void test_nib_pl_set__ENOMEM_diff_pfx_len(void)
                                                         UINT32_MAX));
 }
 
-/*
- * Creates MAX_NUMOF prefix list entries with prefixes of different length and
- * different interfaces and then tries to create another one
- * Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
- */
-static void test_nib_pl_set__ENOMEM_diff_iface_pfx_len(void)
-{
+// Creates MAX_NUMOF prefix list entries with prefixes of different length and
+// different interfaces and then tries to create another one
+// Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
+static void test_nib_pl_set__ENOMEM_diff_iface_pfx_len(void) {
     static const ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                             { .u64 = TEST_UINT64 } } };
     unsigned pfx_len = GLOBAL_PREFIX_LEN, iface = IFACE;
@@ -211,13 +179,10 @@ static void test_nib_pl_set__ENOMEM_diff_iface_pfx_len(void)
                                                         UINT32_MAX));
 }
 
-/*
- * Creates CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF prefix list entries with different prefixes
- * and then tries to create another one
- * Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
- */
-static void test_nib_pl_set__ENOMEM_diff_pfx_pfx_len(void)
-{
+// Creates CONFIG_GNRC_IPV6_NIB_OFFL_NUMOF prefix list entries with different prefixes
+// and then tries to create another one
+// Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
+static void test_nib_pl_set__ENOMEM_diff_pfx_pfx_len(void) {
     ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                  { .u64 = TEST_UINT64 } } };
     unsigned pfx_len = GLOBAL_PREFIX_LEN;
@@ -233,13 +198,10 @@ static void test_nib_pl_set__ENOMEM_diff_pfx_pfx_len(void)
                                                         UINT32_MAX));
 }
 
-/*
- * Creates MAX_NUMOF prefix list entries with different prefixes and different
- * interfaces then tries to create another one
- * Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
- */
-static void test_nib_pl_set__ENOMEM_diff_iface_pfx_pfx_len(void)
-{
+// Creates MAX_NUMOF prefix list entries with different prefixes and different
+// interfaces then tries to create another one
+// Expected result: gnrc_ipv6_nib_pl_set() returns -ENOMEM
+static void test_nib_pl_set__ENOMEM_diff_iface_pfx_pfx_len(void) {
     ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                  { .u64 = TEST_UINT64 } } };
     unsigned pfx_len = GLOBAL_PREFIX_LEN, iface = IFACE;
@@ -256,13 +218,10 @@ static void test_nib_pl_set__ENOMEM_diff_iface_pfx_pfx_len(void)
                                                         UINT32_MAX));
 }
 
-/*
- * Creates MAX_NUMOF prefix list entries with different prefixes and different
- * interfaces and then tries to add another equal to the last.
- * Expected result: should return not NULL (the last)
- */
-static void test_nib_pl_set__success_duplicate(void)
-{
+// Creates MAX_NUMOF prefix list entries with different prefixes and different
+// interfaces and then tries to add another equal to the last.
+// Expected result: should return not NULL (the last)
+static void test_nib_pl_set__success_duplicate(void) {
     ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                  { .u64 = TEST_UINT64 } } };
     unsigned pfx_len = GLOBAL_PREFIX_LEN, iface = IFACE;
@@ -278,14 +237,11 @@ static void test_nib_pl_set__success_duplicate(void)
                                                   UINT32_MAX, UINT32_MAX));
 }
 
-/*
- * Creates a prefix list entry then creates it again with a different valid and
- * preferred lifetime.
- * Expected result: should be able to be created and the lifetimes should have
- * been changed
- */
-static void test_nib_pl_set__success_change(void)
-{
+// Creates a prefix list entry then creates it again with a different valid and
+// preferred lifetime.
+// Expected result: should be able to be created and the lifetimes should have
+// been changed
+static void test_nib_pl_set__success_change(void) {
     gnrc_ipv6_nib_pl_t ple;
     void *iter_state = NULL;
     static const ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
@@ -304,14 +260,11 @@ static void test_nib_pl_set__success_change(void)
     TEST_ASSERT(!gnrc_ipv6_nib_pl_iter(0, &iter_state, &ple));
 }
 
-/*
- * Creates a prefix list entry then creates it again with a different valid and
- * preferred lifetime.
- * Expected result: a new entry should exist and contain the given prefix,
- * interface, and lifetimes
- */
-static void test_nib_pl_set__success(void)
-{
+// Creates a prefix list entry then creates it again with a different valid and
+// preferred lifetime.
+// Expected result: a new entry should exist and contain the given prefix,
+// interface, and lifetimes
+static void test_nib_pl_set__success(void) {
     gnrc_ipv6_nib_pl_t ple;
     void *iter_state = NULL;
     static const ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
@@ -329,14 +282,11 @@ static void test_nib_pl_set__success(void)
     TEST_ASSERT(!gnrc_ipv6_nib_pl_iter(0, &iter_state, &ple));
 }
 
-/*
- * Creates MAX_NUMOF prefix list entries with different prefix and interfaces
- * and then tries to delete one with yet another prefix and interface.
- * Expected result: There should be still CONFIG_GNRC_IPV6_NIB_NUMOF entries in the
- * neighbor cache
- */
-static void test_nib_pl_del__unknown(void)
-{
+// Creates MAX_NUMOF prefix list entries with different prefix and interfaces
+// and then tries to delete one with yet another prefix and interface.
+// Expected result: There should be still CONFIG_GNRC_IPV6_NIB_NUMOF entries in the
+// neighbor cache
+static void test_nib_pl_del__unknown(void) {
     void *iter_state = NULL;
     ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                  { .u64 = TEST_UINT64 } } };
@@ -357,12 +307,9 @@ static void test_nib_pl_del__unknown(void)
     TEST_ASSERT_EQUAL_INT(MAX_NUMOF, count);
 }
 
-/*
- * Creates a prefix entry and removes it.
- * Expected result: prefix entry should be empty
- */
-static void test_nib_pl_del__success(void)
-{
+// Creates a prefix entry and removes it.
+// Expected result: prefix entry should be empty
+static void test_nib_pl_del__success(void) {
     void *iter_state = NULL;
     ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                  { .u64 = TEST_UINT64 } } };
@@ -374,14 +321,11 @@ static void test_nib_pl_del__success(void)
     TEST_ASSERT(!gnrc_ipv6_nib_pl_iter(0, &iter_state, &ple));
 }
 
-/**
- * Creates three prefix list entries and removes the second one.
- * The prefix list is then iterated.
- * Expected result: there should be two prefix list entries returned, the first
- * and the third one
- */
-static void test_nib_pl_iter__empty_in_the_middle(void)
-{
+/// Creates three prefix list entries and removes the second one.
+/// The prefix list is then iterated.
+/// Expected result: there should be two prefix list entries returned, the first
+/// and the third one
+static void test_nib_pl_iter__empty_in_the_middle(void) {
     gnrc_ipv6_nib_pl_t ple;
     void *iter_state = NULL;
     ipv6_addr_t pfx = { .u64 = { { .u8 = GLOBAL_PREFIX },
@@ -409,13 +353,12 @@ static void test_nib_pl_iter__empty_in_the_middle(void)
         TEST_ASSERT_EQUAL_INT(UINT32_MAX, ple.valid_until);
         TEST_ASSERT_EQUAL_INT(UINT32_MAX, ple.pref_until);
         count++;
-        pfx.u16[0].u16 += 2; /* we skip the second address */
+        pfx.u16[0].u16 += 2; // we skip the second address
     }
     TEST_ASSERT_EQUAL_INT(2, count);
 }
 
-Test *tests_gnrc_ipv6_nib_pl_tests(void)
-{
+Test *tests_gnrc_ipv6_nib_pl_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_nib_pl_set__EINVAL_unspec_addr),
         new_TestFixture(test_nib_pl_set__EINVAL_link_local),
@@ -433,7 +376,7 @@ Test *tests_gnrc_ipv6_nib_pl_tests(void)
         new_TestFixture(test_nib_pl_set__success),
         new_TestFixture(test_nib_pl_del__unknown),
         new_TestFixture(test_nib_pl_del__success),
-        /* most of gnrc_ipv6_nib_pl_iter() is tested during all the tests above */
+        // most of gnrc_ipv6_nib_pl_iter() is tested during all the tests above
         new_TestFixture(test_nib_pl_iter__empty_in_the_middle),
     };
 

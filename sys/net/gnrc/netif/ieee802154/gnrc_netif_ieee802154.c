@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "net/gnrc.h"
 #include "net/gnrc/netif/ieee802154.h"
@@ -35,19 +31,17 @@ static const gnrc_netif_ops_t ieee802154_ops = {
 };
 
 int gnrc_netif_ieee802154_create(gnrc_netif_t *netif, char *stack, int stacksize,
-                                 char priority, const char *name, netdev_t *dev)
-{
+                                 char priority, const char *name, netdev_t *dev) {
     return gnrc_netif_create(netif, stack, stacksize, priority, name, dev,
                              &ieee802154_ops);
 }
 
-static gnrc_pktsnip_t *_make_netif_hdr(uint8_t *mhr)
-{
+static gnrc_pktsnip_t *_make_netif_hdr(uint8_t *mhr) {
     gnrc_netif_hdr_t *hdr;
     gnrc_pktsnip_t *snip;
     uint8_t src[IEEE802154_LONG_ADDRESS_LEN], dst[IEEE802154_LONG_ADDRESS_LEN];
     int src_len, dst_len;
-    le_uint16_t _pan_tmp;   /* TODO: hand-up PAN IDs to GNRC? */
+    le_uint16_t _pan_tmp;   // TODO: hand-up PAN IDs to GNRC?
 
     dst_len = ieee802154_get_dst(mhr, dst, &_pan_tmp);
     src_len = ieee802154_get_src(mhr, src, &_pan_tmp);
@@ -55,18 +49,18 @@ static gnrc_pktsnip_t *_make_netif_hdr(uint8_t *mhr)
         DEBUG("_make_netif_hdr: unable to get addresses\n");
         return NULL;
     }
-    /* allocate space for header */
+    // allocate space for header
     snip = gnrc_netif_hdr_build(src, (size_t)src_len, dst, (size_t)dst_len);
     if (snip == NULL) {
         DEBUG("_make_netif_hdr: no space left in packet buffer\n");
         return NULL;
     }
     hdr = snip->data;
-    /* set broadcast flag for broadcast destination */
+    // set broadcast flag for broadcast destination
     if ((dst_len == 2) && (dst[0] == 0xff) && (dst[1] == 0xff)) {
         hdr->flags |= GNRC_NETIF_HDR_FLAGS_BROADCAST;
     }
-    /* set flags for pending frames */
+    // set flags for pending frames
     if (mhr[0] & IEEE802154_FCF_FRAME_PEND) {
         hdr->flags |= GNRC_NETIF_HDR_FLAGS_MORE_DATA;
     }
@@ -76,8 +70,7 @@ static gnrc_pktsnip_t *_make_netif_hdr(uint8_t *mhr)
 #if MODULE_GNRC_NETIF_DEDUP
 static inline bool _already_received(gnrc_netif_t *netif,
                                      gnrc_netif_hdr_t *netif_hdr,
-                                     uint8_t *mhr)
-{
+                                     uint8_t *mhr) {
     const uint8_t seq = ieee802154_get_seq(mhr);
 
     return  (netif->last_pkt.seq == seq) &&
@@ -85,10 +78,9 @@ static inline bool _already_received(gnrc_netif_t *netif,
             (memcmp(netif->last_pkt.src, gnrc_netif_hdr_get_src_addr(netif_hdr),
                     netif_hdr->src_l2addr_len) == 0);
 }
-#endif /* MODULE_GNRC_NETIF_DEDUP */
+#endif // MODULE_GNRC_NETIF_DEDUP
 
-static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
-{
+static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif) {
     netdev_t *dev = netif->dev;
     netdev_ieee802154_rx_info_t rx_info;
     gnrc_pktsnip_t *pkt = NULL;
@@ -100,7 +92,7 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
         pkt = gnrc_pktbuf_add(NULL, NULL, bytes_expected, GNRC_NETTYPE_UNDEF);
         if (pkt == NULL) {
             DEBUG("_recv_ieee802154: cannot allocate pktsnip.\n");
-            /* Discard packet on netdev device */
+            // Discard packet on netdev device
             dev->driver->recv(dev, NULL, bytes_expected, NULL);
             return NULL;
         }
@@ -115,8 +107,8 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
 #endif
 
         if (netif->flags & GNRC_NETIF_FLAGS_RAWMODE) {
-            /* Raw mode, skip packet processing, but provide rx_info via
-             * GNRC_NETTYPE_NETIF */
+            // Raw mode, skip packet processing, but provide rx_info via
+            // GNRC_NETTYPE_NETIF
             gnrc_pktsnip_t *netif_snip = gnrc_netif_hdr_build(NULL, 0, NULL, 0);
             if (netif_snip == NULL) {
                 DEBUG("_recv_ieee802154: no space left in packet buffer\n");
@@ -135,13 +127,13 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
             pkt = gnrc_pkt_append(pkt, netif_snip);
         }
         else {
-            /* Normal mode, try to parse the frame according to IEEE 802.15.4 */
+            // Normal mode, try to parse the frame according to IEEE 802.15.4
             gnrc_pktsnip_t *ieee802154_hdr, *netif_hdr;
             gnrc_netif_hdr_t *hdr;
             size_t mhr_len = ieee802154_get_frame_hdr_len(pkt->data);
             uint8_t *mhr = pkt->data;
-            /* nread was checked for <= 0 before so we can safely cast it to
-             * unsigned */
+            // nread was checked for <= 0 before so we can safely cast it to
+            // unsigned
             if ((mhr_len == 0) || ((size_t)nread < mhr_len)) {
                 DEBUG("_recv_ieee802154: illegally formatted frame received\n");
                 gnrc_pktbuf_release(pkt);
@@ -175,7 +167,7 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
                    hdr->src_l2addr_len);
             netif->last_pkt.src_len = hdr->src_l2addr_len;
             netif->last_pkt.seq = ieee802154_get_seq(mhr);
-#endif /* MODULE_GNRC_NETIF_DEDUP */
+#endif // MODULE_GNRC_NETIF_DEDUP
 #if IS_USED(MODULE_IEEE802154_SECURITY)
             {
                 uint8_t *payload = NULL;
@@ -222,7 +214,7 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
                     od_hex_dump(pkt->data, nread, OD_WIDTH_DEFAULT);
                 }
             }
-            /* mark IEEE 802.15.4 header */
+            // mark IEEE 802.15.4 header
             ieee802154_hdr = gnrc_pktbuf_mark(pkt, mhr_len, GNRC_NETTYPE_UNDEF);
             if (ieee802154_hdr == NULL) {
                 DEBUG("_recv_ieee802154: no space left in packet buffer\n");
@@ -245,8 +237,7 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
     return pkt;
 }
 
-static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
-{
+static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt) {
     netdev_t *dev = netif->dev;
     netdev_ieee802154_t *state = container_of(dev, netdev_ieee802154_t, netdev);
     gnrc_netif_hdr_t *netif_hdr;
@@ -273,11 +264,11 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
     }
     netif_hdr = pkt->data;
     if (netif_hdr->flags & GNRC_NETIF_HDR_FLAGS_MORE_DATA) {
-        /* Set frame pending field */
+        // Set frame pending field
         flags |= IEEE802154_FCF_FRAME_PEND;
     }
-    /* prepare destination address */
-    if (netif_hdr->flags & /* If any of these flags is set assume broadcast */
+    // prepare destination address
+    if (netif_hdr->flags & // If any of these flags is set assume broadcast
         (GNRC_NETIF_HDR_FLAGS_BROADCAST | GNRC_NETIF_HDR_FLAGS_MULTICAST)) {
         dst = ieee802154_addr_bcast;
         dst_len = IEEE802154_ADDR_BCAST_LEN;
@@ -287,8 +278,8 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
         dst_len = netif_hdr->dst_l2addr_len;
     }
     if (flags & NETDEV_IEEE802154_SECURITY_EN) {
-        /* need to include long source address because the recipient
-           will need it to decrypt the frame */
+        // need to include long source address because the recipient
+        //    will need it to decrypt the frame
         src_len = IEEE802154_LONG_ADDRESS_LEN;
         src = state->long_addr;
     }
@@ -302,7 +293,7 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
             src = netif->l2addr;
         }
     }
-    /* fill MAC header, seq should be set by device */
+    // fill MAC header, seq should be set by device
     if ((res = ieee802154_set_frame_hdr(mhr, src, src_len,
                                         dst, dst_len, dev_pan,
                                         dev_pan, flags, state->seq++)) == 0) {
@@ -312,7 +303,7 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
     }
     mhr_len = res;
 
-    /* prepare iolist for netdev / mac layer */
+    // prepare iolist for netdev / mac layer
     iolist_t iolist_header = {
         .iol_next = (iolist_t *)pkt->next,
         .iol_base = mhr,
@@ -321,7 +312,7 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
 
 #if IS_USED(MODULE_IEEE802154_SECURITY)
     {
-        /* write protect `pkt` to set `pkt->next` */
+        // write protect `pkt` to set `pkt->next`
         gnrc_pktsnip_t *tmp = gnrc_pktbuf_start_write(pkt);
         if (!tmp) {
             DEBUG("_send_ieee802154: no write access to pkt");
@@ -336,7 +327,7 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
             return -ENOMEM;
         }
         pkt->next = tmp;
-        /* merge snippets to store the L2 payload uniformly in one buffer */
+        // merge snippets to store the L2 payload uniformly in one buffer
         res = gnrc_pktbuf_merge(pkt->next);
         if (res < 0) {
             DEBUG("_send_ieee802154: failed to merge pktbuf\n");
@@ -387,9 +378,9 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
     res = dev->driver->send(dev, &iolist_header);
 
     if (gnrc_netif_netdev_legacy_api(netif)) {
-        /* only for legacy drivers we need to release pkt here */
+        // only for legacy drivers we need to release pkt here
         gnrc_pktbuf_release(pkt);
     }
     return res;
 }
-/** @} */
+/// @}

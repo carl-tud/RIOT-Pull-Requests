@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_sam0_common
- * @brief           Generic EXTI map for all CPUs of the sam0 family.
- * @{
- *
- * @author          Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author          Derek Hageman <hageman@inthat.cloud>
- */
+/// @ingroup         cpu_sam0_common
+/// @brief           Generic EXTI map for all CPUs of the sam0 family.
+/// @{
+///
+/// @author          Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author          Derek Hageman <hageman@inthat.cloud>
 
 #include "cpu_conf.h"
 
@@ -20,9 +16,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Mapping of pins to EXTI lines, -1 means not EXTI possible
- */
+/// @brief   Mapping of pins to EXTI lines, -1 means not EXTI possible
 static const int8_t exti_config[PORT_GROUPS][32] = {
 #if PORT_GROUPS >= 1
 {
@@ -689,4 +683,4 @@ static const int8_t exti_config[PORT_GROUPS][32] = {
 }
 #endif
 
-/** @} */
+/// @}

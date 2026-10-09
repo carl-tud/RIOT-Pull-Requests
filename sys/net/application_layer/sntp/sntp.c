@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Luminița Lăzărescu <cluminita.lazarescu@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Luminița Lăzărescu <cluminita.lazarescu@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       SNTP implementation
- *
- * @author      Luminița Lăzărescu <cluminita.lazarescu@gmail.com>
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       SNTP implementation
+///
+/// @author      Luminița Lăzărescu <cluminita.lazarescu@gmail.com>
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 #include "net/sntp.h"
@@ -31,8 +27,7 @@ static int64_t _sntp_offset = 0;
 static mutex_t _sntp_mutex = MUTEX_INIT;
 static ntp_packet_t _sntp_packet;
 
-int sntp_sync(sock_udp_ep_t *server, uint32_t timeout)
-{
+int sntp_sync(sock_udp_ep_t *server, uint32_t timeout) {
     int result;
 
     if ((result = sock_udp_create(&_sntp_sock,
@@ -72,8 +67,7 @@ int sntp_sync(sock_udp_ep_t *server, uint32_t timeout)
     return 0;
 }
 
-int64_t sntp_get_offset(void)
-{
+int64_t sntp_get_offset(void) {
     int64_t result;
 
     mutex_lock(&_sntp_mutex);

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_bluepill-stm32f030c8
- * @{
- *
- * @file
- * @brief       Board specific configuration of direct mapped GPIOs
- *
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- */
+/// @ingroup     boards_bluepill-stm32f030c8
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration of direct mapped GPIOs
+///
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    GPIO pin configuration
- */
+/// @brief    GPIO pin configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -39,4 +33,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

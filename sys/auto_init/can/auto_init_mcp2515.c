@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init
- * @{
- * @file
- * @brief       initializes mcp2515 can device
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @}
- */
+/// @ingroup sys_auto_init
+/// @{
+/// @file
+/// @brief       initializes mcp2515 can device
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @}
 
 #include "can/device.h"
 #include "mcp2515_params.h"

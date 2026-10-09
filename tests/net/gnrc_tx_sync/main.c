@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Text application for gnrc_tx_sync
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       Text application for gnrc_tx_sync
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
-/* keep include of stdint.h before stdatomic.h for compatibility with broken
- * toolchains */
+// keep include of stdint.h before stdatomic.h for compatibility with broken
+// toolchains
 #include <stdint.h>
 #include <stdatomic.h>
 #include <stdio.h>
@@ -41,23 +37,21 @@ static gnrc_netif_t netif;
 static netdev_test_t netdev_test;
 static netdev_t *netdev = &netdev_test.netdev.netdev;
 
-/* With 6LoWPAN, This test message needs exactly two fragments to be transmitted
- * due to the maximum L2 PDU of 96 bytes */
+// With 6LoWPAN, This test message needs exactly two fragments to be transmitted
+// due to the maximum L2 PDU of 96 bytes
 static const char test_msg[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTU"
                                "VWXYZ0123456789.,:;!?@#$%^&*()[]{}-_=+/<>`~\'\""
                                "\\";
 static unsigned pld_pos = 0;
 
-static bool carries_test_message(const iolist_t *iol)
-{
-    /* Dark magic: We just assume that the test message will be placed at the
-     * end of one single iolist chunk and that fragments (if applicable) are
-     * send in order. We also assume that no more than four bytes in a row will
-     * never match the test message payload by chance.
-     *
-     * Note that this intentionally ignores retransmissions, which can occur in
-     * the SFR case.
-     */
+static bool carries_test_message(const iolist_t *iol) {
+    // Dark magic: We just assume that the test message will be placed at the
+    // end of one single iolist chunk and that fragments (if applicable) are
+    // send in order. We also assume that no more than four bytes in a row will
+    // never match the test message payload by chance.
+    //
+    // Note that this intentionally ignores retransmissions, which can occur in
+    // the SFR case.
 
     while (iol) {
         if ((iol->iol_base != NULL) && (iol->iol_len > 0)) {
@@ -69,7 +63,7 @@ static bool carries_test_message(const iolist_t *iol)
                     if ((len > 4) &&
                             (pld_pos + len <= sizeof(test_msg)) &&
                             !memcmp(pos, &test_msg[pld_pos], len)) {
-                        /* data matches next chunk of test message */
+                        // data matches next chunk of test message
                         pld_pos += len;
                         return true;
                     }
@@ -82,19 +76,17 @@ static bool carries_test_message(const iolist_t *iol)
     return false;
 }
 
-static int netdev_send(netdev_t *dev, const iolist_t *iolist)
-{
+static int netdev_send(netdev_t *dev, const iolist_t *iolist) {
     (void)dev;
     if (carries_test_message(iolist)) {
-        /* sending part of UDP datagram */
+        // sending part of UDP datagram
         xtimer_msleep(100);
         atomic_fetch_add(&sends_completed, 1);
     }
     return iolist_size(iolist);
 }
 
-static int netdev_get_device_type(netdev_t *dev, void *value, size_t max_len)
-{
+static int netdev_get_device_type(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     const uint16_t type_ipv6 = NETDEV_TYPE_ETHERNET;
     const uint16_t type_6lo = NETDEV_TYPE_IEEE802154;
@@ -108,8 +100,7 @@ static int netdev_get_device_type(netdev_t *dev, void *value, size_t max_len)
     return sizeof(uint16_t);
 }
 
-static int netdev_get_max_pdu_size(netdev_t *dev, void *value, size_t max_len)
-{
+static int netdev_get_max_pdu_size(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     const uint16_t pdu_size_ethernet = 1500;
     const uint16_t pdu_size_6lo = 96;
@@ -123,8 +114,7 @@ static int netdev_get_max_pdu_size(netdev_t *dev, void *value, size_t max_len)
     return sizeof(uint16_t);
 }
 
-static int netdev_get_proto(netdev_t *dev, void *value, size_t max_len)
-{
+static int netdev_get_proto(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     const gnrc_nettype_t proto =
 #if IS_USED(MODULE_NETDEV_IEEE802154)
@@ -137,8 +127,7 @@ static int netdev_get_proto(netdev_t *dev, void *value, size_t max_len)
     return sizeof(proto);
 }
 
-static int netdev_get_address(netdev_t *dev, void *value, size_t max_len)
-{
+static int netdev_get_address(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     const uint8_t addr[] = {
 #if IS_USED(MODULE_NETDEV_IEEE802154)
@@ -152,8 +141,7 @@ static int netdev_get_address(netdev_t *dev, void *value, size_t max_len)
     return sizeof(addr);
 }
 
-static int netdev_get_address_long(netdev_t *dev, void *value, size_t max_len)
-{
+static int netdev_get_address_long(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     const uint8_t addr[] = {0x13, 0x37, 0x13, 0x37, 0x13, 0x37, 0x13, 0x37};
     if (!IS_USED(MODULE_NETDEV_IEEE802154)) {
@@ -164,8 +152,7 @@ static int netdev_get_address_long(netdev_t *dev, void *value, size_t max_len)
     return sizeof(addr);
 }
 
-static int netdev_get_src_len(netdev_t *dev, void *value, size_t max_len)
-{
+static int netdev_get_src_len(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     const uint16_t src_len = 2;
     if (!IS_USED(MODULE_NETDEV_IEEE802154)) {
@@ -176,8 +163,7 @@ static int netdev_get_src_len(netdev_t *dev, void *value, size_t max_len)
     return sizeof(src_len);
 }
 
-int main(void)
-{
+int main(void) {
     puts(
         "Test application for gnrc_tx_sync\n"
         "=================================\n"
@@ -218,11 +204,11 @@ int main(void)
     ipv6_addr_set_all_nodes_multicast((ipv6_addr_t *)&remote.addr.ipv6,
                                       IPV6_ADDR_MCAST_SCP_LINK_LOCAL);
     expect(sock_udp_create(&sock, &local, NULL, 0) == 0);
-    /* with gnrc_tx_sync, we expect sock_udp_send() to block until transmission is done */
+    // with gnrc_tx_sync, we expect sock_udp_send() to block until transmission is done
     expect(sock_udp_send(&sock, test_msg, sizeof(test_msg), &remote) > 0);
-    /* the virtual netdev device increments sends_completed for each frame carrying the test
-     * payload. If this value has not reached the value of 1 (or 2 for 6LoWPAN fragmentation),
-     * the test has failed. */
+    // the virtual netdev device increments sends_completed for each frame carrying the test
+    // payload. If this value has not reached the value of 1 (or 2 for 6LoWPAN fragmentation),
+    // the test has failed.
     int sends = atomic_load(&sends_completed);
     int sends_expected = (IS_USED(MODULE_NETDEV_IEEE802154)) ? 2 : 1;
     printf("transmissions expected = %d, transmissions completed = %d\n",

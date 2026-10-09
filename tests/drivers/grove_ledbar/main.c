@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the Grove ledbar
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the Grove ledbar
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -26,10 +22,9 @@
 #define TEST_STEP       (5U)
 #define TEST_WAIT       (42*US_PER_MS)
 
-int main(void)
-{
+int main(void) {
     grove_ledbar_t dev;
-    /* init display */
+    // init display
     puts("[START]");
     if (grove_ledbar_init(&dev, &grove_ledbar_params[0]) != 0) {
         puts("[FAILED]");
@@ -45,7 +40,7 @@ int main(void)
             xtimer_usleep(TEST_WAIT);
         }
         grove_ledbar_set(&dev, GROVE_LEDBAR_MAX);
-        /* turn all off */
+        // turn all off
         xtimer_usleep(TEST_WAIT);
         lvl = GROVE_LEDBAR_MAX;
         while (lvl > TEST_STEP) {
@@ -53,7 +48,7 @@ int main(void)
             lvl -= TEST_STEP;
             xtimer_usleep(TEST_WAIT);
         }
-        /* turn all off */
+        // turn all off
         grove_ledbar_clear(&dev);
     }
     puts("[SUCCESS]");

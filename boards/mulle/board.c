@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014-2017 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2017 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_mulle
- * @{
- *
- * @file
- * @brief       Board specific implementations for the Mulle board
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     boards_mulle
+/// @{
+///
+/// @file
+/// @brief       Board specific implementations for the Mulle board
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
-#include <stddef.h> /* for NULL */
+#include <stddef.h> // for NULL
 #include <stdio.h>
 #include "board.h"
 #include "cpu.h"
@@ -78,7 +74,7 @@ static devfs_t mulle_nor_devfs = {
     .private_data = &mulle_nor_dev,
 };
 
-/** @brief Initialize the GPIO pins controlling the power switches. */
+/// @brief Initialize the GPIO pins controlling the power switches.
 static inline void power_pins_init(void);
 
 static void increase_boot_count(void);
@@ -86,41 +82,37 @@ static int mulle_nvram_init(void);
 
 int mulle_nor_init(void);
 
-void board_init(void)
-{
+void board_init(void) {
     int status;
 
-    /* Initialize power control pins */
+    // Initialize power control pins
     power_pins_init();
 
-    /* Turn on Vperiph for peripherals */
-    /*
-     * By turning on Vperiph first, and before waiting for the clocks to
-     * stabilize, we will have used enough time to have let the FRAM start up
-     * properly when we want to access it later without having to add any extra
-     * delays.
-     */
+    // Turn on Vperiph for peripherals
+    // By turning on Vperiph first, and before waiting for the clocks to
+    // stabilize, we will have used enough time to have let the FRAM start up
+    // properly when we want to access it later without having to add any extra
+    // delays.
     gpio_set(MULLE_POWER_VPERIPH);
 
-    /* Turn on AVDD for reading voltages */
+    // Turn on AVDD for reading voltages
     gpio_set(MULLE_POWER_AVDD);
 
-    /* NVRAM requires xtimer for timing */
+    // NVRAM requires xtimer for timing
     ztimer_init();
 
-    /* Initialize NVRAM */
+    // Initialize NVRAM
     status = mulle_nvram_init();
     if (status == 0) {
-        /* Increment boot counter */
+        // Increment boot counter
         increase_boot_count();
     }
 
-    /* Initialize NOR flash */
+    // Initialize NOR flash
     mulle_nor_init();
 }
 
-static inline void power_pins_init(void)
-{
+static inline void power_pins_init(void) {
     gpio_init(MULLE_POWER_AVDD, GPIO_OUT);
     gpio_init(MULLE_POWER_VPERIPH, GPIO_OUT);
     gpio_init(MULLE_POWER_VSEC, GPIO_OUT);
@@ -129,8 +121,7 @@ static inline void power_pins_init(void)
     gpio_clear(MULLE_POWER_VSEC);
 }
 
-static int mulle_nvram_init(void)
-{
+static int mulle_nvram_init(void) {
     union {
         uint32_t u32;
         uint8_t  u8[sizeof(uint32_t)];
@@ -163,12 +154,11 @@ static int mulle_nvram_init(void)
         }
     }
 
-    /* Register DevFS node */
+    // Register DevFS node
     return devfs_register(&mulle_nvram_devfs);
 }
 
-static void increase_boot_count(void)
-{
+static void increase_boot_count(void) {
     union {
         uint32_t u32;
         uint8_t  u8[sizeof(uint32_t)];
@@ -181,12 +171,11 @@ static void increase_boot_count(void)
     mulle_nvram->write(mulle_nvram, &rec.u8[0], MULLE_NVRAM_BOOT_COUNT, sizeof(rec.u32));
 }
 
-int mulle_nor_init(void)
-{
+int mulle_nor_init(void) {
     int res = mtd_init(mtd0);
 
     if (res >= 0) {
-        /* Register DevFS node */
+        // Register DevFS node
         res = devfs_register(&mulle_nor_devfs);
     }
 

@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test credentials for credman
- *
- * @author      Raul Fuentes <raul.fuentes-samaniego@inria.fr>
- * @author      Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test credentials for credman
+///
+/// @author      Raul Fuentes <raul.fuentes-samaniego@inria.fr>
+/// @author      Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
+///
+/// @}
 
 #include "net/credman.h"
 

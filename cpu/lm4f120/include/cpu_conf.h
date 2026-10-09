@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Rakendra Thapa <rakendrathapa@gmail.com
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Rakendra Thapa <rakendrathapa@gmail.com
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_lm4f120
- * @{
- *
- * @file
- * @brief           Implementation specific CPU configuration options
- *
- * @author          Rakendra Thapa <rakendrathapa@gmail.com>
- */
+/// @ingroup         cpu_lm4f120
+/// @{
+///
+/// @file
+/// @brief           Implementation specific CPU configuration options
+///
+/// @author          Rakendra Thapa <rakendrathapa@gmail.com>
 
 #include "cpu_conf_common.h"
 
@@ -43,26 +39,22 @@ extern "C" {
 #include "vendor/lm4f120h5qr.h"
 #endif
 
-/**
- * @brief   ARM Cortex-M specific CPU configuration
- * @{
- */
+/// @brief   ARM Cortex-M specific CPU configuration
+/// @{
 #define CPU_DEFAULT_IRQ_PRIO            (1U)
 #define CPU_IRQ_NUMOF                   (139U)
 #define CPU_FLASH_BASE                  FLASH_BASE
 #define CPU_HAS_BITBAND                 (1)
-/** @} */
+/// @}
 
-/**
- * @name cpu functions
- * @{
- */
+/// @name cpu functions
+/// @{
 extern void setup_fpu(void);
 extern void cpu_clock_init(int);
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

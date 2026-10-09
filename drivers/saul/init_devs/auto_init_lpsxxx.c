@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of LPSXXX family of pressure sensors
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization of LPSXXX family of pressure sensors
+//
+// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,34 +17,23 @@
 #include "lpsxxx.h"
 #include "lpsxxx_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define LPSXXX_NUM      ARRAY_SIZE(lpsxxx_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static lpsxxx_t lpsxxx_devs[LPSXXX_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[LPSXXX_NUM * 2];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define LPSXXX_INFO_NUM    ARRAY_SIZE(lpsxxx_saul_info)
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern saul_driver_t lpsxxx_saul_pres_driver;
 extern saul_driver_t lpsxxx_saul_temp_driver;
 
-void auto_init_lpsxxx(void)
-{
+void auto_init_lpsxxx(void) {
     assert(LPSXXX_NUM == LPSXXX_INFO_NUM);
 
     for (unsigned int i = 0; i < LPSXXX_NUM; i++) {

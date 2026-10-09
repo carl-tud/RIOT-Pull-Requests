@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 INRIA
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 INRIA
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_mbed_lpc1768
- * @{
- *
- * @file
- * @brief       Board specific definitions for the mbed_lpc1768 board
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_mbed_lpc1768
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the mbed_lpc1768 board
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "cpu.h"
 #include "periph_conf.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(1, 18)
 #define LED1_PIN            GPIO_PIN(1, 20)
 #define LED2_PIN            GPIO_PIN(1, 21)
@@ -46,10 +40,10 @@ extern "C" {
 #define LED3_ON             gpio_set(LED3_PIN)
 #define LED3_OFF            gpio_clear(LED3_PIN)
 #define LED3_TOGGLE         gpio_toggle(LED3_PIN)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

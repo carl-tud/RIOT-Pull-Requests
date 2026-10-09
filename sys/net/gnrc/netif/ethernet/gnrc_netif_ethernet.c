@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
 
 #include <assert.h>
 #include <string.h>
@@ -36,7 +32,7 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif);
 static int _set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt);
 #else
 #define _set    gnrc_netif_set_from_netdev
-#endif /* MODULE_GNRC_SIXLOENC */
+#endif // MODULE_GNRC_SIXLOENC
 
 static char addr_str[ETHERNET_ADDR_LEN * 3];
 
@@ -49,20 +45,17 @@ static const gnrc_netif_ops_t ethernet_ops = {
 };
 
 int gnrc_netif_ethernet_create(gnrc_netif_t *netif, char *stack, int stacksize,
-                               char priority, char *name, netdev_t *dev)
-{
+                               char priority, char *name, netdev_t *dev) {
     return gnrc_netif_create(netif, stack, stacksize, priority, name, dev,
                              &ethernet_ops);
 }
 
-static inline void _addr_set_broadcast(uint8_t *dst)
-{
+static inline void _addr_set_broadcast(uint8_t *dst) {
     memset(dst, 0xff, ETHERNET_ADDR_LEN);
 }
 
 static inline void _addr_set_multicast(gnrc_netif_t *netif, uint8_t *dst,
-                                       gnrc_pktsnip_t *payload)
-{
+                                       gnrc_pktsnip_t *payload) {
     switch (payload->type) {
 #ifdef MODULE_GNRC_IPV6
         case GNRC_NETTYPE_IPV6: {
@@ -78,8 +71,7 @@ static inline void _addr_set_multicast(gnrc_netif_t *netif, uint8_t *dst,
     }
 }
 
-static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
-{
+static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt) {
     ethernet_hdr_t hdr;
     gnrc_netif_hdr_t *netif_hdr;
     gnrc_pktsnip_t *payload;
@@ -108,7 +100,7 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
 
     netif_hdr = pkt->data;
 
-    /* set ethernet header */
+    // set ethernet header
     if (netif_hdr->src_l2addr_len == ETHERNET_ADDR_LEN) {
         memcpy(hdr.dst, gnrc_netif_hdr_get_src_addr(netif_hdr),
                netif_hdr->src_l2addr_len);
@@ -160,15 +152,14 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
     res = dev->driver->send(dev, &iolist);
 
     if (gnrc_netif_netdev_legacy_api(netif)) {
-        /* only for legacy drivers we need to release pkt here */
+        // only for legacy drivers we need to release pkt here
         gnrc_pktbuf_release(pkt);
     }
 
     return res;
 }
 
-static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
-{
+static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif) {
     netdev_t *dev = netif->dev;
     gnrc_pktsnip_t *pkt = NULL;
     netdev_eth_rx_info_t rx_info = { .flags = 0 };
@@ -182,7 +173,7 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
         if (!pkt) {
             DEBUG("gnrc_netif_ethernet: cannot allocate pktsnip.\n");
 
-            /* drop the packet */
+            // drop the packet
             dev->driver->recv(dev, NULL, bytes_expected, NULL);
 
             goto out;
@@ -199,8 +190,8 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
 #endif
 
         if (nread < bytes_expected) {
-            /* we've got less than the expected packet size,
-             * so free the unused space.*/
+            // we've got less than the expected packet size,
+            // so free the unused space.
 
             DEBUG("gnrc_netif_ethernet: reallocating.\n");
             gnrc_pktbuf_realloc_data(pkt, nread);
@@ -212,7 +203,7 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
 #if defined(MODULE_OD) && ENABLE_DEBUG
         od_hex_dump(pkt->data, nread, OD_WIDTH_DEFAULT);
 #endif
-        /* mark ethernet header */
+        // mark ethernet header
         gnrc_pktsnip_t *eth_hdr = gnrc_pktbuf_mark(pkt, sizeof(ethernet_hdr_t), GNRC_NETTYPE_UNDEF);
         if (!eth_hdr) {
             DEBUG("gnrc_netif_ethernet: no space left in packet buffer\n");
@@ -228,10 +219,10 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
         }
 #endif
 
-        /* set payload type from ethertype */
+        // set payload type from ethertype
         pkt->type = gnrc_nettype_from_ethertype(byteorder_ntohs(hdr->type));
 
-        /* create netif header */
+        // create netif header
         gnrc_pktsnip_t *netif_hdr;
         netif_hdr = gnrc_pktbuf_add(NULL, NULL,
                                     sizeof(gnrc_netif_hdr_t) + (2 * ETHERNET_ADDR_LEN),
@@ -264,8 +255,7 @@ safe_out:
 }
 
 #ifdef MODULE_GNRC_SIXLOENC
-static int _set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt)
-{
+static int _set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt) {
     if (opt->opt == NETOPT_6LO) {
         assert(opt->data_len == sizeof(netopt_enable_t));
         if (*((netopt_enable_t *)opt->data) == NETOPT_ENABLE) {
@@ -280,5 +270,5 @@ static int _set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt)
     }
     return gnrc_netif_set_from_netdev(netif, opt);
 }
-#endif /* MODULE_GNRC_SIXLOENC */
-/** @} */
+#endif // MODULE_GNRC_SIXLOENC
+/// @}

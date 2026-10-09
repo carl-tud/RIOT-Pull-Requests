@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2015-17 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2026 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-17 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2026 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Command for sending and receiving of UDP data
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Command for sending and receiving of UDP data
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -45,12 +41,11 @@
 
 static char server_stack[SERVER_STACKSIZE];
 
-/* accessed from both main and server thread */
+// accessed from both main and server thread
 static event_queue_t queue;
 static kernel_pid_t server_pid = KERNEL_PID_UNDEF;
 
-static void _server_handler(sock_udp_t *sock, sock_async_flags_t type, void *arg)
-{
+static void _server_handler(sock_udp_t *sock, sock_async_flags_t type, void *arg) {
     (void)arg;
     if (type & SOCK_ASYNC_MSG_RECV) {
         sock_udp_ep_t src;
@@ -81,18 +76,16 @@ static void _server_handler(sock_udp_t *sock, sock_async_flags_t type, void *arg
     }
 }
 
-/* thread-local to server thread */
+// thread-local to server thread
 static bool _server_should_stop = false;
 
-static void _server_stop_cb(event_t *event)
-{
+static void _server_stop_cb(event_t *event) {
     (void)event;
     _server_should_stop = true;
 }
 static event_t _server_stop_event = { .handler = _server_stop_cb };
 
-static void *_server_thread(void *arg)
-{
+static void *_server_thread(void *arg) {
     uint16_t port = (uint16_t)(uintptr_t)arg;
 
     sock_udp_ep_t local = SOCK_IP_EP_ANY;
@@ -123,25 +116,24 @@ static void *_server_thread(void *arg)
     return NULL;
 }
 
-/* thread-local to main thread */
+// thread-local to main thread
 static uint16_t server_port = 0;
 
-static void _start_server(const char *port_str)
-{
-    /* check if server is already running */
+static void _start_server(const char *port_str) {
+    // check if server is already running
     if (server_pid != KERNEL_PID_UNDEF) {
         printf("Error: server already running on port %" PRIu16 "\n", server_port);
         return;
     }
-    /* parse port */
+    // parse port
     server_port = atoi(port_str);
     if (server_port == 0) {
         printf("Error: invalid port specified\n");
         return;
     }
-    /* init event queue to be used by server thread */
+    // init event queue to be used by server thread
     event_queue_init_detached(&queue);
-    /* start server */
+    // start server
     server_pid = thread_create(server_stack, sizeof(server_stack), SERVER_PRIO,
                                 0, _server_thread, (void *)(uintptr_t)server_port, "UDP server");
     if (server_pid <= KERNEL_PID_UNDEF) {
@@ -150,40 +142,36 @@ static void _start_server(const char *port_str)
     }
 }
 
-static void _stop_server(void)
-{
-    /* check if server is running at all */
+static void _stop_server(void) {
+    // check if server is running at all
     if (server_pid == KERNEL_PID_UNDEF) {
         printf("Error: server was not running\n");
         return;
     }
-    /* stop server */
+    // stop server
     event_post(&queue, &_server_stop_event);
 }
 
 #else
 
-static void _start_server(const char *port_str)
-{
+static void _start_server(const char *port_str) {
     (void)port_str;
-    /* not reachable since all calls are module-guarded */
+    // not reachable since all calls are module-guarded
     assert(0);
 }
 
-static void _stop_server(void)
-{
-    /* not reachable since all calls are module-guarded */
+static void _stop_server(void) {
+    // not reachable since all calls are module-guarded
     assert(0);
 }
 
-#endif /* MODULE_SHELL_CMD_UDP_SERVER*/
+#endif // MODULE_SHELL_CMD_UDP_SERVER
 
 static void _send(const char *addr_str, const char *_data, size_t num,
-                  unsigned int delay, bool data_is_hex)
-{
+                  unsigned int delay, bool data_is_hex) {
     int res = -1;
 
-    /* parse destination address */
+    // parse destination address
     sock_udp_ep_t dst;
     if (sock_udp_name2ep(&dst, addr_str) < 0) {
         puts("Error: unable to parse destination address");
@@ -232,8 +220,7 @@ static void _send(const char *addr_str, const char *_data, size_t num,
     sock_udp_close(&sock);
 }
 
-static int _udp_cmd(int argc, char **argv)
-{
+static int _udp_cmd(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s [send|server]\n", argv[0]);
         return 1;
@@ -249,7 +236,7 @@ static int _udp_cmd(int argc, char **argv)
         }
         bool binary = strcmp(argv[2], "-b") == 0;
         if (binary) {
-            /* shift arguments by 1 to account for encountered -b option */
+            // shift arguments by 1 to account for encountered -b option
             argv++;
             argc--;
         }

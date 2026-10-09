@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2017 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_kinetis
- * @{
- *
- * @file
- * @brief       Default interrupt service routine definitions for Kinetis CPUs
- *
- * This file defines weak defaults for all available ISRs in Kinetis CPUs, these
- * weak defaults will act as fallback definitions if no driver defines a
- * specific handler for any interrupt.
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     cpu_kinetis
+/// @{
+///
+/// @file
+/// @brief       Default interrupt service routine definitions for Kinetis CPUs
+///
+/// This file defines weak defaults for all available ISRs in Kinetis CPUs, these
+/// weak defaults will act as fallback definitions if no driver defines a
+/// specific handler for any interrupt.
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #include <stdint.h>
 #include "cpu.h"
@@ -26,59 +22,52 @@
 #include "wdog.h"
 #include "bit.h"
 
-/**
- * @brief Enable workarounds for some known CPU errata
- */
-static inline void cpu_errata_fixes(void)
-{
+/// @brief Enable workarounds for some known CPU errata
+static inline void cpu_errata_fixes(void) {
 #ifdef SIM_SCGC7_FLEXBUS_SHIFT
-    /* K series errata
-     * e4218: SIM/FLEXBUS: SIM_SCGC7[FLEXBUS] bit should be cleared when the
-     * FlexBus is not being used.
-     *
-     * Description: The SIM_SCGC7[FLEXBUS] bit is set by default. This means
-     * that the FlexBus will be enabled and come up in global chip select mode.
-     * With some code sequence and register value combinations the core could
-     * attempt to prefetch from the FlexBus even though it might not actually
-     * use the value it prefetched. In the case where the FlexBus is
-     * unconfigured, this can result in a hung bus cycle on the FlexBus.
-     *
-     * Workaround: If the FlexBus is not being used, disabled the clock to the
-     * FlexBus during chip initialization by clearing the SIM_SCGC7[FLEXBUS] bit.
-     * If the FlexBus will be used, then enable at least one chip select as
-     * early in the chip initialization process as possible.
-     */
+    // K series errata
+    // e4218: SIM/FLEXBUS: SIM_SCGC7[FLEXBUS] bit should be cleared when the
+    // FlexBus is not being used.
+    //
+    // Description: The SIM_SCGC7[FLEXBUS] bit is set by default. This means
+    // that the FlexBus will be enabled and come up in global chip select mode.
+    // With some code sequence and register value combinations the core could
+    // attempt to prefetch from the FlexBus even though it might not actually
+    // use the value it prefetched. In the case where the FlexBus is
+    // unconfigured, this can result in a hung bus cycle on the FlexBus.
+    //
+    // Workaround: If the FlexBus is not being used, disabled the clock to the
+    // FlexBus during chip initialization by clearing the SIM_SCGC7[FLEXBUS] bit.
+    // If the FlexBus will be used, then enable at least one chip select as
+    // early in the chip initialization process as possible.
     bit_clear32(&SIM->SCGC7, SIM_SCGC7_FLEXBUS_SHIFT);
 #endif
 #ifdef RSIM
-    /* KW41Z errata
-     * e10224: RSIM: XTAL_OUT_EN signal from the pin is enabled by default
-     *
-     * Description: The XTAL_OUT_EN signal from the default XTAL_OUT_EN pin,
-     * PTB0, is enabled out of reset. This will result in the reference
-     * oscillator being enabled when this pin is asserted high regardless of the
-     * port control multiplexor setting.
-     *
-     * Workaround: To prevent the pin from enabling the XTAL out feature
-     * unintentionally, set RSIM_RF_OSC_CTRL[RADIO_EXT_OSC_OVRD_EN]=1.
-     */
+    // KW41Z errata
+    // e10224: RSIM: XTAL_OUT_EN signal from the pin is enabled by default
+    //
+    // Description: The XTAL_OUT_EN signal from the default XTAL_OUT_EN pin,
+    // PTB0, is enabled out of reset. This will result in the reference
+    // oscillator being enabled when this pin is asserted high regardless of the
+    // port control multiplexor setting.
+    //
+    // Workaround: To prevent the pin from enabling the XTAL out feature
+    // unintentionally, set RSIM_RF_OSC_CTRL[RADIO_EXT_OSC_OVRD_EN]=1.
     bit_set32(&RSIM->RF_OSC_CTRL, RSIM_RF_OSC_CTRL_RADIO_EXT_OSC_OVRD_EN_SHIFT);
 #endif
 }
 
-void pre_startup(void)
-{
-    /* disable the WDOG */
+void pre_startup(void) {
+    // disable the WDOG
     wdog_disable();
     cpu_errata_fixes();
 }
 
-void dummy_handler(void)
-{
+void dummy_handler(void) {
     dummy_handler_default();
 }
 
-/* Kinetis specific interrupt service routines */
+// Kinetis specific interrupt service routines
 WEAK_DEFAULT void isr_adc0(void);
 WEAK_DEFAULT void isr_adc1(void);
 WEAK_DEFAULT void isr_adc2(void);
@@ -222,13 +211,13 @@ WEAK_DEFAULT void isr_wdog_ewm(void);
 WEAK_DEFAULT void isr_mscan_rx(void);
 WEAK_DEFAULT void isr_mscan_tx(void);
 
-/* Empty interrupt vector padding to ensure that all sanity checks in the
- * linking stage are fulfilled. These will be placed in the area between the
- * used vector table starting at memory address 0 and the flash configuration
- * field at 0x400-0x410 */
-/* By using this padding we can let the linker script checks remain in place and
- * we will get a linking error if we accidentally link two interrupt vector
- * tables, or link the table from a different CPU, and catch many other mistakes. */
-/* We subtract the expected number of used vectors, which are: The initial stack
- * pointer + the Cortex-M common IRQs + the Kinetis CPU specific IRQs */
+// Empty interrupt vector padding to ensure that all sanity checks in the
+// linking stage are fulfilled. These will be placed in the area between the
+// used vector table starting at memory address 0 and the flash configuration
+// field at 0x400-0x410
+// By using this padding we can let the linker script checks remain in place and
+// we will get a linking error if we accidentally link two interrupt vector
+// tables, or link the table from a different CPU, and catch many other mistakes.
+// We subtract the expected number of used vectors, which are: The initial stack
+// pointer + the Cortex-M common IRQs + the Kinetis CPU specific IRQs
 ISR_VECTOR(99) const isr_t vector_padding[(0x400 / sizeof(isr_t)) - 1 - CPU_NONISR_EXCEPTIONS - CPU_IRQ_NUMOF] = { 0 };

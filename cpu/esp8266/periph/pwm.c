@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp8266
- * @ingroup     drivers_periph_pwm
- * @{
- *
- * @file
- * @brief       Low-level PWM driver implementation
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp8266
+/// @ingroup     drivers_periph_pwm
+/// @{
+///
+/// @file
+/// @brief       Low-level PWM driver implementation
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <assert.h>
 
@@ -62,8 +58,7 @@ typedef struct
 
 static _pwm_dev_t _pwm_dev;
 
-static void _pwm_timer_handler (void* arg)
-{
+static void _pwm_timer_handler (void* arg) {
     irq_isr_enter ();
 
     _pwm_dev.cycles++;
@@ -84,9 +79,8 @@ static void _pwm_timer_handler (void* arg)
     irq_isr_exit ();
 }
 
-static void _pwm_start(void)
-{
-    /* enable the timer and the interrupt and load the counter */
+static void _pwm_start(void) {
+    // enable the timer and the interrupt and load the counter
     TIMER_FRC1.CTRL = TIMER_FRC1_CLKDIV_16 | TIMER_CTRL_RELOAD | TIMER_CTRL_RUN;
     TM1_EDGE_INT_ENABLE();
     ETS_FRC1_INT_ENABLE();
@@ -94,24 +88,22 @@ static void _pwm_start(void)
 
     _pwm_dev.cycles = 0;
 
-    /* set the duty for all channels to start them */
+    // set the duty for all channels to start them
     for (int i = 0; i < _pwm_dev.chn_num; i++) {
         pwm_set(PWM_DEV(0), i, _pwm_dev.chn[i].duty);
     }
 }
 
-static void _pwm_stop(void)
-{
-    /* disable the interrupt and the timer */
+static void _pwm_stop(void) {
+    // disable the interrupt and the timer
     ETS_FRC1_INT_DISABLE();
     TM1_EDGE_INT_DISABLE();
     TIMER_FRC1.CTRL &= ~TIMER_CTRL_RUN;
 }
 
-#define PWM_MAX_CPS 100000UL  /* maximum cycles per second */
+#define PWM_MAX_CPS 100000UL  // maximum cycles per second
 
-uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res)
-{
+uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res) {
     DEBUG ("%s pwm=%u mode=%u freq=%u, res=%u\n", __func__, pwm, mode, freq, res);
 
     uint8_t _pwm_channel_gpio_num = sizeof(pwm0_channels) >> 2;
@@ -121,13 +113,13 @@ uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res)
     assert(freq > 0);
     assert(_pwm_channel_gpio_num <= PWM_CHANNEL_NUM_MAX);
 
-    /* maximum number of cycles per second (freq*res) should not be greater than */
-    /* 100.000 (period of 10 us), reduce freq if necessary and keep resolution */
+    // maximum number of cycles per second (freq*res) should not be greater than
+    // 100.000 (period of 10 us), reduce freq if necessary and keep resolution
     if (res * freq > PWM_MAX_CPS) {
         freq = PWM_MAX_CPS / res;
     }
 
-    _pwm_dev.load = 5e6 / freq / res;   /* load value for FRC1 at TIMER_FRC1_CLKDIV_16 */
+    _pwm_dev.load = 5e6 / freq / res;   // load value for FRC1 at TIMER_FRC1_CLKDIV_16
     _pwm_dev.res = res;
     _pwm_dev.chn_num = 0;
     _pwm_dev.cycles = 0;
@@ -163,15 +155,13 @@ uint32_t pwm_init(pwm_t pwm, pwm_mode_t mode, uint32_t freq, uint16_t res)
     return freq;
 }
 
-uint8_t pwm_channels(pwm_t pwm)
-{
+uint8_t pwm_channels(pwm_t pwm) {
     assert(pwm < PWM_NUMOF);
 
     return _pwm_dev.chn_num;
 }
 
-void pwm_set(pwm_t pwm, uint8_t channel, uint16_t value)
-{
+void pwm_set(pwm_t pwm, uint8_t channel, uint16_t value) {
     DEBUG("%s pwm=%u channel=%u value=%u\n", __func__, pwm, channel, value);
 
     assert(pwm < PWM_NUMOF);
@@ -213,22 +203,19 @@ void pwm_set(pwm_t pwm, uint8_t channel, uint16_t value)
     irq_restore(state);
 }
 
-void pwm_poweron(pwm_t pwm)
-{
+void pwm_poweron(pwm_t pwm) {
     CHECK_PARAM (pwm < PWM_NUMOF);
 
     _pwm_start();
 }
 
-void pwm_poweroff(pwm_t pwm)
-{
+void pwm_poweroff(pwm_t pwm) {
     assert(pwm < PWM_NUMOF);
 
     _pwm_stop ();
 }
 
-void pwm_print_config(void)
-{
+void pwm_print_config(void) {
     printf("\tPWM_DEV(0)\tchannels=[ ");
     for (unsigned i = 0; i < sizeof(pwm0_channels) >> 2; i++) {
         printf("%d ", pwm0_channels[i]);

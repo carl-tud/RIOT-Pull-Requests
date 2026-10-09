@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_iotlab-m3
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the iotlab-m3 board
- *
- * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_iotlab-m3
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the iotlab-m3 board
+///
+/// @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "periph_cpu.h"
 #include "periph_conf_common.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -63,10 +57,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

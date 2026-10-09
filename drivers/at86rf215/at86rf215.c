@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_at86rf215
- * @{
- *
- * @file
- * @brief       Implementation of public functions for AT86RF215 driver
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup     drivers_at86rf215
+/// @{
+///
+/// @file
+/// @brief       Implementation of public functions for AT86RF215 driver
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include "board.h"
 #include "byteorder.h"
@@ -26,8 +22,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static void _setup_interface(at86rf215_t *dev, const at86rf215_params_t *params, uint8_t index)
-{
+static void _setup_interface(at86rf215_t *dev, const at86rf215_params_t *params, uint8_t index) {
     netdev_t *netdev = &dev->netdev.netdev;
 
     netdev->driver = &at86rf215_driver;
@@ -37,9 +32,8 @@ static void _setup_interface(at86rf215_t *dev, const at86rf215_params_t *params,
     netdev_register(netdev, NETDEV_AT86RF215, index);
 }
 
-void at86rf215_setup(at86rf215_t *dev_09, at86rf215_t *dev_24, const at86rf215_params_t *params, uint8_t index)
-{
-    /* configure the sub-GHz interface */
+void at86rf215_setup(at86rf215_t *dev_09, at86rf215_t *dev_24, const at86rf215_params_t *params, uint8_t index) {
+    // configure the sub-GHz interface
     if (dev_09) {
         dev_09->RF = &RF09_regs;
         dev_09->BBC = &BBC0_regs;
@@ -47,7 +41,7 @@ void at86rf215_setup(at86rf215_t *dev_09, at86rf215_t *dev_24, const at86rf215_p
         dev_09->sibling = dev_24;
     }
 
-    /* configure the 2.4 GHz interface */
+    // configure the 2.4 GHz interface
     if (dev_24) {
         dev_24->RF = &RF24_regs;
         dev_24->BBC = &BBC1_regs;
@@ -56,11 +50,10 @@ void at86rf215_setup(at86rf215_t *dev_09, at86rf215_t *dev_24, const at86rf215_p
     }
 }
 
-void at86rf215_reset_and_cfg(at86rf215_t *dev)
-{
+void at86rf215_reset_and_cfg(at86rf215_t *dev) {
     netdev_ieee802154_reset(&dev->netdev);
 
-    /* set device address */
+    // set device address
     netdev_ieee802154_setup(&dev->netdev);
 
     if (is_subGHz(dev)) {
@@ -71,7 +64,7 @@ void at86rf215_reset_and_cfg(at86rf215_t *dev)
 
     dev->netdev.pan = CONFIG_IEEE802154_DEFAULT_PANID;
 
-    /* set default options */
+    // set default options
     dev->retries_max      = AT86RF215_RETRIES_MAX_DEFAULT;
     dev->csma_retries_max = AT86RF215_CSMA_RETRIES_MAX_DEFAULT;
     dev->csma_maxbe       = AT86RF215_CSMA_MAX_BE_DEFAULT;
@@ -84,36 +77,35 @@ void at86rf215_reset_and_cfg(at86rf215_t *dev)
 #endif
                ;
 
-    /* apply the configuration */
+    // apply the configuration
     at86rf215_reset(dev);
 
-    /* default to requesting ACKs, just like at86rf2xx */
+    // default to requesting ACKs, just like at86rf2xx
     static const netopt_enable_t ack_req =
             IS_ACTIVE(CONFIG_IEEE802154_DEFAULT_ACK_REQ) ? NETOPT_ENABLE : NETOPT_DISABLE;
     netdev_ieee802154_set(&dev->netdev, NETOPT_ACK_REQ,
                           &ack_req, sizeof(ack_req));
 
-    /* enable RX start IRQs */
+    // enable RX start IRQs
     at86rf215_reg_or(dev, dev->BBC->RG_IRQM, BB_IRQ_RXAM);
 }
 
-void at86rf215_reset(at86rf215_t *dev)
-{
+void at86rf215_reset(at86rf215_t *dev) {
     uint8_t reg;
     dev->state = AT86RF215_STATE_OFF;
 
-    /* Reset state machine to ensure a known state */
+    // Reset state machine to ensure a known state
     at86rf215_rf_cmd(dev, CMD_RF_TRXOFF);
     at86rf215_await_state(dev, RF_STATE_TRXOFF);
 
     if (!dev->sibling) {
-        /* disable 2.4-GHz IRQs if the interface is not enabled */
+        // disable 2.4-GHz IRQs if the interface is not enabled
         if (is_subGHz(dev)) {
             at86rf215_reg_write(dev, RG_BBC1_IRQM, 0);
             at86rf215_reg_write(dev, RG_RF24_IRQM, 0);
             at86rf215_reg_write(dev, RG_RF24_CMD, CMD_RF_SLEEP);
 
-        /* disable sub-GHz IRQs if the interface is not enabled */
+        // disable sub-GHz IRQs if the interface is not enabled
         } else {
             at86rf215_reg_write(dev, RG_BBC0_IRQM, 0);
             at86rf215_reg_write(dev, RG_RF09_IRQM, 0);
@@ -121,29 +113,29 @@ void at86rf215_reset(at86rf215_t *dev)
         }
     }
 
-    /* disable clock output */
+    // disable clock output
 if (!IS_ACTIVE(CONFIG_AT86RF215_USE_CLOCK_OUTPUT)){
     at86rf215_reg_write(dev, RG_RF_CLKO, 0);
 }
-    /* allow to configure board-specific trim */
+    // allow to configure board-specific trim
 #ifdef CONFIG_AT86RF215_TRIM_VAL
     at86rf215_set_trim(dev, CONFIG_AT86RF215_TRIM_VAL);
 #endif
 
-    /* enable TXFE & RXFE IRQ */
+    // enable TXFE & RXFE IRQ
     at86rf215_reg_write(dev, dev->BBC->RG_IRQM, BB_IRQ_TXFE | BB_IRQ_RXFE);
 
-    /* enable EDC IRQ */
+    // enable EDC IRQ
     at86rf215_reg_write(dev, dev->RF->RG_IRQM, RF_IRQ_EDC | RF_IRQ_TRXRDY);
 
-    /* set energy detect threshold to -84 dBm */
+    // set energy detect threshold to -84 dBm
     at86rf215_set_cca_threshold(dev, AT86RF215_EDT_DEFAULT);
 
-    /* enable address filter 0 */
+    // enable address filter 0
     at86rf215_reg_write(dev, dev->BBC->RG_AFC0, AFC0_AFEN0_MASK );
     at86rf215_reg_write(dev, dev->BBC->RG_AMAACKPD, AMAACKPD_PD0_MASK);
 
-    /* enable auto-ACK with Frame Checksum & Data Rate derived from RX frame */
+    // enable auto-ACK with Frame Checksum & Data Rate derived from RX frame
     reg = AMCS_AACKFA_MASK | AMCS_AACKDR_MASK;
     if (dev->flags & AT86RF215_OPT_AUTOACK) {
         reg |= AMCS_AACK_MASK;
@@ -173,31 +165,30 @@ if (!IS_ACTIVE(CONFIG_AT86RF215_USE_CLOCK_OUTPUT)){
                                      CONFIG_AT86RF215_DEFAULT_MR_FSK_FEC);
     }
 
-    /* set default channel */
+    // set default channel
     at86rf215_set_chan(dev, dev->netdev.chan);
 
-    /* set short and long address */
+    // set short and long address
     uint64_t long_addr;
     memcpy(&long_addr, dev->netdev.long_addr, sizeof(long_addr));
     at86rf215_set_addr_long(dev, long_addr);
     at86rf215_set_addr_short(dev, 0, unaligned_get_u16(dev->netdev.short_addr));
 
-    /* set default PAN id */
+    // set default PAN id
     at86rf215_set_pan(dev, 0, dev->netdev.pan);
 
-    /* set default TX power */
+    // set default TX power
     at86rf215_set_txpower(dev, CONFIG_AT86RF215_DEFAULT_TXPOWER);
 
-    /* start listening for incoming packets */
+    // start listening for incoming packets
     at86rf215_rf_cmd(dev, CMD_RF_RX);
     at86rf215_await_state(dev, RF_STATE_RX);
 
     dev->state = AT86RF215_STATE_IDLE;
 }
 
-ssize_t at86rf215_send(at86rf215_t *dev, const void *data, size_t len)
-{
-    /* check data length */
+ssize_t at86rf215_send(at86rf215_t *dev, const void *data, size_t len) {
+    // check data length
     if (len > AT86RF215_MAX_PKT_LENGTH) {
         DEBUG("[at86rf215] Error: data to send exceeds max packet size\n");
         return -EOVERFLOW;
@@ -212,11 +203,10 @@ ssize_t at86rf215_send(at86rf215_t *dev, const void *data, size_t len)
     return len;
 }
 
-void at86rf215_tx_done(at86rf215_t *dev)
-{
+void at86rf215_tx_done(at86rf215_t *dev) {
     uint8_t amcs = at86rf215_reg_read(dev, dev->BBC->RG_AMCS);
 
-    /* re-enable AACK, disable TX2RX */
+    // re-enable AACK, disable TX2RX
     amcs &= ~AMCS_TX2RX_MASK;
     if (dev->flags & AT86RF215_OPT_AUTOACK) {
         amcs |= AMCS_AACK_MASK;
@@ -224,24 +214,23 @@ void at86rf215_tx_done(at86rf215_t *dev)
 
     at86rf215_reg_write(dev, dev->BBC->RG_AMCS, amcs);
 
-    /* listen to non-ACK packets again */
+    // listen to non-ACK packets again
     if (dev->flags & AT86RF215_OPT_ACK_REQUESTED) {
         dev->flags &= ~AT86RF215_OPT_ACK_REQUESTED;
         at86rf215_filter_ack(dev, false);
     }
 
-    /* re-enable reduced power consumption */
+    // re-enable reduced power consumption
     at86rf215_enable_rpc(dev);
 }
 
-static bool _tx_ongoing(at86rf215_t *dev)
-{
+static bool _tx_ongoing(at86rf215_t *dev) {
     if (dev->flags & AT86RF215_OPT_TX_PENDING) {
         return true;
     }
 
-    /* we can still fill the TX buffer and queue TX
-       when in AT86RF215_STATE_RX_SEND_ACK */
+    // we can still fill the TX buffer and queue TX
+    //    when in AT86RF215_STATE_RX_SEND_ACK
     if (dev->state == AT86RF215_STATE_TX ||
         dev->state == AT86RF215_STATE_TX_WAIT_ACK) {
         return true;
@@ -250,8 +239,7 @@ static bool _tx_ongoing(at86rf215_t *dev)
     return false;
 }
 
-int at86rf215_tx_prepare(at86rf215_t *dev)
-{
+int at86rf215_tx_prepare(at86rf215_t *dev) {
     if (dev->state == AT86RF215_STATE_SLEEP) {
         return -ENETDOWN;
     }
@@ -266,9 +254,8 @@ int at86rf215_tx_prepare(at86rf215_t *dev)
 }
 
 size_t at86rf215_tx_load(at86rf215_t *dev, const uint8_t *data,
-                         size_t len, size_t offset)
-{
-    /* set bit if ACK was requested and retransmission is enabled */
+                         size_t len, size_t offset) {
+    // set bit if ACK was requested and retransmission is enabled
     if (offset == 0 && (data[0] & IEEE802154_FCF_ACK_REQ) && dev->retries_max) {
         dev->flags |= AT86RF215_OPT_ACK_REQUESTED;
     }
@@ -279,9 +266,8 @@ size_t at86rf215_tx_load(at86rf215_t *dev, const uint8_t *data,
     return offset + len;
 }
 
-int at86rf215_tx_exec(at86rf215_t *dev)
-{
-    /* write frame length */
+int at86rf215_tx_exec(at86rf215_t *dev) {
+    // write frame length
     at86rf215_reg_write16(dev, dev->BBC->RG_TXFLL, dev->tx_frame_len);
 
     dev->retries = dev->retries_max;
@@ -293,10 +279,10 @@ int at86rf215_tx_exec(at86rf215_t *dev)
         dev->flags |= AT86RF215_OPT_CCA_PENDING;
     }
 
-    /* AGCH marks a reception in progress. A high IRQ pin marks an unserviced
-     * radio event - e.g. a finished RX whose auto-ACK is still transmitting
-     * (AGCR already cleared AGCH). Prevent kicking TXPREP during ongoing frame
-     * reception, so defer: the pending _isr resumes the TX via _set_idle(). */
+    // AGCH marks a reception in progress. A high IRQ pin marks an unserviced
+    // radio event - e.g. a finished RX whose auto-ACK is still transmitting
+    // (AGCR already cleared AGCH). Prevent kicking TXPREP during ongoing frame
+    // reception, so defer: the pending _isr resumes the TX via _set_idle().
     if ((dev->state == AT86RF215_STATE_IDLE) &&
         !(dev->flags & AT86RF215_OPT_AGCH) &&
         !gpio_read(dev->params.int_pin)) {
@@ -308,8 +294,7 @@ int at86rf215_tx_exec(at86rf215_t *dev)
     return 0;
 }
 
-void at86rf215_tx_abort(at86rf215_t *dev)
-{
+void at86rf215_tx_abort(at86rf215_t *dev) {
     dev->flags &= ~(AT86RF215_OPT_CCA_PENDING | AT86RF215_OPT_TX_PENDING);
 
     at86rf215_tx_done(dev);
@@ -319,13 +304,12 @@ void at86rf215_tx_abort(at86rf215_t *dev)
     dev->state = AT86RF215_STATE_IDLE;
 }
 
-bool at86rf215_cca(at86rf215_t *dev)
-{
+bool at86rf215_cca(at86rf215_t *dev) {
     bool clear;
     uint8_t old_state;
 
-    /* Check both software state AND hardware reception state (AGCH)
-     * to prevent CCA during ongoing frame reception */
+    // Check both software state AND hardware reception state (AGCH)
+    // to prevent CCA during ongoing frame reception
     if (dev->state != AT86RF215_STATE_IDLE || (dev->flags & AT86RF215_OPT_AGCH)) {
         return false;
     }
@@ -338,19 +322,19 @@ bool at86rf215_cca(at86rf215_t *dev)
         return false;
     }
 
-    /* disable ED IRQ, baseband */
+    // disable ED IRQ, baseband
     at86rf215_reg_and(dev, dev->RF->RG_IRQM, ~(RF_IRQ_EDC | RF_IRQ_TRXRDY));
     at86rf215_reg_and(dev, dev->BBC->RG_PC, ~PC_BBEN_MASK);
 
     at86rf215_disable_rpc(dev);
 
-    /* start energy detect */
+    // start energy detect
     at86rf215_reg_write(dev, dev->RF->RG_EDC, RF_EDSINGLE);
     while (!(at86rf215_reg_read(dev, dev->RF->RG_IRQS) & RF_IRQ_EDC)) {}
 
     clear = !(at86rf215_reg_read(dev, dev->BBC->RG_AMCS) & AMCS_CCAED_MASK);
 
-    /* enable ED IRQ, baseband */
+    // enable ED IRQ, baseband
     at86rf215_reg_or(dev, dev->RF->RG_IRQM, RF_IRQ_EDC | RF_IRQ_TRXRDY);
     at86rf215_reg_or(dev, dev->BBC->RG_PC, PC_BBEN_MASK);
 

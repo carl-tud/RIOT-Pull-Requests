@@ -1,25 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_emcute
- * @{
- *
- * @file
- * @brief       emCute string functions (for debugging purposes)
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     net_emcute
+/// @{
+///
+/// @file
+/// @brief       emCute string functions (for debugging purposes)
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include "net/emcute.h"
 #include "emcute_internal.h"
 
-const char *emcute_type_str(uint8_t type)
-{
+const char *emcute_type_str(uint8_t type) {
     switch (type) {
         case ADVERTISE:     return "ADVERTISE";
         case SEARCHGW:      return "SEARCHGW";

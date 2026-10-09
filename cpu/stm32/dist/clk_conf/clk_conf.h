@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @brief       Compute clock constants for STM32F[2|4|7] CPUs
- *
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @{
- */
+/// @brief       Compute clock constants for STM32F[2|4|7] CPUs
+///
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @{
 
 #include <stdbool.h>
 
@@ -19,10 +15,8 @@
 extern "C" {
 #endif
 
-/**
- * @name STM32 families
- * @{
- */
+/// @name STM32 families
+/// @{
 enum fam {
     STM32F0,
     STM32F1,
@@ -33,12 +27,10 @@ enum fam {
     STM32MP1,
     FAM_MAX,
 };
-/** @} */
+/// @}
 
-/**
- * @name Supported models
- * @{
- */
+/// @name Supported models
+/// @{
 enum {
     STM32F030,
     STM32F070,
@@ -110,99 +102,93 @@ enum {
 
     MODEL_MP_MAX,
 };
-/** @} */
+/// @}
 
-/**
- * @brief PLL configuration parameters
- *
- * PLL configuration follows the model:
- * ```
- *
- * pll_in  +----+  vco_in  +------------------------------+
- * --------| /M |----------|\  +----+ vco_out     +----+  |
- *         +----+          | --| xN |-------------| /P |--|-- pll_p_out
- *                         |   +----+         \   +----+  |
- *                         |                   |  +----+  |
- *                         |                   ---| /Q |--|-- pll_q_out
- *                         |                   |  +----+  |
- *                         |                   |  +----+  |
- *                         |                   ---| /R |--|-- pll_r_out
- *                         |                      +----+  |
- *                         +------------------------------+
- * ```
- *
- * vco_in = pll_in / M;
- * vco_out = vco_in * N;
- * pll_p_out = vco_out / P;
- * pll_q_out = vco_out / Q;
- * pll_r_out = vco_out / R;
- */
+/// @brief PLL configuration parameters
+///
+/// PLL configuration follows the model:
+/// ```
+///
+/// pll_in  +----+  vco_in  +------------------------------+
+/// --------| /M |----------|\  +----+ vco_out     +----+  |
+///         +----+          | --| xN |-------------| /P |--|-- pll_p_out
+///                         |   +----+         \   +----+  |
+///                         |                   |  +----+  |
+///                         |                   ---| /Q |--|-- pll_q_out
+///                         |                   |  +----+  |
+///                         |                   |  +----+  |
+///                         |                   ---| /R |--|-- pll_r_out
+///                         |                      +----+  |
+///                         +------------------------------+
+/// ```
+///
+/// vco_in = pll_in / M;
+/// vco_out = vco_in * N;
+/// pll_p_out = vco_out / P;
+/// pll_q_out = vco_out / Q;
+/// pll_r_out = vco_out / R;
 typedef struct {
-    unsigned min_vco_input;  /**< Min VCO input */
-    unsigned max_vco_input;  /**< Max VCO input */
-    unsigned min_vco_output; /**< Min VCO output */
-    unsigned max_vco_output; /**< Max VCO output */
+    unsigned min_vco_input;  ///< Min VCO input
+    unsigned max_vco_input;  ///< Max VCO input
+    unsigned min_vco_output; ///< Min VCO output
+    unsigned max_vco_output; ///< Max VCO output
 
-    unsigned min_n; /**< Min N */
-    unsigned max_n; /**< Max N */
-    unsigned inc_n; /**< Increment between two values of N */
+    unsigned min_n; ///< Min N
+    unsigned max_n; ///< Max N
+    unsigned inc_n; ///< Increment between two values of N
 
-    unsigned min_m; /**< Min M */
-    unsigned max_m; /**< Max M */
-    unsigned inc_m; /**< Increment between two values of M */
+    unsigned min_m; ///< Min M
+    unsigned max_m; ///< Max M
+    unsigned inc_m; ///< Increment between two values of M
 
-    unsigned min_p; /**< Min P */
-    unsigned max_p; /**< Max P */
-    unsigned inc_p; /**< Increment between two values of P */
+    unsigned min_p; ///< Min P
+    unsigned max_p; ///< Max P
+    unsigned inc_p; ///< Increment between two values of P
 
-    unsigned min_q; /**< Min Q */
-    unsigned max_q; /**< Max Q */
-    unsigned inc_q; /**< Increment between two values of Q */
+    unsigned min_q; ///< Min Q
+    unsigned max_q; ///< Max Q
+    unsigned inc_q; ///< Increment between two values of Q
 } pll_cfg_t;
 
-/**
- * @brief Clock configuration
- */
+/// @brief Clock configuration
 typedef struct {
-    enum fam family; /**< Family */
+    enum fam family; ///< Family
 
-    unsigned max_coreclock; /**< Max coreclock */
-    unsigned max_apb1;      /**< Max APB1 clock */
-    unsigned max_apb2;      /**< Max APB2 clock */
-    unsigned max_apb3;      /**< Max APB3 clock */
+    unsigned max_coreclock; ///< Max coreclock
+    unsigned max_apb1;      ///< Max APB1 clock
+    unsigned max_apb2;      ///< Max APB2 clock
+    unsigned max_apb3;      ///< Max APB3 clock
 
-    unsigned hsi; /**< HSI frequency */
+    unsigned hsi; ///< HSI frequency
 
-    pll_cfg_t pll; /**< PLL configuration */
+    pll_cfg_t pll; ///< PLL configuration
 
-    bool has_pll_i2s;   /**< PLL I2S available */
-    bool has_pll_sai;   /**< PLL SAI available */
-    bool has_pll_i2s_m; /**< PLL I2S has a M factor */
-    bool has_pll_sai_m; /**< PLL SAI has a M factor */
-    bool has_pll_i2s_alt_input; /**< PLL I2S has an external input available */
+    bool has_pll_i2s;   ///< PLL I2S available
+    bool has_pll_sai;   ///< PLL SAI available
+    bool has_pll_i2s_m; ///< PLL I2S has a M factor
+    bool has_pll_sai_m; ///< PLL SAI has a M factor
+    bool has_pll_i2s_alt_input; ///< PLL I2S has an external input available
 
-    unsigned hsi_prediv;    /**< Value if HSI has a fixed prediv, 0 otherwise */
+    unsigned hsi_prediv;    ///< Value if HSI has a fixed prediv, 0 otherwise
 
-    int has_alt_48MHz; /**< 48MHz can be generated by an alternate source */
-    bool need_48MHz;   /**< 48MHz is needed */
+    int has_alt_48MHz; ///< 48MHz can be generated by an alternate source
+    bool need_48MHz;   ///< 48MHz is needed
 } clk_cfg_t;
 
-/**
- * @name Alternative 48MHz sources
- * @{
- */
+/// @name Alternative 48MHz sources
+/// @{
 #define ALT_48MHZ_NO  0
 #define ALT_48MHZ_I2S 1
 #define ALT_48MHZ_SAI 2
 
 #define ALT_48MHZ_Q   0
 #define ALT_48MHZ_P   4
-/** @} */
+/// @}
 
 #define STM32F(x) [STM32F##x] = x
 #define STM32F0(x) [STM32F0##x] = x
 
-/** List of supported models */
+/// List of supported models
 static const unsigned stm32_f_model[] = {
     STM32F0(30),
     STM32F0(70),
@@ -269,12 +255,12 @@ static const unsigned stm32_f_model[] = {
 
 #define STM32MP(x) [STM32MP##x] = x
 
-/** List of supported models */
+/// List of supported models
 static const unsigned stm32_model_mp[] = {
     STM32MP(157),
 };
 
-/** STM32F2xx / STM32F401 PLL config */
+/// STM32F2xx / STM32F401 PLL config
 #define stm32f2_4_192_pll_cfg  { \
     .min_vco_input = 1000000U, \
     .max_vco_input = 2000000U, \
@@ -294,7 +280,7 @@ static const unsigned stm32_model_mp[] = {
     .inc_q = 1, \
 }
 
-/** STM32F4 (except 401) / STM32F7 PLL config */
+/// STM32F4 (except 401) / STM32F7 PLL config
 #define stm32f4_7_pll_cfg  { \
     .min_vco_input = 1000000U, \
     .max_vco_input = 2000000U, \
@@ -314,7 +300,7 @@ static const unsigned stm32_model_mp[] = {
     .inc_q = 1, \
 }
 
-/** STM32MP1 PLL config */
+/// STM32MP1 PLL config
 #define stm32mp1_pll_cfg  { \
     .min_vco_input = 4000000U, \
     .max_vco_input = 16000000U, \
@@ -334,9 +320,7 @@ static const unsigned stm32_model_mp[] = {
     .inc_q = 1, \
 }
 
-/**
- * @brief Clock config for supported cpu
- */
+/// @brief Clock config for supported cpu
 static const clk_cfg_t stm32_f_clk_cfg[] = {
     [STM32F030 ... STM32F098] = {
         .family = STM32F0,
@@ -625,9 +609,7 @@ static const clk_cfg_t stm32_f_clk_cfg[] = {
     },
 };
 
-/**
- * @brief Clock config for supported cpu
- */
+/// @brief Clock config for supported cpu
 static const clk_cfg_t stm32_mp_clk_cfg[] = {
     [STM32MP157] = {
         .family = STM32MP1,
@@ -651,4 +633,4 @@ static const clk_cfg_t stm32_mp_clk_cfg[] = {
 }
 #endif
 
-/** @} */
+/// @}

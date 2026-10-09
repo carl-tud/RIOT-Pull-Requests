@@ -1,41 +1,33 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_feetech
- * @{
- *
- * @file
- * @brief       Feetech messages writer
- *
- * @author      Loïc Dauphin <loic.dauphin@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_feetech
+/// @{
+///
+/// @file
+/// @brief       Feetech messages writer
+///
+/// @author      Loïc Dauphin <loic.dauphin@inria.fr>
+///
+/// @}
 
 #include "feetech_writer.h"
 
-void feetech_writer_init(feetech_writer_t *writer, uint8_t *buffer, size_t buffer_max_size)
-{
+void feetech_writer_init(feetech_writer_t *writer, uint8_t *buffer, size_t buffer_max_size) {
     writer->buffer = buffer;
     writer->size = 0;
     writer->buffer_max_size = buffer_max_size;
 }
 
-const uint8_t *feetech_writer_get_data(const feetech_writer_t *writer)
-{
+const uint8_t *feetech_writer_get_data(const feetech_writer_t *writer) {
     return (const uint8_t*)writer->buffer;
 }
 
-size_t feetech_writer_get_size(const feetech_writer_t *writer)
-{
+size_t feetech_writer_get_size(const feetech_writer_t *writer) {
     return writer->size;
 }
 
-void feetech_writer_response_make(feetech_writer_t *writer, uint8_t id, const uint8_t *buffer, size_t size)
-{
+void feetech_writer_response_make(feetech_writer_t *writer, uint8_t id, const uint8_t *buffer, size_t size) {
     const size_t len = 2 + size;
     if (len + 4 <= writer->buffer_max_size) {
         writer->size = len + 4;
@@ -59,8 +51,7 @@ void feetech_writer_response_make(feetech_writer_t *writer, uint8_t id, const ui
     }
 }
 
-void feetech_writer_ack_make(feetech_writer_t *writer, uint8_t id)
-{
+void feetech_writer_ack_make(feetech_writer_t *writer, uint8_t id) {
     const size_t len = 2;
     if (len + 4 <= writer->buffer_max_size) {
         writer->size = len + 4;
@@ -79,8 +70,7 @@ void feetech_writer_ack_make(feetech_writer_t *writer, uint8_t id)
     }
 }
 
-void feetech_writer_ping_make(feetech_writer_t *writer, uint8_t id)
-{
+void feetech_writer_ping_make(feetech_writer_t *writer, uint8_t id) {
     const size_t len = 2;
     if (len + 4 <= writer->buffer_max_size) {
         writer->size = len + 4;
@@ -99,8 +89,7 @@ void feetech_writer_ping_make(feetech_writer_t *writer, uint8_t id)
     }
 }
 
-void feetech_writer_write8_make(feetech_writer_t *writer, uint8_t id, uint8_t reg, uint8_t value)
-{
+void feetech_writer_write8_make(feetech_writer_t *writer, uint8_t id, uint8_t reg, uint8_t value) {
     const size_t len = 4;
     if (len + 4 <= writer->buffer_max_size) {
         writer->size = len + 4;
@@ -123,8 +112,7 @@ void feetech_writer_write8_make(feetech_writer_t *writer, uint8_t id, uint8_t re
     }
 }
 
-void feetech_writer_write16_make(feetech_writer_t *writer, uint8_t id, uint8_t reg, uint16_t value)
-{
+void feetech_writer_write16_make(feetech_writer_t *writer, uint8_t id, uint8_t reg, uint16_t value) {
     const size_t len = 5;
     if (len + 4 <= writer->buffer_max_size) {
         writer->size = len + 4;
@@ -148,8 +136,7 @@ void feetech_writer_write16_make(feetech_writer_t *writer, uint8_t id, uint8_t r
     }
 }
 
-void feetech_writer_write_make(feetech_writer_t *writer, uint8_t id, uint8_t reg, const uint8_t *buffer, size_t size)
-{
+void feetech_writer_write_make(feetech_writer_t *writer, uint8_t id, uint8_t reg, const uint8_t *buffer, size_t size) {
     const size_t len = 3 + size;
     if (len + 4 <= writer->buffer_max_size) {
         writer->size = len + 4;
@@ -174,8 +161,7 @@ void feetech_writer_write_make(feetech_writer_t *writer, uint8_t id, uint8_t reg
     }
 }
 
-void feetech_writer_read_make(feetech_writer_t *writer, uint8_t id, uint8_t reg, size_t size)
-{
+void feetech_writer_read_make(feetech_writer_t *writer, uint8_t id, uint8_t reg, size_t size) {
     const size_t len = 4;
     if (len + 4 <= writer->buffer_max_size) {
         writer->size = len + 4;
@@ -198,23 +184,20 @@ void feetech_writer_read_make(feetech_writer_t *writer, uint8_t id, uint8_t reg,
     }
 }
 
-size_t feetech_writer_sync_write_required(feetech_writer_t *writer)
-{
+size_t feetech_writer_sync_write_required(feetech_writer_t *writer) {
     if (8 <= writer->size && writer->buffer[4] == INST_SYNC_WRITE) {
         return writer->buffer[6];
     }
     return 0;
 }
 
-void feetech_writer_sync_write_end(feetech_writer_t *writer)
-{
+void feetech_writer_sync_write_end(feetech_writer_t *writer) {
     if (writer->size <= 8) {
         writer->size = 0;
     }
 }
 
-void feetech_writer_sync_write_add(feetech_writer_t *writer, uint8_t id, const uint8_t *buffer, size_t size)
-{
+void feetech_writer_sync_write_add(feetech_writer_t *writer, uint8_t id, const uint8_t *buffer, size_t size) {
     if (feetech_writer_sync_write_required(writer) == size &&
         size != 0 && writer->size + size + 1 <= writer->buffer_max_size) {
 
@@ -234,8 +217,7 @@ void feetech_writer_sync_write_add(feetech_writer_t *writer, uint8_t id, const u
     }
 }
 
-void feetech_writer_sync_write_add_8bits(feetech_writer_t *writer, uint8_t id, uint8_t value)
-{
+void feetech_writer_sync_write_add_8bits(feetech_writer_t *writer, uint8_t id, uint8_t value) {
     if (feetech_writer_sync_write_required(writer) == 1 &&
         writer->size + 2 <= writer->buffer_max_size) {
 
@@ -253,8 +235,7 @@ void feetech_writer_sync_write_add_8bits(feetech_writer_t *writer, uint8_t id, u
     }
 }
 
-void feetech_writer_sync_write_add_16bits(feetech_writer_t *writer, uint8_t id, uint16_t value)
-{
+void feetech_writer_sync_write_add_16bits(feetech_writer_t *writer, uint8_t id, uint16_t value) {
     if (feetech_writer_sync_write_required(writer) == 2 &&
         writer->size + 3 <= writer->buffer_max_size) {
 
@@ -273,8 +254,7 @@ void feetech_writer_sync_write_add_16bits(feetech_writer_t *writer, uint8_t id, 
     }
 }
 
-void feetech_writer_sync_write_begin(feetech_writer_t *writer, uint8_t reg, size_t size)
-{
+void feetech_writer_sync_write_begin(feetech_writer_t *writer, uint8_t reg, size_t size) {
     const size_t len = 4;
     if (len + 4 <= writer->buffer_max_size) {
         writer->size = len + 4;

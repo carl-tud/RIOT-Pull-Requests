@@ -1,29 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2020 Deutsches Zentrum für Luft- und Raumfahrt e.V. (DLR)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Deutsches Zentrum für Luft- und Raumfahrt e.V. (DLR)
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_hsc
- * @brief       Internal addresses, constants for the HSC sensor.
- * @{
- *
- * @file
- * @brief       Internal addresses, constants for the HSC sensor.
- *
- * @author      Quang Pham <phhr_quang@live.com>
- */
+/// @ingroup     drivers_hsc
+/// @brief       Internal addresses, constants for the HSC sensor.
+/// @{
+///
+/// @file
+/// @brief       Internal addresses, constants for the HSC sensor.
+///
+/// @author      Quang Pham <phhr_quang@live.com>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name    HSC I2C Packet Readout
- * @{
- */
+/// @name    HSC I2C Packet Readout
+/// @{
 #define HSC_PRESSURE_DATA_LENGTH    (2)      /**<
         Pressure is stored in the first 2 bytes of data */
 #define HSC_FULL_DATA_LENGTH        (4)      /**<
@@ -34,26 +28,22 @@ extern "C" {
         Bit mask for the pressure data */
 #define HSC_TEMPERATURE_SHIFT       (5)      /**<
         Temperature data is left adjusted within the word */
-/** @} */
+/// @}
 
-/**
- * @name   Status and error return codes
- * @{
- */
+/// @name   Status and error return codes
+/// @{
 enum {
     HSC_STATUS_OK           = 0x00,
-    /**
-     * stale data: data that has already been fetched since the last measurement
-     * cycle, or data fetched before the first measurement has been completed.
-     */
+    /// stale data: data that has already been fetched since the last measurement
+    /// cycle, or data fetched before the first measurement has been completed.
     HSC_STATUS_STALE_DATA   = 0x40,
     HSC_STATUS_COMMAND_MODE = 0x80,
     HSC_STATUS_DIAGNOSTIC   = 0xc0,
 };
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

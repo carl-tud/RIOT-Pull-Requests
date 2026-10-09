@@ -1,24 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2022 Niklaus Leuenberger
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Niklaus Leuenberger
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup
- * @ingroup
- * @brief
- * @{
- *
- * @file
- * @brief
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @author      NikLeberg <niklaus.leuenb+github@gmail.com>
- *
- * @}
- */
+/// @defgroup
+/// @ingroup
+/// @brief
+/// @{
+///
+/// @file
+/// @brief
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @author      NikLeberg <niklaus.leuenb+github@gmail.com>
+///
+/// @}
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,4 +28,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -17,10 +13,9 @@
 
 #define DEC     "0123456789"
 
-/* based on inet_pton4() by Paul Vixie */
+// based on inet_pton4() by Paul Vixie
 ipv4_addr_t *ipv4_addr_from_buf(ipv4_addr_t *result, const char *addr,
-                                size_t addr_len)
-{
+                                size_t addr_len) {
     uint8_t saw_digit, octets;
     uint8_t tmp[sizeof(ipv4_addr_t)], *tp;
     const char *start = addr;
@@ -76,8 +71,7 @@ ipv4_addr_t *ipv4_addr_from_buf(ipv4_addr_t *result, const char *addr,
     return result;
 }
 
-ipv4_addr_t *ipv4_addr_from_str(ipv4_addr_t *result, const char *addr)
-{
+ipv4_addr_t *ipv4_addr_from_str(ipv4_addr_t *result, const char *addr) {
     if ((result == NULL) || (addr == NULL)) {
         return NULL;
     }
@@ -85,4 +79,4 @@ ipv4_addr_t *ipv4_addr_from_str(ipv4_addr_t *result, const char *addr)
     return ipv4_addr_from_buf(result, addr, strlen(addr));
 }
 
-/** @} */
+/// @}

@@ -1,21 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <stdlib.h>
 
 #include "net/ipv4/addr.h"
 
-/* based on inet_ntop4() by Paul Vixie */
-char *ipv4_addr_to_str(char *result, const ipv4_addr_t *addr, uint8_t result_len)
-{
+// based on inet_ntop4() by Paul Vixie
+char *ipv4_addr_to_str(char *result, const ipv4_addr_t *addr, uint8_t result_len) {
     uint8_t n = 0;
     char *next = result;
 
@@ -46,4 +41,4 @@ char *ipv4_addr_to_str(char *result, const ipv4_addr_t *addr, uint8_t result_len
     return result;
 }
 
-/** @} */
+/// @}

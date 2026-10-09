@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     core_thread
- * @{
- *
- * @file
- * @brief       thread flags implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     core_thread
+/// @{
+///
+/// @file
+/// @brief       thread flags implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include "thread_flags.h"
 #include "irq.h"
@@ -23,8 +19,7 @@
 #include "debug.h"
 
 static inline int __attribute__((always_inline)) _thread_flags_wake(
-    thread_t *thread)
-{
+    thread_t *thread) {
     unsigned wakeup;
     thread_flags_t mask = (uint16_t)(uintptr_t)thread->wait_data;
 
@@ -51,8 +46,7 @@ static inline int __attribute__((always_inline)) _thread_flags_wake(
 }
 
 static thread_flags_t _thread_flags_clear_atomic(thread_t *thread,
-                                                 thread_flags_t mask)
-{
+                                                 thread_flags_t mask) {
     unsigned state = irq_disable();
 
     mask &= thread->flags;
@@ -62,8 +56,7 @@ static thread_flags_t _thread_flags_clear_atomic(thread_t *thread,
 }
 
 static void _thread_flags_wait(thread_flags_t mask, thread_t *thread,
-                               unsigned threadstate, unsigned irqstate)
-{
+                               unsigned threadstate, unsigned irqstate) {
     DEBUG(
         "_thread_flags_wait: me->flags=0x%08x me->mask=0x%08x. going blocked.\n",
         (unsigned)thread->flags, (unsigned)mask);
@@ -74,8 +67,7 @@ static void _thread_flags_wait(thread_flags_t mask, thread_t *thread,
     thread_yield_higher();
 }
 
-thread_flags_t thread_flags_clear(thread_flags_t mask)
-{
+thread_flags_t thread_flags_clear(thread_flags_t mask) {
     thread_t *me = thread_get_active();
 
     mask = _thread_flags_clear_atomic(me, mask);
@@ -84,8 +76,7 @@ thread_flags_t thread_flags_clear(thread_flags_t mask)
     return mask;
 }
 
-static void _thread_flags_wait_any(thread_flags_t mask)
-{
+static void _thread_flags_wait_any(thread_flags_t mask) {
     thread_t *me = thread_get_active();
     unsigned state = irq_disable();
 
@@ -97,27 +88,24 @@ static void _thread_flags_wait_any(thread_flags_t mask)
     }
 }
 
-thread_flags_t thread_flags_wait_any(thread_flags_t mask)
-{
+thread_flags_t thread_flags_wait_any(thread_flags_t mask) {
     thread_t *me = thread_get_active();
 
     _thread_flags_wait_any(mask);
     return _thread_flags_clear_atomic(me, mask);
 }
 
-thread_flags_t thread_flags_wait_one(thread_flags_t mask)
-{
+thread_flags_t thread_flags_wait_one(thread_flags_t mask) {
     _thread_flags_wait_any(mask);
     thread_t *me = thread_get_active();
     thread_flags_t tmp = me->flags & mask;
 
-    /* clear all but least significant bit */
+    // clear all but least significant bit
     tmp &= (~tmp + 1);
     return _thread_flags_clear_atomic(me, tmp);
 }
 
-thread_flags_t thread_flags_wait_all(thread_flags_t mask)
-{
+thread_flags_t thread_flags_wait_all(thread_flags_t mask) {
     unsigned state = irq_disable();
     thread_t *me = thread_get_active();
 
@@ -134,14 +122,12 @@ thread_flags_t thread_flags_wait_all(thread_flags_t mask)
     return _thread_flags_clear_atomic(me, mask);
 }
 
-bool thread_flags_set_internal(thread_t *thread, thread_flags_t mask)
-{
+bool thread_flags_set_internal(thread_t *thread, thread_flags_t mask) {
     thread->flags |= mask;
     return _thread_flags_wake(thread);
 }
 
-void thread_flags_set(thread_t *thread, thread_flags_t mask)
-{
+void thread_flags_set(thread_t *thread, thread_flags_t mask) {
     DEBUG("thread_flags_set(): setting 0x%08x for pid %" PRIkernel_pid "\n",
           mask, thread->pid);
     unsigned state = irq_disable();

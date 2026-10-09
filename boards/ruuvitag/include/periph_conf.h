@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_ruuvitag
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the RuuviTag
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- */
+/// @ingroup     boards_ruuvitag
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the RuuviTag
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
 
 #include "periph_cpu.h"
 #include "cfg_clock_32_1.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPIM0,
@@ -40,12 +34,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = NRF_UARTE0,
@@ -61,10 +53,10 @@ static const uart_conf_t uart_config[] = {
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
 #define UART_0_ISR          (isr_uart0)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

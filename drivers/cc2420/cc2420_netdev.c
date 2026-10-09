@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_cc2420
- * @{
- *
- * @file
- * @brief       Netdev adaption for the cc2420 driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Francisco Acosta <francisco.acosta@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_cc2420
+/// @{
+///
+/// @file
+/// @brief       Netdev adaption for the cc2420 driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Francisco Acosta <francisco.acosta@inria.fr>
+///
+/// @}
 
 #include <string.h>
 #include <assert.h>
@@ -51,82 +47,74 @@ const netdev_driver_t cc2420_driver = {
     .set = _set,
 };
 
-static void _irq_handler(void *arg)
-{
+static void _irq_handler(void *arg) {
     netdev_t *dev = arg;
 
     netdev_trigger_event_isr(dev);
 }
 
-static inline uint16_t to_u16(const void *buf)
-{
+static inline uint16_t to_u16(const void *buf) {
     return *((const uint16_t *)buf);
 }
 
-static inline int16_t to_i16(const void *buf)
-{
+static inline int16_t to_i16(const void *buf) {
     return *((const int16_t *)buf);
 }
 
-static inline bool to_bool(const void *buf)
-{
+static inline bool to_bool(const void *buf) {
     return *((const bool *)buf);
 }
 
-static inline int w_u16(void *buf, uint16_t val)
-{
+static inline int w_u16(void *buf, uint16_t val) {
     memcpy(buf, &val, sizeof(uint16_t));
     return sizeof(uint16_t);
 }
 
-static inline int w_i16(void *buf, int16_t val)
-{
+static inline int w_i16(void *buf, int16_t val) {
     memcpy(buf, &val, sizeof(int16_t));
     return sizeof(int16_t);
 }
 
-static inline int opt_state(void *buf, bool cond)
-{
+static inline int opt_state(void *buf, bool cond) {
     *((netopt_enable_t *)buf) = !!(cond);
     return sizeof(netopt_enable_t);
 }
 
-static int _init(netdev_t *netdev)
-{
+static int _init(netdev_t *netdev) {
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     cc2420_t *dev = container_of(netdev_ieee802154, cc2420_t, netdev);
 
     uint16_t reg;
 
-    /* initialize power and reset pins -> put the device into reset state */
+    // initialize power and reset pins -> put the device into reset state
     gpio_init(dev->params.pin_reset, GPIO_OUT);
     gpio_set(dev->params.pin_reset);
     gpio_init(dev->params.pin_vrefen, GPIO_OUT);
     gpio_clear(dev->params.pin_vrefen);
 
-    /* initialize the input lines */
+    // initialize the input lines
     gpio_init(dev->params.pin_cca, GPIO_IN);
     gpio_init(dev->params.pin_sfd, GPIO_IN);
     gpio_init(dev->params.pin_fifo, GPIO_IN);
     gpio_init_int(dev->params.pin_fifop, GPIO_IN, GPIO_RISING, _irq_handler, dev);
 
-    /* initialize the chip select line and the SPI bus */
+    // initialize the chip select line and the SPI bus
     spi_init_cs(dev->params.spi, dev->params.pin_cs);
 
-    /* power on and toggle reset */
+    // power on and toggle reset
     gpio_set(dev->params.pin_vrefen);
     gpio_clear(dev->params.pin_reset);
     xtimer_usleep(CC2420_RESET_DELAY);
     gpio_set(dev->params.pin_reset);
 
-    /* test the connection to the device by reading MANFIDL register */
+    // test the connection to the device by reading MANFIDL register
     reg = cc2420_reg_read(dev, CC2420_REG_MANFIDL);
     if (reg != CC2420_MANFIDL_VAL) {
         DEBUG("cc2420: init: unable to communicate with device\n");
         return -1;
     }
 
-    /* turn on the oscillator and wait for it to be stable */
+    // turn on the oscillator and wait for it to be stable
     cc2420_en_xosc(dev);
     if (!(cc2420_status(dev) & CC2420_STATUS_XOSC_STABLE)) {
         DEBUG("cc2420: init: oscillator did not stabilize\n");
@@ -135,34 +123,30 @@ static int _init(netdev_t *netdev)
 
     int res = cc2420_init(dev);
     if (res == 0) {
-        /* signal link UP */
+        // signal link UP
         netdev->event_callback(netdev, NETDEV_EVENT_LINK_UP);
     }
 
     return res;
 }
 
-static void _isr(netdev_t *netdev)
-{
+static void _isr(netdev_t *netdev) {
     netdev->event_callback(netdev, NETDEV_EVENT_RX_COMPLETE);
 }
 
-static int _send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _send(netdev_t *netdev, const iolist_t *iolist) {
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     cc2420_t *dev = container_of(netdev_ieee802154, cc2420_t, netdev);
     return (int)cc2420_send(dev, iolist);
 }
 
-static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     cc2420_t *dev = container_of(netdev_ieee802154, cc2420_t, netdev);
     return (int)cc2420_rx(dev, buf, len, info);
 }
 
-static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
-{
+static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len) {
     if (netdev == NULL) {
         return -ENODEV;
     }
@@ -230,8 +214,7 @@ static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
     }
 }
 
-static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t val_len)
-{
+static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t val_len) {
     if (netdev == NULL) {
         return -ENODEV;
     }

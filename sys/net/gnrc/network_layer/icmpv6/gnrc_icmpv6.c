@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_gnrc_icmpv6
- * @{
- *
- * @file
- *
- * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @ingroup     net_gnrc_icmpv6
+/// @{
+///
+/// @file
+///
+/// @author      Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -33,8 +29,7 @@
 
 static inline uint16_t _calc_csum(gnrc_pktsnip_t *hdr,
                                   gnrc_pktsnip_t *pseudo_hdr,
-                                  gnrc_pktsnip_t *payload)
-{
+                                  gnrc_pktsnip_t *payload) {
     uint16_t csum = 0;
     uint16_t len = (uint16_t)hdr->size;
 
@@ -50,8 +45,7 @@ static inline uint16_t _calc_csum(gnrc_pktsnip_t *hdr,
     return ~csum;
 }
 
-void gnrc_icmpv6_demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
-{
+void gnrc_icmpv6_demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt) {
     gnrc_pktsnip_t *icmpv6, *ipv6;
     icmpv6_hdr_t *hdr;
 
@@ -59,8 +53,8 @@ void gnrc_icmpv6_demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
 
     assert(icmpv6 != NULL);
 
-    /* there can be extension headers between IPv6 and ICMPv6 header so we have
-     * to search it */
+    // there can be extension headers between IPv6 and ICMPv6 header so we have
+    // to search it
     ipv6 = gnrc_pktsnip_search_type(icmpv6, GNRC_NETTYPE_IPV6);
 
     assert(ipv6 != NULL);
@@ -71,7 +65,7 @@ void gnrc_icmpv6_demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
         return;
     }
 
-    /* Note: size will be checked again in packet handlers */
+    // Note: size will be checked again in packet handlers
 
     hdr = (icmpv6_hdr_t *)icmpv6->data;
 
@@ -82,7 +76,7 @@ void gnrc_icmpv6_demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
     }
 
     switch (hdr->type) {
-        /* TODO: handle ICMPv6 errors */
+        // TODO: handle ICMPv6 errors
 #ifdef MODULE_GNRC_ICMPV6_ECHO
         case ICMPV6_ECHO_REQ:
             DEBUG("icmpv6: handle echo request.\n");
@@ -108,8 +102,8 @@ void gnrc_icmpv6_demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
             break;
     }
 
-    /* ICMPv6-all will be send in gnrc_ipv6.c so only dispatch of subtypes is
-     * needed */
+    // ICMPv6-all will be send in gnrc_ipv6.c so only dispatch of subtypes is
+    // needed
     if (!gnrc_netapi_dispatch_receive(GNRC_NETTYPE_ICMPV6, hdr->type, pkt)) {
         DEBUG("icmpv6: no one interested in type %d\n", hdr->type);
         gnrc_pktbuf_release(pkt);
@@ -117,8 +111,7 @@ void gnrc_icmpv6_demux(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
 }
 
 gnrc_pktsnip_t *gnrc_icmpv6_build(gnrc_pktsnip_t *next, uint8_t type,
-                                  uint8_t code, size_t size)
-{
+                                  uint8_t code, size_t size) {
     gnrc_pktsnip_t *pkt;
     icmpv6_hdr_t *icmpv6;
 
@@ -137,8 +130,7 @@ gnrc_pktsnip_t *gnrc_icmpv6_build(gnrc_pktsnip_t *next, uint8_t type,
     return pkt;
 }
 
-int gnrc_icmpv6_calc_csum(gnrc_pktsnip_t *hdr, gnrc_pktsnip_t *pseudo_hdr)
-{
+int gnrc_icmpv6_calc_csum(gnrc_pktsnip_t *hdr, gnrc_pktsnip_t *pseudo_hdr) {
     uint32_t csum = 0;
 
     if (hdr == NULL) {
@@ -159,6 +151,4 @@ int gnrc_icmpv6_calc_csum(gnrc_pktsnip_t *hdr, gnrc_pktsnip_t *pseudo_hdr)
     return 0;
 }
 
-/**
- * @}
- */
+/// @}

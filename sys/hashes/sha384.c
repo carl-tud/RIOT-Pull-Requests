@@ -1,30 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2023 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_hashes
- *
- * @{
- * @file
- * @brief       SHA384 hash function implementation
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     sys_hashes
+///
+/// @{
+/// @file
+/// @brief       SHA384 hash function implementation
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+///
+/// @}
 
 #include <assert.h>
 
 #include "hashes/sha384.h"
 
-void sha384_init(sha384_context_t *ctx)
-{
-    /* Zero bits processed so far */
+void sha384_init(sha384_context_t *ctx) {
+    // Zero bits processed so far
     ctx->count[0] = ctx->count[1] = 0;
 
-    /* Magic initialization constants */
+    // Magic initialization constants
     ctx->state[0] = 0xcbbb9d5dc1059ed8;
     ctx->state[1] = 0x629a292a367cd507;
     ctx->state[2] = 0x9159015a3070dd17;
@@ -35,8 +30,7 @@ void sha384_init(sha384_context_t *ctx)
     ctx->state[7] = 0x47b5481dbefa4fa4;
 }
 
-void sha384(const void *data, size_t len, void *digest)
-{
+void sha384(const void *data, size_t len, void *digest) {
     sha384_context_t c;
     assert(digest);
 

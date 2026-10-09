@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -20,8 +16,7 @@
 #include "net/gnrc/ipv6/nib/ft.h"
 
 int gnrc_ipv6_nib_ft_get(const ipv6_addr_t *dst, gnrc_pktsnip_t *pkt,
-                         gnrc_ipv6_nib_ft_t *fte)
-{
+                         gnrc_ipv6_nib_ft_t *fte) {
     int res;
 
     assert((dst != NULL) && (fte != NULL));
@@ -33,17 +28,16 @@ int gnrc_ipv6_nib_ft_get(const ipv6_addr_t *dst, gnrc_pktsnip_t *pkt,
 
 int gnrc_ipv6_nib_ft_add(const ipv6_addr_t *dst, unsigned dst_len,
                          const ipv6_addr_t *next_hop, unsigned iface,
-                         uint32_t ltime)
-{
+                         uint32_t ltime) {
     int res = 0;
     bool is_default_route = ((dst == NULL) || (dst_len == 0) ||
                              ipv6_addr_is_unspecified(dst));
 
     uint32_t ltime_ms;
-    /* The valid lifetime is given in seconds, but our timers work in
-     * milliseconds, so we have to scale down to the smallest possible
-     * value (UINT32_MAX ms). This is however alright since we ask for
-     * a new router advertisement before this timeout expires */
+    // The valid lifetime is given in seconds, but our timers work in
+    // milliseconds, so we have to scale down to the smallest possible
+    // value (UINT32_MAX ms). This is however alright since we ask for
+    // a new router advertisement before this timeout expires
     if (ltime > UINT32_MAX / MS_PER_SEC) {
         ltime_ms = UINT32_MAX;
     }
@@ -83,7 +77,7 @@ int gnrc_ipv6_nib_ft_add(const ipv6_addr_t *dst, unsigned dst_len,
                          &ptr->route_timeout, ltime_ms);
         }
     }
-#else /* CONFIG_GNRC_IPV6_NIB_ROUTER */
+#else // CONFIG_GNRC_IPV6_NIB_ROUTER
     else {
         res = -ENOTSUP;
     }
@@ -92,8 +86,7 @@ int gnrc_ipv6_nib_ft_add(const ipv6_addr_t *dst, unsigned dst_len,
     return res;
 }
 
-void gnrc_ipv6_nib_ft_del(const ipv6_addr_t *dst, unsigned dst_len)
-{
+void gnrc_ipv6_nib_ft_del(const ipv6_addr_t *dst, unsigned dst_len) {
     _nib_acquire();
     if ((dst == NULL) || (dst_len == 0) || ipv6_addr_is_unspecified(dst)) {
         _nib_dr_entry_t *entry = _nib_drl_get_dr();
@@ -119,8 +112,7 @@ void gnrc_ipv6_nib_ft_del(const ipv6_addr_t *dst, unsigned dst_len)
 }
 
 bool gnrc_ipv6_nib_ft_iter(const ipv6_addr_t *next_hop, unsigned iface,
-                          void **state, gnrc_ipv6_nib_ft_t *fte)
-{
+                          void **state, gnrc_ipv6_nib_ft_t *fte) {
     _nib_dr_entry_t *entry;
     assert((state != NULL) && (fte != NULL));
 
@@ -130,20 +122,20 @@ bool gnrc_ipv6_nib_ft_iter(const ipv6_addr_t *next_hop, unsigned iface,
         while ((offl = _nib_offl_iter(offl))) {
             assert(offl->mode != 0);
             if (offl->next_hop == NULL) {
-                /* 'holey' NIB / dangling reference.
-                 * there is no next hop (not even an interface) */
+                // 'holey' NIB / dangling reference.
+                // there is no next hop (not even an interface)
                 continue;
             }
             if (offl->mode == _PL && !(offl->flags & _PFX_ON_LINK)) {
-                /* prefix list entry is off-link */
+                // prefix list entry is off-link
                 continue;
             }
             if (iface && iface != _nib_onl_get_if(offl->next_hop)) {
-                /* interface does not match */
+                // interface does not match
                 continue;
             }
             if (next_hop && !ipv6_addr_equal(&offl->next_hop->ipv6, next_hop)) {
-                /* next hop does not match */
+                // next hop does not match
                 continue;
             }
             _nib_ft_get(offl, fte);
@@ -166,8 +158,7 @@ bool gnrc_ipv6_nib_ft_iter(const ipv6_addr_t *next_hop, unsigned iface,
     return (*state != NULL);
 }
 
-void gnrc_ipv6_nib_ft_print(const gnrc_ipv6_nib_ft_t *fte)
-{
+void gnrc_ipv6_nib_ft_print(const gnrc_ipv6_nib_ft_t *fte) {
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
     if ((fte->dst_len == 0) || ipv6_addr_is_unspecified(&fte->dst)) {
@@ -184,4 +175,4 @@ void gnrc_ipv6_nib_ft_print(const gnrc_ipv6_nib_ft_t *fte)
     printf("dev #%u\n", fte->iface);
 }
 
-/** @} */
+/// @}

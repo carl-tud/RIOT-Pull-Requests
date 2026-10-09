@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Network throughput benchmarks using lwIP iPerf.
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Network throughput benchmarks using lwIP iPerf.
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -28,23 +24,17 @@
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
 
-/**
- * @brief Default DHCP timeout in seconds.
- */
+/// @brief Default DHCP timeout in seconds.
 #ifndef TEST_DHCP_TIMEOUT_SEC
 #  define TEST_DHCP_TIMEOUT_SEC   10
 #endif
 
-/**
- * @brief Default local IPv4 address, when DHCP is not used.
- */
+/// @brief Default local IPv4 address, when DHCP is not used.
 #ifndef TEST_ADDR4_LOCAL
 #  define TEST_ADDR4_LOCAL        IP4_ADDR_INIT(192, 168, 100, 11)
 #endif
 
-/**
- * @brief Default local IPv4 subnet mask, when DHCP is not used.
- */
+/// @brief Default local IPv4 subnet mask, when DHCP is not used.
 #ifndef TEST_ADDR4_MASK
 #  define TEST_ADDR4_MASK         IP4_ADDR_INIT(255, 255, 255, 0)
 #endif
@@ -57,8 +47,7 @@ static void _iperf_report_cb(void *arg,
                              const ip_addr_t *remote_addr, u16_t remote_port,
                              u32_t bytes_transferred,
                              u32_t ms_duration,
-                             u32_t bandwidth_kbitpsec)
-{
+                             u32_t bandwidth_kbitpsec) {
     (void)arg;
     (void)local_addr;
     (void)local_port;
@@ -92,12 +81,11 @@ static void _iperf_report_cb(void *arg,
     puts("--------------");
     puts("");
 
-    /* runs from the lwIP thread, so locking not necessary */
+    // runs from the lwIP thread, so locking not necessary
     _session = NULL;
 }
 
-static int _cmd_server(int argc, char **argv)
-{
+static int _cmd_server(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -133,8 +121,7 @@ static int _cmd_server(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_client(int argc, char **argv)
-{
+static int _cmd_client(int argc, char **argv) {
     ip_addr_t remote_addr;
 
     if (argc < 2) {
@@ -171,8 +158,7 @@ static int _cmd_client(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_abort(int argc, char **argv)
-{
+static int _cmd_abort(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -198,14 +184,13 @@ SHELL_COMMAND(abort,  "abort active iPerf session", _cmd_abort);
 SHELL_COMMAND(client, "start iPerf client <ip>", _cmd_client);
 SHELL_COMMAND(server, "start iPerf server", _cmd_server);
 
-int main(void)
-{
+int main(void) {
 #if IS_USED(MODULE_LWIP_IPV4) && IS_USED(MODULE_LWIP_DHCP_AUTO)
-    /* auto-configure using DHCP */
+    // auto-configure using DHCP
     puts("Waiting for DHCP address autoconfiguration ...");
     ztimer_sleep(ZTIMER_MSEC, TEST_DHCP_TIMEOUT_SEC * MS_PER_SEC);
 #elif IS_USED(MODULE_LWIP_IPV4)
-    /* configure static IP address */
+    // configure static IP address
     ip4_addr_t ip = TEST_ADDR4_LOCAL;
     ip4_addr_t subnet = TEST_ADDR4_MASK;
 
@@ -215,10 +200,10 @@ int main(void)
     sys_unlock_tcpip_core();
 #endif
 
-    /* print usage instruction */
+    // print usage instruction
     puts("lwIP iPerf application running. Use `help` to get started.");
 
-    /* spawn a shell */
+    // spawn a shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 

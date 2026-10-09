@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2015 Nico von Geyso
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Nico von Geyso
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <limits.h>
 
@@ -16,7 +14,7 @@
 
 static const size_t nonce_and_len_encoding_size = 15;
 
-/* RFC3610 Packet Vector #1 */
+// RFC3610 Packet Vector #1
 static const uint8_t TEST_RFC_1_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -45,7 +43,7 @@ static const uint8_t TEST_RFC_1_EXPECTED[] = {
 };
 static const size_t TEST_RFC_1_EXPECTED_LEN = 39;
 
-/* RFC3610 Packet Vector #2 */
+// RFC3610 Packet Vector #2
 static const uint8_t TEST_RFC_2_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -74,7 +72,7 @@ static const uint8_t TEST_RFC_2_EXPECTED[] = {
 };
 static const size_t TEST_RFC_2_EXPECTED_LEN = 40;
 
-/* RFC3610 Packet Vector #3 */
+// RFC3610 Packet Vector #3
 static const uint8_t TEST_RFC_3_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -105,7 +103,7 @@ static const uint8_t TEST_RFC_3_EXPECTED[] = {
 };
 static const size_t TEST_RFC_3_EXPECTED_LEN = 41;
 
-/* RFC3610 Packet Vector #4 */
+// RFC3610 Packet Vector #4
 static const uint8_t TEST_RFC_4_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -134,7 +132,7 @@ static const uint8_t TEST_RFC_4_EXPECTED[] = {
 };
 static const size_t TEST_RFC_4_EXPECTED_LEN = 39;
 
-/* RFC3610 Packet Vector #5 */
+// RFC3610 Packet Vector #5
 static const uint8_t TEST_RFC_5_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -163,7 +161,7 @@ static const uint8_t TEST_RFC_5_EXPECTED[] = {
 };
 static const size_t TEST_RFC_5_EXPECTED_LEN = 40;
 
-/* RFC3610 Packet Vector #6 */
+// RFC3610 Packet Vector #6
 static const uint8_t TEST_RFC_6_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -194,7 +192,7 @@ static const uint8_t TEST_RFC_6_EXPECTED[] = {
 };
 static const size_t TEST_RFC_6_EXPECTED_LEN = 41;
 
-/* RFC3610 Packet Vector #7 */
+// RFC3610 Packet Vector #7
 static const uint8_t TEST_RFC_7_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -224,7 +222,7 @@ static const uint8_t TEST_RFC_7_EXPECTED[] = {
 };
 static const size_t TEST_RFC_7_EXPECTED_LEN = 41;
 
-/* RFC3610 Packet Vector #8 */
+// RFC3610 Packet Vector #8
 static const uint8_t TEST_RFC_8_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -254,7 +252,7 @@ static const uint8_t TEST_RFC_8_EXPECTED[] = {
 };
 static const size_t TEST_RFC_8_EXPECTED_LEN = 42;
 
-/* RFC3610 Packet Vector #9 */
+// RFC3610 Packet Vector #9
 static const uint8_t TEST_RFC_9_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -285,7 +283,7 @@ static const uint8_t TEST_RFC_9_EXPECTED[] = {
 };
 static const size_t TEST_RFC_9_EXPECTED_LEN = 43;
 
-/* RFC3610 Packet Vector #10 */
+// RFC3610 Packet Vector #10
 static const uint8_t TEST_RFC_10_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -315,7 +313,7 @@ static const uint8_t TEST_RFC_10_EXPECTED[] = {
 };
 static const size_t TEST_RFC_10_EXPECTED_LEN = 41;
 
-/* RFC3610 Packet Vector #11 */
+// RFC3610 Packet Vector #11
 static const uint8_t TEST_RFC_11_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -345,7 +343,7 @@ static const uint8_t TEST_RFC_11_EXPECTED[] = {
 };
 static const size_t TEST_RFC_11_EXPECTED_LEN = 42;
 
-/* RFC3610 Packet Vector #12 */
+// RFC3610 Packet Vector #12
 static const uint8_t TEST_RFC_12_KEY[] = {
     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7,
     0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
@@ -376,7 +374,7 @@ static const uint8_t TEST_RFC_12_EXPECTED[] = {
 };
 static const size_t TEST_RFC_12_EXPECTED_LEN = 43;
 
-/* RFC3610 Packet Vector #13 */
+// RFC3610 Packet Vector #13
 static const uint8_t TEST_RFC_13_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -405,7 +403,7 @@ static const uint8_t TEST_RFC_13_EXPECTED[] = {
 };
 static const size_t TEST_RFC_13_EXPECTED_LEN = 39;
 
-/* RFC3610 Packet Vector #14 */
+// RFC3610 Packet Vector #14
 static const uint8_t TEST_RFC_14_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -434,7 +432,7 @@ static const uint8_t TEST_RFC_14_EXPECTED[] = {
 };
 static const size_t TEST_RFC_14_EXPECTED_LEN = 40;
 
-/* RFC3610 Packet Vector #15 */
+// RFC3610 Packet Vector #15
 static const uint8_t TEST_RFC_15_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -465,7 +463,7 @@ static const uint8_t TEST_RFC_15_EXPECTED[] = {
 };
 static const size_t TEST_RFC_15_EXPECTED_LEN = 41;
 
-/* RFC3610 Packet Vector #16 */
+// RFC3610 Packet Vector #16
 static const uint8_t TEST_RFC_16_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -494,7 +492,7 @@ static const uint8_t TEST_RFC_16_EXPECTED[] = {
 };
 static const size_t TEST_RFC_16_EXPECTED_LEN = 39;
 
-/* RFC3610 Packet Vector #17 */
+// RFC3610 Packet Vector #17
 static const uint8_t TEST_RFC_17_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -523,7 +521,7 @@ static const uint8_t TEST_RFC_17_EXPECTED[] = {
 };
 static const size_t TEST_RFC_17_EXPECTED_LEN = 40;
 
-/* RFC3610 Packet Vector #18 */
+// RFC3610 Packet Vector #18
 static const uint8_t TEST_RFC_18_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -554,7 +552,7 @@ static const uint8_t TEST_RFC_18_EXPECTED[] = {
 };
 static const size_t TEST_RFC_18_EXPECTED_LEN = 41;
 
-/* RFC3610 Packet Vector #19 */
+// RFC3610 Packet Vector #19
 static const uint8_t TEST_RFC_19_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -584,7 +582,7 @@ static const uint8_t TEST_RFC_19_EXPECTED[] = {
 };
 static const size_t TEST_RFC_19_EXPECTED_LEN = 41;
 
-/* RFC3610 Packet Vector #20 */
+// RFC3610 Packet Vector #20
 static const uint8_t TEST_RFC_20_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -614,7 +612,7 @@ static const uint8_t TEST_RFC_20_EXPECTED[] = {
 };
 static const size_t TEST_RFC_20_EXPECTED_LEN = 42;
 
-/* RFC3610 Packet Vector #21 */
+// RFC3610 Packet Vector #21
 static const uint8_t TEST_RFC_21_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -645,7 +643,7 @@ static const uint8_t TEST_RFC_21_EXPECTED[] = {
 };
 static const size_t TEST_RFC_21_EXPECTED_LEN = 43;
 
-/* RFC3610 Packet Vector #22 */
+// RFC3610 Packet Vector #22
 static const uint8_t TEST_RFC_22_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -675,7 +673,7 @@ static const uint8_t TEST_RFC_22_EXPECTED[] = {
 };
 static const size_t TEST_RFC_22_EXPECTED_LEN = 41;
 
-/* RFC3610 Packet Vector #23 */
+// RFC3610 Packet Vector #23
 static const uint8_t TEST_RFC_23_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -705,7 +703,7 @@ static const uint8_t TEST_RFC_23_EXPECTED[] = {
 };
 static const size_t TEST_RFC_23_EXPECTED_LEN = 42;
 
-/* RFC3610 Packet Vector #24 */
+// RFC3610 Packet Vector #24
 static const uint8_t TEST_RFC_24_KEY[] = {
     0xD7, 0x82, 0x8D, 0x13, 0xB2, 0xB0, 0xBD, 0xC3,
     0x25, 0xA7, 0x62, 0x36, 0xDF, 0x93, 0xCC, 0x6B,
@@ -736,7 +734,7 @@ static const uint8_t TEST_RFC_24_EXPECTED[] = {
 };
 static const size_t TEST_RFC_24_EXPECTED_LEN = 43;
 
-/* NIST SP 800-38C Appex C.1 */
+// NIST SP 800-38C Appex C.1
 static const uint8_t TEST_NIST_1_KEY[] = {
     0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
     0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
@@ -759,7 +757,7 @@ static const uint8_t TEST_NIST_1_EXPECTED[] = {
 };
 static const size_t TEST_NIST_1_EXPECTED_LEN = 16;
 
-/* NIST SP 800-38C Appex C.2 */
+// NIST SP 800-38C Appex C.2
 static const uint8_t TEST_NIST_2_KEY[] = {
     0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
     0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
@@ -787,7 +785,7 @@ static const uint8_t TEST_NIST_2_EXPECTED[] = {
 };
 static const size_t TEST_NIST_2_EXPECTED_LEN = 38;
 
-/* NIST SP 800-38C Appex C.3 */
+// NIST SP 800-38C Appex C.3
 static const uint8_t TEST_NIST_3_KEY[] = {
     0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
     0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
@@ -820,10 +818,10 @@ static const uint8_t TEST_NIST_3_EXPECTED[] = {
 };
 static const size_t TEST_NIST_3_EXPECTED_LEN = 52;
 
-/* Tests from Project Wycheproof */
-/* See https://github.com/google/wycheproof/blob/master/testvectors/aes_ccm_test.json */
+// Tests from Project Wycheproof
+// See https://github.com/google/wycheproof/blob/master/testvectors/aes_ccm_test.json
 
-/* tcId" : 1 */
+// tcId" : 1
 static const uint8_t TEST_WYCHEPROOF_1_KEY[] = {
     0xbe, 0xdc, 0xfb, 0x5a, 0x01, 0x1e, 0xbc, 0x84,
     0x60, 0x0f, 0xcb, 0x29, 0x6c, 0x15, 0xaf, 0x0d
@@ -836,19 +834,19 @@ static const uint8_t TEST_WYCHEPROOF_1_NONCE[] = {
 static const size_t TEST_WYCHEPROOF_1_NONCE_LEN = 12;
 static const size_t TEST_WYCHEPROOF_1_MAC_LEN = 16;
 static const uint8_t TEST_WYCHEPROOF_1_INPUT[] = {
-    /* PLAINTEXT */
+    // PLAINTEXT
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 static const size_t TEST_WYCHEPROOF_1_INPUT_LEN = 0;
 static const size_t TEST_WYCHEPROOF_1_ADATA_LEN = 0;
 static const uint8_t TEST_WYCHEPROOF_1_EXPECTED[] = {
-    /* MAC */
+    // MAC
     0x25, 0xd1, 0xa3, 0x84, 0x95, 0xa7, 0xde, 0xa4,
     0x5b, 0xda, 0x04, 0x97, 0x05, 0x62, 0x7d, 0x10
 };
 static const size_t TEST_WYCHEPROOF_1_EXPECTED_LEN = 16;
 
-/* tcId" : 28 */
+// tcId" : 28
 static const uint8_t TEST_WYCHEPROOF_28_KEY[] = {
     0x20, 0xbb, 0xf7, 0x4c, 0x1e, 0x63, 0x98, 0x2c,
     0x47, 0x2c, 0x47, 0x43, 0x56, 0x9e, 0x4c, 0x84,
@@ -861,35 +859,35 @@ static const uint8_t TEST_WYCHEPROOF_28_NONCE[] = {
 static const size_t TEST_WYCHEPROOF_28_NONCE_LEN = 12;
 static const size_t TEST_WYCHEPROOF_28_MAC_LEN = 16;
 static const uint8_t TEST_WYCHEPROOF_28_INPUT[] = {
-    /* AAD */
+    // AAD
     0x4f, 0x22, 0x85, 0xce, 0x3d, 0xaf, 0xa5, 0x28,
     0xc6, 0x94, 0xa5, 0x27, 0x2d, 0x3b, 0x7b, 0x92,
     0x90, 0x97, 0xdb, 0x39, 0x87, 0x72, 0x65, 0x3b,
     0xd9, 0xbb, 0xbd, 0xb3, 0xb2, 0xc8, 0xe1,
-    /* PLAINTEXT */
+    // PLAINTEXT
     0x6d, 0xb5, 0x09, 0x92, 0xe8, 0xfb, 0xbe, 0xe1,
     0x5d, 0x49, 0x79, 0xd3, 0xe3, 0x22, 0xda, 0xcd,
 };
 static const size_t TEST_WYCHEPROOF_28_INPUT_LEN = 16;
 static const size_t TEST_WYCHEPROOF_28_ADATA_LEN = 31;
 static const uint8_t TEST_WYCHEPROOF_28_EXPECTED[] = {
-    /* AAD */
+    // AAD
     0x4f, 0x22, 0x85, 0xce, 0x3d, 0xaf, 0xa5, 0x28,
     0xc6, 0x94, 0xa5, 0x27, 0x2d, 0x3b, 0x7b, 0x92,
     0x90, 0x97, 0xdb, 0x39, 0x87, 0x72, 0x65, 0x3b,
     0xd9, 0xbb, 0xbd, 0xb3, 0xb2, 0xc8, 0xe1,
-    /* CIPHERTEXT */
+    // CIPHERTEXT
     0x87, 0x03, 0xe4, 0x46, 0x97, 0x13, 0x8c, 0x58,
     0x53, 0x2d, 0x97, 0xee, 0x99, 0x23, 0x1d, 0x94,
-    /* MAC */
+    // MAC
     0xf1, 0x4c, 0x2f, 0x39, 0xa4, 0x87, 0x1a, 0x4a,
     0x16, 0xc4, 0x2f, 0x6f, 0xe8, 0x78, 0xde, 0xef,
 };
 static const size_t TEST_WYCHEPROOF_28_EXPECTED_LEN = 63;
 
-/* Manually created test vectors */
-/* This is necessary, because no test vectors are published with input length > 256 */
-/* Data has been verified against BouncyCastle (.NET Core) and pycryptodome */
+// Manually created test vectors
+// This is necessary, because no test vectors are published with input length > 256
+// Data has been verified against BouncyCastle (.NET Core) and pycryptodome
 
 static const uint8_t TEST_MANUAL_01_KEY[] = {
     0x6D, 0x64, 0x80, 0x02, 0x92, 0xE5, 0x60, 0xB5,
@@ -903,13 +901,13 @@ static const uint8_t TEST_MANUAL_01_NONCE[] = {
 static const size_t TEST_MANUAL_01_NONCE_LEN = 12;
 static const size_t TEST_MANUAL_01_MAC_LEN = 8;
 static const uint8_t TEST_MANUAL_01_INPUT[] = {
-    /* AAD */
+    // AAD
     0x10, 0x25, 0x5F, 0xD5, 0xCE, 0x9C, 0xC6, 0xCD,
     0x3B, 0x31, 0x21, 0xF5, 0x10, 0x26, 0x20, 0xFA,
     0xE9, 0x7A, 0x52, 0x2D, 0x67, 0x4D, 0x8E, 0xD8,
     0x4D, 0x0D, 0x85, 0x7C, 0xA3, 0xAD, 0x97, 0x28,
     0xF9, 0x60, 0x8A, 0x8A, 0x67, 0x6D, 0xBC, 0x79,
-    /* PLAINTEXT */
+    // PLAINTEXT
     0x6E, 0xA0, 0xA3, 0x0B, 0x80, 0x9A, 0x4A, 0x4E,
     0xC1, 0x7F, 0xAB, 0x7E, 0x49, 0x64, 0x49, 0x7F,
     0xA0, 0xE6, 0x70, 0x41, 0xDA, 0x16, 0x3D, 0x08,
@@ -948,13 +946,13 @@ static const uint8_t TEST_MANUAL_01_INPUT[] = {
 static const size_t TEST_MANUAL_01_INPUT_LEN = 270;
 static const size_t TEST_MANUAL_01_ADATA_LEN = 40;
 static const uint8_t TEST_MANUAL_01_EXPECTED[] = {
-    /* AAD */
+    // AAD
     0x10, 0x25, 0x5F, 0xD5, 0xCE, 0x9C, 0xC6, 0xCD,
     0x3B, 0x31, 0x21, 0xF5, 0x10, 0x26, 0x20, 0xFA,
     0xE9, 0x7A, 0x52, 0x2D, 0x67, 0x4D, 0x8E, 0xD8,
     0x4D, 0x0D, 0x85, 0x7C, 0xA3, 0xAD, 0x97, 0x28,
     0xF9, 0x60, 0x8A, 0x8A, 0x67, 0x6D, 0xBC, 0x79,
-    /* CIPHERTEXT */
+    // CIPHERTEXT
     0x3B, 0x39, 0x41, 0x8A, 0xD8, 0xCF, 0x8D, 0xDD,
     0xCD, 0x68, 0xE4, 0x61, 0xC5, 0x01, 0x1E, 0xD9,
     0x16, 0x8A, 0xCC, 0x9C, 0xE8, 0x28, 0xBF, 0xC3,
@@ -989,13 +987,13 @@ static const uint8_t TEST_MANUAL_01_EXPECTED[] = {
     0x10, 0x8F, 0xB3, 0xA3, 0x77, 0xBF, 0x3F, 0x9B,
     0xB6, 0xB1, 0xAF, 0x07, 0xE5, 0xD1, 0x6E, 0x70,
     0x66, 0x30, 0xAE, 0x4E, 0xFB, 0x56,
-    /* MAC */
+    // MAC
     0x2E, 0xB4, 0x86, 0xF7, 0x01, 0x6C, 0xD0, 0x6F
 
 };
 static const size_t TEST_MANUAL_01_EXPECTED_LEN = 318;
 
-/* Test to check that the whole plaintext_len is written */
+// Test to check that the whole plaintext_len is written
 static const uint8_t TEST_CUSTOM_1_KEY[]        = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1008,7 +1006,7 @@ static const uint8_t TEST_CUSTOM_1_NONCE[]      = {
 static const uint8_t TEST_CUSTOM_1_NONCE_LEN    = 13;
 static const uint8_t TEST_CUSTOM_1_MAC_LEN      = 8;
 static const uint8_t TEST_CUSTOM_1_INPUT[]      = {
-    /* PLAINTEXT */
+    // PLAINTEXT
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1045,7 +1043,7 @@ static const uint8_t TEST_CUSTOM_1_INPUT[]      = {
 static const size_t  TEST_CUSTOM_1_INPUT_LEN    = 256;
 static const size_t  TEST_CUSTOM_1_ADATA_LEN    = 0;
 static const uint8_t TEST_CUSTOM_1_EXPECTED[]   = {
-    /* CIPHERTEXT */
+    // CIPHERTEXT
     0xd5, 0x78, 0xf2, 0x0d, 0x00, 0x95, 0x8c, 0x6c,
     0x50, 0x6e, 0x36, 0x76, 0x9e, 0xad, 0xce, 0x6e,
     0x0a, 0x2d, 0xdc, 0xe6, 0x4b, 0x3d, 0x6c, 0x0d,
@@ -1078,12 +1076,12 @@ static const uint8_t TEST_CUSTOM_1_EXPECTED[]   = {
     0x6b, 0x7a, 0xc8, 0xad, 0x97, 0x7c, 0x02, 0xe6,
     0x46, 0xfe, 0xd3, 0x16, 0x87, 0x87, 0xaf, 0x8e,
     0x75, 0x26, 0xe7, 0x00, 0xe8, 0xcc, 0xcc, 0xaa,
-    /* MAC */
+    // MAC
     0xff, 0xc7, 0xef, 0x75, 0xa1, 0x4b, 0xa2, 0x25,
 };
 static const size_t  TEST_CUSTOM_1_EXPECTED_LEN = 264;
 
-/* Share test buffer output */
+// Share test buffer output
 static uint8_t data[512];
 
 static void test_encrypt_op(const uint8_t *key, uint8_t key_len,
@@ -1092,8 +1090,7 @@ static void test_encrypt_op(const uint8_t *key, uint8_t key_len,
                             const uint8_t *plain, size_t plain_len,
                             const uint8_t *output_expected,
                             size_t output_expected_len,
-                            uint8_t mac_length)
-{
+                            uint8_t mac_length) {
     cipher_t cipher;
     int len, err, cmp;
     size_t len_encoding = nonce_and_len_encoding_size - nonce_len;
@@ -1120,8 +1117,7 @@ static void test_decrypt_op(const uint8_t *key, uint8_t key_len,
                             const uint8_t *encrypted, size_t encrypted_len,
                             const uint8_t *output_expected,
                             size_t output_expected_len,
-                            uint8_t mac_length)
-{
+                            uint8_t mac_length) {
     cipher_t cipher;
     int len, err, cmp;
     size_t len_encoding = nonce_and_len_encoding_size - nonce_len;
@@ -1158,8 +1154,7 @@ static void test_decrypt_op(const uint8_t *key, uint8_t key_len,
                         ); \
 } while (0)
 
-static void test_crypto_modes_ccm_encrypt(void)
-{
+static void test_crypto_modes_ccm_encrypt(void) {
     do_test_encrypt_op(RFC_1);
     do_test_encrypt_op(RFC_2);
     do_test_encrypt_op(RFC_3);
@@ -1211,8 +1206,7 @@ static void test_crypto_modes_ccm_encrypt(void)
                         ); \
 } while (0)
 
-static void test_crypto_modes_ccm_decrypt(void)
-{
+static void test_crypto_modes_ccm_decrypt(void) {
     do_test_decrypt_op(RFC_1);
     do_test_decrypt_op(RFC_2);
     do_test_decrypt_op(RFC_3);
@@ -1255,8 +1249,7 @@ typedef int (*func_ccm_t)(const cipher_t *, const uint8_t *, uint32_t,
 
 static int _test_ccm_len(func_ccm_t func, uint8_t len_encoding,
                          const uint8_t *input, size_t input_len,
-                         size_t adata_len)
-{
+                         size_t adata_len) {
     int ret;
     cipher_t cipher;
     uint8_t mac_length = 8;
@@ -1272,43 +1265,41 @@ static int _test_ccm_len(func_ccm_t func, uint8_t len_encoding,
     return ret;
 }
 
-/* Test length checking in ccm functions. */
-static void test_crypto_modes_ccm_check_len(void)
-{
+// Test length checking in ccm functions.
+static void test_crypto_modes_ccm_check_len(void) {
     int ret;
 
-/* Using length_encoding above UINT16_MAX doesn't work on 8/16 bit
-   architectures, SIZE_MAX is equal to UINT16_MAX there */
+// Using length_encoding above UINT16_MAX doesn't work on 8/16 bit
+//    architectures, SIZE_MAX is equal to UINT16_MAX there
 #if SIZE_MAX > UINT16_MAX
-    /* Just 1 to big to fit */
+    // Just 1 to big to fit
     ret = _test_ccm_len(cipher_encrypt_ccm, 2, NULL, 1 << 16, 0);
     TEST_ASSERT_EQUAL_INT(CCM_ERR_INVALID_LENGTH_ENCODING, ret);
     ret = _test_ccm_len(cipher_decrypt_ccm, 2, NULL, 1 << 16, 0);
     TEST_ASSERT_EQUAL_INT(CCM_ERR_INVALID_LENGTH_ENCODING, ret);
 
-    /* adata_len should not change the result (was wrong in previous implem) */
+    // adata_len should not change the result (was wrong in previous implem)
     ret = _test_ccm_len(cipher_encrypt_ccm, 2, NULL, 1 << 16, 65535);
     TEST_ASSERT_EQUAL_INT(CCM_ERR_INVALID_LENGTH_ENCODING, ret);
     ret = _test_ccm_len(cipher_decrypt_ccm, 2, NULL, 1 << 16, 65535);
     TEST_ASSERT_EQUAL_INT(CCM_ERR_INVALID_LENGTH_ENCODING, ret);
 #endif
 
-    /* Invalid length when length_encoding < 2 */
+    // Invalid length when length_encoding < 2
     ret = _test_ccm_len(cipher_encrypt_ccm, 1, NULL, 8, 0);
     TEST_ASSERT_EQUAL_INT(CCM_ERR_INVALID_LENGTH_ENCODING, ret);
 
-    /* Valid length that were wrongly checked */
-    /* Check should work with len_encoding >= 4, test with 8 */
+    // Valid length that were wrongly checked
+    // Check should work with len_encoding >= 4, test with 8
     uint8_t input[8];
     ret = _test_ccm_len(cipher_encrypt_ccm, 8, input, 8, 0);
     TEST_ASSERT_MESSAGE(ret > 0, "Encryption : failed with valid input_len");
 
-    /* einput is encrypted value for
-     * - 8 * 0 input
-     * - All 0 nonce and key
-     * - adata_len == 0
-     * - mac_len == 8 and len_encoding = 8
-     */
+    // einput is encrypted value for
+    // - 8 * 0 input
+    // - All 0 nonce and key
+    // - adata_len == 0
+    // - mac_len == 8 and len_encoding = 8
     uint8_t einput[16] = {
         0xa2, 0x46, 0x75, 0xfc, 0x5f, 0x1b, 0x01, 0x37,
         0x8a, 0x85, 0xd7, 0xf8, 0x42, 0x82, 0x6a, 0x63,
@@ -1317,13 +1308,12 @@ static void test_crypto_modes_ccm_check_len(void)
     ret = _test_ccm_len(cipher_decrypt_ccm, 8, einput, 16, 0);
     TEST_ASSERT_MESSAGE(ret > 0, "Decryption : failed with valid input_len");
 
-    /* ccm library does not support auth_data_len > 0xFEFF */
+    // ccm library does not support auth_data_len > 0xFEFF
     ret = _test_ccm_len(cipher_encrypt_ccm, 2, NULL, 0, 0xFEFF + 1);
     TEST_ASSERT_EQUAL_INT(-1, ret);
 }
 
-Test *tests_crypto_modes_ccm_tests(void)
-{
+Test *tests_crypto_modes_ccm_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_crypto_modes_ccm_encrypt),
         new_TestFixture(test_crypto_modes_ccm_decrypt),

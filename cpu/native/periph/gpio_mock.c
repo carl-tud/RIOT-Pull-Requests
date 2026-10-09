@@ -1,21 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_gpio
- * @brief   empty GPIO implementation
- * @author  Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_gpio
+/// @brief   empty GPIO implementation
+/// @author  Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
 
 #include "periph/gpio.h"
 
-/**
- * @brief Mocked GPIO array
- */
+/// @brief Mocked GPIO array
 gpio_mock_t gpio_mock[GPIO_PORT_MAX][GPIO_PIN_MAX];
 
 __attribute__((weak)) int gpio_init(gpio_t pin, gpio_mode_t mode) {
@@ -32,8 +26,7 @@ __attribute__((weak)) int gpio_init(gpio_t pin, gpio_mode_t mode) {
 }
 
 __attribute__((weak)) int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
-                  gpio_cb_t cb, void *arg)
-{
+                  gpio_cb_t cb, void *arg) {
     (void) cb;
     (void) arg;
 
@@ -50,13 +43,11 @@ __attribute__((weak)) int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank
     return -1;
 }
 
-__attribute__((weak)) void gpio_irq_enable(gpio_t pin)
-{
+__attribute__((weak)) void gpio_irq_enable(gpio_t pin) {
     (void) pin;
 }
 
-__attribute__((weak)) void gpio_irq_disable(gpio_t pin)
-{
+__attribute__((weak)) void gpio_irq_disable(gpio_t pin) {
     (void) pin;
 }
 

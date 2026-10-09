@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Viktor Gal
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Viktor Gal
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_seesaw_soil
- * @{
- *
- * @file
- * @brief       Driver for the Adafruit Seesaw Soil Moisture and Temperature Sensor.
- *
- * @author      Viktor Gal <viktor.gal@maeth.com>
- *
- * @}
- */
+/// @ingroup     drivers_seesaw_soil
+/// @{
+///
+/// @file
+/// @brief       Driver for the Adafruit Seesaw Soil Moisture and Temperature Sensor.
+///
+/// @author      Viktor Gal <viktor.gal@maeth.com>
+///
+/// @}
 
 #include <string.h>
 
@@ -29,16 +25,16 @@ static int _seesaw_read_regs(const seesaw_soil_t *dev, uint16_t reg_addr, void* 
     int r;
 
     reg_addr = htons(reg_addr);
-    /* send the 16bit register address we want to read with STOP bit */
+    // send the 16bit register address we want to read with STOP bit
     if ((r = i2c_write_bytes(dev->params.i2c, dev->params.addr,
                              &reg_addr, 2, 0)) < 0) {
         return r;
     }
 
-    /* wait for the answer */
+    // wait for the answer
     xtimer_usleep(5000);
 
-    /* and now we read the register value */
+    // and now we read the register value
     if ((r = i2c_read_bytes(dev->params.i2c, dev->params.addr,
                            data, len, 0)) < 0) {
         return r;
@@ -51,15 +47,14 @@ static int _seesaw_read_reg(seesaw_soil_t *dev, uint16_t reg_addr, void* data) {
     return _seesaw_read_regs(dev, reg_addr, data, 1);
 }
 
-int seesaw_soil_init(seesaw_soil_t *dev, const seesaw_soil_params_t *params)
-{
+int seesaw_soil_init(seesaw_soil_t *dev, const seesaw_soil_params_t *params) {
     uint8_t reg;
 
-    /* write device descriptor */
+    // write device descriptor
     dev->params = *params;
 
     DEBUG("[SEESAW SOIL] Initializing seesaw soil device.\n");
-    /* try if we can interact with the device by reading its manufacturer ID */
+    // try if we can interact with the device by reading its manufacturer ID
     i2c_acquire(dev->params.i2c);
     if (_seesaw_read_reg(dev, SEESAW_SOIL_MANUFACTURER_ID, &reg) < 0) {
         DEBUG("[SEESAW SOIL] Could not read manufacture id.\n");
@@ -74,12 +69,11 @@ int seesaw_soil_init(seesaw_soil_t *dev, const seesaw_soil_params_t *params)
     }
     i2c_release(dev->params.i2c);
 
-    /* all set */
+    // all set
     return SEESAW_SOIL_OK;
 }
 
-int seesaw_soil_temperature(const seesaw_soil_t *dev, int16_t *temp)
-{
+int seesaw_soil_temperature(const seesaw_soil_t *dev, int16_t *temp) {
     int status = SEESAW_SOIL_OK;
     uint32_t raw_temp;
 
@@ -96,8 +90,7 @@ int seesaw_soil_temperature(const seesaw_soil_t *dev, int16_t *temp)
     return status;
 }
 
-int seesaw_soil_moisture(const seesaw_soil_t *dev, uint16_t *moist)
-{
+int seesaw_soil_moisture(const seesaw_soil_t *dev, uint16_t *moist) {
     int status = SEESAW_SOIL_OK;
     uint16_t raw_moist;
 

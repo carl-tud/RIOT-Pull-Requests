@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Measure runtime of select core API functions
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Measure runtime of select core API functions
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -36,8 +32,8 @@
 #  endif
 #endif
 
-/* Assuming < 32 bit architectures to be too slow to sort 256 nodes in time
- * for this benchmark */
+// Assuming < 32 bit architectures to be too slow to sort 256 nodes in time
+// for this benchmark
 #ifndef BENCH_CLIST_SORT_TEST_NODES
 #  if ARCHITECTURE_WORD_BITS < 32
 #    define BENCH_CLIST_SORT_TEST_NODES 64
@@ -57,50 +53,43 @@ static thread_flags_t _flag = 0x0001;
 static msg_t _msg;
 static struct test_node nodes[BENCH_CLIST_SORT_TEST_NODES];
 
-static void _mutex_lockunlock(void)
-{
+static void _mutex_lockunlock(void) {
     mutex_lock(&_lock);
     mutex_unlock(&_lock);
 }
 
-static void _flag_waitany(void)
-{
+static void _flag_waitany(void) {
     thread_flags_set(t, _flag);
     thread_flags_wait_any(_flag);
 }
 
-static void _flag_waitall(void)
-{
+static void _flag_waitall(void) {
     thread_flags_set(t, _flag);
     thread_flags_wait_all(_flag);
 }
 
-static void _flag_waitone(void)
-{
+static void _flag_waitone(void) {
     thread_flags_set(t, _flag);
     thread_flags_wait_one(_flag);
 }
 
 static clist_node_t clist;
 
-static int _insert_reversed_data(clist_node_t *item, void *arg)
-{
+static int _insert_reversed_data(clist_node_t *item, void *arg) {
     unsigned *val = arg;
     struct test_node *n = container_of(item, struct test_node, list);
     n->value = *val--;
     return 0;
 }
 
-static int _insert_fully_sorted_data(clist_node_t *item, void *arg)
-{
+static int _insert_fully_sorted_data(clist_node_t *item, void *arg) {
     unsigned *val = arg;
     struct test_node *n = container_of(item, struct test_node, list);
     n->value = *val++;
     return 0;
 }
 
-static int _insert_almost_sorted_data(clist_node_t *item, void *arg)
-{
+static int _insert_almost_sorted_data(clist_node_t *item, void *arg) {
     unsigned *val = arg;
     struct test_node *n = container_of(item, struct test_node, list);
     if (*val == 3) {
@@ -113,41 +102,37 @@ static int _insert_almost_sorted_data(clist_node_t *item, void *arg)
     return 0;
 }
 
-static uint16_t _prng_next(uint16_t val)
-{
+static uint16_t _prng_next(uint16_t val) {
     val ^= val << 7;
     val ^= val >> 9;
     val ^= val << 8;
     return val;
 }
 
-static int _insert_prng_data(clist_node_t *item, void *arg)
-{
+static int _insert_prng_data(clist_node_t *item, void *arg) {
     uint16_t *seed = arg;
     struct test_node *n = container_of(item, struct test_node, list);
     *seed = _prng_next(*seed);
 
-    /* By masking off some bits from the full sequence PRNG input we introduce
-     * duplicates: 2 dups in 64 items, 3 in 128 items, 20 in 256 items.
-     *
-     * The API explicitly says stable sort, so we better have some input data
-     * where this attribute would make a difference. */
+    // By masking off some bits from the full sequence PRNG input we introduce
+    // duplicates: 2 dups in 64 items, 3 in 128 items, 20 in 256 items.
+    //
+    // The API explicitly says stable sort, so we better have some input data
+    // where this attribute would make a difference.
     const uint16_t dup_mask = 0x3ff;
     n->value = *seed & dup_mask;
 
     return 0;
 }
 
-static int _cmp(clist_node_t *_lhs, clist_node_t *_rhs)
-{
+static int _cmp(clist_node_t *_lhs, clist_node_t *_rhs) {
     struct test_node *lhs = container_of(_lhs, struct test_node, list);
     struct test_node *rhs = container_of(_rhs, struct test_node, list);
 
     return lhs->value - rhs->value;
 }
 
-static void _build_test_clist(size_t len)
-{
+static void _build_test_clist(size_t len) {
     assert(len <= ARRAY_SIZE(nodes));
 
     memset(nodes, 0, sizeof(nodes));
@@ -158,8 +143,7 @@ static void _build_test_clist(size_t len)
     }
 }
 
-static void _clist_sort_test_reversed(void)
-{
+static void _clist_sort_test_reversed(void) {
     clist_node_t *list = &clist;
 
     unsigned value = BENCH_CLIST_SORT_TEST_NODES;
@@ -167,17 +151,15 @@ static void _clist_sort_test_reversed(void)
     clist_sort(list, _cmp);
 }
 
-static void _clist_sort_test_prng(void)
-{
+static void _clist_sort_test_prng(void) {
     clist_node_t *list = &clist;
 
-    uint16_t seed = 1337; /* What else as seed? ;-P */
+    uint16_t seed = 1337; // What else as seed? ;-P
     clist_foreach(list, _insert_prng_data, &seed);
     clist_sort(list, _cmp);
 }
 
-static void _clist_sort_test_fully_sorted(void)
-{
+static void _clist_sort_test_fully_sorted(void) {
     clist_node_t *list = &clist;
 
     unsigned value = 0;
@@ -185,8 +167,7 @@ static void _clist_sort_test_fully_sorted(void)
     clist_sort(list, _cmp);
 }
 
-static void _clist_sort_test_almost_sorted(void)
-{
+static void _clist_sort_test_almost_sorted(void) {
     clist_node_t *list = &clist;
 
     unsigned value = 0;
@@ -194,9 +175,8 @@ static void _clist_sort_test_almost_sorted(void)
     clist_sort(list, _cmp);
 }
 
-static bool _is_list_stable_sorted(clist_node_t *list)
-{
-    /* empty list is always considered as sorted */
+static bool _is_list_stable_sorted(clist_node_t *list) {
+    // empty list is always considered as sorted
     if (!list->next) {
         return true;
     }
@@ -212,8 +192,8 @@ static bool _is_list_stable_sorted(clist_node_t *list)
         }
         else if (cmp == 0) {
             if ((uintptr_t)prev > (uintptr_t)cur) {
-                /* items got reordered even though their value is equal, so the
-                 * sort is not stable */
+                // items got reordered even though their value is equal, so the
+                // sort is not stable
                 return false;
             }
         }
@@ -225,8 +205,7 @@ static bool _is_list_stable_sorted(clist_node_t *list)
     return true;
 }
 
-static void _test_sort_correctness(unsigned size)
-{
+static void _test_sort_correctness(unsigned size) {
     static void (*sort_funcs[])(void) = {
         _clist_sort_test_reversed,
         _clist_sort_test_prng,
@@ -241,8 +220,7 @@ static void _test_sort_correctness(unsigned size)
     }
 }
 
-static void _bench_clist_sort(unsigned size)
-{
+static void _bench_clist_sort(unsigned size) {
     char name[48] = {};
     snprintf(name, sizeof(name) - 1, "clist_sort, #%u, rev", size);
     _build_test_clist(size);
@@ -261,8 +239,7 @@ static void _bench_clist_sort(unsigned size)
     BENCHMARK_FUNC(name, BENCH_CLIST_RUNS, _clist_sort_test_almost_sorted());
 }
 
-int main(void)
-{
+int main(void) {
     puts("Runtime of Selected Core API functions\n");
 
     t = thread_get_active();

@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for checking whether malloc is thread-safe
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for checking whether malloc is thread-safe
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+/// @}
 
 #include <errno.h>
 #include <stdint.h>
-/* keep stdatomic.h after stdint.h for buggy toolchains */
+// keep stdatomic.h after stdint.h for buggy toolchains
 #include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,8 +32,7 @@ static char WORD_ALIGNED t1_stack[THREAD_STACKSIZE_SMALL];
 static char WORD_ALIGNED t2_stack[THREAD_STACKSIZE_SMALL];
 static atomic_uint_least8_t is_running = ATOMIC_VAR_INIT(1);
 
-void * t1_t2_malloc_func(void *arg)
-{
+void * t1_t2_malloc_func(void *arg) {
     (void)arg;
     while (atomic_load(&is_running)) {
         int *chunk1 = malloc(sizeof(int) * 1);
@@ -54,22 +49,21 @@ void * t1_t2_malloc_func(void *arg)
     return NULL;
 }
 
-void * t1_t2_realloc_func(void *arg)
-{
+void * t1_t2_realloc_func(void *arg) {
     (void)arg;
     while (atomic_load(&is_running)) {
         int *chunk = realloc(NULL, sizeof(int) * 1);
         expect(chunk);
-        /* cppcheck-suppress memleakOnRealloc
-         * no need to free data on allocation failure, as expect() terminates then anyway */
+        // cppcheck-suppress memleakOnRealloc
+        // no need to free data on allocation failure, as expect() terminates then anyway
         chunk = realloc(chunk, sizeof(int) * 2);
         expect(chunk);
-        /* cppcheck-suppress memleakOnRealloc
-         * no need to free data on allocation failure, as expect() terminates then anyway */
+        // cppcheck-suppress memleakOnRealloc
+        // no need to free data on allocation failure, as expect() terminates then anyway
         chunk = realloc(chunk, sizeof(int) * 4);
         expect(chunk);
-        /* cppcheck-suppress memleakOnRealloc
-         * no need to free data on allocation failure, as expect() terminates then anyway */
+        // cppcheck-suppress memleakOnRealloc
+        // no need to free data on allocation failure, as expect() terminates then anyway
         chunk = realloc(chunk, sizeof(int) * 8);
         expect(chunk);
         free(chunk);
@@ -78,8 +72,7 @@ void * t1_t2_realloc_func(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     kernel_pid_t t1, t2;
     int failed = 0;
     puts(
@@ -94,9 +87,8 @@ int main(void)
     );
 
 #ifndef NO_MALLINFO
-    /* in case the malloc implementation dynamically allocates management structures,
-     * do one malloc() / free() to obtain the baseline for mallinfo()
-     */
+    // in case the malloc implementation dynamically allocates management structures,
+    // do one malloc() / free() to obtain the baseline for mallinfo()
     free(malloc(sizeof(int)));
     struct mallinfo pre = mallinfo();
 #else
@@ -116,25 +108,24 @@ int main(void)
 
         for (uint16_t i = 0; i < 2 * MS_PER_SEC; i++) {
             xtimer_usleep(US_PER_MS);
-            /* shuffle t1 and t2 in their run queue. This should eventually hit
-             * during a call to malloc() or free() and disclose any missing
-             * guards */
+            // shuffle t1 and t2 in their run queue. This should eventually hit
+            // during a call to malloc() or free() and disclose any missing
+            // guards
             sched_runq_advance(THREAD_PRIORITY_MAIN + 1);
         }
 
-        /* Don't keep threads spinning */
+        // Don't keep threads spinning
         atomic_store(&is_running, 0);
-        /* Give threads time to terminate */
+        // Give threads time to terminate
         xtimer_usleep(10 * US_PER_MS);
 
 #ifndef NO_MALLINFO
         struct mallinfo post = mallinfo();
 
-        /* RIOT's board or arch support hopefully doesn't use malloc, so there
-         * should be zero bytes allocated prior to the first call to malloc() in
-         * this test. But let's be forgiving and just expect that the number of
-         * allocated bytes before and after the test is equal.
-         */
+        // RIOT's board or arch support hopefully doesn't use malloc, so there
+        // should be zero bytes allocated prior to the first call to malloc() in
+        // this test. But let's be forgiving and just expect that the number of
+        // allocated bytes before and after the test is equal.
         if (pre.uordblks != post.uordblks) {
             failed = 1;
             puts("Not all blocks were correctly freed!");
@@ -144,11 +135,11 @@ int main(void)
 #endif
     }
 
-    /* cppcheck-suppress knownConditionTrueFalse
-     * The actual test is that this application doesn't crash / hang due to memory corruptions.
-     * But if there is mallinfo() provided, we can also test for memory leaks in the malloc()
-     * implementation pretty much for free. Even if this implementation most likely comes from
-     * the standard C lib, it is still good to be at least aware of bugs in the used toolchain */
+    // cppcheck-suppress knownConditionTrueFalse
+    // The actual test is that this application doesn't crash / hang due to memory corruptions.
+    // But if there is mallinfo() provided, we can also test for memory leaks in the malloc()
+    // implementation pretty much for free. Even if this implementation most likely comes from
+    // the standard C lib, it is still good to be at least aware of bugs in the used toolchain
     if (failed) {
         puts("TEST FAILED");
     }

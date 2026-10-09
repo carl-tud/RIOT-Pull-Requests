@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <string.h>
 
@@ -18,16 +16,14 @@
 static priority_queue_t q = PRIORITY_QUEUE_INIT;
 static priority_queue_node_t qe[Q_LEN];
 
-static void set_up(void)
-{
+static void set_up(void) {
     priority_queue_init(&q);
     for (unsigned i = 0; i < ARRAY_SIZE(qe); ++i) {
         priority_queue_node_init(&(qe[i]));
     }
 }
 
-static void test_priority_queue_remove_head_empty(void)
-{
+static void test_priority_queue_remove_head_empty(void) {
     priority_queue_t *root = &q;
     priority_queue_node_t *res;
 
@@ -36,8 +32,7 @@ static void test_priority_queue_remove_head_empty(void)
     TEST_ASSERT_NULL(res);
 }
 
-static void test_priority_queue_remove_head_one(void)
-{
+static void test_priority_queue_remove_head_one(void) {
     priority_queue_t *root = &q;
     priority_queue_node_t *elem = &(qe[1]), *res;
 
@@ -55,8 +50,7 @@ static void test_priority_queue_remove_head_one(void)
     TEST_ASSERT_NULL(res);
 }
 
-static void test_priority_queue_add_one(void)
-{
+static void test_priority_queue_add_one(void) {
     priority_queue_t *root = &q;
     priority_queue_node_t *elem = &(qe[1]);
 
@@ -72,8 +66,7 @@ static void test_priority_queue_add_one(void)
     TEST_ASSERT_NULL(root->first->next);
 }
 
-static void test_priority_queue_add_two_equal(void)
-{
+static void test_priority_queue_add_two_equal(void) {
     priority_queue_t *root = &q;
     priority_queue_node_t *elem1 = &(qe[1]), *elem2 = &(qe[2]);
 
@@ -97,8 +90,7 @@ static void test_priority_queue_add_two_equal(void)
     TEST_ASSERT_NULL(root->first->next->next);
 }
 
-static void test_priority_queue_add_two_distinct(void)
-{
+static void test_priority_queue_add_two_distinct(void) {
     priority_queue_t *root = &q;
     priority_queue_node_t *elem1 = &(qe[1]), *elem2 = &(qe[2]);
 
@@ -122,8 +114,7 @@ static void test_priority_queue_add_two_distinct(void)
     TEST_ASSERT_NULL(root->first->next->next);
 }
 
-static void test_priority_queue_remove_one(void)
-{
+static void test_priority_queue_remove_one(void) {
     priority_queue_t *root = &q;
     priority_queue_node_t *elem1 = &(qe[1]), *elem2 = &(qe[2]), *elem3 = &(qe[3]);
 
@@ -137,8 +128,7 @@ static void test_priority_queue_remove_one(void)
     TEST_ASSERT_NULL(root->first->next->next);
 }
 
-Test *tests_core_priority_queue_tests(void)
-{
+Test *tests_core_priority_queue_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_priority_queue_remove_head_empty),
         new_TestFixture(test_priority_queue_remove_head_one),

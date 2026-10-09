@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       SDK configuration used by the ESP-IDF for ESP32-C3 SoC variant (family)
- *
- * The SDK configuration can be partially overridden by application-specific
- * board configuration.
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       SDK configuration used by the ESP-IDF for ESP32-C3 SoC variant (family)
+///
+/// The SDK configuration can be partially overridden by application-specific
+/// board configuration.
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #ifndef DOXYGEN
 
@@ -24,12 +20,10 @@
 extern "C" {
 #endif
 
-/**
- * @name ESP32-C3 specific clock configuration
- * @{
- */
+/// @name ESP32-C3 specific clock configuration
+/// @{
 
-/* Mapping of Kconfig defines to the respective enumeration values */
+// Mapping of Kconfig defines to the respective enumeration values
 #if CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ_2
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ       2
 #elif CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ_5
@@ -46,39 +40,29 @@ extern "C" {
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ       160
 #endif
 
-/**
- * @brief Defines the CPU frequency [values = 2, 5, 10, 20, 40, 80, 160]
- */
+/// @brief Defines the CPU frequency [values = 2, 5, 10, 20, 40, 80, 160]
 #ifndef CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ       80
 #endif
 
-/** @} */
+/// @}
 
-/**
- * ESP32-C3 specific RTC clock configuration
- */
+/// ESP32-C3 specific RTC clock configuration
 #define CONFIG_RTC_CLK_CAL_CYCLES               1024
 
-/**
- * ESP32-C3 specific EFUSE configuration
- */
+/// ESP32-C3 specific EFUSE configuration
 #define CONFIG_EFUSE_MAX_BLK_LEN                256
 #define CONFIG_ESP_EFUSE_BLOCK_REV_MIN_FULL     0
 #define CONFIG_ESP_EFUSE_BLOCK_REV_MAX_FULL     199
 
-/**
- * ESP32-C3 specific MAC configuration
- */
+/// ESP32-C3 specific MAC configuration
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_WIFI_STA   1
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_WIFI_AP    1
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_BT         1
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_ETH        1
 #define CONFIG_ESP32C3_UNIVERSAL_MAC_ADDRESSES  4
 
-/**
- * ESP32-C3 specific system configuration (DO NOT CHANGE)
- */
+/// ESP32-C3 specific system configuration (DO NOT CHANGE)
 #define CONFIG_ESP_TIMER_IMPL_SYSTIMER          1
 
 #define CONFIG_ESP32C3_DEBUG_OCDAWARE           1
@@ -87,26 +71,20 @@ extern "C" {
 #define CONFIG_ESP32C3_BROWNOUT_DET             1
 #define CONFIG_ESP32C3_BROWNOUT_DET_LVL         7
 
-/**
- * ESP32-C3 specific sleep configuration (DO NOT CHANGE)
- */
+/// ESP32-C3 specific sleep configuration (DO NOT CHANGE)
 #define CONFIG_ESP32C3_LIGHTSLEEP_GPIO_RESET_WORKAROUND 1
 #define CONFIG_ESP_ROM_SUPPORT_DEEP_SLEEP_WAKEUP_STUB   1
 #define CONFIG_ESP_SLEEP_GPIO_RESET_WORKAROUND          1
-#define CONFIG_ESP_SLEEP_GPIO_ENABLE_INTERNAL_RESISTORS 0   /* we realize it */
+#define CONFIG_ESP_SLEEP_GPIO_ENABLE_INTERNAL_RESISTORS 0   // we realize it
 #define CONFIG_ESP_SLEEP_FLASH_LEAKAGE_WORKAROUND       1
 #define CONFIG_ESP_SLEEP_POWER_DOWN_FLASH               1
 #define CONFIG_ESP_SLEEP_WAIT_FLASH_READY_EXTRA_DELAY   0
 #define CONFIG_PM_POWER_DOWN_CPU_IN_LIGHT_SLEEP         1
 
-/**
- * ESP32-C3 specific USB configuration
- */
+/// ESP32-C3 specific USB configuration
 #define CONFIG_ESP_PHY_ENABLE_USB                       1
 
-/**
- * ESP32-C3 BLE driver configuration (DO NOT CHANGE)
- */
+/// ESP32-C3 BLE driver configuration (DO NOT CHANGE)
 #ifdef MODULE_ESP_BLE
 #  define CONFIG_BT_ALARM_MAX_NUM                           50
 #  define CONFIG_BT_BLE_CCA_MODE                            0
@@ -148,16 +126,16 @@ extern "C" {
 #  define CONFIG_BT_NIMBLE_COEX_PHY_CODED_TX_RX_TLIM_DIS    1
 #endif
 
-/* According to the ESP32-C3 Errata Sheet ADC2 does not work correctly.
- * To use ADC2 and GPIO5 as ADC channel, CONFIG_ADC_ONESHOT_FORCE_USE_ADC2_ON_C3
- * has to be set (default). */
+// According to the ESP32-C3 Errata Sheet ADC2 does not work correctly.
+// To use ADC2 and GPIO5 as ADC channel, CONFIG_ADC_ONESHOT_FORCE_USE_ADC2_ON_C3
+// has to be set (default).
 #ifndef CONFIG_ADC_ONESHOT_FORCE_USE_ADC2_ON_C3
 #  define CONFIG_ADC_ONESHOT_FORCE_USE_ADC2_ON_C3           1
 #endif
 
-/* According to the ESP32-C3 Errata Sheet ADC2 does not work correctly.
- * To use ADC2 and GPIO5 as ADC channel, CONFIG_ADC_ONESHOT_FORCE_USE_ADC2_ON_C3
- * has to be set (default). */
+// According to the ESP32-C3 Errata Sheet ADC2 does not work correctly.
+// To use ADC2 and GPIO5 as ADC channel, CONFIG_ADC_ONESHOT_FORCE_USE_ADC2_ON_C3
+// has to be set (default).
 #ifndef CONFIG_ADC_ONESHOT_FORCE_USE_ADC2_ON_C3
 #define CONFIG_ADC_ONESHOT_FORCE_USE_ADC2_ON_C3         1
 #endif
@@ -166,5 +144,5 @@ extern "C" {
 }
 #endif
 
-#endif /* DOXYGEN */
-/** @} */
+#endif // DOXYGEN
+/// @}

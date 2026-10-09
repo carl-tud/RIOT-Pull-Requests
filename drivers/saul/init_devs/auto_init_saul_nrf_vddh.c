@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of internal voltage sensor directly mapped to SAUL reg
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of internal voltage sensor directly mapped to SAUL reg
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include "cpu.h"
 #include "log.h"
@@ -21,11 +17,10 @@
 #include "saul/periph.h"
 #include "periph/adc.h"
 
-static int _read_voltage(const void *dev, phydat_t *res)
-{
+static int _read_voltage(const void *dev, phydat_t *res) {
     (void)dev;
 
-    /* GPIO reference voltage / external output supply voltage in high voltage mode */
+    // GPIO reference voltage / external output supply voltage in high voltage mode
     const uint8_t vref_deci_volt[] = { 18, 21, 24, 27, 30, 33, 0, 18 };
     uint8_t idx = NRF_UICR->REGOUT0 & UICR_REGOUT0_VOUT_Msk;
 
@@ -43,8 +38,7 @@ static saul_driver_t nrf_vddh_saul_driver = {
     .type = SAUL_SENSE_VOLTAGE,
 };
 
-void auto_init_nrf_vddh(void)
-{
+void auto_init_nrf_vddh(void) {
     static saul_reg_t saul_reg_entry = {
         .dev = NULL,
         .name = "NRF_VDDH",
@@ -53,6 +47,6 @@ void auto_init_nrf_vddh(void)
 
     adc_init(NRF52_VDDHDIV5);
 
-    /* add to registry */
+    // add to registry
     saul_reg_add(&(saul_reg_entry));
 }

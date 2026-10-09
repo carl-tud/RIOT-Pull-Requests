@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sgp30
- * @brief       SAUL adaption for SGP30 sensor
- * @{
- *
- * @file
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- */
+/// @ingroup     drivers_sgp30
+/// @brief       SAUL adaption for SGP30 sensor
+/// @{
+///
+/// @file
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
 
 #include <errno.h>
 #include <stdio.h>
@@ -23,8 +19,7 @@
 
 #include "sgp30.h"
 
-static int _read_tvoc(const void *dev, phydat_t *res)
-{
+static int _read_tvoc(const void *dev, phydat_t *res) {
     sgp30_data_t data;
 
     if (sgp30_read_measurements((sgp30_t *)dev, &data)) {
@@ -36,8 +31,7 @@ static int _read_tvoc(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int _read_eco2(const void *dev, phydat_t *res)
-{
+static int _read_eco2(const void *dev, phydat_t *res) {
     sgp30_data_t data;
 
     if (sgp30_read_measurements((sgp30_t *)dev, &data)) {

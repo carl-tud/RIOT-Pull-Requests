@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2025 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the Guestgood GP8xxx I2C DACs
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the Guestgood GP8xxx I2C DACs
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,8 +21,7 @@
 
 static gp8xxx_t gp8xxx_devs[ARRAY_SIZE(gp8xxx_params)];
 
-static int _info(int argc, char **argv)
-{
+static int _info(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -78,8 +73,7 @@ static int _info(int argc, char **argv)
 }
 
 #if GP8XXX_HAS_IDAC
-static int _calibrate(int argc, char **argv)
-{
+static int _calibrate(int argc, char **argv) {
     if (argc != 4) {
         printf("Usage: %s <dev> <dac value @ 4 mA> <dac value @ 20 mA>\n", argv[0]);
         return 1;
@@ -109,8 +103,7 @@ static int _calibrate(int argc, char **argv)
     return 0;
 }
 
-static int _set_current(int argc, char **argv)
-{
+static int _set_current(int argc, char **argv) {
     if (argc != 4) {
         printf("Usage: %s <dev> <channel> <current (uA)>\n", argv[0]);
         return 1;
@@ -144,10 +137,9 @@ static int _set_current(int argc, char **argv)
 
     return 0;
 }
-#endif /* GP8XXX_HAS_IDAC */
+#endif // GP8XXX_HAS_IDAC
 
-static int _set_dac(int argc, char **argv)
-{
+static int _set_dac(int argc, char **argv) {
     if (argc != 4) {
         printf("Usage: %s <dev> <channel> <value>\n", argv[0]);
         return 1;
@@ -183,8 +175,7 @@ static int _set_dac(int argc, char **argv)
 }
 
 #if GP8XXX_HAS_VDAC
-static int _set_voltage(int argc, char **argv)
-{
+static int _set_voltage(int argc, char **argv) {
     if (argc != 4) {
         printf("Usage: %s <dev> <channel> <voltage (mV)>\n", argv[0]);
         return 1;
@@ -219,8 +210,7 @@ static int _set_voltage(int argc, char **argv)
     return 0;
 }
 
-static int _set_range(int argc, char **argv)
-{
+static int _set_range(int argc, char **argv) {
     if (argc != 3) {
         printf("Usage: %s <dev> <range>\n", argv[0]);
         return 1;
@@ -254,10 +244,9 @@ static int _set_range(int argc, char **argv)
     return 0;
 }
 
-#endif /* GP8XXX_HAS_VDAC */
+#endif // GP8XXX_HAS_VDAC
 
-static int _sweep(int argc, char **argv)
-{
+static int _sweep(int argc, char **argv) {
     if (argc != 2) {
         printf("Usage: %s <dev>\n", argv[0]);
         return 1;
@@ -293,19 +282,18 @@ static const shell_command_t shell_commands[] = {
 #if GP8XXX_HAS_IDAC
     { "calibrate", "Calibrate 4 mA and 20 mA values.", _calibrate },
     { "set_current", "Set current (in uA).", _set_current },
-#endif /* GP8XXX_HAS_IDAC */
+#endif // GP8XXX_HAS_IDAC
     { "set_dac", "Set DAC value (raw).", _set_dac },
 #if GP8XXX_HAS_VDAC
     { "set_voltage", "Set voltage (in mV).", _set_voltage },
     { "set_range", "Set voltage range.", _set_range },
-#endif /* GP8XXX_HAS_VDAC */
+#endif // GP8XXX_HAS_VDAC
     { "sweep", "Sweep DAC range.", _sweep },
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
-    /* initialize the DACs */
+int main(void) {
+    // initialize the DACs
     puts("Initializing DACs... ");
 
     for (unsigned i = 0; i < ARRAY_SIZE(gp8xxx_params); i++) {
@@ -317,7 +305,7 @@ int main(void)
         }
     }
 
-    /* run shell */
+    // run shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

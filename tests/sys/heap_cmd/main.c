@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht <gunar@schorcht.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht <gunar@schorcht.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       Shell-based test application for heap functions
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- */
+/// @file
+/// @brief       Shell-based test application for heap functions
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,8 +13,7 @@
 
 #include "shell.h"
 
-static int malloc_cmd(int argc, char **argv)
-{
+static int malloc_cmd(int argc, char **argv) {
     static void *ptr = 0;
     if (argc < 2) {
         printf("usage: %s <bytes>\n", argv[0]);
@@ -32,8 +27,7 @@ static int malloc_cmd(int argc, char **argv)
 
 SHELL_COMMAND(malloc, "malloc <size>", malloc_cmd);
 
-static int free_cmd(int argc, char **argv)
-{
+static int free_cmd(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <ptr in hex> returned from malloc, e.g., 0x1234\n",
                argv[0]);
@@ -49,15 +43,14 @@ static int free_cmd(int argc, char **argv)
 
 SHELL_COMMAND(free, "free <addr in hex> returned from malloc, e.g., 0x1234", free_cmd);
 
-int main(void)
-{
+int main(void) {
     puts("Shell-based test application for heap functions.\n"
          "Use the 'help' command to get more information on how to use it.");
 
-    /* define buffer to be used by the shell */
+    // define buffer to be used by the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
 
-    /* define own shell commands */
+    // define own shell commands
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 
     return 0;

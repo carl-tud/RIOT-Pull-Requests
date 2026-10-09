@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 #include "bplib_init.h"
 #include "bplib_cla_udp.h"
 #include "bplib.h"
@@ -33,8 +31,7 @@ static bplib_cla_udp_t cla_udp1;
 static char stack_egress[THREAD_STACKSIZE_MEDIUM];
 static char recv_buffer[CONFIG_BPLIB_CLA_UDP_BUFLEN];
 
-static void* _poll_bp(void* arg)
-{
+static void* _poll_bp(void* arg) {
     (void) arg;
     BPLib_Status_t rv;
     size_t size;
@@ -54,9 +51,8 @@ static void* _poll_bp(void* arg)
     return NULL;
 }
 
-static void _config_nc(void)
-{
-    /* Configure the channel */
+static void _config_nc(void) {
+    // Configure the channel
     BPLib_EID_t dest = {
        .Scheme = BPLIB_EID_SCHEME_IPN,
        .IpnSspFormat = BPLIB_EID_IPN_SSP_FORMAT_TWO_DIGIT,
@@ -76,8 +72,8 @@ static void _config_nc(void)
     bplib_channel_set_block_num(0, BPLIB_BUNDLE_AGE_BLOCK, 2);
     bplib_channel_set_block_crc_type(0, BPLIB_BUNDLE_AGE_BLOCK, BPLib_CRC_Type_CRC16);
 
-    /* Here the hop count and previous node blocks are configured and added. They
-     * can be removed by setting the bplib_channel_set_block_include to false.*/
+    // Here the hop count and previous node blocks are configured and added. They
+    // can be removed by setting the bplib_channel_set_block_include to false.
     bplib_channel_set_block_include(0, BPLIB_HOP_COUNT_BLOCK, true);
     bplib_channel_set_hop_limit(0, 10);
     bplib_channel_set_block_num(0, BPLIB_HOP_COUNT_BLOCK, 3);
@@ -102,8 +98,7 @@ static void _config_nc(void)
     bplib_contact_set_in_addr(0, BPLIB_EXAMPLE_IP_LOCAL, BPLIB_EXAMPLE_PORT);
 }
 
-int main(void)
-{
+int main(void) {
     int rv = bplib_init();
     if (rv != 0) {
         printf("Error Initializing bplib: %i\n", rv);
@@ -112,21 +107,21 @@ int main(void)
 
     _config_nc();
 
-    /* Start the implementation of the CLA */
+    // Start the implementation of the CLA
     rv = bplib_cla_udp_start(&cla_udp1, 0);
     if (rv != 0) {
         printf("Failed to start UDP CL, error: %i\n", rv);
     }
 
-    /* Add and start the application level I/O */
+    // Add and start the application level I/O
     BPLib_PI_AddApplication(0);
     BPLib_PI_StartApplication(0);
 
-    /* Let bplib know the contact started */
+    // Let bplib know the contact started
     BPLib_CLA_ContactSetup(0);
     BPLib_CLA_ContactStart(0);
 
-    /* Consume the incoming bundles */
+    // Consume the incoming bundles
     thread_create(stack_egress, sizeof(stack_egress),
         THREAD_PRIORITY_MAIN - 1, 0, _poll_bp,
         NULL, "bplib APP IN");
@@ -134,9 +129,9 @@ int main(void)
     char buffer[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, buffer, SHELL_DEFAULT_BUFSIZE);
 
-    /* Note: Make sure to call BPLib_CLA_ContactTeardown and BPLib_PI_RemoveApplication
-     * in production, since this includes some measures to push bundles not yet sent, but queued,
-     * back into storage. This is not reachable here due to the shell. */
+    // Note: Make sure to call BPLib_CLA_ContactTeardown and BPLib_PI_RemoveApplication
+    // in production, since this includes some measures to push bundles not yet sent, but queued,
+    // back into storage. This is not reachable here due to the shell.
     BPLib_CLA_ContactStop(0);
     BPLib_CLA_ContactTeardown(&bplib_instance_data.BPLibInst, 0);
     bplib_cla_udp_stop(&cla_udp1);

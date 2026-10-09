@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_microbit_v2
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the BBC micro:bit v2
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_microbit_v2
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the BBC micro:bit v2
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "periph_cpu.h"
@@ -25,12 +21,10 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    { /* Mapped to USB virtual COM port */
+    { // Mapped to USB virtual COM port
         .dev        = NRF_UARTE0,
         .rx_pin     = GPIO_PIN(1, 8),
         .tx_pin     = GPIO_PIN(0, 6),
@@ -45,17 +39,15 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          (isr_uart0)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         NRF_PWM0,
         {
-            SPEAKER_PIN,    /* configure Speaker pin as PWM */
+            SPEAKER_PIN,    // configure Speaker pin as PWM
             GPIO_UNDEF,
             GPIO_UNDEF,
             GPIO_UNDEF,
@@ -63,39 +55,35 @@ static const pwm_conf_t pwm_config[] = {
     },
 };
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
-    {   /* Internal I2C */
+    {   // Internal I2C
         .dev = NRF_TWIM1,
         .scl = GPIO_PIN(0, 8),
         .sda = GPIO_PIN(0, 16),
         .speed = I2C_SPEED_NORMAL
     },
-    {   /* External I2C */
+    {   // External I2C
         .dev = NRF_TWIM0,
-        .scl = GPIO_PIN(0, 26),     /* P19 */
-        .sda = GPIO_PIN(1, 0),      /* P20 */
+        .scl = GPIO_PIN(0, 26),     // P19
+        .sda = GPIO_PIN(1, 0),      // P20
         .speed = I2C_SPEED_NORMAL
     },
 };
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPIM0,
-        .sclk = GPIO_PIN(0, 17),    /* P13 */
-        .mosi = GPIO_PIN(0, 13),    /* P15 */
-        .miso = GPIO_PIN(0, 1),     /* P14 */
+        .sclk = GPIO_PIN(0, 17),    // P13
+        .mosi = GPIO_PIN(0, 13),    // P15
+        .miso = GPIO_PIN(0, 1),     // P14
 #ifdef ERRATA_SPI_SINGLE_BYTE_WORKAROUND
         .ppi = 0,
 #endif
@@ -103,10 +91,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

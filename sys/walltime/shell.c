@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_walltime
- * @{
- *
- * @file
- * @brief       Wall-Clock time shell commands
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_walltime
+/// @{
+///
+/// @file
+/// @brief       Wall-Clock time shell commands
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 #include <stdlib.h>
 #include <string.h>
 
@@ -22,8 +18,7 @@
 #include "rtc_utils.h"
 #include "walltime.h"
 
-static int cmd_uptime(int argc, char **argv)
-{
+static int cmd_uptime(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -39,8 +34,7 @@ static int cmd_uptime(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_set_time(char **argv)
-{
+static int _cmd_set_time(char **argv) {
     struct tm now;
     memset(&now, 0, sizeof(now));
 
@@ -59,8 +53,7 @@ static int _cmd_set_time(char **argv)
     return res;
 }
 
-static int cmd_walltime(int argc, char **argv)
-{
+static int cmd_walltime(int argc, char **argv) {
     if (argc == 1) {
         struct tm now;
         char out[20];

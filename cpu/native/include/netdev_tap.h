@@ -1,21 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @addtogroup drivers_netdev
- * @{
- */
+/// @addtogroup drivers_netdev
+/// @{
 
-/**
- * @file
- * @brief  Definitions for @ref netdev ethernet driver for host system's
- *         TAP interfaces
- * @author Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @file
+/// @brief  Definitions for @ref netdev ethernet driver for host system's
+///         TAP interfaces
+/// @author Kaspar Schleiser <kaspar@schleiser.de>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,26 +23,20 @@ extern "C" {
 
 #include "net/if.h"
 
-/* MARK: - Low-level ethernet driver for native tap interfaces */
-/**
- * @name Low-level ethernet driver for native tap interfaces
- * @{
- */
-/**
- * @brief tap interface state
- */
+// MARK: - Low-level ethernet driver for native tap interfaces
+/// @name Low-level ethernet driver for native tap interfaces
+/// @{
+/// @brief tap interface state
 typedef struct netdev_tap {
-    netdev_t netdev;                    /**< netdev internal member */
-    char tap_name[IFNAMSIZ];            /**< host dev file name */
-    int tap_fd;                         /**< host file descriptor for the TAP */
-    uint8_t addr[ETHERNET_ADDR_LEN];    /**< The MAC address of the TAP */
-    bool promiscuous;                   /**< Flag for promiscuous mode */
-    bool wired;                         /**< Flag for wired mode */
+    netdev_t netdev;                    ///< netdev internal member
+    char tap_name[IFNAMSIZ];            ///< host dev file name
+    int tap_fd;                         ///< host file descriptor for the TAP
+    uint8_t addr[ETHERNET_ADDR_LEN];    ///< The MAC address of the TAP
+    bool promiscuous;                   ///< Flag for promiscuous mode
+    bool wired;                         ///< Flag for wired mode
 } netdev_tap_t;
 
-/**
- * @brief tap interface initialization parameters
- */
+/// @brief tap interface initialization parameters
 typedef struct {
     char **tap_name;                    /**< Name of the host system's tap
                                              interface to bind to. */
@@ -56,19 +44,17 @@ typedef struct {
                                              wired interface. */
 } netdev_tap_params_t;
 
-/**
- * @brief Setup netdev_tap_t structure.
- *
- * @param dev       the preallocated netdev_tap device handle to setup
- * @param params    initialization parameters
- * @param index     Index of @p params in a global parameter struct array.
- *                  If initialized manually, pass a unique identifier instead.
- */
+/// @brief Setup netdev_tap_t structure.
+///
+/// @param dev       the preallocated netdev_tap device handle to setup
+/// @param params    initialization parameters
+/// @param index     Index of @p params in a global parameter struct array.
+///                  If initialized manually, pass a unique identifier instead.
 void netdev_tap_setup(netdev_tap_t *dev, const netdev_tap_params_t *params, int index);
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_emcute
- * @{
- *
- * @file
- * @brief       MQTT-SN implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     net_emcute
+/// @{
+///
+/// @file
+/// @brief       MQTT-SN implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -58,10 +54,9 @@ static volatile uint8_t waiton = 0xff;
 static volatile uint16_t waitonid = 0;
 static volatile int result;
 
-static size_t set_len(uint8_t *buf, size_t len)
-{
-    /* - `len` field minimum length == 1
-     * - `((len + 1) <= 0xff) == len < 0xff` */
+static size_t set_len(uint8_t *buf, size_t len) {
+    // - `len` field minimum length == 1
+    // - `((len + 1) <= 0xff) == len < 0xff`
     if (len < 0xff) {
         buf[0] = len + 1;
         return 1;
@@ -73,8 +68,7 @@ static size_t set_len(uint8_t *buf, size_t len)
     }
 }
 
-static size_t get_len(uint8_t *buf, uint16_t *len)
-{
+static size_t get_len(uint8_t *buf, uint16_t *len) {
     if (buf[0] != 0x01) {
         *len = (uint16_t)buf[0];
         return 1;
@@ -85,18 +79,16 @@ static size_t get_len(uint8_t *buf, uint16_t *len)
     }
 }
 
-static void time_evt(void *arg)
-{
+static void time_evt(void *arg) {
     thread_flags_set(arg, TFLAGS_TIMEOUT);
 }
 
-static int syncsend(uint8_t resp, size_t len, bool unlock)
-{
+static int syncsend(uint8_t resp, size_t len, bool unlock) {
     int res = EMCUTE_TIMEOUT;
     waiton = resp;
     timer.arg = thread_get_active();
-    /* clear flags, in case the timer was triggered last time right before the
-     * remove was called */
+    // clear flags, in case the timer was triggered last time right before the
+    // remove was called
     thread_flags_clear(TFLAGS_ANY);
 
     for (unsigned retries = 0; retries <= CONFIG_EMCUTE_N_RETRY; retries++) {
@@ -113,7 +105,7 @@ static int syncsend(uint8_t resp, size_t len, bool unlock)
         }
     }
 
-    /* cleanup sync state */
+    // cleanup sync state
     waiton = 0xff;
     if (unlock) {
         mutex_unlock(&txlock);
@@ -121,8 +113,7 @@ static int syncsend(uint8_t resp, size_t len, bool unlock)
     return res;
 }
 
-static void on_disconnect(void)
-{
+static void on_disconnect(void) {
     if (waiton == DISCONNECT) {
         gateway.port = 0;
         result = EMCUTE_OK;
@@ -130,8 +121,7 @@ static void on_disconnect(void)
     }
 }
 
-static void on_ack(uint8_t type, int id_pos, int ret_pos, int res_pos)
-{
+static void on_ack(uint8_t type, int id_pos, int ret_pos, int res_pos) {
     if ((waiton == type) &&
         (!id_pos || (waitonid == byteorder_bebuftohs(&rbuf[id_pos])))) {
         if (!ret_pos || (rbuf[ret_pos] == ACCEPT)) {
@@ -147,9 +137,8 @@ static void on_ack(uint8_t type, int id_pos, int ret_pos, int res_pos)
     }
 }
 
-static void on_publish(size_t len, size_t pos)
-{
-    /* make sure packet length is valid - if not, drop packet silently */
+static void on_publish(size_t len, size_t pos) {
+    // make sure packet length is valid - if not, drop packet silently
     if (len < (pos + 6)) {
         return;
     }
@@ -157,20 +146,20 @@ static void on_publish(size_t len, size_t pos)
     emcute_sub_t *sub;
     uint16_t tid = byteorder_bebuftohs(&rbuf[pos + 2]);
 
-    /* allocate a response packet */
+    // allocate a response packet
     uint8_t buf[7] = { 7, PUBACK, 0, 0, 0, 0, ACCEPT };
-    /* and populate message ID and topic ID fields */
+    // and populate message ID and topic ID fields
     memcpy(&buf[2], &rbuf[pos + 2], 4);
 
-    /* return error code in case we don't support/understand active flags. So
-     * far we only understand QoS 1... */
+    // return error code in case we don't support/understand active flags. So
+    // far we only understand QoS 1...
     if (rbuf[pos + 1] & ~(EMCUTE_QOS_1 | EMCUTE_TIT_SHORT | EMCUTE_RETAIN)) {
         buf[6] = REJ_NOTSUP;
         sock_udp_send(&sock, &buf, 7, &gateway);
         return;
     }
 
-    /* find the registered topic */
+    // find the registered topic
     for (sub = subs; sub && (sub->topic.id != tid); sub = sub->next) {}
     if (sub == NULL) {
         buf[6] = REJ_INVTID;
@@ -188,21 +177,18 @@ static void on_publish(size_t len, size_t pos)
     }
 }
 
-static void on_pingreq(sock_udp_ep_t *remote)
-{
-    /* @todo    respond with a PINGRESP only if the PINGREQ came from the
-     *          connected gateway -> see spec v1.2, section 6.11 */
+static void on_pingreq(sock_udp_ep_t *remote) {
+    // @todo    respond with a PINGRESP only if the PINGREQ came from the
+    //          connected gateway -> see spec v1.2, section 6.11
     uint8_t buf[2] = { 2, PINGRESP };
     sock_udp_send(&sock, &buf, 2, remote);
 }
 
-static void on_pingresp(void)
-{
-    /** @todo trigger update something like a 'last seen' value */
+static void on_pingresp(void) {
+    /// @todo trigger update something like a 'last seen' value
 }
 
-static void send_ping(void)
-{
+static void send_ping(void) {
     if (gateway.port != 0) {
         uint8_t buf[2] = { 2, PINGREQ };
         sock_udp_send(&sock, &buf, 2, &gateway);
@@ -210,8 +196,7 @@ static void send_ping(void)
 }
 
 int emcute_con(sock_udp_ep_t *remote, bool clean, const char *will_topic,
-               const void *will_msg, size_t will_msg_len, unsigned will_flags)
-{
+               const void *will_msg, size_t will_msg_len, unsigned will_flags) {
     int res;
     size_t len;
 
@@ -219,19 +204,19 @@ int emcute_con(sock_udp_ep_t *remote, bool clean, const char *will_topic,
 
     mutex_lock(&txlock);
 
-    /* check for existing connections and copy given UDP endpoint */
+    // check for existing connections and copy given UDP endpoint
     if (gateway.port != 0) {
         return EMCUTE_NOGW;
     }
     memcpy(&gateway, remote, sizeof(sock_udp_ep_t));
 
-    /* figure out which flags to set */
+    // figure out which flags to set
     uint8_t flags = (clean) ? EMCUTE_CS : 0;
     if (will_topic) {
         flags |= EMCUTE_WILL;
     }
 
-    /* compute packet size */
+    // compute packet size
     len = (strlen(cli_id) + 6);
     tbuf[0] = (uint8_t)len;
     tbuf[1] = CONNECT;
@@ -240,7 +225,7 @@ int emcute_con(sock_udp_ep_t *remote, bool clean, const char *will_topic,
     byteorder_htobebufs(&tbuf[4], CONFIG_EMCUTE_KEEPALIVE);
     memcpy(&tbuf[6], cli_id, strlen(cli_id));
 
-    /* configure 'state machine' and send the connection request */
+    // configure 'state machine' and send the connection request
     if (will_topic) {
         size_t topic_len = strlen(will_topic);
         if ((topic_len > CONFIG_EMCUTE_TOPIC_MAXLEN) ||
@@ -255,7 +240,7 @@ int emcute_con(sock_udp_ep_t *remote, bool clean, const char *will_topic,
             return res;
         }
 
-        /* now send WILLTOPIC */
+        // now send WILLTOPIC
         size_t pos = set_len(tbuf, (topic_len + 2));
         len = (pos + topic_len + 2);
         tbuf[pos++] = WILLTOPIC;
@@ -268,7 +253,7 @@ int emcute_con(sock_udp_ep_t *remote, bool clean, const char *will_topic,
             return res;
         }
 
-        /* and WILLMSG afterwards */
+        // and WILLMSG afterwards
         pos = set_len(tbuf, (will_msg_len + 1));
         len = (pos + will_msg_len + 1);
         tbuf[pos++] = WILLMSG;
@@ -282,8 +267,7 @@ int emcute_con(sock_udp_ep_t *remote, bool clean, const char *will_topic,
     return res;
 }
 
-int emcute_discon(void)
-{
+int emcute_discon(void) {
     if (gateway.port == 0) {
         return EMCUTE_NOGW;
     }
@@ -296,8 +280,7 @@ int emcute_discon(void)
     return syncsend(DISCONNECT, 2, true);
 }
 
-int emcute_reg(emcute_topic_t *topic)
-{
+int emcute_reg(emcute_topic_t *topic) {
     assert(topic && topic->name);
 
     if (gateway.port == 0) {
@@ -325,8 +308,7 @@ int emcute_reg(emcute_topic_t *topic)
 }
 
 int emcute_pub(emcute_topic_t *topic, const void *data, size_t len,
-               unsigned flags)
-{
+               unsigned flags) {
     int res = EMCUTE_OK;
 
     assert((topic->id != 0) && data && (len > 0) && !(flags & ~PUB_FLAGS));
@@ -348,7 +330,7 @@ int emcute_pub(emcute_topic_t *topic, const void *data, size_t len,
     tbuf[pos++] = flags;
     byteorder_htobebufs(&tbuf[pos], topic->id);
     pos += 2;
-    /* set generated MessageId for QOS 1 and 2, else set it to 0 */
+    // set generated MessageId for QOS 1 and 2, else set it to 0
     if (((flags & MQTTSN_QOS_MASK) == MQTTSN_QOS_1) ||
         ((flags & MQTTSN_QOS_MASK) == MQTTSN_QOS_2)) {
         byteorder_htobebufs(&tbuf[pos], id_next);
@@ -371,8 +353,7 @@ int emcute_pub(emcute_topic_t *topic, const void *data, size_t len,
     return res;
 }
 
-int emcute_sub(emcute_sub_t *sub, unsigned flags)
-{
+int emcute_sub(emcute_sub_t *sub, unsigned flags) {
     assert(sub && (sub->cb) && (sub->topic.name) && !(flags & ~SUB_FLAGS));
 
     if (gateway.port == 0) {
@@ -396,7 +377,7 @@ int emcute_sub(emcute_sub_t *sub, unsigned flags)
         DEBUG("[emcute] sub: success, topic id is %i\n", res);
         sub->topic.id = res;
 
-        /* check if subscription is already in the list, only insert if not*/
+        // check if subscription is already in the list, only insert if not
         emcute_sub_t *s;
         for (s = subs; s && (s != sub); s = s->next) {}
         if (!s) {
@@ -410,8 +391,7 @@ int emcute_sub(emcute_sub_t *sub, unsigned flags)
     return res;
 }
 
-int emcute_unsub(emcute_sub_t *sub)
-{
+int emcute_unsub(emcute_sub_t *sub) {
     assert(sub && sub->topic.name);
 
     if (gateway.port == 0) {
@@ -447,8 +427,7 @@ int emcute_unsub(emcute_sub_t *sub)
     return res;
 }
 
-int emcute_willupd_topic(const char *topic, unsigned flags)
-{
+int emcute_willupd_topic(const char *topic, unsigned flags) {
     assert(!(flags & ~PUB_FLAGS));
 
     if (gateway.port == 0) {
@@ -473,8 +452,7 @@ int emcute_willupd_topic(const char *topic, unsigned flags)
     return syncsend(WILLTOPICRESP, (size_t)tbuf[0], true);
 }
 
-int emcute_willupd_msg(const void *data, size_t len)
-{
+int emcute_willupd_msg(const void *data, size_t len) {
     assert(data && (len > 0));
 
     if (gateway.port == 0) {
@@ -493,8 +471,7 @@ int emcute_willupd_msg(const void *data, size_t len)
     return syncsend(WILLMSGRESP, (pos + len), true);
 }
 
-void emcute_run(uint16_t port, const char *id)
-{
+void emcute_run(uint16_t port, const char *id) {
     assert(strlen(id) >= MQTTSN_CLI_ID_MINLEN &&
            strlen(id) <= MQTTSN_CLI_ID_MAXLEN);
 
@@ -523,19 +500,19 @@ void emcute_run(uint16_t port, const char *id)
         }
 
         if (len >= 2) {
-            /* handle the packet */
+            // handle the packet
             uint16_t pkt_len;
-            /* catch invalid length field */
+            // catch invalid length field
             if ((len == 2) && (rbuf[0] == 0x01)) {
                 continue;
             }
-            /* parse length field */
+            // parse length field
             size_t pos = get_len(rbuf, &pkt_len);
-            /* verify length to prevent overflows */
+            // verify length to prevent overflows
             if (((size_t)pkt_len > (size_t)len) || (pos >= (size_t)len)) {
                 continue;
             }
-            /* get packet type */
+            // get packet type
             uint8_t type = rbuf[pos];
 
             switch (type) {

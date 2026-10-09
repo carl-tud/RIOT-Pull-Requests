@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -11,7 +9,7 @@
 extern "C" {
 #endif
 
-/* IAP-Commands  */
+// IAP-Commands
 #define PREPARE_SECTOR_FOR_WRITE_OPERATION  (50)
 #define COPY_RAM_TO_FLASH                   (51)
 #define ERASE_SECTOR                        (52)
@@ -20,7 +18,7 @@ extern "C" {
 #define READ_BOOT_CODE_VERSION              (55)
 #define COMPARE                             (56)
 
-/* IAP status codes */
+// IAP status codes
 #define CMD_SUCCESS                                 (0)
 #define INVALID_COMMAND                             (1)
 #define SRC_ADDR_ERROR                              (2)
@@ -36,23 +34,21 @@ extern "C" {
 
 #define INVALID_ADDRESS     (0xFF)
 
-/* IAP start location on flash */
+// IAP start location on flash
 #define IAP_LOCATION    (0x7FFFFFF1)
 
-/* PLL */
-#define PLLCON_PLLE     (0x01)      /**< PLL Enable */
-#define PLLCON_PLLD     (0x00)      /**< PLL Disable */
-#define PLLCON_PLLC     (0x03)      /**< PLL Connect */
-#define PLLSTAT_PLOCK   (0x0400)    /**< PLL Lock Status */
+// PLL
+#define PLLCON_PLLE     (0x01)      ///< PLL Enable
+#define PLLCON_PLLD     (0x00)      ///< PLL Disable
+#define PLLCON_PLLC     (0x03)      ///< PLL Connect
+#define PLLSTAT_PLOCK   (0x0400)    ///< PLL Lock Status
 
-/**
- * @brief  Converts 'addr' to sector number
- * @note   Sector table (Users Manual P. 610)
- *
- * @param addr      Flash address
- *
- * @return  Sector number. 0xFF on error
- */
+/// @brief  Converts 'addr' to sector number
+/// @note   Sector table (Users Manual P. 610)
+///
+/// @param addr      Flash address
+///
+/// @return  Sector number. 0xFF on error
 uint8_t iap_get_sector(uint32_t addr);
 
 #ifdef __cplusplus

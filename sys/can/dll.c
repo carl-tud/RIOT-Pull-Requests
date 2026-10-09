@@ -1,24 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_can_dll
- * @{
- * @file
- * @brief       CAN Data Link Layer module
- *
- * This module contains the DLL interfaces for upper layer (raw_can_*)
- * and devices (can_dll_*).
- * It manages the connection between an device number and its candev thread.
- *
- *
- * @author      Toon Stegen <toon.stegen@altran.com>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Aurelien Gonce <aurelien.gonce@altran.com>
- * @}
- */
+/// @ingroup     sys_can_dll
+/// @{
+/// @file
+/// @brief       CAN Data Link Layer module
+///
+/// This module contains the DLL interfaces for upper layer (raw_can_*)
+/// and devices (can_dll_*).
+/// It manages the connection between an device number and its candev thread.
+///
+///
+/// @author      Toon Stegen <toon.stegen@altran.com>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Aurelien Gonce <aurelien.gonce@altran.com>
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -41,8 +37,7 @@ static int candev_nb = 0;
 static can_reg_entry_t *tx_list[CAN_DLL_NUMOF];
 static mutex_t tx_lock = MUTEX_INIT;
 
-static int _get_ifnum(kernel_pid_t pid)
-{
+static int _get_ifnum(kernel_pid_t pid) {
     for (int i = 0; i < candev_nb; i++) {
         if (candev_list[i]->pid == pid) {
             return i;
@@ -52,8 +47,7 @@ static int _get_ifnum(kernel_pid_t pid)
     return -ENODEV;
 }
 
-int _send_pkt(can_pkt_t *pkt)
-{
+int _send_pkt(can_pkt_t *pkt) {
     assert(pkt);
 
     msg_t msg;
@@ -76,8 +70,7 @@ int _send_pkt(can_pkt_t *pkt)
     return handle;
 }
 
-int raw_can_send(int ifnum, const can_frame_t *frame, kernel_pid_t pid)
-{
+int raw_can_send(int ifnum, const can_frame_t *frame, kernel_pid_t pid) {
     can_pkt_t *pkt;
 
     assert(frame);
@@ -99,8 +92,7 @@ int raw_can_send(int ifnum, const can_frame_t *frame, kernel_pid_t pid)
 }
 
 #ifdef MODULE_CAN_MBOX
-int raw_can_send_mbox(int ifnum, const can_frame_t *frame, mbox_t *mbox)
-{
+int raw_can_send_mbox(int ifnum, const can_frame_t *frame, mbox_t *mbox) {
     can_pkt_t *pkt;
 
     assert(frame);
@@ -121,8 +113,7 @@ int raw_can_send_mbox(int ifnum, const can_frame_t *frame, mbox_t *mbox)
 }
 #endif
 
-int raw_can_abort(int ifnum, int handle)
-{
+int raw_can_abort(int ifnum, int handle) {
     msg_t msg, reply;
     can_pkt_t *pkt = NULL;
     can_reg_entry_t *entry = NULL;
@@ -164,8 +155,7 @@ int raw_can_abort(int ifnum, int handle)
 }
 
 static int register_filter_entry(can_reg_entry_t *entry,
-                                 const struct can_filter *filter, void *param)
-{
+                                 const struct can_filter *filter, void *param) {
     msg_t msg;
     msg_t reply;
     int ret;
@@ -195,8 +185,7 @@ static int register_filter_entry(can_reg_entry_t *entry,
 }
 
 static int unregister_filter_entry(can_reg_entry_t *entry,
-                                   const struct can_filter *filter, void *param)
-{
+                                   const struct can_filter *filter, void *param) {
     msg_t msg;
     msg_t reply;
     int ret;
@@ -225,8 +214,7 @@ static int unregister_filter_entry(can_reg_entry_t *entry,
 }
 
 int raw_can_subscribe_rx(int ifnum, const struct can_filter *filter,
-                         kernel_pid_t pid, void *param)
-{
+                         kernel_pid_t pid, void *param) {
     assert(ifnum < candev_nb);
     assert(filter);
 
@@ -242,8 +230,7 @@ int raw_can_subscribe_rx(int ifnum, const struct can_filter *filter,
 
 #ifdef MODULE_CAN_MBOX
 int raw_can_subscribe_rx_mbox(int ifnum, const struct can_filter *filter,
-                              mbox_t *mbox, void *param)
-{
+                              mbox_t *mbox, void *param) {
     assert(ifnum < candev_nb);
     assert(filter);
 
@@ -256,8 +243,7 @@ int raw_can_subscribe_rx_mbox(int ifnum, const struct can_filter *filter,
 }
 #endif
 
-int raw_can_unsubscribe_rx(int ifnum, const struct can_filter *filter, kernel_pid_t pid, void *param)
-{
+int raw_can_unsubscribe_rx(int ifnum, const struct can_filter *filter, kernel_pid_t pid, void *param) {
     assert(ifnum < candev_nb);
     assert(filter);
 
@@ -273,8 +259,7 @@ int raw_can_unsubscribe_rx(int ifnum, const struct can_filter *filter, kernel_pi
 
 #ifdef MODULE_CAN_MBOX
 int raw_can_unsubscribe_rx_mbox(int ifnum, const struct can_filter *filter,
-                                mbox_t *mbox, void *param)
-{
+                                mbox_t *mbox, void *param) {
     assert(ifnum < candev_nb);
     assert(filter);
 
@@ -287,8 +272,7 @@ int raw_can_unsubscribe_rx_mbox(int ifnum, const struct can_filter *filter,
 }
 #endif
 
-int raw_can_free_frame(can_rx_data_t *frame)
-{
+int raw_can_free_frame(can_rx_data_t *frame) {
     if (!frame) {
         return 0;
     }
@@ -299,8 +283,7 @@ int raw_can_free_frame(can_rx_data_t *frame)
     return ret;
 }
 
-int raw_can_get_can_opt(int ifnum, can_opt_t *opt)
-{
+int raw_can_get_can_opt(int ifnum, can_opt_t *opt) {
     msg_t msg, reply;
 
     assert(ifnum < CAN_DLL_NUMOF);
@@ -320,8 +303,7 @@ int raw_can_get_can_opt(int ifnum, can_opt_t *opt)
     return (int) reply.content.value;
 }
 
-int raw_can_set_can_opt(int ifnum, can_opt_t *opt)
-{
+int raw_can_set_can_opt(int ifnum, can_opt_t *opt) {
     msg_t msg, reply;
 
     assert(ifnum < CAN_DLL_NUMOF);
@@ -341,8 +323,7 @@ int raw_can_set_can_opt(int ifnum, can_opt_t *opt)
     return (int) reply.content.value;
 }
 
-int can_dll_register_candev(candev_dev_t *candev)
-{
+int can_dll_register_candev(candev_dev_t *candev) {
     if (candev_nb >= CAN_DLL_NUMOF) {
         return -ENODEV;
     }
@@ -355,15 +336,13 @@ int can_dll_register_candev(candev_dev_t *candev)
     return candev_nb++;
 }
 
-int can_dll_dispatch_rx_frame(can_frame_t *frame, kernel_pid_t pid)
-{
+int can_dll_dispatch_rx_frame(can_frame_t *frame, kernel_pid_t pid) {
     can_pkt_t *pkt = can_pkt_alloc_rx(_get_ifnum(pid), frame);
 
     return can_router_dispatch_rx_indic(pkt);
 }
 
-static int _remove_entry_from_list(can_reg_entry_t **list, can_reg_entry_t *entry)
-{
+static int _remove_entry_from_list(can_reg_entry_t **list, can_reg_entry_t *entry) {
     assert(list);
     int res = -1;
     can_reg_entry_t *_tmp;
@@ -384,8 +363,7 @@ static int _remove_entry_from_list(can_reg_entry_t **list, can_reg_entry_t *entr
     return res;
 }
 
-int can_dll_dispatch_tx_conf(can_pkt_t *pkt)
-{
+int can_dll_dispatch_tx_conf(can_pkt_t *pkt) {
     DEBUG("can_dll_dispatch_tx_conf: pkt=%p\n", (void*)pkt);
 
     mutex_lock(&tx_lock);
@@ -400,8 +378,7 @@ int can_dll_dispatch_tx_conf(can_pkt_t *pkt)
     return 0;
 }
 
-int can_dll_dispatch_tx_error(can_pkt_t *pkt)
-{
+int can_dll_dispatch_tx_error(can_pkt_t *pkt) {
     DEBUG("can_dll_dispatch_tx_error: pkt=%p\n", (void*)pkt);
 
     mutex_lock(&tx_lock);
@@ -417,8 +394,7 @@ int can_dll_dispatch_tx_error(can_pkt_t *pkt)
 
 }
 
-int can_dll_dispatch_bus_off(kernel_pid_t pid)
-{
+int can_dll_dispatch_bus_off(kernel_pid_t pid) {
     int ifnum = _get_ifnum(pid);
     can_reg_entry_t *entry = tx_list[ifnum];
 
@@ -437,16 +413,14 @@ int can_dll_dispatch_bus_off(kernel_pid_t pid)
     return 0;
 }
 
-int can_dll_init(void)
-{
+int can_dll_init(void) {
     can_pkt_init();
     can_router_init();
 
     return 0;
 }
 
-int raw_can_power_down(int ifnum)
-{
+int raw_can_power_down(int ifnum) {
     msg_t msg, reply;
 
     assert(ifnum < candev_nb);
@@ -459,8 +433,7 @@ int raw_can_power_down(int ifnum)
     return (int) reply.content.value;
 }
 
-int raw_can_power_up(int ifnum)
-{
+int raw_can_power_up(int ifnum) {
     msg_t msg, reply;
 
     assert(ifnum < candev_nb);
@@ -473,8 +446,7 @@ int raw_can_power_up(int ifnum)
     return (int) reply.content.value;
 }
 
-int raw_can_set_bitrate(int ifnum, uint32_t bitrate, uint32_t sample_point)
-{
+int raw_can_set_bitrate(int ifnum, uint32_t bitrate, uint32_t sample_point) {
     if (ifnum < 0 || ifnum >= candev_nb) {
         return -1;
     }
@@ -530,8 +502,7 @@ int raw_can_set_bitrate(int ifnum, uint32_t bitrate, uint32_t sample_point)
 }
 
 #ifdef MODULE_CAN_TRX
-int raw_can_set_trx(int ifnum, can_trx_t *trx)
-{
+int raw_can_set_trx(int ifnum, can_trx_t *trx) {
     msg_t msg, reply;
 
     assert(ifnum < candev_nb);
@@ -546,8 +517,7 @@ int raw_can_set_trx(int ifnum, can_trx_t *trx)
 }
 #endif
 
-int raw_can_get_ifnum_by_name(const char *name)
-{
+int raw_can_get_ifnum_by_name(const char *name) {
     for (int i = 0; i < candev_nb; i++) {
         if ((strcmp(name, candev_list[i]->name) == 0) &&
                 (strlen(name) == strlen(candev_list[i]->name))) {
@@ -558,8 +528,7 @@ int raw_can_get_ifnum_by_name(const char *name)
     return RAW_CAN_DEV_UNDEF;
 }
 
-const char *raw_can_get_name_by_ifnum(int ifnum)
-{
+const char *raw_can_get_name_by_ifnum(int ifnum) {
     assert(ifnum >= 0);
 
     if (ifnum >= candev_nb) {
@@ -569,8 +538,7 @@ const char *raw_can_get_name_by_ifnum(int ifnum)
     return candev_list[ifnum]->name;
 }
 
-candev_dev_t *raw_can_get_dev_by_ifnum(int ifnum)
-{
+candev_dev_t *raw_can_get_dev_by_ifnum(int ifnum) {
     assert(ifnum >= 0);
 
     if (ifnum >= candev_nb) {

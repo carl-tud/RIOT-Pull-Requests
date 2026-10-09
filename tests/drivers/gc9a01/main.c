@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the GC9A01 LCD driver
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the GC9A01 LCD driver
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include <stdio.h>
 #include "byteorder.h"
@@ -25,17 +21,16 @@
 #include "gc9a01.h"
 #include "gc9a01_params.h"
 
-int main(void)
-{
+int main(void) {
     lcd_t dev;
     dev.driver = &lcd_gc9a01_driver;
 
     puts("GC9A01 display test application");
 
-    /* initialize the sensor */
+    // initialize the sensor
     printf("Initializing display...");
 
-    /* Enable backlight if macro is defined */
+    // Enable backlight if macro is defined
 #ifdef BACKLIGHT_ON
     BACKLIGHT_ON;
 #endif
@@ -53,7 +48,7 @@ int main(void)
              0x0000);
     puts("lcd TFT display map filled");
 
-    /* Fill square with blue */
+    // Fill square with blue
     puts("Drawing blue rectangle");
     lcd_fill(&dev, 0, dev.params->lines / 3, 0, dev.params->rgb_channels - 1,
              0x001F);
@@ -79,7 +74,7 @@ int main(void)
     lcd_fill(&dev, 0, dev.params->lines - 1, 0, dev.params->rgb_channels - 1,
              0x0000);
 #ifndef CONFIG_NO_RIOT_IMAGE
-    /* Approximate middle of the display */
+    // Approximate middle of the display
     uint8_t x1 = (dev.params->lines / 2) - (RIOT_LOGO_WIDTH / 2);
     uint8_t y1 = (dev.params->rgb_channels / 2) - (RIOT_LOGO_HEIGHT / 2);
     lcd_pixmap(&dev, x1, x1 + RIOT_LOGO_WIDTH - 1, y1, y1 +  RIOT_LOGO_HEIGHT - 1,

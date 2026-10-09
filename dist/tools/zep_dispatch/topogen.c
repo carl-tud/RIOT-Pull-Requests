@@ -1,9 +1,7 @@
-/*
- * Copyright (C) 2021 Benjamin Valentin
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- */
+// Copyright (C) 2021 Benjamin Valentin
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
 
 #include <ctype.h>
 #include <stdbool.h>
@@ -40,21 +38,19 @@ struct world {
     bool grid;
 };
 
-static unsigned random_range(unsigned lower, unsigned upper)
-{
+static unsigned random_range(unsigned lower, unsigned upper) {
     unsigned range = upper - lower + 1;
     return lower + rand() % range;
 }
 
 static struct node *node_generate(struct node *node, const struct world *w,
-                                  unsigned range, unsigned idx)
-{
+                                  unsigned range, unsigned idx) {
     if (w->grid) {
         float width  = w->w;
         float height = w->h;
         float num    = w->num_nodes;
 
-        /* https://math.stackexchange.com/a/1039514 */
+        // https://math.stackexchange.com/a/1039514
         float n_x = sqrtf(num * width/height
                           + powf(width - height, 2)/(4 * height*height))
                   - (width - height)/2;
@@ -73,13 +69,11 @@ static struct node *node_generate(struct node *node, const struct world *w,
     return node;
 }
 
-static double node_distance(const struct node *a, const struct node *b)
-{
+static double node_distance(const struct node *a, const struct node *b) {
     return sqrt(pow(a->x - b->x, 2) + pow(a->y - b->y, 2));
 }
 
-static double node_distance_weight(const struct node *a, const struct node *b)
-{
+static double node_distance_weight(const struct node *a, const struct node *b) {
     double w = 1 - pow(node_distance(a, b), 2) / pow(a->r, 2);
 
     if (w < 0) {
@@ -88,8 +82,7 @@ static double node_distance_weight(const struct node *a, const struct node *b)
     return w;
 }
 
-static void node_name(struct node *n, unsigned idx)
-{
+static void node_name(struct node *n, unsigned idx) {
     if (CONFIG_USE_NUMERIC_NAMES) {
         snprintf(n->name, sizeof(n->name), "n%03u", (uint16_t)idx + 1);
         return;
@@ -108,8 +101,7 @@ static void node_name(struct node *n, unsigned idx)
 
 static void world_gen(struct world *w, unsigned num_nodes,
                       unsigned width, unsigned height,
-                      unsigned range, unsigned var)
-{
+                      unsigned range, unsigned var) {
     w->w = width;
     w->h = height;
     w->num_nodes = num_nodes;
@@ -121,14 +113,13 @@ static void world_gen(struct world *w, unsigned num_nodes,
     }
 
     if (!w->grid) {
-        /* place first node at origin */
+        // place first node at origin
         w->nodes[0].x = 0;
         w->nodes[0].y = 0;
     }
 }
 
-static unsigned _color(const struct node *n, unsigned base)
-{
+static unsigned _color(const struct node *n, unsigned base) {
     if (n->rx_from_root && n->tx_to_root) {
         return base;
     } else if (n->rx_from_root) {
@@ -140,8 +131,7 @@ static unsigned _color(const struct node *n, unsigned base)
     return 0;
 }
 
-static void _print_nodes(struct node *nodes, unsigned num, unsigned color)
-{
+static void _print_nodes(struct node *nodes, unsigned num, unsigned color) {
     for (unsigned i = 0; i < num; ++i) {
         printf("# %s\t%d\t%d\t%u\t0x%x\n", nodes[i].name,
                                            nodes[i].x, nodes[i].y,
@@ -149,17 +139,15 @@ static void _print_nodes(struct node *nodes, unsigned num, unsigned color)
     }
 }
 
-/* To visualize the network we color the nodes based on whether they have
- * a (bi-directional) connection to the root node via some other node(s).
- */
-static void _calc_connections(struct node *nodes, unsigned num)
-{
+// To visualize the network we color the nodes based on whether they have
+// a (bi-directional) connection to the root node via some other node(s).
+static void _calc_connections(struct node *nodes, unsigned num) {
     bool changes = true;
     nodes->rx_from_root = true;
     nodes->tx_to_root = true;
 
-    /* super basic algorithm - just loop unti there are no more changes
-     * in the node's connection states. */
+    // super basic algorithm - just loop unti there are no more changes
+    // in the node's connection states.
     while (changes) {
         changes = false;
 
@@ -169,12 +157,12 @@ static void _calc_connections(struct node *nodes, unsigned num)
             for (unsigned j = 0; j < num; ++j) {
                 struct node *m = &nodes[j];
 
-                /* node is already fully connected */
+                // node is already fully connected
                 if (m->rx_from_root && m->tx_to_root) {
                     continue;
                 }
 
-                /* m can receive from n and n can receive from root */
+                // m can receive from n and n can receive from root
                 if (node_distance_weight(n, m) > 0) {
                     if (!m->rx_from_root && n->rx_from_root) {
                         m->rx_from_root = true;
@@ -182,7 +170,7 @@ static void _calc_connections(struct node *nodes, unsigned num)
                     }
                 }
 
-                /* m can send to n and n can send to root */
+                // m can send to n and n can send to root
                 if (node_distance_weight(m, n) > 0) {
                     if (!m->tx_to_root && n->tx_to_root) {
                         m->tx_to_root = true;
@@ -194,8 +182,7 @@ static void _calc_connections(struct node *nodes, unsigned num)
     }
 }
 
-static void _print_distance(struct node *nodes, unsigned num, bool recursive, bool binary)
-{
+static void _print_distance(struct node *nodes, unsigned num, bool recursive, bool binary) {
     struct node *start = nodes;
 
     if (recursive) {
@@ -231,8 +218,7 @@ static void _print_distance(struct node *nodes, unsigned num, bool recursive, bo
     }
 }
 
-static void _print_help(const char *name)
-{
+static void _print_help(const char *name) {
     puts("Generate a number of nodes that are randomly placed in a rectangular area");
     printf("usage: %s [-s <seed>]"
                     " [-w <width>]"
@@ -256,8 +242,7 @@ static void _print_help(const char *name)
     puts("\t-g\t\tnodes are organized as a grid");
 }
 
-static bool _is_empty(const char *line)
-{
+static bool _is_empty(const char *line) {
     while (*line) {
         if (!isspace(*line++)) {
             return false;
@@ -267,8 +252,7 @@ static bool _is_empty(const char *line)
     return true;
 }
 
-static struct node *_get_node_by_name(struct world *w, const char *name)
-{
+static struct node *_get_node_by_name(struct world *w, const char *name) {
     for (unsigned i = 0; i < w->num_nodes; ++i) {
         if (!strcmp(w->nodes[i].name, name)) {
             return &w->nodes[i];
@@ -278,15 +262,14 @@ static struct node *_get_node_by_name(struct world *w, const char *name)
     return NULL;
 }
 
-static int _from_file(struct world *w, FILE *file)
-{
+static int _from_file(struct world *w, FILE *file) {
     char *line = NULL;
     size_t len = 0;
     unsigned linenum = 0;
     while (getline(&line, &len, file) >= 0) {
         ++linenum;
 
-        /* skip comments & empty lines */
+        // skip comments & empty lines
         if (*line == '#' || _is_empty(line)) {
             continue;
         }
@@ -296,20 +279,20 @@ static int _from_file(struct world *w, FILE *file)
         char *ypos = strtok(NULL, DELIM);
         char *range = strtok(NULL, DELIM);
 
-        /* check if node is already stored */
+        // check if node is already stored
         struct node *n = _get_node_by_name(w, name);
         if (n == NULL) {
             w->nodes = reallocarray(w->nodes, ++w->num_nodes, sizeof(*w->nodes));
             n = &w->nodes[w->num_nodes - 1];
         }
 
-        /* store name */
+        // store name
         strncpy(n->name, name, sizeof(n->name) - 1);
         if (strlen(name) >= sizeof(n->name)) {
             fprintf(stderr, "warning: '%s' truncated to '%s'\n", name, n->name);
         }
 
-        /* node definition with pinned MAC */
+        // node definition with pinned MAC
         if (!strcmp(xpos, ":=")) {
             strncpy(n->extra, ypos, sizeof(n->extra) - 1);
             continue;
@@ -345,8 +328,7 @@ static int _from_file(struct world *w, FILE *file)
     return 0;
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     const char *progname = argv[0];
     char *worldmap = NULL;
 

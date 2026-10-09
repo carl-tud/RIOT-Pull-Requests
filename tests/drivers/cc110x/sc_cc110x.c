@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdio.h>
 #include <stdint.h>
@@ -26,8 +24,7 @@ static const char *pa_settings[] = {
     "+10",
 };
 
-static const char *state2s(cc110x_state_t state)
-{
+static const char *state2s(cc110x_state_t state) {
     switch (state) {
     case CC110X_STATE_IDLE:
         return "IDLE";
@@ -57,8 +54,7 @@ static const char *state2s(cc110x_state_t state)
     return "Unknown";
 }
 
-static const char *gdoconf2s(uint8_t conf)
-{
+static const char *gdoconf2s(uint8_t conf) {
     switch (conf) {
     case CC110X_GDO_ON_RX_DATA:
         return "High when frame received or RX FIFO needs draining";
@@ -81,13 +77,11 @@ static const char *gdoconf2s(uint8_t conf)
     return "Unknown";
 }
 
-static inline const char *b2s(int boolean)
-{
+static inline const char *b2s(int boolean) {
     return (boolean) ? "1" : "0";
 }
 
-static void print_state(cc110x_t *dev)
-{
+static void print_state(cc110x_t *dev) {
     uint8_t status;
     uint8_t pktstatus;
     int8_t rssi_raw;
@@ -100,7 +94,7 @@ static void print_state(cc110x_t *dev)
     uint8_t physical_channel;
     uint8_t virtual_channel;
 
-    /* Get all required data and release device */
+    // Get all required data and release device
     cc110x_acquire(dev);
 
     if (dev->state == CC110X_STATE_OFF) {
@@ -109,11 +103,10 @@ static void print_state(cc110x_t *dev)
         return;
     }
 
-    /* Reading out the RSSI changes it, as SPI communication seems to generate
-     * some noise. Reading the RSSI out first yields up to 20 dBm lower
-     * values... (E.g. about -100dBm instead of about -80dBm with no
-     * other sources of Sub-GHz RF)
-     */
+    // Reading out the RSSI changes it, as SPI communication seems to generate
+    // some noise. Reading the RSSI out first yields up to 20 dBm lower
+    // values... (E.g. about -100dBm instead of about -80dBm with no
+    // other sources of Sub-GHz RF)
     status = cc110x_read_reliable(dev, CC110X_REG_RSSI, (uint8_t *)&rssi_raw);
     cc110x_read_reliable(dev, CC110X_REG_PKTSTATUS, &pktstatus);
     cc110x_read(dev, CC110X_REG_IOCFG2, &iocfg2);
@@ -127,7 +120,7 @@ static void print_state(cc110x_t *dev)
     cc110x_state_t sw_state = dev->state;
     cc110x_release(dev);
 
-    /* Parse obtained raw data */
+    // Parse obtained raw data
     cc110x_state_t hw_state = (status >> 4) & 0x03;
     int ready      = !(status & 0x80);
     int rssi       = ((int)rssi_raw / 2) - (int)dev->rssi_offset;
@@ -138,7 +131,7 @@ static void print_state(cc110x_t *dev)
     int cs         = pktstatus & CC110X_PKTSTATUS_CS;
     const char *pa = pa_settings[frend0 & 0x07];
 
-    /* Print all information */
+    // Print all information
     if (!ready) {
         puts("  CRITICAL: Crystal has not stabilized yet!");
     }
@@ -171,8 +164,7 @@ static void print_state(cc110x_t *dev)
     }
 }
 
-int sc_cc110x(int argc, char **argv)
-{
+int sc_cc110x(int argc, char **argv) {
     switch (argc) {
     case 1:
         for (unsigned i = 0; i < CC110X_NUM; i++){
@@ -207,8 +199,7 @@ int sc_cc110x(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
-int sc_cc110x_sleep(int argc, char **argv)
-{
+int sc_cc110x_sleep(int argc, char **argv) {
     switch (argc) {
     case 1:
         for (unsigned i = 0; i < CC110X_NUM; i++){
@@ -243,8 +234,7 @@ int sc_cc110x_sleep(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
-int sc_cc110x_wakeup(int argc, char **argv)
-{
+int sc_cc110x_wakeup(int argc, char **argv) {
     switch (argc) {
     case 1:
         for (unsigned i = 0; i < CC110X_NUM; i++){

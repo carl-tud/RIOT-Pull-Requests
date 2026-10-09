@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for nrf24l01p lowlevel functions
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for nrf24l01p lowlevel functions
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+///
+/// @}
 
 #ifndef SPI_PORT
 #error "SPI_PORT not defined"
@@ -54,9 +50,7 @@ void print_register(char reg, int num_bytes);
 
 static nrf24l01p_t nrf24l01p_0;
 
-/**
- * define some additional shell commands
- */
+/// define some additional shell commands
 static const shell_command_t shell_commands[] = {
     { "prgs", "print registers", cmd_print_regs },
     { "it", "init transceiver", cmd_its },
@@ -64,8 +58,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-void prtbin(unsigned byte)
-{
+void prtbin(unsigned byte) {
     for (char i = 0; i < 8; i++) {
         printf("%u", (byte >> (7 - i)) & 0x0001);
     }
@@ -73,11 +66,8 @@ void prtbin(unsigned byte)
     puts("\n");
 }
 
-/**
- * @print register
- */
-void print_register(char reg, int num_bytes)
-{
+/// @print register
+void print_register(char reg, int num_bytes) {
 
     char buf_return[num_bytes];
 
@@ -107,9 +97,8 @@ char rx_handler_stack[THREAD_STACKSIZE_MAIN];
 
 static msg_t _msg_q[1];
 
-/* RX handler that waits for a message from the ISR */
-void *nrf24l01p_rx_handler(void *arg)
-{
+// RX handler that waits for a message from the ISR
+void *nrf24l01p_rx_handler(void *arg) {
     (void)arg;
     msg_init_queue(_msg_q, 1);
     unsigned int pid = thread_getpid();
@@ -127,19 +116,19 @@ void *nrf24l01p_rx_handler(void *arg)
             case RCV_PKT_NRF24L01P:
                 puts("Received packet.");
 
-                /* CE low */
+                // CE low
                 nrf24l01p_stop(m.content.ptr);
 
-                /* read payload */
+                // read payload
                 nrf24l01p_read_payload(m.content.ptr, rx_buf, NRF24L01P_MAX_DATA_LENGTH);
 
-                /* flush rx fifo */
+                // flush rx fifo
                 nrf24l01p_flush_rx_fifo(m.content.ptr);
 
-                /* CE high */
+                // CE high
                 nrf24l01p_start(m.content.ptr);
 
-                /* print rx buffer */
+                // print rx buffer
                 for (int i = 0; i < NRF24L01P_MAX_DATA_LENGTH; i++) {
                     printf("%i ", rx_buf[i]);
                 }
@@ -159,23 +148,20 @@ void *nrf24l01p_rx_handler(void *arg)
     return NULL;
 }
 
-/**
- * @init transceiver
- */
-int cmd_its(int argc, char **argv)
-{
+/// @init transceiver
+int cmd_its(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
     puts("Init Transceiver\n");
 
-    /* initialize transceiver device */
+    // initialize transceiver device
     if (nrf24l01p_init(&nrf24l01p_0, SPI_PORT, CE_PIN, CS_PIN, IRQ_PIN) < 0) {
         puts("Error in nrf24l01p_init");
         return 1;
     }
 
-    /* create thread that gets msg when data arrives */
+    // create thread that gets msg when data arrives
     if (thread_create(
         rx_handler_stack, sizeof(rx_handler_stack), THREAD_PRIORITY_MAIN - 1, 0,
         nrf24l01p_rx_handler, 0, "nrf24l01p_rx_handler") < 0) {
@@ -183,7 +169,7 @@ int cmd_its(int argc, char **argv)
         return 1;
     }
 
-    /* setup device as receiver */
+    // setup device as receiver
     if (nrf24l01p_set_rxmode(&nrf24l01p_0) < 0) {
         puts("Error in nrf24l01p_set_rxmode");
         return 1;
@@ -192,11 +178,8 @@ int cmd_its(int argc, char **argv)
     return cmd_print_regs(0, 0);
 }
 
-/**
- * @set TX mode
- */
-int cmd_send(int argc, char **argv)
-{
+/// @set TX mode
+int cmd_send(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -205,30 +188,30 @@ int cmd_send(int argc, char **argv)
     int status = 0;
     char tx_buf[NRF24L01P_MAX_DATA_LENGTH];
 
-    /* fill TX buffer with numbers 32..1 */
+    // fill TX buffer with numbers 32..1
     for (size_t i = 0; i < sizeof(tx_buf); i++) {
         tx_buf[i] = NRF24L01P_MAX_DATA_LENGTH - i;
     }
-    /* power on the device */
+    // power on the device
     if (nrf24l01p_on(&nrf24l01p_0) < 0) {
         puts("Error in nrf24l01p_on");
         return 1;
     }
-    /* setup device as transmitter */
+    // setup device as transmitter
     if (nrf24l01p_set_txmode(&nrf24l01p_0) < 0) {
         puts("Error in nrf24l01p_set_txmode");
         return 1;
     }
-    /* load data to transmit into device */
+    // load data to transmit into device
     if (nrf24l01p_preload(&nrf24l01p_0, tx_buf, NRF24L01P_MAX_DATA_LENGTH) < 0) {
         puts("Error in nrf24l01p_preload");
         return 1;
     }
-    /* trigger transmitting */
+    // trigger transmitting
     nrf24l01p_transmit(&nrf24l01p_0);
-    /* wait while data is physically transmitted  */
+    // wait while data is physically transmitted
     ztimer_sleep(ZTIMER_USEC, DELAY_DATA_ON_AIR);
-    /* get status of the transceiver */
+    // get status of the transceiver
     status = nrf24l01p_get_status(&nrf24l01p_0);
     if (status < 0) {
         puts("Error in nrf24l01p_get_status");
@@ -236,7 +219,7 @@ int cmd_send(int argc, char **argv)
     if (status & TX_DS) {
         puts("Sent Packet");
     }
-    /* setup device as receiver */
+    // setup device as receiver
     if (nrf24l01p_set_rxmode(&nrf24l01p_0) < 0) {
         puts("Error in nrf24l01p_set_rxmode");
         return 1;
@@ -245,11 +228,8 @@ int cmd_send(int argc, char **argv)
     return 0;
 }
 
-/**
- * @print registers
- */
-int cmd_print_regs(int argc, char **argv)
-{
+/// @print registers
+int cmd_print_regs(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -310,8 +290,7 @@ int cmd_print_regs(int argc, char **argv)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Welcome to RIOT!");
 
     puts("Starting shell...");

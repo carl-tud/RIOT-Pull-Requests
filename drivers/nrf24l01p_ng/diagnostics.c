@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup drivers_nrf24l01p_ng
- * @{
- *
- * @file
- * @brief     Functions to debug the NRF24L01+ (NG) transceiver
- *
- * @author Fabian Hüßler <fabian.huessler@ovgu.de>
- * @}
- */
+/// @ingroup drivers_nrf24l01p_ng
+/// @{
+///
+/// @file
+/// @brief     Functions to debug the NRF24L01+ (NG) transceiver
+///
+/// @author Fabian Hüßler <fabian.huessler@ovgu.de>
+/// @}
 #include <stdio.h>
 #include <string.h>
 #include "nrf24l01p_ng_registers.h"
@@ -58,8 +54,7 @@
 #endif
 
 const char *
-nrf24l01p_ng_diagnostics_state_to_string(nrf24l01p_ng_state_t state)
-{
+nrf24l01p_ng_diagnostics_state_to_string(nrf24l01p_ng_state_t state) {
     if (state == NRF24L01P_NG_STATE_POWER_DOWN) {
         return "POWER_DOWN";
     }
@@ -79,8 +74,7 @@ nrf24l01p_ng_diagnostics_state_to_string(nrf24l01p_ng_state_t state)
 }
 
 nrf24l01p_ng_state_t
-nrf24l01p_ng_diagnostics_string_to_state(const char *sstate)
-{
+nrf24l01p_ng_diagnostics_string_to_state(const char *sstate) {
     if (!strcmp(sstate, "POWER_DOWN")) {
         return NRF24L01P_NG_STATE_POWER_DOWN;
     }
@@ -99,8 +93,7 @@ nrf24l01p_ng_diagnostics_string_to_state(const char *sstate)
     return NRF24L01P_NG_STATE_UNDEFINED;
 }
 
-void nrf24l01p_ng_diagnostics_print_all_regs(const nrf24l01p_ng_t *dev)
-{
+void nrf24l01p_ng_diagnostics_print_all_regs(const nrf24l01p_ng_t *dev) {
     uint8_t config;
 
     nrf24l01p_ng_read_reg(dev, NRF24L01P_NG_REG_CONFIG, &config, 1);
@@ -213,7 +206,7 @@ void nrf24l01p_ng_diagnostics_print_all_regs(const nrf24l01p_ng_t *dev)
         "RPD            [RPD %u]\n",
         (unsigned)NRF24L01P_NG_VAL_RPD(rpd)
         );
-    uint8_t rx_addr_px_40[2][NRF24L01P_NG_MAX_ADDR_WIDTH]; /* Pipe 0/1 */
+    uint8_t rx_addr_px_40[2][NRF24L01P_NG_MAX_ADDR_WIDTH]; // Pipe 0/1
     nrf24l01p_ng_read_reg(dev, NRF24L01P_NG_REG_RX_ADDR_P0, rx_addr_px_40[0],
                           NRF24L01P_NG_MAX_ADDR_WIDTH);
     printf(
@@ -234,7 +227,7 @@ void nrf24l01p_ng_diagnostics_print_all_regs(const nrf24l01p_ng_t *dev)
         rx_addr_px_40[1][3],
         rx_addr_px_40[1][4]
         );
-    uint8_t rx_addr_px_8[4];  /* Pipe 2/3/4/5 */
+    uint8_t rx_addr_px_8[4];  // Pipe 2/3/4/5
     nrf24l01p_ng_read_reg(dev, NRF24L01P_NG_REG_RX_ADDR_P2,
                           &rx_addr_px_8[0], 1);
     printf(
@@ -341,8 +334,7 @@ void nrf24l01p_ng_diagnostics_print_all_regs(const nrf24l01p_ng_t *dev)
         );
 }
 
-void nrf24l01p_ng_diagnostics_print_dev_info(const nrf24l01p_ng_t *dev)
-{
+void nrf24l01p_ng_diagnostics_print_dev_info(const nrf24l01p_ng_t *dev) {
     printf("device:                 %p\n", (const void *)dev);
     printf("address length:         %u\n", (unsigned)NRF24L01P_NG_ADDR_WIDTH);
     printf("device params:\n");
@@ -378,8 +370,7 @@ void nrf24l01p_ng_diagnostics_print_dev_info(const nrf24l01p_ng_t *dev)
 }
 
 void nrf24l01p_ng_diagnostics_print_frame(const nrf24l01p_ng_t *dev,
-                                          const void *frame, size_t len)
-{
+                                          const void *frame, size_t len) {
     (void)dev;
     puts("Rx frame");
     for (uint8_t i = 0; i < len; i++) {

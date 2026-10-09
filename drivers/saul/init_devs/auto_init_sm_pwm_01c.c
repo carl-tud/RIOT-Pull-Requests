@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- * @file
- * @brief       Auto initialization for SM_PWM_01C dust sensor
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+/// @file
+/// @brief       Auto initialization for SM_PWM_01C dust sensor
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -19,33 +15,24 @@
 #include "sm_pwm_01c_params.h"
 #include "sm_pwm_01c.h"
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static sm_pwm_01c_t sm_pwm_01c_devs[SM_PWM_01C_NUMOF];
 
 #if IS_ACTIVE(MODULE_SAUL)
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[SM_PWM_01C_NUMOF * 2];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define SM_PWM_01C_INFO_NUM ARRAY_SIZE(sm_pwm_01c_saul_info)
 
-/**
- * @name    Import SAUL endpoints
- * @{
- */
+/// @name    Import SAUL endpoints
+/// @{
 extern const saul_driver_t sm_pwm_01c_saul_driver_mc_pm_2p5;
 extern const saul_driver_t sm_pwm_01c_saul_driver_mc_pm_10;
-/** @} */
+/// @}
 #endif
 
-void auto_init_sm_pwm_01c(void)
-{
+void auto_init_sm_pwm_01c(void) {
 #if IS_ACTIVE(MODULE_SAUL)
     assert(SM_PWM_01C_INFO_NUM == SM_PWM_01C_NUMOF);
 #endif

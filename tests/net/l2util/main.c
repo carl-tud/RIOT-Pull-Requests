@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
-  * @ingroup    tests
-  * @{
-  *
-  * @file
-  * @brief      Unit tests for l2util
-  *
-  * @author     Martine Lenders <m.lenders@fu-berlin.de>
-  */
+/// @ingroup    tests
+/// @{
+///
+/// @file
+/// @brief      Unit tests for l2util
+///
+/// @author     Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <stdint.h>
 
@@ -32,11 +28,10 @@
 #define TEST_EUI64_IID      { 0x23, 0x55, 0x31, 0x02, 0x41, 0xfd, 0xfb, 0xfd }
 #define TEST_IPV6_GROUP     { 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
                               0x3f, 0x6c, 0xa1, 0xbb, 0xe5, 0x03, 0x6b, 0xe2 }
-/* see https://tools.ietf.org/html/rfc2464#section-7 */
+// see https://tools.ietf.org/html/rfc2464#section-7
 #define TEST_ETHERNET_GROUP { 0x33, 0x33, 0xe5, 0x03, 0x6b, 0xe2 }
 
-static void test_eui64_from_addr__success(void)
-{
+static void test_eui64_from_addr__success(void) {
     static const uint8_t test_addr[L2UTIL_ADDR_MAX_LEN] = TEST_ADDR;
     static const eui64_t test_802154_s = { .uint8 = TEST_802154_S_IID };
     static const eui64_t test_cc110x = { .uint8 = TEST_CC110X_IID };
@@ -44,42 +39,42 @@ static void test_eui64_from_addr__success(void)
     static const eui64_t test_eui64 = { .uint8 = TEST_ADDR };
     eui64_t res;
 
-    /* test Ethernet */
+    // test Ethernet
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_eui64_from_addr(NETDEV_TYPE_ETHERNET,
                                                  test_addr, sizeof(eui48_t),
                                                  &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_eui48, &res, sizeof(eui64_t)));
-    /* test IEEE 802.15.4 */
+    // test IEEE 802.15.4
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_eui64_from_addr(NETDEV_TYPE_IEEE802154,
                                                  test_addr, sizeof(eui64_t),
                                                  &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_eui64, &res, sizeof(eui64_t)));
-    /* test BLE */
+    // test BLE
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_eui64_from_addr(NETDEV_TYPE_BLE,
                                                  test_addr, sizeof(eui48_t),
                                                  &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_eui48, &res, sizeof(eui64_t)));
-    /* test cc110x */
+    // test cc110x
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_eui64_from_addr(NETDEV_TYPE_CC110X,
                                                  test_addr, sizeof(uint8_t),
                                                  &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_cc110x, &res, sizeof(eui64_t)));
-    /* test NRFMIN */
+    // test NRFMIN
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_eui64_from_addr(NETDEV_TYPE_NRFMIN,
                                                  test_addr, sizeof(uint16_t),
                                                  &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_802154_s, &res, sizeof(eui64_t)));
-    /* test ESP-Now */
+    // test ESP-Now
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_eui64_from_addr(NETDEV_TYPE_ESP_NOW,
@@ -88,17 +83,16 @@ static void test_eui64_from_addr__success(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_eui48, &res, sizeof(eui64_t)));
 }
 
-static void test_eui64_from_addr__EINVAL(void)
-{
+static void test_eui64_from_addr__EINVAL(void) {
     static const uint8_t test_addr[L2UTIL_ADDR_MAX_LEN] = TEST_ADDR;
     eui64_t res = { .uint8 = { 0 } };
 
-    /* test Ethernet */
+    // test Ethernet
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_eui64_from_addr(NETDEV_TYPE_ETHERNET,
                                                  test_addr, sizeof(eui64_t),
                                                  &res));
-    /* test IEEE 802.15.4 */
+    // test IEEE 802.15.4
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_eui64_from_addr(NETDEV_TYPE_IEEE802154,
                                                  test_addr, sizeof(uint16_t),
@@ -107,30 +101,29 @@ static void test_eui64_from_addr__EINVAL(void)
                           l2util_eui64_from_addr(NETDEV_TYPE_IEEE802154,
                                                  test_addr, sizeof(eui48_t),
                                                  &res));
-    /* test BLE */
+    // test BLE
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_eui64_from_addr(NETDEV_TYPE_BLE,
                                                  test_addr, sizeof(uint16_t),
                                                  &res));
-    /* test cc110x */
+    // test cc110x
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_eui64_from_addr(NETDEV_TYPE_CC110X,
                                                  test_addr, sizeof(uint64_t),
                                                  &res));
-    /* test NRFMIN */
+    // test NRFMIN
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_eui64_from_addr(NETDEV_TYPE_NRFMIN,
                                                  test_addr, sizeof(uint64_t),
                                                  &res));
-    /* test ESP-Now */
+    // test ESP-Now
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_eui64_from_addr(NETDEV_TYPE_ESP_NOW,
                                                  test_addr, 0,
                                                  &res));
 }
 
-static void test_eui64_from_addr__ENOTSUP(void)
-{
+static void test_eui64_from_addr__ENOTSUP(void) {
     static const uint8_t test_addr[L2UTIL_ADDR_MAX_LEN] = TEST_ADDR;
     eui64_t res = { .uint8 = { 0 } };
 
@@ -140,8 +133,7 @@ static void test_eui64_from_addr__ENOTSUP(void)
                                                  &res));
 }
 
-static void test_iid_from_addr__success(void)
-{
+static void test_iid_from_addr__success(void) {
     static const uint8_t test_addr[L2UTIL_ADDR_MAX_LEN] = TEST_ADDR;
     static const eui64_t test_802154_s = { .uint8 = TEST_802154_S_IID };
     static const eui64_t test_cc110x = { .uint8 = TEST_CC110X_IID };
@@ -150,14 +142,14 @@ static void test_iid_from_addr__success(void)
     static const eui64_t test_ble = { .uint8 = TEST_EUI48_EUI64 };
     eui64_t res;
 
-    /* test Ethernet */
+    // test Ethernet
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_ETHERNET,
                                                     test_addr, sizeof(eui48_t),
                                                     &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_eui48, &res, sizeof(eui64_t)));
-    /* test IEEE 802.15.4 */
+    // test IEEE 802.15.4
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_IEEE802154,
@@ -171,28 +163,28 @@ static void test_iid_from_addr__success(void)
                                                     IEEE802154_SHORT_ADDRESS_LEN,
                                                     &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_802154_s, &res, sizeof(eui64_t)));
-    /* test BLE */
+    // test BLE
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_BLE,
                                                     test_addr, sizeof(eui48_t),
                                                     &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_ble, &res, sizeof(eui64_t)));
-    /* test cc110x */
+    // test cc110x
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_CC110X,
                                                     test_addr, sizeof(uint8_t),
                                                     &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_cc110x, &res, sizeof(eui64_t)));
-    /* test NRFMIN */
+    // test NRFMIN
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_NRFMIN,
                                                     test_addr, sizeof(uint16_t),
                                                     &res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_802154_s, &res, sizeof(eui64_t)));
-    /* test ESP-Now */
+    // test ESP-Now
     res.uint64.u64 = 0;
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_ESP_NOW,
@@ -201,45 +193,43 @@ static void test_iid_from_addr__success(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(&test_eui48, &res, sizeof(eui64_t)));
 }
 
-static void test_iid_from_addr__EINVAL(void)
-{
+static void test_iid_from_addr__EINVAL(void) {
     static const uint8_t test_addr[L2UTIL_ADDR_MAX_LEN] = TEST_ADDR;
     eui64_t res = { .uint8 = { 0 } };
 
-    /* test Ethernet */
+    // test Ethernet
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_ETHERNET,
                                                     test_addr, sizeof(eui64_t),
                                                     &res));
-    /* test IEEE 802.15.4 */
+    // test IEEE 802.15.4
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_IEEE802154,
                                                     test_addr, sizeof(eui48_t),
                                                     &res));
-    /* test BLE */
+    // test BLE
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_BLE,
                                                     test_addr, sizeof(uint16_t),
                                                     &res));
-    /* test cc110x */
+    // test cc110x
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_CC110X,
                                                     test_addr, sizeof(uint64_t),
                                                     &res));
-    /* test NRFMIN */
+    // test NRFMIN
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_NRFMIN,
                                                     test_addr, sizeof(uint64_t),
                                                     &res));
-    /* test ESP-Now */
+    // test ESP-Now
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ipv6_iid_from_addr(NETDEV_TYPE_ESP_NOW,
                                                     test_addr, 0,
                                                     &res));
 }
 
-static void test_iid_from_addr__ENOTSUP(void)
-{
+static void test_iid_from_addr__ENOTSUP(void) {
     static const uint8_t test_addr[L2UTIL_ADDR_MAX_LEN] = TEST_ADDR;
     eui64_t res = { .uint8 = { 0 } };
 
@@ -249,8 +239,7 @@ static void test_iid_from_addr__ENOTSUP(void)
                                                     &res));
 }
 
-static void test_iid_to_addr__success(void)
-{
+static void test_iid_to_addr__success(void) {
     static const uint8_t test_addr[L2UTIL_ADDR_MAX_LEN] = TEST_ADDR;
     static const eui64_t test_802154_s = { .uint8 = TEST_802154_S_IID };
     static const eui64_t test_cc110x = { .uint8 = TEST_CC110X_IID };
@@ -259,37 +248,37 @@ static void test_iid_to_addr__success(void)
     static const eui64_t test_ble = { .uint8 = TEST_EUI48_EUI64 };
     uint8_t res[L2UTIL_ADDR_MAX_LEN];
 
-    /* test Ethernet */
+    // test Ethernet
     memset(res, 0, sizeof(res));
     TEST_ASSERT_EQUAL_INT(sizeof(eui48_t),
                           l2util_ipv6_iid_to_addr(NETDEV_TYPE_ETHERNET,
                                                   &test_eui48, res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(test_addr, res, sizeof(eui48_t)));
-    /* test IEEE 802.15.4 */
+    // test IEEE 802.15.4
     memset(res, 0, sizeof(res));
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_ipv6_iid_to_addr(NETDEV_TYPE_IEEE802154,
                                                   &test_eui64, res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(test_addr, res, sizeof(eui64_t)));
-    /* test BLE */
+    // test BLE
     memset(res, 0, sizeof(res));
     TEST_ASSERT_EQUAL_INT(sizeof(eui48_t),
                           l2util_ipv6_iid_to_addr(NETDEV_TYPE_BLE,
                                                   &test_ble, res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(test_addr, res, sizeof(eui48_t)));
-    /* test cc110x */
+    // test cc110x
     memset(res, 0, sizeof(res));
     TEST_ASSERT_EQUAL_INT(sizeof(uint8_t),
                           l2util_ipv6_iid_to_addr(NETDEV_TYPE_CC110X,
                                                   &test_cc110x, res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(test_addr, res, sizeof(uint8_t)));
-    /* test NRFMIN */
+    // test NRFMIN
     memset(res, 0, sizeof(res));
     TEST_ASSERT_EQUAL_INT(sizeof(uint16_t),
                           l2util_ipv6_iid_to_addr(NETDEV_TYPE_NRFMIN,
                                                   &test_802154_s, res));
     TEST_ASSERT_EQUAL_INT(0, memcmp(test_addr, res, sizeof(uint16_t)));
-    /* test ESP-Now */
+    // test ESP-Now
     memset(res, 0, sizeof(res));
     TEST_ASSERT_EQUAL_INT(sizeof(eui48_t),
                           l2util_ipv6_iid_to_addr(NETDEV_TYPE_ESP_NOW,
@@ -297,8 +286,7 @@ static void test_iid_to_addr__success(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(test_addr, res, sizeof(eui48_t)));
 }
 
-static void test_iid_to_addr__ENOTSUP(void)
-{
+static void test_iid_to_addr__ENOTSUP(void) {
     static const eui64_t test_eui48 = { .uint8 = TEST_EUI48_IID };
     uint8_t res[L2UTIL_ADDR_MAX_LEN];
 
@@ -307,16 +295,15 @@ static void test_iid_to_addr__ENOTSUP(void)
                                                   &test_eui48, res));
 }
 
-static void test_addr_len_from_l2ao__success(void)
-{
+static void test_addr_len_from_l2ao__success(void) {
     ndp_opt_t opt = { .type = NDP_OPT_SL2A };
 
-    /* test Ethernet */
+    // test Ethernet
     opt.len = 1;
     TEST_ASSERT_EQUAL_INT(sizeof(eui48_t),
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_ETHERNET,
                                                         &opt));
-    /* test IEEE 802.15.4 */
+    // test IEEE 802.15.4
     opt.len = 1;
     TEST_ASSERT_EQUAL_INT(IEEE802154_SHORT_ADDRESS_LEN,
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_IEEE802154,
@@ -325,56 +312,54 @@ static void test_addr_len_from_l2ao__success(void)
     TEST_ASSERT_EQUAL_INT(sizeof(eui64_t),
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_IEEE802154,
                                                         &opt));
-    /* test BLE */
+    // test BLE
     opt.len = 1;
     TEST_ASSERT_EQUAL_INT(sizeof(eui48_t),
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_BLE,
                                                         &opt));
-    /* test cc110x */
+    // test cc110x
     opt.len = 1;
     TEST_ASSERT_EQUAL_INT(sizeof(uint8_t),
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_CC110X,
                                                         &opt));
-    /* test NRFMIN */
+    // test NRFMIN
     opt.len = 1;
     TEST_ASSERT_EQUAL_INT(sizeof(uint16_t),
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_NRFMIN,
                                                         &opt));
-    /* test ESP-Now */
+    // test ESP-Now
     opt.len = 1;
     TEST_ASSERT_EQUAL_INT(sizeof(eui48_t),
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_ESP_NOW,
                                                         &opt));
 }
 
-static void test_addr_len_from_l2ao__EINVAL(void)
-{
+static void test_addr_len_from_l2ao__EINVAL(void) {
     ndp_opt_t opt = { .type = NDP_OPT_SL2A };
 
-    /* test Ethernet */
+    // test Ethernet
     opt.len = 0;
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_ETHERNET,
                                                         &opt));
-    /* test IEEE 802.15.4 */
+    // test IEEE 802.15.4
     opt.len = 0;
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_IEEE802154,
                                                         &opt));
-    /* test BLE */
+    // test BLE
     opt.len = 0;
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_BLE,
                                                         &opt));
-    /* test ESP-Now */
+    // test ESP-Now
     opt.len = 0;
     TEST_ASSERT_EQUAL_INT(-EINVAL,
                           l2util_ndp_addr_len_from_l2ao(NETDEV_TYPE_ESP_NOW,
                                                         &opt));
 }
 
-static void test_addr_len_from_l2ao__ENOTSUP(void)
-{
+static void test_addr_len_from_l2ao__ENOTSUP(void) {
     ndp_opt_t opt = { .type = NDP_OPT_SL2A };
 
     opt.len = 1;
@@ -383,8 +368,7 @@ static void test_addr_len_from_l2ao__ENOTSUP(void)
                                                         &opt));
 }
 
-static void test_ipv6_group_to_l2group__success(void)
-{
+static void test_ipv6_group_to_l2group__success(void) {
     static const ipv6_addr_t test_group = {
         .u8 = TEST_IPV6_GROUP,
     };
@@ -393,7 +377,7 @@ static void test_ipv6_group_to_l2group__success(void)
     };
     uint8_t res[L2UTIL_ADDR_MAX_LEN];
 
-    /* test Ethernet */
+    // test Ethernet
     memset(res, 0, sizeof(res));
     TEST_ASSERT_EQUAL_INT(sizeof(test_ethernet),
                           l2util_ipv6_group_to_l2_group(NETDEV_TYPE_ETHERNET,
@@ -402,8 +386,7 @@ static void test_ipv6_group_to_l2group__success(void)
                                     sizeof(test_ethernet)));
 }
 
-static void test_ipv6_group_to_l2group__ENOTSUP(void)
-{
+static void test_ipv6_group_to_l2group__ENOTSUP(void) {
     static const ipv6_addr_t test_group = {
         .u8 = TEST_IPV6_GROUP,
     };
@@ -414,8 +397,7 @@ static void test_ipv6_group_to_l2group__ENOTSUP(void)
                                                         &test_group, res));
 }
 
-static void test_l2util_addr_to_str(void)
-{
+static void test_l2util_addr_to_str(void) {
     static const uint8_t ethernet_l2addr[] = ETHERNET_SRC;
     static const uint8_t ieee802154_l2addr_long[] = IEEE802154_LONG_SRC;
     static const uint8_t ieee802154_l2addr_short[] = IEEE802154_SHORT_SRC;
@@ -441,8 +423,7 @@ static void test_l2util_addr_to_str(void)
     TEST_ASSERT_EQUAL_STRING("3E:E7:B5:0F:19:22:FD:0A", &out[0]);
 }
 
-static void test_l2util_addr_from_str(void)
-{
+static void test_l2util_addr_from_str(void) {
     static const uint8_t ethernet_l2addr[] = ETHERNET_SRC;
     static const uint8_t ieee802154_l2addr_long[] = IEEE802154_LONG_SRC;
     static const uint8_t ieee802154_l2addr_short[] = IEEE802154_SHORT_SRC;
@@ -475,8 +456,7 @@ static void test_l2util_addr_from_str(void)
     TEST_ASSERT_EQUAL_INT(canary, out[L2UTIL_ADDR_MAX_LEN]);
 }
 
-TestRef test_l2util(void)
-{
+TestRef test_l2util(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_eui64_from_addr__success),
         new_TestFixture(test_eui64_from_addr__EINVAL),
@@ -499,8 +479,7 @@ TestRef test_l2util(void)
     return (TestRef) & tests_l2util;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(test_l2util());
     TESTS_END();

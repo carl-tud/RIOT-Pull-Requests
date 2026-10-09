@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Bennet Blischke <bennet.blischke@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Bennet Blischke <bennet.blischke@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_gba_cartridge
- * @{
- *
- * @file
- * @brief
- *
- * @author
- */
+/// @ingroup     boards_gba_cartridge
+/// @{
+///
+/// @file
+/// @brief
+///
+/// @author
 
 #include "periph_cpu.h"
 
@@ -26,4 +22,4 @@ extern "C"
 }
 #endif
 
-/** @} */
+/// @}

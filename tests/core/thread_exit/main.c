@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2013 INRIA
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 INRIA
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Thread test application
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Thread test application
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -22,24 +18,21 @@
 char second_thread_stack[THREAD_STACKSIZE_MAIN];
 char third_thread_stack[THREAD_STACKSIZE_MAIN];
 
-void *fourth_thread(void *arg)
-{
+void *fourth_thread(void *arg) {
     (void) arg;
     puts("4th: starting");
     puts("4th: exiting");
     return NULL;
 }
 
-void *third_thread(void *arg)
-{
+void *third_thread(void *arg) {
     (void) arg;
     puts("3rd: starting");
     puts("3rd: exiting");
     return NULL;
 }
 
-void *second_thread(void *arg)
-{
+void *second_thread(void *arg) {
     (void) arg;
     puts("2nd: starting");
 
@@ -55,7 +48,7 @@ void *second_thread(void *arg)
         puts("2nd: Error creating 3rd thread.");
     }
 
-    /* thread should have returned already */
+    // thread should have returned already
 
     if ((thread_create(
              third_thread_stack,
@@ -73,8 +66,7 @@ void *second_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("main: starting");
 
     if ((thread_create(

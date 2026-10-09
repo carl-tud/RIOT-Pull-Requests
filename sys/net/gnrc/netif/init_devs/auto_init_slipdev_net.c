@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief   Auto initialization for XBee network interfaces
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @ingroup sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief   Auto initialization for XBee network interfaces
+///
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
 
 #include "log.h"
 #include "board.h"
@@ -24,10 +20,8 @@
 
 #define SLIPDEV_NUM ARRAY_SIZE(slipdev_params)
 
-/**
- * @brief   Define stack parameters for the MAC layer thread
- * @{
- */
+/// @brief   Define stack parameters for the MAC layer thread
+/// @{
 #define SLIPDEV_STACKSIZE       (GNRC_NETIF_STACKSIZE_DEFAULT)
 #ifndef SLIPDEV_PRIO
 #define SLIPDEV_PRIO            (GNRC_NETIF_PRIO)
@@ -38,8 +32,7 @@ static char _slipdev_stacks[SLIPDEV_NUM][SLIPDEV_STACKSIZE];
 
 static gnrc_netif_t _netif[SLIPDEV_NUM];
 
-void auto_init_slipdev(void)
-{
+void auto_init_slipdev(void) {
     for (unsigned i = 0; i < SLIPDEV_NUM; i++) {
         const slipdev_params_t *p = &slipdev_params[i];
 
@@ -51,4 +44,4 @@ void auto_init_slipdev(void)
                               &slipdevs[i].netdev);
     }
 }
-/** @} */
+/// @}

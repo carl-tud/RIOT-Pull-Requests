@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Generic touch device test application
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Generic touch device test application
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -35,15 +31,13 @@
 #endif
 
 #if !IS_ACTIVE(TOUCH_DEV_POLLING_MODE)
-static void _touch_event_cb(void *arg)
-{
+static void _touch_event_cb(void *arg) {
     mutex_unlock(arg);
 }
 #endif
 
-int main(void)
-{
-    /* Use the first screen */
+int main(void) {
+    // Use the first screen
     touch_dev_reg_t *touch_dev = touch_dev_reg_find_screen(0);
     if (!touch_dev) {
         puts("No screen found!");
@@ -71,7 +65,7 @@ int main(void)
 #if IS_ACTIVE(TOUCH_DEV_POLLING_MODE)
         ztimer_sleep(ZTIMER_MSEC, TOUCH_DEV_POLLING_PERIOD);
 #else
-        /* wait for event */
+        // wait for event
         mutex_lock(&lock);
 #endif
         touch_t touches[1];
@@ -87,7 +81,7 @@ int main(void)
             last_touches = current_touches;
         }
 
-        /* Display touch position if pressed */
+        // Display touch position if pressed
         if (current_touches == 1) {
             printf("X: %i, Y:%i\n", touches[0].x, touches[0].y);
         }

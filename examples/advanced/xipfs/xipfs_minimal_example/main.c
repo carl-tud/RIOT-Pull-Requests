@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Université de Lille
- * SPDX-License-Identifier: LGPL-2.1-or-later
- */
+// SPDX-FileCopyrightText: 2024-2026 Université de Lille
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       A minimal application demonstrating xipfs
- *
- * @author      Damien Amara <damien.amara@univ-lille.fr>
- * @author      Gregory Guche <gregory.guche@univ-lille.fr>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       A minimal application demonstrating xipfs
+///
+/// @author      Damien Amara <damien.amara@univ-lille.fr>
+/// @author      Gregory Guche <gregory.guche@univ-lille.fr>
+///
+/// @}
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -24,29 +20,25 @@
 #include "shell.h"
 #include "vfs.h"
 
-#define NVME0P0_PAGE_NUM 10 /**< The number of flash pages for the nvme0p0 file system. */
+#define NVME0P0_PAGE_NUM 10 ///< The number of flash pages for the nvme0p0 file system.
 
-#define NVME0P1_PAGE_NUM 15 /**< The number of flash pages for the nvme0p1 file system. */
+#define NVME0P1_PAGE_NUM 15 ///< The number of flash pages for the nvme0p1 file system.
 
-/* Allocate a new contiguous space for the nvme0p0 file system. */
+// Allocate a new contiguous space for the nvme0p0 file system.
 XIPFS_NEW_PARTITION(nvme0p0, "/nvme0p0", NVME0P0_PAGE_NUM);
 
-/* Allocate a new contiguous space for the nvme0p1 file system. */
+// Allocate a new contiguous space for the nvme0p1 file system.
 XIPFS_NEW_PARTITION(nvme0p1, "/nvme0p1", NVME0P1_PAGE_NUM);
 
 #ifdef BOARD_DWM1001
 
-/**
- * @brief hello-world.fae data blob.
- */
+/// @brief hello-world.fae data blob.
 #include "blob/hello-world.fae.h"
 
 #define FILENAME_OF_HELLO_WORLD_FAE  "/nvme0p0/hello-world.fae"
 #define SIZEOF_HELLO_WORLD_FAE       (sizeof(hello_world_fae) / sizeof(hello_world_fae[0]))
 
-/**
- * @brief dumper.fae data blob.
- */
+/// @brief dumper.fae data blob.
 #include "blob/dumper.fae.h"
 
 #define FILENAME_OF_DUMPER_FAE  "/nvme0p0/dumper.fae"
@@ -72,7 +64,7 @@ static int drop_file(const file_to_drop_t *file_to_drop) {
     int file_handle = vfs_open(file_to_drop->filename, O_RDONLY, 0);
     if (file_handle < 0) {
 
-        /* There's no executable file yet, let's drop one */
+        // There's no executable file yet, let's drop one
         int ret = xipfs_extended_driver_new_file(
             file_to_drop->filename, file_to_drop->bytesize, file_to_drop->is_executable
         );
@@ -82,10 +74,8 @@ static int drop_file(const file_to_drop_t *file_to_drop) {
             return EXIT_FAILURE;
         }
 
-        /*
-         * Fill it with data
-         * Take care : vfs does not support O_APPEND with vfs_write, only O_WRONLY or O_RDWR
-         */
+        // Fill it with data
+        // Take care : vfs does not support O_APPEND with vfs_write, only O_WRONLY or O_RDWR
         file_handle = vfs_open(file_to_drop->filename, O_WRONLY, 0);
         if (file_handle < 0) {
             printf("vfs_open: failed to open '%s' : error =%d\n",
@@ -106,12 +96,10 @@ static int drop_file(const file_to_drop_t *file_to_drop) {
     return EXIT_SUCCESS;
 }
 
-/**
- * @brief "Drop files" shell command.
- *
- * This shell command handler will create hello-world.fae and dumper.fae files
- * on /nvme0p0, if none exists yet, from the files_to_drop array.
- */
+/// @brief "Drop files" shell command.
+///
+/// This shell command handler will create hello-world.fae and dumper.fae files
+/// on /nvme0p0, if none exists yet, from the files_to_drop array.
 int drop_files_handler(int argc, char **argv) {
     (void)argc;
     (void)argv;
@@ -130,23 +118,20 @@ static shell_command_t shell_commands[] = {
     {NULL, NULL, NULL},
 };
 
-#else /* BOARD_DWM1001 */
+#else // BOARD_DWM1001
 
 static shell_command_t shell_commands[] = { {NULL, NULL, NULL} };
 
-#endif /* BOARD_DWM1001 */
+#endif // BOARD_DWM1001
 
-/**
- * @internal
- *
- * @brief Mount a partition, or if it is corrupted, format and
- * remount it.
- *
- * @param[in] xipfs_mp  A pointer to a memory region containing an
- *                      xipfs mount point structure.
- */
-static void mount_or_format(vfs_xipfs_mount_t *xipfs_mp)
-{
+/// @internal
+///
+/// @brief Mount a partition, or if it is corrupted, format and
+/// remount it.
+///
+/// @param[in] xipfs_mp  A pointer to a memory region containing an
+///                      xipfs mount point structure.
+static void mount_or_format(vfs_xipfs_mount_t *xipfs_mp) {
     if (vfs_mount(&xipfs_mp->vfs_mp) < 0) {
         printf("vfs_mount: \"%s\": file system has not been "
                "initialized or is corrupted\n", xipfs_mp->vfs_mp.mount_point);
@@ -163,8 +148,7 @@ static void mount_or_format(vfs_xipfs_mount_t *xipfs_mp)
     printf("vfs_mount: \"%s\": OK\n", xipfs_mp->vfs_mp.mount_point);
 }
 
-int main(void)
-{
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
 
     mount_or_format(&nvme0p0);

@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2025 David Picard
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 David Picard
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization for MAX31865 RTD-to-digital converter
- *
- * @author      David Picard
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization for MAX31865 RTD-to-digital converter
+//
+// @author      David Picard
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,35 +17,24 @@
 #include "max31865_params.h"
 #include "max31865.h"
 
-/**
- * @brief   Define the number of configured devices
- */
+/// @brief   Define the number of configured devices
 #define MAX31865_NUM     ARRAY_SIZE(max31865_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static max31865_t max31865_devs[MAX31865_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[MAX31865_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define MAX31865_INFO_NUM ARRAY_SIZE(max31865_saul_info)
 
-/**
- * @name    Import SAUL endpoints
- * @{
- */
+/// @name    Import SAUL endpoints
+/// @{
 extern const saul_driver_t max31865_saul_driver_temp;
-/** @} */
+/// @}
 
-void auto_init_max31865(void)
-{
+void auto_init_max31865(void) {
     assert(MAX31865_INFO_NUM == MAX31865_NUM);
 
     for (unsigned int i = 0; i < MAX31865_NUM; i++) {

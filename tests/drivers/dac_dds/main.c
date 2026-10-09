@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Beuth Hochschule für Technik Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       DAC (audio) test application
- *
- *              Generates Sine, Square and Sawtooth waves using
- *              a DAC.
- *              Connect a speaker or headphones to the DAC output
- *              pins of your board, you should be able to hear the
- *              generated sounds.
- *
- * @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       DAC (audio) test application
+///
+///              Generates Sine, Square and Sawtooth waves using
+///              a DAC.
+///              Connect a speaker or headphones to the DAC output
+///              pins of your board, you should be able to hear the
+///              generated sounds.
+///
+/// @author      Benjamin Valentin <benpicco@beuth-hochschule.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,21 +52,18 @@
 static bool res_16b = 0;
 static unsigned sample_rate = 8000;
 
-/* simple function to fill buffer with samples
- *
- * It is up to the caller to ensure that len is always at least period.
- * */
+// simple function to fill buffer with samples
+//
+// It is up to the caller to ensure that len is always at least period.
 typedef void (*sample_gen_t)(uint8_t *dst, size_t len, uint16_t period);
 
-static void _fill_saw_samples_8(uint8_t *buf, size_t len, uint16_t period)
-{
+static void _fill_saw_samples_8(uint8_t *buf, size_t len, uint16_t period) {
     for (uint16_t i = 0; i < len; ++i) {
         buf[i] = (i * 0xFFUL) / period;
     }
 }
 
-static void _fill_saw_samples_16(uint8_t *buf, size_t len, uint16_t period)
-{
+static void _fill_saw_samples_16(uint8_t *buf, size_t len, uint16_t period) {
     for (uint16_t i = 0; i < len; ++i) {
         uint16_t y = (i * 0xFFFFUL) / period;
         buf[i]   = y;
@@ -78,8 +71,7 @@ static void _fill_saw_samples_16(uint8_t *buf, size_t len, uint16_t period)
     }
 }
 
-static void _fill_sine_samples_8(uint8_t *buf, size_t len, uint16_t period)
-{
+static void _fill_sine_samples_8(uint8_t *buf, size_t len, uint16_t period) {
     uint16_t x = 0;
     unsigned step = SINI_PERIOD / period;
 
@@ -93,8 +85,7 @@ static void _fill_sine_samples_8(uint8_t *buf, size_t len, uint16_t period)
     }
 }
 
-static void _fill_sine_samples_16(uint8_t *buf, size_t len, uint16_t period)
-{
+static void _fill_sine_samples_16(uint8_t *buf, size_t len, uint16_t period) {
     uint16_t x = 0;
     unsigned step = SINI_PERIOD / period;
 
@@ -113,8 +104,7 @@ static void _fill_sine_samples_16(uint8_t *buf, size_t len, uint16_t period)
     }
 }
 
-static void _fill_square_samples(uint8_t *buf, size_t len, uint16_t period)
-{
+static void _fill_square_samples(uint8_t *buf, size_t len, uint16_t period) {
     period /= 2;
 
     if (res_16b) {
@@ -129,13 +119,11 @@ static void _fill_square_samples(uint8_t *buf, size_t len, uint16_t period)
     }
 }
 
-static void _unlock(void *arg)
-{
+static void _unlock(void *arg) {
     mutex_unlock(arg);
 }
 
-static void play_function(uint16_t period, uint32_t samples, sample_gen_t fun)
-{
+static void play_function(uint16_t period, uint32_t samples, sample_gen_t fun) {
     static uint8_t buf[DAC_BUF_SIZE];
     mutex_t lock = MUTEX_INIT_LOCKED;
 
@@ -144,21 +132,21 @@ static void play_function(uint16_t period, uint32_t samples, sample_gen_t fun)
         return;
     }
 
-    /* only work with whole wave periods */
+    // only work with whole wave periods
     uint16_t len_aligned = DAC_BUF_SIZE - DAC_BUF_SIZE % period;
 
-    /* One underrun indication is expected (for the first sample) */
+    // One underrun indication is expected (for the first sample)
     int underruns = -1;
 
-    /* 16 bit samples doubles data rate */
+    // 16 bit samples doubles data rate
     if (res_16b) {
         samples *= 2;
     }
 
-    /* pre-calculate buffer */
+    // pre-calculate buffer
     fun(buf, len_aligned, period);
 
-    /* we want to block until the next buffer can be queued */
+    // we want to block until the next buffer can be queued
     dac_dds_set_cb(DAC_DDS_CHAN, _unlock, &lock);
 
     while (samples) {
@@ -167,7 +155,7 @@ static void play_function(uint16_t period, uint32_t samples, sample_gen_t fun)
 
         underruns += !dac_dds_play(DAC_DDS_CHAN, buf, len);
 
-        /* wait for buffer flip */
+        // wait for buffer flip
         mutex_lock(&lock);
     }
 
@@ -177,8 +165,7 @@ static void play_function(uint16_t period, uint32_t samples, sample_gen_t fun)
 }
 
 #if IS_USED(ENABLE_GREETING)
-static int cmd_greeting(int argc, char **argv)
-{
+static int cmd_greeting(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -188,7 +175,7 @@ static int cmd_greeting(int argc, char **argv)
 
     puts("Play Greeting…");
 
-    /* we only want to play a single sample */
+    // we only want to play a single sample
     dac_dds_set_cb(DAC_DDS_CHAN, NULL, NULL);
 
     dac_dds_play(DAC_DDS_CHAN, hello_raw, hello_raw_len);
@@ -197,15 +184,13 @@ static int cmd_greeting(int argc, char **argv)
 }
 #endif
 
-static void _dac_init(void)
-{
+static void _dac_init(void) {
     printf("init DAC DDS with %d bit, %u Hz\n", res_16b ? 16 : 8, sample_rate);
     dac_dds_init(DAC_DDS_CHAN, sample_rate,
                  res_16b ? DAC_FLAG_16BIT : DAC_FLAG_8BIT, NULL, NULL);
 }
 
-static int cmd_init(int argc, char **argv)
-{
+static int cmd_init(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <freq> <bit>\n", argv[0]);
         return 1;
@@ -229,8 +214,7 @@ static int cmd_init(int argc, char **argv)
     return 0;
 }
 
-static int cmd_saw(int argc, char **argv)
-{
+static int cmd_saw(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <freq> <secs>\n", argv[0]);
         return 1;
@@ -245,8 +229,7 @@ static int cmd_saw(int argc, char **argv)
     return 0;
 }
 
-static int cmd_sine(int argc, char **argv)
-{
+static int cmd_sine(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <freq> <secs>\n", argv[0]);
         return 1;
@@ -261,8 +244,7 @@ static int cmd_sine(int argc, char **argv)
     return 0;
 }
 
-static int cmd_square(int argc, char **argv)
-{
+static int cmd_square(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <freq> <secs>\n", argv[0]);
         return 1;
@@ -288,14 +270,13 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     dac_init(DAC_DDS_DAC);
-    /* Initialize to the idle level of 16bit audio */
+    // Initialize to the idle level of 16bit audio
     dac_set(DAC_DDS_DAC, 1 << 15);
     _dac_init();
 
-    /* start the shell */
+    // start the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

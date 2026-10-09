@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_psa_crypto
- * @{
- *
- * @file
- * @brief       Glue code translating between PSA Crypto and the RIOT Cipher module
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     sys_psa_crypto
+/// @{
+///
+/// @file
+/// @brief       Glue code translating between PSA Crypto and the RIOT Cipher module
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include "psa/crypto.h"
 #include "crypto/modes/cbc.h"
@@ -30,8 +26,7 @@ psa_status_t psa_cipher_cbc_aes_256_encrypt(const psa_key_attributes_t *attribut
                                             size_t input_length,
                                             uint8_t *output,
                                             size_t output_size,
-                                            size_t *output_length)
-{
+                                            size_t *output_length) {
     DEBUG("RIOT AES 256 Cipher");
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_cipher_operation_t operation = psa_cipher_operation_init();

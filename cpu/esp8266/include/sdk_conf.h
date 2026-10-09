@@ -1,24 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp8266
- * @{
- *
- * @file
- * @brief       SDK configuration compatible to the ESP-IDF
- *
- * This file defines configuration parameters that are only required for source
- * code compatibility with the SDK. These configuration parameters are not used
- * directly to configure the compilation of RIOT-OS. However, some of them can
- * be overrien overridden by application-specific board configuration.
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     cpu_esp8266
+/// @{
+///
+/// @file
+/// @brief       SDK configuration compatible to the ESP-IDF
+///
+/// This file defines configuration parameters that are only required for source
+/// code compatibility with the SDK. These configuration parameters are not used
+/// directly to configure the compilation of RIOT-OS. However, some of them can
+/// be overrien overridden by application-specific board configuration.
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #ifndef DOXYGEN
 
@@ -29,28 +25,24 @@
 extern "C" {
 #endif
 
-/**
- * @brief   SDK version number
- *
- * Determined with `git describe --tags` in `$ESP8266_SDK_DIR`
- */
+/// @brief   SDK version number
+///
+/// Determined with `git describe --tags` in `$ESP8266_SDK_DIR`
 #if !defined(IDF_VER) || DOXYGEN
 #include "esp8266_idf_version.h"
 #endif
 
-/**
- * @name Default console configuration
- *
- * STDIO_UART_BAUDRATE is used as CONFIG_CONSOLE_UART_BAUDRATE and
- * can be overridden by an application specific configuration.
- *
- * @{
- */
+/// @name Default console configuration
+///
+/// STDIO_UART_BAUDRATE is used as CONFIG_CONSOLE_UART_BAUDRATE and
+/// can be overridden by an application specific configuration.
+///
+/// @{
 #define CONFIG_CONSOLE_UART_NUM         (0)
 #ifndef CONFIG_CONSOLE_UART_BAUDRATE
 #define CONFIG_CONSOLE_UART_BAUDRATE    (STDIO_UART_BAUDRATE)
 #endif
-/** @} */
+/// @}
 
 #define CONFIG_APP1_SIZE                (0xf0000)
 #define CONFIG_APP1_OFFSET              (0x10000)
@@ -68,8 +60,8 @@ extern "C" {
 #define CONFIG_ESP_PHY_CALIBRATION_AND_DATA_STORAGE
 #define CONFIG_ESP_PHY_INIT_DATA_IN_PARTITION       (0)
 
-#define CONFIG_SPI_FLASH_FREQ           (ESP_IMAGE_SPI_SPEED_40M) /* 40 MHz */
-#define CONFIG_SPI_FLASH_MODE           (ESP_IMAGE_SPI_MODE_DIO)  /* DIO mode */
+#define CONFIG_SPI_FLASH_FREQ           (ESP_IMAGE_SPI_SPEED_40M) // 40 MHz
+#define CONFIG_SPI_FLASH_MODE           (ESP_IMAGE_SPI_MODE_DIO)  // DIO mode
 #define CONFIG_SPI_FLASH_SIZE           (0x100000)
 
 #define CONFIG_SCAN_AP_MAX              (32)
@@ -80,5 +72,5 @@ extern "C" {
 }
 #endif
 
-#endif /* DOXYGEN */
-/** @} */
+#endif // DOXYGEN
+/// @}

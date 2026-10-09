@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for CC2420 IEEE 802.15.4 device driver
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for CC2420 IEEE 802.15.4 device driver
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -31,13 +27,13 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
         printf("%d out of %u\n", i + 1, (unsigned)CC2420_NUM);
         netdev_t *netdev = &cc2420[i].netdev.netdev;
 
-        /* setup the specific driver */
+        // setup the specific driver
         cc2420_setup(&cc2420[i], &cc2420_params[i], i);
 
-        /* set the application-provided callback */
+        // set the application-provided callback
         netdev->event_callback = cb;
 
-        /* initialize the device driver */
+        // initialize the device driver
         int res = netdev->driver->init(netdev);
         if (res) {
             return res;
@@ -46,8 +42,7 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Test application for CC2420 IEEE 802.15.4 device driver");
 
     int res = netdev_ieee802154_minimal_init();
@@ -56,7 +51,7 @@ int main(void)
         return 1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

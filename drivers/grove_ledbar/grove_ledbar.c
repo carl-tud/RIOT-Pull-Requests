@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_grove_ledbar
- *
- * @{
- * @file
- * @brief       Driver for the Grove ledbar
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     drivers_grove_ledbar
+///
+/// @{
+/// @file
+/// @brief       Driver for the Grove ledbar
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <assert.h>
 #include <stdint.h>
@@ -27,15 +23,13 @@
 #define DEV_LEDS            (dev->params.leds)
 #define DEV_STATE(x)        (dev->state[x])
 
-int grove_ledbar_init(grove_ledbar_t *dev, const grove_ledbar_params_t *params)
-{
+int grove_ledbar_init(grove_ledbar_t *dev, const grove_ledbar_params_t *params) {
     assert(dev && params);
 
     return my9221_init((my9221_t *)dev, (my9221_params_t *)params);
 }
 
-void grove_ledbar_set(grove_ledbar_t *dev, uint8_t level)
-{
+void grove_ledbar_set(grove_ledbar_t *dev, uint8_t level) {
     assert(dev);
 
     uint8_t frac = GROVE_LEDBAR_MAX / DEV_LEDS;
@@ -56,8 +50,7 @@ void grove_ledbar_set(grove_ledbar_t *dev, uint8_t level)
     my9221_set_state((my9221_t *)dev, NULL, 0);
 }
 
-void grove_ledbar_clear(grove_ledbar_t *dev)
-{
+void grove_ledbar_clear(grove_ledbar_t *dev) {
     assert(dev);
 
     grove_ledbar_set(dev, 0);

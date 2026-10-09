@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    net_dns DNS defines
- * @ingroup     net
- * @brief       Generic DNS values
- * @{
- *
- * @file
- * @brief   Generic DNS values
- *
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @defgroup    net_dns DNS defines
+/// @ingroup     net
+/// @brief       Generic DNS values
+/// @{
+///
+/// @file
+/// @brief   Generic DNS values
+///
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "modules.h"
 #include "net/af.h"
@@ -36,49 +32,42 @@
 extern "C" {
 #endif
 
-/**
- * @name DNS defines
- * @{
- */
+/// @name DNS defines
+/// @{
 #define DNS_TYPE_A              (1)
 #define DNS_TYPE_AAAA           (28)
 #define DNS_CLASS_IN            (1)
-/** @} */
+/// @}
 
-/**
- * @name    Field lengths
- * @{
- */
+/// @name    Field lengths
+/// @{
 #define RR_TYPE_LENGTH      (2U)
 #define RR_CLASS_LENGTH     (2U)
 #define RR_TTL_LENGTH       (4U)
 #define RR_RDLENGTH_LENGTH  (2U)
-/** @} */
+/// @}
 
-/**
- * @brief Get IP address for DNS name
- *
- * This function will synchronously try to resolve a DNS A or AAAA record by contacting
- * the DNS server specified in the global variable @ref sock_dns_server.
- *
- * By supplying AF_INET, AF_INET6 or AF_UNSPEC in @p family requesting of A
- * records (IPv4), AAAA records (IPv6) or both can be selected.
- *
- * This function will return the first DNS record it receives. IF both A and
- * AAAA are requested, AAAA will be preferred.
- *
- * @note @p addr_out needs to provide space for any possible result!
- *       (4byte when family==AF_INET, 16byte otherwise)
- *
- * @param[in]   domain_name     DNS name to resolve into address
- * @param[out]  addr_out        buffer to write result into
- * @param[in]   family          Either AF_INET, AF_INET6 or AF_UNSPEC
- *
- * @return      the size of the resolved address on success
- * @return      < 0 otherwise
- */
-static inline int dns_query(const char *domain_name, void *addr_out, int family)
-{
+/// @brief Get IP address for DNS name
+///
+/// This function will synchronously try to resolve a DNS A or AAAA record by contacting
+/// the DNS server specified in the global variable @ref sock_dns_server.
+///
+/// By supplying AF_INET, AF_INET6 or AF_UNSPEC in @p family requesting of A
+/// records (IPv4), AAAA records (IPv6) or both can be selected.
+///
+/// This function will return the first DNS record it receives. IF both A and
+/// AAAA are requested, AAAA will be preferred.
+///
+/// @note @p addr_out needs to provide space for any possible result!
+///       (4byte when family==AF_INET, 16byte otherwise)
+///
+/// @param[in]   domain_name     DNS name to resolve into address
+/// @param[out]  addr_out        buffer to write result into
+/// @param[in]   family          Either AF_INET, AF_INET6 or AF_UNSPEC
+///
+/// @return      the size of the resolved address on success
+/// @return      < 0 otherwise
+static inline int dns_query(const char *domain_name, void *addr_out, int family) {
     (void)domain_name;
     (void)addr_out;
 
@@ -121,4 +110,4 @@ static inline int dns_query(const char *domain_name, void *addr_out, int family)
 }
 #endif
 
-/** @} */
+/// @}

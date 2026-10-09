@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_tja1042
- * @{
- *
- * @file
- * @brief       generic CAN transceiver implementation for tja1042
- *
- * @author      Aurelien Gonce <aurelien.gonce@altran.com>
- * @author      Vincent Dupont <vincent@otakeys.com>
- *
- * @}
- */
+/// @ingroup     drivers_tja1042
+/// @{
+///
+/// @file
+/// @brief       generic CAN transceiver implementation for tja1042
+///
+/// @author      Aurelien Gonce <aurelien.gonce@altran.com>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+///
+/// @}
 
 #include <assert.h>
 
@@ -23,8 +19,7 @@
 
 #include "tja1042.h"
 
-int tja1042_trx_set_mode(can_trx_t *dev, can_trx_mode_t mode)
-{
+int tja1042_trx_set_mode(can_trx_t *dev, can_trx_mode_t mode) {
     tja1042_trx_t *tja1042 = (tja1042_trx_t *)dev;
     int ret;
 
@@ -50,8 +45,7 @@ int tja1042_trx_set_mode(can_trx_t *dev, can_trx_mode_t mode)
     return ret;
 }
 
-int tja1042_trx_init(can_trx_t *dev)
-{
+int tja1042_trx_init(can_trx_t *dev) {
     assert(dev != NULL);
 
     tja1042_trx_t *tja1042 = (tja1042_trx_t *)dev;

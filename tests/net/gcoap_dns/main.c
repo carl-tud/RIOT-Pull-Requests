@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -73,8 +69,7 @@ static_assert(!IS_USED(MODULE_GCOAP_DTLS) ||
     _credential.params.psk.key.len = sizeof(TEST_PSK); \
     strcpy((char *)_credential.params.psk.key.s, TEST_PSK)
 
-static void setup(void)
-{
+static void setup(void) {
     gcoap_dns_server_uri_set(NULL);
     gcoap_dns_cred_reset();
     _credential.tag = CREDMAN_TAG_EMPTY;
@@ -82,8 +77,7 @@ static void setup(void)
     _credential.params.psk.key.len = 0U;
 }
 
-static void test_server_uri_set__success_1(void)
-{
+static void test_server_uri_set__success_1(void) {
     static const char uri[] = "coap://example.org/";
     char res[sizeof(uri)];
 
@@ -95,8 +89,7 @@ static void test_server_uri_set__success_1(void)
     TEST_ASSERT(!gcoap_dns_server_uri_is_set());
 }
 
-static void test_server_uri_set__success_2(void)
-{
+static void test_server_uri_set__success_2(void) {
     static const char uri[] = "coaps://example.org/";
 
     if (IS_USED(MODULE_GCOAP_DTLS)) {
@@ -112,13 +105,12 @@ static void test_server_uri_set__success_2(void)
     }
 }
 
-static void test_server_uri_set__uri_too_long(void)
-{
+static void test_server_uri_set__uri_too_long(void) {
     static const char uri[] = "coap://a.very.long.host-name.org"
         "/this/is/a/very/long/path/to/dns";
 
     TEST_ASSERT(!gcoap_dns_server_uri_is_set());
-    /* would not fit trailing \0 */
+    // would not fit trailing \0
     TEST_ASSERT_EQUAL_INT(CONFIG_GCOAP_DNS_SERVER_URI_LEN,
                           strlen(uri));
     INIT_TEST_PSK(TEST_TAG);
@@ -126,8 +118,7 @@ static void test_server_uri_set__uri_too_long(void)
     TEST_ASSERT(!gcoap_dns_server_uri_is_set());
 }
 
-static void test_server_uri_set__not_coap(void)
-{
+static void test_server_uri_set__not_coap(void) {
     static const char uri[] = "https://example.org/";
 
     TEST_ASSERT(!gcoap_dns_server_uri_is_set());
@@ -136,8 +127,7 @@ static void test_server_uri_set__not_coap(void)
     TEST_ASSERT(!gcoap_dns_server_uri_is_set());
 }
 
-static void test_server_uri_get__buf_too_short(void)
-{
+static void test_server_uri_get__buf_too_short(void) {
     static const char uri[] = "coap://example.org/";
     char res[sizeof(uri) - 1];
 
@@ -145,8 +135,7 @@ static void test_server_uri_get__buf_too_short(void)
     TEST_ASSERT_EQUAL_INT(-ENOBUFS, gcoap_dns_server_uri_get(res, sizeof(res)));
 }
 
-static void test_cred_add__success(void)
-{
+static void test_cred_add__success(void) {
     INIT_TEST_PSK(TEST_TAG);
     if (IS_USED(MODULE_GCOAP_DTLS)) {
         TEST_ASSERT_EQUAL_INT(0, gcoap_dns_cred_add(&_credential));
@@ -156,8 +145,7 @@ static void test_cred_add__success(void)
     }
 }
 
-static void test_cred_add__no_mem(void)
-{
+static void test_cred_add__no_mem(void) {
 #if IS_USED(MODULE_GCOAP_DTLS)
     for (unsigned i = 0; i < CONFIG_GCOAP_DNS_CREDS_MAX; i++) {
         INIT_TEST_PSK(TEST_TAG + i);
@@ -170,8 +158,7 @@ static void test_cred_add__no_mem(void)
 #endif
 }
 
-static void test_cred_add__credman_error(void)
-{
+static void test_cred_add__credman_error(void) {
     if (IS_USED(MODULE_GCOAP_DTLS)) {
         INIT_TEST_PSK(TEST_TAG);
         _credential.type = CREDMAN_TYPE_EMPTY;
@@ -182,8 +169,7 @@ static void test_cred_add__credman_error(void)
     }
 }
 
-static void test_cred_remove__success(void)
-{
+static void test_cred_remove__success(void) {
     INIT_TEST_PSK(TEST_TAG);
     if (IS_USED(MODULE_GCOAP_DTLS)) {
         TEST_ASSERT_EQUAL_INT(CREDMAN_NOT_FOUND, credman_get(&_credential,
@@ -200,8 +186,7 @@ static void test_cred_remove__success(void)
     }
 }
 
-static int _unittests(int argc, char **argv)
-{
+static int _unittests(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -225,14 +210,13 @@ static int _unittests(int argc, char **argv)
     return 0;
 }
 
-static ssize_t _mock_dns_server(coap_pkt_t *pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
-{
+static ssize_t _mock_dns_server(coap_pkt_t *pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx) {
     (void)ctx;
     if ((_resp_code >> 5) == COAP_CLASS_SUCCESS) {
         gcoap_resp_init(pdu, buf, len, _resp_code);
         coap_opt_add_format(pdu, COAP_FORMAT_DNS_MESSAGE);
         size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
-        /* write the RIOT board name in the response buffer */
+        // write the RIOT board name in the response buffer
         if (pdu->payload_len >= _mock_response_len) {
             memcpy(pdu->payload, _mock_response, _mock_response_len);
             return resp_len + _mock_response_len;
@@ -247,14 +231,12 @@ static ssize_t _mock_dns_server(coap_pkt_t *pdu, uint8_t *buf, size_t len, coap_
     }
 }
 
-static void _uri_usage(const char *cmd)
-{
+static void _uri_usage(const char *cmd) {
     printf("usage: %s -d\n", cmd);
     printf("       %s <uri>\n", cmd);
 }
 
-static int _set_uri(int argc, char **argv)
-{
+static int _set_uri(int argc, char **argv) {
     int res;
 
     if ((argc > 1) && (strcmp(argv[1], "-d") == 0)) {
@@ -283,7 +265,7 @@ static int _set_uri(int argc, char **argv)
             return 0;
         }
     }
-    /* argc > 1 can be assumed since argc == 1 returns above */
+    // argc > 1 can be assumed since argc == 1 returns above
     res = gcoap_dns_server_uri_set(argv[1]);
     if (res < 0) {
         errno = -res;
@@ -294,14 +276,12 @@ static int _set_uri(int argc, char **argv)
     return 0;
 }
 
-static void _creds_usage(const char *cmd)
-{
+static void _creds_usage(const char *cmd) {
     printf("usage: %s -d <cred_tag>\n", cmd);
     printf("       %s <cred_tag> <psk_id> <psk>\n", cmd);
 }
 
-static int _creds(int argc, char **argv)
-{
+static int _creds(int argc, char **argv) {
     if ((argc > 2) && (strcmp(argv[1], "-d") == 0)) {
         credman_tag_t tag = atoi(argv[2]);
 
@@ -344,8 +324,7 @@ static int _creds(int argc, char **argv)
     return 0;
 }
 
-static int _proxy(int argc, char **argv)
-{
+static int _proxy(int argc, char **argv) {
     if (argc < 2) {
         static char proxy[CONFIG_GCOAP_DNS_SERVER_URI_LEN];
         int res;
@@ -383,13 +362,11 @@ static int _proxy(int argc, char **argv)
     }
     return 0;
 }
-static void _query_usage(const char *cmd)
-{
+static void _query_usage(const char *cmd) {
     printf("usage: %s <hostname> [inet|inet6]\n", cmd);
 }
 
-int _parse_af(const char *family_name)
-{
+int _parse_af(const char *family_name) {
     if (strcmp("inet6", family_name) == 0) {
         return AF_INET6;
     }
@@ -402,8 +379,7 @@ int _parse_af(const char *family_name)
     }
 }
 
-int _print_addr(const char *hostname, const uint8_t *addr, int addr_len)
-{
+int _print_addr(const char *hostname, const uint8_t *addr, int addr_len) {
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
     switch (addr_len) {
@@ -425,8 +401,7 @@ int _print_addr(const char *hostname, const uint8_t *addr, int addr_len)
     return 0;
 }
 
-static int _query(int argc, char **argv)
-{
+static int _query(int argc, char **argv) {
     uint8_t addr_out[sizeof(ipv6_addr_t)];
     const char *hostname;
     int family = AF_INET6;
@@ -456,9 +431,8 @@ static int _query(int argc, char **argv)
     return _print_addr(hostname, addr_out, res);
 }
 
-static ssize_t _copy_mock_response(const char *str)
-{
-    bool msn = true;   /* most significant nibble */
+static ssize_t _copy_mock_response(const char *str) {
+    bool msn = true;   // most significant nibble
     ssize_t start = _mock_response_len;
 
     for (unsigned i = 0; i < strlen(str); i++) {
@@ -485,8 +459,7 @@ static ssize_t _copy_mock_response(const char *str)
     return _mock_response_len - start;
 }
 
-static int _resp(int argc, char **argv)
-{
+static int _resp(int argc, char **argv) {
     if (argc < 2) {
         od_hex_dump(_mock_response, _mock_response_len, OD_WIDTH_DEFAULT);
         return 0;
@@ -519,8 +492,7 @@ static int _resp(int argc, char **argv)
     return 0;
 }
 
-static int _has_dns_cache(int argc, char **argv)
-{
+static int _has_dns_cache(int argc, char **argv) {
     (void)argc;
     (void)argv;
     if (IS_USED(MODULE_DNS_CACHE)) {
@@ -556,11 +528,10 @@ static const shell_command_t _shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     gcoap_register_listener(&_listener);
     shell_run(_shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
     return 0;
 }
 
-/** @} */
+/// @}

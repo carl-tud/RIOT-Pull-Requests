@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- *
- * @file
- * @brief       Automatic mount of DevFS on /dev
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+///
+/// @file
+/// @brief       Automatic mount of DevFS on /dev
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #include "vfs.h"
 #include "fs/devfs.h"
@@ -41,8 +37,7 @@ static devfs_t random_devfs = {
 };
 #endif
 
-void auto_init_devfs(void)
-{
+void auto_init_devfs(void) {
     DEBUG("auto_init_devfs: mounting /dev\n");
     vfs_mount(&_devfs_auto_init_mount);
 

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Frits Kuipers
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Frits Kuipers
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_maple-mini
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the maple-mini board
- *
- * @author      Frits Kuipers <frits.kuipers@gmail.com>
- */
+/// @ingroup     boards_maple-mini
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the maple-mini board
+///
+/// @author      Frits Kuipers <frits.kuipers@gmail.com>
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -47,12 +41,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tim3
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev      = USART2,
@@ -85,18 +77,16 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          isr_usart3
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
         .speed          = I2C_SPEED_NORMAL,
-        .scl_pin        = GPIO_PIN(PORT_B, 8), /* D15 */
-        .sda_pin        = GPIO_PIN(PORT_B, 9), /* D16 */
+        .scl_pin        = GPIO_PIN(PORT_B, 8), // D15
+        .sda_pin        = GPIO_PIN(PORT_B, 9), // D16
         .bus            = APB1,
         .rcc_mask       = RCC_APB1ENR_I2C1EN,
         .clk            = CLOCK_APB1,
@@ -105,8 +95,8 @@ static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C2,
         .speed          = I2C_SPEED_NORMAL,
-        .scl_pin        = GPIO_PIN(PORT_B, 10), /* D1 */
-        .sda_pin        = GPIO_PIN(PORT_B, 11), /* D0 */
+        .scl_pin        = GPIO_PIN(PORT_B, 10), // D1
+        .sda_pin        = GPIO_PIN(PORT_B, 11), // D0
         .bus            = APB1,
         .rcc_mask       = RCC_APB1ENR_I2C2EN,
         .clk            = CLOCK_APB1,
@@ -118,12 +108,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c2_ev
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name SPI configuration
- * @{
- */
+/// @name SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -146,10 +134,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

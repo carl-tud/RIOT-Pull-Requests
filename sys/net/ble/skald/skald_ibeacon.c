@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     ble_skald_ibeacon
- * @{
- *
- * @file
- * @brief       Skald's iBeacon implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     ble_skald_ibeacon
+/// @{
+///
+/// @file
+/// @brief       Skald's iBeacon implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -23,9 +19,7 @@
 
 #define PREFIX_LEN          (9U)
 
-/**
- * @brief   PDU format for iBeacon packets
- */
+/// @brief   PDU format for iBeacon packets
 typedef struct __attribute__((packed)) {
     uint8_t txadd[BLE_ADDR_LEN];
     uint8_t prefix[PREFIX_LEN];
@@ -35,15 +29,14 @@ typedef struct __attribute__((packed)) {
     uint8_t txpower;
 } ibeacon_t;
 
-/* constant GAP type value fields, fixed for the iBeacon format */
+// constant GAP type value fields, fixed for the iBeacon format
 static const uint8_t prefix[PREFIX_LEN] = { 0x02, 0x01, 0x06, 0x1a, 0xff,
                                             0x4c, 0x00, 0x02, 0x15 };
 
 void skald_ibeacon_advertise(skald_ctx_t *ctx, const skald_uuid_t *uuid,
                              uint16_t major, uint16_t minor, uint8_t txpower,
-                             uint32_t adv_itvl_ms)
-{
-    /* configure the iBeacon PDU */
+                             uint32_t adv_itvl_ms) {
+    // configure the iBeacon PDU
     ibeacon_t *pdu = (ibeacon_t *)ctx->pkt.pdu;
 
     ctx->pkt.len = (uint8_t)sizeof(ibeacon_t);

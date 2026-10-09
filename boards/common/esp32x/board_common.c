@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_common_esp32x
- * @{
- *
- * @file
- * @brief       Common declarations and functions for all ESP32x boards.
- *
- * This file contains default declarations and functions that are valid
- * for all ESP32x boards.
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     boards_common_esp32x
+/// @{
+///
+/// @file
+/// @brief       Common declarations and functions for all ESP32x boards.
+///
+/// This file contains default declarations and functions that are valid
+/// for all ESP32x boards.
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "board.h"
 #include "esp_common.h"
@@ -35,8 +31,7 @@ extern void spi_print_config(void);
 extern void uart_print_config(void);
 extern void can_print_config(void);
 
-void print_board_config(void)
-{
+void print_board_config(void) {
     ets_printf("\nBoard configuration:\n");
 
 #if IS_USED(MODULE_PERIPH_ADC)
@@ -90,7 +85,7 @@ void print_board_config(void)
 }
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

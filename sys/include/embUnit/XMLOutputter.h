@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_XMLOUTPUTTER_H
 #define EMBUNIT_XMLOUTPUTTER_H
 
@@ -18,4 +16,4 @@ OutputterRef XMLOutputter_outputter(void);
 }
 #endif
 
-#endif /* EMBUNIT_XMLOUTPUTTER_H */
+#endif // EMBUNIT_XMLOUTPUTTER_H

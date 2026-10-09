@@ -1,24 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- * @file
- * @brief       initializes USBUS, usb devices and handlers
- *
- * This auto initialization for USBUS is designed to cover the common use case
- * of a single USB peripheral. An USBUS instance is started with USB function
- * handlers based on which module is compiled in.
- *
- * If this doesn't suit your use case, a different initialization function can
- * to be created based on this initialization sequence.
- *
- * @author  Koen Zandberg <koen@bergzand.net>
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+/// @file
+/// @brief       initializes USBUS, usb devices and handlers
+///
+/// This auto initialization for USBUS is designed to cover the common use case
+/// of a single USB peripheral. An USBUS instance is started with USB function
+/// handlers based on which module is compiled in.
+///
+/// If this doesn't suit your use case, a different initialization function can
+/// to be created based on this initialization sequence.
+///
+/// @author  Koen Zandberg <koen@bergzand.net>
+/// @}
 
 #define USB_H_USER_IS_RIOT_INTERNAL
 
@@ -87,16 +83,15 @@ static_assert(USBUS_EP_OUT_REQUIRED_NUMOF <= USBDEV_NUM_ENDPOINTS,
 static char _stack[USBUS_STACKSIZE];
 static usbus_t usbus;
 
-void auto_init_usb(void)
-{
-    /* Get driver context */
+void auto_init_usb(void) {
+    // Get driver context
     usbdev_t *usbdev = usbdev_get_ctx(0);
     assert(usbdev);
 
-    /* Initialize basic usbus struct, don't start the thread yet */
+    // Initialize basic usbus struct, don't start the thread yet
     usbus_init(&usbus, usbdev);
 
-    /* USBUS function handlers initialization */
+    // USBUS function handlers initialization
 #ifdef MODULE_STDIO_CDC_ACM
     void usb_cdc_acm_stdio_init(usbus_t *usbus);
     usb_cdc_acm_stdio_init(&usbus);
@@ -111,15 +106,14 @@ void auto_init_usb(void)
 #endif
 
 #ifdef MODULE_USBUS_MSC
-    /* Initialize Mass Storage Class */
+    // Initialize Mass Storage Class
     usbus_msc_init(&usbus, &msc);
 #endif
 
-    /* Finally initialize USBUS thread */
+    // Finally initialize USBUS thread
     usbus_create(_stack, USBUS_STACKSIZE, USBUS_PRIO, USBUS_TNAME, &usbus);
 }
 
-usbus_t *usbus_auto_init_get(void)
-{
+usbus_t *usbus_auto_init_get(void) {
     return &usbus;
 }

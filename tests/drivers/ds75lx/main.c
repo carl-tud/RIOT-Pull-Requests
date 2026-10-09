@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the DS75LX temperature sensor
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the DS75LX temperature sensor
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -22,8 +18,7 @@
 #include "ds75lx_params.h"
 #include "xtimer.h"
 
-int main(void)
-{
+int main(void) {
     ds75lx_t dev;
     int result;
 
@@ -42,7 +37,7 @@ int main(void)
     int16_t temperature;
     while (1) {
         ds75lx_wakeup(&dev);
-        /* Get temperature in degrees celsius */
+        // Get temperature in degrees celsius
         ds75lx_read_temperature(&dev, &temperature);
         ds75lx_shutdown(&dev);
 

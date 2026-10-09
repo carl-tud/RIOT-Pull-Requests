@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Robert Olsson <roolss@kth.se>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Robert Olsson <roolss@kth.se>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_avr-rss2
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Robert Olsson <roolss@kth.se>
- */
+/// @ingroup     boards_avr-rss2
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Robert Olsson <roolss@kth.se>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   GPIO configuration
- */
+/// @brief   GPIO configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -51,4 +45,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

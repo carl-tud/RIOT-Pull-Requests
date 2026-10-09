@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_nrf5x_nrfmin
- * @{
- *
- * @file
- * @brief       Implementation of the nrfmin radio driver for nRF51 radios
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_nrf5x_nrfmin
+/// @{
+///
+/// @file
+/// @brief       Implementation of the nrfmin radio driver for nRF51 radios
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 #include <errno.h>
@@ -36,10 +32,8 @@
 #define ENABLE_DEBUG            0
 #include "debug.h"
 
-/**
- * @brief   Driver specific device configuration
- * @{
- */
+/// @brief   Driver specific device configuration
+/// @{
 #define CONF_MODE               RADIO_MODE_MODE_Nrf_1Mbit
 #define CONF_LEN                (8U)
 #define CONF_S0                 (0U)
@@ -51,115 +45,87 @@
 #define CONF_CRC_LEN            (2U)
 #define CONF_CRC_POLY           (0x11021)
 #define CONF_CRC_INIT           (0xf0f0f0)
-/** @} */
+/// @}
 
-/**
- * @brief   Driver specific address configuration
- * @{
- */
+/// @brief   Driver specific address configuration
+/// @{
 #define CONF_ADDR_PREFIX0       (0xe7e7e7e7)
 #define CONF_ADDR_BASE          (0xe7e70000)
 #define CONF_ADDR_BCAST         (CONF_ADDR_BASE | NRFMIN_ADDR_BCAST)
-/** @} */
+/// @}
 
-/**
- * @brief   We define a pseudo NID for compliance to 6LoWPAN
- */
+/// @brief   We define a pseudo NID for compliance to 6LoWPAN
 #define CONF_PSEUDO_NID         (0xaffe)
 
-/**
- * @brief   Driver specific (interrupt) events (not all of them used currently)
- * @{
- */
+/// @brief   Driver specific (interrupt) events (not all of them used currently)
+/// @{
 #define ISR_EVENT_RX_START      (0x0001)
 #define ISR_EVENT_RX_DONE       (0x0002)
 #define ISR_EVENT_TX_START      (0x0004)
 #define ISR_EVENT_TX_DONE       (0x0008)
 #define ISR_EVENT_WRONG_CHKSUM  (0x0010)
-/** @} */
+/// @}
 
-/**
- * @brief   Possible internal device states
- */
+/// @brief   Possible internal device states
 typedef enum {
-    STATE_OFF,                  /**< device is powered off */
-    STATE_IDLE,                 /**< device is in idle mode */
-    STATE_RX,                   /**< device is in receive mode */
-    STATE_TX,                   /**< device is transmitting data */
+    STATE_OFF,                  ///< device is powered off
+    STATE_IDLE,                 ///< device is in idle mode
+    STATE_RX,                   ///< device is in receive mode
+    STATE_TX,                   ///< device is transmitting data
 } state_t;
 
-/**
- * @brief   Since there can only be 1 nrfmin device, we allocate it right here
- */
+/// @brief   Since there can only be 1 nrfmin device, we allocate it right here
 netdev_t nrfmin_dev;
 
-/**
- * @brief   For faster lookup we remember our own 16-bit address
- */
+/// @brief   For faster lookup we remember our own 16-bit address
 static uint16_t my_addr;
 
-/**
- * @brief   We need to keep track of the radio state in SW (-> PAN ID 20)
- *
- * See nRF51822 PAN ID 20: RADIO State Register is not functional.
- */
+/// @brief   We need to keep track of the radio state in SW (-> PAN ID 20)
+///
+/// See nRF51822 PAN ID 20: RADIO State Register is not functional.
 static volatile state_t state = STATE_OFF;
 
-/**
- * @brief   We also remember the 'long-term' state, so we can resume after TX
- */
+/// @brief   We also remember the 'long-term' state, so we can resume after TX
 static volatile state_t target_state = STATE_OFF;
 
-/**
- * @brief   When sending out data, the data needs to be in one continuous memory
- *          region. So we need to buffer outgoing data on the driver level.
- */
+/// @brief   When sending out data, the data needs to be in one continuous memory
+///          region. So we need to buffer outgoing data on the driver level.
 static nrfmin_pkt_t tx_buf;
 
-/**
- * @brief   As the device is memory mapped, we need some space to save incoming
- *          data to.
- *
- * @todo    Improve the RX buffering to at least use double buffering
- */
+/// @brief   As the device is memory mapped, we need some space to save incoming
+///          data to.
+///
+/// @todo    Improve the RX buffering to at least use double buffering
 static nrfmin_pkt_t rx_buf;
 
-/**
- * @brief   While we listen for incoming data, we lock the RX buffer
- */
+/// @brief   While we listen for incoming data, we lock the RX buffer
 static volatile uint8_t rx_lock = 0;
 
-/**
- * @brief   Set radio into idle (DISABLED) state
- */
-static void go_idle(void)
-{
-    /* set device into basic disabled state */
+/// @brief   Set radio into idle (DISABLED) state
+static void go_idle(void) {
+    // set device into basic disabled state
     NRF_RADIO->EVENTS_DISABLED = 0;
     NRF_RADIO->TASKS_DISABLE = 1;
     while (NRF_RADIO->EVENTS_DISABLED == 0) {}
-    /* also release any existing lock on the RX buffer */
+    // also release any existing lock on the RX buffer
     rx_lock = 0;
     state = STATE_IDLE;
 }
 
-/**
- * @brief   Set radio into the target state as defined by `target_state`
- *
- * Trick here is, that the driver can go back to it's previous state after a
- * send operation, so it can differentiate if the driver was in DISABLED or in
- * RX mode before the send process had started.
- */
-static void goto_target_state(void)
-{
+/// @brief   Set radio into the target state as defined by `target_state`
+///
+/// Trick here is, that the driver can go back to it's previous state after a
+/// send operation, so it can differentiate if the driver was in DISABLED or in
+/// RX mode before the send process had started.
+static void goto_target_state(void) {
     go_idle();
 
     if ((target_state == STATE_RX) && (rx_buf.pkt.hdr.len == 0)) {
-        /* set receive buffer and our own address */
+        // set receive buffer and our own address
         rx_lock = 1;
         NRF_RADIO->PACKETPTR = (uint32_t)(&rx_buf);
         NRF_RADIO->BASE0 = (CONF_ADDR_BASE | my_addr);
-        /* goto RX mode */
+        // goto RX mode
         NRF_RADIO->EVENTS_READY = 0;
         NRF_RADIO->TASKS_RXEN = 1;
         while (NRF_RADIO->EVENTS_READY == 0) {}
@@ -172,36 +138,31 @@ static void goto_target_state(void)
     }
 }
 
-void nrfmin_setup(void)
-{
+void nrfmin_setup(void) {
     nrfmin_dev.driver = &nrfmin_netdev;
     nrfmin_dev.event_callback = NULL;
     nrfmin_dev.context = NULL;
 }
 
-uint16_t nrfmin_get_addr(void)
-{
+uint16_t nrfmin_get_addr(void) {
     return my_addr;
 }
 
-uint16_t nrfmin_get_channel(void)
-{
+uint16_t nrfmin_get_channel(void) {
     return (uint16_t)(NRF_RADIO->FREQUENCY >> 2);
 }
 
-netopt_state_t nrfmin_get_state(void)
-{
+netopt_state_t nrfmin_get_state(void) {
     switch (state) {
         case STATE_OFF:  return NETOPT_STATE_OFF;
         case STATE_IDLE: return NETOPT_STATE_SLEEP;
         case STATE_RX:   return NETOPT_STATE_IDLE;
         case STATE_TX:   return NETOPT_STATE_TX;
-        default:         return NETOPT_STATE_RESET;     /* should never show */
+        default:         return NETOPT_STATE_RESET;     // should never show
     }
 }
 
-int16_t nrfmin_get_txpower(void)
-{
+int16_t nrfmin_get_txpower(void) {
     int8_t p = (int8_t)NRF_RADIO->TXPOWER;
     if (p < 0) {
         return (int16_t)(0xff00 | p);
@@ -209,14 +170,12 @@ int16_t nrfmin_get_txpower(void)
     return (int16_t)p;
 }
 
-void nrfmin_set_addr(uint16_t addr)
-{
+void nrfmin_set_addr(uint16_t addr) {
     my_addr = addr;
     goto_target_state();
 }
 
-int nrfmin_set_channel(uint16_t chan)
-{
+int nrfmin_set_channel(uint16_t chan) {
     if (chan > NRFMIN_CHAN_MAX) {
         return -EOVERFLOW;
     }
@@ -227,8 +186,7 @@ int nrfmin_set_channel(uint16_t chan)
     return sizeof(uint16_t);
 }
 
-void nrfmin_set_txpower(int16_t power)
-{
+void nrfmin_set_txpower(int16_t power) {
     if (power > 2) {
         NRF_RADIO->TXPOWER = RADIO_TXPOWER_TXPOWER_Pos4dBm;
     }
@@ -255,9 +213,8 @@ void nrfmin_set_txpower(int16_t power)
     }
 }
 
-int nrfmin_set_state(netopt_state_t val)
-{
-    /* make sure radio is turned on and no transmission is in progress */
+int nrfmin_set_state(netopt_state_t val) {
+    // make sure radio is turned on and no transmission is in progress
     NRF_RADIO->POWER = 1;
 
     switch (val) {
@@ -279,16 +236,13 @@ int nrfmin_set_state(netopt_state_t val)
     return sizeof(netopt_state_t);
 }
 
-/**
- * @brief   Radio interrupt routine
- */
-void isr_radio(void)
-{
+/// @brief   Radio interrupt routine
+void isr_radio(void) {
     if (NRF_RADIO->EVENTS_END == 1) {
         NRF_RADIO->EVENTS_END = 0;
-        /* did we just send or receive something? */
+        // did we just send or receive something?
         if (state == STATE_RX) {
-            /* drop packet on invalid CRC */
+            // drop packet on invalid CRC
             if ((NRF_RADIO->CRCSTATUS != 1) || !(nrfmin_dev.event_callback)) {
                 rx_buf.pkt.hdr.len = 0;
                 NRF_RADIO->TASKS_START = 1;
@@ -306,8 +260,7 @@ void isr_radio(void)
     cortexm_isr_end();
 }
 
-static int nrfmin_send(netdev_t *dev, const iolist_t *iolist)
-{
+static int nrfmin_send(netdev_t *dev, const iolist_t *iolist) {
     (void)dev;
 
     assert(iolist);
@@ -315,11 +268,11 @@ static int nrfmin_send(netdev_t *dev, const iolist_t *iolist)
         return -ENETDOWN;
     }
 
-    /* wait for any ongoing transmission to finish and go into idle state */
+    // wait for any ongoing transmission to finish and go into idle state
     while (state == STATE_TX) {}
     go_idle();
 
-    /* copy packet data into the transmit buffer */
+    // copy packet data into the transmit buffer
     int pos = 0;
     for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
         if ((pos + iol->iol_len) > NRFMIN_PKT_MAX) {
@@ -330,12 +283,12 @@ static int nrfmin_send(netdev_t *dev, const iolist_t *iolist)
         pos += iol->iol_len;
     }
 
-    /* set output buffer and destination address */
+    // set output buffer and destination address
     nrfmin_hdr_t *hdr = (nrfmin_hdr_t *)iolist->iol_base;
     NRF_RADIO->PACKETPTR = (uint32_t)(&tx_buf);
     NRF_RADIO->BASE0 = (CONF_ADDR_BASE | hdr->dst_addr);
 
-    /* trigger the actual transmission */
+    // trigger the actual transmission
     DEBUG("[nrfmin] send: putting %i byte into the ether\n", (int)hdr->len);
     NRF_RADIO->EVENTS_READY = 0;
     NRF_RADIO->TASKS_TXEN = 1;
@@ -345,8 +298,7 @@ static int nrfmin_send(netdev_t *dev, const iolist_t *iolist)
     return (int)pos;
 }
 
-static int nrfmin_recv(netdev_t *dev, void *buf, size_t len, void *info)
-{
+static int nrfmin_recv(netdev_t *dev, void *buf, size_t len, void *info) {
     (void)dev;
     (void)info;
 
@@ -356,7 +308,7 @@ static int nrfmin_recv(netdev_t *dev, void *buf, size_t len, void *info)
 
     unsigned pktlen = rx_buf.pkt.hdr.len;
 
-    /* check if packet data is readable */
+    // check if packet data is readable
     if (rx_lock || (pktlen == 0)) {
         DEBUG("[nrfmin] recv: no packet data available\n");
         return 0;
@@ -364,7 +316,7 @@ static int nrfmin_recv(netdev_t *dev, void *buf, size_t len, void *info)
 
     if (buf == NULL) {
         if (len > 0) {
-            /* drop packet */
+            // drop packet
             DEBUG("[nrfmin] recv: dropping packet of length %i\n", pktlen);
             rx_buf.pkt.hdr.len = 0;
             goto_target_state();
@@ -382,43 +334,42 @@ static int nrfmin_recv(netdev_t *dev, void *buf, size_t len, void *info)
     return pktlen;
 }
 
-static int nrfmin_init(netdev_t *dev)
-{
+static int nrfmin_init(netdev_t *dev) {
     (void)dev;
     uint8_t cpuid[CPUID_LEN];
 
-    /* check given device descriptor */
+    // check given device descriptor
     assert(dev);
 
-    /* initialize our own address from the CPU ID */
+    // initialize our own address from the CPU ID
     my_addr = 0;
     cpuid_get(cpuid);
     for (unsigned i = 0; i < CPUID_LEN; i++) {
         my_addr ^= cpuid[i] << (8 * (i & 0x01));
     }
 
-    /* the radio need the external HF clock source to be enabled */
-    /* @todo    add proper handling to release the clock whenever the radio is
-     *          idle */
+    // the radio need the external HF clock source to be enabled
+    // @todo    add proper handling to release the clock whenever the radio is
+    //          idle
     clock_hfxo_request();
 
-    /* power on the NRFs radio */
+    // power on the NRFs radio
     NRF_RADIO->POWER = 1;
-    /* load driver specific configuration */
+    // load driver specific configuration
     NRF_RADIO->MODE = CONF_MODE;
-    /* configure variable parameters to default values */
+    // configure variable parameters to default values
     NRF_RADIO->TXPOWER = NRFMIN_TXPOWER_DEFAULT;
     NRF_RADIO->FREQUENCY = NRFMIN_CHAN_DEFAULT;
-    /* pre-configure radio addresses */
+    // pre-configure radio addresses
     NRF_RADIO->PREFIX0 = CONF_ADDR_PREFIX0;
     NRF_RADIO->BASE0   = (CONF_ADDR_BASE | my_addr);
     NRF_RADIO->BASE1   = CONF_ADDR_BCAST;
-    /* always send from logical address 0 */
+    // always send from logical address 0
     NRF_RADIO->TXADDRESS = 0x00UL;
-    /* and listen to logical addresses 0 and 1 */
-    /* workaround errata nrf52832 3.41 [143] */
+    // and listen to logical addresses 0 and 1
+    // workaround errata nrf52832 3.41 [143]
     NRF_RADIO->RXADDRESSES = 0x10003UL;
-    /* configure data fields and packet length whitening and endianness */
+    // configure data fields and packet length whitening and endianness
     NRF_RADIO->PCNF0 = ((CONF_S1 << RADIO_PCNF0_S1LEN_Pos) |
                         (CONF_S0 << RADIO_PCNF0_S0LEN_Pos) |
                         (CONF_LEN << RADIO_PCNF0_LFLEN_Pos));
@@ -427,39 +378,37 @@ static int nrfmin_init(netdev_t *dev)
                         (CONF_BASE_ADDR_LEN << RADIO_PCNF1_BALEN_Pos) |
                         (CONF_STATLEN << RADIO_PCNF1_STATLEN_Pos) |
                         (NRFMIN_PKT_MAX << RADIO_PCNF1_MAXLEN_Pos));
-    /* configure the CRC unit, we skip the address field as this seems to lead
-     * to wrong checksum calculation on nRF52 devices in some cases */
+    // configure the CRC unit, we skip the address field as this seems to lead
+    // to wrong checksum calculation on nRF52 devices in some cases
     NRF_RADIO->CRCCNF = CONF_CRC_LEN | RADIO_CRCCNF_SKIPADDR_Msk;
     NRF_RADIO->CRCPOLY = CONF_CRC_POLY;
     NRF_RADIO->CRCINIT = CONF_CRC_INIT;
-    /* set shortcuts for more efficient transfer */
+    // set shortcuts for more efficient transfer
     NRF_RADIO->SHORTS = RADIO_SHORTS_READY_START_Msk;
-    /* enable interrupts */
+    // enable interrupts
     NVIC_EnableIRQ(RADIO_IRQn);
-    /* enable END interrupt */
+    // enable END interrupt
     NRF_RADIO->EVENTS_END = 0;
     NRF_RADIO->INTENSET = RADIO_INTENSET_END_Msk;
-    /* put device in receive mode */
+    // put device in receive mode
     target_state = STATE_RX;
     goto_target_state();
 
     DEBUG("[nrfmin] initialization successful\n");
 
-    /* signal link UP */
+    // signal link UP
     dev->event_callback(dev, NETDEV_EVENT_LINK_UP);
 
     return 0;
 }
 
-static void nrfmin_isr(netdev_t *dev)
-{
+static void nrfmin_isr(netdev_t *dev) {
     if (nrfmin_dev.event_callback) {
         nrfmin_dev.event_callback(dev, NETDEV_EVENT_RX_COMPLETE);
     }
 }
 
-static int nrfmin_get(netdev_t *dev, netopt_t opt, void *val, size_t max_len)
-{
+static int nrfmin_get(netdev_t *dev, netopt_t opt, void *val, size_t max_len) {
     (void)dev;
     (void)max_len;
 
@@ -507,8 +456,7 @@ static int nrfmin_get(netdev_t *dev, netopt_t opt, void *val, size_t max_len)
     }
 }
 
-static int nrfmin_set(netdev_t *dev, netopt_t opt, const void *val, size_t len)
-{
+static int nrfmin_set(netdev_t *dev, netopt_t opt, const void *val, size_t len) {
     (void)dev;
     (void)len;
 
@@ -539,9 +487,7 @@ static int nrfmin_set(netdev_t *dev, netopt_t opt, const void *val, size_t len)
     }
 }
 
-/**
- * @brief   Export of the netdev interface
- */
+/// @brief   Export of the netdev interface
 const netdev_driver_t nrfmin_netdev = {
     .send = nrfmin_send,
     .recv = nrfmin_recv,

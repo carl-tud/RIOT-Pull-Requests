@@ -1,19 +1,15 @@
-/*
- * Copyright (C) 2021 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for
- * more details.
- */
+// Copyright (C) 2021 ML!PA Consulting GmbH
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for
+// more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,8 +20,7 @@
 static const char *bench_server = BENCH_SERVER_DEFAULT;
 static uint16_t bench_port = BENCH_PORT_DEFAULT;
 
-static int _benchmark_udp_handler(int argc, char **argv)
-{
+static int _benchmark_udp_handler(int argc, char **argv) {
     if (argc < 2) {
         goto usage;
     }
@@ -65,4 +60,4 @@ usage:
 }
 
 SHELL_COMMAND(bench_udp, "UDP benchmark", _benchmark_udp_handler);
-/** @} */
+/// @}

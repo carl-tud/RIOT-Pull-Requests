@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2020 Savoir-faire Linux
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Savoir-faire Linux
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_stm32mp157c-dk2
- * @{
- *
- * @file
- * @brief       Board specific implementations for the STM32MP157C-DK2 board
- *
- * @author      Gilles DOFFE <gilles.doffe@savoirfairelinux.com>
- */
+/// @ingroup     boards_stm32mp157c-dk2
+/// @{
+///
+/// @file
+/// @brief       Board specific implementations for the STM32MP157C-DK2 board
+///
+/// @author      Gilles DOFFE <gilles.doffe@savoirfairelinux.com>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -33,10 +29,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART3,
@@ -53,9 +47,9 @@ static const uart_conf_t uart_config[] = {
         .dma_chan   = 4,
 #endif
 #if IS_USED(MODULE_STM32MP1_ENG_MODE)
-        .clk_src    = RCC_UART35CKSELR_UART35SRC_4, /* HSE clock source */
+        .clk_src    = RCC_UART35CKSELR_UART35SRC_4, // HSE clock source
 #else
-        .clk_src    = RCC_UART35CKSELR_UART35SRC_2, /* HSI clock source */
+        .clk_src    = RCC_UART35CKSELR_UART35SRC_2, // HSI clock source
 #endif
     },
 };
@@ -64,10 +58,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_DMA_ISR      (isr_dma1_stream4)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

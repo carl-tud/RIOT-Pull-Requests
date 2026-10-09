@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    sys_suit_transport_mock SUIT secure firmware OTA mock transport
- * @ingroup     sys_suit
- * @brief       SUIT firmware mock transport
- *
- * @{
- *
- * @brief       Mock transport backend definitions for SUIT manifests
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * The mock transport is a noop transport. Payloads are preloaded in flash and
- * provided as an array of @ref suit_transport_mock_payload_t to the module.
- *
- * Both the array of payloads named `payloads` and the size with name
- * `num_payloads` must be provided.
- */
+/// @defgroup    sys_suit_transport_mock SUIT secure firmware OTA mock transport
+/// @ingroup     sys_suit
+/// @brief       SUIT firmware mock transport
+///
+/// @{
+///
+/// @brief       Mock transport backend definitions for SUIT manifests
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// The mock transport is a noop transport. Payloads are preloaded in flash and
+/// provided as an array of @ref suit_transport_mock_payload_t to the module.
+///
+/// Both the array of payloads named `payloads` and the size with name
+/// `num_payloads` must be provided.
 
 #include "suit.h"
 
@@ -29,29 +25,25 @@
 extern "C" {
 #endif
 
-/**
- * @brief Mock payload.
- */
+/// @brief Mock payload.
 typedef struct {
-    const uint8_t *buf; /**< Ptr to the memory space containing the payload */
-    size_t len;         /**< Length of the payload in bytes */
+    const uint8_t *buf; ///< Ptr to the memory space containing the payload
+    size_t len;         ///< Length of the payload in bytes
 } suit_transport_mock_payload_t;
 
-/**
- * @brief 'fetch' a payload
- *
- * The payload fetched from the payloads array is indicated by the @ref
- * suit_manifest_t::component_current member
- *
- * @param[in]   manifest    suit manifest context
- *
- * @returns     SUIT_OK if valid
- * @returns     negative otherwise
- */
+/// @brief 'fetch' a payload
+///
+/// The payload fetched from the payloads array is indicated by the @ref
+/// suit_manifest_t::component_current member
+///
+/// @param[in]   manifest    suit manifest context
+///
+/// @returns     SUIT_OK if valid
+/// @returns     negative otherwise
 int suit_transport_mock_fetch(const suit_manifest_t *manifest);
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

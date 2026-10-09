@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024-2025 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2025 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2025 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2025 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup unittests
- * @brief   Unit tests for contiguous and noncontiguous payload functionality
- * @author  Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @ingroup unittests
+/// @brief   Unit tests for contiguous and noncontiguous payload functionality
+/// @author  Carl Seifert <carl.seifert@tu-dresden.de>
 
 #include <stdio.h>
 #include <string.h>
@@ -18,8 +14,7 @@
 #include "net/unicoap/options.h"
 #include "tests-unicoap.h"
 
-static void test_contiguous_payload(void)
-{
+static void test_contiguous_payload(void) {
     unicoap_message_t message = { .method = UNICOAP_METHOD_GET };
 
     TEST_ASSERT(unicoap_message_payload_is_empty(&message));
@@ -33,8 +28,7 @@ static void test_contiguous_payload(void)
     TEST_ASSERT_EQUAL_INT(false, unicoap_message_payload_is_empty(&message));
 }
 
-static void test_contiguous_payload_copy(void)
-{
+static void test_contiguous_payload_copy(void) {
     unicoap_message_t message = { .method = UNICOAP_METHOD_GET };
 
     uint8_t payload[] = { 0xc0, 0xff, 0xee };
@@ -47,8 +41,7 @@ static void test_contiguous_payload_copy(void)
     _TEST_ASSERT_EQUAL_BYTES(payload, payload2, sizeof(payload));
 }
 
-static void test_noncontiguous_payload(void)
-{
+static void test_noncontiguous_payload(void) {
     unicoap_message_t message = { .method = UNICOAP_METHOD_GET };
 
     TEST_ASSERT(unicoap_message_payload_is_empty(&message));
@@ -74,8 +67,7 @@ static void test_noncontiguous_payload(void)
     TEST_ASSERT_EQUAL_INT(false, unicoap_message_payload_is_empty(&message));
 }
 
-static void test_noncontiguous_payload_append(void)
-{
+static void test_noncontiguous_payload_append(void) {
     unicoap_message_t message = { .method = UNICOAP_METHOD_GET };
 
     uint8_t payload2[] = { 0xee };
@@ -103,8 +95,7 @@ static void test_noncontiguous_payload_append(void)
     TEST_ASSERT_EQUAL_INT(false, unicoap_message_payload_is_empty(&message));
 }
 
-static void test_noncontiguous_payload_make_contiguous(void)
-{
+static void test_noncontiguous_payload_make_contiguous(void) {
     unicoap_message_t message = { .method = UNICOAP_METHOD_GET };
 
     uint8_t payload2[] = { 0xee };
@@ -133,8 +124,7 @@ static void test_noncontiguous_payload_make_contiguous(void)
                               &message, buffer, sizeof(buffer)));
 }
 
-static void test_noncontiguous_payload_copy(void)
-{
+static void test_noncontiguous_payload_copy(void) {
     unicoap_message_t message = { .method = UNICOAP_METHOD_GET };
 
     uint8_t payload2[] = { 0xee };
@@ -171,8 +161,7 @@ static void test_noncontiguous_payload_copy(void)
     _TEST_ASSERT_EQUAL_BYTES(buffer2, buffer, sizeof(buffer));
 }
 
-Test *tests_unicoap_message(void)
-{
+Test *tests_unicoap_message(void) {
     EMB_UNIT_TESTFIXTURES(fixtures){
         new_TestFixture(test_contiguous_payload),
         new_TestFixture(test_contiguous_payload_copy),

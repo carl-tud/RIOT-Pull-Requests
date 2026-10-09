@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_nrf53
- * @{
- *
- * @file
- * @brief           nRF5340 specific definitions for handling peripherals
- *
- * @author          Dylan Laduranty <dylan.laduranty@mesotic.com>
- */
+/// @ingroup         cpu_nrf53
+/// @{
+///
+/// @file
+/// @brief           nRF5340 specific definitions for handling peripherals
+///
+/// @author          Dylan Laduranty <dylan.laduranty@mesotic.com>
 
 #include "periph_cpu_common.h"
 #include "macros/units.h"
@@ -22,19 +18,15 @@
 extern "C" {
 #endif
 
-/**
- * @brief    Peripheral clocks speed
- */
-#define PERIPH_CLOCK_1MHZ   MHZ(1)          /**<  1MHz peripheral clock */
-#define PERIPH_CLOCK_16MHZ  MHZ(16)         /**< 16MHz peripheral clock */
-#define PERIPH_CLOCK_32MHZ  MHZ(32)         /**< 32MHz peripheral clock */
-#define PERIPH_CLOCK_64MHZ  MHZ(64)         /**< 64MHz peripheral clock */
-#define PERIPH_CLOCK        PERIPH_CLOCK_16MHZ /**< For driver compatibility */
+/// @brief    Peripheral clocks speed
+#define PERIPH_CLOCK_1MHZ   MHZ(1)          ///< 1MHz peripheral clock
+#define PERIPH_CLOCK_16MHZ  MHZ(16)         ///< 16MHz peripheral clock
+#define PERIPH_CLOCK_32MHZ  MHZ(32)         ///< 32MHz peripheral clock
+#define PERIPH_CLOCK_64MHZ  MHZ(64)         ///< 64MHz peripheral clock
+#define PERIPH_CLOCK        PERIPH_CLOCK_16MHZ ///< For driver compatibility
 
 #ifndef DOXYGEN
-/**
- * @brief Wrapper to fix differences between nRF families vendor files
-  */
+/// @brief Wrapper to fix differences between nRF families vendor files
 #define UART_BAUDRATE_BAUDRATE_Baud1200 UARTE_BAUDRATE_BAUDRATE_Baud1200
 #define UART_BAUDRATE_BAUDRATE_Baud2400 UARTE_BAUDRATE_BAUDRATE_Baud2400
 #define UART_BAUDRATE_BAUDRATE_Baud4800 UARTE_BAUDRATE_BAUDRATE_Baud4800
@@ -59,4 +51,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

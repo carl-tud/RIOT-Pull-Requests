@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016 Michel Rottleuthner
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Michel Rottleuthner
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the SDIO/SD/MMC driver
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the SDIO/SD/MMC driver
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <inttypes.h>
 #include <stdlib.h>
@@ -29,8 +25,8 @@
 
 #include "sdmmc/sdmmc.h"
 
-/* independent of what you specify in a r/w cmd this is the maximum number of blocks read at once.
-   If you call read with a bigger blockcount the read is performed in chunks*/
+// independent of what you specify in a r/w cmd this is the maximum number of blocks read at once.
+//    If you call read with a bigger blockcount the read is performed in chunks
 #define MAX_BLOCKS_IN_BUFFER 4
 #define BLOCK_PRINT_BYTES_PER_LINE 16
 #define FIRST_PRINTABLE_ASCII_CHAR 0x20
@@ -40,8 +36,7 @@ sdmmc_dev_t *dev = NULL;
 
 uint8_t buffer[SDMMC_SDHC_BLOCK_SIZE * MAX_BLOCKS_IN_BUFFER];
 
-static int _card_assert(void)
-{
+static int _card_assert(void) {
     if (dev == NULL) {
         printf("[Error] SD/MMC device not initialized, use init command\n");
         return -1;
@@ -60,8 +55,7 @@ static int _card_assert(void)
     return 0;
 }
 
-static int _init(int argc, char **argv)
-{
+static int _init(int argc, char **argv) {
     int device = 0;
 
     if ((argc == 2)) {
@@ -72,7 +66,7 @@ static int _init(int argc, char **argv)
 
     if (dev == NULL) {
         printf("[Error] No device with index %i\n", device);
-        /* use the first SDMMC device by default */
+        // use the first SDMMC device by default
         dev = sdmmc_get_dev(0);
         return -1;
     }
@@ -93,8 +87,7 @@ static int _init(int argc, char **argv)
     return 0;
 }
 
-static int _cid(int argc, char **argv)
-{
+static int _cid(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -133,8 +126,7 @@ static int _cid(int argc, char **argv)
     return 0;
 }
 
-static int _scr(int argc, char **argv)
-{
+static int _scr(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -178,8 +170,7 @@ static int _scr(int argc, char **argv)
     return 0;
 }
 
-static int _csd(int argc, char **argv)
-{
+static int _csd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -303,8 +294,7 @@ static int _csd(int argc, char **argv)
     return 0;
 }
 
-static int _sds(int argc, char **argv)
-{
+static int _sds(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -337,13 +327,12 @@ static int _sds(int argc, char **argv)
 #define MEGA    (1000000UL)
 #define GIGA    (1000000000UL)
 
-static void _print_size(uint64_t bytes)
-{
-    /* gib_frac = (bytes - gib_int * GiB) / MiB * KILO / KiB; */
+static void _print_size(uint64_t bytes) {
+    // gib_frac = (bytes - gib_int * GiB) / MiB * KILO / KiB;
     uint32_t gib_int = bytes / GiB(1);
     uint32_t gib_frac = (((bytes / MiB(1)) - (gib_int * KiB(1))) * KILO) / KiB(1);
 
-    /* gb_frac = (bytes - gb_int * GIGA) / MEGA */
+    // gb_frac = (bytes - gb_int * GIGA) / MEGA
     uint32_t gb_int = bytes / GIGA;
     uint32_t gb_frac = (bytes / MEGA) - (gb_int * KILO);
 
@@ -352,8 +341,7 @@ static void _print_size(uint64_t bytes)
            gib_frac, gb_int, gb_frac);
 }
 
-static int _size(int argc, char **argv)
-{
+static int _size(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -363,8 +351,7 @@ static int _size(int argc, char **argv)
     return 0;
 }
 
-static int _read(int argc, char **argv)
-{
+static int _read(int argc, char **argv) {
     int blockaddr;
     int cnt;
     bool print_as_char = false;
@@ -424,11 +411,11 @@ static int _read(int argc, char **argv)
                 }
 
                 if ((i % BLOCK_PRINT_BYTES_PER_LINE) == (BLOCK_PRINT_BYTES_PER_LINE - 1)) {
-                    puts(""); /* line break after BLOCK_PRINT_BYTES_PER_LINE bytes */
+                    puts(""); // line break after BLOCK_PRINT_BYTES_PER_LINE bytes
                 }
 
                 if ((i % SDMMC_SDHC_BLOCK_SIZE) == (SDMMC_SDHC_BLOCK_SIZE - 1)) {
-                    puts(""); /* empty line after each printed block */
+                    puts(""); // empty line after each printed block
                 }
             }
         }
@@ -439,8 +426,7 @@ static int _read(int argc, char **argv)
     return 0;
 }
 
-static int _write(int argc, char **argv)
-{
+static int _write(int argc, char **argv) {
     int bladdr;
     char *data;
     int size;
@@ -475,8 +461,8 @@ static int _write(int argc, char **argv)
         return -1;
     }
 
-    /* copy data to a full-block-sized buffer an fill remaining block space
-     * according to -r param*/
+    // copy data to a full-block-sized buffer an fill remaining block space
+    // according to -r param
     uint8_t write_buffer[SDMMC_SDHC_BLOCK_SIZE];
     for (unsigned i = 0; i < sizeof(write_buffer); i++) {
         if (repeat_data || ((int)i < size)) {
@@ -498,8 +484,7 @@ static int _write(int argc, char **argv)
     return 0;
 }
 
-static int _writem(int argc, char **argv)
-{
+static int _writem(int argc, char **argv) {
     int bladdr;
     int cnt;
     uint16_t done;
@@ -517,7 +502,7 @@ static int _writem(int argc, char **argv)
         return -1;
     }
 
-    /* writing cnt blocks with data from stack */
+    // writing cnt blocks with data from stack
     int res = sdmmc_write_blocks(dev, bladdr, SDMMC_SDHC_BLOCK_SIZE, cnt,
                                  (void *)&bladdr, &done);
     if (res) {
@@ -529,8 +514,7 @@ static int _writem(int argc, char **argv)
     return 0;
 }
 
-static int _erase(int argc, char **argv)
-{
+static int _erase(int argc, char **argv) {
     int blockaddr;
     int cnt;
 
@@ -557,8 +541,7 @@ static int _erase(int argc, char **argv)
     return 0;
 }
 
-static int _copy(int argc, char **argv)
-{
+static int _copy(int argc, char **argv) {
     int src_block;
     int dst_block;
     int num_block = 1;
@@ -615,8 +598,7 @@ static int _copy(int argc, char **argv)
     return 0;
 }
 
-static int _sector_count(int argc, char **argv)
-{
+static int _sector_count(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -625,8 +607,7 @@ static int _sector_count(int argc, char **argv)
     return 0;
 }
 
-void _card_event_cb(sdmmc_dev_t *dev, sdmmc_event_t event)
-{
+void _card_event_cb(sdmmc_dev_t *dev, sdmmc_event_t event) {
     (void)dev;
     switch (event) {
     case SDMMC_EVENT_CARD_INSERTED:
@@ -659,9 +640,8 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
-    /* use the first SDMMC device by default */
+int main(void) {
+    // use the first SDMMC device by default
     dev = sdmmc_get_dev(0);
     dev->event_cb = _card_event_cb;
 

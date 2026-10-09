@@ -1,22 +1,18 @@
-/*
- * Copyright (C) Inria 2018
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) Inria 2018
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #pragma once
 
-/**
- * @ingroup   boards_stm32l476g-disco
- * @{
- *
- * @file
- * @brief     Board specific configuration of direct mapped GPIOs
- *
- * @author    Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup   boards_stm32l476g-disco
+/// @{
+///
+/// @file
+/// @brief     Board specific configuration of direct mapped GPIOs
+///
+/// @author    Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -25,9 +21,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    GPIO pin configuration
- */
+/// @brief    GPIO pin configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -71,4 +65,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

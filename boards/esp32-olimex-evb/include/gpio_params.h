@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_esp32_olimex-esp32-evb
- * @brief       Board specific configuration of direct mapped GPIOs
- * @file
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @{
- */
+/// @ingroup     boards_esp32_olimex-esp32-evb
+/// @brief       Board specific configuration of direct mapped GPIOs
+/// @file
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @{
 
 #include "board.h"
 #include "saul/periph.h"
@@ -20,9 +16,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   LED and button configuration
- */
+/// @brief   LED and button configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     #if MODULE_OLIMEX_ESP32_GATEWAY
@@ -45,4 +39,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_gnrc_pktdump
- * @{
- *
- * @file
- * @brief       Generic module to dump packages received via netapi to STDOUT
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     net_gnrc_pktdump
+/// @{
+///
+/// @file
+/// @brief       Generic module to dump packages received via netapi to STDOUT
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -32,19 +28,14 @@
 #include "net/sixlowpan.h"
 #include "od.h"
 
-/**
- * @brief   PID of the pktdump thread
- */
+/// @brief   PID of the pktdump thread
 kernel_pid_t gnrc_pktdump_pid = KERNEL_PID_UNDEF;
 
-/**
- * @brief   Stack for the pktdump thread
- */
+/// @brief   Stack for the pktdump thread
 static char _stack[GNRC_PKTDUMP_STACKSIZE];
 static msg_t _msg_queue[GNRC_PKTDUMP_MSG_QUEUE_SIZE];
 
-static void _dump_snip(gnrc_pktsnip_t *pkt)
-{
+static void _dump_snip(gnrc_pktsnip_t *pkt) {
     size_t hdr_len = 0;
 
     switch (pkt->type) {
@@ -66,7 +57,7 @@ static void _dump_snip(gnrc_pktsnip_t *pkt)
             hdr_len = pkt->size;
         }
         break;
-#endif  /* IS_USED(MODULE_GNRC_NETTYPE_SIXLOWPAN) */
+#endif  // IS_USED(MODULE_GNRC_NETTYPE_SIXLOWPAN)
 #if IS_USED(MODULE_GNRC_NETTYPE_IPV6)
     case GNRC_NETTYPE_IPV6:
         printf("NETTYPE_IPV6 (%i)\n", pkt->type);
@@ -75,12 +66,12 @@ static void _dump_snip(gnrc_pktsnip_t *pkt)
             hdr_len = sizeof(ipv6_hdr_t);
         }
         break;
-#endif  /* IS_USED(MODULE_GNRC_NETTYPE_IPV6) */
+#endif  // IS_USED(MODULE_GNRC_NETTYPE_IPV6)
 #if IS_USED(MODULE_GNRC_NETTYPE_IPV6_EXT)
     case GNRC_NETTYPE_IPV6_EXT:
         printf("NETTYPE_IPV6_EXT (%i)\n", pkt->type);
         break;
-#endif  /* IS_USED(MODULE_GNRC_NETTYPE_IPV6_EXT) */
+#endif  // IS_USED(MODULE_GNRC_NETTYPE_IPV6_EXT)
 #if IS_USED(MODULE_GNRC_NETTYPE_ICMPV6)
     case GNRC_NETTYPE_ICMPV6:
         printf("NETTYPE_ICMPV6 (%i)\n", pkt->type);
@@ -89,19 +80,19 @@ static void _dump_snip(gnrc_pktsnip_t *pkt)
             hdr_len = sizeof(icmpv6_hdr_t);
         }
         break;
-#endif  /* IS_USED(MODULE_GNRC_NETTYPE_ICMPV6) */
+#endif  // IS_USED(MODULE_GNRC_NETTYPE_ICMPV6)
 #if IS_USED(MODULE_GNRC_NETTYPE_CCN)
     case GNRC_NETTYPE_CCN_CHUNK:
         printf("GNRC_NETTYPE_CCN_CHUNK (%i)\n", pkt->type);
         printf("Content is: %.*s\n", (int)pkt->size, (char*)pkt->data);
         hdr_len = pkt->size;
         break;
-#endif  /* IS_USED(MODULE_GNRC_NETTYPE_CCN) */
+#endif  // IS_USED(MODULE_GNRC_NETTYPE_CCN)
 #if IS_USED(MODULE_GNRC_NETTYPE_NDN)
     case GNRC_NETTYPE_NDN:
             printf("NETTYPE_NDN (%i)\n", pkt->type);
         break;
-#endif  /* IS_USED(MODULE_GNRC_NETTYPE_NDN) */
+#endif  // IS_USED(MODULE_GNRC_NETTYPE_NDN)
 #if IS_USED(MODULE_GNRC_NETTYPE_TCP)
     case GNRC_NETTYPE_TCP:
         printf("NETTYPE_TCP (%i)\n", pkt->type);
@@ -110,7 +101,7 @@ static void _dump_snip(gnrc_pktsnip_t *pkt)
             hdr_len = sizeof(tcp_hdr_t);
         }
         break;
-#endif  /* IS_USED(MODULE_GNRC_NETTYPE_TCP) */
+#endif  // IS_USED(MODULE_GNRC_NETTYPE_TCP)
 #if IS_USED(MODULE_GNRC_NETTYPE_UDP)
     case GNRC_NETTYPE_UDP:
         printf("NETTYPE_UDP (%i)\n", pkt->type);
@@ -119,7 +110,7 @@ static void _dump_snip(gnrc_pktsnip_t *pkt)
             hdr_len = sizeof(udp_hdr_t);
         }
         break;
-#endif  /* IS_USED(MODULE_GNRC_NETTYPE_UDP) */
+#endif  // IS_USED(MODULE_GNRC_NETTYPE_UDP)
 #ifdef TEST_SUITES
     case GNRC_NETTYPE_TEST:
         printf("NETTYPE_TEST (%i)\n", pkt->type);
@@ -136,8 +127,7 @@ static void _dump_snip(gnrc_pktsnip_t *pkt)
     }
 }
 
-static void _dump(gnrc_pktsnip_t *pkt)
-{
+static void _dump(gnrc_pktsnip_t *pkt) {
     int snips = 0;
     int size = 0;
     gnrc_pktsnip_t *snip = pkt;
@@ -155,12 +145,11 @@ static void _dump(gnrc_pktsnip_t *pkt)
     gnrc_pktbuf_release(pkt);
 }
 
-static void *_eventloop(void *arg)
-{
+static void *_eventloop(void *arg) {
     (void)arg;
     msg_t msg, reply;
 
-    /* setup the message queue */
+    // setup the message queue
     msg_init_queue(_msg_queue, GNRC_PKTDUMP_MSG_QUEUE_SIZE);
 
     reply.content.value = (uint32_t)(-ENOTSUP);
@@ -188,12 +177,11 @@ static void *_eventloop(void *arg)
         }
     }
 
-    /* never reached */
+    // never reached
     return NULL;
 }
 
-kernel_pid_t gnrc_pktdump_init(void)
-{
+kernel_pid_t gnrc_pktdump_init(void) {
     if (gnrc_pktdump_pid == KERNEL_PID_UNDEF) {
         gnrc_pktdump_pid = thread_create(_stack, sizeof(_stack), GNRC_PKTDUMP_PRIO,
                              0,

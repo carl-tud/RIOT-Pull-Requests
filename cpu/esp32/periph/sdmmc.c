@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       Low-level SDIO/SD/MMC peripheral driver interface for ESP32
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       Low-level SDIO/SD/MMC peripheral driver interface for ESP32
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <errno.h>
 #include <inttypes.h>
@@ -37,18 +33,18 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* CLK_EDGE_SEL - clock phase selection register */
+// CLK_EDGE_SEL - clock phase selection register
 #define SDMMC_CLOCK_REG_CCLKIN_EDGE_SAM_SEL_S   (3)
 #define SDMMC_CLOCK_REG_CCLKIN_EDGE_SAM_SEL_M   (0x7 << SDMMC_CLOCK_REG_CCLKIN_EDGE_SAM_SEL_S)
 
-/* we have to redefine it here since we can't include "gpio_types.h" due to
- * naming conflicts */
+// we have to redefine it here since we can't include "gpio_types.h" due to
+// naming conflicts
 #define GPIO_NUM_NC     (GPIO_UNDEF)
 
-/* debounce time for CD pin */
+// debounce time for CD pin
 #define CONFIG_CD_PIN_DEBOUNCE_US   25000
 
-/* limit the Default and High Speed clock rates for debugging */
+// limit the Default and High Speed clock rates for debugging
 #if CONFIG_SDMMC_CLK_MAX_400KHZ
 #define CONFIG_SDMMC_CLK_MAX        KHZ(400)
 #elif CONFIG_SDMMC_CLK_MAX_1MHZ
@@ -63,7 +59,7 @@
 #define CONFIG_SDMMC_CLK_MAX        MHZ(40)
 #endif
 
-/* millisecond timer definitions dependent on active ztimer backend */
+// millisecond timer definitions dependent on active ztimer backend
 #if IS_USED(MODULE_ZTIMER_MSEC)
 #define _ZTIMER_SLEEP_MS(n)     ztimer_sleep(ZTIMER_MSEC, n)
 #elif IS_USED(MODULE_ZTIMER_USEC)
@@ -72,15 +68,15 @@
 #error "Either ztimer_msec or ztimer_usec is needed"
 #endif
 
-/* forward declaration of _driver */
+// forward declaration of _driver
 static const sdmmc_driver_t _driver;
 
-/* driver related */
+// driver related
 typedef struct {
-    sdmmc_dev_t sdmmc_dev;      /**< Inherited sdmmc_dev_t struct */
-    const sdmmc_conf_t *config; /**< SDIO/SD/MMC peripheral config   */
-    uint32_t last_cd_pin_irq;   /**< Last CD Pin IRQ time for debouncing */
-    bool data_transfer;         /**< Transfer active */
+    sdmmc_dev_t sdmmc_dev;      ///< Inherited sdmmc_dev_t struct
+    const sdmmc_conf_t *config; ///< SDIO/SD/MMC peripheral config
+    uint32_t last_cd_pin_irq;   ///< Last CD Pin IRQ time for debouncing
+    bool data_transfer;         ///< Transfer active
 } esp32_sdmmc_dev_t;
 
 static esp32_sdmmc_dev_t _sdmmc_devs[] = {
@@ -100,7 +96,7 @@ static esp32_sdmmc_dev_t _sdmmc_devs[] = {
 #endif
 };
 
-/* sanity check of configuration */
+// sanity check of configuration
 static_assert(SDMMC_CONFIG_NUMOF == ARRAY_SIZE(sdmmc_config),
               "SDMMC_CONFIG_NUMOF and the number of elements in sdmmc_config differ");
 static_assert(SDMMC_CONFIG_NUMOF == ARRAY_SIZE(_sdmmc_devs),
@@ -113,12 +109,11 @@ XFA_CONST(sdmmc_dev_t * const, sdmmc_devs, 0) _sdmmc_0 = (sdmmc_dev_t * const)&_
 XFA_CONST(sdmmc_dev_t * const, sdmmc_devs, 0) _sdmmc_1 = (sdmmc_dev_t * const)&_sdmmc_devs[1];
 #endif
 
-/* forward declaration of internal functions */
+// forward declaration of internal functions
 static int _esp_err_to_sdmmc_err_code(esp_err_t code);
 static void _isr_cd_pin(void *arg);
 
-static void _init(sdmmc_dev_t *sdmmc_dev)
-{
+static void _init(sdmmc_dev_t *sdmmc_dev) {
     DEBUG("[sdmmc] %s", __func__);
 
     esp32_sdmmc_dev_t *dev = container_of(sdmmc_dev, esp32_sdmmc_dev_t, sdmmc_dev);
@@ -127,16 +122,16 @@ static void _init(sdmmc_dev_t *sdmmc_dev)
     const sdmmc_conf_t *conf = dev->config;
     assert(conf);
 
-    /* additional sanity checks */
+    // additional sanity checks
     assert(conf->slot < SOC_SDMMC_NUM_SLOTS);
 
     sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
 
 #if IS_USED(CPU_FAM_ESP32)
 
-    /* On ESP32 only Slot 1 can be used */
+    // On ESP32 only Slot 1 can be used
     assert(conf->slot == SDMMC_SLOT_1);
-    /* Slot 1 has only 4 data lines */
+    // Slot 1 has only 4 data lines
     assert((conf->bus_width == 1) || (conf->bus_width == 4));
 
     sdmmc_dev->bus_width = conf->bus_width;
@@ -147,7 +142,7 @@ static void _init(sdmmc_dev_t *sdmmc_dev)
     assert(gpio_is_valid(conf->cmd) && !gpio_is_equal(conf->cmd, GPIO0));
     assert(gpio_is_valid(conf->dat0) && !gpio_is_equal(conf->dat0, GPIO0));
 
-    /* TODO Check for collision with Flash GPIOs */
+    // TODO Check for collision with Flash GPIOs
     slot_config.clk = conf->clk;
     slot_config.cmd = conf->cmd;
     slot_config.d0 = conf->dat0;
@@ -219,9 +214,8 @@ static void _init(sdmmc_dev_t *sdmmc_dev)
 }
 
 static int _send_cmd(sdmmc_dev_t *sdmmc_dev, sdmmc_cmd_t cmd_idx, uint32_t arg,
-                     sdmmc_resp_t resp_type, uint32_t *resp)
-{
-    /* to ensure that `sdmmc_send_acmd` is used for application specific commands */
+                     sdmmc_resp_t resp_type, uint32_t *resp) {
+    // to ensure that `sdmmc_send_acmd` is used for application specific commands
     assert((cmd_idx & SDMMC_ACMD_PREFIX) == 0);
 
     esp32_sdmmc_dev_t *dev = container_of(sdmmc_dev, esp32_sdmmc_dev_t, sdmmc_dev);
@@ -230,8 +224,8 @@ static int _send_cmd(sdmmc_dev_t *sdmmc_dev, sdmmc_cmd_t cmd_idx, uint32_t arg,
     assert(dev->config);
 
     if (dev->data_transfer) {
-        /* data transfer command is issued in _xfer_execute as one transaction
-         * together with data phase */
+        // data transfer command is issued in _xfer_execute as one transaction
+        // together with data phase
         return 0;
     }
 
@@ -300,18 +294,16 @@ static int _send_cmd(sdmmc_dev_t *sdmmc_dev, sdmmc_cmd_t cmd_idx, uint32_t arg,
 
     if (cmd.error) {
 #if CPU_FAM_ESP32S3
-        /*
-         * FIXME:
-         * The host controller triggers an invalid response error on ESP32-S3,
-         * although the response from the card is completely correct and is
-         * received completely by the host controller. The reason for this is
-         * not yet clear. The sequence of commands including all parameters
-         * sent to the host controller as well as the timing are exactly the
-         * same as in the IDF code. The initialization of the host controller
-         * is also exactly the same as in the IDF code. The problem only
-         * occurs with the ESP32-S3, but not with the ESP32. As a workaround,
-         * we ignore invalid response errors on ESP32-S3.
-         */
+        // FIXME:
+        // The host controller triggers an invalid response error on ESP32-S3,
+        // although the response from the card is completely correct and is
+        // received completely by the host controller. The reason for this is
+        // not yet clear. The sequence of commands including all parameters
+        // sent to the host controller as well as the timing are exactly the
+        // same as in the IDF code. The initialization of the host controller
+        // is also exactly the same as in the IDF code. The problem only
+        // occurs with the ESP32-S3, but not with the ESP32. As a workaround,
+        // we ignore invalid response errors on ESP32-S3.
         if (cmd.error != ESP_ERR_INVALID_RESPONSE) {
             return _esp_err_to_sdmmc_err_code(cmd.error);
         }
@@ -323,8 +315,7 @@ static int _send_cmd(sdmmc_dev_t *sdmmc_dev, sdmmc_cmd_t cmd_idx, uint32_t arg,
     return 0;
 }
 
-static int _set_bus_width(sdmmc_dev_t *sdmmc_dev, sdmmc_bus_width_t width)
-{
+static int _set_bus_width(sdmmc_dev_t *sdmmc_dev, sdmmc_bus_width_t width) {
     DEBUG("[sdmmc] %s width=%d\n", __func__, width);
     esp32_sdmmc_dev_t *dev = container_of(sdmmc_dev, esp32_sdmmc_dev_t, sdmmc_dev);
     assert(dev);
@@ -337,8 +328,7 @@ static int _set_bus_width(sdmmc_dev_t *sdmmc_dev, sdmmc_bus_width_t width)
     return 0;
 }
 
-static int _set_clock_rate(sdmmc_dev_t *sdmmc_dev, sdmmc_clock_rate_t rate)
-{
+static int _set_clock_rate(sdmmc_dev_t *sdmmc_dev, sdmmc_clock_rate_t rate) {
     DEBUG("[sdmmc] %s rate=%"PRIu32" ", __func__, (uint32_t)rate);
 
     esp32_sdmmc_dev_t *dev = container_of(sdmmc_dev, esp32_sdmmc_dev_t, sdmmc_dev);
@@ -356,8 +346,8 @@ static int _set_clock_rate(sdmmc_dev_t *sdmmc_dev, sdmmc_clock_rate_t rate)
     }
 
 #if SOC_SDMMC_USE_GPIO_MATRIX
-    /* phase has to be modified to get it working for MMCs if
-     * SOC_SDMMC_USE_GPIO_MATRIX is used */
+    // phase has to be modified to get it working for MMCs if
+    // SOC_SDMMC_USE_GPIO_MATRIX is used
     uint32_t reg = *((uint32_t *)SDMMC_CLOCK_REG);
     reg &= ~SDMMC_CLOCK_REG_CCLKIN_EDGE_SAM_SEL_M;
     reg |= (6 << SDMMC_CLOCK_REG_CCLKIN_EDGE_SAM_SEL_S);
@@ -367,15 +357,14 @@ static int _set_clock_rate(sdmmc_dev_t *sdmmc_dev, sdmmc_clock_rate_t rate)
     return 0;
 }
 
-static int _xfer_prepare(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer)
-{
+static int _xfer_prepare(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer) {
     esp32_sdmmc_dev_t *dev = container_of(sdmmc_dev, esp32_sdmmc_dev_t, sdmmc_dev);
 
     assert(dev);
     assert(dev->config);
 
-    /* SDIO/SD/MMC uses 32-bit words */
-    /* TODO: at the moment only 32-bit words supported */
+    // SDIO/SD/MMC uses 32-bit words
+    // TODO: at the moment only 32-bit words supported
     assert((xfer->block_size % sizeof(uint32_t)) == 0);
 
     dev->data_transfer = true;
@@ -385,12 +374,11 @@ static int _xfer_prepare(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer)
 
 static int _xfer_execute(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer,
                          const void *data_wr, void *data_rd,
-                         uint16_t *done)
-{
+                         uint16_t *done) {
     assert(xfer);
     assert((xfer->write && data_wr) || (!xfer->write && data_rd));
 
-    /* check the alignment required for the buffers */
+    // check the alignment required for the buffers
     assert(HAS_ALIGNMENT_OF(data_wr, SDMMC_CPU_DMA_ALIGNMENT));
     assert(HAS_ALIGNMENT_OF(data_rd, SDMMC_CPU_DMA_ALIGNMENT));
 
@@ -406,7 +394,7 @@ static int _xfer_execute(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer,
         .data = xfer->write ? (void *)data_wr : data_rd,
         .datalen = xfer->block_num * xfer->block_size,
         .blklen = xfer->block_size,
-        .timeout_ms = xfer->write ? 2500 : 1000, /* TODO */
+        .timeout_ms = xfer->write ? 2500 : 1000, // TODO
     };
 
     if (done) {
@@ -419,18 +407,16 @@ static int _xfer_execute(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer,
     }
     else if (cmd.error) {
 #ifdef CPU_FAM_ESP32S3
-        /*
-         * FIXME:
-         * The host controller triggers an invalid response error on ESP32-S3,
-         * although the response from the card is completely correct and is
-         * received completely by the host controller. The reason for this is
-         * not yet clear. The sequence of commands including all parameters
-         * sent to the host controller as well as the timing are exactly the
-         * same as in the IDF code. The initialization of the host controller
-         * is also exactly the same as in the IDF code. The problem only
-         * occurs with the ESP32-S3, but not with the ESP32. As a workaround,
-         * we ignore invalid response errors on ESP32-S3.
-         */
+        // FIXME:
+        // The host controller triggers an invalid response error on ESP32-S3,
+        // although the response from the card is completely correct and is
+        // received completely by the host controller. The reason for this is
+        // not yet clear. The sequence of commands including all parameters
+        // sent to the host controller as well as the timing are exactly the
+        // same as in the IDF code. The initialization of the host controller
+        // is also exactly the same as in the IDF code. The problem only
+        // occurs with the ESP32-S3, but not with the ESP32. As a workaround,
+        // we ignore invalid response errors on ESP32-S3.
         if (cmd.error != ESP_ERR_INVALID_RESPONSE) {
             return _esp_err_to_sdmmc_err_code(cmd.error);
         }
@@ -446,8 +432,7 @@ static int _xfer_execute(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer,
     return 0;
 }
 
-static int _xfer_finish(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer)
-{
+static int _xfer_finish(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer) {
     (void)xfer;
 
     esp32_sdmmc_dev_t *dev = container_of(sdmmc_dev, esp32_sdmmc_dev_t, sdmmc_dev);
@@ -456,8 +441,7 @@ static int _xfer_finish(sdmmc_dev_t *sdmmc_dev, sdmmc_xfer_desc_t *xfer)
     return 0;
 }
 
-static int _esp_err_to_sdmmc_err_code(esp_err_t error)
-{
+static int _esp_err_to_sdmmc_err_code(esp_err_t error) {
     switch (error) {
     case ESP_ERR_TIMEOUT:
         DEBUG("[sdmmc] Timeout error\n");
@@ -480,15 +464,14 @@ static int _esp_err_to_sdmmc_err_code(esp_err_t error)
     }
 }
 
-static void _isr_cd_pin(void *arg)
-{
+static void _isr_cd_pin(void *arg) {
     uint32_t state = irq_disable();
 
     esp32_sdmmc_dev_t *dev = arg;
     assert(dev);
 
-    /* for debouncing handle only the first CD Pin interrupts and ignore further
-     * interrupts that happen within the debouncing time interval */
+    // for debouncing handle only the first CD Pin interrupts and ignore further
+    // interrupts that happen within the debouncing time interval
     if ((system_get_time() - dev->last_cd_pin_irq) > CONFIG_CD_PIN_DEBOUNCE_US) {
         dev->last_cd_pin_irq = system_get_time();
 
@@ -508,7 +491,7 @@ static void _isr_cd_pin(void *arg)
 
 static const sdmmc_driver_t _driver = {
     .init = _init,
-    .card_init = NULL,  /* no own card init function */
+    .card_init = NULL,  // no own card init function
     .send_cmd = _send_cmd,
     .set_bus_width = _set_bus_width,
     .set_clock_rate = _set_clock_rate,

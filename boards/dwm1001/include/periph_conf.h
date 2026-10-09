@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_dwm1001
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the DWM1001 dev board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- */
+/// @ingroup     boards_dwm1001
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the DWM1001 dev board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
 
 #include "cfg_clock_32_1.h"
 #include "cfg_rtt_default.h"
@@ -25,12 +21,10 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    { /* Mapped to USB virtual COM port */
+    { // Mapped to USB virtual COM port
         .dev        = NRF_UARTE0,
         .rx_pin     = GPIO_PIN(0, 11),
         .tx_pin     = GPIO_PIN(0, 5),
@@ -44,12 +38,10 @@ static const uart_conf_t uart_config[] = {
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
 #define UART_0_ISR          (isr_uart0)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPIM0,
@@ -58,7 +50,7 @@ static const spi_conf_t spi_config[] = {
         .miso = GPIO_PIN(0, 7),
         .ppi = 0,
     },
-    {   /* Connected to the DWM1001 UWB transceiver */
+    {   // Connected to the DWM1001 UWB transceiver
         .dev  = NRF_SPIM1,
         .sclk = GPIO_PIN(0, 16),
         .mosi = GPIO_PIN(0, 20),
@@ -68,12 +60,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = NRF_TWIM1,
@@ -83,10 +73,10 @@ static const i2c_conf_t i2c_config[] = {
     }
 };
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

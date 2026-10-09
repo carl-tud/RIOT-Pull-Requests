@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 #include <stdlib.h>
 
@@ -36,84 +32,68 @@
         } \
     }
 
-static void test_ipv6_hdr_set_version(void)
-{
+static void test_ipv6_hdr_set_version(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { TEST_UINT8 };
 
     ipv6_hdr_set_version((ipv6_hdr_t *)val);
 
-    /*
-     * Header format:
-     *  1
-     * +----+--
-     * |  6 |
-     * +----+--
-     */
+    // Header format:
+    //  1
+    // +----+--
+    // |  6 |
+    // +----+--
     TEST_ASSERT_EQUAL_INT(0x60, val[0] & 0xf0);
     TEST_ASSERT_EQUAL_INT(TEST_UINT8 & 0x0f, val[0] & 0x0f);
 }
 
-static void test_ipv6_hdr_get_version(void)
-{
+static void test_ipv6_hdr_get_version(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { TEST_UINT8 };
 
-    /*
-     * Header format:
-     *          8
-     * +----+----
-     * |  6 |
-     * +----+----
-     */
+    // Header format:
+    //          8
+    // +----+----
+    // |  6 |
+    // +----+----
     TEST_ASSERT_EQUAL_INT(TEST_UINT8 >> 4, ipv6_hdr_get_version((ipv6_hdr_t *)val));
 }
 
-static void test_ipv6_hdr_is_ipv6_hdr__false(void)
-{
-    /*
-     * Header format:
-     *          8
-     * +----+----
-     * |  6 |
-     * +----+----
-     */
+static void test_ipv6_hdr_is_ipv6_hdr__false(void) {
+    // Header format:
+    //          8
+    // +----+----
+    // |  6 |
+    // +----+----
     uint8_t val[sizeof(ipv6_hdr_t)] = { 0 };
 
     TEST_ASSERT(!ipv6_hdr_is((ipv6_hdr_t *)val));
 }
 
-static void test_ipv6_hdr_is_ipv6_hdr__true(void)
-{
-    /*
-     * Header format:
-     *          8
-     * +----+----
-     * |  6 |
-     * +----+----
-     */
+static void test_ipv6_hdr_is_ipv6_hdr__true(void) {
+    // Header format:
+    //          8
+    // +----+----
+    // |  6 |
+    // +----+----
     uint8_t val[sizeof(ipv6_hdr_t)] = { 0x60 | (TEST_UINT8 & 0x0f) };
 
     TEST_ASSERT(ipv6_hdr_is((ipv6_hdr_t *)val));
 }
 
-static void test_ipv6_hdr_set_tc(void)
-{
+static void test_ipv6_hdr_set_tc(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { TEST_UINT8, 0 };
 
     ipv6_hdr_set_tc((ipv6_hdr_t *)val, OTHER_BYTE);
 
-    /*
-     * Header format:
-     *          8
-     * +----+--------+--
-     * |  6 |   tc   |
-     * +----+--------+--
-     */
+    // Header format:
+    //          8
+    // +----+--------+--
+    // |  6 |   tc   |
+    // +----+--------+--
     TEST_ASSERT_EQUAL_INT((TEST_UINT8 & 0xf0) | (OTHER_BYTE >> 4), val[0]);
     TEST_ASSERT_EQUAL_INT((OTHER_BYTE << 4) & 0xf0, val[1]);
 }
 
-static void test_ipv6_hdr_set_tc_ecn(void)
-{
+static void test_ipv6_hdr_set_tc_ecn(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { TEST_UINT8 };
 
     ipv6_hdr_set_tc_ecn((ipv6_hdr_t *)val, OTHER_BYTE);
@@ -133,8 +113,7 @@ static void test_ipv6_hdr_set_tc_ecn(void)
     TEST_ASSERT_EQUAL_INT((TEST_UINT8 & 0xf3) | ((OTHER_BYTE & 0x03) << 2), val[0]);
 }
 
-static void test_ipv6_hdr_set_tc_dscp(void)
-{
+static void test_ipv6_hdr_set_tc_dscp(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { TEST_UINT8, 0 };
 
     ipv6_hdr_set_tc_dscp((ipv6_hdr_t *)val, OTHER_BYTE);
@@ -155,23 +134,19 @@ static void test_ipv6_hdr_set_tc_dscp(void)
     TEST_ASSERT_EQUAL_INT((OTHER_BYTE & 0x0f) << 4, val[1]);
 }
 
-static void test_ipv6_hdr_get_tc(void)
-{
+static void test_ipv6_hdr_get_tc(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { TEST_UINT8, OTHER_BYTE };
 
-    /*
-     * Header format:
-     *          8
-     * +----+--------+--
-     * |  6 |   tc   |
-     * +----+--------+--
-     */
+    // Header format:
+    //          8
+    // +----+--------+--
+    // |  6 |   tc   |
+    // +----+--------+--
     TEST_ASSERT_EQUAL_INT(((TEST_UINT8 << 4) & 0xf0) | (OTHER_BYTE >> 4),
                           ipv6_hdr_get_tc((ipv6_hdr_t *)val));
 }
 
-static void test_ipv6_hdr_get_tc_ecn(void)
-{
+static void test_ipv6_hdr_get_tc_ecn(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { TEST_UINT8 };
 
     /*
@@ -189,8 +164,7 @@ static void test_ipv6_hdr_get_tc_ecn(void)
     TEST_ASSERT_EQUAL_INT(TEST_UINT8 & 0x03, ipv6_hdr_get_tc_ecn((ipv6_hdr_t *)val));
 }
 
-static void test_ipv6_hdr_get_tc_dscp(void)
-{
+static void test_ipv6_hdr_get_tc_dscp(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { TEST_UINT8, OTHER_BYTE };
 
     /*
@@ -209,19 +183,16 @@ static void test_ipv6_hdr_get_tc_dscp(void)
                           ipv6_hdr_get_tc_dscp((ipv6_hdr_t *)val));
 }
 
-static void test_ipv6_hdr_set_fl(void)
-{
+static void test_ipv6_hdr_set_fl(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { 0, TEST_UINT8, 0, 0 };
 
     ipv6_hdr_set_fl((ipv6_hdr_t *)val, TEST_UINT32);
 
-    /*
-     * Header format:
-     *          8       16      24      32
-     * +----+--------+--------------------+
-     * |  6 |   tc   |     flow label     |
-     * +----+--------+--------------------+
-     */
+    // Header format:
+    //          8       16      24      32
+    // +----+--------+--------------------+
+    // |  6 |   tc   |     flow label     |
+    // +----+--------+--------------------+
     TEST_ASSERT_EQUAL_INT(0, val[0]);
     TEST_ASSERT_EQUAL_INT((TEST_UINT8 & 0xf0) | ((TEST_UINT32 & 0x000f0000) >> 16),
                           val[1]);
@@ -230,53 +201,48 @@ static void test_ipv6_hdr_set_fl(void)
     TEST_ASSERT_EQUAL_INT((TEST_UINT32 & 0x000000ff), val[3]);
 }
 
-static void test_ipv6_hdr_get_fl(void)
-{
+static void test_ipv6_hdr_get_fl(void) {
     uint8_t val[sizeof(ipv6_hdr_t)] = { TEST_UINT8, OTHER_BYTE, 0, 0 };
 
-    /*
-     * Header format:
-     *          8       16      24      32
-     * +----+--------+--------------------+
-     * |  6 |   tc   |     flow label     |
-     * +----+--------+--------------------+
-     */
+    // Header format:
+    //          8       16      24      32
+    // +----+--------+--------------------+
+    // |  6 |   tc   |     flow label     |
+    // +----+--------+--------------------+
     TEST_ASSERT_EQUAL_INT((uint32_t)(OTHER_BYTE & 0x0f) << 16,
                           ipv6_hdr_get_fl((ipv6_hdr_t *)val));
 }
 
-static void test_ipv6_hdr_inet_csum__initial_sum_overflows(void)
-{
+static void test_ipv6_hdr_inet_csum__initial_sum_overflows(void) {
     uint16_t sum = 0xffff;
     uint16_t res = 0, payload_len = 0;
     uint8_t val[] = {
-        0x60, 0x00, 0x00, 0x00, 0x00, 0x0c, 0x3a, 0x40, /* IPv6 header */
+        0x60, 0x00, 0x00, 0x00, 0x00, 0x0c, 0x3a, 0x40, // IPv6 header
         0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0xc8, 0x86, 0xcd, 0xff, 0xfe, 0x0f, 0xce, 0x49,
         0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x18, 0xaa, 0x2d, 0xff, 0xfe, 0x44, 0x43, 0xac
     };
 
-    /* calculate checksum of pseudo header */
+    // calculate checksum of pseudo header
     res = ipv6_hdr_inet_csum(sum, (ipv6_hdr_t *)&val, PROTNUM_ICMPV6,
                              payload_len);
-    res = ~res;     /* take 1's-complement for correct checksum */
+    res = ~res;     // take 1's-complement for correct checksum
 
     TEST_ASSERT_EQUAL_INT(0x1749, res);
 }
 
-static void test_ipv6_hdr_inet_csum__initial_sum_0(void)
-{
-    /* source: https://www.cloudshark.org/captures/ea72fbab241b (No. 56) */
+static void test_ipv6_hdr_inet_csum__initial_sum_0(void) {
+    // source: https://www.cloudshark.org/captures/ea72fbab241b (No. 56)
     uint16_t res = 0, payload_len;
     uint8_t val[] = {
-        0x60, 0x00, 0x00, 0x00, 0x00, 0x38, 0x3a, 0xff, /* IPv6 header */
+        0x60, 0x00, 0x00, 0x00, 0x00, 0x38, 0x3a, 0xff, // IPv6 header
         0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x5a, 0x6d, 0x8f, 0xff, 0xfe, 0x56, 0x30, 0x09,
         0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
-        0x86, 0x00, 0x00, 0x00, 0x40, 0x58, 0x07, 0x08, /* ICMPv6 payload */
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* set checksum to 0 */
+        0x86, 0x00, 0x00, 0x00, 0x40, 0x58, 0x07, 0x08, // ICMPv6 payload
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // set checksum to 0
         0x03, 0x04, 0x40, 0xc0, 0x00, 0x00, 0x00, 0x1e,
         0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00,
         0x20, 0x02, 0x18, 0x3d, 0xdb, 0xa4, 0x00, 0x00,
@@ -286,18 +252,17 @@ static void test_ipv6_hdr_inet_csum__initial_sum_0(void)
 
     payload_len = sizeof(val) - sizeof(ipv6_hdr_t);
 
-    /* calculate checksum of pseudo header */
+    // calculate checksum of pseudo header
     res = ipv6_hdr_inet_csum(0, (ipv6_hdr_t *)&val, PROTNUM_ICMPV6,
                              payload_len);
-    /* calculate checksum of payload */
+    // calculate checksum of payload
     res = inet_csum(res, val + sizeof(ipv6_hdr_t), payload_len);
-    res = ~res;     /* take 1's-complement for correct checksum */
+    res = ~res;     // take 1's-complement for correct checksum
 
     TEST_ASSERT_EQUAL_INT(0xab32, res);
 }
 
-static void test_ipv6_ext_frag_get(void)
-{
+static void test_ipv6_ext_frag_get(void) {
     static const uint8_t fix_data1[] = {
         PROTNUM_SNP, 0x00, 0x12, 0x29, 0xAB, 0x4A, 0x2D, 0xF3
     };
@@ -321,8 +286,7 @@ static void test_ipv6_ext_frag_get(void)
     TEST_ASSERT_EQUAL_INT(0xAE49019F, byteorder_ntohl(frag_hdr->id));
 }
 
-static void test_ipv6_ext_frag_set(void)
-{
+static void test_ipv6_ext_frag_set(void) {
     ipv6_ext_frag_t frag_hdr = { .nh = PROTNUM_TPPLUSPLUS,
                                  .id = { .u8 = { 0xA7, 0xE8, 0x3D, 0x35 } } };
 
@@ -347,8 +311,7 @@ static void test_ipv6_ext_frag_set(void)
     TEST_ASSERT_EQUAL_INT(0xA7E83D35, byteorder_ntohl(frag_hdr.id));
 }
 
-static Test *tests_ipv6_hdr_tests(void)
-{
+static Test *tests_ipv6_hdr_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_ipv6_hdr_set_version),
         new_TestFixture(test_ipv6_hdr_get_version),
@@ -371,8 +334,7 @@ static Test *tests_ipv6_hdr_tests(void)
     return (Test *)&ipv6_hdr_tests;
 }
 
-static Test *tests_ipv6_ext_frag_tests(void)
-{
+static Test *tests_ipv6_ext_frag_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_ipv6_ext_frag_get),
         new_TestFixture(test_ipv6_ext_frag_set),
@@ -383,9 +345,8 @@ static Test *tests_ipv6_ext_frag_tests(void)
     return (Test *)&ipv6_ext_frag_tests;
 }
 
-void tests_ipv6_hdr(void)
-{
+void tests_ipv6_hdr(void) {
     TESTS_RUN(tests_ipv6_hdr_tests());
     TESTS_RUN(tests_ipv6_ext_frag_tests());
 }
-/** @} */
+/// @}

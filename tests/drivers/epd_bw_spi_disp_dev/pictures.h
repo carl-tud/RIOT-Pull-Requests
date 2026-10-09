@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2013 RIOT OS, All Rights Reserved.
- */
+// SPDX-FileCopyrightText: 2013 RIOT OS, All Rights Reserved.
 
 #pragma once
 
-/**
- * @ingroup     tests_drivers_epd_bw_spi
- * @{
- *
- * @file
- * @brief       Black and white bitmaps of the RIOT logo
- *
- * The icons in this header file were generated using
- * [png2c](https://github.com/silkeh/png2c) using PNG files derived from the
- * RIOT OS logo.
- * See the [RIOT OS website](https://www.riot-os.org/branding.html)
- * for usage guidelines.
- *
- * @author      Silke Hofstra <silke@slxh.eu>
- *
- * @}
- */
+/// @ingroup     tests_drivers_epd_bw_spi
+/// @{
+///
+/// @file
+/// @brief       Black and white bitmaps of the RIOT logo
+///
+/// The icons in this header file were generated using
+/// [png2c](https://github.com/silkeh/png2c) using PNG files derived from the
+/// RIOT OS logo.
+/// See the [RIOT OS website](https://www.riot-os.org/branding.html)
+/// for usage guidelines.
+///
+/// @author      Silke Hofstra <silke@slxh.eu>
+///
+/// @}
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,11 +24,9 @@ extern "C" {
 
 #include <stdint.h>
 
-/* begin{code-style-ignore} */
+// begin{code-style-ignore}
 
-/**
- * @brief   Riot icon (200x200)
- */
+/// @brief   Riot icon (200x200)
 const uint8_t riot_icon_200[200][25] = {
     { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
     { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
@@ -236,9 +230,7 @@ const uint8_t riot_icon_200[200][25] = {
     { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }
 };
 
-/**
- * @brief   Riot logo (32x17)
- */
+/// @brief   Riot logo (32x17)
 const uint8_t riot_logo_32[17][4] = {
     { 0xff, 0xff, 0xff, 0xff },
     { 0xff, 0x83, 0xff, 0xff },
@@ -259,7 +251,7 @@ const uint8_t riot_logo_32[17][4] = {
     { 0xff, 0xff, 0xff, 0xff }
 };
 
-/* end{code-style-ignore} */
+// end{code-style-ignore}
 
 #ifdef __cplusplus
 }

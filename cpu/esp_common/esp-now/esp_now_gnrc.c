@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Timo Rothenpieler
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Timo Rothenpieler
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp_common_esp_now
- * @{
- *
- * @file
- * @brief       Netif interface for the ESP-NOW WiFi P2P protocol
- *
- * @author Timo Rothenpieler <timo.rothenpieler@uni-bremen.de>
- */
+/// @ingroup     cpu_esp_common_esp_now
+/// @{
+///
+/// @file
+/// @brief       Netif interface for the ESP-NOW WiFi P2P protocol
+///
+/// @author Timo Rothenpieler <timo.rothenpieler@uni-bremen.de>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -30,8 +26,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
-{
+static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt) {
     uint8_t mac[ESP_NOW_ADDR_LEN];
     esp_now_pkt_hdr_t esp_hdr;
     netdev_t *dev = netif->dev;
@@ -48,7 +43,7 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
     gnrc_pktsnip_t *payload = pkt->next;
 
     if (netif_hdr->flags & (GNRC_NETIF_HDR_FLAGS_BROADCAST | GNRC_NETIF_HDR_FLAGS_MULTICAST)) {
-        /* ESP-NOW does not support multicast, always broadcast */
+        // ESP-NOW does not support multicast, always broadcast
         memset(mac, 0xff, ESP_NOW_ADDR_LEN);
     } else if (netif_hdr->dst_l2addr_len == ESP_NOW_ADDR_LEN) {
         memcpy(mac, gnrc_netif_hdr_get_dst_addr(netif_hdr), ESP_NOW_ADDR_LEN);
@@ -91,8 +86,7 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
     return res;
 }
 
-static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
-{
+static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif) {
     netdev_t *dev = netif->dev;
     esp_now_netdev_t *esp_now = container_of(dev, esp_now_netdev_t, netdev);
 
@@ -109,7 +103,7 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
     if (!pkt) {
         DEBUG("gnrc_esp_now: cannot allocate pktsnip.\n");
 
-        /* drop the packet */
+        // drop the packet
         dev->driver->recv(dev, NULL, bytes_expected, NULL);
 
         return NULL;
@@ -190,17 +184,15 @@ static const gnrc_netif_ops_t _esp_now_ops = {
 };
 
 int gnrc_netif_esp_now_create(gnrc_netif_t *netif, char *stack, int stacksize, char priority,
-                              char *name, netdev_t *dev)
-{
+                              char *name, netdev_t *dev) {
     return gnrc_netif_create(netif, stack, stacksize, priority, name, dev, &_esp_now_ops);
 }
 
-/* device thread stack */
+// device thread stack
 static char _esp_now_stack[ESP_NOW_STACKSIZE];
 static gnrc_netif_t _netif;
 
-void auto_init_esp_now(void)
-{
+void auto_init_esp_now(void) {
     LOG_TAG_DEBUG("esp_now", "initializing ESP-NOW device\n");
 
     esp_now_netdev_t *esp_now_dev = netdev_esp_now_setup();
@@ -214,4 +206,4 @@ void auto_init_esp_now(void)
     }
 }
 
-/** @} */
+/// @}

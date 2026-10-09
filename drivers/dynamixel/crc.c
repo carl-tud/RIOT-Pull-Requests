@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_dynamixel
- * @{
- *
- * @file
- * @brief       Dynamixel CRC computation
- *
- * @author      Loïc Dauphin <loic.dauphin@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_dynamixel
+/// @{
+///
+/// @file
+/// @brief       Dynamixel CRC computation
+///
+/// @author      Loïc Dauphin <loic.dauphin@inria.fr>
+///
+/// @}
 
 #include "dynamixel_crc.h"
 
@@ -52,8 +48,7 @@ static const uint16_t _crc_table[256] = {
     0x8213, 0x0216, 0x021C, 0x8219, 0x0208, 0x820D, 0x8207, 0x0202
 };
 
-uint16_t dynamixel_crc_update(uint16_t crc_accum, const uint8_t *buffer, size_t size)
-{
+uint16_t dynamixel_crc_update(uint16_t crc_accum, const uint8_t *buffer, size_t size) {
     for (size_t j = 0; j < size; j++) {
         const uint16_t i = ((uint16_t)(crc_accum >> 8) ^ buffer[j]) & 0xFF;
         crc_accum = (crc_accum << 8) ^ _crc_table[i];

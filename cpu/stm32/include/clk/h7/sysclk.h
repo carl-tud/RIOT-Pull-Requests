@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2024 Prime Controls, Inc.(R)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Prime Controls, Inc.(R)
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       System clock configuration for STM32H7
- *
- * @author      Joshua DeWeese <jdeweese@primecontrols.com>
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       System clock configuration for STM32H7
+///
+/// @author      Joshua DeWeese <jdeweese@primecontrols.com>
 
 #include "hse.h"
 #include "hsi.h"
@@ -42,4 +38,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

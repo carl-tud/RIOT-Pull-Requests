@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp8266_sdk
- * @{
- *
- * @file
- * @brief       ESP8266 ETS ROM function prototypes
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp8266_sdk
+/// @{
+///
+/// @file
+/// @brief       ESP8266 ETS ROM function prototypes
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #ifndef DOXYGEN
 
@@ -28,16 +24,14 @@
 extern "C" {
 #endif
 
-/* interrupts that are not defined in rom/ets_sys.h */
-#define ETS_WDEV_INUM  0    /* WDEV process FIQ interrupt */
-#define ETS_RTC_INUM   3    /* RTC interrupt */
-#define ETS_CCOM_INUM  6    /* CCOMPARE0 match interrupt */
-#define ETS_FRC2_INUM  10   /* SDK FRC2 timer interrupt */
+// interrupts that are not defined in rom/ets_sys.h
+#define ETS_WDEV_INUM  0    // WDEV process FIQ interrupt
+#define ETS_RTC_INUM   3    // RTC interrupt
+#define ETS_CCOM_INUM  6    // CCOMPARE0 match interrupt
+#define ETS_FRC2_INUM  10   // SDK FRC2 timer interrupt
 
-/*
- * The following functions are mappings or dummies for source code
- * compatibility of NONOS-SDK and RTOS-SDK version
- */
+// The following functions are mappings or dummies for source code
+// compatibility of NONOS-SDK and RTOS-SDK version
 
 #include "xtensa/xtensa_api.h"
 
@@ -67,4 +61,4 @@ extern void ets_wdt_enable (void);
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

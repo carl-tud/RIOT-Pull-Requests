@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup fido2_ctap_transport
- * @{
- * @file
- *
- * @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
- * @}
- */
+/// @ingroup fido2_ctap_transport
+/// @{
+/// @file
+///
+/// @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
+/// @}
 
 #include "event/timeout.h"
 
@@ -27,33 +23,22 @@
 #include "debug.h"
 
 #if IS_USED(MODULE_FIDO2_CTAP_TRANSPORT_HID)
-/**
- * @brief CTAPHID timeout handler
- */
+/// @brief CTAPHID timeout handler
 static void _ctap_hid_timeout_cb(event_t *arg);
-/**
- * @brief CTAPHID timeout event
- */
+/// @brief CTAPHID timeout event
 static event_t _ctap_hid_timeout_event = { .handler = _ctap_hid_timeout_cb };
 
-/**
- * @brief CTAPHID event_timeout object
- */
+/// @brief CTAPHID event_timeout object
 static event_timeout_t _ctap_hid_event_timeout;
 #endif
 
-/**
- * @brief CTAP stack
- */
+/// @brief CTAP stack
 static char _ctap_stack[CTAP_STACKSIZE];
 
-/**
- * @brief CTAP transport event queue
- */
+/// @brief CTAP transport event queue
 static event_queue_t _queue;
 
-static void *_event_loop(void *arg)
-{
+static void *_event_loop(void *arg) {
     (void)arg;
     int ret;
 
@@ -77,16 +62,14 @@ static void *_event_loop(void *arg)
 }
 
 #if IS_USED(MODULE_FIDO2_CTAP_TRANSPORT_HID)
-static void _ctap_hid_timeout_cb(event_t *arg)
-{
+static void _ctap_hid_timeout_cb(event_t *arg) {
     (void)arg;
     fido2_ctap_transport_hid_check_timeouts();
     event_timeout_set(&_ctap_hid_event_timeout, CTAP_HID_TRANSACTION_TIMEOUT_MS);
 }
 #endif
 
-void fido2_ctap_transport_init(void)
-{
+void fido2_ctap_transport_init(void) {
 #if IS_USED(MODULE_FIDO2_CTAP_TRANSPORT_HID)
     fido2_ctap_transport_hid_init(&_queue);
 #endif

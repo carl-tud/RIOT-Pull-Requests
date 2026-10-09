@@ -1,10 +1,8 @@
-/*
- * Copyright (C) 2019 Sören Tempel <tempel@uni-bremen.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Sören Tempel <tempel@uni-bremen.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #include <err.h>
 #include <stdlib.h>
@@ -22,8 +20,7 @@
 static uint32_t demux = COAP_PORT;
 static gnrc_nettype_t ntype = GNRC_NETTYPE_UDP;
 
-void initialize(void)
-{
+void initialize(void) {
     if (fuzzing_init(NULL, 0)) {
         errx(EXIT_FAILURE, "fuzzing_init failed");
     }
@@ -31,8 +28,7 @@ void initialize(void)
     gcoap_init();
 }
 
-int main(void)
-{
+int main(void) {
     gnrc_pktsnip_t *ipkt, *upkt, *cpkt;
 
     initialize();

@@ -1,34 +1,27 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <errno.h>
 #include "embUnit.h"
 
 #include "bcd.h"
 
-static void test_bcd_from_byte__zero(void)
-{
+static void test_bcd_from_byte__zero(void) {
     TEST_ASSERT_EQUAL_INT(0x00, bcd_from_byte(0));
 }
 
-static void test_bcd_from_byte__greater_99(void)
-{
-    /* output is garbled intentionally */
+static void test_bcd_from_byte__greater_99(void) {
+    // output is garbled intentionally
     TEST_ASSERT_EQUAL_INT(0xa0, bcd_from_byte(100));
     TEST_ASSERT_EQUAL_INT(0x95, bcd_from_byte(255));
 }
 
-static void test_bcd_from_byte(void)
-{
+static void test_bcd_from_byte(void) {
     TEST_ASSERT_EQUAL_INT(0x01, bcd_from_byte(1));
     TEST_ASSERT_EQUAL_INT(0x09, bcd_from_byte(9));
     TEST_ASSERT_EQUAL_INT(0x10, bcd_from_byte(10));
@@ -36,20 +29,17 @@ static void test_bcd_from_byte(void)
     TEST_ASSERT_EQUAL_INT(0x99, bcd_from_byte(99));
 }
 
-static void test_bcd_to_byte__zero(void)
-{
+static void test_bcd_to_byte__zero(void) {
     TEST_ASSERT_EQUAL_INT(0, bcd_to_byte(0x00));
 }
 
-static void test_bcd_to_byte__greater_0x99(void)
-{
+static void test_bcd_to_byte__greater_0x99(void) {
     TEST_ASSERT_EQUAL_INT(100, bcd_to_byte(0xa0));
     TEST_ASSERT_EQUAL_INT(110, bcd_to_byte(0xaa));
     TEST_ASSERT_EQUAL_INT(165, bcd_to_byte(0xff));
 }
 
-static void test_bcd_to_byte(void)
-{
+static void test_bcd_to_byte(void) {
     TEST_ASSERT_EQUAL_INT( 1, bcd_to_byte(0x01));
     TEST_ASSERT_EQUAL_INT( 9, bcd_to_byte(0x09));
     TEST_ASSERT_EQUAL_INT(10, bcd_to_byte(0x10));
@@ -57,9 +47,8 @@ static void test_bcd_to_byte(void)
     TEST_ASSERT_EQUAL_INT(99, bcd_to_byte(0x99));
 }
 
-static void test_bcd_buf_from_u32(void)
-{
-    uint32_t buf = UINT32_MAX; /* test if full buffer gets written */
+static void test_bcd_buf_from_u32(void) {
+    uint32_t buf = UINT32_MAX; // test if full buffer gets written
 
     TEST_ASSERT_EQUAL_INT(1, bcd_buf_from_u32(0, &buf, sizeof(buf)));
     TEST_ASSERT_EQUAL_INT(0x0, buf);
@@ -78,12 +67,11 @@ static void test_bcd_buf_from_u32(void)
 
     TEST_ASSERT_EQUAL_INT(-ENOBUFS, bcd_buf_from_u32(123456789, &buf, sizeof(buf)));
 
-    /* test empty buffer */
+    // test empty buffer
     TEST_ASSERT_EQUAL_INT(-ENOBUFS, bcd_buf_from_u32(0, NULL, 0));
 }
 
-static void test_bcd_buf_to_u32(void)
-{
+static void test_bcd_buf_to_u32(void) {
     char buf[4];
 
     bcd_buf_from_u32(1, buf, sizeof(buf));
@@ -99,8 +87,7 @@ static void test_bcd_buf_to_u32(void)
     TEST_ASSERT_EQUAL_INT(1234, bcd_buf_to_u32(buf, sizeof(buf)));
 }
 
-static void test_bcd_buf_from_str(void)
-{
+static void test_bcd_buf_from_str(void) {
     uint8_t buf[4];
 
     TEST_ASSERT_EQUAL_INT(1, bcd_buf_from_str("1", 1, buf, sizeof(buf)));
@@ -118,8 +105,7 @@ static void test_bcd_buf_from_str(void)
     TEST_ASSERT_EQUAL_INT(-ENOBUFS, bcd_buf_from_str("1234567890", 10, buf, sizeof(buf)));
 }
 
-Test *tests_bcd_tests(void)
-{
+Test *tests_bcd_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_bcd_from_byte__zero),
         new_TestFixture(test_bcd_from_byte__greater_99),
@@ -137,7 +123,6 @@ Test *tests_bcd_tests(void)
     return (Test *)&bcd_tests;
 }
 
-void tests_bcd(void)
-{
+void tests_bcd(void) {
     TESTS_RUN(tests_bcd_tests());
 }

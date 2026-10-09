@@ -1,23 +1,19 @@
-/*
- * Copyright (C) 2018 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2018 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- *
- * This implementation oriented itself on the [version by Mike
- * Muuss](http://ftp.arl.army.mil/~mike/ping.html) which was published under
- * public domain. The state-handling and duplicate detection was inspired by the
- * ping version of [inetutils](://www.gnu.org/software/inetutils/), which was
- * published under GPLv3
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// This implementation oriented itself on the [version by Mike
+/// Muuss](http://ftp.arl.army.mil/~mike/ping.html) which was published under
+/// public domain. The state-handling and duplicate detection was inspired by the
+/// ping version of [inetutils](://www.gnu.org/software/inetutils/), which was
+/// published under GPLv3
 
 #ifdef MODULE_GNRC_ICMPV6
 #include <limits.h>
@@ -50,7 +46,7 @@
 #define _SEND_NEXT_PING         (0xEF48)
 #define _PING_FINISH            (0xEF49)
 
-#define CKTAB_SIZE              (64U * 8)   /* 64 byte * 8 bit/byte */
+#define CKTAB_SIZE              (64U * 8)   // 64 byte * 8 bit/byte
 
 #define DEFAULT_COUNT           (3U)
 #define DEFAULT_DATALEN         (sizeof(uint32_t))
@@ -83,8 +79,7 @@ static void _pinger(_ping_data_t *data);
 static int _print_reply(gnrc_pktsnip_t *pkt, int corrupted, uint32_t rtt, void *ctx);
 static int _finish(_ping_data_t *data);
 
-static int _gnrc_icmpv6_ping(int argc, char **argv)
-{
+static int _gnrc_icmpv6_ping(int argc, char **argv) {
     _ping_data_t data = {
         .netreg = GNRC_NETREG_ENTRY_INIT_PID(ICMPV6_ECHO_REP,
                                                  thread_getpid()),
@@ -121,7 +116,7 @@ static int _gnrc_icmpv6_ping(int argc, char **argv)
             case _PING_FINISH:
                 goto finish;
             default:
-                /* requeue wrong packets */
+                // requeue wrong packets
                 msg_send(&msg, thread_getpid());
                 break;
         }
@@ -133,14 +128,14 @@ finish:
     while (msg_avail() > 0) {
         msg_t msg;
 
-        /* remove all remaining messages (likely caused by duplicates) */
+        // remove all remaining messages (likely caused by duplicates)
         if ((msg_try_receive(&msg) > 0) &&
             (msg.type == GNRC_NETAPI_MSG_TYPE_RCV) &&
             (((gnrc_pktsnip_t *)msg.content.ptr)->type == GNRC_NETTYPE_ICMPV6)) {
             gnrc_pktbuf_release(msg.content.ptr);
         }
         else {
-            /* requeue other packets */
+            // requeue other packets
             msg_send(&msg, thread_getpid());
         }
     }
@@ -151,8 +146,7 @@ ret:
 
 SHELL_COMMAND(ping, "Ping via ICMPv6", _gnrc_icmpv6_ping);
 
-static void _usage(char *cmdname)
-{
+static void _usage(char *cmdname) {
     printf("%s [-c <count>] [-h] [-i <ms interval>] [-s <packetsize>]\n",
            cmdname);
     printf("     [-t hoplimit] [-W <ms timeout>] <host>[%%<interface>]\n");
@@ -168,13 +162,12 @@ static void _usage(char *cmdname)
               "of any responses, otherwise wait for two RTTs\n");
 }
 
-static int _configure(int argc, char **argv, _ping_data_t *data)
-{
+static int _configure(int argc, char **argv, _ping_data_t *data) {
     char *cmdname = argv[0];
     int res = 1;
     int value;
 
-    /* parse command line arguments */
+    // parse command line arguments
     for (int i = 1; i < argc; i++) {
         char *arg = argv[i];
         if (arg[0] != '-') {
@@ -196,17 +189,17 @@ static int _configure(int argc, char **argv, _ping_data_t *data)
                             continue;
                         }
                     }
-                    /* intentionally falls through */
+                    // intentionally falls through
                 case 'h':
                     res = 1;
                     continue;
-                    /* intentionally falls through */
+                    // intentionally falls through
                 case 'i':
                     if ((++i) < argc) {
                         data->interval = (uint32_t)atoi(argv[i]) * US_PER_MS;
                         continue;
                     }
-                    /* intentionally falls through */
+                    // intentionally falls through
                 case 's':
                     if ((++i) < argc) {
                         value = atoi(argv[i]);
@@ -218,13 +211,13 @@ static int _configure(int argc, char **argv, _ping_data_t *data)
                         data->datalen = value;
                         continue;
                     }
-                    /* intentionally falls through */
+                    // intentionally falls through
                 case 't':
                     if ((++i) < argc) {
                         data->hoplimit = atoi(argv[i]);
                         continue;
                     }
-                    /* intentionally falls through */
+                    // intentionally falls through
                 case 'W':
                     if ((++i) < argc) {
                         data->timeout = (uint32_t)atoi(argv[i]) * US_PER_MS;
@@ -232,7 +225,7 @@ static int _configure(int argc, char **argv, _ping_data_t *data)
                             continue;
                         }
                     }
-                    /* intentionally falls through */
+                    // intentionally falls through
                 default:
                     res = 1;
                     break;
@@ -249,26 +242,25 @@ static int _configure(int argc, char **argv, _ping_data_t *data)
     return res;
 }
 
-static void _pinger(_ping_data_t *data)
-{
+static void _pinger(_ping_data_t *data) {
     uint32_t timer;
     int res;
 
-    /* schedule next event (next ping or finish) ASAP */
+    // schedule next event (next ping or finish) ASAP
     if ((data->num_sent + 1) < data->count) {
-        /* didn't send all pings yet - schedule next in data->interval */
+        // didn't send all pings yet - schedule next in data->interval
         data->sched_msg.type = _SEND_NEXT_PING;
         timer = data->interval;
     }
     else {
-        /* Wait for the last ping to come back.
-         * data->timeout: wait for a response in milliseconds.
-         * Affects only timeout in absence of any responses,
-         * otherwise ping waits for two max RTTs. */
+        // Wait for the last ping to come back.
+        // data->timeout: wait for a response in milliseconds.
+        // Affects only timeout in absence of any responses,
+        // otherwise ping waits for two max RTTs.
         data->sched_msg.type = _PING_FINISH;
         timer = data->timeout;
         if (data->num_recv) {
-            /* approx. 2*tmax, in seconds (2 RTT) */
+            // approx. 2*tmax, in seconds (2 RTT)
             timer = (data->tmax / (512UL * 1024UL)) * US_PER_SEC;
             if (timer == 0) {
                 timer = 1U * US_PER_SEC;
@@ -293,8 +285,7 @@ static void _pinger(_ping_data_t *data)
     }
 }
 
-static int _print_reply(gnrc_pktsnip_t *pkt, int corrupted, uint32_t triptime, void *ctx)
-{
+static int _print_reply(gnrc_pktsnip_t *pkt, int corrupted, uint32_t triptime, void *ctx) {
     _ping_data_t *data = ctx;
     gnrc_pktsnip_t *netif = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_NETIF);
     gnrc_pktsnip_t *ipv6 = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_IPV6);
@@ -317,7 +308,7 @@ static int _print_reply(gnrc_pktsnip_t *pkt, int corrupted, uint32_t triptime, v
         rssi = netif_hdr->rssi;
     }
 
-    /* check if payload size matches expectation */
+    // check if payload size matches expectation
     truncated = (data->datalen + sizeof(icmpv6_echo_t)) - icmpv6->size;
 
     if (icmpv6_hdr->type != ICMPV6_ECHO_REP) {
@@ -328,7 +319,7 @@ static int _print_reply(gnrc_pktsnip_t *pkt, int corrupted, uint32_t triptime, v
     const char *dupmsg = " (DUP!)";
     uint16_t recv_seq;
 
-    /* not our ping */
+    // not our ping
     if (byteorder_ntohs(icmpv6_hdr->id) != data->id) {
         return -EINVAL;
     }
@@ -348,19 +339,19 @@ static int _print_reply(gnrc_pktsnip_t *pkt, int corrupted, uint32_t triptime, v
                icmpv6->size, from_str, if_pid, recv_seq, ipv6_hdr->hl);
 
     }
-    /* check if payload size matches */
+    // check if payload size matches
     if (truncated) {
         printf(" truncated by %d byte", truncated);
     }
-    /* check response for corruption */
+    // check response for corruption
     else if (corrupted >= 0) {
         printf(" corrupted at offset %u", (unsigned)corrupted);
     }
     if (rssi != GNRC_NETIF_HDR_NO_RSSI) {
         printf(" rssi=%"PRId16" dBm", rssi);
     }
-    /* we can only calculate RTT (triptime) if payload was large enough for
-       a TX timestamp */
+    // we can only calculate RTT (triptime) if payload was large enough for
+    //    a TX timestamp
     if (triptime) {
         printf(" time=%lu.%03lu ms", (long unsigned)triptime / 1000,
                (long unsigned)triptime % 1000);
@@ -387,8 +378,7 @@ static int _print_reply(gnrc_pktsnip_t *pkt, int corrupted, uint32_t triptime, v
     return 0;
 }
 
-static int _finish(_ping_data_t *data)
-{
+static int _finish(_ping_data_t *data) {
     unsigned long tmp, nrecv, ndup;
 
     tmp = data->num_sent;
@@ -412,10 +402,10 @@ static int _finish(_ping_data_t *data)
                tavg / 1000, tavg % 1000,
                data->tmax / 1000, data->tmax % 1000);
     }
-    /* if condition is true, exit with 1 -- 'failure' */
+    // if condition is true, exit with 1 -- 'failure'
     return (nrecv == 0);
 }
 
-#endif /* MODULE_GNRC_ICMPV6 */
+#endif // MODULE_GNRC_ICMPV6
 
-/** @} */
+/// @}

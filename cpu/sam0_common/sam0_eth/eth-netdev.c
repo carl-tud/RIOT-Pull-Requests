@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam0_common
- * @{
- *
- * @file
- * @brief       Low-level Ethernet driver implementation
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup     cpu_sam0_common
+/// @{
+///
+/// @file
+/// @brief       Low-level Ethernet driver implementation
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 #include <string.h>
 
 #include "iolist.h"
@@ -34,14 +30,12 @@
 #include "debug.h"
 #include "log.h"
 
-/**
- * @brief   Link auto-negotiation timeout
- */
+/// @brief   Link auto-negotiation timeout
 #ifndef CONFIG_SAM0_ETH_LINK_TIMEOUT_MS
 #define CONFIG_SAM0_ETH_LINK_TIMEOUT_MS         (5 * MS_PER_SEC)
 #endif
 
-/* Internal helpers */
+// Internal helpers
 extern int sam0_eth_init(void);
 extern void sam0_eth_poweron(void);
 extern void sam0_eth_poweroff(void);
@@ -55,30 +49,27 @@ extern unsigned sam0_read_phy(uint8_t phy, uint8_t addr);
 extern void sam0_write_phy(uint8_t phy, uint8_t addr, uint16_t data);
 static void _restart_an(void *ctx);
 
-/* SAM0 CPUs only have one GMAC IP, so it is safe to
-statically defines one in this file */
+// SAM0 CPUs only have one GMAC IP, so it is safe to
+// statically defines one in this file
 static sam0_eth_netdev_t _sam0_eth_dev;
 
-/* auto-negotiation timeout timer */
+// auto-negotiation timeout timer
 static ztimer_t _phy_tim = { .callback = _restart_an };
-/* PHY interrupt status register */
+// PHY interrupt status register
 static uint16_t _phy_irq;
 
-static inline bool _get_link_status(void)
-{
+static inline bool _get_link_status(void) {
     return sam0_read_phy(0, MII_BMSR) & MII_BMSR_LINK;
 }
 
-static void _restart_an(void *ctx)
-{
+static void _restart_an(void *ctx) {
     (void)ctx;
     sam0_write_phy(0, MII_IRQ, MII_IRQ_EN_LPA_ACK);
     sam0_write_phy(0, MII_BMCR, MII_BMCR_AN_RESTART | MII_BMCR_AN_ENABLE |
                                 MII_BMCR_SPEED_100 | MII_BMCR_FULL_DPLX);
 }
 
-static void _phy_isr(void *ctx)
-{
+static void _phy_isr(void *ctx) {
     (void)ctx;
 
     _phy_irq = sam0_read_phy(0, MII_IRQ);
@@ -86,8 +77,7 @@ static void _phy_isr(void *ctx)
     netdev_trigger_event_isr(_sam0_eth_dev.netdev);
 }
 
-static void _handle_phy_irq(uint16_t irq)
-{
+static void _handle_phy_irq(uint16_t irq) {
     netdev_t *netdev = _sam0_eth_dev.netdev;
 
     if (irq & MII_IRQ_LINK_DOWN) {
@@ -96,7 +86,7 @@ static void _handle_phy_irq(uint16_t irq)
         if (IS_USED(MODULE_ZTIMER_MSEC)) {
             ztimer_remove(ZTIMER_MSEC, &_phy_tim);
         }
-        /* only listen for link partner ACK events now */
+        // only listen for link partner ACK events now
         sam0_write_phy(0, MII_IRQ, MII_IRQ_EN_LPA_ACK);
 
         netdev->event_callback(netdev, NETDEV_EVENT_LINK_DOWN);
@@ -115,11 +105,11 @@ static void _handle_phy_irq(uint16_t irq)
         uint32_t ncfgr = GMAC->NCFGR.reg & ~(GMAC_NCFGR_FD | GMAC_NCFGR_MTIHEN);
 
         if ((adv & MII_ADVERTISE_100) && (lpa & MII_LPA_100)) {
-            /* 100 Mbps */
+            // 100 Mbps
             ncfgr |= GMAC_NCFGR_SPD;
         }
         if ((adv & MII_ADVERTISE_10_F) && (lpa & MII_LPA_10_F)) {
-            /* full duplex */
+            // full duplex
             ncfgr |= GMAC_NCFGR_FD;
         }
 
@@ -131,12 +121,12 @@ static void _handle_phy_irq(uint16_t irq)
     if (irq & MII_IRQ_LPA_ACK) {
         DEBUG_PUTS("[sam0_eth]: link partner present");
 
-        /* if we don't succeed, restart auto-negotiation in 5s */
+        // if we don't succeed, restart auto-negotiation in 5s
         if (IS_USED(MODULE_ZTIMER_MSEC)) {
             ztimer_set(ZTIMER_MSEC, &_phy_tim, CONFIG_SAM0_ETH_LINK_TIMEOUT_MS);
         }
 
-        /* we only care about link up / down events now */
+        // we only care about link up / down events now
         sam0_write_phy(0, MII_IRQ, MII_IRQ_EN_LINK_UP | MII_IRQ_EN_LINK_DOWN);
         return;
     }
@@ -144,15 +134,13 @@ static void _handle_phy_irq(uint16_t irq)
     DEBUG("[sam0_eth]: unexpected PHY IRQ: %x\n", irq);
 }
 
-static inline void _setup_phy_irq(gpio_cb_t cb, void *arg)
-{
+static inline void _setup_phy_irq(gpio_cb_t cb, void *arg) {
     gpio_init_int(sam_gmac_config[0].int_pin, GPIO_IN, GPIO_FALLING, cb, arg);
 }
 
-static int _sam0_eth_init(netdev_t *netdev)
-{
-    /* HACK: without the delay we see random hard faults or no sent/received
-       frames after boot. */
+static int _sam0_eth_init(netdev_t *netdev) {
+    // HACK: without the delay we see random hard faults or no sent/received
+    //    frames after boot.
     xtimer_msleep(10);
 
     sam0_eth_init();
@@ -160,7 +148,7 @@ static int _sam0_eth_init(netdev_t *netdev)
     netdev_eui48_get(netdev, &hwaddr);
     sam0_eth_set_mac(&hwaddr);
 
-    /* wait for PHY to be ready */
+    // wait for PHY to be ready
     while (MII_BMCR_RESET & sam0_read_phy(0, MII_BMCR)) {}
 
     _setup_phy_irq(_phy_isr, NULL);
@@ -169,8 +157,7 @@ static int _sam0_eth_init(netdev_t *netdev)
     return 0;
 }
 
-static void _sam0_eth_isr(netdev_t *netdev)
-{
+static void _sam0_eth_isr(netdev_t *netdev) {
     if (_phy_irq) {
         uint16_t tmp = _phy_irq;
         _phy_irq = 0;
@@ -183,13 +170,12 @@ static void _sam0_eth_isr(netdev_t *netdev)
     return;
 }
 
-static int _sam0_eth_recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _sam0_eth_recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     (void)info;
     (void)netdev;
     unsigned ret = sam0_eth_receive_blocking((char *)buf, len);
 
-    /* frame received, check if another frame is queued */
+    // frame received, check if another frame is queued
     if (buf && sam0_eth_has_queued_pkt()) {
         netdev_trigger_event_isr(netdev);
     }
@@ -197,31 +183,29 @@ static int _sam0_eth_recv(netdev_t *netdev, void *buf, size_t len, void *info)
     return ret;
 }
 
-static int _sam0_eth_send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _sam0_eth_send(netdev_t *netdev, const iolist_t *iolist) {
     netdev->event_callback(netdev, NETDEV_EVENT_TX_STARTED);
     return sam0_eth_send(iolist);
 }
 
-static int _sam0_eth_confirm_send(netdev_t *netdev, void *info)
-{
+static int _sam0_eth_confirm_send(netdev_t *netdev, void *info) {
     (void)netdev;
     (void)info;
 
     uint32_t tsr = GMAC->TSR.reg;
-    GMAC->TSR.reg = tsr; /* clear flags */
+    GMAC->TSR.reg = tsr; // clear flags
 
-    /* transmit is active */
+    // transmit is active
     if (tsr & GMAC_TSR_TXGO) {
         return -EAGAIN;
     }
 
-    /* Retry Limit Exceeded, Collision Occurred */
+    // Retry Limit Exceeded, Collision Occurred
     if (tsr & (GMAC_TSR_RLE | GMAC_TSR_COL)) {
         return -EBUSY;
     }
 
-    /* Transmit Frame Corruption */
+    // Transmit Frame Corruption
     if (tsr & GMAC_TSR_TFC) {
         return -EIO;
     }
@@ -230,8 +214,7 @@ static int _sam0_eth_confirm_send(netdev_t *netdev, void *info)
     return _sam0_eth_get_last_len();
 }
 
-static int _sam0_eth_get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
-{
+static int _sam0_eth_get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len) {
     int res = -1;
 
     switch (opt) {
@@ -253,8 +236,7 @@ static int _sam0_eth_get(netdev_t *netdev, netopt_t opt, void *val, size_t max_l
     return res;
 }
 
-static int _set_state(netopt_state_t state)
-{
+static int _set_state(netopt_state_t state) {
     switch (state) {
         case NETOPT_STATE_SLEEP:
             if (IS_USED(MODULE_ZTIMER_MSEC)) {
@@ -275,8 +257,7 @@ static int _set_state(netopt_state_t state)
     return sizeof(netopt_state_t);
 }
 
-static int _sam0_eth_set(netdev_t *netdev, netopt_t opt, const void *val, size_t max_len)
-{
+static int _sam0_eth_set(netdev_t *netdev, netopt_t opt, const void *val, size_t max_len) {
     int res = -1;
 
     switch (opt) {
@@ -307,20 +288,18 @@ static const netdev_driver_t _sam0_eth_driver =
     .set  = _sam0_eth_set,
 };
 
-void sam0_eth_setup(netdev_t* netdev)
-{
+void sam0_eth_setup(netdev_t* netdev) {
 
     DEBUG_PUTS("[sam0_eth]: initializing SAM0 Ethernet MAC (GMAC) device");
 
     _sam0_eth_dev.netdev = netdev;
-    /* set the netdev driver */
+    // set the netdev driver
     netdev->driver = &_sam0_eth_driver;
-    /* Register SAM0 Ethernet to netdev */
+    // Register SAM0 Ethernet to netdev
     netdev_register(netdev, NETDEV_SAM0_ETH, 0);
 }
 
-void isr_gmac(void)
-{
+void isr_gmac(void) {
     uint32_t isr;
     uint32_t rsr;
     netdev_t* netdev = _sam0_eth_dev.netdev;
@@ -328,20 +307,20 @@ void isr_gmac(void)
     isr = GMAC->ISR.reg;
     rsr = GMAC->RSR.reg;
 
-    /* TX done, signal it to netdev */
+    // TX done, signal it to netdev
     if (isr & GMAC_ISR_TCOMP) {
         netdev->event_callback(netdev, NETDEV_EVENT_TX_COMPLETE);
     }
 
-    /* New frame received, signal it to netdev */
+    // New frame received, signal it to netdev
     if (rsr & GMAC_RSR_REC) {
         netdev_trigger_event_isr(netdev);
     }
 
-    /* Buffers Not Available, this can occur if there is a heavy traffic
-       on the network. In this case, disable the GMAC reception, flush
-       our internal buffers and re-enable the reception. This will drop
-       a few packets but it allows the GMAC IP to remains functional */
+    // Buffers Not Available, this can occur if there is a heavy traffic
+    //    on the network. In this case, disable the GMAC reception, flush
+    //    our internal buffers and re-enable the reception. This will drop
+    //    a few packets but it allows the GMAC IP to remains functional
     if (rsr & GMAC_RSR_BNA) {
         GMAC->NCR.reg &= ~GMAC_NCR_RXEN;
         sam0_clear_rx_buffers();

@@ -1,30 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2017 Ken Rabold
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Ken Rabold
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_fe310
- * @{
- *
- * @file        pm.c
- * @brief       Implementation of the CPU power management for SiFive FE310
- *
- * @author      Ken Rabold
- * @}
- */
+/// @ingroup     cpu_fe310
+/// @{
+///
+/// @file        pm.c
+/// @brief       Implementation of the CPU power management for SiFive FE310
+///
+/// @author      Ken Rabold
+/// @}
 
 #include <stdint.h>
 #include "periph/pm.h"
 #include "vendor/platform.h"
 
-void pm_set_lowest(void)
-{
+void pm_set_lowest(void) {
     __asm__ volatile ("wfi");
 }
 
-void pm_reboot(void)
-{
+void pm_reboot(void) {
     AON_REG(AON_WDOGKEY) = AON_WDOGKEY_VALUE;
     AON_REG(AON_WDOGCMP) = 0;
     //wdogconfig: : wdogrsten | enablealways | reset to 0 | max scale

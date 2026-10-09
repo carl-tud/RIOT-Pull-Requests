@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2016 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- *
- * @author  Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+///
+/// @author  Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
 
 #include <assert.h>
 #include <string.h>
@@ -42,8 +38,7 @@
 gnrc_rpl_p2p_ext_t gnrc_rpl_p2p_exts[GNRC_RPL_P2P_EXTS_NUMOF];
 const uint8_t gnrc_rpl_p2p_lifetime_lookup[4] = { 1, 4, 16, 64 };
 
-void gnrc_rpl_p2p_update(void)
-{
+void gnrc_rpl_p2p_update(void) {
     for (uint8_t i = 0; i < GNRC_RPL_P2P_EXTS_NUMOF; ++i) {
         gnrc_rpl_p2p_ext_t *p2p_ext = &gnrc_rpl_p2p_exts[i];
         if ((p2p_ext->state) && (p2p_ext->lifetime_sec > 0)) {
@@ -62,8 +57,7 @@ void gnrc_rpl_p2p_update(void)
 }
 
 gnrc_rpl_instance_t *gnrc_rpl_p2p_root_init(uint8_t instance_id, ipv6_addr_t *dodag_id,
-                                            ipv6_addr_t *target, bool gen_inst_id)
-{
+                                            ipv6_addr_t *target, bool gen_inst_id) {
     if (gen_inst_id) {
         instance_id = gnrc_rpl_gen_instance_id(true);
     }
@@ -111,8 +105,7 @@ gnrc_rpl_instance_t *gnrc_rpl_p2p_root_init(uint8_t instance_id, ipv6_addr_t *do
     return instance;
 }
 
-gnrc_pktsnip_t *gnrc_rpl_p2p_rdo_build(gnrc_pktsnip_t *pkt, gnrc_rpl_p2p_ext_t *p2p_ext)
-{
+gnrc_pktsnip_t *gnrc_rpl_p2p_rdo_build(gnrc_pktsnip_t *pkt, gnrc_rpl_p2p_ext_t *p2p_ext) {
     gnrc_rpl_p2p_opt_rdo_t *rdo;
     gnrc_pktsnip_t *opt_snip;
     size_t addr_len = (sizeof(ipv6_addr_t) - p2p_ext->compr);
@@ -146,8 +139,7 @@ gnrc_pktsnip_t *gnrc_rpl_p2p_rdo_build(gnrc_pktsnip_t *pkt, gnrc_rpl_p2p_ext_t *
     return opt_snip;
 }
 
-void gnrc_rpl_p2p_rdo_parse(gnrc_rpl_p2p_opt_rdo_t *rdo, gnrc_rpl_p2p_ext_t *p2p_ext)
-{
+void gnrc_rpl_p2p_rdo_parse(gnrc_rpl_p2p_opt_rdo_t *rdo, gnrc_rpl_p2p_ext_t *p2p_ext) {
     DEBUG("RPL: Route Discovery DIO option parsed\n");
 
     uint8_t addr_num = (rdo->length - GNRC_RPL_P2P_RDO_LEN)
@@ -213,8 +205,7 @@ void gnrc_rpl_p2p_rdo_parse(gnrc_rpl_p2p_opt_rdo_t *rdo, gnrc_rpl_p2p_ext_t *p2p
     }
 }
 
-static gnrc_pktsnip_t *_build_initial_DRO(gnrc_rpl_p2p_ext_t *p2p_ext)
-{
+static gnrc_pktsnip_t *_build_initial_DRO(gnrc_rpl_p2p_ext_t *p2p_ext) {
     gnrc_pktsnip_t *pkt = NULL, *opt_snip = NULL;
     gnrc_rpl_p2p_dro_t *dro = NULL;
     gnrc_rpl_p2p_opt_rdo_t *rdo = NULL;
@@ -243,7 +234,7 @@ static gnrc_pktsnip_t *_build_initial_DRO(gnrc_rpl_p2p_ext_t *p2p_ext)
     rdo->length = GNRC_RPL_P2P_RDO_LEN + addr_size;
     rdo->compr_flags = (p2p_ext->hop_by_hop << GNRC_RPL_P2P_RDO_FLAGS_HBH) |
                        (p2p_ext->compr & GNRC_RPL_P2P_RDO_FLAGS_COMPR);
-    /* rdo->length does not include the first two bytes, thus we have to add them manually */
+    // rdo->length does not include the first two bytes, thus we have to add them manually
     rdo->lmn = (((rdo->length + 2 - sizeof(*rdo)) / addr_len) & GNRC_RPL_P2P_RDO_FLAGS_NEXT_HOP);
     rdo->target = p2p_ext->target;
     pkt = opt_snip;
@@ -275,8 +266,7 @@ static gnrc_pktsnip_t *_build_initial_DRO(gnrc_rpl_p2p_ext_t *p2p_ext)
     return pkt;
 }
 
-void gnrc_rpl_p2p_send_DRO(gnrc_pktsnip_t *pkt, gnrc_rpl_p2p_ext_t *p2p_ext)
-{
+void gnrc_rpl_p2p_send_DRO(gnrc_pktsnip_t *pkt, gnrc_rpl_p2p_ext_t *p2p_ext) {
     assert(p2p_ext != NULL);
 
     if (pkt == NULL) {
@@ -291,8 +281,7 @@ void gnrc_rpl_p2p_send_DRO(gnrc_pktsnip_t *pkt, gnrc_rpl_p2p_ext_t *p2p_ext)
     return;
 }
 
-void gnrc_rpl_p2p_recv_DRO(gnrc_pktsnip_t *pkt, ipv6_addr_t *src)
-{
+void gnrc_rpl_p2p_recv_DRO(gnrc_pktsnip_t *pkt, ipv6_addr_t *src) {
     gnrc_pktsnip_t *icmpv6_snip = gnrc_pktbuf_mark(pkt, sizeof(icmpv6_hdr_t), GNRC_NETTYPE_ICMPV6);
     gnrc_pktsnip_t *dro_snip = gnrc_pktbuf_mark(pkt, sizeof(gnrc_rpl_p2p_dro_t),
                                                 GNRC_NETTYPE_UNDEF);
@@ -384,6 +373,4 @@ void gnrc_rpl_p2p_recv_DRO(gnrc_pktsnip_t *pkt, ipv6_addr_t *src)
     return;
 }
 
-/**
- * @}
- */
+/// @}

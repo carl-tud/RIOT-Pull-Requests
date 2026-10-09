@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test for raw IP socks
- *
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test for raw IP socks
+///
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -34,14 +30,12 @@
 static sock_ip_t _sock, _sock2;
 static uint8_t _test_buffer[_TEST_BUFFER_SIZE];
 
-static void tear_down(void)
-{
+static void tear_down(void) {
     sock_ip_close(&_sock);
     memset(&_sock, 0, sizeof(_sock));
 }
 
-static void test_sock_ip_create__EAFNOSUPPORT(void)
-{
+static void test_sock_ip_create__EAFNOSUPPORT(void) {
     static const sock_ip_ep_t local = { .family = AF_UNSPEC };
     static const sock_ip_ep_t remote = { .family = AF_UNSPEC };
 
@@ -51,8 +45,7 @@ static void test_sock_ip_create__EAFNOSUPPORT(void)
                                            SOCK_FLAGS_REUSE_EP));
 }
 
-static void test_sock_ip_create__EINVAL_addr(void)
-{
+static void test_sock_ip_create__EINVAL_addr(void) {
     static const sock_ip_ep_t local = { .family = AF_INET6, .netif = _TEST_NETIF };
     static const sock_ip_ep_t remote = { .family = AF_INET6,
                                          .netif = _TEST_NETIF };
@@ -61,8 +54,7 @@ static void test_sock_ip_create__EINVAL_addr(void)
                                      SOCK_FLAGS_REUSE_EP));
 }
 
-static void test_sock_ip_create__EINVAL_netif(void)
-{
+static void test_sock_ip_create__EINVAL_netif(void) {
     static const sock_ip_ep_t local = { .family = AF_INET6, .netif = _TEST_NETIF };
     static const sock_ip_ep_t remote = { .family = AF_INET6,
                                          .netif = (_TEST_NETIF + 1),
@@ -72,8 +64,7 @@ static void test_sock_ip_create__EINVAL_netif(void)
                                      SOCK_FLAGS_REUSE_EP));
 }
 
-static void test_sock_ip_create__no_endpoints(void)
-{
+static void test_sock_ip_create__no_endpoints(void) {
     sock_ip_ep_t ep;
 
     expect(0 == sock_ip_create(&_sock, NULL, NULL, _TEST_PROTO,
@@ -82,8 +73,7 @@ static void test_sock_ip_create__no_endpoints(void)
     expect(-ENOTCONN == sock_ip_get_remote(&_sock, &ep));
 }
 
-static void test_sock_ip_create__only_local(void)
-{
+static void test_sock_ip_create__only_local(void) {
     static const sock_ip_ep_t local = { .family = AF_INET6 };
     sock_ip_ep_t ep;
 
@@ -97,8 +87,7 @@ static void test_sock_ip_create__only_local(void)
     expect(-ENOTCONN == sock_ip_get_remote(&_sock, &ep));
 }
 
-static void test_sock_ip_create__only_local_reuse_ep(void)
-{
+static void test_sock_ip_create__only_local_reuse_ep(void) {
     static const sock_ip_ep_t local = { .family = AF_INET6 };
     sock_ip_ep_t ep, ep2;
 
@@ -121,8 +110,7 @@ static void test_sock_ip_create__only_local_reuse_ep(void)
     sock_ip_close(&_sock2);
 }
 
-static void test_sock_ip_create__only_remote(void)
-{
+static void test_sock_ip_create__only_remote(void) {
     static const ipv6_addr_t remote_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t remote = { .family = AF_INET6,
                                          .addr = { .ipv6 = _TEST_ADDR_REMOTE } };
@@ -137,8 +125,7 @@ static void test_sock_ip_create__only_remote(void)
     expect(SOCK_ADDR_ANY_NETIF == ep.netif);
 }
 
-static void test_sock_ip_create__full(void)
-{
+static void test_sock_ip_create__full(void) {
     static const ipv6_addr_t remote_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t local = { .family = AF_INET6, .netif = _TEST_NETIF };
     static const sock_ip_ep_t remote = { .family = AF_INET6,
@@ -158,8 +145,7 @@ static void test_sock_ip_create__full(void)
     expect(SOCK_ADDR_ANY_NETIF == ep.netif);
 }
 
-static void test_sock_ip_recv__EADDRNOTAVAIL(void)
-{
+static void test_sock_ip_recv__EADDRNOTAVAIL(void) {
     expect(0 == sock_ip_create(&_sock, NULL, NULL, _TEST_PROTO,
                                SOCK_FLAGS_REUSE_EP));
 
@@ -168,8 +154,7 @@ static void test_sock_ip_recv__EADDRNOTAVAIL(void)
                                           NULL));
 }
 
-static void test_sock_ip_recv__EAGAIN(void)
-{
+static void test_sock_ip_recv__EAGAIN(void) {
     static const sock_ip_ep_t local = { .family = AF_INET6, .netif = _TEST_NETIF };
 
     expect(0 == sock_ip_create(&_sock, &local, NULL, _TEST_PROTO,
@@ -179,8 +164,7 @@ static void test_sock_ip_recv__EAGAIN(void)
                                    0, NULL));
 }
 
-static void test_sock_ip_recv__ENOBUFS(void)
-{
+static void test_sock_ip_recv__ENOBUFS(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .family = AF_INET6 };
@@ -194,8 +178,7 @@ static void test_sock_ip_recv__ENOBUFS(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_recv__EPROTO(void)
-{
+static void test_sock_ip_recv__EPROTO(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_WRONG };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .family = AF_INET6 };
@@ -211,8 +194,7 @@ static void test_sock_ip_recv__EPROTO(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_recv__ETIMEDOUT(void)
-{
+static void test_sock_ip_recv__ETIMEDOUT(void) {
     static const sock_ip_ep_t local = { .family = AF_INET6, .netif = _TEST_NETIF };
 
     expect(0 == sock_ip_create(&_sock, &local, NULL, _TEST_PROTO,
@@ -225,8 +207,7 @@ static void test_sock_ip_recv__ETIMEDOUT(void)
     printf(" * (timed out with timeout %lu)\n", (long unsigned)_TEST_TIMEOUT);
 }
 
-static void test_sock_ip_recv__socketed(void)
-{
+static void test_sock_ip_recv__socketed(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .family = AF_INET6 };
@@ -243,8 +224,7 @@ static void test_sock_ip_recv__socketed(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_recv__socketed_with_remote(void)
-{
+static void test_sock_ip_recv__socketed_with_remote(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .family = AF_INET6 };
@@ -265,8 +245,7 @@ static void test_sock_ip_recv__socketed_with_remote(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_recv__unsocketed(void)
-{
+static void test_sock_ip_recv__unsocketed(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .addr = { .ipv6 = _TEST_ADDR_LOCAL },
@@ -282,8 +261,7 @@ static void test_sock_ip_recv__unsocketed(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_recv__unsocketed_with_remote(void)
-{
+static void test_sock_ip_recv__unsocketed_with_remote(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .family = AF_INET6 };
@@ -302,8 +280,7 @@ static void test_sock_ip_recv__unsocketed_with_remote(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_recv__with_timeout(void)
-{
+static void test_sock_ip_recv__with_timeout(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .family = AF_INET6 };
@@ -322,8 +299,7 @@ static void test_sock_ip_recv__with_timeout(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_recv__non_blocking(void)
-{
+static void test_sock_ip_recv__non_blocking(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .family = AF_INET6 };
@@ -341,8 +317,7 @@ static void test_sock_ip_recv__non_blocking(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_recv__aux(void)
-{
+static void test_sock_ip_recv__aux(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .family = AF_INET6 };
@@ -383,8 +358,7 @@ static void test_sock_ip_recv__aux(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_recv_buf__success(void)
-{
+static void test_sock_ip_recv_buf__success(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const sock_ip_ep_t local = { .family = AF_INET6 };
@@ -406,8 +380,7 @@ static void test_sock_ip_recv_buf__success(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_send__EAFNOSUPPORT_INET(void)
-{
+static void test_sock_ip_send__EAFNOSUPPORT_INET(void) {
     static const sock_ip_ep_t remote = { .addr = { .ipv6 = _TEST_ADDR_REMOTE },
                                          .family = AF_INET };
 
@@ -416,8 +389,7 @@ static void test_sock_ip_send__EAFNOSUPPORT_INET(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_send__EAFNOSUPPORT_UNSPEC(void)
-{
+static void test_sock_ip_send__EAFNOSUPPORT_UNSPEC(void) {
     static const sock_ip_ep_t remote = { .addr = { .ipv6 = _TEST_ADDR_REMOTE },
                                          .family = AF_UNSPEC };
 
@@ -426,8 +398,7 @@ static void test_sock_ip_send__EAFNOSUPPORT_UNSPEC(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_send__EINVAL_addr(void)
-{
+static void test_sock_ip_send__EINVAL_addr(void) {
     static const sock_ip_ep_t local = { .addr = { .ipv6 = _TEST_ADDR_LOCAL },
                                         .family = AF_INET6,
                                         .netif = _TEST_NETIF };
@@ -441,8 +412,7 @@ static void test_sock_ip_send__EINVAL_addr(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_send__EINVAL_netif(void)
-{
+static void test_sock_ip_send__EINVAL_netif(void) {
     static const sock_ip_ep_t local = { .addr = { .ipv6 = _TEST_ADDR_LOCAL },
                                         .family = AF_INET6,
                                         .netif = _TEST_NETIF };
@@ -457,8 +427,7 @@ static void test_sock_ip_send__EINVAL_netif(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_send__ENOTCONN(void)
-{
+static void test_sock_ip_send__ENOTCONN(void) {
     expect(0 == sock_ip_create(&_sock, NULL, NULL, _TEST_PROTO,
                                SOCK_FLAGS_REUSE_EP));
     expect(-ENOTCONN == sock_ip_send(&_sock, "ABCD", sizeof("ABCD"),
@@ -466,8 +435,7 @@ static void test_sock_ip_send__ENOTCONN(void)
     expect(_check_net());
 }
 
-static void test_sock_ip_send__socketed_no_local_no_netif(void)
-{
+static void test_sock_ip_send__socketed_no_local_no_netif(void) {
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t remote = { .addr = { .ipv6 = _TEST_ADDR_REMOTE },
                                          .family = AF_INET6 };
@@ -478,12 +446,11 @@ static void test_sock_ip_send__socketed_no_local_no_netif(void)
                                           _TEST_PROTO, NULL));
     expect(_check_packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__socketed_no_netif(void)
-{
+static void test_sock_ip_send__socketed_no_netif(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t local = { .addr = { .ipv6 = _TEST_ADDR_LOCAL },
@@ -497,12 +464,11 @@ static void test_sock_ip_send__socketed_no_netif(void)
                                           _TEST_PROTO, NULL));
     expect(_check_packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__socketed_no_local(void)
-{
+static void test_sock_ip_send__socketed_no_local(void) {
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t remote = { .addr = { .ipv6 = _TEST_ADDR_REMOTE },
                                          .family = AF_INET6,
@@ -514,12 +480,11 @@ static void test_sock_ip_send__socketed_no_local(void)
                                           _TEST_PROTO, NULL));
     expect(_check_packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__socketed(void)
-{
+static void test_sock_ip_send__socketed(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t local = { .addr = { .ipv6 = _TEST_ADDR_LOCAL },
@@ -534,12 +499,11 @@ static void test_sock_ip_send__socketed(void)
                                           _TEST_PROTO, NULL));
     expect(_check_packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__socketed_other_remote(void)
-{
+static void test_sock_ip_send__socketed_other_remote(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t local = { .addr = { .ipv6 = _TEST_ADDR_LOCAL },
@@ -556,12 +520,11 @@ static void test_sock_ip_send__socketed_other_remote(void)
                                           _TEST_PROTO, &remote));
     expect(_check_packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__unsocketed_no_local_no_netif(void)
-{
+static void test_sock_ip_send__unsocketed_no_local_no_netif(void) {
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t remote = { .addr = { .ipv6 = _TEST_ADDR_REMOTE },
                                          .family = AF_INET6 };
@@ -572,12 +535,11 @@ static void test_sock_ip_send__unsocketed_no_local_no_netif(void)
                                           _TEST_PROTO, &remote));
     expect(_check_packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__unsocketed_no_netif(void)
-{
+static void test_sock_ip_send__unsocketed_no_netif(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t local = { .addr = { .ipv6 = _TEST_ADDR_LOCAL },
@@ -591,12 +553,11 @@ static void test_sock_ip_send__unsocketed_no_netif(void)
                                           _TEST_PROTO, &remote));
     expect(_check_packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__unsocketed_no_local(void)
-{
+static void test_sock_ip_send__unsocketed_no_local(void) {
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t remote = { .addr = { .ipv6 = _TEST_ADDR_REMOTE },
                                          .family = AF_INET6,
@@ -608,12 +569,11 @@ static void test_sock_ip_send__unsocketed_no_local(void)
                                           _TEST_PROTO, &remote));
     expect(_check_packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__unsocketed(void)
-{
+static void test_sock_ip_send__unsocketed(void) {
     static const ipv6_addr_t src_addr = { .u8 = _TEST_ADDR_LOCAL };
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t local = { .addr = { .ipv6 = _TEST_ADDR_LOCAL },
@@ -628,12 +588,11 @@ static void test_sock_ip_send__unsocketed(void)
                                           _TEST_PROTO, &remote));
     expect(_check_packet(&src_addr, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__no_sock_no_netif(void)
-{
+static void test_sock_ip_send__no_sock_no_netif(void) {
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t remote = { .addr = { .ipv6 = _TEST_ADDR_REMOTE },
                                          .family = AF_INET6 };
@@ -642,12 +601,11 @@ static void test_sock_ip_send__no_sock_no_netif(void)
                                           _TEST_PROTO, &remote));
     expect(_check_packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), SOCK_ADDR_ANY_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-static void test_sock_ip_send__no_sock(void)
-{
+static void test_sock_ip_send__no_sock(void) {
     static const ipv6_addr_t dst_addr = { .u8 = _TEST_ADDR_REMOTE };
     static const sock_ip_ep_t remote = { .addr = { .ipv6 = _TEST_ADDR_REMOTE },
                                          .family = AF_INET6,
@@ -657,27 +615,26 @@ static void test_sock_ip_send__no_sock(void)
                                           _TEST_PROTO, &remote));
     expect(_check_packet(&ipv6_addr_unspecified, &dst_addr, _TEST_PROTO, "ABCD",
                          sizeof("ABCD"), _TEST_NETIF));
-    xtimer_usleep(1000);    /* let GNRC stack finish */
+    xtimer_usleep(1000);    // let GNRC stack finish
     expect(_check_net());
 }
 
-int main(void)
-{
+int main(void) {
     _net_init();
     tear_down();
-    /* EADDRINUSE does not apply for GNRC */
+    // EADDRINUSE does not apply for GNRC
     CALL(test_sock_ip_create__EAFNOSUPPORT());
     CALL(test_sock_ip_create__EINVAL_addr());
     CALL(test_sock_ip_create__EINVAL_netif());
-    /* EPROTONOSUPPORT does not apply for gnrc_ipv6 */
+    // EPROTONOSUPPORT does not apply for gnrc_ipv6
     CALL(test_sock_ip_create__no_endpoints());
     CALL(test_sock_ip_create__only_local());
     CALL(test_sock_ip_create__only_local_reuse_ep());
     CALL(test_sock_ip_create__only_remote());
     CALL(test_sock_ip_create__full());
-    /* sock_ip_close() is tested in tear_down() */
-    /* sock_ip_get_local() is tested in sock_ip_create() tests */
-    /* sock_ip_get_remote() is tested in sock_ip_create() tests */
+    // sock_ip_close() is tested in tear_down()
+    // sock_ip_get_local() is tested in sock_ip_create() tests
+    // sock_ip_get_remote() is tested in sock_ip_create() tests
     CALL(test_sock_ip_recv__EADDRNOTAVAIL());
     CALL(test_sock_ip_recv__EAGAIN());
     CALL(test_sock_ip_recv__ENOBUFS());
@@ -697,7 +654,7 @@ int main(void)
     CALL(test_sock_ip_send__EINVAL_addr());
     CALL(test_sock_ip_send__EINVAL_netif());
     CALL(test_sock_ip_send__ENOTCONN());
-    /* EPROTOTYPE does not apply for gnrc_ipv6 */
+    // EPROTOTYPE does not apply for gnrc_ipv6
     CALL(test_sock_ip_send__socketed_no_local_no_netif());
     CALL(test_sock_ip_send__socketed_no_netif());
     CALL(test_sock_ip_send__socketed_no_local());

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     ble_skald_eddystone
- * @{
- *
- * @file
- * @brief       Skald's Eddystone implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     ble_skald_eddystone
+/// @{
+///
+/// @file
+/// @brief       Skald's Eddystone implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -51,15 +47,14 @@ typedef struct __attribute__((packed)) {
     uint8_t url[];
 } eddy_url_t;
 
-/* ćonstant GAP data preamble parts, containing the following GAP fields:
- * - flags:  BR/EDR not support set
- * - complete list of 16-bit UUIDs: holding the Eddystone UUID only (0xfeaa)
- * - service data of type 0xfeaa (Eddystone) */
+// ćonstant GAP data preamble parts, containing the following GAP fields:
+// - flags:  BR/EDR not support set
+// - complete list of 16-bit UUIDs: holding the Eddystone UUID only (0xfeaa)
+// - service data of type 0xfeaa (Eddystone)
 static const uint8_t _pa[PA_LEN] = { 0x02, 0x01, 0x04, 0x03, 0x03, 0xaa, 0xfe };
 static const uint8_t _pb[PB_LEN] = { 0x16, 0xaa, 0xfe };
 
-static void _init_pre(pre_t *data, uint8_t type, uint8_t len)
-{
+static void _init_pre(pre_t *data, uint8_t type, uint8_t len) {
     skald_generate_random_addr(data->txadd);
     memcpy(data->pa, _pa, PA_LEN);
     memcpy(data->pb, _pb, PB_LEN);
@@ -69,8 +64,7 @@ static void _init_pre(pre_t *data, uint8_t type, uint8_t len)
 
 void skald_eddystone_uid_adv(skald_ctx_t *ctx,
                              const skald_eddystone_uid_t *uid, uint8_t tx_pwr,
-                             uint32_t adv_itvl_ms)
-{
+                             uint32_t adv_itvl_ms) {
     assert(ctx && uid);
 
     eddy_uid_t *pdu = (eddy_uid_t *)ctx->pkt.pdu;
@@ -81,7 +75,7 @@ void skald_eddystone_uid_adv(skald_ctx_t *ctx,
     memcpy(pdu->instance, uid->instance, EDDYSTONE_INSTANCE_LEN);
     memset(pdu->reserved, 0, 2);
 
-    /* start advertising */
+    // start advertising
     ctx->pkt.len = sizeof(eddy_uid_t);
     ctx->adv_itvl_ms = adv_itvl_ms;
     skald_adv_start(ctx);
@@ -89,8 +83,7 @@ void skald_eddystone_uid_adv(skald_ctx_t *ctx,
 
 void skald_eddystone_url_adv(skald_ctx_t *ctx,
                              uint8_t scheme, const char *url, uint8_t tx_pwr,
-                             uint32_t adv_itvl_ms)
-{
+                             uint32_t adv_itvl_ms) {
     assert(url && ctx);
     size_t len = strlen(url);
     if (len <= (NETDEV_BLE_PDU_MAXLEN - (URL_HDR_LEN + PREAMBLE_LEN))) {
@@ -101,12 +94,12 @@ void skald_eddystone_url_adv(skald_ctx_t *ctx,
     eddy_url_t *pdu = (eddy_url_t *)ctx->pkt.pdu;
     _init_pre(&pdu->pre, EDDYSTONE_URL, (URL_HDR_LEN + len));
 
-    /* set remaining service data fields */
+    // set remaining service data fields
     pdu->tx_pwr = tx_pwr;
     pdu->scheme = scheme;
     memcpy(pdu->url, url, len);
 
-    /* start advertising */
+    // start advertising
     ctx->pkt.len = (sizeof(pre_t) + 2 + len);
     ctx->adv_itvl_ms = adv_itvl_ms;
     skald_adv_start(ctx);

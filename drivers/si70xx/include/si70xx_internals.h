@@ -1,33 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2016 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_si70xx
- *
- * @{
- * @file
- * @brief       Internal definitions for Si7006/13/20/21
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- */
+/// @ingroup     drivers_si70xx
+///
+/// @{
+/// @file
+/// @brief       Internal definitions for Si7006/13/20/21
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief Si70xx chip addresses.
- */
+/// @brief Si70xx chip addresses.
 #define SI70XX_I2C_ADDRESS          (0x40)
 
-/**
- * @name Si70xx device commands.
- * @{
- */
+/// @name Si70xx device commands.
+/// @{
 #define SI70XX_MEASURE_RH_HOLD      (0xE5)
 #define SI70XX_MEASURE_RH           (0xF5)
 #define SI70XX_MEASURE_TEMP_HOLD    (0xE3)
@@ -44,12 +36,10 @@ extern "C" {
 #define SI70XX_READ_ID_SECOND_B     (0xC9)
 #define SI70XX_READ_REVISION_A      (0x84)
 #define SI70XX_READ_REVISION_B      (0xB8)
-/** @} */
+/// @}
 
-/**
- * @name Si70xx register values.
- * @{
- */
+/// @name Si70xx register values.
+/// @{
 #if defined(MODULE_SI7006)
 #define SI70XX_ID                   (6)
 #elif defined(MODULE_SI7013)
@@ -74,10 +64,10 @@ extern "C" {
 
 #define SI70XX_REVISION_1           (0xFF)
 #define SI70XX_REVISION_2           (0x20)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

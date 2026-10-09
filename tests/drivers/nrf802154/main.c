@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for NRF802154 IEEE 802.15.4 device driver
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for NRF802154 IEEE 802.15.4 device driver
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -33,14 +29,14 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
     netdev_register(netdev, NETDEV_CC2538, 0);
     netdev_ieee802154_submac_init(&nrf802154);
 
-    /* set the application-provided callback */
+    // set the application-provided callback
     netdev->event_callback = cb;
 
-    /* setup and initialize the specific driver */
+    // setup and initialize the specific driver
     nrf802154_hal_setup(&nrf802154.submac.dev);
     nrf802154_init();
 
-    /* initialize the device driver */
+    // initialize the device driver
     int res = netdev->driver->init(netdev);
     if (res != 0) {
         return -1;
@@ -49,15 +45,13 @@ int netdev_ieee802154_minimal_init_devs(netdev_event_cb_t cb) {
     return 0;
 }
 
-void send_beacon_usage(char *cmd_name)
-{
+void send_beacon_usage(char *cmd_name) {
     printf("usage: %s [<16 bit hex source PAN ID>] (uses device PAN ID by default)\n", cmd_name);
 }
 
-int cmd_send_beacon(int argc, char **argv)
-{
+int cmd_send_beacon(int argc, char **argv) {
     uint16_t pan_id;
-    /* evaluating if argument is present */
+    // evaluating if argument is present
     switch (argc) {
     case 1:
         pan_id = nrf802154.dev.pan;
@@ -78,7 +72,7 @@ int cmd_send_beacon(int argc, char **argv)
 
     printf("PAN ID: %x\n", pan_id);
 
-    /* preparing the mac header */
+    // preparing the mac header
     uint8_t mhr[IEEE802154_MAX_HDR_LEN];
     memset(mhr, 0, IEEE802154_MAX_HDR_LEN*sizeof(uint8_t));
     le_uint16_t src_pan = byteorder_btols(byteorder_htons(pan_id));
@@ -96,7 +90,7 @@ int cmd_send_beacon(int argc, char **argv)
         send_beacon_usage(argv[0]);
         return 1;
     }
-    /* preparing packet to send */
+    // preparing packet to send
     iolist_t iol = {
         .iol_base = mhr,
         .iol_len = (size_t)res,
@@ -120,8 +114,7 @@ static const shell_command_t shell_commands[] = {
     {NULL, NULL, NULL}
 };
 
-int main(void)
-{
+int main(void) {
     puts("Test application for NRF802154 IEEE 802.15.4 device driver");
 
     int res = netdev_ieee802154_minimal_init();
@@ -130,7 +123,7 @@ int main(void)
         return 1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

@@ -1,21 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <stdio.h>
 #include <inttypes.h>
 
 #include "net/ipv6/hdr.h"
 
-void ipv6_hdr_print(ipv6_hdr_t *hdr)
-{
+void ipv6_hdr_print(ipv6_hdr_t *hdr) {
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
     if (!ipv6_hdr_is(hdr)) {
@@ -35,4 +30,4 @@ void ipv6_hdr_print(ipv6_hdr_t *hdr)
 
 }
 
-/** @} */
+/// @}

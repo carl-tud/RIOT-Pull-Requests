@@ -1,30 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf51
- * @ingroup     drivers_periph_i2c
- * @{
- *
- * @file
- * @brief       Low-level I2C driver implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
-/**
- * @ingroup     cpu_nrf51
- * @ingroup     drivers_periph_i2c
- * @{
- *
- * @file
- * @brief       Low-level I2V driver implementation
- *
- * @}
- */
+/// @ingroup     cpu_nrf51
+/// @ingroup     drivers_periph_i2c
+/// @{
+///
+/// @file
+/// @brief       Low-level I2C driver implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
+/// @ingroup     cpu_nrf51
+/// @ingroup     drivers_periph_i2c
+/// @{
+///
+/// @file
+/// @brief       Low-level I2V driver implementation
+///
+/// @}
 #include <assert.h>
 #include <errno.h>
 #include "cpu.h"
@@ -36,23 +30,17 @@
 #define ENABLE_DEBUG        0
 #include "debug.h"
 
-/**
- * @brief   If any of the 4 lower bits are set, the speed value is invalid
- */
+/// @brief   If any of the 4 lower bits are set, the speed value is invalid
 #define INVALID_SPEED_MASK  (0x0f)
 
-/**
- * @brief   Initialized bus locks
- */
+/// @brief   Initialized bus locks
 static mutex_t locks[I2C_NUMOF];
 
-static inline NRF_TWI_Type *i2c(i2c_t dev)
-{
+static inline NRF_TWI_Type *i2c(i2c_t dev) {
     return i2c_config[dev].dev;
 }
 
-static int error(i2c_t dev)
-{
+static int error(i2c_t dev) {
     i2c(dev)->EVENTS_ERROR = 0;
     DEBUG("[i2c] error 0x%02x\n", (int)i2c(dev)->ERRORSRC);
     if (i2c(dev)->ERRORSRC & TWI_ERRORSRC_ANACK_Msk) {
@@ -70,8 +58,7 @@ static int error(i2c_t dev)
 }
 
 static int write(i2c_t dev, uint16_t addr, const void *data, int len,
-                 uint8_t flags)
-{
+                 uint8_t flags) {
     assert(len > 0);
     assert(dev < I2C_NUMOF);
 
@@ -103,17 +90,16 @@ static int write(i2c_t dev, uint16_t addr, const void *data, int len,
     return 0;
 }
 
-void i2c_init(i2c_t dev)
-{
+void i2c_init(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
-    /* Initialize mutex */
+    // Initialize mutex
     mutex_init(&locks[dev]);
 
-    /* power on the bus */
+    // power on the bus
     i2c(dev)->POWER = TWI_POWER_POWER_Enabled;
 
-    /* pin configuration */
+    // pin configuration
     NRF_GPIO->PIN_CNF[i2c_config[dev].pin_scl] = (GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos);
     NRF_GPIO->PIN_CNF[i2c_config[dev].pin_scl] = (GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos);
 
@@ -123,29 +109,26 @@ void i2c_init(i2c_t dev)
     NRF_PPI->CHENCLR = (1 << i2c_config[dev].ppi);
     NRF_PPI->CH[i2c_config[dev].ppi].EEP = (uint32_t)&i2c(dev)->EVENTS_BB;
 
-    /* bus clock speed configuration */
+    // bus clock speed configuration
     i2c(dev)->FREQUENCY = i2c_config[dev].speed;
-    /* enable the device */
+    // enable the device
     i2c(dev)->ENABLE = TWI_ENABLE_ENABLE_Enabled;
 }
 
-void i2c_acquire(i2c_t dev)
-{
+void i2c_acquire(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
     mutex_lock(&locks[dev]);
 }
 
-void i2c_release(i2c_t dev)
-{
+void i2c_release(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
     mutex_unlock(&locks[dev]);
 }
 
 int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length,
-                   uint8_t flags)
-{
+                   uint8_t flags) {
     assert(length > 0);
     assert(dev < I2C_NUMOF);
 
@@ -157,12 +140,12 @@ int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length,
 
     DEBUG("[i2c] reading %i byte from the bus\n", length);
 
-    /* set the client address */
+    // set the client address
     i2c(dev)->ADDRESS = (address & 0x7f);
 
-    /* setup PPI channel as alternative to the broken SHORTS
-     * -> see PAN notice #36: "Shortcuts described in nRF51 Reference Manual are
-     *                         not functional." */
+    // setup PPI channel as alternative to the broken SHORTS
+    // -> see PAN notice #36: "Shortcuts described in nRF51 Reference Manual are
+    //                         not functional."
     if (length == 1) {
         NRF_PPI->CH[i2c_config[dev].ppi].TEP = (uint32_t)&i2c(dev)->TASKS_STOP;
     }
@@ -191,7 +174,7 @@ int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length,
         i2c(dev)->TASKS_RESUME = 1;
     }
 
-    /* wait for the device to finish up */
+    // wait for the device to finish up
     while (i2c(dev)->EVENTS_STOPPED == 0) {}
     NRF_PPI->CHENCLR = (1 << i2c_config[dev].ppi);
 
@@ -199,8 +182,7 @@ int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length,
 }
 
 int i2c_read_regs(i2c_t dev, uint16_t address, uint16_t reg,
-                  void *data, size_t length, uint8_t flags)
-{
+                  void *data, size_t length, uint8_t flags) {
     if (flags & (I2C_NOSTART | I2C_REG16 | I2C_ADDR10)) {
         return -EOPNOTSUPP;
     }
@@ -210,8 +192,7 @@ int i2c_read_regs(i2c_t dev, uint16_t address, uint16_t reg,
 }
 
 int i2c_write_bytes(i2c_t dev, uint16_t address, const void *data, size_t length,
-                    uint8_t flags)
-{
+                    uint8_t flags) {
     if (flags & (I2C_NOSTART | I2C_REG16 | I2C_ADDR10)) {
         return -EOPNOTSUPP;
     }
@@ -220,8 +201,7 @@ int i2c_write_bytes(i2c_t dev, uint16_t address, const void *data, size_t length
 }
 
 int i2c_write_regs(i2c_t dev, uint16_t address, uint16_t reg,
-                   const void *data, size_t length, uint8_t flags)
-{
+                   const void *data, size_t length, uint8_t flags) {
     if (flags & (I2C_NOSTART | I2C_REG16 | I2C_ADDR10)) {
         return -EOPNOTSUPP;
     }

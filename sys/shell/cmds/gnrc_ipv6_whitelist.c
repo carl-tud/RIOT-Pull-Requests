@@ -1,17 +1,13 @@
-/*
- * Copyright (C) Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- *
- * @file
- * @author Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <stdio.h>
 #include <string.h>
@@ -19,8 +15,7 @@
 #include "net/gnrc/ipv6/whitelist.h"
 #include "shell.h"
 
-static void _usage(char *cmd)
-{
+static void _usage(char *cmd) {
     printf("usage: * %s\n", cmd);
     puts("         Lists all addresses in the whitelist.");
     printf("       * %s add <addr>\n", cmd);
@@ -31,8 +26,7 @@ static void _usage(char *cmd)
     puts("         Print this.");
 }
 
-static int _whitelist(int argc, char **argv)
-{
+static int _whitelist(int argc, char **argv) {
     ipv6_addr_t addr;
     if (argc < 2) {
         gnrc_ipv6_whitelist_print();
@@ -64,4 +58,4 @@ SHELL_COMMAND(whitelist,
         "manage IPv6 addresses in reception allow list ('whitelist [add|del|help]')",
         _whitelist);
 
-/** @} */
+/// @}

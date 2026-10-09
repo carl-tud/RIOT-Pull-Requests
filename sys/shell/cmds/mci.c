@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2013  INRIA.
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2013  INRIA.
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Provides shell commands to access storage (like MMC)
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Provides shell commands to access storage (like MMC)
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -25,8 +21,7 @@
 #include "diskio.h"
 #include "shell.h"
 
-static inline uint8_t sector_read(unsigned char *read_buf, unsigned long sector, unsigned long length, unsigned long offset)
-{
+static inline uint8_t sector_read(unsigned char *read_buf, unsigned long sector, unsigned long length, unsigned long offset) {
     if (mci_read(read_buf, sector, 1) == DISKIO_RES_OK) {
         printf("[disk] Read sector %lu (%lu):\n", sector, offset);
 
@@ -45,8 +40,7 @@ static inline uint8_t sector_read(unsigned char *read_buf, unsigned long sector,
     return 0;
 }
 
-static int _get_sectorsize(int argc, char **argv)
-{
+static int _get_sectorsize(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -65,8 +59,7 @@ static int _get_sectorsize(int argc, char **argv)
 
 SHELL_COMMAND(dget_ssize, "Get the sector size of inserted memory card", _get_sectorsize);
 
-static int _get_blocksize(int argc, char **argv)
-{
+static int _get_blocksize(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -85,8 +78,7 @@ static int _get_blocksize(int argc, char **argv)
 
 SHELL_COMMAND(dget_bsize, "Get the block size of inserted memory card", _get_blocksize);
 
-static int _get_sectorcount(int argc, char **argv)
-{
+static int _get_sectorcount(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -105,8 +97,7 @@ static int _get_sectorcount(int argc, char **argv)
 
 SHELL_COMMAND(dget_scount, "Get the sector count of inserted memory card", _get_sectorcount);
 
-static int _read_sector(int argc, char **argv)
-{
+static int _read_sector(int argc, char **argv) {
     if (argc == 2) {
         unsigned long scount;
         unsigned short ssize;
@@ -132,8 +123,7 @@ static int _read_sector(int argc, char **argv)
 
 SHELL_COMMAND(dread_sec, "Reads the specified sector of inserted memory card", _read_sector);
 
-static int _read_bytes(int argc, char **argv)
-{
+static int _read_bytes(int argc, char **argv) {
     unsigned long sector = 1, scount, offset;
     unsigned short ssize, length;
 
@@ -145,37 +135,37 @@ static int _read_bytes(int argc, char **argv)
     offset = atol(argv[1]);
     length = atoi(argv[2]);
 
-    /* get card info */
+    // get card info
     if ((mci_ioctl(GET_SECTOR_COUNT, &scount) == DISKIO_RES_OK) && (mci_ioctl(GET_SECTOR_SIZE, &ssize) == DISKIO_RES_OK)) {
-        /* calculate sector and offset position */
+        // calculate sector and offset position
         sector = (offset / ssize) + 1;
         offset = (offset % ssize);
-        /* prepare buffer (size must be a multiple of sector size) */
+        // prepare buffer (size must be a multiple of sector size)
         unsigned char read_buf[((length / ssize) + 1) * 512];
 
-        /* read from several sectors */
+        // read from several sectors
         if (length > (ssize - offset)) {
-            /* buffer offset */
+            // buffer offset
             unsigned long j = 0;
-            /* chunk from current sector */
+            // chunk from current sector
             unsigned short tmp = ssize - offset;
 
             while (length) {
                 sector_read(read_buf + j, sector++, tmp, offset);
-                /* decrease length  and recalculate chunk */
+                // decrease length  and recalculate chunk
                 length -= tmp;
                 tmp = (length >= ssize) ? ssize : length;
             }
 
             return 0;
-        } /* length > (ssize - offset) */
-        /* read only one sector */
+        } // length > (ssize - offset)
+        // read only one sector
         else {
             if (sector_read(read_buf, sector, length, offset)) {
                 return 0;
             }
-        } /* length < (ssize - offset) */
-    } /* ioctl */
+        } // length < (ssize - offset)
+    } // ioctl
 
     printf("[disk] Error while reading sector %lu\n", sector);
     return 1;

@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "congure/mock.h"
 
@@ -35,14 +31,12 @@ static const congure_snd_driver_t _driver = {
 };
 
 void congure_mock_snd_setup(congure_mock_snd_t *c,
-                            const congure_snd_driver_t *methods)
-{
+                            const congure_snd_driver_t *methods) {
     c->super.driver = &_driver;
     c->methods = methods;
 }
 
-static void _snd_init(congure_snd_t *cong, void *ctx)
-{
+static void _snd_init(congure_snd_t *cong, void *ctx) {
     congure_mock_snd_t *c = (congure_mock_snd_t *)cong;
 
     c->init_calls++;
@@ -53,8 +47,7 @@ static void _snd_init(congure_snd_t *cong, void *ctx)
     }
 }
 
-static int32_t _snd_inter_msg_interval(congure_snd_t *cong, unsigned msg_size)
-{
+static int32_t _snd_inter_msg_interval(congure_snd_t *cong, unsigned msg_size) {
     congure_mock_snd_t *c = (congure_mock_snd_t *)cong;
 
     c->inter_msg_interval_calls++;
@@ -66,8 +59,7 @@ static int32_t _snd_inter_msg_interval(congure_snd_t *cong, unsigned msg_size)
     return -1;
 }
 
-static void _snd_report_msg_sent(congure_snd_t *cong, unsigned msg_size)
-{
+static void _snd_report_msg_sent(congure_snd_t *cong, unsigned msg_size) {
     congure_mock_snd_t *c = (congure_mock_snd_t *)cong;
 
     c->report_msg_sent_calls++;
@@ -78,8 +70,7 @@ static void _snd_report_msg_sent(congure_snd_t *cong, unsigned msg_size)
     }
 }
 
-static void _snd_report_msg_discarded(congure_snd_t *cong, unsigned msg_size)
-{
+static void _snd_report_msg_discarded(congure_snd_t *cong, unsigned msg_size) {
     congure_mock_snd_t *c = (congure_mock_snd_t *)cong;
 
     c->report_msg_discarded_calls++;
@@ -90,8 +81,7 @@ static void _snd_report_msg_discarded(congure_snd_t *cong, unsigned msg_size)
     }
 }
 
-static void _snd_report_msgs_lost(congure_snd_t *cong, congure_snd_msg_t *msgs)
-{
+static void _snd_report_msgs_lost(congure_snd_t *cong, congure_snd_msg_t *msgs) {
     congure_mock_snd_t *c = (congure_mock_snd_t *)cong;
 
     c->report_msgs_lost_calls++;
@@ -103,8 +93,7 @@ static void _snd_report_msgs_lost(congure_snd_t *cong, congure_snd_msg_t *msgs)
 }
 
 static void _snd_report_msgs_timeout(congure_snd_t *cong,
-                                     congure_snd_msg_t *msgs)
-{
+                                     congure_snd_msg_t *msgs) {
     congure_mock_snd_t *c = (congure_mock_snd_t *)cong;
 
     c->report_msgs_timeout_calls++;
@@ -116,8 +105,7 @@ static void _snd_report_msgs_timeout(congure_snd_t *cong,
 }
 
 static void _snd_report_msg_acked(congure_snd_t *cong, congure_snd_msg_t *msg,
-                                  congure_snd_ack_t *ack)
-{
+                                  congure_snd_ack_t *ack) {
     congure_mock_snd_t *c = (congure_mock_snd_t *)cong;
 
     c->report_msg_acked_calls++;
@@ -129,8 +117,7 @@ static void _snd_report_msg_acked(congure_snd_t *cong, congure_snd_msg_t *msg,
     }
 }
 
-static void _snd_report_ecn_ce(congure_snd_t *cong, ztimer_now_t time)
-{
+static void _snd_report_ecn_ce(congure_snd_t *cong, ztimer_now_t time) {
     congure_mock_snd_t *c = (congure_mock_snd_t *)cong;
 
     c->report_ecn_ce_calls++;
@@ -141,4 +128,4 @@ static void _snd_report_ecn_ce(congure_snd_t *cong, ztimer_now_t time)
     }
 }
 
-/** @} */
+/// @}

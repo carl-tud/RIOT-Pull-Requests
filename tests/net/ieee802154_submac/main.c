@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for AT86RF2xx network device driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for AT86RF2xx network device driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stddef.h>
 #include <stdio.h>
@@ -36,31 +32,31 @@
 
 #define MAX_LINE    (80)
 
-ieee802154_submac_t submac;                     /**< IEEE 802.15.4 SubMAC descriptor */
-mutex_t lock;                                   /**< lock used to synchronize SubMAC operation */
-ztimer_t ack_timer;                             /**< required for the ACK timer */
-eui64_t long_addr;                              /**< SubMAC extended address */
-network_uint16_t short_addr;                    /**< SubMAC short address */
+ieee802154_submac_t submac;                     ///< IEEE 802.15.4 SubMAC descriptor
+mutex_t lock;                                   ///< lock used to synchronize SubMAC operation
+ztimer_t ack_timer;                             ///< required for the ACK timer
+eui64_t long_addr;                              ///< SubMAC extended address
+network_uint16_t short_addr;                    ///< SubMAC short address
 
-static void _ev_tx_done_handler(event_t *event);        /**< TX Done event handler */
-static void _ev_rx_done_handler(event_t *event);        /**< RX Done event handler */
-static void _ev_crc_error_handler(event_t *event);      /**< CRC Error event handler */
-static void _ev_bh_request_handler(event_t *event);     /**< BH Request event handler */
-static void _ev_ack_timeout_handler(event_t *event);    /**< ACK Timeout event handler */
-static void _ev_set_rx_handler(event_t *event);                         /**< Set RX event handler */
+static void _ev_tx_done_handler(event_t *event);        ///< TX Done event handler
+static void _ev_rx_done_handler(event_t *event);        ///< RX Done event handler
+static void _ev_crc_error_handler(event_t *event);      ///< CRC Error event handler
+static void _ev_bh_request_handler(event_t *event);     ///< BH Request event handler
+static void _ev_ack_timeout_handler(event_t *event);    ///< ACK Timeout event handler
+static void _ev_set_rx_handler(event_t *event);                         ///< Set RX event handler
 
-static event_t ev_tx_done = { .handler = _ev_tx_done_handler };         /**< TX Done descriptor */
-static event_t ev_rx_done = { .handler = _ev_rx_done_handler };         /**< RX Done descriptor */
-static event_t ev_crc_error = { .handler = _ev_crc_error_handler };     /**< CRC Error descriptor */
-static event_t ev_bh_request = { .handler = _ev_bh_request_handler }; /**< BH Request descriptor */
-static event_t ev_ack_timeout = { .handler = _ev_ack_timeout_handler }; /**< ACK TO descriptor */
-static event_t ev_set_rx = { .handler = _ev_set_rx_handler };           /**< Set RX descriptor */
+static event_t ev_tx_done = { .handler = _ev_tx_done_handler };         ///< TX Done descriptor
+static event_t ev_rx_done = { .handler = _ev_rx_done_handler };         ///< RX Done descriptor
+static event_t ev_crc_error = { .handler = _ev_crc_error_handler };     ///< CRC Error descriptor
+static event_t ev_bh_request = { .handler = _ev_bh_request_handler }; ///< BH Request descriptor
+static event_t ev_ack_timeout = { .handler = _ev_ack_timeout_handler }; ///< ACK TO descriptor
+static event_t ev_set_rx = { .handler = _ev_set_rx_handler };           ///< Set RX descriptor
 
-uint8_t buffer[IEEE802154_FRAME_LEN_MAX];   /**< buffer to store IEEE 802.15.4 frames */
-uint8_t seq;                                /**< sequence number of IEEE 802.15.4 frame */
+uint8_t buffer[IEEE802154_FRAME_LEN_MAX];   ///< buffer to store IEEE 802.15.4 frames
+uint8_t seq;                                ///< sequence number of IEEE 802.15.4 frame
 
 struct _reg_container {
-    int count;  /* device index */
+    int count;  // device index
 };
 
 static void submac_rx_done(ieee802154_submac_t *submac);
@@ -89,69 +85,60 @@ static const shell_command_t shell_commands[] = {
 
 /****** SubMAC South Bond API Implementation ******/
 
-static void _ev_tx_done_handler(event_t *event)
-{
+static void _ev_tx_done_handler(event_t *event) {
     (void)event;
     mutex_lock(&lock);
     ieee802154_submac_tx_done_cb(&submac);
     mutex_unlock(&lock);
 }
 
-static void _ev_rx_done_handler(event_t *event)
-{
+static void _ev_rx_done_handler(event_t *event) {
     (void)event;
     mutex_lock(&lock);
     ieee802154_submac_rx_done_cb(&submac);
     mutex_unlock(&lock);
 }
 
-static void _ev_crc_error_handler(event_t *event)
-{
+static void _ev_crc_error_handler(event_t *event) {
     (void)event;
     mutex_lock(&lock);
     ieee802154_submac_crc_error_cb(&submac);
     mutex_unlock(&lock);
 }
 
-static void _ev_bh_request_handler(event_t *event)
-{
+static void _ev_bh_request_handler(event_t *event) {
     (void)event;
     mutex_lock(&lock);
     ieee802154_submac_bh_process(&submac);
     mutex_unlock(&lock);
 }
 
-static void _ev_ack_timeout_handler(event_t *event)
-{
+static void _ev_ack_timeout_handler(event_t *event) {
     (void)event;
     mutex_lock(&lock);
     ieee802154_submac_ack_timeout_fired(&submac);
     mutex_unlock(&lock);
 }
 
-void ieee802154_submac_ack_timer_set(ieee802154_submac_t *submac)
-{
+void ieee802154_submac_ack_timer_set(ieee802154_submac_t *submac) {
     ztimer_set(ZTIMER_USEC, &ack_timer, submac->ack_timeout_us);
 }
 
-void ieee802154_submac_ack_timer_cancel(ieee802154_submac_t *submac)
-{
+void ieee802154_submac_ack_timer_cancel(ieee802154_submac_t *submac) {
     (void)submac;
     ztimer_remove(ZTIMER_USEC, &ack_timer);
-    /* Avoid race conditions between RX_DONE and ACK_TIMEOUT */
+    // Avoid race conditions between RX_DONE and ACK_TIMEOUT
     if (ev_ack_timeout.list_node.next) {
         event_cancel(EVENT_PRIO_HIGHEST, &ev_ack_timeout);
     }
 }
 
-static void _ack_timeout(void *arg)
-{
+static void _ack_timeout(void *arg) {
     (void)arg;
     event_post(EVENT_PRIO_HIGHEST, &ev_ack_timeout);
 }
 
-static void _hal_radio_cb(ieee802154_dev_t *dev, ieee802154_trx_ev_t status)
-{
+static void _hal_radio_cb(ieee802154_dev_t *dev, ieee802154_trx_ev_t status) {
     (void)dev;
     switch (status) {
     case IEEE802154_RADIO_CONFIRM_TX_DONE:
@@ -168,14 +155,12 @@ static void _hal_radio_cb(ieee802154_dev_t *dev, ieee802154_trx_ev_t status)
     }
 }
 
-void ieee802154_submac_bh_request(ieee802154_submac_t *submac)
-{
+void ieee802154_submac_bh_request(ieee802154_submac_t *submac) {
     (void)submac;
     event_post(EVENT_PRIO_HIGHEST, &ev_bh_request);
 }
 
-static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque)
-{
+static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque) {
     struct _reg_container *reg = opaque;
 
     printf("Trying to register ");
@@ -218,8 +203,7 @@ static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque)
 
 /****** Helpers ******/
 
-void _print_addr(uint8_t *addr, size_t addr_len)
-{
+void _print_addr(uint8_t *addr, size_t addr_len) {
     for (size_t i = 0; i < addr_len; i++) {
         if (i != 0) {
             printf(":");
@@ -232,8 +216,7 @@ void _print_addr(uint8_t *addr, size_t addr_len)
 #define IEEE802154_LONG_ADDRESS_LEN_STR_MAX \
     (sizeof("00:00:00:00:00:00:00:00"))
 
-static int print_addr(int argc, char **argv)
-{
+static int print_addr(int argc, char **argv) {
     (void)argc;
     (void)argv;
     char addr_str[IEEE802154_LONG_ADDRESS_LEN_STR_MAX];
@@ -242,8 +225,7 @@ static int print_addr(int argc, char **argv)
     return 0;
 }
 
-static void _ev_set_rx_handler(event_t *event)
-{
+static void _ev_set_rx_handler(event_t *event) {
     (void)event;
     mutex_lock(&lock);
     ieee802154_set_rx(&submac);
@@ -251,8 +233,7 @@ static void _ev_set_rx_handler(event_t *event)
 }
 
 static void submac_tx_done(ieee802154_submac_t *submac, int status,
-                           ieee802154_tx_info_t *info)
-{
+                           ieee802154_tx_info_t *info) {
     (void)info;
     (void)submac;
     switch (status) {
@@ -272,13 +253,12 @@ static void submac_tx_done(ieee802154_submac_t *submac, int status,
         break;
     }
 
-    /* Schedule the state change. Calling this function directly in the callback
-     * will return error */
+    // Schedule the state change. Calling this function directly in the callback
+    // will return error
     event_post(EVENT_PRIO_HIGHEST, &ev_set_rx);
 }
 
-static void submac_rx_done(ieee802154_submac_t *submac)
-{
+static void submac_rx_done(ieee802154_submac_t *submac) {
     uint8_t src[IEEE802154_LONG_ADDRESS_LEN], dst[IEEE802154_LONG_ADDRESS_LEN];
     int data_len;
     size_t mhr_len, src_len, dst_len;
@@ -369,14 +349,13 @@ static void submac_rx_done(ieee802154_submac_t *submac)
     printf("\n");
     printf("RSSI: %i, LQI: %u\n\n", rx_info.rssi, rx_info.lqi);
 
-    /* Schedule the state change. Calling this function directly in the callback
-     * will return error */
+    // Schedule the state change. Calling this function directly in the callback
+    // will return error
     event_post(EVENT_PRIO_HIGHEST, &ev_set_rx);
 }
 
 static int send(uint8_t *dst, size_t dst_len,
-                size_t len)
-{
+                size_t len) {
     uint8_t flags;
     uint8_t mhr[IEEE802154_MAX_HDR_LEN];
     int mhr_len;
@@ -395,7 +374,7 @@ static int send(uint8_t *dst, size_t dst_len,
     uint8_t src_len = IEEE802154_LONG_ADDRESS_LEN;
     void *src = &submac.ext_addr;
 
-    /* fill MAC header, seq should be set by device */
+    // fill MAC header, seq should be set by device
     if ((mhr_len = ieee802154_set_frame_hdr(mhr, src, src_len,
                                             dst, dst_len,
                                             src_pan, dst_pan,
@@ -418,8 +397,7 @@ static int send(uint8_t *dst, size_t dst_len,
     return 0;
 }
 
-static int txtsnd(int argc, char **argv)
-{
+static int txtsnd(int argc, char **argv) {
     uint8_t addr[IEEE802154_LONG_ADDRESS_LEN];
     size_t len;
     size_t res;
@@ -438,8 +416,7 @@ static int txtsnd(int argc, char **argv)
     return send(addr, res, len);
 }
 
-static int txtsnd_multiple_times(int argc, char **argv)
-{
+static int txtsnd_multiple_times(int argc, char **argv) {
     if (argc != 5) {
         puts("Usage: txtsnd_n <long_addr> <len> <times> <interval>\n");
         return 1;
@@ -453,13 +430,12 @@ static int txtsnd_multiple_times(int argc, char **argv)
     return 0;
 }
 
-static int _init(void)
-{
+static int _init(void) {
     mutex_init(&lock);
 
     submac.cb = &_cb;
 
-    /* Set the Event Notification */
+    // Set the Event Notification
     submac.dev.cb = _hal_radio_cb;
 
     ack_timer.callback = _ack_timeout;
@@ -481,11 +457,10 @@ static int _init(void)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     _init();
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

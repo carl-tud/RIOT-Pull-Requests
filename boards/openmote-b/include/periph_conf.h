@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_openmote-b
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the OpenMote-B board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Sebastian Meiling <s@mlng.net>
- * @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
- */
+/// @ingroup     boards_openmote-b
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the OpenMote-B board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Sebastian Meiling <s@mlng.net>
+/// @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
 
 #include "cc2538_gpio.h"
 #include "periph_cpu.h"
@@ -28,29 +24,25 @@
  extern "C" {
 #endif
 
-/**
- * @name ADC configuration
- * @{
- */
+/// @name ADC configuration
+/// @{
 #define SOC_ADC_ADCCON3_EREF  SOC_ADC_ADCCON3_EREF_AVDD5
 
 static const adc_conf_t adc_config[] = {
-    GPIO_PIN(1, 0), /**< GPIO_PB0 = GPIO0_PIN */
-    GPIO_PIN(1, 1), /**< GPIO_PB1 = GPIO1_PIN */
-    GPIO_PIN(1, 2), /**< GPIO_PB2 = GPIO2_PIN */
-    GPIO_PIN(1, 3), /**< GPIO_PB3 = GPIO3_PIN */
-    GPIO_PIN(2, 3), /**< GPIO_PC3 = GPIO4_PIN */
-    GPIO_PIN(0, 7), /**< GPIO_PA7 = GPIO5_PIN */
+    GPIO_PIN(1, 0), ///< GPIO_PB0 = GPIO0_PIN
+    GPIO_PIN(1, 1), ///< GPIO_PB1 = GPIO1_PIN
+    GPIO_PIN(1, 2), ///< GPIO_PB2 = GPIO2_PIN
+    GPIO_PIN(1, 3), ///< GPIO_PB3 = GPIO3_PIN
+    GPIO_PIN(2, 3), ///< GPIO_PC3 = GPIO4_PIN
+    GPIO_PIN(0, 7), ///< GPIO_PA7 = GPIO5_PIN
 
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev      = UART0_BASEADDR,
@@ -63,34 +55,30 @@ static const uart_conf_t uart_config[] = {
     }
 };
 
-/* interrupt function name mapping */
+// interrupt function name mapping
 #define UART_0_ISR          isr_uart0
 
-/* macros common across all UARTs */
+// macros common across all UARTs
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 #define I2C_IRQ_PRIO            1
 
 static const i2c_conf_t i2c_config[] = {
     {
-        .speed = I2C_SPEED_FAST,    /**< bus speed */
-        .scl_pin = GPIO_PIN(1, 5),  /* SI7006 Temp/RH sensor */
-        .sda_pin = GPIO_PIN(1, 4)   /* SI7006 Temp/RH sensor */
+        .speed = I2C_SPEED_FAST,    ///< bus speed
+        .scl_pin = GPIO_PIN(1, 5),  // SI7006 Temp/RH sensor
+        .sda_pin = GPIO_PIN(1, 4)   // SI7006 Temp/RH sensor
     },
 };
 
 #define I2C_NUMOF               ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .num      = 0,
@@ -102,10 +90,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

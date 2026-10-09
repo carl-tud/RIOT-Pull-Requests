@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017-2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017-2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_tmp00x
- * @{
- *
- * @file
- * @brief       TMP00X (TMP006 and TMP007) adaption to the RIOT actuator/sensor interface
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     drivers_tmp00x
+/// @{
+///
+/// @file
+/// @brief       TMP00X (TMP006 and TMP007) adaption to the RIOT actuator/sensor interface
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <string.h>
 
@@ -21,8 +17,7 @@
 #include "tmp00x.h"
 #include "kernel_defines.h"
 
-static int read_temp(const void *dev, phydat_t *res)
-{
+static int read_temp(const void *dev, phydat_t *res) {
     if (tmp00x_read_temperature((const tmp00x_t *)dev, &res->val[0],
                                 &res->val[1]) != TMP00X_OK) {
         return -ECANCELED;

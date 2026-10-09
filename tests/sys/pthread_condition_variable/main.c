@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences (HAW)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences (HAW)
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   simple condition variable test application
- *
- * @author  Martin Landsmann <martin.landsmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   simple condition variable test application
+///
+/// @author  Martin Landsmann <martin.landsmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "pthread.h"
@@ -25,13 +21,10 @@ static volatile int is_finished;
 static volatile long count;
 static char stack[THREAD_STACKSIZE_MAIN];
 
-/**
- * @brief   This thread tries to lock the mutex to enter the critical section.
- *          Then it signals one waiting thread to check the condition and it goes to sleep again
- *          If is_finished is set to 1 second_thread ends
- */
-static void *second_thread(void *arg)
-{
+/// @brief   This thread tries to lock the mutex to enter the critical section.
+///          Then it signals one waiting thread to check the condition and it goes to sleep again
+///          If is_finished is set to 1 second_thread ends
+static void *second_thread(void *arg) {
     (void) arg;
     while (1) {
         mutex_lock(&mutex);
@@ -52,8 +45,7 @@ static void *second_thread(void *arg)
 #define ITERATION_STEPS 10000
 #endif
 
-int main(void)
-{
+int main(void) {
     puts("START");
     count = 0;
     is_finished = 0;

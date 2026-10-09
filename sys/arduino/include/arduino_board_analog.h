@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     sys_arduino
- * @{
- *
- * @file
- * @brief       Arduino analog pin map
- *
- * @note        The contents of this file are mostly generated using the
- *              python snippets documented. Do not edit these parts by hand,
- *              but rather adjust the python snippets and regenerate.
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- */
+/// @ingroup     sys_arduino
+/// @{
+///
+/// @file
+/// @brief       Arduino analog pin map
+///
+/// @note        The contents of this file are mostly generated using the
+///              python snippets documented. Do not edit these parts by hand,
+///              but rather adjust the python snippets and regenerate.
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
 
 #include "periph/adc.h"
 #include "arduino_iomap.h"
@@ -27,45 +23,41 @@ extern "C" {
 #endif
 
 #ifdef DOXYGEN
-/**
- * @brief   Number of the last analog pin
- *
- * E.g. 5 if A5 is the analog pin with the highest number.
- */
-#define ARDUINO_ANALOG_PIN_LAST /* board specific number */
-#endif /* DOXYGEN */
+/// @brief   Number of the last analog pin
+///
+/// E.g. 5 if A5 is the analog pin with the highest number.
+#define ARDUINO_ANALOG_PIN_LAST // board specific number
+#endif // DOXYGEN
 
-/* A board may not have any analog pins. But if it has any, it MUST define
- * ARDUINO_ANALOG_PIN_LAST. */
+// A board may not have any analog pins. But if it has any, it MUST define
+// ARDUINO_ANALOG_PIN_LAST.
 #if !defined(ARDUINO_ANALOG_PIN_LAST) && (defined(ARDUINO_A0) || defined(ARDUINO_A1))
 #  error "ARDUINO_PIN_LAST undefined despite analog pins available"
 #endif
 
-/* A board not having A0 and A1, but having e.g. A3 would also trigger this.
- * Extend as needed when porting new boards. */
+// A board not having A0 and A1, but having e.g. A3 would also trigger this.
+// Extend as needed when porting new boards.
 #if defined(ARDUINO_ANALOG_PIN_LAST) && !defined(ARDUINO_A0) && !defined(ARDUINO_A1)
 #  error "ARDUINO_PIN_LAST defined but no analog pins available"
 #endif
 
 #if defined(ARDUINO_ANALOG_PIN_LAST) || defined(DOXYGEN)
-/**
- * @brief   Look-up table for the Arduino's analog pins
- *
- * Generate using
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.py}
- * format = """#ifdef ARDUINO_A{0:}
- *     ARDUINO_A{0:},
- * #elif ARDUINO_ANALOG_PIN_LAST > {0:}
- *     ADC_UNDEF,
- * #endif"""
- * for i in range(16):
- *     print(format.format(i))
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- * The Arduino MEGA 2560 has A0 to A15, so 16 Analog inputs is the largest
- * as of now.
- */
+/// @brief   Look-up table for the Arduino's analog pins
+///
+/// Generate using
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.py}
+/// format = """#ifdef ARDUINO_A{0:}
+///     ARDUINO_A{0:},
+/// #elif ARDUINO_ANALOG_PIN_LAST > {0:}
+///     ADC_UNDEF,
+/// #endif"""
+/// for i in range(16):
+///     print(format.format(i))
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// The Arduino MEGA 2560 has A0 to A15, so 16 Analog inputs is the largest
+/// as of now.
 static const adc_t arduino_analog_map[] = {
 #ifndef DOXYGEN
 #ifdef ARDUINO_A0
@@ -148,12 +140,12 @@ static const adc_t arduino_analog_map[] = {
 #elif ARDUINO_ANALOG_PIN_LAST > 15
     ADC_UNDEF,
 #endif
-#endif /* DOXYGEN */
+#endif // DOXYGEN
 };
-#endif /* defined(ARDUINO_ANALOG_PIN_LAST) */
+#endif // defined(ARDUINO_ANALOG_PIN_LAST)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

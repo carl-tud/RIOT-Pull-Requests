@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the Atmel IO1 Xplained extension
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the Atmel IO1 Xplained extension
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -29,12 +25,11 @@
 #include "io1_xplained.h"
 #include "io1_xplained_params.h"
 
-#define DELAY_1S   (1U * MS_PER_SEC) /* 1 seconds delay between each test */
+#define DELAY_1S   (1U * MS_PER_SEC) // 1 seconds delay between each test
 
 static io1_xplained_t dev;
 
-static void _sd_card_cid(void)
-{
+static void _sd_card_cid(void) {
     puts("SD Card CID info:");
     printf("MID: %d\n", dev.sdcard.cid.MID);
     printf("OID: %c%c\n", dev.sdcard.cid.OID[0], dev.sdcard.cid.OID[1]);
@@ -48,8 +43,7 @@ static void _sd_card_cid(void)
     puts("+----------------------------------------+\n");
 }
 
-int main(void)
-{
+int main(void) {
     float temperature;
 
     puts("IO1 Xplained extension test application\n");
@@ -63,7 +57,7 @@ int main(void)
     puts("Initialization successful");
     puts("\n+--------Starting tests --------+");
     while (1) {
-        /* Get temperature in degrees celsius */
+        // Get temperature in degrees celsius
         at30tse75x_get_temperature(&dev.temp, &temperature);
         printf("Temperature [°C]: %i.%03u\n"
                "+-------------------------------------+\n",
@@ -71,7 +65,7 @@ int main(void)
                (unsigned)((temperature - (int)temperature) * 1000));
         ztimer_sleep(ZTIMER_MSEC, DELAY_1S);
 
-        /* Card detect pin is inverted */
+        // Card detect pin is inverted
         if (!gpio_read(IO1_SDCARD_SPI_PARAM_DETECT)) {
             _sd_card_cid();
             ztimer_sleep(ZTIMER_MSEC, DELAY_1S);
@@ -84,19 +78,19 @@ int main(void)
                light);
         ztimer_sleep(ZTIMER_MSEC, DELAY_1S);
 
-        /* set led */
+        // set led
         gpio_set(IO1_LED_PIN);
         ztimer_sleep(ZTIMER_MSEC, DELAY_1S);
 
-        /* clear led */
+        // clear led
         gpio_clear(IO1_LED_PIN);
         ztimer_sleep(ZTIMER_MSEC, DELAY_1S);
 
-        /* toggle led */
+        // toggle led
         gpio_toggle(IO1_LED_PIN);
         ztimer_sleep(ZTIMER_MSEC, DELAY_1S);
 
-        /* toggle led again */
+        // toggle led again
         gpio_toggle(IO1_LED_PIN);
         ztimer_sleep(ZTIMER_MSEC, DELAY_1S);
     }

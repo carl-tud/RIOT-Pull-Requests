@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the LPS331AP/LPS25HB/LPS22HB/LPS22HH
- *              pressure sensor
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the LPS331AP/LPS25HB/LPS22HB/LPS22HH
+///              pressure sensor
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -24,8 +20,7 @@
 #include "lpsxxx.h"
 #include "lpsxxx_params.h"
 
-int main(void)
-{
+int main(void) {
     lpsxxx_t dev;
 
     printf("Test application for %s pressure sensor\n\n", LPSXXX_SAUL_NAME);
@@ -39,7 +34,7 @@ int main(void)
     int16_t temp;
     while (1) {
         lpsxxx_enable(&dev);
-        xtimer_sleep(1); /* wait a bit for the measurements to complete */
+        xtimer_sleep(1); // wait a bit for the measurements to complete
 
         lpsxxx_read_temp(&dev, &temp);
         lpsxxx_read_pres(&dev, &pres);

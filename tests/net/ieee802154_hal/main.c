@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for IEEE 802.15.4 Radio HAL
- *
- * @author      José I. Alamos <jose.alamos@haw-hamburg.de>
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for IEEE 802.15.4 Radio HAL
+///
+/// @author      José I. Alamos <jose.alamos@haw-hamburg.de>
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <strings.h>
@@ -34,17 +30,16 @@
 #include "test_utils/expect.h"
 #include "xtimer.h"
 
-#define SYMBOL_TIME (16U) /**< 16 us */
+#define SYMBOL_TIME (16U) ///< 16 us
 #define ACK_TIMEOUT_TIME (40 * SYMBOL_TIME)
 #define TX_RX_TURNAROUND (12 * SYMBOL_TIME)
 
-/* the CC2538 takes 193 us to put the transceiver in RX_ON, which officially
- * violates the official TX<->RX turnaround time (192 us for O-QPSK).
- * However, the radio is able to pick up the preamble of a frame even if the
- * first symbol is lost. We add a tolerance of half a symbol to the
- * TX_RX_TURNAROUND in order to be sure the TX<->RX measurement test doesn't
- * fail
- */
+// the CC2538 takes 193 us to put the transceiver in RX_ON, which officially
+// violates the official TX<->RX turnaround time (192 us for O-QPSK).
+// However, the radio is able to pick up the preamble of a frame even if the
+// first symbol is lost. We add a tolerance of half a symbol to the
+// TX_RX_TURNAROUND in order to be sure the TX<->RX measurement test doesn't
+// fail
 #define MAX_TX_RX_TURNAROUND (TX_RX_TURNAROUND + (SYMBOL_TIME >> 1))
 
 #define IEEE802154_LONG_ADDRESS_LEN_STR_MAX \
@@ -60,8 +55,7 @@ static uint8_t seq;
 
 static ieee802154_dev_t _radio;
 
-static void _print_packet(size_t size, uint8_t lqi, int16_t rssi)
-{
+static void _print_packet(size_t size, uint8_t lqi, int16_t rssi) {
     if (buffer[0] & IEEE802154_FCF_TYPE_ACK && ((seq-1) == buffer[2])) {
         printf("Received valid ACK with sqn %i\n", buffer[2]);
     }
@@ -73,8 +67,7 @@ static void _print_packet(size_t size, uint8_t lqi, int16_t rssi)
     puts("");
 }
 
-static int print_addr(int argc, char **argv)
-{
+static int print_addr(int argc, char **argv) {
     (void)argc;
     (void)argv;
     char addr_str[IEEE802154_LONG_ADDRESS_LEN_STR_MAX];
@@ -83,8 +76,7 @@ static int print_addr(int argc, char **argv)
     return 0;
 }
 
-static void _ack_timeout(event_t *event)
-{
+static void _ack_timeout(event_t *event) {
     (void) event;
     ieee802154_dev_t *dev = &_radio;
 
@@ -95,8 +87,7 @@ static event_t _ack_timeout_ev = {
     .handler = _ack_timeout,
 };
 
-void _timer_ack_handler(void *arg)
-{
+void _timer_ack_handler(void *arg) {
     (void) arg;
     event_post(EVENT_PRIO_HIGHEST, &_ack_timeout_ev);
 }
@@ -105,15 +96,14 @@ static xtimer_t timer_ack = {
     .callback = _timer_ack_handler,
 };
 
-void _crc_error_handler(event_t *event)
-{
+void _crc_error_handler(event_t *event) {
     (void) event;
     puts("Frame with invalid CRC received");
     ieee802154_dev_t* dev = &_radio;
-    /* Force transition to IDLE before calling the read function */
+    // Force transition to IDLE before calling the read function
     ieee802154_radio_set_idle(dev, true);
 
-    /* We are not interested in the content of the frame */
+    // We are not interested in the content of the frame
     ieee802154_radio_read(dev, NULL, 0, NULL);
 
     ieee802154_radio_set_rx(dev);
@@ -123,23 +113,21 @@ static event_t _crc_error_event = {
     .handler = _crc_error_handler,
 };
 
-void _rx_done_handler(event_t *event)
-{
+void _rx_done_handler(event_t *event) {
     (void) event;
     ieee802154_rx_info_t info;
     ieee802154_dev_t* dev = &_radio;
 
-    /* Force transition to IDLE before calling the read function */
+    // Force transition to IDLE before calling the read function
     ieee802154_radio_set_idle(dev, true);
 
-    /* Read packet from internal framebuffer
-     *
-     * NOTE: It's possible to call `ieee802154_radio_len` to retrieve the packet
-     * length. Since the buffer is fixed in this test, we don't use it
-     */
+    // Read packet from internal framebuffer
+    //
+    // NOTE: It's possible to call `ieee802154_radio_len` to retrieve the packet
+    // length. Since the buffer is fixed in this test, we don't use it
     int size = ieee802154_radio_read(&_radio, buffer, 127, &info);
     if (size > 0) {
-        /* Print packet while we wait for the state transition */
+        // Print packet while we wait for the state transition
         _print_packet(size, info.lqi, info.rssi);
     }
 
@@ -150,9 +138,8 @@ static event_t _rx_done_event = {
     .handler = _rx_done_handler,
 };
 
-/* Event Notification callback */
-static void _hal_radio_cb(ieee802154_dev_t *dev, ieee802154_trx_ev_t status)
-{
+// Event Notification callback
+static void _hal_radio_cb(ieee802154_dev_t *dev, ieee802154_trx_ev_t status) {
     (void) dev;
     switch (status) {
         case IEEE802154_RADIO_CONFIRM_TX_DONE:
@@ -170,18 +157,17 @@ static void _hal_radio_cb(ieee802154_dev_t *dev, ieee802154_trx_ev_t status)
     }
 }
 
-static void _tx_finish_handler(event_t *event)
-{
+static void _tx_finish_handler(event_t *event) {
     ieee802154_tx_info_t tx_info;
 
     (void) event;
-    /* The TX_DONE event indicates it's safe to call the confirm counterpart */
+    // The TX_DONE event indicates it's safe to call the confirm counterpart
     expect(ieee802154_radio_confirm_transmit(&_radio, &tx_info) >= 0);
 
     ieee802154_radio_set_rx(&_radio);
     if (!ieee802154_radio_has_irq_ack_timeout(&_radio) &&
         !ieee802154_radio_has_frame_retrans(&_radio)) {
-        /* This is just to show how the MAC layer would handle ACKs... */
+        // This is just to show how the MAC layer would handle ACKs...
         xtimer_set(&timer_ack, ACK_TIMEOUT_TIME);
     }
 
@@ -213,29 +199,27 @@ static event_t _tx_finish_ev = {
     .handler = _tx_finish_handler,
 };
 
-static void _send(iolist_t *pkt)
-{
-    /* Request a state change to IDLE */
+static void _send(iolist_t *pkt) {
+    // Request a state change to IDLE
     if (ieee802154_radio_request_set_idle(&_radio, false) < 0) {
         puts("Couldn't send frame");
         return;
     }
 
-    /* Write the packet to the radio while the radio is transitioning to IDLE */
+    // Write the packet to the radio while the radio is transitioning to IDLE
     ieee802154_radio_write(&_radio, pkt);
 
-    /* Block until the radio confirms the state change */
+    // Block until the radio confirms the state change
     while (ieee802154_radio_confirm_set_idle(&_radio) == -EAGAIN) {}
 
-    /* Set the frame filter to receive ACKs */
+    // Set the frame filter to receive ACKs
     ieee802154_radio_set_frame_filter_mode(&_radio, IEEE802154_FILTER_ACK_ONLY);
 
-    /* Trigger the transmit and wait for the mutex unlock (TX_DONE event).
-     * Spin if the radio is busy before transmission (this indicates the
-     * transmission is requested before the end of the IFS).
-     * This won't be necessary anymore when the upper layers take care
-     * of the IFS.
-     */
+    // Trigger the transmit and wait for the mutex unlock (TX_DONE event).
+    // Spin if the radio is busy before transmission (this indicates the
+    // transmission is requested before the end of the IFS).
+    // This won't be necessary anymore when the upper layers take care
+    // of the IFS.
     while (ieee802154_radio_request_transmit(&_radio) == -EBUSY) {}
     mutex_lock(&lock);
 
@@ -246,8 +230,7 @@ struct _reg_container {
     int count;
 };
 
-static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque)
-{
+static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque) {
     struct _reg_container *reg = opaque;
     printf("Trying to register ");
     switch (type) {
@@ -288,23 +271,22 @@ static ieee802154_dev_t *_reg_callback(ieee802154_dev_type_t type, void *opaque)
     return &_radio;
 }
 
-static int _init(void)
-{
+static int _init(void) {
     int res;
     struct _reg_container reg = {0};
 
     ieee802154_hal_test_init_devs(_reg_callback, &reg);
 
-    /* Set the Event Notification */
+    // Set the Event Notification
     ((ieee802154_dev_t*) &_radio)->cb = _hal_radio_cb;
 
-    /* Note that addresses are not kept in the radio. This assumes MAC layers
-     * already have a copy of the address */
+    // Note that addresses are not kept in the radio. This assumes MAC layers
+    // already have a copy of the address
     luid_get_eui64(&ext_addr);
     luid_get_short(&short_addr);
 
-    /* Since the device was already initialized, turn on the radio.
-     * The transceiver state will be "TRX_OFF" */
+    // Since the device was already initialized, turn on the radio.
+    // The transceiver state will be "TRX_OFF"
     res = ieee802154_radio_request_on(&_radio);
 
     expect(res >= 0);
@@ -314,7 +296,7 @@ static int _init(void)
 
     uint16_t panid = CONFIG_IEEE802154_DEFAULT_PANID;
 
-    /* Set all IEEE addresses */
+    // Set all IEEE addresses
     res = ieee802154_radio_config_addr_filter(&_radio,
                                         IEEE802154_AF_SHORT_ADDR, &short_addr);
     expect(res >= 0);
@@ -325,7 +307,7 @@ static int _init(void)
                                         IEEE802154_AF_PANID, &panid);
     expect(res >= 0);
 
-    /* Set PHY configuration */
+    // Set PHY configuration
     ieee802154_phy_conf_t conf = { .phy_mode=CONFIG_IEEE802154_DEFAULT_PHY_MODE,
                                    .channel=CONFIG_IEEE802154_DEFAULT_CHANNEL,
                                    .pow=CONFIG_IEEE802154_DEFAULT_TXPOWER};
@@ -333,13 +315,13 @@ static int _init(void)
     res = ieee802154_radio_config_phy(&_radio, &conf);
     expect(res >= 0);
 
-    /* ieee802154_radio_set_cca_mode*/
+    // ieee802154_radio_set_cca_mode
     res = ieee802154_radio_set_cca_mode(&_radio, IEEE802154_CCA_MODE_ED_THRESHOLD);
     expect(res >= 0);
     res = ieee802154_radio_set_cca_threshold(&_radio, CONFIG_IEEE802154_CCA_THRESH_DEFAULT);
     expect(res >= 0);
 
-    /* Set the transceiver state to RX_ON in order to receive packets */
+    // Set the transceiver state to RX_ON in order to receive packets
     ieee802154_radio_set_rx(&_radio);
     return 0;
 }
@@ -348,8 +330,7 @@ uint8_t payload[] = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
                     "Etiam ornare lacinia mi elementum interdum ligula.";
 
 static int send(uint8_t *dst, size_t dst_len,
-                size_t len, bool ack_req)
-{
+                size_t len, bool ack_req) {
     uint8_t flags;
     uint8_t mhr[IEEE802154_MAX_HDR_LEN];
     int mhr_len;
@@ -368,7 +349,7 @@ static int send(uint8_t *dst, size_t dst_len,
     uint8_t src_len = IEEE802154_LONG_ADDRESS_LEN;
     void *src = &ext_addr;
 
-    /* fill MAC header, seq should be set by device */
+    // fill MAC header, seq should be set by device
     if ((mhr_len = ieee802154_set_frame_hdr(mhr, src, src_len,
                                         dst, dst_len,
                                         src_pan, dst_pan,
@@ -387,8 +368,7 @@ static int send(uint8_t *dst, size_t dst_len,
     return 0;
 }
 
-int _cca(int argc, char **argv)
-{
+int _cca(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -416,15 +396,14 @@ int _cca(int argc, char **argv)
     return 0;
 }
 
-int _test_states(int argc, char **argv)
-{
+int _test_states(int argc, char **argv) {
     (void) argc;
     (void) argv;
     uint32_t usecs;
     int res;
     xtimer_ticks32_t a;
 
-    /* Force transition to IDLE */
+    // Force transition to IDLE
     res = ieee802154_radio_set_idle(&_radio, true);
     expect(res == 0);
 
@@ -451,8 +430,7 @@ int _test_states(int argc, char **argv)
     return 0;
 }
 
-int txtsnd(int argc, char **argv)
-{
+int txtsnd(int argc, char **argv) {
     uint8_t addr[IEEE802154_LONG_ADDRESS_LEN];
     size_t len;
     size_t res;
@@ -476,8 +454,7 @@ int txtsnd(int argc, char **argv)
     return send(addr, res, len, ack_req);
 }
 
-static int promisc(int argc, char **argv)
-{
+static int promisc(int argc, char **argv) {
     ieee802154_filter_mode_t conf;
     if (argc < 2) {
         printf("Usage: %s <on|off>", argv[0]);
@@ -496,8 +473,7 @@ static int promisc(int argc, char **argv)
     return ieee802154_radio_set_frame_filter_mode(&_radio, conf);
 }
 
-int config_phy(int argc, char **argv)
-{
+int config_phy(int argc, char **argv) {
     int res = -EINVAL;
     if (argc < 4) {
         puts("Usage: config_phy <phy_mode> <channel> <tx_pow>");
@@ -558,8 +534,7 @@ int config_phy(int argc, char **argv)
     return res;
 }
 
-int txmode_cmd(int argc, char **argv)
-{
+int txmode_cmd(int argc, char **argv) {
     ieee802154_dev_t *dev = &_radio;
     int res = -EINVAL;
 
@@ -591,8 +566,7 @@ int txmode_cmd(int argc, char **argv)
     return res;
 }
 
-static int _config_cca_cmd(int argc, char **argv)
-{
+static int _config_cca_cmd(int argc, char **argv) {
     ieee802154_dev_t *dev = &_radio;
     int res = -EINVAL;
 
@@ -635,8 +609,7 @@ static int _config_cca_cmd(int argc, char **argv)
     return res;
 }
 
-static int _caps_cmd(int argc, char **argv)
-{
+static int _caps_cmd(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -751,13 +724,12 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     mutex_init(&lock);
     mutex_lock(&lock);
     _init();
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

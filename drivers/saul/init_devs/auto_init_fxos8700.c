@@ -1,49 +1,36 @@
-/*
- * SPDX-FileCopyrightText: 2018 UC Berkeley
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 UC Berkeley
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization for FXOS8700 devices
- *
- * @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization for FXOS8700 devices
+//
+// @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
+//
+// @}
 
 #include "log.h"
 #include "saul_reg.h"
 #include "fxos8700_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define FXOS8700_NUM    ARRAY_SIZE(fxos8700_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static fxos8700_t fxos8700_devs[FXOS8700_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[FXOS8700_NUM * 2];
 
-/**
- * @name    Reference the driver struct
- * @{
- */
+/// @name    Reference the driver struct
+/// @{
 extern saul_driver_t fxos8700_saul_acc_driver;
 extern saul_driver_t fxos8700_saul_mag_driver;
-/** @} */
+/// @}
 
-void auto_init_fxos8700(void)
-{
+void auto_init_fxos8700(void) {
     for (unsigned i = 0; i < FXOS8700_NUM; i++) {
         LOG_DEBUG("[auto_init_saul] initializing fxos8700 #%u\n", i);
 

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam0_common
- * @ingroup     drivers_periph_cpuid
- * @{
- *
- * @file
- * @brief       Low-level CPUID driver implementation
- *
- * @author      Troels Hoffmeyer <troels.d.hoffmeyer@gmail.com>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     cpu_sam0_common
+/// @ingroup     drivers_periph_cpuid
+/// @{
+///
+/// @file
+/// @brief       Low-level CPUID driver implementation
+///
+/// @author      Troels Hoffmeyer <troels.d.hoffmeyer@gmail.com>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <string.h>
@@ -34,10 +30,9 @@
 #define WORD3               (*(volatile uint32_t *)0x0080A048)
 #endif
 
-void cpuid_get(void *id)
-{
-    /* Use memcpy to prevent unaligned access, which is not supported on
-     * cortex-m0+, to id */
+void cpuid_get(void *id) {
+    // Use memcpy to prevent unaligned access, which is not supported on
+    // cortex-m0+, to id
     uint32_t addr[] = { WORD0, WORD1, WORD2, WORD3 };
     memcpy(id, &addr[0], CPUID_LEN);
 }

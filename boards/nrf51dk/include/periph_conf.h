@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf51dk
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the Nordic nRF51DK
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nrf51dk
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the Nordic nRF51DK
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "periph_cpu.h"
 #include "cfg_clock_16_1.h"
@@ -24,12 +20,10 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    { /* Mapped to USB virtual COM port */
+    { // Mapped to USB virtual COM port
         .dev        = NRF_UART0,
         .rx_pin     = GPIO_PIN(0, 11),
         .tx_pin     = GPIO_PIN(0, 9),
@@ -43,12 +37,10 @@ static const uart_conf_t uart_config[] = {
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
 #define UART_0_ISR          isr_uart0
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPI0,
@@ -59,12 +51,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = NRF_TWI1,
@@ -76,34 +66,32 @@ static const i2c_conf_t i2c_config[] = {
 };
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- *
- * The ADC channels have a fixed mapping:
- *
- * | Channel    | MCU Pin   | Arduino pin on board                  |
- * |:---------- |:--------- |:------------------------------------- |
- * | AIN0       | P0.26     | -- (exposed, by no Arduino UNO pin)   |
- * | AIN1       | P0.27     | -- (exposed, by no Arduino UNO pin)   |
- * | AIN2       | P0.01     | A0                                    |
- * | AIN3       | P0.02     | A1                                    |
- * | AIN4       | P0.03     | A2                                    |
- * | AIN5       | P0.04     | A3                                    |
- * | AIN6       | P0.05     | A4                                    |
- * | AIN7       | P0.06     | A5                                    |
- *
- * Expose those on Arduino pins A0 to A5
- * @{
- */
+/// @name    ADC configuration
+///
+/// The ADC channels have a fixed mapping:
+///
+/// | Channel    | MCU Pin   | Arduino pin on board                  |
+/// |:---------- |:--------- |:------------------------------------- |
+/// | AIN0       | P0.26     | -- (exposed, by no Arduino UNO pin)   |
+/// | AIN1       | P0.27     | -- (exposed, by no Arduino UNO pin)   |
+/// | AIN2       | P0.01     | A0                                    |
+/// | AIN3       | P0.02     | A1                                    |
+/// | AIN4       | P0.03     | A2                                    |
+/// | AIN5       | P0.04     | A3                                    |
+/// | AIN6       | P0.05     | A4                                    |
+/// | AIN7       | P0.06     | A5                                    |
+///
+/// Expose those on Arduino pins A0 to A5
+/// @{
 static const adc_conf_t adc_config[] = {2, 3, 4, 5, 6, 7};
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

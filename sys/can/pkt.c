@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_can_dll
- * @{
- * @file
- * @brief       CAN memory allocation module
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Toon Stegen <toon.stegen@altran.com>
- * @}
- */
+/// @ingroup     sys_can_dll
+/// @{
+/// @file
+/// @brief       CAN memory allocation module
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Toon Stegen <toon.stegen@altran.com>
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -38,8 +34,7 @@ static mutex_t _mutex = MUTEX_INIT;
 static can_pkt_t _pkt_buf[CAN_PKT_BUF_SIZE];
 static memarray_t _pkt_array;
 
-void can_pkt_init(void)
-{
+void can_pkt_init(void) {
     static_assert(sizeof(can_pkt_t) >= sizeof(can_rx_data_t), "sizeof(can_rx_data_t) must be at most sizeof(can_pkt_t)");
     mutex_lock(&_mutex);
     handle = 1;
@@ -47,8 +42,7 @@ void can_pkt_init(void)
     mutex_unlock(&_mutex);
 }
 
-static can_pkt_t *_pkt_alloc(int ifnum, const can_frame_t *frame)
-{
+static can_pkt_t *_pkt_alloc(int ifnum, const can_frame_t *frame) {
     can_pkt_t *pkt;
 
     mutex_lock(&_mutex);
@@ -67,14 +61,12 @@ static can_pkt_t *_pkt_alloc(int ifnum, const can_frame_t *frame)
     return pkt;
 }
 
-static void _init_rx_pkt(can_pkt_t *pkt)
-{
+static void _init_rx_pkt(can_pkt_t *pkt) {
     pkt->handle = 0;
     atomic_store(&pkt->ref_count, 0);
 }
 
-static void _init_tx_pkt(can_pkt_t *pkt)
-{
+static void _init_tx_pkt(can_pkt_t *pkt) {
     mutex_lock(&_mutex);
     pkt->handle = handle++;
     if (handle == INT_MAX) {
@@ -84,8 +76,7 @@ static void _init_tx_pkt(can_pkt_t *pkt)
     mutex_unlock(&_mutex);
 }
 
-can_pkt_t *can_pkt_alloc_tx(int ifnum, const can_frame_t *frame, kernel_pid_t tx_pid)
-{
+can_pkt_t *can_pkt_alloc_tx(int ifnum, const can_frame_t *frame, kernel_pid_t tx_pid) {
     can_pkt_t *pkt = _pkt_alloc(ifnum, frame);
 
     if (!pkt) {
@@ -101,8 +92,7 @@ can_pkt_t *can_pkt_alloc_tx(int ifnum, const can_frame_t *frame, kernel_pid_t tx
     return pkt;
 }
 
-can_pkt_t *can_pkt_alloc_rx(int ifnum, const can_frame_t *frame)
-{
+can_pkt_t *can_pkt_alloc_rx(int ifnum, const can_frame_t *frame) {
     can_pkt_t *pkt = _pkt_alloc(ifnum, frame);
 
     if (!pkt) {
@@ -115,8 +105,7 @@ can_pkt_t *can_pkt_alloc_rx(int ifnum, const can_frame_t *frame)
 }
 
 #ifdef MODULE_CAN_MBOX
-can_pkt_t *can_pkt_alloc_mbox_tx(int ifnum, const can_frame_t *frame, mbox_t *tx_mbox)
-{
+can_pkt_t *can_pkt_alloc_mbox_tx(int ifnum, const can_frame_t *frame, mbox_t *tx_mbox) {
     can_pkt_t *pkt = _pkt_alloc(ifnum, frame);
 
     if (!pkt) {
@@ -131,8 +120,7 @@ can_pkt_t *can_pkt_alloc_mbox_tx(int ifnum, const can_frame_t *frame, mbox_t *tx
 }
 #endif
 
-void can_pkt_free(can_pkt_t *pkt)
-{
+void can_pkt_free(can_pkt_t *pkt) {
     assert(pkt);
 
     DEBUG("can_pkt_free: free pkt=%p\n", (void*)pkt);
@@ -142,8 +130,7 @@ void can_pkt_free(can_pkt_t *pkt)
     mutex_unlock(&_mutex);
 }
 
-can_rx_data_t *can_pkt_alloc_rx_data(void *data, size_t len, void *arg)
-{
+can_rx_data_t *can_pkt_alloc_rx_data(void *data, size_t len, void *arg) {
     can_rx_data_t *rx;
 
     mutex_lock(&_mutex);
@@ -163,8 +150,7 @@ can_rx_data_t *can_pkt_alloc_rx_data(void *data, size_t len, void *arg)
     return rx;
 }
 
-void can_pkt_free_rx_data(can_rx_data_t *data)
-{
+void can_pkt_free_rx_data(can_rx_data_t *data) {
     if (!data) {
         return;
     }

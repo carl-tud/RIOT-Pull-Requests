@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the AT25XXX EEPROM driver
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the AT25XXX EEPROM driver
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -25,8 +21,7 @@
 
 static at25xxx_t dev;
 
-static void test_normal_write(void)
-{
+static void test_normal_write(void) {
     const char data_in_a[] = "Hello EEPROM!";
     const char data_in_b[] = "This is a test.";
     char data_out[32];
@@ -40,8 +35,7 @@ static void test_normal_write(void)
     TEST_ASSERT_EQUAL_STRING(data_in_b, data_out);
 }
 
-static void test_page_write(void)
-{
+static void test_page_write(void) {
     const char data_in_a[] = "Hello EEPROM!";
     const char data_in_b[] = "This is a test.";
     char data_out[32];
@@ -55,8 +49,7 @@ static void test_page_write(void)
     TEST_ASSERT_EQUAL_STRING(data_in_b, data_out);
 }
 
-static void test_page_clear(void)
-{
+static void test_page_clear(void) {
     const char data_in_a[] = "Hello EEPROM!";
     char data_out[32];
     char data_clr[32];
@@ -72,8 +65,7 @@ static void test_page_clear(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(data_out, data_clr, sizeof(data_clr)));
 }
 
-static Test *tests_EEPROM_tests(void)
-{
+static Test *tests_EEPROM_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_normal_write),
         new_TestFixture(test_page_write),
@@ -85,8 +77,7 @@ static Test *tests_EEPROM_tests(void)
     return (Test *)&EEPROM_tests;
 }
 
-int main(void)
-{
+int main(void) {
     puts("AT25XXX EEPROM driver test application\n");
 
     at25xxx_init(&dev, &at25xxx_params[0]);

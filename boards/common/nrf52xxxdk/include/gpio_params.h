@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_nrf52xxxdk
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     boards_common_nrf52xxxdk
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -23,9 +19,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    Button configuration
- */
+/// @brief    Button configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
 #ifdef BTN0_PIN
@@ -66,4 +60,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

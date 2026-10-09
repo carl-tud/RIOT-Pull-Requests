@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2024 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @defgroup    tests_periph_uart_locate_pins
- * @{
- *
- * @file
- * @brief       Test application to figure out pin mapping via UART
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
- *
- * @}
- */
+/// @ingroup     tests
+/// @defgroup    tests_periph_uart_locate_pins
+/// @{
+///
+/// @file
+/// @brief       Test application to figure out pin mapping via UART
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
+///
+/// @}
 #include <stdint.h>
 
 #include "container.h"
@@ -28,9 +24,9 @@
 #  define UART_SYMBOL_RATE 9600
 #endif
 
-/* Adapt this list of pins to detect as needed. You may want to not use all
- * pins, e.g. pins connected to crystals, etc. may not react friendly to be
- * used as output */
+// Adapt this list of pins to detect as needed. You may want to not use all
+// pins, e.g. pins connected to crystals, etc. may not react friendly to be
+// used as output
 static const struct {
     uint8_t port_num;
     uint8_t pin_num;
@@ -50,8 +46,7 @@ soft_uart_conf_t soft_uart_config[] = {
     },
 };
 
-int main(void)
-{
+int main(void) {
     while (1) {
         for (unsigned i = 0; i < ARRAY_SIZE(pins); i++) {
             gpio_t pin = GPIO_PIN(pins[i].port_num, pins[i].pin_num);

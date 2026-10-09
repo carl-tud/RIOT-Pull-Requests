@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_io1_xplained
- *
- * @{
- * @file
- * @brief       Default configuration for IO1 Xplained
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_io1_xplained
+///
+/// @{
+/// @file
+/// @brief       Default configuration for IO1 Xplained
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "io1_xplained.h"
@@ -26,10 +22,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the IO1 Xplained extension
- * @{
- */
+/// @name    Set default configuration parameters for the IO1 Xplained extension
+/// @{
 #ifndef IO1_XPLAINED_PARAM_ADDR
 #define IO1_XPLAINED_PARAM_ADDR   (0x07)
 #endif
@@ -43,28 +37,22 @@ extern "C" {
                                    { .name = "GPIO1 (IO1 Xplained)" },       \
                                    { .name = "GPIO2 (IO1 Xplained)" }}
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure IO1 Xplained extension
- */
+/// @brief   Configure IO1 Xplained extension
 static const io1_xplained_params_t io1_xplained_params[] =
 {
     IO1_XPLAINED_PARAMS
 };
 
-/**
- * @brief   Allocate and configure entries to the SAUL registry
- */
+/// @brief   Allocate and configure entries to the SAUL registry
 saul_reg_info_t io1_xplained_saul_info[][4] =
 {
     IO1_XPLAINED_SAUL_INFO
 };
 
 #ifdef MODULE_SAUL_GPIO
-/**
- * @brief   Allocate and configure the extension LED gpios
- */
+/// @brief   Allocate and configure the extension LED gpios
 saul_gpio_params_t io1_xplained_saul_gpios[] =
 {
     {
@@ -87,4 +75,4 @@ saul_gpio_params_t io1_xplained_saul_gpios[] =
 }
 #endif
 
-/** @} */
+/// @}

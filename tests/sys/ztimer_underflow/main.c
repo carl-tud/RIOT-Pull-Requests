@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 SSV Software Systems GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 SSV Software Systems GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief    ztimer test application
- *
- * @author   Juergen Fitschen <jfi@ssv-embedded.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief    ztimer test application
+///
+/// @author   Juergen Fitschen <jfi@ssv-embedded.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -28,8 +24,7 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
-int main(void)
-{
+int main(void) {
     printf("Looping over ztimer clock %s\n", xstr(TEST_ZTIMER_CLOCK));
 
     for (unsigned i = 0; i < LOOPS; i++) {

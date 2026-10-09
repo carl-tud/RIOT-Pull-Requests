@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 Tom Hert <git@annsann.eu>
- * SPDX-FileCopyrightText: 2025 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Tom Hert <git@annsann.eu>
+// SPDX-FileCopyrightText: 2025 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_rp2350
- * @{
- *
- * @file
- * @brief       Implementation of the CPU initialization for RP2350
- *
- * @author      Tom Hert <git@annsann.eu>
- * @}
- */
+/// @ingroup     cpu_rp2350
+/// @{
+///
+/// @file
+/// @brief       Implementation of the CPU initialization for RP2350
+///
+/// @author      Tom Hert <git@annsann.eu>
+/// @}
 
 #include "multicore.h"
 #include <sys/unistd.h>
@@ -26,32 +22,28 @@
 #include "periph/uart.h"
 #include "periph_conf.h"
 
-void gpio_reset(void)
-{
+void gpio_reset(void) {
     reset_component(RESET_PADS_BANK0, RESET_PADS_BANK0);
     reset_component(RESET_IO_BANK0, RESET_IO_BANK0);
 }
 
-/**
- * @brief Initialize the CPU, set IRQ priorities, clocks, peripheral
- */
-void rp2350_init(void)
-{
-    /* Reset GPIO state */
+/// @brief Initialize the CPU, set IRQ priorities, clocks, peripheral
+void rp2350_init(void) {
+    // Reset GPIO state
     gpio_reset();
 
-    /* Reset clock to default state */
+    // Reset clock to default state
     clock_reset();
 
-    /* initialize the CPU clock */
+    // initialize the CPU clock
     cpu_clock_init();
 
-    /* initialize the early peripherals */
+    // initialize the early peripherals
     early_init();
 
-    /* trigger static peripheral initialization */
+    // trigger static peripheral initialization
     periph_init();
 
-    /* initialize the board */
+    // initialize the board
     board_init();
 }

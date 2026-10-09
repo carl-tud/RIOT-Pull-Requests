@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- * @file
- * @brief       Test application for the Sensirion SPS30 device driver
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+/// @file
+/// @brief       Test application for the Sensirion SPS30 device driver
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -34,29 +30,26 @@
 #define NC_UNIT_STR  "[#/cm³]"
 #define TPS_UNIT_STR "[µm]"
 
-/* prints the result of an operation and returns true if an error occurred */
-static bool _print_error(const char *msg, sps30_error_code_t ec)
-{
+// prints the result of an operation and returns true if an error occurred
+static bool _print_error(const char *msg, sps30_error_code_t ec) {
     printf("sps30_%s: [%s]\n", msg, (ec == SPS30_OK) ? "OK" :
                               (ec == SPS30_CRC_ERROR ? "CRC_ERROR"
                                                      : "I2C_ERROR"));
     return ec != SPS30_OK;
 }
 
-static void _print_val_row(char *typ1, char *typ2, char *unit, float val)
-{
+static void _print_val_row(char *typ1, char *typ2, char *unit, float val) {
     printf("| %-5s %4s:%3"PRIu32".%03"PRIu32" %-8s |\n", typ1, typ2,
            (uint32_t)val, ((uint32_t)((val + 0.0005) * 1000)) % 1000, unit);
 }
 
-int main(void)
-{
+int main(void) {
     sps30_t dev;
     sps30_data_t data;
     sps30_error_code_t ec;
     char str[SPS30_SER_ART_LEN];
-    uint32_t ci = 0;   /* clean interval */
-    uint32_t nci = 0;  /* new clean interval */
+    uint32_t ci = 0;   // clean interval
+    uint32_t nci = 0;  // new clean interval
     bool error = false;
     unsigned cnt = NUM_OF_MEASUREMENTS;
 
@@ -84,10 +77,10 @@ int main(void)
     ec = sps30_start_fan_clean(&dev);
     error |= _print_error("start_fan_clean", ec);
 
-    /* wait long enough for the fan clean to be done and the fan to settle */
+    // wait long enough for the fan clean to be done and the fan to settle
     ztimer_sleep(ZTIMER_MSEC, 2 * SPS30_FAN_CLEAN_S);
 
-    /* read the currently set value from the sensor */
+    // read the currently set value from the sensor
     ec = sps30_read_ac_interval(&dev, &ci);
     error |= _print_error("read_ac_interval", ec);
 
@@ -95,23 +88,23 @@ int main(void)
     ec = sps30_write_ac_interval(&dev, nci);
     error |= _print_error("write_ac_interval", ec);
 
-    /* resetting the sensor so the updated value can be read */
+    // resetting the sensor so the updated value can be read
     ec = sps30_reset(&dev);
     error |= _print_error("reset", ec);
 
     ztimer_sleep(ZTIMER_MSEC, SENSOR_RESET_DELAY_MS);
 
-    /* Put the sensor in sleep */
+    // Put the sensor in sleep
     ec = sps30_sleep(&dev);
     error |= _print_error("sleep", ec);
     ztimer_sleep(ZTIMER_MSEC, SENSOR_SLEEP_WAKE_DELAY_MS);
 
-    /* Wake-up the sensor */
+    // Wake-up the sensor
     ec = sps30_wakeup(&dev);
     error |= _print_error("wake-up", ec);
     ztimer_sleep(ZTIMER_MSEC, SENSOR_SLEEP_WAKE_DELAY_MS);
 
-    /* start the sensor again again... */
+    // start the sensor again again...
     ec = sps30_start_measurement(&dev);
     error |= _print_error("start_measurement", ec);
 
@@ -125,7 +118,7 @@ int main(void)
                PRIu32" != %"PRIu32")\n", ci, nci);
     }
 
-    /* restore the default auto-clean cycle */
+    // restore the default auto-clean cycle
     ec = sps30_write_ac_interval(&dev, SPS30_DEFAULT_ACI_S);
     error |= _print_error("write_ac_interval", ec);
 
@@ -136,9 +129,9 @@ int main(void)
         if (!ready) {
             if (err_code != SPS30_OK) {
                 error |= _print_error("data_ready", err_code);
-                cnt--; /* if errors happen, stop after NUM_OF_MEASUREMENTS */
+                cnt--; // if errors happen, stop after NUM_OF_MEASUREMENTS
             }
-            /* try again after some time */
+            // try again after some time
             ztimer_sleep(ZTIMER_MSEC, POLL_FOR_READY_MS);
             continue;
         }

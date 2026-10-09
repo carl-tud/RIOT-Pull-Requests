@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2018 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2018 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     tools
- * @{
- *
- * @file
- * @brief       Tool for programming the reset pin on nRF52x-based boards
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tools
+/// @{
+///
+/// @file
+/// @brief       Tool for programming the reset pin on nRF52x-based boards
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -24,7 +20,7 @@
 #include "cpu.h"
 #include "periph/pm.h"
 
-/* guard against bad usage: only allow building for nRF52x CPUs */
+// guard against bad usage: only allow building for nRF52x CPUs
 #ifndef CPU_NRF52
 #error This tool is only usable for nRF52x-based platforms
 #endif
@@ -41,32 +37,28 @@
 
 #define REG_NUM         (sizeof(NRF_UICR_Type) / 4)
 
-/* allocate a copy of the registers in RAM */
+// allocate a copy of the registers in RAM
 static NRF_UICR_Type _buf;
 
-static void _print_pin(uint32_t p)
-{
+static void _print_pin(uint32_t p) {
     printf("P%i.%2i", (int)((p & PORT_BIT) >> PORT_POS), (int)(p & PIN_MASK));
 }
 
-static void _copy(volatile uint32_t *dst, volatile uint32_t *src, unsigned num)
-{
+static void _copy(volatile uint32_t *dst, volatile uint32_t *src, unsigned num) {
     for (unsigned i = 0; i < num; i++) {
         *dst++ = *src++;
     }
 }
 
-static void _save_uicr(void)
-{
+static void _save_uicr(void) {
     memcpy(&_buf, (void *)NRF_UICR, sizeof(NRF_UICR_Type));
 }
 
-static void _restore_uicr(void)
-{
+static void _restore_uicr(void) {
     NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen;
     while (NRF_NVMC->READY == NVMC_READY_READY_Busy) {}
 
-    /* we copy the values back selectively, skipping the PSELRESET fields */
+    // we copy the values back selectively, skipping the PSELRESET fields
     _copy(NRF_UICR->NRFFW, _buf.NRFFW, 15);
     _copy(NRF_UICR->NRFHW, _buf.NRFHW, 12);
     _copy(NRF_UICR->CUSTOMER, _buf.CUSTOMER, 32);
@@ -76,11 +68,10 @@ static void _restore_uicr(void)
     NRF_UICR->REGOUT0 = _buf.REGOUT0;
 #endif
 
-    /* we can leave the NVMC in write enable mode when leaving... */
+    // we can leave the NVMC in write enable mode when leaving...
 }
 
-int main(void)
-{
+int main(void) {
     uint32_t target = (uint32_t)RESET_PIN;
 
     if ((NRF_UICR->PSELRESET[0] == target) &&
@@ -100,8 +91,8 @@ int main(void)
         puts("Programming the pin now...");
         if ((NRF_UICR->PSELRESET[0] != RESET_VAL) ||
             (NRF_UICR->PSELRESET[1] != RESET_VAL)) {
-            /* we can only erase all UICR registers at once, so we need to save
-             * and restore there values for clearing the PSELRESET registers */
+            // we can only erase all UICR registers at once, so we need to save
+            // and restore there values for clearing the PSELRESET registers
             puts("save uicr");
             _save_uicr();
             NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Een;
@@ -120,7 +111,7 @@ int main(void)
         while (NRF_NVMC->READY == NVMC_READY_READY_Busy) {}
         NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren;
 
-        /* verify result */
+        // verify result
         puts("The changes will only take effect after reboot.\n"
              "Doing a reboot now...\n");
         pm_reboot();

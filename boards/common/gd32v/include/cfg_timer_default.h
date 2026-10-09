@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht <gunar@schorcht.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht <gunar@schorcht.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_gd32v
- * @{
- *
- * @file
- * @brief       Default timer configuration for GD32VF103 boards
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     boards_common_gd32v
+/// @{
+///
+/// @file
+/// @brief       Default timer configuration for GD32VF103 boards
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include "periph_cpu.h"
 
@@ -23,15 +19,13 @@
 extern "C" {
 #endif
 
-/**
- * @name   Timer configuration
- *
- * All GD32VF103xx variants have at least one advanced timer TIMER0 and two
- * general timers TIMER1 and TIMER2. GD32VF10x8 and GD32VF10xB have two
- * additional general timers TIMER3 and TIMER4.
- *
- * @{
- */
+/// @name   Timer configuration
+///
+/// All GD32VF103xx variants have at least one advanced timer TIMER0 and two
+/// general timers TIMER1 and TIMER2. GD32VF10x8 and GD32VF10xB have two
+/// additional general timers TIMER3 and TIMER4.
+///
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIMER0,
@@ -74,7 +68,7 @@ static const timer_conf_t timer_config[] = {
         .irqn     = TIMER4_IRQn
     }
 #endif
-#endif /* !defined(MODULE_PERIPH_PWM) */
+#endif // !defined(MODULE_PERIPH_PWM)
 };
 
 #define TIMER_0_IRQN        TIMER0_Channel_IRQn
@@ -89,13 +83,13 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_3_IRQN        TIMER3_IRQn
 #define TIMER_4_IRQN        TIMER4_IRQn
 #endif
-#endif /* !defined(MODULE_PERIPH_PWM) */
+#endif // !defined(MODULE_PERIPH_PWM)
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

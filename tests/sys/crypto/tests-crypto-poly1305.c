@@ -1,8 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "embUnit/embUnit.h"
 #include "tests-crypto.h"
@@ -11,11 +9,9 @@
 
 #include <string.h>
 
-/*
- *  Poly1305 Message Authentication Code
- *
- *  https://tools.ietf.org/html/draft-nir-cfrg-chacha20-poly1305-06#appendix-A.3
- */
+//  Poly1305 Message Authentication Code
+//
+//  https://tools.ietf.org/html/draft-nir-cfrg-chacha20-poly1305-06#appendix-A.3
 
 static const uint8_t key_1[32] = { 0 };
 static const uint8_t msg_1[64] = { 0 };
@@ -214,8 +210,7 @@ static const uint8_t tag_11[] = {
 };
 
 static void _test_poly1305(const uint8_t *key, const uint8_t *msg, size_t msglen,
-                           const uint8_t *tag)
-{
+                           const uint8_t *tag) {
     uint8_t gen_tag[16];
 
     poly1305_auth(gen_tag, msg, msglen, key);
@@ -224,63 +219,51 @@ static void _test_poly1305(const uint8_t *key, const uint8_t *msg, size_t msglen
     }
 }
 
-static void test_crypto_poly1305_1(void)
-{
+static void test_crypto_poly1305_1(void) {
     _test_poly1305(key_1, msg_1, sizeof(msg_1), tag_1);
 }
 
-static void test_crypto_poly1305_2(void)
-{
+static void test_crypto_poly1305_2(void) {
     _test_poly1305(key_2, msg_2, sizeof(msg_2), tag_2);
 }
 
-static void test_crypto_poly1305_3(void)
-{
+static void test_crypto_poly1305_3(void) {
     _test_poly1305(key_3, msg_3, sizeof(msg_3), tag_3);
 }
 
-static void test_crypto_poly1305_4(void)
-{
+static void test_crypto_poly1305_4(void) {
     _test_poly1305(key_4, msg_4, sizeof(msg_4), tag_4);
 }
 
-static void test_crypto_poly1305_5(void)
-{
+static void test_crypto_poly1305_5(void) {
     _test_poly1305(key_5, msg_5, sizeof(msg_5), tag_5);
 }
 
-static void test_crypto_poly1305_6(void)
-{
+static void test_crypto_poly1305_6(void) {
     _test_poly1305(key_6, msg_6, sizeof(msg_6), tag_6);
 }
 
-static void test_crypto_poly1305_7(void)
-{
+static void test_crypto_poly1305_7(void) {
     _test_poly1305(key_7, msg_7, sizeof(msg_7), tag_7);
 }
 
-static void test_crypto_poly1305_8(void)
-{
+static void test_crypto_poly1305_8(void) {
     _test_poly1305(key_8, msg_8, sizeof(msg_8), tag_8);
 }
 
-static void test_crypto_poly1305_9(void)
-{
+static void test_crypto_poly1305_9(void) {
     _test_poly1305(key_9, msg_9, sizeof(msg_9), tag_9);
 }
 
-static void test_crypto_poly1305_10(void)
-{
+static void test_crypto_poly1305_10(void) {
     _test_poly1305(key_10, msg_10, sizeof(msg_10), tag_10);
 }
 
-static void test_crypto_poly1305_11(void)
-{
+static void test_crypto_poly1305_11(void) {
     _test_poly1305(key_11, msg_11, sizeof(msg_11), tag_11);
 }
 
-Test *tests_crypto_poly1305_tests(void)
-{
+Test *tests_crypto_poly1305_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_crypto_poly1305_1),
         new_TestFixture(test_crypto_poly1305_2),

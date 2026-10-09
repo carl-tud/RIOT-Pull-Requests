@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   msg_try_receive regression test application
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   msg_try_receive regression test application
+///
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "thread.h"
@@ -23,8 +19,7 @@
 static kernel_pid_t _main_pid;
 
 static char stack[THREAD_STACKSIZE_MAIN];
-static void *second_thread(void *arg)
-{
+static void *second_thread(void *arg) {
     (void) arg;
     msg_t test;
     puts("sending message...");
@@ -33,8 +28,7 @@ static void *second_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     printf("main starting\n");
 
     _main_pid = thread_getpid();

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_luid
- * @{
- *
- * @file
- * @brief       LUID module implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_luid
+/// @{
+///
+/// @file
+/// @brief       LUID module implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <string.h>
@@ -23,9 +19,8 @@
 #include "luid.h"
 
 #if CPUID_LEN
-/* based on DJB2 Hash */
-static void _luid_round(const uint8_t *in, size_t in_len, uint8_t *out, size_t out_len)
-{
+// based on DJB2 Hash
+static void _luid_round(const uint8_t *in, size_t in_len, uint8_t *out, size_t out_len) {
     uint32_t hash = 5381;
 
     for (size_t i = 0; i < in_len; i++) {
@@ -35,8 +30,7 @@ static void _luid_round(const uint8_t *in, size_t in_len, uint8_t *out, size_t o
 }
 #endif
 
-void __attribute__((weak)) luid_base(void *buf, size_t len)
-{
+void __attribute__((weak)) luid_base(void *buf, size_t len) {
     memset(buf, LUID_BACKUP_SEED, len);
 
 #if CPUID_LEN
@@ -50,22 +44,19 @@ void __attribute__((weak)) luid_base(void *buf, size_t len)
 
 static uint8_t lastused;
 
-void luid_get(void *buf, size_t len)
-{
+void luid_get(void *buf, size_t len) {
     luid_base(buf, len);
 
     ((uint8_t *)buf)[0] ^= lastused++;
 }
 
-void luid_get_lb(void *buf, size_t len)
-{
+void luid_get_lb(void *buf, size_t len) {
     luid_base(buf, len);
 
     ((uint8_t *)buf)[len - 1] ^= lastused++;
 }
 
-void luid_custom(void *buf, size_t len, uint16_t gen)
-{
+void luid_custom(void *buf, size_t len, uint16_t gen) {
     luid_base(buf, len);
 
     for (size_t i = 0; i < sizeof(gen); i++) {
@@ -73,18 +64,16 @@ void luid_custom(void *buf, size_t len, uint16_t gen)
     }
 }
 
-void luid_get_short(network_uint16_t *addr)
-{
+void luid_get_short(network_uint16_t *addr) {
     luid_base(addr, sizeof(*addr));
     addr->u8[1] ^= lastused++;
 
-    /* https://tools.ietf.org/html/rfc4944#section-12 requires the first bit to
-     * 0 for unicast addresses */
+    // https://tools.ietf.org/html/rfc4944#section-12 requires the first bit to
+    // 0 for unicast addresses
     addr->u8[0] &= 0x7F;
 }
 
-void luid_get_eui48(eui48_t *addr)
-{
+void luid_get_eui48(eui48_t *addr) {
     luid_base(addr, sizeof(*addr));
     addr->uint8[5] ^= lastused++;
 
@@ -92,14 +81,13 @@ void luid_get_eui48(eui48_t *addr)
     eui48_clear_group(addr);
 }
 
-void luid_netdev_get_eui48(const netdev_t *netdev, eui48_t *addr)
-{
+void luid_netdev_get_eui48(const netdev_t *netdev, eui48_t *addr) {
     luid_base(addr, sizeof(*addr));
 #ifdef MODULE_NETDEV_REGISTER
     addr->uint8[4] ^= netdev->type;
     addr->uint8[5] ^= netdev->index;
 #else
-    /* we should only get here with gnrc_netif_single */
+    // we should only get here with gnrc_netif_single
     (void)netdev;
 #endif
 
@@ -107,8 +95,7 @@ void luid_netdev_get_eui48(const netdev_t *netdev, eui48_t *addr)
     eui48_clear_group(addr);
 }
 
-void luid_get_eui64(eui64_t *addr)
-{
+void luid_get_eui64(eui64_t *addr) {
     luid_base(addr, sizeof(*addr));
     addr->uint8[7] ^= lastused++;
 
@@ -116,14 +103,13 @@ void luid_get_eui64(eui64_t *addr)
     eui64_clear_group(addr);
 }
 
-void luid_netdev_get_eui64(const netdev_t *netdev, eui64_t *addr)
-{
+void luid_netdev_get_eui64(const netdev_t *netdev, eui64_t *addr) {
     luid_base(addr, sizeof(*addr));
 #ifdef MODULE_NETDEV_REGISTER
     addr->uint8[6] ^= netdev->type;
     addr->uint8[7] ^= netdev->index;
 #else
-    /* we should only get here with gnrc_netif_single */
+    // we should only get here with gnrc_netif_single
     (void)netdev;
 #endif
 

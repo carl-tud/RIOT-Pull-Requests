@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f767zi
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-f767zi board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nucleo-f767zi
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-f767zi board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -37,15 +33,13 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 4 },    /* DMA1 Stream 4 - USART3_TX */
-    { .stream = 14 },   /* DMA2 Stream 6 - USART6_TX */
-    { .stream = 6 },    /* DMA1 Stream 6 - USART2_TX */
-    { .stream = 8 },    /* DMA2 Stream 0 - ETH_TX    */
+    { .stream = 4 },    // DMA1 Stream 4 - USART3_TX
+    { .stream = 14 },   // DMA2 Stream 6 - USART6_TX
+    { .stream = 6 },    // DMA1 Stream 6 - USART2_TX
+    { .stream = 8 },    // DMA2 Stream 0 - ETH_TX
 };
 
 #define DMA_0_ISR  isr_dma1_stream4
@@ -54,12 +48,10 @@ static const dma_conf_t dma_config[] = {
 #define DMA_3_ISR  isr_dma2_stream0
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART3,
@@ -110,20 +102,17 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
-        /* PA7 is the default MOSI pin, as it is required for compatibility with
-         * Arduino(ish) shields. Sadly, it is also connected to the RMII_DV of
-         * Ethernet PHY. We work around this by remapping the MOSI to PB5 when
-         * the on-board Ethernet PHY is used.
-         */
+        // PA7 is the default MOSI pin, as it is required for compatibility with
+        // Arduino(ish) shields. Sadly, it is also connected to the RMII_DV of
+        // Ethernet PHY. We work around this by remapping the MOSI to PB5 when
+        // the on-board Ethernet PHY is used.
 #ifdef MODULE_PERIPH_ETH
         .mosi_pin = GPIO_PIN(PORT_B, 5),
 #else
@@ -155,12 +144,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name ETH configuration
- * @{
- */
+/// @name ETH configuration
+/// @{
 static const eth_conf_t eth_config = {
     .mode = RMII,
     .speed = MII_BMCR_SPEED_100 | MII_BMCR_FULL_DPLX,
@@ -181,18 +168,16 @@ static const eth_conf_t eth_config = {
 };
 
 #define ETH_DMA_ISR        isr_dma2_stream0
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32F767ZI order.  Instead, we
- * just define 6 ADC channels, for the Nucleo
- * Arduino header pins A0-A5 and the internal VBAT channel.
- *
- * @{
- */
+/// @name   ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32F767ZI order.  Instead, we
+/// just define 6 ADC channels, for the Nucleo
+/// Arduino header pins A0-A5 and the internal VBAT channel.
+///
+/// @{
 static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_A, 3), 2, 3},
     {GPIO_PIN(PORT_C, 0), 2, 10},
@@ -200,21 +185,17 @@ static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_F, 3), 2, 9},
     {GPIO_PIN(PORT_F, 5), 2, 15},
     {GPIO_PIN(PORT_F, 10), 2, 8},
-    {GPIO_UNDEF, 0, 18}, /* VBAT */
+    {GPIO_UNDEF, 0, 18}, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(6) /**< VBAT ADC line */
-#define ADC_CLK_MAX         MHZ(36)     /**< Use a faster than default ADC clock */
+#define VBAT_ADC            ADC_LINE(6) ///< VBAT ADC line
+#define ADC_CLK_MAX         MHZ(36)     ///< Use a faster than default ADC clock
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
-/**
- * @brief   Actual PWM configuration
- */
+/// @name    PWM configuration
+/// @{
+/// @brief   Actual PWM configuration
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM1,
@@ -238,14 +219,12 @@ static const pwm_conf_t pwm_config[] = {
     },
 };
 
-/**
- * @brief   Number of PWM devices
- */
+/// @brief   Number of PWM devices
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

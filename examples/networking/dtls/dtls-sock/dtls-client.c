@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       DTLS sock client example
- *
- * @author      Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       DTLS sock client example
+///
+/// @author      Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
 
 #include <stdio.h>
 
@@ -30,12 +26,12 @@
 #include "dtls_client_credentials.h"
 
 #ifndef DTLS_DEFAULT_PORT
-#define DTLS_DEFAULT_PORT (20220) /* DTLS default port */
+#define DTLS_DEFAULT_PORT (20220) // DTLS default port
 #endif
 
 static bool _client_credentials_configured = false;
 
-/* Credman tags to select which credentials to use */
+// Credman tags to select which credentials to use
 #define SOCK_DTLS_CLIENT_TAG_0 (2)
 #define SOCK_DTLS_CLIENT_TAG_1 (3)
 
@@ -93,8 +89,7 @@ static const credman_credential_t psk_credential_1 = {
 };
 
 static credman_tag_t _client_psk_cb(sock_dtls_t *sock, sock_udp_ep_t *ep, credman_tag_t tags[],
-                                    unsigned tags_len, const char *hint, size_t hint_len)
-{
+                                    unsigned tags_len, const char *hint, size_t hint_len) {
     (void) sock;
     (void) tags;
     (void) tags_len;
@@ -105,7 +100,7 @@ static credman_tag_t _client_psk_cb(sock_dtls_t *sock, sock_udp_ep_t *ep, credma
     sock_udp_ep_fmt(ep, addrstr, &port);
     printf("From [%s]:%" PRIu16" \n", addrstr, port);
 
-    /* if we got a hint, try to use it to determine which PSK to use */
+    // if we got a hint, try to use it to determine which PSK to use
     if (hint && hint_len) {
         printf("Client got hint: %.*s\n", (unsigned)hint_len, hint);
 
@@ -123,9 +118,8 @@ static credman_tag_t _client_psk_cb(sock_dtls_t *sock, sock_udp_ep_t *ep, credma
     return CREDMAN_TAG_EMPTY;
 }
 
-static int _configure_client_credentials(void)
-{
-    /* register the credentials on credman */
+static int _configure_client_credentials(void) {
+    // register the credentials on credman
     if (IS_ACTIVE(CONFIG_DTLS_ECC)) {
         if (credman_add(&ecc_credential_0) != CREDMAN_OK) {
             puts("Error cannot add ECC credential 0 to system");
@@ -146,8 +140,7 @@ static int _configure_client_credentials(void)
     return 0;
 }
 
-static int client_send(char *addr_str, char *data, size_t datalen)
-{
+static int client_send(char *addr_str, char *data, size_t datalen) {
     ssize_t res;
     sock_udp_t udp_sock;
     sock_dtls_t dtls_sock;
@@ -158,7 +151,7 @@ static int client_send(char *addr_str, char *data, size_t datalen)
     remote.port = DTLS_DEFAULT_PORT;
     uint8_t buf[DTLS_HANDSHAKE_BUFSIZE];
 
-    /* get interface */
+    // get interface
     netif_t *netif;
     res = netutils_get_ipv6((void *)&remote.addr, &netif, addr_str);
     if (res) {
@@ -174,11 +167,9 @@ static int client_send(char *addr_str, char *data, size_t datalen)
         return -1;
     }
 
-    /*
-     * Currently DTLS sock needs one and only one credential for the
-     * initialization. Subsequent credentials are made available to the sock
-     * by means of `sock_dtls_add_credential`.
-     */
+    // Currently DTLS sock needs one and only one credential for the
+    // initialization. Subsequent credentials are made available to the sock
+    // by means of `sock_dtls_add_credential`.
     if (sock_dtls_create(&dtls_sock, &udp_sock, SOCK_DTLS_CLIENT_TAG_0,
                          SOCK_DTLS_1_2, SOCK_DTLS_CLIENT) < 0) {
         puts("Error creating DTLS sock");
@@ -187,13 +178,13 @@ static int client_send(char *addr_str, char *data, size_t datalen)
     }
 
     if (IS_ACTIVE(CONFIG_DTLS_PSK)) {
-        /* make the new credential available to the sock */
+        // make the new credential available to the sock
         if (sock_dtls_add_credential(&dtls_sock, SOCK_DTLS_CLIENT_TAG_1) < 0) {
             puts("Error cannot add second PSK credential to the sock");
             return -1;
         }
 
-        /* register a callback for PSK credential selection */
+        // register a callback for PSK credential selection
         sock_dtls_set_client_psk_cb(&dtls_sock, _client_psk_cb);
     }
 
@@ -233,8 +224,7 @@ static int client_send(char *addr_str, char *data, size_t datalen)
     return 0;
 }
 
-static int _client_cmd(int argc, char **argv)
-{
+static int _client_cmd(int argc, char **argv) {
     if (argc != 3) {
         printf("usage %s <addr> <data>\n", argv[0]);
         return 1;

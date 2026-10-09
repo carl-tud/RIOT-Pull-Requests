@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Configuration definitions for bench_periph_timer
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Configuration definitions for bench_periph_timer
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #include <stdint.h>
 
@@ -33,9 +29,7 @@ extern "C" {
 #error "TIMER_NUMOF not defined!"
 #endif
 
-/**
- * @brief Timer under test (TUT)
- */
+/// @brief Timer under test (TUT)
 #ifndef TIM_TEST_DEV
 #define TIM_TEST_DEV (TIMER_DEV(0))
 #endif
@@ -46,33 +40,31 @@ extern "C" {
 #define TIM_TEST_CHAN 0
 #endif
 
-/* Use separate reference timer to compare against */
+// Use separate reference timer to compare against
 #ifndef USE_REFERENCE
 #define USE_REFERENCE 1
 #endif
 
-/* Whether to keep statistics per timer target value, or only totals */
+// Whether to keep statistics per timer target value, or only totals
 #ifndef DETAILED_STATS
 #define DETAILED_STATS 1
 #endif
 
-/* Group statistics into log2 size buckets, instead of one record per timer target
- * i.e. 1, 2, 3-4, 5-8, 9-16, 17-32 etc. */
-/* Only used if DETAILED_STATS is 1 */
+// Group statistics into log2 size buckets, instead of one record per timer target
+// i.e. 1, 2, 3-4, 5-8, 9-16, 17-32 etc.
+// Only used if DETAILED_STATS is 1
 #ifndef LOG2_STATS
 #define LOG2_STATS 1
 #endif
 
-/* Margin to ensure that the rescheduling timer never is hit */
+// Margin to ensure that the rescheduling timer never is hit
 #ifndef RESCHEDULE_MARGIN
 #define RESCHEDULE_MARGIN (SPIN_MAX_TARGET * 16)
 #endif
 
-/**
- * @brief Reference timer to compare against
- */
+/// @brief Reference timer to compare against
 #ifndef TIM_REF_DEV
-/* Avoid using the timer under test as reference */
+// Avoid using the timer under test as reference
 #if ((TIM_TEST_DEV) == (TIMER_DEV(0)))
 #define TIM_REF_DEV (TIMER_DEV(1))
 #else
@@ -92,26 +84,26 @@ extern "C" {
 #define TIM_TEST_TO_REF(x) (x)
 #endif
 
-/* Longest timer timeout tested (TUT ticks)*/
-/* Reduce this if RAM usage is too high */
+// Longest timer timeout tested (TUT ticks)
+// Reduce this if RAM usage is too high
 #ifndef TEST_MAX
 #define TEST_MAX 128
 #endif
-/* Shortest timer timeout tested (TUT ticks) */
+// Shortest timer timeout tested (TUT ticks)
 #ifndef TEST_MIN
 #if TEST_XTIMER
-/* Default minimum delay for xtimer */
+// Default minimum delay for xtimer
 #define TEST_MIN (XTIMER_ISR_BACKOFF)
 #elif TIM_TEST_FREQ < 100000
-/* this usually works for slow timers */
+// this usually works for slow timers
 #define TEST_MIN 1
 #else
-/* avoid problems with timer_set_absolute setting a time in the past because of
- * processing delays */
+// avoid problems with timer_set_absolute setting a time in the past because of
+// processing delays
 #define TEST_MIN 16
 #endif
 #endif
-/* Minimum delay for relative timers, should usually work with any value */
+// Minimum delay for relative timers, should usually work with any value
 #ifndef TEST_MIN_REL
 #if TEST_XTIMER
 #define TEST_MIN_REL (TEST_MIN)
@@ -119,10 +111,10 @@ extern "C" {
 #define TEST_MIN_REL (0)
 #endif
 #endif
-/* Number of test values */
+// Number of test values
 #define TEST_NUM ((TEST_MAX) - (TEST_MIN) + 1)
-/* 2-logarithm of TEST_NUM, not possible to compute automatically by the
- * preprocessor unless comparing values like this */
+// 2-logarithm of TEST_NUM, not possible to compute automatically by the
+// preprocessor unless comparing values like this
 #if TEST_NUM <=     (1 <<  2)
 #define TEST_LOG2NUM       2
 #elif TEST_NUM <=   (1 <<  3)
@@ -161,8 +153,8 @@ extern "C" {
 #define TEST_LOG2NUM      32
 #endif
 
-/* convert TUT ticks to reference ticks */
-/* x is expected to be < 2**16 */
+// convert TUT ticks to reference ticks
+// x is expected to be < 2**16
 #ifndef TIM_TEST_TO_REF
 #if (TIM_TEST_FREQ == TIM_REF_FREQ)
 #define TIM_TEST_TO_REF(x) (x)
@@ -170,7 +162,7 @@ extern "C" {
 #define TIM_TEST_TO_REF(x) (((uint32_t)(x) * 15625ul) >> 9)
 #elif (TIM_TEST_FREQ == 1000000ul) && (TIM_REF_FREQ == 32768ul)
 #define TIM_TEST_TO_REF(x) (div_u32_by_15625div512(x))
-/* General conversion for Timer with 2^x factor */
+// General conversion for Timer with 2^x factor
 #elif (TIM_TEST_FREQ < TIM_REF_FREQ ) && ((TIM_REF_FREQ % TIM_TEST_FREQ) == 0)
 #ifndef TIM_TEST_TO_REF_SHIFT
 #if ((TIM_REF_FREQ >> 1) == TIM_TEST_FREQ)
@@ -215,13 +207,13 @@ extern "C" {
 #endif
 #endif
 
-/* Print results every X reference ticks */
+// Print results every X reference ticks
 #ifndef TEST_PRINT_INTERVAL_TICKS
 #define TEST_PRINT_INTERVAL_TICKS ((TIM_REF_FREQ) * 30)
 #endif
 
-/* If variance or mean exceeds these values the row will be marked with a "SIC!"
- * in the table output */
+// If variance or mean exceeds these values the row will be marked with a "SIC!"
+// in the table output
 #ifndef TEST_UNEXPECTED_STDDEV
 #define TEST_UNEXPECTED_STDDEV 4
 #endif
@@ -229,13 +221,13 @@ extern "C" {
 #define TEST_UNEXPECTED_MEAN 10
 #endif
 
-/* The spin calibration will try to set spin_limit to a number of loop
- * iterations which correspond to this many TUT ticks */
+// The spin calibration will try to set spin_limit to a number of loop
+// iterations which correspond to this many TUT ticks
 #ifndef SPIN_MAX_TARGET
 #define SPIN_MAX_TARGET 16
 #endif
 
-/* estimate_cpu_overhead will loop for this many iterations to get a proper estimate */
+// estimate_cpu_overhead will loop for this many iterations to get a proper estimate
 #define ESTIMATE_CPU_ITERATIONS 2048
 
 #if TEST_XTIMER

@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_gd32v
- * @ingroup     drivers_periph_wdt
- *
- * @brief
- *
- * @{
- *
- * @file        wdt.c
- * @brief       Independent Watchdog timer for gd32v platforms
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @author      Koen Zandberg <koen@bergzand.net>
- */
+/// @ingroup     cpu_gd32v
+/// @ingroup     drivers_periph_wdt
+///
+/// @brief
+///
+/// @{
+///
+/// @file        wdt.c
+/// @brief       Independent Watchdog timer for gd32v platforms
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @author      Koen Zandberg <koen@bergzand.net>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -45,25 +41,21 @@
 #define FWDGT_UNLOCK            ((uint16_t)0x5555)
 #define FWDGT_LOCK              ((uint16_t)0x0000)
 
-/* wdt_time (us) = LSI(us) x 4 x 2^PRE x RELOAD */
-static inline __attribute__((used)) uint32_t _wdt_time(uint8_t pre, uint16_t rel)
-{
+// wdt_time (us) = LSI(us) x 4 x 2^PRE x RELOAD
+static inline __attribute__((used)) uint32_t _wdt_time(uint8_t pre, uint16_t rel) {
     return (uint32_t)(((uint64_t)US_PER_SEC * 4 * (1 << pre) * rel) /
                       CLOCK_LSI);
 }
 
-static inline void _fwdt_unlock(void)
-{
+static inline void _fwdt_unlock(void) {
     FWDGT->CTL = FWDGT_UNLOCK;
 }
 
-static inline void _fwdt_lock(void)
-{
+static inline void _fwdt_lock(void) {
     FWDGT->CTL = FWDGT_LOCK;
 }
 
-static void _set_prescaler(uint8_t prescaler)
-{
+static void _set_prescaler(uint8_t prescaler) {
     assert(prescaler <= MAX_PRESCALER);
 
     _fwdt_unlock();
@@ -71,8 +63,7 @@ static void _set_prescaler(uint8_t prescaler)
     _fwdt_lock();
 }
 
-static void _set_reload(uint16_t reload)
-{
+static void _set_reload(uint16_t reload) {
     assert(reload <= FWDGT_RLD_RLD_Msk);
 
     _fwdt_unlock();
@@ -80,18 +71,16 @@ static void _set_reload(uint16_t reload)
     _fwdt_lock();
 }
 
-static uint8_t _find_prescaler(uint32_t rst_time)
-{
-    /* Divide by the range to get power of 2 of the prescaler */
+static uint8_t _find_prescaler(uint32_t rst_time) {
+    // Divide by the range to get power of 2 of the prescaler
     uint8_t pre = bitarithm_msb(rst_time / FWDGT_STEP_MS) + 1;
 
     DEBUG("[wdt]: prescaler value %d\n", pre);
     return pre;
 }
 
-static uint16_t _find_reload_value(uint8_t pre, uint32_t rst_time)
-{
-    /* Calculate best reload value = rst_time / LSI(ms) x 4 x 2^PRE */
+static uint16_t _find_reload_value(uint8_t pre, uint32_t rst_time) {
+    // Calculate best reload value = rst_time / LSI(ms) x 4 x 2^PRE
     uint16_t rel = (uint16_t)((rst_time * CLOCK_LSI) / \
                               ((uint32_t)(US_PER_MS * 4 * (1 << pre))));
 
@@ -99,23 +88,20 @@ static uint16_t _find_reload_value(uint8_t pre, uint32_t rst_time)
     return rel;
 }
 
-void wdt_start(void)
-{
+void wdt_start(void) {
     FWDGT->CTL = FWDGT_CTL_KEY_ENABLE;
 }
 
-void wdt_kick(void)
-{
+void wdt_kick(void) {
     FWDGT->CTL = FWDGT_CTL_KEY_RELOAD;
 }
 
-void wdt_setup_reboot(uint32_t min_time, uint32_t max_time)
-{
+void wdt_setup_reboot(uint32_t min_time, uint32_t max_time) {
     (void)min_time;
-    /* Windowed wdt not supported */
+    // Windowed wdt not supported
     assert(min_time == 0);
 
-    /* Check reset time limit */
+    // Check reset time limit
     assert((max_time > NWDT_TIME_LOWER_LIMIT) ||
            (max_time < NWDT_TIME_UPPER_LIMIT));
 
@@ -125,12 +111,12 @@ void wdt_setup_reboot(uint32_t min_time, uint32_t max_time)
     uint8_t pre = _find_prescaler(max_time);
     uint16_t rel = _find_reload_value(pre, max_time);
 
-    /* Set watchdog prescaler and reload value */
+    // Set watchdog prescaler and reload value
     _set_prescaler(pre);
     _set_reload(rel);
 
     DEBUG("[wdt]: reset time %" PRIu32 " [us]\n", _wdt_time(pre, rel));
 
-    /* Refresh wdt counter */
+    // Refresh wdt counter
     wdt_kick();
 }

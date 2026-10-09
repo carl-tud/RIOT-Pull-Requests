@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test for the on-board button macros
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test for the on-board button macros
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -39,16 +35,14 @@
 #endif
 
 #if defined (BTN0_PIN) || defined (BTN1_PIN) || defined (BTN2_PIN) || defined (BTN3_PIN)
-static void cb(void *arg)
-{
+static void cb(void *arg) {
     printf("Pressed BTN%d\n", (int)arg);
 }
 #endif
 
-int main(void)
-{
+int main(void) {
     int cnt = 0;
-    /* get the number of available buttons and init interrupt handler */
+    // get the number of available buttons and init interrupt handler
 #ifdef BTN0_PIN
     if (gpio_init_int(BTN0_PIN, BTN0_MODE, BTN0_INT_FLANK, cb, (void *)cnt) < 0) {
         puts("[FAILED] init BTN0!");
@@ -79,8 +73,8 @@ int main(void)
 #endif
 
     puts("On-board button test\n");
-    /* cppcheck-suppress knownConditionTrueFalse
-     * (reason: board-dependent ifdefs) */
+    // cppcheck-suppress knownConditionTrueFalse
+    // (reason: board-dependent ifdefs)
     if (cnt == 0) {
         puts("[FAILED] no buttons available!");
         return 2;

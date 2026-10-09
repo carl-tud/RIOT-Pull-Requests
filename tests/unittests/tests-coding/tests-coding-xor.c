@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021 Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Benjamin Valentin <benjamin.valentin@ml-pa.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdint.h>
 #include <stdio.h>
@@ -12,8 +10,7 @@
 #include "coding/xor.h"
 #include "tests-coding.h"
 
-static void test_coding_xor_building_blocks(void)
-{
+static void test_coding_xor_building_blocks(void) {
     char string[] = "0123456789AB";
     uint8_t parity[CODING_XOR_PARITY_LEN(sizeof(string) - 1)];
 
@@ -32,8 +29,7 @@ static void test_coding_xor_building_blocks(void)
     TEST_ASSERT_EQUAL_STRING("0123456789AB", string);
 }
 
-static void test_coding_xor_recovery(void)
-{
+static void test_coding_xor_recovery(void) {
     char string[] = "0123456789AB";
     char string_rx[sizeof(string)];
     uint8_t parity[CODING_XOR_PARITY_LEN(sizeof(string) - 1)];
@@ -48,7 +44,7 @@ static void test_coding_xor_recovery(void)
     coding_xor_generate(string, sizeof(string) - 1, parity);
 
     for (unsigned i = 0; i < num_chunks; ++i) {
-        /* lose a single chunk / packet */
+        // lose a single chunk / packet
         if (i == 1) {
             continue;
         }
@@ -58,7 +54,7 @@ static void test_coding_xor_recovery(void)
                chunk_size);
         bf_set(chunks, i);
     }
-    /* we have all parity chunks */
+    // we have all parity chunks
     for (unsigned i = 0; i < num_parity_chunks; ++i) {
         bf_set(chunks, num_chunks + i);
     }
@@ -69,8 +65,7 @@ static void test_coding_xor_recovery(void)
     TEST_ASSERT_EQUAL_STRING("0123456789AB", string_rx);
 }
 
-static void test_coding_xor_recovery_failed(void)
-{
+static void test_coding_xor_recovery_failed(void) {
     char string[] = "0123456789AB";
     char string_rx[sizeof(string)];
     uint8_t parity[CODING_XOR_PARITY_LEN(sizeof(string) - 1)];
@@ -85,7 +80,7 @@ static void test_coding_xor_recovery_failed(void)
     coding_xor_generate(string, sizeof(string) - 1, parity);
 
     for (unsigned i = 0; i < num_chunks; ++i) {
-        /* lose two chunks / packets */
+        // lose two chunks / packets
         if (i == 1 || i == 2) {
             continue;
         }
@@ -95,7 +90,7 @@ static void test_coding_xor_recovery_failed(void)
                chunk_size);
         bf_set(chunks, i);
     }
-    /* we have all parity chunks */
+    // we have all parity chunks
     for (unsigned i = 0; i < num_parity_chunks; ++i) {
         bf_set(chunks, num_chunks + i);
     }
@@ -105,8 +100,7 @@ static void test_coding_xor_recovery_failed(void)
     TEST_ASSERT(!success);
 }
 
-static void test_coding_xor_recovery_parity(void)
-{
+static void test_coding_xor_recovery_parity(void) {
     char string[] = "0123456789AB";
     uint8_t parity[CODING_XOR_PARITY_LEN(sizeof(string) - 1)];
     uint8_t parity_rx[CODING_XOR_PARITY_LEN(sizeof(string) - 1)];
@@ -119,7 +113,7 @@ static void test_coding_xor_recovery_parity(void)
 
     coding_xor_generate(string, sizeof(string) - 1, parity);
 
-    /* we have all data chunks */
+    // we have all data chunks
     for (unsigned i = 0; i < num_chunks; ++i) {
         bf_set(chunks, i);
     }
@@ -131,8 +125,7 @@ static void test_coding_xor_recovery_parity(void)
     TEST_ASSERT(memcmp(parity, parity_rx, sizeof(parity)) == 0);
 }
 
-static void test_coding_xor_recovery_large(void)
-{
+static void test_coding_xor_recovery_large(void) {
     uint8_t txbuf[1024];
     const size_t data_len = 768;
 
@@ -146,7 +139,7 @@ static void test_coding_xor_recovery_large(void)
 
     TEST_ASSERT_EQUAL_INT(sizeof(txbuf), data_len + parity_len);
 
-    /* fill TX buffer with known pattern */
+    // fill TX buffer with known pattern
     for (unsigned i = 0; i < data_len; ++i) {
         txbuf[i] = i & 0xFF;
     }
@@ -155,7 +148,7 @@ static void test_coding_xor_recovery_large(void)
     for (unsigned i = 0; i < num_chunks; ++i) {
         uint8_t *data = &txbuf[i * chunk_size];
 
-        /* lose some chunks */
+        // lose some chunks
         if (i == 3 || i == 10 || i == 13) {
             memset(data, 0, chunk_size);
         } else {
@@ -171,8 +164,7 @@ static void test_coding_xor_recovery_large(void)
     }
 }
 
-Test *tests_coding_xor_tests(void)
-{
+Test *tests_coding_xor_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_coding_xor_building_blocks),
         new_TestFixture(test_coding_xor_recovery),

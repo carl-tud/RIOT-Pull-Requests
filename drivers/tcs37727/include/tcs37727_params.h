@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_tcs37727
- *
- * @{
- * @file
- * @brief       Default configuration for TCS37727 devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_tcs37727
+///
+/// @{
+/// @file
+/// @brief       Default configuration for TCS37727 devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "tcs37727.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Set default configuration parameters for TCS37727 devices
- * @{
- */
+/// @name   Set default configuration parameters for TCS37727 devices
+/// @{
 #ifndef TCS37727_PARAM_I2C
 #define TCS37727_PARAM_I2C          I2C_DEV(0)
 #endif
@@ -45,19 +39,15 @@ extern "C" {
 #ifndef TCS37727_SAUL_INFO
 #define TCS37727_SAUL_INFO          { .name = "tcs37727" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   TCS37727 configuration
- */
+/// @brief   TCS37727 configuration
 static const tcs37727_params_t tcs37727_params[] =
 {
     TCS37727_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t tcs37727_saul_info[] =
 {
     TCS37727_SAUL_INFO
@@ -67,4 +57,4 @@ static const saul_reg_info_t tcs37727_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

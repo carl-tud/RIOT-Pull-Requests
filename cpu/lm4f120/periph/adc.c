@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2016 Marc Poulhiès
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Marc Poulhiès
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_lm4f120
- * @ingroup     drivers_periph_adc
- * @{
- *
- * @file
- * @brief       Low-level ADC driver implementation
- *
- * The current ADC driver implementation only supports ADC0.
- *
- * @author      Marc Poulhiès <dkm@kataplop.net>
- *
- * @}
- */
+/// @ingroup     cpu_lm4f120
+/// @ingroup     drivers_periph_adc
+/// @{
+///
+/// @file
+/// @brief       Low-level ADC driver implementation
+///
+/// The current ADC driver implementation only supports ADC0.
+///
+/// @author      Marc Poulhiès <dkm@kataplop.net>
+///
+/// @}
 
 #include <stdint.h>
 #include <string.h>
@@ -25,61 +21,50 @@
 #include "mutex.h"
 #include "periph/adc.h"
 
-/*
- * @brief   ADC sequence used by this driver and oversampling settings
- * @{
- */
+// @brief   ADC sequence used by this driver and oversampling settings
+// @{
 #define SEQ             (3)
 #define OVERSAMPLE      (64)
-/** @} */
+/// @}
 
-/**
- * @brief   pin configuration parameters
- */
+/// @brief   pin configuration parameters
 struct adc_gpio_cfg_s {
     unsigned long gpio_base;
     unsigned long gpio_sysctl;
     unsigned short gpio_pin;
 };
 
-/**
- * @brief   Fixed ADC pin configuration
- */
+/// @brief   Fixed ADC pin configuration
 static const struct adc_gpio_cfg_s adc0_gpio[ADC_NUMOF] = {
-    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_3 }, /**< AIN0 */
-    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_2 }, /**< AIN1 */
-    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_1 }, /**< AIN2 */
-    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_0 }, /**< AIN3 */
-    { GPIO_PORTD_BASE, SYSCTL_PERIPH_GPIOD, GPIO_PIN_3 }, /**< AIN4 */
-    { GPIO_PORTD_BASE, SYSCTL_PERIPH_GPIOD, GPIO_PIN_2 }, /**< AIN5 */
-    { GPIO_PORTD_BASE, SYSCTL_PERIPH_GPIOD, GPIO_PIN_1 }, /**< AIN6 */
-    { GPIO_PORTD_BASE, SYSCTL_PERIPH_GPIOD, GPIO_PIN_0 }, /**< AIN7 */
-    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_5 }, /**< AIN8 */
-    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_4 }, /**< AIN9 */
-    { GPIO_PORTB_BASE, SYSCTL_PERIPH_GPIOB, GPIO_PIN_4 }, /**< AIN10 */
-    { GPIO_PORTB_BASE, SYSCTL_PERIPH_GPIOB, GPIO_PIN_5 }, /**< AIN11 */
+    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_3 }, ///< AIN0
+    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_2 }, ///< AIN1
+    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_1 }, ///< AIN2
+    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_0 }, ///< AIN3
+    { GPIO_PORTD_BASE, SYSCTL_PERIPH_GPIOD, GPIO_PIN_3 }, ///< AIN4
+    { GPIO_PORTD_BASE, SYSCTL_PERIPH_GPIOD, GPIO_PIN_2 }, ///< AIN5
+    { GPIO_PORTD_BASE, SYSCTL_PERIPH_GPIOD, GPIO_PIN_1 }, ///< AIN6
+    { GPIO_PORTD_BASE, SYSCTL_PERIPH_GPIOD, GPIO_PIN_0 }, ///< AIN7
+    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_5 }, ///< AIN8
+    { GPIO_PORTE_BASE, SYSCTL_PERIPH_GPIOE, GPIO_PIN_4 }, ///< AIN9
+    { GPIO_PORTB_BASE, SYSCTL_PERIPH_GPIOB, GPIO_PIN_4 }, ///< AIN10
+    { GPIO_PORTB_BASE, SYSCTL_PERIPH_GPIOB, GPIO_PIN_5 }, ///< AIN11
 };
 
-/**
- * @brief   Lock to prevent concurrent access to the ADC
- */
+/// @brief   Lock to prevent concurrent access to the ADC
 static mutex_t lock = MUTEX_INIT;
 
-static inline void prep(void)
-{
+static inline void prep(void) {
     mutex_lock(&lock);
     ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
 }
 
-static inline void done(void)
-{
+static inline void done(void) {
     ROM_SysCtlPeripheralDisable(SYSCTL_PERIPH_ADC0);
     mutex_unlock(&lock);
 }
 
-int adc_init(adc_t line)
-{
-    /* make sure the given ADC line is valid */
+int adc_init(adc_t line) {
+    // make sure the given ADC line is valid
     if (line >= ADC_NUMOF) {
         return -1;
     }
@@ -97,8 +82,7 @@ int adc_init(adc_t line)
     return 0;
 }
 
-int32_t adc_sample(adc_t line, adc_res_t res)
-{
+int32_t adc_sample(adc_t line, adc_res_t res) {
     int value[2];
 
     if ((res != ADC_RES_10BIT) && (res != ADC_RES_12BIT)) {
@@ -107,22 +91,22 @@ int32_t adc_sample(adc_t line, adc_res_t res)
 
     prep();
 
-    /* set channel */
+    // set channel
     ROM_ADCSequenceConfigure(ADC0_BASE, SEQ, ADC_TRIGGER_PROCESSOR, 0);
     ROM_ADCSequenceStepConfigure(ADC0_BASE, SEQ, 0, line | ADC_CTL_IE | ADC_CTL_END);
-    /* set resolution */
+    // set resolution
     ROM_ADCResolutionSet(ADC0_BASE, (unsigned long)res);
 
-    /* start conversion and wait for results */
+    // start conversion and wait for results
     ROM_ADCSequenceEnable(ADC0_BASE, SEQ);
     ROM_ADCIntClear(ADC0_BASE, SEQ);
     ROM_ADCProcessorTrigger(ADC0_BASE, SEQ);
     while (!ROM_ADCIntStatus(ADC0_BASE, SEQ, false)) {}
 
-    /* get results */
+    // get results
     ROM_ADCSequenceDataGet(ADC0_BASE, SEQ, (unsigned long *) value);
 
-    /* disable device again */
+    // disable device again
     ROM_ADCSequenceDisable(ADC0_BASE, SEQ);
     done();
 

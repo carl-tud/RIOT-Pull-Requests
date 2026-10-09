@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #ifndef DOXYGEN
 
@@ -36,9 +34,7 @@
 #define PRO_CPU_NUM (0)
 #endif
 
-/**
- * @brief   Architecture specific data of thread control blocks
- */
+/// @brief   Architecture specific data of thread control blocks
 typedef struct {
     uint32_t saved_int_state;
     uint32_t critical_nesting;
@@ -55,11 +51,10 @@ BaseType_t xTaskCreatePinnedToCore(TaskFunction_t pvTaskCode,
                                    void * const pvParameters,
                                    UBaseType_t uxPriority,
                                    TaskHandle_t * const pvCreatedTask,
-                                   const BaseType_t xCoreID)
-{
+                                   const BaseType_t xCoreID) {
     assert(xCoreID == 0 || xCoreID == tskNO_AFFINITY);
 
-    /* FreeRTOS priority values have to be inverted */
+    // FreeRTOS priority values have to be inverted
     uxPriority = SCHED_PRIO_LEVELS - uxPriority - 1;
 
     DEBUG("%s name=%s size=%"PRIu32" prio=%u pvCreatedTask=%p xCoreId=%d\n",
@@ -94,8 +89,7 @@ BaseType_t xTaskCreate(TaskFunction_t pvTaskCode,
                        const uint32_t usStackDepth,
                        void * const pvParameters,
                        UBaseType_t uxPriority,
-                       TaskHandle_t * const pvCreatedTask)
-{
+                       TaskHandle_t * const pvCreatedTask) {
     return xTaskCreatePinnedToCore(pvTaskCode,
                                    pcName,
                                    usStackDepth,
@@ -105,8 +99,7 @@ BaseType_t xTaskCreate(TaskFunction_t pvTaskCode,
                                    PRO_CPU_NUM);
 }
 
-void vTaskDelete(TaskHandle_t xTaskToDelete)
-{
+void vTaskDelete(TaskHandle_t xTaskToDelete) {
     extern volatile thread_t *sched_active_thread;
     DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), xTaskToDelete);
 
@@ -116,7 +109,7 @@ void vTaskDelete(TaskHandle_t xTaskToDelete)
     }
     assert(pid_is_valid(pid));
 
-    /* remove the task from scheduling */
+    // remove the task from scheduling
     thread_t* thread = (thread_t*)sched_threads[pid];
     sched_set_status(thread, STATUS_STOPPED);
     sched_threads[pid] = NULL;
@@ -125,8 +118,7 @@ void vTaskDelete(TaskHandle_t xTaskToDelete)
     free(thread->stack_start);
 }
 
-void vTaskSuspend(TaskHandle_t xTaskToSuspend)
-{
+void vTaskSuspend(TaskHandle_t xTaskToSuspend) {
     extern volatile thread_t *sched_active_thread;
     DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), xTaskToSuspend);
 
@@ -134,10 +126,10 @@ void vTaskSuspend(TaskHandle_t xTaskToSuspend)
                                                            : (uint32_t)xTaskToSuspend);
     assert(thread != NULL);
 
-    /* set status to sleeping to suspend it */
+    // set status to sleeping to suspend it
     sched_set_status(thread, STATUS_SLEEPING);
 
-    /* trigger rescheduling if a task suspends itself */
+    // trigger rescheduling if a task suspends itself
     if (xTaskToSuspend == NULL) {
         thread_yield_higher();
     }
@@ -145,17 +137,15 @@ void vTaskSuspend(TaskHandle_t xTaskToSuspend)
 
 static bool _suspend_all = false;
 
-void vTaskSuspendAll(void)
-{
-    /* TODO:
-     * It has to be implemented once there is a mechanism in RIOT to suspend
-     * the scheduler without disabling interrupts. At the moment it is a
-     * placeholder to make the linker happy. */
+void vTaskSuspendAll(void) {
+    // TODO:
+    // It has to be implemented once there is a mechanism in RIOT to suspend
+    // the scheduler without disabling interrupts. At the moment it is a
+    // placeholder to make the linker happy.
     _suspend_all = true;
 }
 
-void vTaskResume(TaskHandle_t xTaskToResume)
-{
+void vTaskResume(TaskHandle_t xTaskToResume) {
     extern volatile thread_t *sched_active_thread;
     DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), xTaskToResume);
 
@@ -164,15 +154,13 @@ void vTaskResume(TaskHandle_t xTaskToResume)
     thread_wakeup (pid);
 }
 
-BaseType_t xTaskResumeAll(void)
-{
-    /* TODO */
+BaseType_t xTaskResumeAll(void) {
+    // TODO
     _suspend_all = false;
     return pdFALSE;
 }
 
-BaseType_t xTaskGetSchedulerState(void)
-{
+BaseType_t xTaskGetSchedulerState(void) {
     if (thread_get_active() == KERNEL_PID_UNDEF) {
         return taskSCHEDULER_NOT_STARTED;
     }
@@ -183,32 +171,29 @@ BaseType_t xTaskGetSchedulerState(void)
     return taskSCHEDULER_RUNNING;
 };
 
-void vTaskDelay(const TickType_t xTicksToDelay)
-{
+void vTaskDelay(const TickType_t xTicksToDelay) {
     DEBUG("%s xTicksToDelay=%"PRIu32"\n", __func__, xTicksToDelay);
 
 #ifdef CPU_ESP8266
-    /*
-     * FIXME if possible
-     * With the ESP8266, this function is only called by
-     * `ieee80211_sta_new_state`, with interrupts of all levels disabled,
-     * for example as a result of executing `esp_wifi_disconnect`.
-     * If `ztimer_sleep` is then called with interrupts disabled, for
-     * some reason this leads to memory corruption when interrupts are
-     * re-enabled afterwards. The only way to avoid this is to re-enable
-     * interrupts before calling `ztimer_sleep`.
-     *
-     * Since debugging ESP8266 code is very limited and sometimes impossible
-     * due to there being only one hardware breakpoint and a lot of closed
-     * binary code involved when calling `esp_wifi_disconnect`, it was not
-     * possible to find the reason for the memory corruption. An exception
-     * occurs after executing `esp_wifi_disconnect` in `ztimer_handler` when
-     * `_callback_unlock_mutex` is called with a mutex parameter that points
-     * to irrelevant read-only memory in IROM.
-     *
-     * Therefore, enabling the interrupts here is currently the only way to
-     * avoid the exception, even though this is only a hack.
-     */
+    // FIXME if possible
+    // With the ESP8266, this function is only called by
+    // `ieee80211_sta_new_state`, with interrupts of all levels disabled,
+    // for example as a result of executing `esp_wifi_disconnect`.
+    // If `ztimer_sleep` is then called with interrupts disabled, for
+    // some reason this leads to memory corruption when interrupts are
+    // re-enabled afterwards. The only way to avoid this is to re-enable
+    // interrupts before calling `ztimer_sleep`.
+    //
+    // Since debugging ESP8266 code is very limited and sometimes impossible
+    // due to there being only one hardware breakpoint and a lot of closed
+    // binary code involved when calling `esp_wifi_disconnect`, it was not
+    // possible to find the reason for the memory corruption. An exception
+    // occurs after executing `esp_wifi_disconnect` in `ztimer_handler` when
+    // `_callback_unlock_mutex` is called with a mutex parameter that points
+    // to irrelevant read-only memory in IROM.
+    //
+    // Therefore, enabling the interrupts here is currently the only way to
+    // avoid the exception, even though this is only a hack.
     irq_enable();
 #endif
 
@@ -221,16 +206,14 @@ void vTaskDelay(const TickType_t xTicksToDelay)
 #endif
 }
 
-TaskHandle_t xTaskGetCurrentTaskHandle(void)
-{
+TaskHandle_t xTaskGetCurrentTaskHandle(void) {
     DEBUG("%s pid=%d\n", __func__, thread_getpid());
 
     uint32_t pid = thread_getpid();
     return (TaskHandle_t)pid;
 }
 
-const char *pcTaskGetTaskName(TaskHandle_t xTaskToQuery)
-{
+const char *pcTaskGetTaskName(TaskHandle_t xTaskToQuery) {
     DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), xTaskToQuery);
 
     thread_t *thread = thread_get((xTaskToQuery == NULL) ? (uint32_t)thread_getpid()
@@ -240,8 +223,7 @@ const char *pcTaskGetTaskName(TaskHandle_t xTaskToQuery)
 }
 
 #ifdef DEVELHELP
-UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t xTask)
-{
+UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t xTask) {
     DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), xTask);
 
     thread_t *thread = thread_get((xTask == NULL) ? (uint32_t)thread_getpid()
@@ -251,92 +233,87 @@ UBaseType_t uxTaskGetStackHighWaterMark(TaskHandle_t xTask)
 }
 
 void *pvTaskGetThreadLocalStoragePointer(TaskHandle_t xTaskToQuery,
-                                         BaseType_t xIndex)
-{
+                                         BaseType_t xIndex) {
     (void)xTaskToQuery;
     (void)xIndex;
 
-    /* TODO define TLS using thread_arch_t */
+    // TODO define TLS using thread_arch_t
     return NULL;
 }
 
 void vTaskSetThreadLocalStoragePointerAndDelCallback(TaskHandle_t xTaskToSet,
                                                      BaseType_t xIndex,
                                                      void *pvValue,
-                                                     TlsDeleteCallbackFunction_t pvDelCallback)
-{
+                                                     TlsDeleteCallbackFunction_t pvDelCallback) {
     (void)xTaskToSet;
     (void)xIndex;
     (void)pvValue;
     (void)pvDelCallback;
 
-    /* TODO define TLS using thread_arch_t */
+    // TODO define TLS using thread_arch_t
 }
-#endif /* DEVELHELP */
+#endif // DEVELHELP
 
-TickType_t xTaskGetTickCount (void)
-{
+TickType_t xTaskGetTickCount (void) {
     return system_get_time() / US_PER_MS / portTICK_PERIOD_MS;
 }
 
-void vTaskEnterCritical( portMUX_TYPE *mux )
-{
+void vTaskEnterCritical( portMUX_TYPE *mux ) {
 #ifdef CPU_ESP8266
-    /* we have to return on NMI */
+    // we have to return on NMI
     if (NMIIrqIsOn) {
         return;
     }
-#endif /* CPU_ESP8266 */
+#endif // CPU_ESP8266
 
-    /* disable interrupts */
+    // disable interrupts
     uint32_t state = irq_disable();
 
-    /* determine calling thread pid (can't fail) */
+    // determine calling thread pid (can't fail)
     kernel_pid_t my_pid = thread_getpid();
 
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
           my_pid, sched_threads[my_pid]->priority, mux);
 
-    /* acquire the mutex with interrupts disabled */
+    // acquire the mutex with interrupts disabled
     if (mux) {
-        /* Locking the given mutex does not work here, as this function can also
-           be called in the interrupt context. Therefore, the given mutex is not
-           used. Instead, the basic default FreeRTOS mechanism for critical
-           sections is used by simply disabling interrupts. Since context
-           switches for the ESPs are also based on interrupts, there is no
-           possibility that another thread will enter the critical section
-           once the interrupts are disabled. */
+        // Locking the given mutex does not work here, as this function can also
+        //    be called in the interrupt context. Therefore, the given mutex is not
+        //    used. Instead, the basic default FreeRTOS mechanism for critical
+        //    sections is used by simply disabling interrupts. Since context
+        //    switches for the ESPs are also based on interrupts, there is no
+        //    possibility that another thread will enter the critical section
+        //    once the interrupts are disabled.
         /* mutex_lock(mux); */ /* TODO should be only a spin lock */
     }
 
-    /* increment nesting counter and save old interrupt level */
+    // increment nesting counter and save old interrupt level
     threads_arch_exts[my_pid].critical_nesting++;
     if (threads_arch_exts[my_pid].critical_nesting == 1) {
         threads_arch_exts[my_pid].saved_int_state = state;
     }
 }
 
-void vTaskExitCritical( portMUX_TYPE *mux )
-{
+void vTaskExitCritical( portMUX_TYPE *mux ) {
 #ifdef CPU_ESP8266
-    /* we have to return on NMI */
+    // we have to return on NMI
     if (NMIIrqIsOn) {
         return;
     }
-#endif /* CPU_ESP8266 */
+#endif // CPU_ESP8266
 
-    /* determine calling thread pid (can't fail) */
+    // determine calling thread pid (can't fail)
     kernel_pid_t my_pid = thread_getpid();
 
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
           my_pid, sched_threads[my_pid]->priority, mux);
 
-    /* release the mutex with interrupts disabled */
+    // release the mutex with interrupts disabled
     if (mux) {
         /* mutex_unlock(mux); */ /* TODO should be only a spin lock */
     }
 
-    /* decrement nesting counter and restore old interrupt level */
+    // decrement nesting counter and restore old interrupt level
     if (threads_arch_exts[my_pid].critical_nesting) {
         threads_arch_exts[my_pid].critical_nesting--;
         if (threads_arch_exts[my_pid].critical_nesting == 0) {
@@ -345,31 +322,24 @@ void vTaskExitCritical( portMUX_TYPE *mux )
     }
 }
 
-void vTaskStepTick(const TickType_t xTicksToJump)
-{
+void vTaskStepTick(const TickType_t xTicksToJump) {
     DEBUG("%s xTicksToJump=%"PRIu32"\n", __func__, xTicksToJump);
-    /*
-     * TODO:
-     * At the moment, only the calling task is set to sleep state. Usually, the
-     * complete system should sleep but not only the task.
-     */
+    // TODO:
+    // At the moment, only the calling task is set to sleep state. Usually, the
+    // complete system should sleep but not only the task.
     vTaskDelay(xTicksToJump);
 }
 
-TickType_t prvGetExpectedIdleTime(void)
-{
+TickType_t prvGetExpectedIdleTime(void) {
     DEBUG("%s\n", __func__);
-    /*
-     * TODO:
-     * Since we are not able to estimate the time the system will be idle,
-     * we simply return 0.
-     */
+    // TODO:
+    // Since we are not able to estimate the time the system will be idle,
+    // we simply return 0.
     return 0;
 }
 
 BaseType_t xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue,
-                       eNotifyAction eAction)
-{
+                       eNotifyAction eAction) {
     uint32_t pid = (uint32_t)xTaskToNotify;
     thread_t* thread = thread_get(pid);
 
@@ -390,21 +360,21 @@ BaseType_t xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue,
             break;
         case eSetValueWithoutOverwrite:
             if (threads_arch_exts[pid].notification_pending) {
-                /* if a notificatoin is pending, return with error */
+                // if a notificatoin is pending, return with error
                 vTaskExitCritical(0);
                 return pdFALSE;
             }
-            /* fallthrough */
+            // fallthrough
         case eSetValueWithOverwrite:
             threads_arch_exts[pid].notification_value = ulValue;
             break;
         default:
-            /* no action */
+            // no action
             break;
     }
 
     if (threads_arch_exts[pid].notification_waiting) {
-        /* if the task is waiting for a notification, wake it up */
+        // if the task is waiting for a notification, wake it up
         sched_set_status(thread, STATUS_PENDING);
         vTaskExitCritical(0);
         thread_yield_higher();
@@ -420,8 +390,7 @@ BaseType_t xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue,
 BaseType_t xTaskNotifyWait(uint32_t ulBitsToClearOnEntry,
                            uint32_t ulBitsToClearOnExit,
                            uint32_t *pulNotificationValue,
-                           TickType_t xTicksToWait)
-{
+                           TickType_t xTicksToWait) {
     kernel_pid_t pid = thread_getpid();
 
     DEBUG("%s task=%d entry=%08"PRIx32" exit=%08"PRIx32" wait=%"PRIu32"\n", __func__,
@@ -433,10 +402,10 @@ BaseType_t xTaskNotifyWait(uint32_t ulBitsToClearOnEntry,
     vTaskEnterCritical(0);
 
     if (!threads_arch_exts[pid].notification_pending) {
-        /* bits to clear on entry if notification was not pending */
+        // bits to clear on entry if notification was not pending
         threads_arch_exts[pid].notification_value ^= ulBitsToClearOnEntry;
 
-        /* suspend the calling thread to wait for notification */
+        // suspend the calling thread to wait for notification
         threads_arch_exts[pid].notification_waiting = true;
         thread_t *me = thread_get_active();
         sched_set_status(me, STATUS_SLEEPING);
@@ -446,7 +415,7 @@ BaseType_t xTaskNotifyWait(uint32_t ulBitsToClearOnEntry,
 #if IS_USED(MODULE_ZTIMER_MSEC)
         ztimer_t tm = { };
         uint32_t to = xTicksToWait * portTICK_PERIOD_MS;
-        /* set the timeout if given */
+        // set the timeout if given
         if (xTicksToWait < portMAX_DELAY) {
             ztimer_set_timeout_flag(ZTIMER_MSEC, &tm, to);
             ztimer_set_wakeup(ZTIMER_MSEC, &tm, to + 1, pid);
@@ -472,7 +441,7 @@ BaseType_t xTaskNotifyWait(uint32_t ulBitsToClearOnEntry,
     }
 
     if (pulNotificationValue) {
-        /* save the notification value before clearing bits on exit */
+        // save the notification value before clearing bits on exit
         *pulNotificationValue = threads_arch_exts[pid].notification_value;
     }
     threads_arch_exts[pid].notification_value ^= ulBitsToClearOnExit;
@@ -481,16 +450,14 @@ BaseType_t xTaskNotifyWait(uint32_t ulBitsToClearOnEntry,
     return pdTRUE;
 }
 
-BaseType_t xTaskNotifyGive(TaskHandle_t xTaskToNotify)
-{
+BaseType_t xTaskNotifyGive(TaskHandle_t xTaskToNotify) {
     DEBUG("%s pid=%d task=%p\n", __func__, thread_getpid(), xTaskToNotify);
     vTaskNotifyGiveFromISR(xTaskToNotify, NULL);
     return pdPASS;
 }
 
 void vTaskNotifyGiveFromISR(TaskHandle_t xTaskToNotify,
-                            BaseType_t *pxHigherPriorityTaskWoken)
-{
+                            BaseType_t *pxHigherPriorityTaskWoken) {
     uint32_t pid = (uint32_t)xTaskToNotify;
     thread_t* thread = thread_get(pid);
 
@@ -504,17 +471,17 @@ void vTaskNotifyGiveFromISR(TaskHandle_t xTaskToNotify,
     threads_arch_exts[pid].notification_value++;
 
     if (threads_arch_exts[pid].notification_waiting) {
-        /* if the task is waiting for notification, set its status to pending */
+        // if the task is waiting for notification, set its status to pending
         sched_set_status(thread, STATUS_PENDING);
 
         if (thread->priority < sched_threads[thread_getpid()]->priority) {
-            /* a context switch is needed */
+            // a context switch is needed
             if (pxHigherPriorityTaskWoken) {
                 *pxHigherPriorityTaskWoken = pdTRUE;
             }
 
             vTaskExitCritical(0);
-            /* sets only the sched_context_switch_request in ISRs */
+            // sets only the sched_context_switch_request in ISRs
             thread_yield_higher();
             return;
         }
@@ -523,8 +490,7 @@ void vTaskNotifyGiveFromISR(TaskHandle_t xTaskToNotify,
 }
 
 uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit,
-                          TickType_t xTicksToWait)
-{
+                          TickType_t xTicksToWait) {
     DEBUG("%s pid=%d\n", __func__, thread_getpid());
 
     kernel_pid_t pid = thread_getpid();
@@ -536,17 +502,17 @@ uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit,
     uint32_t prev_value = threads_arch_exts[pid].notification_value;
 
     if (prev_value) {
-        /* notification was pending */
+        // notification was pending
         threads_arch_exts[pid].notification_value--;
         vTaskExitCritical(0);
     }
     else if (xTicksToWait == 0 || irq_is_in()) {
-        /* if delaying is not allowed */
+        // if delaying is not allowed
         DEBUG("%s pid=%d delaying not allowed\n", __func__, thread_getpid());
         assert(0);
     }
     else {
-        /* suspend the calling thread to wait for notification */
+        // suspend the calling thread to wait for notification
         threads_arch_exts[pid].notification_waiting = true;
         thread_t *me = thread_get_active();
         sched_set_status(me, STATUS_SLEEPING);
@@ -556,7 +522,7 @@ uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit,
         vTaskExitCritical(0);
         thread_yield_higher();
 
-        /* TODO timeout handling with xTicksToWait */
+        // TODO timeout handling with xTicksToWait
         DEBUG("%s pid=%d continue calling thread\n", __func__, thread_getpid());
     }
     threads_arch_exts[pid].notification_waiting = false;
@@ -566,4 +532,4 @@ uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit,
     return prev_value;
 }
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

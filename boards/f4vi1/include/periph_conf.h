@@ -1,28 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_f4vi1
- * @{
- *
- * @file
- * @name        Peripheral MCU configuration for the F4VI1 board
- *
- * @author      Stefan Pfeiffer <pfeiffer@inf.fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- */
+/// @ingroup     boards_f4vi1
+/// @{
+///
+/// @file
+/// @name        Peripheral MCU configuration for the F4VI1 board
+///
+/// @author      Stefan Pfeiffer <pfeiffer@inf.fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
 
-/* The HSE provides a 16MHz clock */
+// The HSE provides a 16MHz clock
 #ifndef CONFIG_CLOCK_HSE
 #define CONFIG_CLOCK_HSE               MHZ(16)
 #endif
@@ -34,10 +30,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -59,12 +53,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tim5
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART6,
@@ -85,10 +77,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          (isr_usart6)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2013 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2013 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     core_sync
- * @{
- *
- * @file
- * @brief       Kernel mutex implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     core_sync
+/// @{
+///
+/// @file
+/// @brief       Kernel mutex implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #include <errno.h>
 #include <inttypes.h>
@@ -33,24 +29,21 @@
 
 #if MAXTHREADS > 1
 
-/**
- * @brief   Block waiting for a locked mutex
- * @pre     IRQs are disabled
- * @post    IRQs are restored to @p irq_state
- * @post    The calling thread is no longer waiting for the mutex, either
- *          because it got the mutex, or because the operation was cancelled
- *          (only possible for @ref mutex_lock_cancelable)
- *
- * Most applications don't use @ref mutex_lock_cancelable. Inlining this
- * function into both @ref mutex_lock and @ref mutex_lock_cancelable is,
- * therefore, beneficial for the majority of applications.
- */
+/// @brief   Block waiting for a locked mutex
+/// @pre     IRQs are disabled
+/// @post    IRQs are restored to @p irq_state
+/// @post    The calling thread is no longer waiting for the mutex, either
+///          because it got the mutex, or because the operation was cancelled
+///          (only possible for @ref mutex_lock_cancelable)
+///
+/// Most applications don't use @ref mutex_lock_cancelable. Inlining this
+/// function into both @ref mutex_lock and @ref mutex_lock_cancelable is,
+/// therefore, beneficial for the majority of applications.
 static inline __attribute__((always_inline))
 void _block(mutex_t *mutex,
             unsigned irq_state,
-            uinttxtptr_t pc)
-{
-    /* pc is only used when MODULE_CORE_MUTEX_DEBUG */
+            uinttxtptr_t pc) {
+    // pc is only used when MODULE_CORE_MUTEX_DEBUG
     (void)pc;
 #if IS_USED(MODULE_CORE_MUTEX_DEBUG)
     printf("[mutex] waiting for thread %" PRIkernel_pid " (pc = 0x%" PRIxTXTPTR
@@ -59,8 +52,8 @@ void _block(mutex_t *mutex,
 #endif
     thread_t *me = thread_get_active();
 
-    /* Fail visibly even if a blocking action is called from somewhere where
-     * it's subtly not allowed, eg. board_init */
+    // Fail visibly even if a blocking action is called from somewhere where
+    // it's subtly not allowed, eg. board_init
     assert(me != NULL);
     DEBUG("PID[%" PRIkernel_pid "] mutex_lock() Adding node to mutex queue: "
           "prio: %" PRIu32 "\n", thread_getpid(), (uint32_t)me->priority);
@@ -86,14 +79,13 @@ void _block(mutex_t *mutex,
 
     irq_restore(irq_state);
     thread_yield_higher();
-    /* We were woken up by scheduler. Waker removed us from queue. */
+    // We were woken up by scheduler. Waker removed us from queue.
 #if IS_USED(MODULE_CORE_MUTEX_DEBUG)
     mutex->owner_calling_pc = pc;
 #endif
 }
 
-bool mutex_lock_internal(mutex_t *mutex, bool block)
-{
+bool mutex_lock_internal(mutex_t *mutex, bool block) {
     uinttxtptr_t pc = 0;
 #if IS_USED(MODULE_CORE_MUTEX_DEBUG)
     pc = cpu_get_caller_pc();
@@ -104,7 +96,7 @@ bool mutex_lock_internal(mutex_t *mutex, bool block)
           thread_getpid(), (unsigned)block);
 
     if (mutex->queue.next == NULL) {
-        /* mutex is unlocked. */
+        // mutex is unlocked.
         mutex->queue.next = MUTEX_LOCKED;
 #if IS_USED(MODULE_CORE_MUTEX_PRIORITY_INHERITANCE) \
         || IS_USED(MODULE_CORE_MUTEX_DEBUG)
@@ -132,8 +124,7 @@ bool mutex_lock_internal(mutex_t *mutex, bool block)
     return true;
 }
 
-int mutex_lock_cancelable(mutex_cancel_t *mc)
-{
+int mutex_lock_cancelable(mutex_cancel_t *mc) {
     uinttxtptr_t pc = 0;
 #if IS_USED(MODULE_CORE_MUTEX_DEBUG)
     pc = cpu_get_caller_pc();
@@ -153,7 +144,7 @@ int mutex_lock_cancelable(mutex_cancel_t *mc)
     mutex_t *mutex = mc->mutex;
 
     if (mutex->queue.next == NULL) {
-        /* mutex is unlocked. */
+        // mutex is unlocked.
         mutex->queue.next = MUTEX_LOCKED;
 #if IS_USED(MODULE_CORE_MUTEX_PRIORITY_INHERITANCE) \
         || IS_USED(MODULE_CORE_MUTEX_DEBUG)
@@ -181,22 +172,21 @@ int mutex_lock_cancelable(mutex_cancel_t *mc)
     }
 }
 
-void mutex_unlock(mutex_t *mutex)
-{
+void mutex_unlock(mutex_t *mutex) {
     unsigned irqstate = irq_disable();
 
     DEBUG("PID[%" PRIkernel_pid "] mutex_unlock(): queue.next: %p\n",
           thread_getpid(), (void *)mutex->queue.next);
 
     if (mutex->queue.next == NULL) {
-        /* the mutex was not locked */
+        // the mutex was not locked
         irq_restore(irqstate);
         return;
     }
 
     if (mutex->queue.next == MUTEX_LOCKED) {
         mutex->queue.next = NULL;
-        /* the mutex was locked and no thread was waiting for it */
+        // the mutex was locked and no thread was waiting for it
         irq_restore(irqstate);
         return;
     }
@@ -230,8 +220,7 @@ void mutex_unlock(mutex_t *mutex)
     thread_yield_higher();
 }
 
-void mutex_unlock_and_sleep(mutex_t *mutex)
-{
+void mutex_unlock_and_sleep(mutex_t *mutex) {
     DEBUG("PID[%" PRIkernel_pid "] mutex_unlock_and_sleep(): queue.next: %p\n",
           thread_getpid(), (void *)mutex->queue.next);
     unsigned irqstate = irq_disable();
@@ -260,8 +249,7 @@ void mutex_unlock_and_sleep(mutex_t *mutex)
     thread_yield_higher();
 }
 
-void mutex_cancel(mutex_cancel_t *mc)
-{
+void mutex_cancel(mutex_cancel_t *mc) {
     unsigned irq_state = irq_disable();
 
     mc->cancelled = 1;
@@ -270,8 +258,8 @@ void mutex_cancel(mutex_cancel_t *mc)
     thread_t *thread = mc->thread;
 
     if (thread_is_active(thread)) {
-        /* thread is still running or about to run, so it will check
-         * `mc-cancelled` in time */
+        // thread is still running or about to run, so it will check
+        // `mc-cancelled` in time
         irq_restore(irq_state);
         return;
     }
@@ -279,7 +267,7 @@ void mutex_cancel(mutex_cancel_t *mc)
     if ((mutex->queue.next != MUTEX_LOCKED)
         && (mutex->queue.next != NULL)
         && list_remove(&mutex->queue, (list_node_t *)&thread->rq_entry)) {
-        /* Thread was queued and removed from list, wake it up */
+        // Thread was queued and removed from list, wake it up
         if (mutex->queue.next == NULL) {
             mutex->queue.next = MUTEX_LOCKED;
         }
@@ -292,6 +280,6 @@ void mutex_cancel(mutex_cancel_t *mc)
     irq_restore(irq_state);
 }
 
-#else /* MAXTHREADS < 2 */
+#else // MAXTHREADS < 2
 typedef int dont_be_pedantic;
 #endif

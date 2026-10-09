@@ -1,13 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2015 Nico von Geyso <nico.geyso@fu-berlin.de>
- * SPDX-FileCopyrightText: 2015 René Kijewski <rene.kijewski@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Nico von Geyso <nico.geyso@fu-berlin.de>
+// SPDX-FileCopyrightText: 2015 René Kijewski <rene.kijewski@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "crypto/helper.h"
 
-void crypto_block_inc_ctr(uint8_t block[16], int L)
-{
+void crypto_block_inc_ctr(uint8_t block[16], int L) {
     uint8_t *b = &block[15];
 
     for (int i = 0; i < L; ++i, --b) {
@@ -17,8 +14,7 @@ void crypto_block_inc_ctr(uint8_t block[16], int L)
     }
 }
 
-int crypto_equals(const uint8_t *a, const uint8_t *b, size_t len)
-{
+int crypto_equals(const uint8_t *a, const uint8_t *b, size_t len) {
     uint8_t diff = 0;
 
     for (size_t i = 0; i < len; ++i, ++a, ++b) {
@@ -33,9 +29,8 @@ int crypto_equals(const uint8_t *a, const uint8_t *b, size_t len)
     return diff;
 }
 
-/* Compiler should not be allowed to optimize this */
-void crypto_secure_wipe(void *buf, size_t len)
-{
+// Compiler should not be allowed to optimize this
+void crypto_secure_wipe(void *buf, size_t len) {
     volatile uint8_t *vbuf = (uint8_t *)buf;
 
     for (size_t i = 0; i < len; i++) {

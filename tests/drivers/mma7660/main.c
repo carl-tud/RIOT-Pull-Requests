@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the MMA7660 3 axis accelerometer driver.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the MMA7660 3 axis accelerometer driver.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -25,8 +21,7 @@
 
 static mma7660_t dev;
 
-int main(void)
-{
+int main(void) {
     puts("MMA7660 accelerometer driver test application\n");
     printf("Initializing MMA7660 accelerometer at I2C_DEV(%i)... ",
            mma7660_params->i2c);

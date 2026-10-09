@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @}
 
 #include "msg.h"
 #include "net/gnrc/ipv6.h"
@@ -28,15 +24,13 @@ static msg_t _msg_queue[_MSG_QUEUE_SIZE];
 static gnrc_netreg_entry_t _udp_handler;
 static char _rx_buf[32];
 
-void _net_init(void)
-{
+void _net_init(void) {
     msg_init_queue(_msg_queue, _MSG_QUEUE_SIZE);
     gnrc_netreg_entry_init_pid(&_udp_handler, GNRC_NETREG_DEMUX_CTX_ALL,
                                thread_getpid());
 }
 
-void _prepare_send_checks(void)
-{
+void _prepare_send_checks(void) {
     gnrc_netreg_register(GNRC_NETTYPE_UDP, &_udp_handler);
 }
 
@@ -45,8 +39,7 @@ static gnrc_pktsnip_t *_build_udp_packet(const ipv6_addr_t *src,
                                          uint16_t src_port, uint16_t dst_port,
                                          void *data, size_t data_len,
                                          uint16_t netif,
-                                         const inject_aux_t *aux)
-{
+                                         const inject_aux_t *aux) {
     gnrc_pktsnip_t *netif_hdr_snip, *ipv6, *udp;
     udp_hdr_t *udp_hdr;
     ipv6_hdr_t *ipv6_hdr;
@@ -100,8 +93,7 @@ static gnrc_pktsnip_t *_build_udp_packet(const ipv6_addr_t *src,
 bool _inject_packet_aux(const ipv6_addr_t *src, const ipv6_addr_t *dst,
                         uint16_t src_port, uint16_t dst_port,
                         void *data, size_t data_len, uint16_t netif,
-                        const inject_aux_t *aux)
-{
+                        const inject_aux_t *aux) {
     gnrc_pktsnip_t *pkt = _build_udp_packet(src, dst, src_port, dst_port,
                                             data, data_len, netif, aux);
 
@@ -112,13 +104,11 @@ bool _inject_packet_aux(const ipv6_addr_t *src, const ipv6_addr_t *dst,
                                          GNRC_NETREG_DEMUX_CTX_ALL, pkt) > 0);
 }
 
-bool _check_net(void)
-{
+bool _check_net(void) {
     return (gnrc_pktbuf_is_sane() && gnrc_pktbuf_is_empty());
 }
 
-static inline bool _res(gnrc_pktsnip_t *pkt, bool res)
-{
+static inline bool _res(gnrc_pktsnip_t *pkt, bool res) {
     gnrc_pktbuf_release(pkt);
     return res;
 }
@@ -126,8 +116,7 @@ static inline bool _res(gnrc_pktsnip_t *pkt, bool res)
 bool _check_packet(const ipv6_addr_t *src, const ipv6_addr_t *dst,
                    uint16_t src_port, uint16_t dst_port,
                    void *data, size_t data_len, uint16_t iface,
-                   bool random_src_port)
-{
+                   bool random_src_port) {
     gnrc_pktsnip_t *pkt, *ipv6, *udp, *payload;
     ipv6_hdr_t *ipv6_hdr;
     udp_hdr_t *udp_hdr;

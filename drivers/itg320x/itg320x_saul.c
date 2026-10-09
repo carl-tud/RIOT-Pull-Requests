@@ -1,28 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_itg320x
- * @brief       ITG320X adaption to the RIOT actuator/sensor interface
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- */
+/// @ingroup     drivers_itg320x
+/// @brief       ITG320X adaption to the RIOT actuator/sensor interface
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
 
 #include <string.h>
 
 #include "saul.h"
 #include "itg320x.h"
 
-static int read_gyro(const void *dev, phydat_t *res)
-{
+static int read_gyro(const void *dev, phydat_t *res) {
     itg320x_data_t data;
     int ret = itg320x_read((const itg320x_t *)dev, &data);
     if (ret < 0) {
         return -ECANCELED;
     }
-    /* convert milli-dps to deci-dps */
+    // convert milli-dps to deci-dps
     res->val[0] = data.x;
     res->val[1] = data.y;
     res->val[2] = data.z;
@@ -32,8 +27,7 @@ static int read_gyro(const void *dev, phydat_t *res)
     return 3;
 }
 
-static int read_temp(const void *dev, phydat_t *res)
-{
+static int read_temp(const void *dev, phydat_t *res) {
     int ret = itg320x_read_temp((const itg320x_t *)dev, &res->val[0]);
     if (ret < 0) {
         return -ECANCELED;

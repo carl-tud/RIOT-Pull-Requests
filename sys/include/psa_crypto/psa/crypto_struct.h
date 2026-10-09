@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     sys_psa_crypto
- * @{
- *
- * @file        crypto_struct.h
- * @brief       Structure definitions for PSA Crypto
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- */
+/// @ingroup     sys_psa_crypto
+/// @{
+///
+/// @file        crypto_struct.h
+/// @brief       Structure definitions for PSA Crypto
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,4 +30,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

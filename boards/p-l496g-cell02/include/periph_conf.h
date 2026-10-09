@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_p-l496g-cell02
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the P-L496G-CELL02 board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_p-l496g-cell02
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the P-L496G-CELL02 board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -30,10 +26,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -51,9 +45,9 @@ static const uart_conf_t uart_config[] = {
         .rts_af     = GPIO_AF7,
 #endif
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
-    {   /* Arduino pinout RX/TX pins on D0/D1 */
+    {   // Arduino pinout RX/TX pins on D0/D1
         .dev        = LPUART1,
         .rcc_mask   = RCC_APB1ENR2_LPUART1EN,
         .rx_pin     = GPIO_PIN(PORT_G, 8),
@@ -71,7 +65,7 @@ static const uart_conf_t uart_config[] = {
         .type       = STM32_LPUART,
         .clk_src    = 0,
     },
-    {   /* STMod+/PMOD connectors */
+    {   // STMod+/PMOD connectors
         .dev        = USART1,
         .rcc_mask   = RCC_APB2ENR_USART1EN,
         .rx_pin     = GPIO_PIN(PORT_G, 10),
@@ -87,7 +81,7 @@ static const uart_conf_t uart_config[] = {
         .rts_af     = GPIO_AF7,
 #endif
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     }
 };
 
@@ -96,12 +90,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -112,7 +104,7 @@ static const i2c_conf_t i2c_config[] = {
         .sda_af         = GPIO_AF4,
         .bus            = APB1,
         .rcc_mask       = RCC_APB1ENR1_I2C1EN,
-        .rcc_sw_mask    = RCC_CCIPR_I2C1SEL_1,      /* HSI (16 MHz) */
+        .rcc_sw_mask    = RCC_CCIPR_I2C1SEL_1,      // HSI (16 MHz)
         .irqn           = I2C1_ER_IRQn
     },
 };
@@ -120,12 +112,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_0_ISR           isr_i2c1_er
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -143,10 +133,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

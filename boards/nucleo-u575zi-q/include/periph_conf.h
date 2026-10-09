@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2024 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-u575zi-q
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-u575zi-q board
- *
- * @author      Nils Ollrogge <nils.ollrogge@mailbox.tu-dresden.de>
- */
+/// @ingroup     boards_nucleo-u575zi-q
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-u575zi-q board
+///
+/// @author      Nils Ollrogge <nils.ollrogge@mailbox.tu-dresden.de>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE 1
 #endif
@@ -29,10 +25,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev = USART1,
@@ -44,7 +38,7 @@ static const uart_conf_t uart_config[] = {
         .bus = APB2,
         .irqn = USART1_IRQn,
         .type = STM32_USART,
-        .clk_src = 0, /* Use APB clock */
+        .clk_src = 0, // Use APB clock
     },
     {
         .dev = LPUART1,
@@ -56,7 +50,7 @@ static const uart_conf_t uart_config[] = {
         .bus = APB3,
         .irqn = LPUART1_IRQn,
         .type = STM32_LPUART,
-        .clk_src = 0, /* Use APB clock */
+        .clk_src = 0, // Use APB clock
     },
 };
 
@@ -64,18 +58,16 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR (isr_lpuart1)
 
 #define UART_NUMOF ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev = SPI1,
-        .mosi_pin = GPIO_PIN(PORT_A, 7),    /* Arduino D11 */
-        .miso_pin = GPIO_PIN(PORT_A, 6),    /* Arduino D12 */
-        .sclk_pin = GPIO_PIN(PORT_A, 5),    /* Arduino D13 */
+        .mosi_pin = GPIO_PIN(PORT_A, 7),    // Arduino D11
+        .miso_pin = GPIO_PIN(PORT_A, 6),    // Arduino D12
+        .sclk_pin = GPIO_PIN(PORT_A, 5),    // Arduino D13
         .cs_pin = GPIO_UNDEF,
         .mosi_af = GPIO_AF5,
         .miso_af = GPIO_AF5,
@@ -87,12 +79,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = I2C1,
@@ -123,23 +113,21 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_0_ISR isr_i2c1_er
 #define I2C_1_ISR isr_i2c2_er
 #define I2C_NUMOF ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- *
- * To find appriopate device and channel find in the MCU datasheet table
- * concerning "Alternate function AF0 to AF7" a text similar to TIM[X]_CH[Y],
- * where:
- * TIM[X] - is device,
- * [Y] - describes used channel (indexed from 0), for example TIM2_CH1 is
- * channel 0 in configuration structure (cc_chan - field),
- * Port column in the table describes connected port.
- *
- * For Nucleo-U575ZI-Q this information is in the datasheet, Table 27, page 127.
- *
- * @{
- */
+/// @name    PWM configuration
+///
+/// To find appriopate device and channel find in the MCU datasheet table
+/// concerning "Alternate function AF0 to AF7" a text similar to TIM[X]_CH[Y],
+/// where:
+/// TIM[X] - is device,
+/// [Y] - describes used channel (indexed from 0), for example TIM2_CH1 is
+/// channel 0 in configuration structure (cc_chan - field),
+/// Port column in the table describes connected port.
+///
+/// For Nucleo-U575ZI-Q this information is in the datasheet, Table 27, page 127.
+///
+/// @{
 static const pwm_conf_t pwm_config[] = {
     { .dev = TIM2,
       .rcc_mask = RCC_APB1ENR1_TIM2EN,
@@ -169,10 +157,10 @@ static const pwm_conf_t pwm_config[] = {
 
 #define PWM_NUMOF ARRAY_SIZE(pwm_config)
 
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

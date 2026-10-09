@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_tsl2561
- *
- * @{
- * @file
- * @brief       Default configuration for TSL2561
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_tsl2561
+///
+/// @{
+/// @file
+/// @brief       Default configuration for TSL2561
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "saul_reg.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the TSL2561
- * @{
- */
+/// @name    Set default configuration parameters for the TSL2561
+/// @{
 #ifndef TSL2561_PARAM_I2C_DEV
 #define TSL2561_PARAM_I2C_DEV         I2C_DEV(0)
 #endif
@@ -49,19 +43,15 @@ extern "C" {
 #ifndef TSL2561_SAUL_INFO
 #define TSL2561_SAUL_INFO             { .name= "tsl2561" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure TSL2561
- */
+/// @brief   Configure TSL2561
 static const tsl2561_params_t tsl2561_params[] =
 {
     TSL2561_PARAMS
 };
 
-/**
- * @brief   Allocate and configure entries to the SAUL registry
- */
+/// @brief   Allocate and configure entries to the SAUL registry
 saul_reg_info_t tsl2561_saul_info[] =
 {
     TSL2561_SAUL_INFO
@@ -71,4 +61,4 @@ saul_reg_info_t tsl2561_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

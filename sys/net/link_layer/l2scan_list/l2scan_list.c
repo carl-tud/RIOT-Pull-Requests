@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_l2scan_list
- * @{
- *
- * @file
- * @brief       List to store the result of a network scan
- *
- * @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     net_l2scan_list
+/// @{
+///
+/// @file
+/// @brief       List to store the result of a network scan
+///
+/// @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
+///
+/// @}
 
 #include <string.h>
 
@@ -23,27 +19,24 @@
 
 #define SCAN_LIST_NODE_AT(array, pos, size) ((void *)(((uint8_t *)(array)) + ((pos) * (size))))
 
-/**
- * @brief  Basic type of a scan result in a list
- */
+/// @brief  Basic type of a scan result in a list
 typedef struct scan_list_node {
-    list_node_t node;               /* Basic node */
-    netopt_scan_result_t result;    /* Basic scan result */
+    list_node_t node;               // Basic node
+    netopt_scan_result_t result;    // Basic scan result
 } scan_list_node_t;
 
 static scan_list_node_t *_scan_list_get_insert(l2scan_list_t *list,
                                                list_node_t *array, unsigned array_numof,
-                                               size_t item_size)
-{
+                                               size_t item_size) {
     scan_list_node_t *lowest = (scan_list_node_t *)array;
     for (unsigned i = 0; i < array_numof; i++) {
-        /* look for free slot or lowest element */
+        // look for free slot or lowest element
         scan_list_node_t *result = SCAN_LIST_NODE_AT(array, i, item_size);
         if (!result->result.strength) {
-            return result; /* free slot */
+            return result; // free slot
         }
         if (result->result.strength < lowest->result.strength) {
-            lowest = result; /* override lowest element */
+            lowest = result; // override lowest element
         }
     }
     list_remove(&list->head, &lowest->node);
@@ -52,8 +45,7 @@ static scan_list_node_t *_scan_list_get_insert(l2scan_list_t *list,
 
 void l2scan_list_empty(l2scan_list_t *list,
                        list_node_t *nodes, unsigned nodes_numof,
-                       size_t node_size)
-{
+                       size_t node_size) {
     list->head.next = NULL;
     memset(nodes, 0, nodes_numof * node_size);
 }
@@ -61,8 +53,7 @@ void l2scan_list_empty(l2scan_list_t *list,
 void l2scan_list_insert(l2scan_list_t *list,
                         list_node_t *nodes, unsigned nodes_numof,
                         size_t node_size,
-                        const netopt_scan_result_t *result)
-{
+                        const netopt_scan_result_t *result) {
     scan_list_node_t *insert = _scan_list_get_insert(list, nodes,
                                                      nodes_numof, node_size);
     *insert = (scan_list_node_t) { .node = { .next = NULL }, };
@@ -78,8 +69,7 @@ void l2scan_list_insert(l2scan_list_t *list,
 
 unsigned l2scan_list_to_array(const l2scan_list_t *list,
                               void *nodes_array, unsigned nodes_numof,
-                              size_t node_size)
-{
+                              size_t node_size) {
     list_node_t *node = list->head.next;
     uint8_t *buf = nodes_array;
     size_t size = node_size - sizeof(*node);

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_sx126x
- *
- * @{
- * @file
- * @brief       Default configuration
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_sx126x
+///
+/// @{
+/// @file
+/// @brief       Default configuration
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "sx126x.h"
@@ -34,37 +30,33 @@ extern "C" {
 #  define SX126X_PARAM_DIO1                 ARDUINO_PIN_5
 #endif
 
-/**
- * @name    Set default configuration parameters
- *
- * Default values are adapted for mbed shield used with to nucleo64 boards
- * @{
- */
+/// @name    Set default configuration parameters
+///
+/// Default values are adapted for mbed shield used with to nucleo64 boards
+/// @{
 #ifndef SX126X_PARAM_SPI
 #  define SX126X_PARAM_SPI                  SPI_DEV(0)
 #endif
 
 #ifndef SX126X_PARAM_SPI_NSS
-#  define SX126X_PARAM_SPI_NSS              GPIO_PIN(0, 8)  /* D7 */
+#  define SX126X_PARAM_SPI_NSS              GPIO_PIN(0, 8)  // D7
 #endif
 
 #ifndef SX126X_PARAM_RESET
-#  define SX126X_PARAM_RESET                GPIO_PIN(0, 0)  /* A0 */
+#  define SX126X_PARAM_RESET                GPIO_PIN(0, 0)  // A0
 #endif
 
 #ifndef SX126X_PARAM_BUSY
-#  define SX126X_PARAM_BUSY                 GPIO_PIN(1, 3)  /* D3 */
+#  define SX126X_PARAM_BUSY                 GPIO_PIN(1, 3)  // D3
 #endif
 
 #ifndef SX126X_PARAM_DIO1
-#  define SX126X_PARAM_DIO1                 GPIO_PIN(1, 4)  /* D5 */
+#  define SX126X_PARAM_DIO1                 GPIO_PIN(1, 4)  // D5
 #endif
 
 #if !defined(SX126X_PARAM_REGULATOR) || defined(DOXYGEN)
-/**
- * @brief   Regulator type which can be
- *          SX126X_REG_MODE_LDO or SX126X_REG_MODE_DCDC
- */
+/// @brief   Regulator type which can be
+///          SX126X_REG_MODE_LDO or SX126X_REG_MODE_DCDC
 #  define SX126X_PARAM_REGULATOR            SX126X_REG_MODE_DCDC
 #endif
 
@@ -77,43 +69,33 @@ extern "C" {
 #endif
 
 #if !defined(SX126X_PARAM_DIO2_MODE) || defined(DOXYGEN)
-/**
- * @brief   DIO2 pin mode which can be
- *          SX126X_DIO2_UNUSED, SX126X_DIO2_IRQ or SX126X_DIO2_RF_SWITCH
- */
+/// @brief   DIO2 pin mode which can be
+///          SX126X_DIO2_UNUSED, SX126X_DIO2_IRQ or SX126X_DIO2_RF_SWITCH
 #  define SX126X_PARAM_DIO2_MODE            SX126X_DIO2_UNUSED
 #endif
 
 #if !defined(SX126X_PARAM_DIO3_MODE) || defined(DOXYGEN)
-/**
- * @brief   DIO3 pin mode which can be
- *          SX126X_DIO3_UNUSED, SX126X_DIO3_IRQ or SX126X_DIO3_TCXO
- */
+/// @brief   DIO3 pin mode which can be
+///          SX126X_DIO3_UNUSED, SX126X_DIO3_IRQ or SX126X_DIO3_TCXO
 #  define SX126X_PARAM_DIO3_MODE            SX126X_DIO3_UNUSED
 #endif
 
 #if !defined(SX126X_PARAM_TCXO_VOLTAGE) || defined(DOXYGEN)
-/**
- * @brief   TCXO voltage is configured to be 200 mV below the supply voltage.
- *
- * This means that even if tcxoVoltage is configured above the supply voltage,
- * the supply voltage will be limited by: VDDop > VTCXO + 200 mV
- */
+/// @brief   TCXO voltage is configured to be 200 mV below the supply voltage.
+///
+/// This means that even if tcxoVoltage is configured above the supply voltage,
+/// the supply voltage will be limited by: VDDop > VTCXO + 200 mV
 #  define SX126X_PARAM_TCXO_VOLTAGE         SX126X_TCXO_CTRL_3_0V
 #endif
 
 #if !defined(SX126X_PARAM_TCXO_TIMEOUT) || defined(DOXYGEN)
-/**
- * @brief   Timeout for tcxo stabilization in 15.625 µs steps
- *          The default value is 256 (4ms).
- */
+/// @brief   Timeout for tcxo stabilization in 15.625 µs steps
+///          The default value is 256 (4ms).
 #  define SX126X_PARAM_TCXO_TIMEOUT         256
 #endif
 
 #if !defined(SX126X_PARAM_DIO3_ARG) || defined(DOXYGEN)
-/**
- * @brief   DIO3 argument if mode is SX126X_DIO3_TCXO
- */
+/// @brief   DIO3 argument if mode is SX126X_DIO3_TCXO
 #  define SX126X_PARAM_DIO3_ARG             { .tcxo_volt = SX126X_PARAM_TCXO_VOLTAGE, \
                                               .tcxo_timeout = SX126X_PARAM_TCXO_TIMEOUT }
 #endif
@@ -143,22 +125,16 @@ extern "C" {
 #endif
 
 #if IS_USED(MODULE_SX126X_DIO2) || defined(DOXYGEN)
-/**
- * @brief   DIO2 pin mode
- */
+/// @brief   DIO2 pin mode
 #  define SX126X_DIO2_MODE      .dio2_mode = SX126X_PARAM_DIO2_MODE,
 #else
 #  define SX126X_DIO2_MODE
 #endif
 
 #if IS_USED(MODULE_SX126X_DIO3) || defined(DOXYGEN)
-/**
- * @brief   DIO3 pin mode
- */
+/// @brief   DIO3 pin mode
 #  define SX126X_DIO3_MODE      .dio3_mode = SX126X_PARAM_DIO3_MODE,
-/**
- * @brief   DIO3 pin argument
- */
+/// @brief   DIO3 pin argument
 #  define SX126X_DIO3_ARG       .dio3_arg = SX126X_PARAM_DIO3_ARG,
 #else
 #  define SX126X_DIO3_MODE
@@ -181,11 +157,9 @@ extern "C" {
                                    }
 #endif
 
-/**@}*/
+/// @}
 
-/**
- * @brief   Configuration struct
- */
+/// @brief   Configuration struct
 static const sx126x_params_t sx126x_params[] =
 {
     SX126X_PARAMS
@@ -195,4 +169,4 @@ static const sx126x_params_t sx126x_params[] =
 }
 #endif
 
-/** @} */
+/// @}

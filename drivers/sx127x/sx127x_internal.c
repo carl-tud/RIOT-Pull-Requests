@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 Unwired Devices <info@unwds.com>
- * SPDX-FileCopyrightText: 2017 Inria Chile
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Unwired Devices <info@unwds.com>
+// SPDX-FileCopyrightText: 2017 Inria Chile
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sx127x
- * @{
- * @file
- * @brief       implementation of internal functions for sx127x
- *
- * @author      Eugene P. <ep@unwds.com>
- * @author      José Ignacio Alamos <jose.alamos@inria.cl>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     drivers_sx127x
+/// @{
+/// @file
+/// @brief       implementation of internal functions for sx127x
+///
+/// @author      Eugene P. <ep@unwds.com>
+/// @author      José Ignacio Alamos <jose.alamos@inria.cl>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -37,9 +33,8 @@
 #define SX127X_SPI_SPEED    (SPI_CLK_1MHZ)
 #define SX127X_SPI_MODE     (SPI_MODE_0)
 
-int sx127x_check_version(const sx127x_t *dev)
-{
-    /* Read version number and compare with sx127x assigned revision */
+int sx127x_check_version(const sx127x_t *dev) {
+    // Read version number and compare with sx127x assigned revision
     uint8_t version = sx127x_reg_read(dev, SX127X_REG_VERSION);
 
 #if defined(MODULE_SX1272)
@@ -49,7 +44,7 @@ int sx127x_check_version(const sx127x_t *dev)
         return -1;
     }
     DEBUG("[sx127x] SX1272 transceiver detected\n");
-#else /* MODULE_SX1276) */
+#else // MODULE_SX1276)
     if (version != VERSION_SX1276 && version != VERSION_SX1276_WLR089) {
         DEBUG("[sx127x] sx1276 test failed, invalid version number: %d\n",
               version);
@@ -61,13 +56,11 @@ int sx127x_check_version(const sx127x_t *dev)
     return 0;
 }
 
-void sx127x_reg_write(const sx127x_t *dev, uint8_t addr, uint8_t data)
-{
+void sx127x_reg_write(const sx127x_t *dev, uint8_t addr, uint8_t data) {
     sx127x_reg_write_burst(dev, addr, &data, 1);
 }
 
-uint8_t sx127x_reg_read(const sx127x_t *dev, uint8_t addr)
-{
+uint8_t sx127x_reg_read(const sx127x_t *dev, uint8_t addr) {
     uint8_t data;
 
     sx127x_reg_read_burst(dev, addr, &data, 1);
@@ -76,8 +69,7 @@ uint8_t sx127x_reg_read(const sx127x_t *dev, uint8_t addr)
 }
 
 void sx127x_reg_write_burst(const sx127x_t *dev, uint8_t addr, uint8_t *buffer,
-                            uint8_t size)
-{
+                            uint8_t size) {
     spi_acquire(dev->params.spi, SPI_CS_UNDEF, SX127X_SPI_MODE, SX127X_SPI_SPEED);
 
     gpio_clear(dev->params.nss_pin);
@@ -88,8 +80,7 @@ void sx127x_reg_write_burst(const sx127x_t *dev, uint8_t addr, uint8_t *buffer,
 }
 
 void sx127x_reg_read_burst(const sx127x_t *dev, uint8_t addr, uint8_t *buffer,
-                           uint8_t size)
-{
+                           uint8_t size) {
     spi_acquire(dev->params.spi, SPI_CS_UNDEF, SX127X_SPI_MODE, SX127X_SPI_SPEED);
 
     gpio_clear(dev->params.nss_pin);
@@ -99,33 +90,30 @@ void sx127x_reg_read_burst(const sx127x_t *dev, uint8_t addr, uint8_t *buffer,
     spi_release(dev->params.spi);
 }
 
-void sx127x_write_fifo(const sx127x_t *dev, uint8_t *buffer, uint8_t size)
-{
+void sx127x_write_fifo(const sx127x_t *dev, uint8_t *buffer, uint8_t size) {
     sx127x_reg_write_burst(dev, 0, buffer, size);
 }
 
-void sx127x_read_fifo(const sx127x_t *dev, uint8_t *buffer, uint8_t size)
-{
+void sx127x_read_fifo(const sx127x_t *dev, uint8_t *buffer, uint8_t size) {
     sx127x_reg_read_burst(dev, 0, buffer, size);
 }
 
 #if defined(MODULE_SX1276)
-void sx1276_rx_chain_calibration(sx127x_t *dev)
-{
+void sx1276_rx_chain_calibration(sx127x_t *dev) {
     uint8_t reg_pa_config_init_val;
     uint32_t initial_freq;
 
-    /* Save context */
+    // Save context
     reg_pa_config_init_val = sx127x_reg_read(dev, SX127X_REG_PACONFIG);
     initial_freq = ((uint32_t)sx127x_reg_read(dev, SX127X_REG_FRFMSB) << 16)
                  | ((uint32_t)sx127x_reg_read(dev, SX127X_REG_FRFMID) << 8)
                  | ((uint32_t)sx127x_reg_read(dev, SX127X_REG_FRFLSB));
     initial_freq = (uint64_t)initial_freq * LORA_FREQUENCY_RESOLUTION_NANOHERTZ_DEFAULT / 1000000000U;
 
-    /* Cut the PA just in case, RFO output, power = -1 dBm */
+    // Cut the PA just in case, RFO output, power = -1 dBm
     sx127x_reg_write(dev, SX127X_REG_PACONFIG, 0x00);
 
-    /* Launch Rx chain calibration for LF band */
+    // Launch Rx chain calibration for LF band
     sx127x_reg_write(dev,
                      SX127X_REG_IMAGECAL,
                      (sx127x_reg_read(dev, SX127X_REG_IMAGECAL) & SX127X_RF_IMAGECAL_IMAGECAL_MASK)
@@ -134,10 +122,10 @@ void sx1276_rx_chain_calibration(sx127x_t *dev)
     while ((sx127x_reg_read(dev, SX127X_REG_IMAGECAL) & SX127X_RF_IMAGECAL_IMAGECAL_RUNNING)
            == SX127X_RF_IMAGECAL_IMAGECAL_RUNNING) {}
 
-    /* Set a frequency in HF band */
+    // Set a frequency in HF band
     sx127x_set_channel(dev, SX127X_HF_CHANNEL_DEFAULT);
 
-    /* Launch Rx chain calibration for HF band */
+    // Launch Rx chain calibration for HF band
     sx127x_reg_write(dev,
                      SX127X_REG_IMAGECAL,
                      (sx127x_reg_read(dev, SX127X_REG_IMAGECAL) & SX127X_RF_IMAGECAL_IMAGECAL_MASK)
@@ -145,14 +133,13 @@ void sx1276_rx_chain_calibration(sx127x_t *dev)
     while ((sx127x_reg_read(dev, SX127X_REG_IMAGECAL) & SX127X_RF_IMAGECAL_IMAGECAL_RUNNING)
            == SX127X_RF_IMAGECAL_IMAGECAL_RUNNING) {}
 
-    /* Restore context */
+    // Restore context
     sx127x_reg_write(dev, SX127X_REG_PACONFIG, reg_pa_config_init_val);
     sx127x_set_channel(dev, initial_freq);
 }
 #endif
 
-int16_t sx127x_read_rssi(const sx127x_t *dev)
-{
+int16_t sx127x_read_rssi(const sx127x_t *dev) {
     int16_t rssi = 0;
 
     switch (dev->settings.modem) {
@@ -162,7 +149,7 @@ int16_t sx127x_read_rssi(const sx127x_t *dev)
     case SX127X_MODEM_LORA:
 #if defined(MODULE_SX1272)
         rssi = SX127X_RSSI_OFFSET + sx127x_reg_read(dev, SX127X_REG_LR_RSSIVALUE);
-#else /* MODULE_SX1276 */
+#else // MODULE_SX1276
         if (dev->settings.channel > SX127X_RF_MID_BAND_THRESH) {
             rssi = SX127X_RSSI_OFFSET_HF + sx127x_reg_read(dev, SX127X_REG_LR_RSSIVALUE);
         }
@@ -179,33 +166,32 @@ int16_t sx127x_read_rssi(const sx127x_t *dev)
     return rssi;
 }
 
-void sx127x_start_cad(sx127x_t *dev)
-{
+void sx127x_start_cad(sx127x_t *dev) {
     switch (dev->settings.modem) {
     case SX127X_MODEM_FSK:
         break;
     case SX127X_MODEM_LORA:
-        /* Disable all interrupts except CAD-related */
+        // Disable all interrupts except CAD-related
         sx127x_reg_write(dev, SX127X_REG_LR_IRQFLAGSMASK,
                          SX127X_RF_LORA_IRQFLAGS_RXTIMEOUT |
                          SX127X_RF_LORA_IRQFLAGS_RXDONE |
                          SX127X_RF_LORA_IRQFLAGS_PAYLOADCRCERROR |
                          SX127X_RF_LORA_IRQFLAGS_VALIDHEADER |
                          SX127X_RF_LORA_IRQFLAGS_TXDONE |
-                            /*SX127X_RF_LORA_IRQFLAGS_CADDONE |*/
+                            // SX127X_RF_LORA_IRQFLAGS_CADDONE |
                          SX127X_RF_LORA_IRQFLAGS_FHSSCHANGEDCHANNEL
-                            /* | SX127X_RF_LORA_IRQFLAGS_CADDETECTED*/
+                            // | SX127X_RF_LORA_IRQFLAGS_CADDETECTED
                          );
 
         if (gpio_is_valid(dev->params.dio3_pin)) {
-            /* DIO3 = CADDone */
+            // DIO3 = CADDone
             sx127x_reg_write(dev, SX127X_REG_DIOMAPPING1,
                              (sx127x_reg_read(dev, SX127X_REG_DIOMAPPING1) &
                               SX127X_RF_LORA_DIOMAPPING1_DIO3_MASK) |
                              SX127X_RF_LORA_DIOMAPPING1_DIO3_00);
         }
         else {
-            /* DIO0 = CADDone */
+            // DIO0 = CADDone
             sx127x_reg_write(dev, SX127X_REG_DIOMAPPING1,
                              (sx127x_reg_read(dev, SX127X_REG_DIOMAPPING1) &
                               SX127X_RF_LORA_DIOMAPPING1_DIO0_MASK) |
@@ -220,14 +206,13 @@ void sx127x_start_cad(sx127x_t *dev)
     }
 }
 
-bool sx127x_is_channel_free(sx127x_t *dev, uint32_t freq, int16_t rssi_threshold)
-{
+bool sx127x_is_channel_free(sx127x_t *dev, uint32_t freq, int16_t rssi_threshold) {
     int16_t rssi = 0;
 
     sx127x_set_channel(dev, freq);
     sx127x_set_op_mode(dev, SX127X_RF_OPMODE_RECEIVER);
 
-    ztimer_sleep(ZTIMER_MSEC, 1); /* wait 1 millisecond */
+    ztimer_sleep(ZTIMER_MSEC, 1); // wait 1 millisecond
 
     rssi = sx127x_read_rssi(dev);
     sx127x_set_sleep(dev);

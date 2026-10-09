@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2013 Christian Mehlis <mehlis@inf.fu-berlin.de>
- * SPDX-FileCopyrightText: 2014 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Christian Mehlis <mehlis@inf.fu-berlin.de>
+// SPDX-FileCopyrightText: 2014 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Thread test application
- *
- * @author Christian Mehlis <mehlis@inf.fu-berlin.de>
- * @author Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Thread test application
+///
+/// @author Christian Mehlis <mehlis@inf.fu-berlin.de>
+/// @author Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -29,8 +25,7 @@ char t3_stack[THREAD_STACKSIZE_MAIN];
 kernel_pid_t p_main = KERNEL_PID_UNDEF, p1 = KERNEL_PID_UNDEF,
              p2 = KERNEL_PID_UNDEF, p3 = KERNEL_PID_UNDEF;
 
-void *sub_thread(void *arg)
-{
+void *sub_thread(void *arg) {
     kernel_pid_t pid = thread_getpid();
     printf("THREAD %s (pid:%" PRIkernel_pid ") start\n", (char*) arg, pid);
 
@@ -45,8 +40,7 @@ void *sub_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("START");
     msg_t msg;
 

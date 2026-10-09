@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of LSM303DLHC accelerometer/magnetometer
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization of LSM303DLHC accelerometer/magnetometer
+//
+// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,36 +17,25 @@
 #include "lsm303dlhc.h"
 #include "lsm303dlhc_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define LSM303DLHC_NUM    ARRAY_SIZE(lsm303dlhc_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static lsm303dlhc_t lsm303dlhc_devs[LSM303DLHC_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[LSM303DLHC_NUM * 2];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define LSM303DLHC_INFO_NUM    ARRAY_SIZE(lsm303dlhc_saul_info)
 
-/**
- * @name    Reference the driver structs
- * @{
- */
+/// @name    Reference the driver structs
+/// @{
 extern saul_driver_t lsm303dlhc_saul_acc_driver;
 extern saul_driver_t lsm303dlhc_saul_mag_driver;
-/** @} */
+/// @}
 
-void auto_init_lsm303dlhc(void)
-{
+void auto_init_lsm303dlhc(void) {
     assert(LSM303DLHC_NUM == LSM303DLHC_INFO_NUM);
 
     for (unsigned int i = 0; i < LSM303DLHC_NUM; i++) {

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -10,10 +8,8 @@
 #include <ifaddrs.h>
 #include <stdio.h>
 
-/**
- * @addtogroup cpu_native
- * @{
- */
+/// @addtogroup cpu_native
+/// @{
 
 #ifndef DOXYGEN
 #  if NATIVE_SYSCALLS_DEFINITION
@@ -27,15 +23,13 @@
 extern "C" {
 #endif
 
-/* MARK: - System call wrappers */
-/** @cond */
-/**
- * @name System call wrappers
- *
- * Internally, these function pointers are assigned their implementation in the standard library.
- * We wrap system calls and syscall-invoking library calls to ensure **no context switches occur during a system call**.
- * @{
- */
+// MARK: - System call wrappers
+/// @cond
+/// @name System call wrappers
+///
+/// Internally, these function pointers are assigned their implementation in the standard library.
+/// We wrap system calls and syscall-invoking library calls to ensure **no context switches occur during a system call**.
+/// @{
 __SPECIFIER ssize_t (*real_read)(int fd, void *buf, size_t count);
 __SPECIFIER ssize_t (*real_write)(int fd, const void *buf, size_t count);
 __SPECIFIER size_t (*real_fread)(void *ptr, size_t size, size_t nmemb, FILE *stream);
@@ -98,8 +92,8 @@ __SPECIFIER struct dirent *(*real_readdir)(DIR *dirp);
 __SPECIFIER int (*real_closedir)(DIR *dirp);
 __SPECIFIER int (*real_rename)(const char *, const char *);
 __SPECIFIER int (*real_statvfs)(const char *restrict path, struct statvfs *restrict buf);
-/** @}*/
-/** @endcond */
+/// @}
+/// @endcond
 
 #ifdef __cplusplus
 }
@@ -109,4 +103,4 @@ __SPECIFIER int (*real_statvfs)(const char *restrict path, struct statvfs *restr
 # undef __SPECIFIER
 #endif
 
-/** @} */
+/// @}

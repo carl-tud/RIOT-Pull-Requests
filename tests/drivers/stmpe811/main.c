@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the STMPE811 touchscreen controller
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the STMPE811 touchscreen controller
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -31,14 +27,12 @@
 #endif
 
 #if !IS_ACTIVE(STMPE811_POLLING_MODE)
-static void _touch_event_cb(void *arg)
-{
+static void _touch_event_cb(void *arg) {
     mutex_unlock(arg);
 }
 #endif
 
-int main(void)
-{
+int main(void) {
 #if !IS_ACTIVE(STMPE811_POLLING_MODE)
     mutex_t lock = MUTEX_INIT_LOCKED;
 #endif
@@ -66,10 +60,10 @@ int main(void)
     while (1) {
 
 #if IS_ACTIVE(STMPE811_POLLING_MODE)
-        /* polling is used */
+        // polling is used
         ztimer_sleep(ZTIMER_MSEC, STMPE811_POLLING_PERIOD);
 #else
-        /* wait for touch event */
+        // wait for touch event
         mutex_lock(&lock);
 #endif
 
@@ -85,7 +79,7 @@ int main(void)
             last_touch_state = current_touch_state;
         }
 
-        /* Display touch position if pressed */
+        // Display touch position if pressed
         if (current_touch_state == STMPE811_TOUCH_STATE_PRESSED) {
             stmpe811_touch_position_t position;
             stmpe811_read_touch_position(&dev, &position);

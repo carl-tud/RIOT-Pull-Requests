@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       GPIO-driven low-Level parallel interface implementation for LCDs
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       GPIO-driven low-Level parallel interface implementation for LCDs
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <assert.h>
 
@@ -28,10 +24,10 @@
 #include "debug.h"
 
 typedef struct {
-    uint32_t set_mask_0;    /* port 0 set mask */
-    uint32_t set_mask_1;    /* port 0 set mask */
-    uint32_t clr_mask_0;    /* port 1 clear mask */
-    uint32_t clr_mask_1;    /* port 1 clear mask */
+    uint32_t set_mask_0;    // port 0 set mask
+    uint32_t set_mask_1;    // port 0 set mask
+    uint32_t clr_mask_0;    // port 1 clear mask
+    uint32_t clr_mask_1;    // port 1 clear mask
 } _pin_mask_t;
 
 static _pin_mask_t _low_byte_masks[256] = {};
@@ -40,21 +36,17 @@ static _pin_mask_t _low_byte_masks[256] = {};
 static _pin_mask_t _high_byte_masks[256] = {};
 #endif
 
-/*
- * Following functions are not implemented by intention to let the
- * GPIO-driven low-level implementation handle the configuration
- * of the GPIOs. The function `_lcd_ll_mcu_set_data_dir` is used to
- * initialize the GPIO masks when the clear masks are completely 0.
- */
+// Following functions are not implemented by intention to let the
+// GPIO-driven low-level implementation handle the configuration
+// of the GPIOs. The function `_lcd_ll_mcu_set_data_dir` is used to
+// initialize the GPIO masks when the clear masks are completely 0.
 #if 0
 
-static void _lcd_ll_mcu_init(lcd_t *dev)
-{
+static void _lcd_ll_mcu_init(lcd_t *dev) {
     (void)dev;
 }
 
-static void _lcd_ll_mcu_cmd_start(lcd_t *dev, uint8_t cmd, bool cont)
-{
+static void _lcd_ll_mcu_cmd_start(lcd_t *dev, uint8_t cmd, bool cont) {
     (void)dev;
     (void)cmd;
     (void)cont;
@@ -62,11 +54,10 @@ static void _lcd_ll_mcu_cmd_start(lcd_t *dev, uint8_t cmd, bool cont)
 
 #endif
 
-static void _lcd_ll_mcu_set_data_dir(lcd_t *dev, bool output)
-{
+static void _lcd_ll_mcu_set_data_dir(lcd_t *dev, bool output) {
     DEBUG("[lcd_ll_mcu] %s %u\n", __func__, output);
 
-    /* sanity check to ensure that data pins can be handled as array */
+    // sanity check to ensure that data pins can be handled as array
     assert((&dev->params->d7_pin - &dev->params->d0_pin) == 7);
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
     assert((&dev->params->d15_pin - &dev->params->d8_pin) == 7);
@@ -74,13 +65,13 @@ static void _lcd_ll_mcu_set_data_dir(lcd_t *dev, bool output)
 
     if ((_low_byte_masks[0].clr_mask_0 == 0) &&
         (_low_byte_masks[0].clr_mask_1 == 0)) {
-        /* initialize the mask array if it is not yet initialized */
+        // initialize the mask array if it is not yet initialized
         const gpio_t *pins = &dev->params->d0_pin;
 
         for (unsigned data = 0; data < 256; data++) {
             for (unsigned i = 0; i < 8; i++) {
                 if (data & (1 << i)) {
-                    /* set mask */
+                    // set mask
                     if (pins[i] < 32) {
                         _low_byte_masks[data].set_mask_0 |= 1 << pins[i];
                     }
@@ -89,7 +80,7 @@ static void _lcd_ll_mcu_set_data_dir(lcd_t *dev, bool output)
                     }
                 }
                 else {
-                    /* clear mask */
+                    // clear mask
                     if (pins[i] < 32) {
                         _low_byte_masks[data].clr_mask_0 |= 1 << pins[i];
                     }
@@ -105,7 +96,7 @@ static void _lcd_ll_mcu_set_data_dir(lcd_t *dev, bool output)
         for (unsigned data = 0; data < 256; data++) {
             for (unsigned i = 0; i < 8; i++) {
                 if (data & (1 << i)) {
-                    /* set mask */
+                    // set mask
                     if (pins[i] < 32) {
                         _high_byte_masks[data].set_mask_0 |= 1 << pins[i];
                     }
@@ -114,7 +105,7 @@ static void _lcd_ll_mcu_set_data_dir(lcd_t *dev, bool output)
                     }
                 }
                 else {
-                    /* clear mask */
+                    // clear mask
                     if (pins[i] < 32) {
                         _high_byte_masks[data].clr_mask_0 |= 1 << pins[i];
                     }
@@ -144,12 +135,11 @@ static void _lcd_ll_mcu_set_data_dir(lcd_t *dev, bool output)
     gpio_init(dev->params->d13_pin, output ? GPIO_OUT : GPIO_IN);
     gpio_init(dev->params->d14_pin, output ? GPIO_OUT : GPIO_IN);
     gpio_init(dev->params->d15_pin, output ? GPIO_OUT : GPIO_IN);
-#endif /* IS_USED(MODULE_LCD_PARALLEL_16BIT) */
+#endif // IS_USED(MODULE_LCD_PARALLEL_16BIT)
 }
 
 static void _lcd_ll_mcu_write_data(lcd_t *dev, bool cont,
-                                   uint16_t data, unsigned pin_num)
-{
+                                   uint16_t data, unsigned pin_num) {
     if (gpio_is_valid(dev->params->cs_pin)) {
         gpio_clear(dev->params->cs_pin);
     }
@@ -184,8 +174,7 @@ static void _lcd_ll_mcu_write_data(lcd_t *dev, bool cont,
     }
 }
 
-static uint16_t _lcd_ll_mcu_read_data(lcd_t *dev, bool cont, unsigned pin_num)
-{
+static uint16_t _lcd_ll_mcu_read_data(lcd_t *dev, bool cont, unsigned pin_num) {
     const gpio_t *pins = &dev->params->d0_pin;
 
     if (gpio_is_valid(dev->params->cs_pin)) {
@@ -217,38 +206,34 @@ static uint16_t _lcd_ll_mcu_read_data(lcd_t *dev, bool cont, unsigned pin_num)
     return in;
 }
 
-static void _lcd_ll_mcu_write_byte(lcd_t *dev, bool cont, uint8_t out)
-{
+static void _lcd_ll_mcu_write_byte(lcd_t *dev, bool cont, uint8_t out) {
     DEBUG("[lcd_ll_mcu] write byte: %02x\n", out);
 
     _lcd_ll_mcu_write_data(dev, cont, out, 8);
 }
 
-static uint8_t _lcd_ll_mcu_read_byte(lcd_t *dev, bool cont)
-{
+static uint8_t _lcd_ll_mcu_read_byte(lcd_t *dev, bool cont) {
     return _lcd_ll_mcu_read_data(dev, cont, 8);
 }
 
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
-static void _lcd_ll_mcu_write_word(lcd_t *dev, bool cont, uint16_t out)
-{
+static void _lcd_ll_mcu_write_word(lcd_t *dev, bool cont, uint16_t out) {
     DEBUG("[lcd_ll_mcu] write word: %04x\n", out);
 
     _lcd_ll_mcu_write_data(dev, cont, out, 16);
 }
 
-static uint16_t _lcd_ll_mcu_read_word(lcd_t *dev, bool cont)
-{
+static uint16_t _lcd_ll_mcu_read_word(lcd_t *dev, bool cont) {
     return _lcd_ll_mcu_read_data(dev, cont, 16);
 }
 
-#endif /* IS_USED(MODULE_LCD_PARALLEL_16BIT) */
+#endif // IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
 const lcd_ll_par_driver_t lcd_ll_par_driver = {
-    .init = lcd_ll_par_gpio_init,               /* GPIO-driven `init` is used */
+    .init = lcd_ll_par_gpio_init,               // GPIO-driven `init` is used
     .set_data_dir = _lcd_ll_mcu_set_data_dir,
-    .cmd_start = lcd_ll_par_gpio_cmd_start,     /* GPIO-driven `cmd_start` is used */
+    .cmd_start = lcd_ll_par_gpio_cmd_start,     // GPIO-driven `cmd_start` is used
     .write_byte = _lcd_ll_mcu_write_byte,
     .read_byte = _lcd_ll_mcu_read_byte,
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
@@ -257,10 +242,10 @@ const lcd_ll_par_driver_t lcd_ll_par_driver = {
 #endif
 };
 
-#else /* MODULE_ESP_LCD_GPIO */
+#else // MODULE_ESP_LCD_GPIO
 
-/* the GPIO-driven low-level interface is not used */
+// the GPIO-driven low-level interface is not used
 const lcd_ll_par_driver_t lcd_ll_par_driver = {
 };
 
-#endif /* MODULE_ESP_LCD_GPIO */
+#endif // MODULE_ESP_LCD_GPIO

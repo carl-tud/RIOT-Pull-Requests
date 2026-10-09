@@ -1,27 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Another peripheral timer test application
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Another peripheral timer test application
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #include "print_results.h"
 #include "matstat.h"
 #include "fmt.h"
 #include "bench_timers_config.h"
 
-static void print_statistics(const matstat_state_t *state, const stat_limits_t *limits)
-{
+static void print_statistics(const matstat_state_t *state, const stat_limits_t *limits) {
     if (state->count == 0) {
         print_str("no samples\n");
         return;
@@ -52,15 +47,14 @@ static void print_statistics(const matstat_state_t *state, const stat_limits_t *
     if (limits) {
         if ((mean < limits->mean_low) || (limits->mean_high < mean) ||
             (variance < limits->variance_low) || (limits->variance_high < variance) ) {
-            /* mean or variance is outside the expected range, alert the user */
+            // mean or variance is outside the expected range, alert the user
             print_str("  <=== SIC!");
         }
     }
     print("\n", 1);
 }
 
-static void print_totals(const matstat_state_t *states, size_t nelem, const stat_limits_t *limits)
-{
+static void print_totals(const matstat_state_t *states, size_t nelem, const stat_limits_t *limits) {
     matstat_state_t totals;
     matstat_clear(&totals);
     for (size_t k = 0; k < nelem; ++k) {
@@ -70,8 +64,7 @@ static void print_totals(const matstat_state_t *states, size_t nelem, const stat
 }
 
 static void print_detailed(const matstat_state_t *states, size_t nelem, unsigned int test_min,
-                           const stat_limits_t *limits)
-{
+                           const stat_limits_t *limits) {
     if (LOG2_STATS) {
         print_str("   interval     count       sum       sum_sq    min   max  mean  variance\n");
         for (unsigned int k = 0; k < nelem; ++k) {
@@ -82,7 +75,7 @@ static void print_detailed(const matstat_state_t *states, size_t nelem, unsigned
             }
             unsigned int start = num + test_min;
             if (num == 1) {
-                /* special case, bitarithm_msb will return 0 for both 0 and 1 */
+                // special case, bitarithm_msb will return 0 for both 0 and 1
                 start = test_min;
             }
             print(buf, fmt_lpad(buf, fmt_u32_dec(buf, start), 4, ' '));
@@ -107,9 +100,8 @@ static void print_detailed(const matstat_state_t *states, size_t nelem, unsigned
 }
 
 void print_results(const result_presentation_t *pres, const matstat_state_t *ref_states,
-                   const matstat_state_t *int_states)
-{
-    static char buf[48]; /* String formatting temporary buffer, not thread safe */
+                   const matstat_state_t *int_states) {
+    static char buf[48]; // String formatting temporary buffer, not thread safe
     print_str("------------- BEGIN STATISTICS --------------\n");
     print_str("===== Reference timer statistics =====\n");
     print_str("Limits: mean: [");

@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @addtogroup  unittests
- * @{
- *
- * @file
- * @brief       Implementations of unit tests for printing floating point numbers
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @}
- */
+/// @addtogroup  unittests
+/// @{
+///
+/// @file
+/// @brief       Implementations of unit tests for printing floating point numbers
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -28,8 +24,7 @@ static const double in0 = 2016.0349;
 static const double in1 = 123.4567;
 static const double in2 = 0.0;
 
-static void sfprintf_float(void)
-{
+static void sfprintf_float(void) {
     char tmp[BUFSIZE];
     char *str = tmp;
 
@@ -58,8 +53,7 @@ static void sfprintf_float(void)
     TEST_ASSERT_EQUAL_STRING("0.0000", str);
 }
 
-Test *tests_printf_float_tests(void)
-{
+Test *tests_printf_float_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(sfprintf_float)
     };
@@ -69,7 +63,6 @@ Test *tests_printf_float_tests(void)
     return (Test *)&pkt_tests;
 }
 
-void tests_printf_float(void)
-{
+void tests_printf_float(void) {
     TESTS_RUN(tests_printf_float_tests());
 }

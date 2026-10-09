@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
 
 #include <errno.h>
 #include <stdbool.h>
@@ -22,9 +18,8 @@
 #endif
 #include "net/dns.h"
 
-/* get the next netif, returns true if there are more */
-static bool _netif_get(netif_t **current_netif)
-{
+// get the next netif, returns true if there are more
+static bool _netif_get(netif_t **current_netif) {
     netif_t *netif = *current_netif;
     netif = netif_iter(netif);
 
@@ -32,8 +27,7 @@ static bool _netif_get(netif_t **current_netif)
     return netif_iter(netif);
 }
 
-int netutils_get_ipv4(ipv4_addr_t *addr, const char *hostname)
-{
+int netutils_get_ipv4(ipv4_addr_t *addr, const char *hostname) {
     if (hostname == NULL) {
         return -EINVAL;
     }
@@ -41,8 +35,8 @@ int netutils_get_ipv4(ipv4_addr_t *addr, const char *hostname)
     for (size_t i = 0; i < strlen(hostname); i++) {
         bool is_not_ipv4 = (hostname[i] < '0' || hostname[i] > '9') && hostname[i] != '.';
 
-        /* once we see an invalid character for an IPv4 address try to
-         * resolve the hostname by DNS */
+        // once we see an invalid character for an IPv4 address try to
+        // resolve the hostname by DNS
         if (is_not_ipv4) {
             int res = dns_query(hostname, addr, AF_INET);
             if (res < 0) {
@@ -60,15 +54,14 @@ int netutils_get_ipv4(ipv4_addr_t *addr, const char *hostname)
     return 0;
 }
 
-int netutils_get_ipv6(ipv6_addr_t *addr, netif_t **netif, const char *hostname)
-{
+int netutils_get_ipv6(ipv6_addr_t *addr, netif_t **netif, const char *hostname) {
     *netif = NULL;
 
     if (hostname == NULL) {
         return -EINVAL;
     }
 
-    /* hostname is not an IPv6 address */
+    // hostname is not an IPv6 address
     if (strchr(hostname, ':') == NULL) {
         int res = dns_query(hostname, addr, AF_INET6);
         if (res < 0) {
@@ -77,7 +70,7 @@ int netutils_get_ipv6(ipv6_addr_t *addr, netif_t **netif, const char *hostname)
         return 0;
     }
 
-    /* search for interface ID */
+    // search for interface ID
     size_t len = strlen(hostname);
     const char *iface = strchr(hostname, '%');
     if (iface) {
@@ -88,9 +81,9 @@ int netutils_get_ipv6(ipv6_addr_t *addr, netif_t **netif, const char *hostname)
             return -EINVAL;
         }
     }
-    /* preliminary select the first interface */
+    // preliminary select the first interface
     else if (_netif_get(netif)) {
-        /* don't take it if there is more than one interface */
+        // don't take it if there is more than one interface
         *netif = NULL;
     }
 
@@ -100,4 +93,4 @@ int netutils_get_ipv6(ipv6_addr_t *addr, netif_t **netif, const char *hostname)
 
     return 0;
 }
-/** @} */
+/// @}

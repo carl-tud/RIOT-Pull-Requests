@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2023 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_nrf5340dk-app
- * @{
- *
- * @file
- * @brief       Board specific implementations for the Nordic nRF5340DK board
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- * @}
- */
+/// @ingroup     boards_nrf5340dk-app
+/// @{
+///
+/// @file
+/// @brief       Board specific implementations for the Nordic nRF5340DK board
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+/// @}
 
 #include "board.h"
 #include "periph/gpio.h"
@@ -23,7 +19,7 @@
 
 #ifdef MODULE_MTD_SPI_NOR
 #include "mtd_spi_nor.h"
-/* MX25R64 */
+// MX25R64
 static const mtd_spi_nor_params_t _nrf5340_nor_params = {
     .opcode = &mtd_spi_nor_opcode_default,
     .wait_chip_erase = 240 * US_PER_SEC,
@@ -52,4 +48,4 @@ MTD_XFA_ADD(nrf5340_nor_dev, 0);
 #ifdef MODULE_VFS_DEFAULT
 VFS_AUTO_MOUNT(littlefs2, VFS_MTD(nrf5340_nor_dev), VFS_DEFAULT_NVM(0), 0);
 #endif
-#endif /* MODULE_MTD_SPI_NOR */
+#endif // MODULE_MTD_SPI_NOR

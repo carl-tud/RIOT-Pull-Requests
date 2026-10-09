@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "congure/reno.h"
 
@@ -24,10 +20,9 @@ static const congure_snd_driver_t _driver = {
 };
 
 void congure_reno_snd_setup(congure_reno_snd_t *c,
-                            const congure_reno_snd_consts_t *consts)
-{
+                            const congure_reno_snd_consts_t *consts) {
     c->super.driver = &_driver;
     c->consts = consts;
 }
 
-/** @} */
+/// @}

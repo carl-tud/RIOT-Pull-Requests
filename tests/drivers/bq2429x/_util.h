@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 Locha Inc
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Locha Inc
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     tests
- * @brief       Util functions for test application for the BQ24298x device
- *              driver
- * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
- * @file
- */
+/// @ingroup     tests
+/// @brief       Util functions for test application for the BQ24298x device
+///              driver
+/// @author      Jean Pierre Dudey <jeandudey@hotmail.com>
+/// @file
 
 #include <assert.h>
 #include "bq2429x.h"
@@ -20,8 +16,7 @@
 extern "C" {
 #endif
 
-static inline const char *_util_vlim_to_str(bq2429x_input_voltage_limit_t vlim)
-{
+static inline const char *_util_vlim_to_str(bq2429x_input_voltage_limit_t vlim) {
     switch (vlim) {
         case BQ2429X_VLIM_3880:
             return "3880 mV";
@@ -63,8 +58,7 @@ static inline const char *_util_vlim_to_str(bq2429x_input_voltage_limit_t vlim)
     return "";
 }
 
-static inline const char *_util_ilim_to_str(bq2429x_input_current_limit_t vlim)
-{
+static inline const char *_util_ilim_to_str(bq2429x_input_current_limit_t vlim) {
     switch (vlim) {
         case BQ2429X_ILIM_100:
             return "100 mA";
@@ -90,8 +84,7 @@ static inline const char *_util_ilim_to_str(bq2429x_input_current_limit_t vlim)
     return "";
 }
 
-static inline const char *_util_ichg_to_str(bq2429x_charge_current_t vlim)
-{
+static inline const char *_util_ichg_to_str(bq2429x_charge_current_t vlim) {
     switch (vlim) {
         case BQ2429X_ICHG_512:
             return "512 mA";
@@ -113,8 +106,7 @@ static inline const char *_util_ichg_to_str(bq2429x_charge_current_t vlim)
     return "";
 }
 
-static inline const char *_util_vreg_to_str(bq2429x_charge_voltage_limit_t vreg)
-{
+static inline const char *_util_vreg_to_str(bq2429x_charge_voltage_limit_t vreg) {
     switch (vreg) {
         case BQ2429X_VREG_3504:
             return "3504 mV";
@@ -144,8 +136,7 @@ static inline const char *_util_vreg_to_str(bq2429x_charge_voltage_limit_t vreg)
     return "";
 }
 
-static inline const char *_util_vbus_stat_to_str(bq2429x_vbus_stat_t stat)
-{
+static inline const char *_util_vbus_stat_to_str(bq2429x_vbus_stat_t stat) {
     switch (stat) {
         case BQ2429X_VBUS_NONE:
             return "None";
@@ -163,8 +154,7 @@ static inline const char *_util_vbus_stat_to_str(bq2429x_vbus_stat_t stat)
     return "";
 }
 
-static inline const char *_util_chrg_stat_to_str(bq2429x_chrg_stat_t stat)
-{
+static inline const char *_util_chrg_stat_to_str(bq2429x_chrg_stat_t stat) {
     switch (stat) {
         case BQ2429X_CHARGE_NONE:
             return "None";
@@ -182,8 +172,7 @@ static inline const char *_util_chrg_stat_to_str(bq2429x_chrg_stat_t stat)
     return "";
 }
 
-static inline const char *_util_chrg_fault_to_str(bq2429x_chrg_fault_t fault)
-{
+static inline const char *_util_chrg_fault_to_str(bq2429x_chrg_fault_t fault) {
     switch (fault) {
         case BQ2429x_CHRG_FAULT_NORMAL:
             return "Normal";

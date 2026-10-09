@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gerson Fernando Budke <nandojve@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gerson Fernando Budke <nandojve@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_atxmega
- * @ingroup     cpu_atxmega_periph
- * @{
- *
- * @file
- * @brief       Low-level CPUID driver implementation
- *
- * @author      Gerson Fernando Budke <nandojve@gmail.com>
- *
- * @}
- */
+/// @ingroup     cpu_atxmega
+/// @ingroup     cpu_atxmega_periph
+/// @{
+///
+/// @file
+/// @brief       Low-level CPUID driver implementation
+///
+/// @author      Gerson Fernando Budke <nandojve@gmail.com>
+///
+/// @}
 
 #include "periph_cpu.h"
 #include "cpu_nvm.h"
@@ -22,8 +18,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-void cpuid_get(void *id)
-{
+void cpuid_get(void *id) {
     uint8_t *addr = id;
 
     addr[0x0] = nvm_read_production_signature_row(

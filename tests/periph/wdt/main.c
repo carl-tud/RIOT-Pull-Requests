@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test for wdt Drivers
- *
- *              This test initializes the wdt counter to a preset value
- *              and spins until a wdt reset is triggered
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test for wdt Drivers
+///
+///              This test initializes the wdt counter to a preset value
+///              and spins until a wdt reset is triggered
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,8 +21,7 @@
 #include "shell.h"
 #include "xtimer.h"
 
-int get_range(int argc, char **argv)
-{
+int get_range(int argc, char **argv) {
     (void)argc;
     (void)argv;
     printf("lower_bound: %d upper_bound: %"PRIu32" \n", NWDT_TIME_LOWER_LIMIT,
@@ -34,8 +29,7 @@ int get_range(int argc, char **argv)
     return 0;
 }
 
-int setup_wdt(int argc, char **argv)
-{
+int setup_wdt(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <min_time[ms]> <max_time[ms]>\n", argv[0]);
         return -1;
@@ -55,8 +49,7 @@ int setup_wdt(int argc, char **argv)
     return 0;
 }
 
-int start_wdt(int argc, char **argv)
-{
+int start_wdt(int argc, char **argv) {
     (void)argc;
     (void)argv;
     puts("starting wdt timer");
@@ -64,8 +57,7 @@ int start_wdt(int argc, char **argv)
     return 0;
 }
 
-int start_loop_wdt(int argc, char **argv)
-{
+int start_loop_wdt(int argc, char **argv) {
     (void)argc;
     (void)argv;
     printf("start time: %" PRIu32 " us\n", xtimer_now_usec());
@@ -77,8 +69,7 @@ int start_loop_wdt(int argc, char **argv)
 }
 
 #if WDT_HAS_STOP
-int stop_wdt(int argc, char **argv)
-{
+int stop_wdt(int argc, char **argv) {
     (void)argc;
     (void)argv;
     puts("stopping wdt timer");
@@ -87,8 +78,7 @@ int stop_wdt(int argc, char **argv)
 }
 #endif
 
-int kick_wdt(int argc, char **argv)
-{
+int kick_wdt(int argc, char **argv) {
     (void)argc;
     (void)argv;
     puts("delaying wdt timer");
@@ -108,10 +98,9 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("RIOT wdt test application");
-    /* run the shell */
+    // run the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

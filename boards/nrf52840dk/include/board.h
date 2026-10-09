@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf52840dk
- * @{
- *
- * @file
- * @brief       Board specific configuration for the nRF52840 DK
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     boards_nrf52840dk
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration for the nRF52840 DK
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "board_common.h"
 
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin configuration
- * @{
- */
+/// @name    LED pin configuration
+/// @{
 #define LED0_PIN            GPIO_PIN(0, 13)
 #define LED1_PIN            GPIO_PIN(0, 14)
 #define LED2_PIN            GPIO_PIN(0, 15)
@@ -53,14 +47,12 @@ extern "C" {
 #define LED3_ON             (LED_PORT->OUTCLR = LED3_MASK)
 #define LED3_OFF            (LED_PORT->OUTSET = LED3_MASK)
 #define LED3_TOGGLE         (LED_PORT->OUT   ^= LED3_MASK)
-/** @} */
+/// @}
 
-/**
- * @name SPI NOR flash hardware configuration
- *
- * A Macronix MX25R6435F is present on the board
- * @{
- */
+/// @name SPI NOR flash hardware configuration
+///
+/// A Macronix MX25R6435F is present on the board
+/// @{
 #define NRF52840DK_NOR_PAGE_SIZE          (256)
 #define NRF52840DK_NOR_PAGES_PER_SECTOR   (16)
 #define NRF52840DK_NOR_SECTOR_COUNT       (2048)
@@ -69,15 +61,13 @@ extern "C" {
 #define NRF52840DK_NOR_SPI_CLK            SPI_CLK_10MHZ
 #define NRF52840DK_NOR_SPI_CS             GPIO_PIN(0, 17)
 #define NRF52840DK_NOR_SPI_MODE           SPI_MODE_0
-/** @} */
+/// @}
 
-/** Default MTD device */
+/// Default MTD device
 #define MTD_0 mtd_dev_get(0)
 
-/**
- * @name    Button pin configuration
- * @{
- */
+/// @name    Button pin configuration
+/// @{
 #define BTN0_PIN            GPIO_PIN(0, 11)
 #define BTN0_MODE           GPIO_IN_PU
 #define BTN1_PIN            GPIO_PIN(0, 12)
@@ -86,10 +76,10 @@ extern "C" {
 #define BTN2_MODE           GPIO_IN_PU
 #define BTN3_PIN            GPIO_PIN(0, 25)
 #define BTN3_MODE           GPIO_IN_PU
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Mock implementation of sock_dns
- *
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @brief       Mock implementation of sock_dns
+///
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <errno.h>
 #include <string.h>
@@ -19,8 +15,7 @@
 #include "net/ipv6/addr.h"
 #include "net/sock/dns.h"
 
-int sock_dns_query(const char *domain_name, void *addr_out, int family)
-{
+int sock_dns_query(const char *domain_name, void *addr_out, int family) {
     const ipv6_addr_t a = { {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
@@ -42,6 +37,6 @@ int sock_dns_query(const char *domain_name, void *addr_out, int family)
     memcpy(addr_out, &a, sizeof(a));
     return sizeof(a);
 }
-/** @} */
+/// @}
 
-/** @} */
+/// @}

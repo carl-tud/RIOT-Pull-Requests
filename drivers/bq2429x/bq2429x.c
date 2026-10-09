@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Locha Inc
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Locha Inc
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_bq2429x
- * @{
- *
- * @file
- * @brief       Device driver implementation for BQ2429x power ICs
- *
- * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_bq2429x
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for BQ2429x power ICs
+///
+/// @author      Jean Pierre Dudey <jeandudey@hotmail.com>
+///
+/// @}
 
 #include "bq2429x.h"
 #include "bq2429x_internal.h"
@@ -33,8 +29,7 @@
         } \
     } while (0)
 
-static inline int _read_reg(const bq2429x_t *dev, uint8_t reg, uint8_t *value)
-{
+static inline int _read_reg(const bq2429x_t *dev, uint8_t reg, uint8_t *value) {
     int ret;
     i2c_acquire(dev->params.i2c);
     if ((ret = i2c_read_reg(dev->params.i2c, BQ2429X_I2C_ADDR, reg, value,
@@ -48,8 +43,7 @@ static inline int _read_reg(const bq2429x_t *dev, uint8_t reg, uint8_t *value)
     return BQ2429X_OK;
 }
 
-static inline int _write_reg(const bq2429x_t *dev, uint8_t reg, uint8_t value)
-{
+static inline int _write_reg(const bq2429x_t *dev, uint8_t reg, uint8_t value) {
     int ret;
     i2c_acquire(dev->params.i2c);
     if ((ret = i2c_write_reg(dev->params.i2c, BQ2429X_I2C_ADDR, reg, value,
@@ -64,8 +58,7 @@ static inline int _write_reg(const bq2429x_t *dev, uint8_t reg, uint8_t value)
 }
 
 static int _update_bits(const bq2429x_t *dev, uint8_t reg, uint8_t mask,
-                        uint8_t value)
-{
+                        uint8_t value) {
     uint8_t tmp;
 
     EXEC_RET(_read_reg(dev, reg, &tmp));
@@ -76,8 +69,7 @@ static int _update_bits(const bq2429x_t *dev, uint8_t reg, uint8_t mask,
     return _write_reg(dev, reg, tmp);
 }
 
-static int _update_charge_params(const bq2429x_t *dev)
-{
+static int _update_charge_params(const bq2429x_t *dev) {
     assert(dev);
 
     DEBUG_DEV("", dev);
@@ -92,8 +84,7 @@ static int _update_charge_params(const bq2429x_t *dev)
     return BQ2429X_OK;
 }
 
-int bq2429x_init(bq2429x_t *dev, const bq2429x_params_t *params)
-{
+int bq2429x_init(bq2429x_t *dev, const bq2429x_params_t *params) {
     assert(dev && params);
 
     DEBUG_DEV("", dev);
@@ -104,7 +95,7 @@ int bq2429x_init(bq2429x_t *dev, const bq2429x_params_t *params)
             DEBUG_DEV("couldn't initialize CE pin", dev);
             return BQ2429X_ERR_GPIO;
         }
-        /* enable charge by default */
+        // enable charge by default
         gpio_clear(dev->params.ce_pin);
     }
     if (!gpio_is_equal(dev->params.otg_pin, GPIO_UNDEF)) {
@@ -112,23 +103,22 @@ int bq2429x_init(bq2429x_t *dev, const bq2429x_params_t *params)
             DEBUG_DEV("couldn't initialize OTG pin", dev);
             return BQ2429X_ERR_GPIO;
         }
-        /* disable OTG by default */
+        // disable OTG by default
         gpio_clear(dev->params.otg_pin);
     }
 
-    /* update parameters on the device */
+    // update parameters on the device
     EXEC_RET(_update_charge_params(dev));
 
     return BQ2429X_OK;
 }
 
 #if IS_USED(MODULE_BQ2429X_INT)
-int bq2429x_init_int(bq2429x_t *dev, bq2429x_int_cb_t cb, void *arg)
-{
+int bq2429x_init_int(bq2429x_t *dev, bq2429x_int_cb_t cb, void *arg) {
     assert(dev && !gpio_is_equal(dev->params.int_pin, GPIO_UNDEF) && cb);
     DEBUG_DEV("cb=%p arg=%p", dev, cb, arg);
 
-    /* the device always emits an active-low 256-us pulse */
+    // the device always emits an active-low 256-us pulse
     if (gpio_init_int(dev->params.int_pin, GPIO_IN, GPIO_FALLING, cb,
                       arg) < 0) {
         return BQ2429X_ERR_GPIO;
@@ -138,8 +128,7 @@ int bq2429x_init_int(bq2429x_t *dev, bq2429x_int_cb_t cb, void *arg)
 }
 #endif
 
-int bq2429x_get_status(const bq2429x_t *dev, bq2429x_status_t *status)
-{
+int bq2429x_get_status(const bq2429x_t *dev, bq2429x_status_t *status) {
     assert(dev && status);
 
     DEBUG_DEV("", dev);
@@ -163,8 +152,7 @@ int bq2429x_get_status(const bq2429x_t *dev, bq2429x_status_t *status)
     return BQ2429X_OK;
 }
 
-int bq2429x_get_fault(const bq2429x_t *dev, bq2429x_fault_t *fault)
-{
+int bq2429x_get_fault(const bq2429x_t *dev, bq2429x_fault_t *fault) {
     assert(dev && fault);
 
     DEBUG_DEV("", dev);
@@ -188,8 +176,7 @@ int bq2429x_get_fault(const bq2429x_t *dev, bq2429x_fault_t *fault)
     return BQ2429X_OK;
 }
 
-int bq2429x_enable_otg(const bq2429x_t *dev)
-{
+int bq2429x_enable_otg(const bq2429x_t *dev) {
     assert(dev);
 
     DEBUG_DEV("", dev);
@@ -200,8 +187,7 @@ int bq2429x_enable_otg(const bq2429x_t *dev)
     return _update_bits(dev, BQ2429X_REG01, BQ2429X_REG01_OTG_m, val);
 }
 
-int bq2429x_disable_otg(const bq2429x_t *dev)
-{
+int bq2429x_disable_otg(const bq2429x_t *dev) {
     assert(dev);
 
     DEBUG_DEV("", dev);
@@ -212,8 +198,7 @@ int bq2429x_disable_otg(const bq2429x_t *dev)
     return _update_bits(dev, BQ2429X_REG01, BQ2429X_REG01_OTG_m, val);
 }
 
-int bq2429x_enable_charge(const bq2429x_t *dev)
-{
+int bq2429x_enable_charge(const bq2429x_t *dev) {
     assert(dev);
 
     DEBUG_DEV("", dev);
@@ -224,21 +209,19 @@ int bq2429x_enable_charge(const bq2429x_t *dev)
     return _update_bits(dev, BQ2429X_REG01, BQ2429X_REG01_CHG_m, val);
 }
 
-int bq2429x_disable_charge(const bq2429x_t *dev)
-{
+int bq2429x_disable_charge(const bq2429x_t *dev) {
     assert(dev);
 
     DEBUG_DEV("", dev);
     if (!gpio_is_equal(dev->params.ce_pin, GPIO_UNDEF)) {
-        /* set CE pin to high to disable charge */
+        // set CE pin to high to disable charge
         gpio_set(dev->params.ce_pin);
     }
     uint8_t val = BQ2429X_REG01_CHG_DISABLE << BQ2429X_REG01_CHG_s;
     return _update_bits(dev, BQ2429X_REG01, BQ2429X_REG01_CHG_m, val);
 }
 
-int bq2429x_set_vlim(bq2429x_t *dev, bq2429x_input_voltage_limit_t vlim)
-{
+int bq2429x_set_vlim(bq2429x_t *dev, bq2429x_input_voltage_limit_t vlim) {
     assert(dev);
 
     DEBUG_DEV("vlim=%u", dev, (unsigned)vlim);
@@ -249,8 +232,7 @@ int bq2429x_set_vlim(bq2429x_t *dev, bq2429x_input_voltage_limit_t vlim)
     return BQ2429X_OK;
 }
 
-int bq2429x_get_vlim(const bq2429x_t *dev, bq2429x_input_voltage_limit_t *vlim)
-{
+int bq2429x_get_vlim(const bq2429x_t *dev, bq2429x_input_voltage_limit_t *vlim) {
     assert(dev && vlim);
 
     DEBUG_DEV("", dev);
@@ -262,8 +244,7 @@ int bq2429x_get_vlim(const bq2429x_t *dev, bq2429x_input_voltage_limit_t *vlim)
     return BQ2429X_OK;
 }
 
-int bq2429x_set_ilim(bq2429x_t *dev, bq2429x_input_current_limit_t ilim)
-{
+int bq2429x_set_ilim(bq2429x_t *dev, bq2429x_input_current_limit_t ilim) {
     assert(dev);
 
     DEBUG_DEV("ilim=%u", dev, (unsigned)ilim);
@@ -273,8 +254,7 @@ int bq2429x_set_ilim(bq2429x_t *dev, bq2429x_input_current_limit_t ilim)
     return BQ2429X_OK;
 }
 
-int bq2429x_get_ilim(const bq2429x_t *dev, bq2429x_input_current_limit_t *ilim)
-{
+int bq2429x_get_ilim(const bq2429x_t *dev, bq2429x_input_current_limit_t *ilim) {
     assert(dev && ilim);
 
     DEBUG_DEV("", dev);
@@ -286,8 +266,7 @@ int bq2429x_get_ilim(const bq2429x_t *dev, bq2429x_input_current_limit_t *ilim)
     return BQ2429X_OK;
 }
 
-int bq2429x_set_ichg(bq2429x_t *dev, bq2429x_charge_current_t ichg)
-{
+int bq2429x_set_ichg(bq2429x_t *dev, bq2429x_charge_current_t ichg) {
     assert(dev);
 
     DEBUG_DEV("ichg=%u", dev, (unsigned)ichg);
@@ -297,8 +276,7 @@ int bq2429x_set_ichg(bq2429x_t *dev, bq2429x_charge_current_t ichg)
     return BQ2429X_OK;
 }
 
-int bq2429x_get_ichg(const bq2429x_t *dev, bq2429x_charge_current_t *ichg)
-{
+int bq2429x_get_ichg(const bq2429x_t *dev, bq2429x_charge_current_t *ichg) {
     assert(dev && ichg);
 
     DEBUG_DEV("", dev);
@@ -310,8 +288,7 @@ int bq2429x_get_ichg(const bq2429x_t *dev, bq2429x_charge_current_t *ichg)
     return BQ2429X_OK;
 }
 
-int bq2429x_set_vreg(bq2429x_t *dev, bq2429x_charge_voltage_limit_t vreg)
-{
+int bq2429x_set_vreg(bq2429x_t *dev, bq2429x_charge_voltage_limit_t vreg) {
     assert(dev);
 
     DEBUG_DEV("vreg=%u", dev, (unsigned)vreg);
@@ -321,8 +298,7 @@ int bq2429x_set_vreg(bq2429x_t *dev, bq2429x_charge_voltage_limit_t vreg)
     return BQ2429X_OK;
 }
 
-int bq2429x_get_vreg(const bq2429x_t *dev, bq2429x_charge_voltage_limit_t *vreg)
-{
+int bq2429x_get_vreg(const bq2429x_t *dev, bq2429x_charge_voltage_limit_t *vreg) {
     assert(dev && vreg);
 
     DEBUG_DEV("", dev);

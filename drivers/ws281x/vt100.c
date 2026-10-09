@@ -1,25 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2019 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ws281x
- *
- * @{
- *
- * @file
- * @brief       Implementation of `ws281x_write()` for VT100 terminals
- *
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- *
- * @}
- */
+/// @ingroup     drivers_ws281x
+///
+/// @{
+///
+/// @file
+/// @brief       Implementation of `ws281x_write()` for VT100 terminals
+///
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
+///
+/// @}
 #include <stdio.h>
 #include "ws281x.h"
 
-void ws281x_write_buffer(ws281x_t *dev, const void *buf, size_t size)
-{
+void ws281x_write_buffer(ws281x_t *dev, const void *buf, size_t size) {
     (void) dev;
     const uint8_t *src = buf;
 
@@ -31,18 +26,16 @@ void ws281x_write_buffer(ws281x_t *dev, const void *buf, size_t size)
     }
 }
 
-void ws281x_prepare_transmission(ws281x_t *dev)
-{
+void ws281x_prepare_transmission(ws281x_t *dev) {
     (void) dev;
 
-    /* clear the line and reset cursor position */
+    // clear the line and reset cursor position
     printf("\033[2K\r");
 }
 
-void ws281x_end_transmission(ws281x_t *dev)
-{
+void ws281x_end_transmission(ws281x_t *dev) {
     (void) dev;
 
-    /* set color back to normal */
+    // set color back to normal
     printf("\033[0m");
 }

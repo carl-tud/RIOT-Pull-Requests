@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup   boards_stm32f3discovery
- * @{
- *
- * @file
- * @brief     Board specific configuration of direct mapped GPIOs
- *
- * @author    Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author    Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup   boards_stm32f3discovery
+/// @{
+///
+/// @file
+/// @brief     Board specific configuration of direct mapped GPIOs
+///
+/// @author    Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author    Sebastian Meiling <s@mlng.net>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -23,9 +19,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    GPIO pin configuration
- */
+/// @brief    GPIO pin configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -79,4 +73,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

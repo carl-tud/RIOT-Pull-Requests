@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_waveshare_nrf52840_eval_kit
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the Waveshare nRF52840 Eval Kit
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- */
+/// @ingroup     boards_waveshare_nrf52840_eval_kit
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the Waveshare nRF52840 Eval Kit
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
 
 #include "periph_cpu.h"
 #include "cfg_clock_32_1.h"
@@ -27,15 +23,11 @@
 extern "C" {
 #endif
 
-/**
- * @brief Enable the internal DC/DC converter
- */
+/// @brief Enable the internal DC/DC converter
 #define NRF5X_ENABLE_DCDC
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = NRF_TWIM1,
@@ -52,12 +44,10 @@ static const i2c_conf_t i2c_config[] = {
 
 };
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev = NRF_PWM0,
@@ -89,12 +79,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPIM0,
@@ -110,14 +98,12 @@ static const spi_conf_t spi_config[] = {
     }
 };
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    { /* Mapped to USB virtual COM port */
+    { // Mapped to USB virtual COM port
         .dev        = NRF_UARTE0,
         .rx_pin     = GPIO_PIN(0, 8),
         .tx_pin     = GPIO_PIN(0, 6),
@@ -127,7 +113,7 @@ static const uart_conf_t uart_config[] = {
 #endif
         .irqn       = UARTE0_UART0_IRQn,
     },
-    { /* Mapped to Arduino D0/D1 pins */
+    { // Mapped to Arduino D0/D1 pins
         .dev        = NRF_UARTE1,
         .rx_pin     = GPIO_PIN(1, 1),
         .tx_pin     = GPIO_PIN(1, 2),
@@ -143,10 +129,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_uarte1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

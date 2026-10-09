@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 RWTH Aachen
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 RWTH Aachen
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_tps6274x
- * @{
- *
- * @file
- * @brief       Device driver implementation for the TPS6274x family DC/DC-converter.
- *
- * @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
- * @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
- *
- * @}
- */
+/// @ingroup     drivers_tps6274x
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the TPS6274x family DC/DC-converter.
+///
+/// @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
+/// @author      Josua Arndt <jarndt@ias.rwth-aachen.de>
+///
+/// @}
 
 #include "tps6274x.h"
 #include "periph/gpio.h"
@@ -22,8 +18,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-int tps6274x_init(tps6274x_t *dev, const tps6274x_params_t *params)
-{
+int tps6274x_init(tps6274x_t *dev, const tps6274x_params_t *params) {
     int ret;
 
     dev->params = *params;
@@ -44,8 +39,7 @@ int tps6274x_init(tps6274x_t *dev, const tps6274x_params_t *params)
     return TPS6274X_OK;
 }
 
-uint16_t tps6274x_switch_voltage(tps6274x_t *dev, uint16_t voltage)
-{
+uint16_t tps6274x_switch_voltage(tps6274x_t *dev, uint16_t voltage) {
     if (voltage < 1800) {
         voltage = 1800;
     }
@@ -57,7 +51,7 @@ uint16_t tps6274x_switch_voltage(tps6274x_t *dev, uint16_t voltage)
     for (uint8_t i = 0; i < 4; i++) {
         if (gpio_is_valid(dev->params.vsel[i])) {
             gpio_write(dev->params.vsel[i], (vsel & (0x01 << i)));
-            /* mark pins that could and had to be set */
+            // mark pins that could and had to be set
             vsel_set |= vsel & (1 << i);
         }
         else {
@@ -68,8 +62,7 @@ uint16_t tps6274x_switch_voltage(tps6274x_t *dev, uint16_t voltage)
     return ((uint16_t)vsel_set) * 100 + 1800;
 }
 
-void tps6274x_load_ctrl(tps6274x_t *dev, int status)
-{
+void tps6274x_load_ctrl(tps6274x_t *dev, int status) {
     if (gpio_is_valid(dev->params.ctrl_pin)) {
         gpio_write(dev->params.ctrl_pin, status);
     }

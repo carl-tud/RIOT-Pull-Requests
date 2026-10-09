@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2020 J. David Ibáñez <jdavid.ibp@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 J. David Ibáñez <jdavid.ibp@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_remote-revb
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Arduino pins for Remote revision B board
- *
- * You can use the defines in this file for simplified interaction with the
- * Arduino specific pin numbers.
- *
- * @author      J. David Ibáñez <jdavid.ibp@gmail.com>
- */
+/// @ingroup     boards_remote-revb
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Arduino pins for Remote revision B board
+///
+/// You can use the defines in this file for simplified interaction with the
+/// Arduino specific pin numbers.
+///
+/// @author      J. David Ibáñez <jdavid.ibp@gmail.com>
 
 #include "periph/gpio.h"
 #include "periph/adc.h"
@@ -25,16 +21,14 @@
 extern "C" {
 #endif
 
-/**
- * @name    Mapping of MCU pins to Arduino pins
- *
- * @warning Beware: Despite an Arudino pin mapping being available, Arduino shields
- *          are mechanically not compatible with the board. Check header file
- *          https://github.com/RIOT-OS/RIOT/blob/master/boards/remote-revb/include/arduino_iomap.h#L43
- *          for the exact mapping.
- *
- * @{
- */
+/// @name    Mapping of MCU pins to Arduino pins
+///
+/// @warning Beware: Despite an Arudino pin mapping being available, Arduino shields
+///          are mechanically not compatible with the board. Check header file
+///          https://github.com/RIOT-OS/RIOT/blob/master/boards/remote-revb/include/arduino_iomap.h#L43
+///          for the exact mapping.
+///
+/// @{
 
 #define ARDUINO_PIN_1               GPIO_PIN(PORT_D, 4) // LED1.R
 #define ARDUINO_PIN_2               GPIO_PIN(PORT_B, 7) // LED2.G/JTAG.TDO
@@ -63,7 +57,7 @@ extern "C" {
 #define ARDUINO_PIN_36              GPIO_PIN(PORT_C, 4) // USD.SCLK
 #define ARDUINO_PIN_LAST            36
 
-/* Aliases for analog pins */
+// Aliases for analog pins
 #define ARDUINO_PIN_A1              ARDUINO_PIN_28
 #define ARDUINO_PIN_A2              ARDUINO_PIN_29
 #define ARDUINO_PIN_A3              ARDUINO_PIN_32
@@ -76,10 +70,10 @@ extern "C" {
 #define ARDUINO_A4                  ADC_LINE(4)
 #define ARDUINO_A5                  ADC_LINE(5)
 #define ARDUINO_ANALOG_PIN_LAST     5
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_nrf52xxxdk
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped PWM channels
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- */
+/// @ingroup     boards_common_nrf52xxxdk
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped PWM channels
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,11 +18,9 @@
 extern "C" {
 #endif
 
-#define SAUL_PWM_NO_RGB /**< No RGB leds provided */
+#define SAUL_PWM_NO_RGB ///< No RGB leds provided
 
-/**
- * @brief    LED configuration
- */
+/// @brief    LED configuration
 static const saul_pwm_dimmer_params_t saul_pwm_dimmer_params[] =
 {
 #ifdef LED0_PIN
@@ -59,4 +53,4 @@ static const saul_pwm_dimmer_params_t saul_pwm_dimmer_params[] =
 }
 #endif
 
-/** @} */
+/// @}

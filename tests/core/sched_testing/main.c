@@ -1,32 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2014 Oliver Hahm <oliver.hahm@inria.fr>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Oliver Hahm <oliver.hahm@inria.fr>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- * @file
- * @brief       Test thread_yield()
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @author      René Kijewski <rene.kijewski@fu-berlin.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+/// @file
+/// @brief       Test thread_yield()
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @author      René Kijewski <rene.kijewski@fu-berlin.de>
+/// @}
 
 #include <stdio.h>
 #include "thread.h"
 
 char snd_thread_stack[THREAD_STACKSIZE_MAIN];
 
-void *snd_thread(void *unused)
-{
+void *snd_thread(void *unused) {
     (void) unused;
     puts("snd_thread running");
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("The output should be: yield 1, snd_thread running, yield 2, done");
     puts("----------------------------------------------------------------");
 

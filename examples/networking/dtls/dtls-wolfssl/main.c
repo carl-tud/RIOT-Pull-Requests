@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Daniele Lacamera
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Daniele Lacamera
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Example application  for DTLS 1.2 using wolfSSL
- *
- * @author      Daniele Lacamera <daniele@wolfssl.com>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Example application  for DTLS 1.2 using wolfSSL
+///
+/// @author      Daniele Lacamera <daniele@wolfssl.com>
+///
+/// @}
 
 #include <wolfssl/ssl.h>
 
@@ -33,8 +29,7 @@ extern int dtls_server(int argc, char **argv);
 
 #ifdef MODULE_WOLFCRYPT_TEST
 extern int wolfcrypt_test(void* args);
-static int wolftest(int argc, char **argv)
-{
+static int wolftest(int argc, char **argv) {
     (void)argc;
     (void)argv;
     wolfcrypt_test(NULL);
@@ -43,20 +38,19 @@ static int wolftest(int argc, char **argv)
 SHELL_COMMAND(wolftest, "Perform wolfcrypt porting test", wolftest);
 #endif
 
-int main(void)
-{
-    /* we need a message queue for the thread running the shell in order to
-     * receive potentially fast incoming networking packets */
+int main(void) {
+    // we need a message queue for the thread running the shell in order to
+    // receive potentially fast incoming networking packets
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
     LOG(LOG_INFO, "RIOT wolfSSL DTLS testing implementation\n");
     wolfSSL_Init();
     wolfSSL_Debugging_ON();
 
-    /* start shell */
+    // start shell
     LOG(LOG_INFO, "All up, running the shell now\n");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }

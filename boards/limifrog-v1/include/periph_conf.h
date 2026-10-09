@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_limifrog-v1
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the limifrog-v1 board
- *
- * @author      Katja Kirstein <katja.kirstein@haw-hamburg.de>
- */
+/// @ingroup     boards_limifrog-v1
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the limifrog-v1 board
+///
+/// @author      Katja Kirstein <katja.kirstein@haw-hamburg.de>
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM5,
@@ -39,12 +33,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_0_ISR         (isr_tim5)
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART3,
@@ -72,12 +64,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -108,12 +98,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
-  * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -145,10 +133,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c2_ev
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

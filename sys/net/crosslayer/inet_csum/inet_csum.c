@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -19,8 +15,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-uint16_t inet_csum_slice(uint16_t sum, const uint8_t *buf, uint16_t len, size_t accum_len)
-{
+uint16_t inet_csum_slice(uint16_t sum, const uint8_t *buf, uint16_t len, size_t accum_len) {
     uint32_t csum = sum;
 
     DEBUG("inet_sum: sum = 0x%04" PRIx16 ", len = %" PRIu16, sum, len);
@@ -37,20 +32,20 @@ uint16_t inet_csum_slice(uint16_t sum, const uint8_t *buf, uint16_t len, size_t 
     if (len == 0)
         return csum;
 
-    if (accum_len & 1) {      /* if accumulated length is odd */
-        csum += *buf;         /* add first byte as bottom half of 16-byte word */
+    if (accum_len & 1) {      // if accumulated length is odd
+        csum += *buf;         // add first byte as bottom half of 16-byte word
         buf++;
         len--;
         accum_len++;
     }
 
     for (unsigned i = 0; i < (len >> 1); buf += 2, i++) {
-        csum += (uint16_t)(*buf << 8) + *(buf + 1); /* group bytes by 16-byte words */
-                                                    /* and add them */
+        csum += (uint16_t)(*buf << 8) + *(buf + 1); // group bytes by 16-byte words
+                                                    // and add them
     }
 
-    if ((accum_len + len) & 1)          /* if accumulated length is odd */
-        csum += (uint16_t)(*buf << 8);  /* add last byte as top half of 16-byte word */
+    if ((accum_len + len) & 1)          // if accumulated length is odd
+        csum += (uint16_t)(*buf << 8);  // add last byte as top half of 16-byte word
 
     while (csum >> 16) {
         uint16_t carry = csum >> 16;
@@ -62,4 +57,4 @@ uint16_t inet_csum_slice(uint16_t sum, const uint8_t *buf, uint16_t len, size_t 
     return csum;
 }
 
-/** @} */
+/// @}

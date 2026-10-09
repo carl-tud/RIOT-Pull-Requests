@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @{
- *
- * @file
- *
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+///
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "congure/abe.h"
 
@@ -29,4 +25,4 @@ void congure_abe_test_set_same_wnd_adv_res(bool value);
 }
 #endif
 
-/** @} */
+/// @}

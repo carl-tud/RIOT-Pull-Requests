@@ -1,25 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- * @file
- * @brief       automatically initializes screen display and touch devices
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+/// @file
+/// @brief       automatically initializes screen display and touch devices
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include <stdio.h>
 
 #define ENABLE_DEBUG    0
 #include "debug.h"
 
-void auto_init_screen(void)
-{
+void auto_init_screen(void) {
     if (IS_USED(MODULE_DISP_DEV)) {
         DEBUG("auto_init_screen: init display drivers\n");
         if (IS_USED(MODULE_ILI9341)) {

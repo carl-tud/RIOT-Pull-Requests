@@ -1,31 +1,27 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_samd21
- * @{
- *
- * @file
- * @brief       Startup code and interrupt vector definition
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     cpu_samd21
+/// @{
+///
+/// @file
+/// @brief       Startup code and interrupt vector definition
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdint.h>
 #include "vectors_cortexm.h"
 #include "cpu.h"
 
-/* define a local dummy handler as it needs to be in the same compilation unit
- * as the alias definition */
+// define a local dummy handler as it needs to be in the same compilation unit
+// as the alias definition
 void dummy_handler(void) {
     dummy_handler_default();
 }
 
-/* SAMR21 specific interrupt vector */
+// SAMR21 specific interrupt vector
 WEAK_DEFAULT void isr_pm(void);
 WEAK_DEFAULT void isr_sysctrl(void);
 WEAK_DEFAULT void isr_wdt(void);
@@ -46,25 +42,25 @@ WEAK_DEFAULT void isr_ac(void);
 WEAK_DEFAULT void isr_dac(void);
 WEAK_DEFAULT void isr_ptc(void);
 
-/* CPU specific interrupt vector table */
+// CPU specific interrupt vector table
 ISR_VECTOR(1) const isr_t vector_cpu[CPU_IRQ_NUMOF] = {
-    isr_pm,                 /*  0 Power Manager */
-    isr_sysctrl,            /*  1 System Control */
-    isr_wdt,                /*  2 Watchdog Timer */
-    isr_rtc,                /*  3 Real-Time Counter */
-    isr_eic,                /*  4 External Interrupt Controller */
-    isr_nvmctrl,            /*  5 Non-Volatile Memory Controller */
-    isr_dmac,               /*  6 Direct Memory Access Controller */
-    isr_usb,                /*  7 Universal Serial Bus */
-    isr_evsys,              /*  8 Event System Interface */
-    isr_sercom0,            /*  9 Serial Communication Interface 0 */
-    isr_sercom1,            /* 10 Serial Communication Interface 1 */
-    isr_sercom2,            /* 11 Serial Communication Interface 2 */
-    isr_tcc0,               /* 12 Timer Counter Control 0 */
-    isr_tc1,                /* 13 Basic Timer Control 1 */
-    isr_tc2,                /* 14 Basic Timer Control 2 */
-    isr_adc,                /* 15 Analog Digital Converter */
-    isr_ac,                 /* 16 Analog Comparators */
-    isr_dac,                /* 17 Digital Analog Converter */
-    isr_ptc,                /* 18 Peripheral Touch Controller */
+    isr_pm,                 // 0 Power Manager
+    isr_sysctrl,            // 1 System Control
+    isr_wdt,                // 2 Watchdog Timer
+    isr_rtc,                // 3 Real-Time Counter
+    isr_eic,                // 4 External Interrupt Controller
+    isr_nvmctrl,            // 5 Non-Volatile Memory Controller
+    isr_dmac,               // 6 Direct Memory Access Controller
+    isr_usb,                // 7 Universal Serial Bus
+    isr_evsys,              // 8 Event System Interface
+    isr_sercom0,            // 9 Serial Communication Interface 0
+    isr_sercom1,            // 10 Serial Communication Interface 1
+    isr_sercom2,            // 11 Serial Communication Interface 2
+    isr_tcc0,               // 12 Timer Counter Control 0
+    isr_tc1,                // 13 Basic Timer Control 1
+    isr_tc2,                // 14 Basic Timer Control 2
+    isr_adc,                // 15 Analog Digital Converter
+    isr_ac,                 // 16 Analog Comparators
+    isr_dac,                // 17 Digital Analog Converter
+    isr_ptc,                // 18 Peripheral Touch Controller
 };

@@ -1,20 +1,16 @@
-/*
- * Copyright (C) 2018 Koen Zandberg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2018 Koen Zandberg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup usb_usbus_fmt
- * @{
- * @file
- * @brief   USBUS protocol message formatting functions
- *
- * @author  Koen Zandberg <koen@bergzand.net>
- * @}
- */
+/// @ingroup usb_usbus_fmt
+/// @{
+/// @file
+/// @brief   USBUS protocol message formatting functions
+///
+/// @author  Koen Zandberg <koen@bergzand.net>
+/// @}
 
 #define USB_H_USER_IS_RIOT_INTERNAL
 
@@ -25,8 +21,7 @@
 #include "usb/usbus/fmt.h"
 #include "usb/usbus/control.h"
 
-static size_t _num_ifaces(usbus_t *usbus)
-{
+static size_t _num_ifaces(usbus_t *usbus) {
     size_t num = 0;
 
     for (usbus_interface_t *iface = usbus->iface;
@@ -37,8 +32,7 @@ static size_t _num_ifaces(usbus_t *usbus)
     return num;
 }
 
-static size_t _num_endpoints(usbus_interface_t *iface)
-{
+static size_t _num_endpoints(usbus_interface_t *iface) {
     size_t num = 0;
 
     for (usbus_endpoint_t *ep = iface->ep;
@@ -48,8 +42,7 @@ static size_t _num_endpoints(usbus_interface_t *iface)
     return num;
 }
 
-static uint8_t _type_to_attribute(usbus_endpoint_t *ep)
-{
+static uint8_t _type_to_attribute(usbus_endpoint_t *ep) {
     switch (ep->ep->type) {
         case USB_EP_TYPE_CONTROL:
             return 0x00;
@@ -66,8 +59,7 @@ static uint8_t _type_to_attribute(usbus_endpoint_t *ep)
     return 0x00;
 }
 
-static size_t _num_endpoints_alt(usbus_interface_alt_t *alt)
-{
+static size_t _num_endpoints_alt(usbus_interface_alt_t *alt) {
     size_t num = 0;
 
     for (usbus_endpoint_t *ep = alt->ep;
@@ -77,8 +69,7 @@ static size_t _num_endpoints_alt(usbus_interface_alt_t *alt)
     return num;
 }
 
-static size_t _gen_descriptor_size(usbus_t *usbus, usbus_descr_gen_t *descr)
-{
+static size_t _gen_descriptor_size(usbus_t *usbus, usbus_descr_gen_t *descr) {
     size_t len = 0;
 
     for (; descr; descr = descr->next) {
@@ -89,8 +80,7 @@ static size_t _gen_descriptor_size(usbus_t *usbus, usbus_descr_gen_t *descr)
     return len;
 }
 
-static size_t _ep_size(usbus_t *usbus, usbus_endpoint_t *ep)
-{
+static size_t _ep_size(usbus_t *usbus, usbus_endpoint_t *ep) {
     size_t len = 0;
 
     for (; ep; ep = ep->next) {
@@ -100,8 +90,7 @@ static size_t _ep_size(usbus_t *usbus, usbus_endpoint_t *ep)
     return len;
 }
 
-static size_t _alt_size(usbus_t *usbus, usbus_interface_alt_t *alt)
-{
+static size_t _alt_size(usbus_t *usbus, usbus_interface_alt_t *alt) {
     size_t len = 0;
 
     for (; alt; alt = alt->next) {
@@ -112,8 +101,7 @@ static size_t _alt_size(usbus_t *usbus, usbus_interface_alt_t *alt)
     return len;
 }
 
-static size_t _gen_config_descriptor_size(usbus_t *usbus)
-{
+static size_t _gen_config_descriptor_size(usbus_t *usbus) {
     size_t len = sizeof(usb_descriptor_configuration_t);
 
     len += _gen_descriptor_size(usbus, usbus->descr_gen);
@@ -128,8 +116,7 @@ static size_t _gen_config_descriptor_size(usbus_t *usbus)
     return len;
 }
 
-static size_t _fmt_descriptors_pre(usbus_t *usbus, usbus_descr_gen_t *descr)
-{
+static size_t _fmt_descriptors_pre(usbus_t *usbus, usbus_descr_gen_t *descr) {
     size_t len = 0;
 
     for (; descr; descr = descr->next) {
@@ -140,8 +127,7 @@ static size_t _fmt_descriptors_pre(usbus_t *usbus, usbus_descr_gen_t *descr)
     return len;
 }
 
-static size_t _fmt_descriptors_post(usbus_t *usbus, usbus_descr_gen_t *descr)
-{
+static size_t _fmt_descriptors_post(usbus_t *usbus, usbus_descr_gen_t *descr) {
     size_t len = 0;
 
     for (; descr; descr = descr->next) {
@@ -152,8 +138,7 @@ static size_t _fmt_descriptors_post(usbus_t *usbus, usbus_descr_gen_t *descr)
     return len;
 }
 
-static size_t _fmt_descriptors_endpoints(usbus_t *usbus, usbus_endpoint_t *ep)
-{
+static size_t _fmt_descriptors_endpoints(usbus_t *usbus, usbus_endpoint_t *ep) {
     size_t len = 0;
 
     while (ep) {
@@ -173,15 +158,14 @@ static size_t _fmt_descriptors_endpoints(usbus_t *usbus, usbus_endpoint_t *ep)
                                        sizeof(usb_descriptor_endpoint_t));
         _fmt_descriptors_post(usbus, ep->descr_gen);
         len += usb_ep.length;
-        /* iterate to next endpoint */
+        // iterate to next endpoint
         ep = ep->next;
     }
     return len;
 }
 
 static void _fmt_descriptor_iface(usbus_interface_t *iface,
-                            usb_descriptor_interface_t *usb_iface)
-{
+                            usb_descriptor_interface_t *usb_iface) {
     memset(usb_iface, 0, sizeof(usb_descriptor_interface_t));
     usb_iface->length = sizeof(usb_descriptor_interface_t);
     usb_iface->type = USB_TYPE_DESCRIPTOR_INTERFACE;
@@ -192,8 +176,7 @@ static void _fmt_descriptor_iface(usbus_interface_t *iface,
 }
 
 static size_t _fmt_descriptors_iface_alts(usbus_t *usbus,
-                                          usbus_interface_t *iface)
-{
+                                          usbus_interface_t *iface) {
     size_t len = 0;
     uint8_t alts = 1;
 
@@ -208,8 +191,8 @@ static size_t _fmt_descriptors_iface_alts(usbus_t *usbus,
         if (alt->descr) {
             usb_iface.idx = alt->descr->idx;
         } else {
-            /* If there is no string descriptor for a given alt interface
-               set the index to 0 to advertise it */
+            // If there is no string descriptor for a given alt interface
+            //    set the index to 0 to advertise it
             usb_iface.idx = 0;
         }
         usbus_control_slicer_put_bytes(usbus, (uint8_t *)&usb_iface,
@@ -220,8 +203,7 @@ static size_t _fmt_descriptors_iface_alts(usbus_t *usbus,
     return len;
 }
 
-static size_t _fmt_descriptors_ifaces(usbus_t *usbus)
-{
+static size_t _fmt_descriptors_ifaces(usbus_t *usbus) {
     size_t len = 0;
 
     for (usbus_interface_t *iface = usbus->iface;
@@ -247,8 +229,7 @@ static size_t _fmt_descriptors_ifaces(usbus_t *usbus)
     return len;
 }
 
-size_t usbus_fmt_descriptor_conf(usbus_t *usbus)
-{
+size_t usbus_fmt_descriptor_conf(usbus_t *usbus) {
     size_t len = 0;
     usb_descriptor_configuration_t conf;
 
@@ -264,8 +245,8 @@ size_t usbus_fmt_descriptor_conf(usbus_t *usbus)
     if (CONFIG_USB_REM_WAKEUP) {
         conf.attributes |= USB_CONF_ATTR_REM_WAKEUP;
     }
-    /* TODO: upper bound */
-    /* USB max power is reported in increments of 2 mA */
+    // TODO: upper bound
+    // USB max power is reported in increments of 2 mA
     conf.max_power = CONFIG_USB_MAX_POWER / 2;
     conf.num_interfaces = _num_ifaces(usbus);
     len += sizeof(usb_descriptor_configuration_t);
@@ -278,8 +259,7 @@ size_t usbus_fmt_descriptor_conf(usbus_t *usbus)
     return len;
 }
 
-size_t usbus_fmt_descriptor_dev(usbus_t *usbus)
-{
+size_t usbus_fmt_descriptor_dev(usbus_t *usbus) {
     usb_descriptor_device_t desc;
 
     memset(&desc, 0, sizeof(usb_descriptor_device_t));
@@ -293,7 +273,7 @@ size_t usbus_fmt_descriptor_dev(usbus_t *usbus)
     desc.manufacturer_idx = usbus->manuf.idx;
     desc.product_idx = usbus->product.idx;
     desc.serial_idx = usbus->serial.idx;
-    /* USBUS supports only a single config at the moment */
+    // USBUS supports only a single config at the moment
     desc.num_configurations = 1;
     usbus_control_slicer_put_bytes(usbus, (uint8_t *)&desc,
                                    sizeof(usb_descriptor_device_t));

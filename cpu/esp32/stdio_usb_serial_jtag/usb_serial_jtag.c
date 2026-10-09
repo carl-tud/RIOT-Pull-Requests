@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2023 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @defgroup    cpu_esp32_usb_serial_jtag  ESP32 USB Serial/JTAG interface
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       stdio via USB Serial JTAG debug interface
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @defgroup    cpu_esp32_usb_serial_jtag  ESP32 USB Serial/JTAG interface
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       stdio via USB Serial JTAG debug interface
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -36,8 +32,7 @@ static uint8_t serial_tx_rb_buf[USB_SERIAL_JTAG_PACKET_SZ_BYTES];
 #define IRQ_MASK (USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY | \
                  (IS_USED(MODULE_STDIO_USB_SERIAL_JTAG_RX) * USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT))
 
-static ssize_t _write(const void *buffer, size_t len)
-{
+static ssize_t _write(const void *buffer, size_t len) {
     tsrb_add(&serial_tx_rb, buffer, len);
     USB_SERIAL_JTAG.int_ena.val = IRQ_MASK;
 
@@ -45,27 +40,26 @@ static ssize_t _write(const void *buffer, size_t len)
 }
 
 IRAM_ATTR
-static void _serial_intr_handler(void *arg)
-{
+static void _serial_intr_handler(void *arg) {
     (void)arg;
 
     irq_isr_enter();
 
     uint32_t mask = usb_serial_jtag_ll_get_intsts_mask();
 
-    /* read data if available */
+    // read data if available
     while (IS_USED(MODULE_STDIO_USB_SERIAL_JTAG_RX) &&
            usb_serial_jtag_ll_rxfifo_data_available()) {
         stdio_rx_write_one(USB_SERIAL_JTAG.ep1.rdwr_byte);
     }
 
-    /* write data if there is a free stop */
+    // write data if there is a free stop
     if (mask & USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY) {
 
         while (usb_serial_jtag_ll_txfifo_writable()) {
             int c = tsrb_get_one(&serial_tx_rb);
             if (c < 0) {
-                /* no more data to send - disable interrupt */
+                // no more data to send - disable interrupt
                 USB_SERIAL_JTAG.int_ena.val = IRQ_MASK & ~USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY;
                 break;
             }
@@ -73,42 +67,40 @@ static void _serial_intr_handler(void *arg)
         }
     }
 
-    /* clear all interrupt flags */
+    // clear all interrupt flags
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_LL_INTR_MASK);
     usb_serial_jtag_ll_txfifo_flush();
 
     irq_isr_exit();
 }
 
-static void _init(void)
-{
+static void _init(void) {
     tsrb_init(&serial_tx_rb, serial_tx_rb_buf, sizeof(serial_tx_rb_buf));
 
-    /* enable RX interrupt */
+    // enable RX interrupt
     if (IS_USED(MODULE_STDIO_USB_SERIAL_JTAG_RX)) {
         USB_SERIAL_JTAG.int_ena.val = USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT;
     }
 
-    /* clear all interrupt flags */
+    // clear all interrupt flags
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_LL_INTR_MASK);
 
-    /* route USB Serial/JTAG interrupt source to CPU interrupt */
+    // route USB Serial/JTAG interrupt source to CPU interrupt
     intr_matrix_set(PRO_CPU_NUM, ETS_USB_SERIAL_JTAG_INTR_SOURCE, CPU_INUM_SERIAL_JTAG);
 
-    /* enable the CPU interrupt */
+    // enable the CPU interrupt
     esp_cpu_intr_set_handler(CPU_INUM_SERIAL_JTAG, _serial_intr_handler, NULL);
     esp_cpu_intr_enable(BIT(CPU_INUM_SERIAL_JTAG));
 
 #ifdef SOC_CPU_HAS_FLEXIBLE_INTC
-    /* set interrupt level */
+    // set interrupt level
     esp_cpu_intr_set_priority(CPU_INUM_SERIAL_JTAG, 1);
 #endif
 }
 
-static void _detach(void)
-{
+static void _detach(void) {
     esp_cpu_intr_disable(BIT(CPU_INUM_SERIAL_JTAG));
 }
 
 STDIO_PROVIDER(STDIO_ESP32_SERIAL_JTAG, _init, _detach, _write)
-/**@}*/
+/// @}

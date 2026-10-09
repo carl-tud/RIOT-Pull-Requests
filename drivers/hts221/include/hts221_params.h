@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_hts221
- *
- * @{
- * @file
- * @brief       Default configuration for ST HTS221 devices
- *
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     drivers_hts221
+///
+/// @{
+/// @file
+/// @brief       Default configuration for ST HTS221 devices
+///
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "board.h"
 #include "hts221.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Set default configuration parameters for the HTS221 driver
- * @{
- */
+/// @name   Set default configuration parameters for the HTS221 driver
+/// @{
 #ifndef HTS221_PARAM_I2C
 #define HTS221_PARAM_I2C    I2C_DEV(0)
 #endif
@@ -46,24 +40,20 @@ extern "C" {
                               .addr = HTS221_PARAM_ADDR, \
                               .avgx = HTS221_PARAM_AVGX, \
                               .rate = HTS221_PARAM_RATE }
-#endif /* HTS221_PARAMS */
+#endif // HTS221_PARAMS
 
 #ifndef HTS221_SAULINFO
 #define HTS221_SAULINFO     { .name = "hts221" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   HTS221 configuration
- */
+/// @brief   HTS221 configuration
 static const hts221_params_t hts221_params[] =
 {
     HTS221_PARAMS,
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t hts221_saul_info[] =
 {
     HTS221_SAULINFO
@@ -73,4 +63,4 @@ static const saul_reg_info_t hts221_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       ADXL345 test application
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       ADXL345 test application
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -23,8 +19,7 @@
 
 #define SLEEP_DELAY 100 * 1000U
 
-int main(void)
-{
+int main(void) {
     adxl345_t dev;
     adxl345_data_t data;
 

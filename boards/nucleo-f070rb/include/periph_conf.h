@@ -1,28 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f070rb
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-f070rb board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nucleo-f070rb
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-f070rb board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
-/* HSE available on this board */
+// HSE available on this board
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE        1
 #endif
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE        1
 #endif
@@ -35,10 +31,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM1,
@@ -52,12 +46,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_0_ISR         isr_tim1_cc
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -96,27 +88,23 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart3_8)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
     { .stream = 1  },
     { .stream = 2  },
 };
 
 #define DMA_SHARED_ISR_0            isr_dma1_ch2_3_dma2_ch1_2
-#define DMA_SHARED_ISR_0_STREAMS    { 0, 1 } /* Indexes 0 and 1 of dma_config share the same isr */
+#define DMA_SHARED_ISR_0_STREAMS    { 0, 1 } // Indexes 0 and 1 of dma_config share the same isr
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM3,
@@ -141,12 +129,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- * @{
- */
+/// @name   ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_A, 0), 0 },
     { GPIO_PIN(PORT_A, 1), 1 },
@@ -157,19 +143,17 @@ static const adc_conf_t adc_config[] = {
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- *
- * To find appriopate device and pins find in the MCU datasheet table
- * concerning "Alternate function AF0 to AF7" a texts similar to
- * SPI[X]_MOSI/_MISO/_SCK where SPI[X] is SPI device.
- *
- * For nucleo-f070rb this information is in the datasheet, Tables 11, 12 and 13,
- * page 30.
- * @{
- */
+/// @name   SPI configuration
+///
+/// To find appriopate device and pins find in the MCU datasheet table
+/// concerning "Alternate function AF0 to AF7" a texts similar to
+/// SPI[X]_MOSI/_MISO/_SCK where SPI[X] is SPI device.
+///
+/// For nucleo-f070rb this information is in the datasheet, Tables 11, 12 and 13,
+/// page 30.
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -193,10 +177,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

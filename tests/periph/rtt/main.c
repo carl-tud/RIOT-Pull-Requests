@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test for low-level Real Time Timer drivers
- *
- * This test will initialize the real-time timer and trigger an alarm printing
- * 'Hello' every 5 seconds
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test for low-level Real Time Timer drivers
+///
+/// This test will initialize the real-time timer and trigger an alarm printing
+/// 'Hello' every 5 seconds
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -34,8 +30,7 @@ static volatile uint32_t last;
 
 static const uint32_t _ticktest[] = { 1, 256, 65536, 16777216, 2147483648 };
 
-void cb(void *arg)
-{
+void cb(void *arg) {
     (void)arg;
 
     last += TICKS_TO_WAIT;
@@ -48,20 +43,18 @@ void cb(void *arg)
 #ifdef MODULE_PERIPH_RTC_MEM
 static const uint8_t riot_msg_offset = 1;
 static const char riot_msg[] = "RIOT";
-static void _set_rtc_mem(void)
-{
-    /* first fill the whole memory */
+static void _set_rtc_mem(void) {
+    // first fill the whole memory
     uint8_t size = rtc_mem_size();
     while (size--) {
         rtc_mem_write(size, &size, sizeof(size));
     }
 
-    /* write test data */
+    // write test data
     rtc_mem_write(riot_msg_offset, riot_msg, sizeof(riot_msg) - 1);
 }
 
-static void _get_rtc_mem(void)
-{
+static void _get_rtc_mem(void) {
     char buf[sizeof(riot_msg) - 1];
     rtc_mem_read(riot_msg_offset, buf, sizeof(buf));
 
@@ -96,8 +89,7 @@ static inline void _set_rtc_mem(void) {}
 static inline void _get_rtc_mem(void) {}
 #endif
 
-int main(void)
-{
+int main(void) {
     puts("\nRIOT RTT low-level driver test");
 
     puts("RTT configuration:");
@@ -110,7 +102,7 @@ int main(void)
         uint32_t ticks = RTT_SEC_TO_TICKS(sec);
         printf("Trying to convert %" PRIu32 " to seconds and back\n",
                _ticktest[i]);
-        /* RTT_FREQUENCY is not always power of 2 so compare with rounded result */
+        // RTT_FREQUENCY is not always power of 2 so compare with rounded result
         if ((ticks != 0) && (ticks != _ticktest[i] / RTT_FREQUENCY * RTT_FREQUENCY)) {
             puts("error: TICK conversion not working as expected\n");
             return 1;

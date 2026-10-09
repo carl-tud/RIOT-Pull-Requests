@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-l031k6
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-l031k6 board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Alexandre Aabdie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nucleo-l031k6
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-l031k6 board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Alexandre Aabdie <alexandre.abadie@inria.fr>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -32,10 +28,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -47,19 +41,17 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART2_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     }
 };
 
 #define UART_0_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM21,
@@ -74,12 +66,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -97,27 +87,25 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
-    { GPIO_PIN(PORT_A, 0), 0 },  /* Pin A0 */
-    { GPIO_PIN(PORT_A, 1), 1 },  /* Pin A1 */
-    { GPIO_PIN(PORT_A, 3), 3 },  /* Pin A2 */
-    { GPIO_PIN(PORT_A, 4), 4 },  /* Pin A3 */
-    { GPIO_PIN(PORT_A, 5), 5 },  /* Pin A4 */
-    { GPIO_PIN(PORT_A, 6), 6 },  /* Pin A5 */
-    { GPIO_PIN(PORT_A, 7), 7 },  /* Pin A6 */
+    { GPIO_PIN(PORT_A, 0), 0 },  // Pin A0
+    { GPIO_PIN(PORT_A, 1), 1 },  // Pin A1
+    { GPIO_PIN(PORT_A, 3), 3 },  // Pin A2
+    { GPIO_PIN(PORT_A, 4), 4 },  // Pin A3
+    { GPIO_PIN(PORT_A, 5), 5 },  // Pin A4
+    { GPIO_PIN(PORT_A, 6), 6 },  // Pin A5
+    { GPIO_PIN(PORT_A, 7), 7 },  // Pin A6
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

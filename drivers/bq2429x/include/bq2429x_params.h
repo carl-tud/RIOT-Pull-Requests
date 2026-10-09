@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Locha Inc
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Locha Inc
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_bq2429x
- *
- * @{
- * @file
- * @brief       Default configuration for BQ2429x power ICs.
- *
- * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
- */
+/// @ingroup     drivers_bq2429x
+///
+/// @{
+/// @file
+/// @brief       Default configuration for BQ2429x power ICs.
+///
+/// @author      Jean Pierre Dudey <jeandudey@hotmail.com>
 
 #include "board.h"
 #include "bq2429x.h"
@@ -22,17 +18,17 @@
 extern "C" {
 #endif
 
-/* I2C configuration */
+// I2C configuration
 #ifndef BQ2429X_PARAM_I2C
 #define BQ2429X_PARAM_I2C       I2C_DEV(0)
 #endif
 
-/* Interrupt pin configuration */
+// Interrupt pin configuration
 #ifndef BQ2429X_PARAM_INT_PIN
 #define BQ2429X_PARAM_INT_PIN   GPIO_UNDEF
 #endif
 
-/* Control pins */
+// Control pins
 #ifndef BQ2429X_PARAM_CE_PIN
 #define BQ2429X_PARMA_CE_PIN    GPIO_UNDEF
 #endif
@@ -40,7 +36,7 @@ extern "C" {
 #define BQ2429X_PARMA_OTG_PIN   GPIO_UNDEF
 #endif
 
-/* Input current/voltage */
+// Input current/voltage
 #ifndef BQ2429X_PARAM_VLIM
 #define BQ2429X_PARAM_VLIM      BQ2429X_VLIM_4360
 #endif
@@ -48,7 +44,7 @@ extern "C" {
 #define BQ2429X_PARAM_ILIM      BQ2429X_ILIM_500
 #endif
 
-/* Battery charge current/voltage */
+// Battery charge current/voltage
 #ifndef BQ2429X_PARAM_ICHG
 #define BQ2429X_PARAM_ICHG      BQ2429X_ICHG_512
 #endif
@@ -70,7 +66,7 @@ extern "C" {
                         }
 #endif
 
-#else /* !IS_USED(MODULE_BQ2429X_INT) */
+#else // !IS_USED(MODULE_BQ2429X_INT)
 
 #ifndef BQ2429X_PARAMS
 #define BQ2429X_PARAMS  { \
@@ -85,7 +81,7 @@ extern "C" {
                         }
 #endif
 
-#endif /* !IS_USED(MODULE_BQ2429X_INT) */
+#endif // !IS_USED(MODULE_BQ2429X_INT)
 
 static bq2429x_params_t bq2429x_params[] = {
     BQ2429X_PARAMS,
@@ -95,4 +91,4 @@ static bq2429x_params_t bq2429x_params[] = {
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -10,8 +8,7 @@
 #include "log.h"
 #include "net/uhcp.h"
 
-void uhcp_handle_udp(uint8_t *buf, size_t len, uint8_t *src, uint16_t port, uhcp_iface_t iface)
-{
+void uhcp_handle_udp(uint8_t *buf, size_t len, uint8_t *src, uint16_t port, uhcp_iface_t iface) {
     char addr_str[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, src, addr_str, INET6_ADDRSTRLEN);
     LOG_DEBUG("got packet from %s port %u\n", addr_str, (unsigned)port);
@@ -70,8 +67,7 @@ void uhcp_handle_udp(uint8_t *buf, size_t len, uint8_t *src, uint16_t port, uhcp
 #ifdef MODULE_UHCPD
 extern char _prefix[16];
 extern unsigned _prefix_len;
-void uhcp_handle_req(uhcp_req_t *req, uint8_t *src, uint16_t port, uhcp_iface_t iface)
-{
+void uhcp_handle_req(uhcp_req_t *req, uint8_t *src, uint16_t port, uhcp_iface_t iface) {
     size_t prefix_bytes = (_prefix_len + 7)>>3;
     uint8_t packet[sizeof(uhcp_push_t) + prefix_bytes];
 
@@ -86,16 +82,15 @@ void uhcp_handle_req(uhcp_req_t *req, uint8_t *src, uint16_t port, uhcp_iface_t 
         LOG_ERROR("uhcp_handle_req(): udp_sendto() res=%i\n", res);
     }
 }
-#endif /* MODULE_UHCPD */
+#endif // MODULE_UHCPD
 
 #ifdef MODULE_UHCPC
-void uhcp_handle_push(uhcp_push_t *req, uint8_t *src, uint16_t port, uhcp_iface_t iface)
-{
+void uhcp_handle_push(uhcp_push_t *req, uint8_t *src, uint16_t port, uhcp_iface_t iface) {
     char addr_str[INET6_ADDRSTRLEN];
     char prefix_str[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, src, addr_str, INET6_ADDRSTRLEN);
     uint8_t prefix[IN6ADDRSZ] = { 0 };
-    /* prefix_len can't be 0 or greater then IN6ADDRSZ * 8 (== 128) */
+    // prefix_len can't be 0 or greater then IN6ADDRSZ * 8 (== 128)
     if ((req->prefix_len == 0) || (req->prefix_len > (IN6ADDRSZ << 3))) {
         LOG_ERROR("uhcp_handle_push(): invalid prefix length\n");
         return;

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     ble_bluetil_addr
- * @{
- *
- * @file
- * @brief       Implementation of generic BLE address helper functions
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     ble_bluetil_addr
+/// @{
+///
+/// @file
+/// @brief       Implementation of generic BLE address helper functions
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -22,15 +18,13 @@
 #include "assert.h"
 #include "net/bluetil/addr.h"
 
-static int _is_hex_char(char c)
-{
+static int _is_hex_char(char c) {
     return (((c >= '0') && (c <= '9')) ||
             ((c >= 'A') && (c <= 'F')) ||
             ((c >= 'a') && (c <= 'f')));
 }
 
-void bluetil_addr_swapped_cp(const uint8_t *src, uint8_t *dst)
-{
+void bluetil_addr_swapped_cp(const uint8_t *src, uint8_t *dst) {
     dst[0] = src[5];
     dst[1] = src[4];
     dst[2] = src[3];
@@ -39,8 +33,7 @@ void bluetil_addr_swapped_cp(const uint8_t *src, uint8_t *dst)
     dst[5] = src[0];
 }
 
-void bluetil_addr_sprint(char *out, const uint8_t *addr)
-{
+void bluetil_addr_sprint(char *out, const uint8_t *addr) {
     assert(out);
     assert(addr);
 
@@ -54,8 +47,7 @@ void bluetil_addr_sprint(char *out, const uint8_t *addr)
     *out = '\0';
 }
 
-void bluetil_addr_print(const uint8_t *addr)
-{
+void bluetil_addr_print(const uint8_t *addr) {
     assert(addr);
 
     char str[BLUETIL_ADDR_STRLEN];
@@ -63,12 +55,11 @@ void bluetil_addr_print(const uint8_t *addr)
     printf("%s", str);
 }
 
-uint8_t *bluetil_addr_from_str(uint8_t *addr, const char *addr_str)
-{
+uint8_t *bluetil_addr_from_str(uint8_t *addr, const char *addr_str) {
     assert(addr);
     assert(addr_str);
 
-    /* check for colons */
+    // check for colons
     for (unsigned i = 2; i < (BLUETIL_ADDR_STRLEN - 1); i += 3) {
         if (addr_str[i] != ':') {
             return NULL;
@@ -85,8 +76,7 @@ uint8_t *bluetil_addr_from_str(uint8_t *addr, const char *addr_str)
     return addr;
 }
 
-void bluetil_addr_ipv6_l2ll_sprint(char *out, const uint8_t *addr)
-{
+void bluetil_addr_ipv6_l2ll_sprint(char *out, const uint8_t *addr) {
     assert(out);
     assert(addr);
 
@@ -106,8 +96,7 @@ void bluetil_addr_ipv6_l2ll_sprint(char *out, const uint8_t *addr)
     *out = '\0';
 }
 
-void bluetil_addr_ipv6_l2ll_print(const uint8_t *addr)
-{
+void bluetil_addr_ipv6_l2ll_print(const uint8_t *addr) {
     assert(addr);
 
     char tmp[BLUETIL_IPV6_IID_STRLEN];

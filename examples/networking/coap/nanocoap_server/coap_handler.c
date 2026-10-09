@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,15 +14,14 @@
 #include "net/nanocoap.h"
 #include "net/nanocoap_sock.h"
 
-/* internal value that can be read/written via CoAP */
+// internal value that can be read/written via CoAP
 static uint8_t internal_value = 0;
 
 static const uint8_t block2_intro[] = "This is RIOT (Version: ";
 static const uint8_t block2_board[] = " running on a ";
 static const uint8_t block2_mcu[] = " board with a ";
 
-static ssize_t _echo_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, coap_request_ctx_t *context)
-{
+static ssize_t _echo_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, coap_request_ctx_t *context) {
     (void)context;
     char uri[CONFIG_NANOCOAP_URI_MAX];
 
@@ -39,16 +36,14 @@ static ssize_t _echo_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, coap_req
 }
 
 static ssize_t _riot_board_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
-                                   coap_request_ctx_t *context)
-{
+                                   coap_request_ctx_t *context) {
     (void)context;
     return coap_reply_simple(pkt, COAP_CODE_205, buf, len,
             COAP_FORMAT_TEXT, (uint8_t*)RIOT_BOARD, strlen(RIOT_BOARD));
 }
 
 static ssize_t _riot_block2_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
-                                    coap_request_ctx_t *context)
-{
+                                    coap_request_ctx_t *context) {
     (void)context;
     coap_block_slicer_t slicer;
     coap_builder_t state;
@@ -61,16 +56,16 @@ static ssize_t _riot_block2_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
         return err;
     }
 
-    /* Note the implicit error handling: If adding an option / payload fails,
-     * state.size is set to 0 and all subsequent operations fail as well. At the
-     * end of the function, `coap_builder_msg_size()` returns -EOVERFLOW and
-     * passes on the error correctly. We could also check the return value if
-     * we don't want to spent more resources on processing a request, but we
-     * opt to optimize for the common case instead of the edge case here. */
+    // Note the implicit error handling: If adding an option / payload fails,
+    // state.size is set to 0 and all subsequent operations fail as well. At the
+    // end of the function, `coap_builder_msg_size()` returns -EOVERFLOW and
+    // passes on the error correctly. We could also check the return value if
+    // we don't want to spent more resources on processing a request, but we
+    // opt to optimize for the common case instead of the edge case here.
     coap_opt_put_ct(&state, COAP_FORMAT_TEXT);
     coap_opt_put_block2(&state, &slicer);
 
-    /* Add actual content */
+    // Add actual content
     coap_builder_add_payload_marker(&state);
     coap_blockwise_put_bytes(&state, &slicer, block2_intro, sizeof(block2_intro)-1);
     coap_blockwise_put_bytes(&state, &slicer, RIOT_VERSION, strlen(RIOT_VERSION));
@@ -80,7 +75,7 @@ static ssize_t _riot_block2_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
     coap_blockwise_put_bytes(&state, &slicer, block2_mcu, sizeof(block2_mcu)-1);
     coap_blockwise_put_bytes(&state, &slicer, RIOT_CPU, strlen(RIOT_CPU));
 
-    /* To demonstrate individual chars */
+    // To demonstrate individual chars
     coap_blockwise_put_char(&state, &slicer, ' ');
     coap_blockwise_put_char(&state, &slicer, 'M');
     coap_blockwise_put_char(&state, &slicer, 'C');
@@ -92,8 +87,7 @@ static ssize_t _riot_block2_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
 }
 
 static ssize_t _riot_value_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
-                                   coap_request_ctx_t *context)
-{
+                                   coap_request_ctx_t *context) {
     (void) context;
 
     size_t rsp_len = 0;
@@ -103,7 +97,7 @@ static ssize_t _riot_value_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
     switch (coap_get_code_raw(pkt)) {
     default:
     case COAP_GET:
-        /* write the response buffer with the internal value */
+        // write the response buffer with the internal value
         rsp_len += fmt_u32_dec(rsp, internal_value);
         code = COAP_CODE_205;
         break;
@@ -125,13 +119,12 @@ static ssize_t _riot_value_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
     return coap_reply_simple(pkt, code, buf, len, COAP_FORMAT_TEXT, rsp, rsp_len);
 }
 
-ssize_t _sha256_handler(coap_pkt_t* pkt, uint8_t *buf, size_t len, coap_request_ctx_t *context)
-{
+ssize_t _sha256_handler(coap_pkt_t* pkt, uint8_t *buf, size_t len, coap_request_ctx_t *context) {
     (void)context;
 
-    /* using a shared sha256 context *will* break if two requests are handled
-     * at the same time.  doing it anyways, as this is meant to showcase block1
-     * support, not proper synchronisation. */
+    // using a shared sha256 context *will* break if two requests are handled
+    // at the same time.  doing it anyways, as this is meant to showcase block1
+    // support, not proper synchronisation.
     static sha256_context_t sha256;
 
     uint8_t digest[SHA256_DIGEST_LENGTH];
@@ -172,7 +165,7 @@ ssize_t _sha256_handler(coap_pkt_t* pkt, uint8_t *buf, size_t len, coap_request_
         coap_opt_put_block1_control(&state, &block1);
     }
     if (result_len) {
-        /* two hex chars per byte */
+        // two hex chars per byte
         size_t pld_len = 2 * sizeof(digest);
         char *pld = coap_builder_allocate_payload(&state, pld_len);
         if (!pld) {
@@ -200,12 +193,11 @@ NANOCOAP_RESOURCE(sha256) {
     .path = "/sha256", .methods = COAP_POST, .handler = _sha256_handler
 };
 
-/* separate response requires an event thread to execute it */
+// separate response requires an event thread to execute it
 #ifdef MODULE_NANOCOAP_SERVER_EVENT_THREAD
 static nanocoap_server_response_ctx_t _separate_ctx;
 
-static void _send_response(void *ctx)
-{
+static void _send_response(void *ctx) {
     const char response[] = "This is a delayed response.";
 
     puts("_separate_handler(): send delayed response");
@@ -214,15 +206,14 @@ static void _send_response(void *ctx)
 }
 
 static ssize_t _separate_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
-                                 coap_request_ctx_t *context)
-{
+                                 coap_request_ctx_t *context) {
     static event_timeout_t event_timeout;
     static event_callback_t event_timed = EVENT_CALLBACK_INIT(_send_response, &_separate_ctx);
 
     if (event_timeout_is_pending(&event_timeout)) {
         if (nanocoap_server_is_remote_in_response_ctx(&_separate_ctx, context)) {
-            /* duplicate of the request a separate response is already scheduled
-             * for --> resending the ACK */
+            // duplicate of the request a separate response is already scheduled
+            // for --> resending the ACK
             return coap_build_empty_ack(pkt, (void *)buf);
         }
         puts("_separate_handler(): response already scheduled");
@@ -231,7 +222,7 @@ static ssize_t _separate_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
 
     if (nanocoap_server_prepare_separate(&_separate_ctx, pkt, context)) {
         puts("_separate_handler(): failed to prepare context for separate response");
-        /* send a reset message, as we don't support large tokens here */
+        // send a reset message, as we don't support large tokens here
         return coap_build_reply(pkt, 0, buf, len, 0);
     }
 
@@ -247,15 +238,14 @@ static ssize_t _separate_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
 NANOCOAP_RESOURCE(separate) {
     .path = "/separate", .methods = COAP_GET, .handler = _separate_handler,
 };
-#endif /* MODULE_NANOCOAP_SERVER_EVENT_THREAD */
+#endif // MODULE_NANOCOAP_SERVER_EVENT_THREAD
 
 #ifdef MODULE_NANOCOAP_SERVER_OBSERVE
-static ssize_t _time_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, coap_request_ctx_t *context)
-{
+static ssize_t _time_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, coap_request_ctx_t *context) {
     uint32_t obs;
     bool registered = false;
     if (coap_opt_get_uint(pkt, COAP_OPT_OBSERVE, &obs)) {
-        /* No (valid) observe option present */
+        // No (valid) observe option present
         obs = UINT32_MAX;
     }
 
@@ -263,7 +253,7 @@ static ssize_t _time_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, coap_req
 
     switch (obs) {
     case 0:
-        /* register */
+        // register
         if (nanocoap_register_observer(context, pkt) == 0) {
             registered = true;
         }
@@ -272,19 +262,19 @@ static ssize_t _time_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, coap_req
         }
         break;
     case 1:
-        /* unregister */
+        // unregister
         nanocoap_unregister_observer(context, pkt);
         break;
     default:
-        /* No (valid) observe option present --> ignore observe and handle
-         * as regular GET */
+        // No (valid) observe option present --> ignore observe and handle
+        // as regular GET
         break;
     }
 
     coap_builder_t state;
     int err = coap_builder_init_reply(&state, buf, len, pkt, COAP_CODE_CONTENT);
     if (err) {
-        /* we undo any potential registration if we cannot reply */
+        // we undo any potential registration if we cannot reply
         nanocoap_unregister_observer(context, pkt);
         return err;
     }
@@ -293,15 +283,15 @@ static ssize_t _time_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, coap_req
         coap_opt_put_observe(&state, now);
     }
 
-    /* Calculate payload size first. One extra byte for line break. */
+    // Calculate payload size first. One extra byte for line break.
     size_t pld_len = fmt_u32_dec(NULL, now) + 1;
     char *pld = coap_builder_allocate_payload(&state, pld_len);
     if (!pld) {
-        /* undo any potential registration on error */
+        // undo any potential registration on error
         nanocoap_unregister_observer(context, pkt);
         return -EOVERFLOW;
     }
-    /* Now calling fmt_u32_dec() again to actually write the payload */
+    // Now calling fmt_u32_dec() again to actually write the payload
     pld += fmt_u32_dec(pld, now);
     *pld = '\n';
 
@@ -312,8 +302,7 @@ NANOCOAP_RESOURCE(time) {
     .path = "/time", .methods = COAP_GET, .handler = _time_handler,
 };
 
-static void _notify_observer_handler(event_t *ev)
-{
+static void _notify_observer_handler(event_t *ev) {
     (void)ev;
     uint32_t now = ztimer_now(ZTIMER_MSEC);
     uint8_t buf[32];
@@ -324,7 +313,7 @@ static void _notify_observer_handler(event_t *ev)
     if (coap_opt_put_observe(&state, now)) {
         return;
     }
-    char pld[11]; /* == strlen("4294967295") + 1 == strlen(#UINT32_MAX) + 1*/
+    char pld[11]; // == strlen("4294967295") + 1 == strlen(#UINT32_MAX) + 1
     size_t pld_len = fmt_u32_dec(pld, now);
     pld[pld_len++] = '\n';
     if (coap_builder_add_payload(&state, pld, pld_len)) {
@@ -336,13 +325,12 @@ static void _notify_observer_handler(event_t *ev)
         .iol_len = coap_builder_msg_size(&state),
     };
 
-    /* `NANOCOAP_RESOURCE(time)` expends to XFA magic adding an entry named
-     * `coap_resource_time`. */
+    // `NANOCOAP_RESOURCE(time)` expends to XFA magic adding an entry named
+    // `coap_resource_time`.
     nanocoap_notify_observers(&coap_resource_time, &data);
 }
 
-void setup_observe_event(void)
-{
+void setup_observe_event(void) {
     static event_t ev = {
         .handler = _notify_observer_handler
     };
@@ -351,9 +339,9 @@ void setup_observe_event(void)
     event_periodic_init(&pev, ZTIMER_MSEC, EVENT_PRIO_MEDIUM, &ev);
     event_periodic_start(&pev, MS_PER_SEC);
 }
-#endif /* MODULE_NANOCOAP_SERVER_OBSERVE */
+#endif // MODULE_NANOCOAP_SERVER_OBSERVE
 
-/* we can also include the fileserver module */
+// we can also include the fileserver module
 #ifdef MODULE_NANOCOAP_FILESERVER
 #include "net/nanocoap/fileserver.h"
 #include "vfs_default.h"

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the PAA5100JE/PMW3901 optical flow sensor driver
- *
- * @author      Leonard Herbst <leonard.herbst@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the PAA5100JE/PMW3901 optical flow sensor driver
+///
+/// @author      Leonard Herbst <leonard.herbst@tu-dresden.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -23,8 +19,7 @@
 
 static paa5100je_t dev;
 
-int main(void)
-{
+int main(void) {
     puts("PAA5100JE/PMW3901 Optical Flow Sensor Test Application...");
     int ret = paa5100je_init(&dev, &paa5100je_params[0]);
     if (ret == 0) {

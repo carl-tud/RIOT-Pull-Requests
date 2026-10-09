@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_tsl4531x
- *
- * @{
- * @file
- * @brief       Default configuration for tsl4531x light sensor.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Daniel Petry <danielpetry@cantab.net>
- *
- * Derived from the default configuration for the tsl2561 driver.
- */
+/// @ingroup     drivers_tsl4531x
+///
+/// @{
+/// @file
+/// @brief       Default configuration for tsl4531x light sensor.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Daniel Petry <danielpetry@cantab.net>
+///
+/// Derived from the default configuration for the tsl2561 driver.
 
 #include "board.h"
 #include "saul_reg.h"
@@ -27,10 +23,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the TSL4531x
- * @{
- */
+/// @name    Set default configuration parameters for the TSL4531x
+/// @{
 #ifndef TSL4531X_PARAM_I2C_DEV
 #define TSL4531X_PARAM_I2C_DEV         I2C_DEV(0)
 #endif
@@ -57,19 +51,15 @@ extern "C" {
 #ifndef TSL4531X_SAUL_INFO
 #define TSL4531X_SAUL_INFO             { .name = "tsl4531x" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure TSL4531x
- */
+/// @brief   Configure TSL4531x
 static const tsl4531x_params_t tsl4531x_params[] =
 {
     TSL4531X_PARAMS
 };
 
-/**
- * @brief   Allocate and configure entries to the SAUL registry
- */
+/// @brief   Allocate and configure entries to the SAUL registry
 saul_reg_info_t tsl4531x_saul_info[] =
 {
     TSL4531X_SAUL_INFO
@@ -79,4 +69,4 @@ saul_reg_info_t tsl4531x_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

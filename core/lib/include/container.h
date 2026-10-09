@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 HAW-Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 HAW-Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     core_internal
- * @{
- *
- * @file
- * @brief       Common macros and compiler attributes/pragmas configuration
- *
- * @author      René Kijewski <rene.kijewski@fu-berlin.de>
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- */
+/// @ingroup     core_internal
+/// @{
+///
+/// @file
+/// @brief       Common macros and compiler attributes/pragmas configuration
+///
+/// @author      René Kijewski <rene.kijewski@fu-berlin.de>
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -24,22 +20,20 @@
 extern "C" {
 #endif
 
-/* uncrustify gets mightily confused by these macros... */
-/* begin{code-style-ignore} */
+// uncrustify gets mightily confused by these macros...
+// begin{code-style-ignore}
 
-/**
- * @def         container_of(PTR, TYPE, MEMBER)
- * @brief       Returns the container of a pointer to a member.
- * @details     For a struct `TYPE` with a member `MEMBER`,
- *              given a pointer `PTR` to `TYPE::MEMBER` this function returns a pointer
- *              to the instance of `TYPE`.
- * @details     E.g. for `struct my_struct_t { ...; something_t n; ... } my_struct;`,
- *              `&my_struct == container_of(&my_struct.n, struct my_struct_t, n)`.
- * @param[in]   PTR      pointer to a member
- * @param[in]   TYPE     a type name (a struct or union), container of PTR
- * @param[in]   MEMBER   name of the member of TYPE which PTR points to
- * @return      Pointer to the container of PTR.
- */
+/// @def         container_of(PTR, TYPE, MEMBER)
+/// @brief       Returns the container of a pointer to a member.
+/// @details     For a struct `TYPE` with a member `MEMBER`,
+///              given a pointer `PTR` to `TYPE::MEMBER` this function returns a pointer
+///              to the instance of `TYPE`.
+/// @details     E.g. for `struct my_struct_t { ...; something_t n; ... } my_struct;`,
+///              `&my_struct == container_of(&my_struct.n, struct my_struct_t, n)`.
+/// @param[in]   PTR      pointer to a member
+/// @param[in]   TYPE     a type name (a struct or union), container of PTR
+/// @param[in]   MEMBER   name of the member of TYPE which PTR points to
+/// @return      Pointer to the container of PTR.
 #if __STDC_VERSION__ >= 201112L
 #   define container_of(PTR, TYPE, MEMBER) \
         (_Generic((PTR), \
@@ -59,22 +53,18 @@ extern "C" {
         ((TYPE *) ((char *) (PTR) - offsetof(TYPE, MEMBER)))
 #endif
 
-/**
- * @def         index_of(ARRAY, ELEMENT)
- * @brief       Returns the index of a pointer to an array element.
-
- * @param[in]   ARRAY    an array
- * @param[in]   ELEMENT  pointer to an array element
- * @return      Index of the element in the array
- */
+/// @def         index_of(ARRAY, ELEMENT)
+/// @brief       Returns the index of a pointer to an array element.
+///
+/// @param[in]   ARRAY    an array
+/// @param[in]   ELEMENT  pointer to an array element
+/// @return      Index of the element in the array
 #define index_of(ARRAY, ELEMENT) (((uintptr_t)(ELEMENT) - (uintptr_t)(ARRAY)) / sizeof((ARRAY)[0]))
 
-/**
- * @def ARRAY_SIZE(a)
- * @brief       Calculate the number of elements in a static array.
- * @param[in]   a   Array to examine
- * @returns     The number of elements in the array a.
- */
+/// @def ARRAY_SIZE(a)
+/// @brief       Calculate the number of elements in a static array.
+/// @param[in]   a   Array to examine
+/// @returns     The number of elements in the array a.
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof((a)) / sizeof((a)[0]))
 #endif
@@ -83,4 +73,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

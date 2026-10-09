@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_opt3001
- *
- * @{
- * @file
- * @brief       Default configuration for OPT3001 devices
- *
- * @author      Jannes Volkens <jannes.volkens@haw-hamburg.de>
- */
+/// @ingroup     drivers_opt3001
+///
+/// @{
+/// @file
+/// @brief       Default configuration for OPT3001 devices
+///
+/// @author      Jannes Volkens <jannes.volkens@haw-hamburg.de>
 
 #include "board.h"
 #include "opt3001.h"
@@ -23,11 +19,9 @@
 extern "C" {
 #endif
 
-/**
- * @name   Set default configuration parameters for the opt3001
- * @ingroup config
- * @{
- */
+/// @name   Set default configuration parameters for the opt3001
+/// @ingroup config
+/// @{
  #ifndef OPT3001_PARAM_I2C_DEV
  #define OPT3001_PARAM_I2C_DEV    I2C_DEV(0)
  #endif
@@ -43,19 +37,15 @@ extern "C" {
  #ifndef OPT3001_SAUL_INFO
  #define OPT3001_SAUL_INFO    { .name = "opt3001" }
  #endif
- /**@}*/
+ /// @}
 
- /**
-  * @brief   OPT3001 configuration
-  */
+ /// @brief   OPT3001 configuration
  static const opt3001_params_t opt3001_params[] =
  {
      OPT3001_PARAMS
  };
 
- /**
-  * @brief   Additional meta information to keep in the SAUL registry
-  */
+ /// @brief   Additional meta information to keep in the SAUL registry
  static const saul_reg_info_t opt3001_saul_info[] =
  {
      OPT3001_SAUL_INFO
@@ -65,4 +55,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

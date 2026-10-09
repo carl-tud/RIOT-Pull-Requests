@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_bmp180
- * @{
- *
- * @file
- * @brief       Device driver implementation for the BMP180/BMP085 temperature and pressure sensor.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_bmp180
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the BMP180/BMP085 temperature and pressure sensor.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <math.h>
 
@@ -31,28 +27,27 @@
 #define DEV_ADDR     (dev->params.i2c_addr)
 #define OVERSAMPLING (dev->params.oversampling)
 
-/* Internal function prototypes */
+// Internal function prototypes
 static int _read_ut(const bmp180_t *dev, int32_t *ut);
 static int _read_up(const bmp180_t *dev, int32_t *up);
 static int _compute_b5(const bmp180_t *dev, int32_t ut, int32_t *b5);
 
-/*---------------------------------------------------------------------------*
- *                          BMP180 Core API                                 *
- *---------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------*
+//                          BMP180 Core API                                 *
+// ---------------------------------------------------------------------------
 
-int bmp180_init(bmp180_t *dev, const bmp180_params_t *params)
-{
+int bmp180_init(bmp180_t *dev, const bmp180_params_t *params) {
     dev->params = *params;
 
-    /* Clamp oversampling mode */
+    // Clamp oversampling mode
     if (OVERSAMPLING > BMP180_ULTRAHIGHRES) {
         OVERSAMPLING = BMP180_ULTRAHIGHRES;
     }
 
-    /* Acquire exclusive access */
+    // Acquire exclusive access
     i2c_acquire(DEV_I2C);
 
-    /* Check sensor ID */
+    // Check sensor ID
     uint8_t checkid;
     i2c_read_reg(DEV_I2C, DEV_ADDR, BMP180_REGISTER_ID, &checkid, 0);
     if (checkid != 0x55) {
@@ -61,11 +56,11 @@ int bmp180_init(bmp180_t *dev, const bmp180_params_t *params)
         return -BMP180_ERR_NODEV;
     }
 
-    /* adding delay before reading calibration values to avoid timing issues */
+    // adding delay before reading calibration values to avoid timing issues
     ztimer_sleep(ZTIMER_MSEC, BMP180_ULTRALOWPOWER_DELAY_MS);
 
     uint8_t buffer[22] = {0};
-    /* Read calibration values, using contiguous register addresses */
+    // Read calibration values, using contiguous register addresses
     if (i2c_read_regs(DEV_I2C, DEV_ADDR, BMP180_CALIBRATION_AC1,
                       buffer, 22, 0) < 0) {
         DEBUG("[Error] Cannot read calibration registers.\n");
@@ -84,7 +79,7 @@ int bmp180_init(bmp180_t *dev, const bmp180_params_t *params)
     dev->calibration.mc  = (int16_t)(buffer[18] << 8)  | buffer[19];
     dev->calibration.md  = (int16_t)(buffer[20] << 8)  | buffer[21];
 
-    /* Release I2C device */
+    // Release I2C device
     i2c_release(DEV_I2C);
 
     DEBUG("AC1: %i\n", (int)dev->calibration.ac1);
@@ -101,40 +96,38 @@ int bmp180_init(bmp180_t *dev, const bmp180_params_t *params)
     return 0;
 }
 
-int16_t bmp180_read_temperature(const bmp180_t *dev)
-{
+int16_t bmp180_read_temperature(const bmp180_t *dev) {
     int32_t ut = 0, b5;
-    /* Acquire exclusive access */
+    // Acquire exclusive access
     i2c_acquire(DEV_I2C);
 
-    /* Read uncompensated value */
+    // Read uncompensated value
     _read_ut(dev, &ut);
 
-    /* Release I2C device */
+    // Release I2C device
     i2c_release(DEV_I2C);
 
-    /* Compute true temperature value following datasheet formulas */
+    // Compute true temperature value following datasheet formulas
     _compute_b5(dev, ut, &b5);
 
     return (int16_t)((b5 + 8) >> 4);
 }
 
-uint32_t bmp180_read_pressure(const bmp180_t *dev)
-{
+uint32_t bmp180_read_pressure(const bmp180_t *dev) {
     int32_t ut = 0, up = 0, x1, x2, x3, b3, b5, b6, p;
     uint32_t b4, b7;
 
-    /* Acquire exclusive access */
+    // Acquire exclusive access
     i2c_acquire(DEV_I2C);
 
-    /* Read uncompensated values: first temperature, second pressure */
+    // Read uncompensated values: first temperature, second pressure
     _read_ut(dev, &ut);
     _read_up(dev, &up);
 
-    /* release I2C device */
+    // release I2C device
     i2c_release(DEV_I2C);
 
-    /* Compute true pressure value following datasheet formulas */
+    // Compute true pressure value following datasheet formulas
     _compute_b5(dev, ut, &b5);
     b6 = b5 - 4000;
     x1 = ((int32_t)dev->calibration.b2 * ((b6 * b6) >> 12)) >> 11;
@@ -160,27 +153,24 @@ uint32_t bmp180_read_pressure(const bmp180_t *dev)
     return (uint32_t)(p + ((x1 + x2 + 3791) >> 4));
 }
 
-int16_t bmp180_altitude(const bmp180_t *dev, uint32_t pressure_0)
-{
+int16_t bmp180_altitude(const bmp180_t *dev, uint32_t pressure_0) {
     uint32_t p = bmp180_read_pressure(dev);
 
     return (int16_t)(44330.0 * (1.0 - pow((double)p / pressure_0, 0.1903)));;
 }
 
-uint32_t bmp180_sealevel_pressure(const bmp180_t *dev, int16_t altitude)
-{
+uint32_t bmp180_sealevel_pressure(const bmp180_t *dev, int16_t altitude) {
     uint32_t p = bmp180_read_pressure(dev);
 
     return (uint32_t)((double)p / pow(1.0 - (altitude / 44330.0), 5.255));;
 }
 
-/*------------------------------------------------------------------------------------*/
-/*                                Internal functions                                  */
-/*------------------------------------------------------------------------------------*/
+// ------------------------------------------------------------------------------------
+// Internal functions
+// ------------------------------------------------------------------------------------
 
-static int _read_ut(const bmp180_t *dev, int32_t *output)
-{
-    /* Read UT (Uncompsensated Temperature value) */
+static int _read_ut(const bmp180_t *dev, int32_t *output) {
+    // Read UT (Uncompsensated Temperature value)
     uint8_t ut[2] = {0};
     uint8_t control[2] = { BMP180_REGISTER_CONTROL, BMP180_TEMPERATURE_COMMAND };
     i2c_write_bytes(DEV_I2C, DEV_ADDR, control, 2, 0);
@@ -197,9 +187,8 @@ static int _read_ut(const bmp180_t *dev, int32_t *output)
     return 0;
 }
 
-static int _read_up(const bmp180_t *dev, int32_t *output)
-{
-    /* Read UP (Uncompsensated Pressure value) */
+static int _read_up(const bmp180_t *dev, int32_t *output) {
+    // Read UP (Uncompsensated Pressure value)
     uint8_t up[3] = {0};
     uint8_t control[2] = { BMP180_REGISTER_CONTROL,
                            BMP180_PRESSURE_COMMAND | (OVERSAMPLING & 0x3) << 6 };
@@ -235,8 +224,7 @@ static int _read_up(const bmp180_t *dev, int32_t *output)
     return 0;
 }
 
-static int _compute_b5(const bmp180_t *dev, int32_t ut, int32_t *output)
-{
+static int _compute_b5(const bmp180_t *dev, int32_t ut, int32_t *output) {
     int32_t x1 = 0, x2 = 0;
     x1 = (((int32_t)ut - (int32_t)dev->calibration.ac6) * (int32_t)dev->calibration.ac5) >> 15;
     x2 = ((int32_t)dev->calibration.mc << 11) / (x1 + dev->calibration.md);

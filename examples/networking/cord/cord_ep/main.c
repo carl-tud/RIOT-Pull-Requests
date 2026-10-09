@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017-2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017-2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       CoRE Resource Directory endpoint (cord_ep) example
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       CoRE Resource Directory endpoint (cord_ep) example
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -29,9 +25,8 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 #define NODE_INFO  "SOME NODE INFORMATION"
 
-/* we will use a custom event handler for dumping cord_ep events */
-static void _on_ep_event(cord_ep_standalone_event_t event)
-{
+// we will use a custom event handler for dumping cord_ep events
+static void _on_ep_event(cord_ep_standalone_event_t event) {
     switch (event) {
         case CORD_EP_REGISTERED:
             puts("RD endpoint event: now registered with a RD");
@@ -45,13 +40,12 @@ static void _on_ep_event(cord_ep_standalone_event_t event)
     }
 }
 
-/* define some dummy CoAP resources */
+// define some dummy CoAP resources
 static ssize_t _handler_dummy(coap_pkt_t *pdu,
-                              uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
-{
+                              uint8_t *buf, size_t len, coap_request_ctx_t *ctx) {
     (void)ctx;
 
-    /* get random data */
+    // get random data
     int16_t val = 23;
 
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
@@ -61,8 +55,7 @@ static ssize_t _handler_dummy(coap_pkt_t *pdu,
 }
 
 static ssize_t _handler_info(coap_pkt_t *pdu,
-                             uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
-{
+                             uint8_t *buf, size_t len, coap_request_ctx_t *ctx) {
     (void)ctx;
 
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
@@ -84,18 +77,17 @@ static gcoap_listener_t _listener = {
     .next          = NULL
 };
 
-int main(void)
-{
-    /* we need a message queue for the thread running the shell in order to
-     * receive potentially fast incoming networking packets */
+int main(void) {
+    // we need a message queue for the thread running the shell in order to
+    // receive potentially fast incoming networking packets
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     puts("CoRE RD client example!\n");
 
-    /* setup CoAP resources */
+    // setup CoAP resources
     gcoap_register_listener(&_listener);
 
-    /* register event callback with cord_ep_standalone */
+    // register event callback with cord_ep_standalone
     cord_ep_standalone_reg_cb(_on_ep_event);
 
     puts("Client information:");

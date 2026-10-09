@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 #include "bplib_init.h"
 #include "bplib_cla_ble.h"
 #include "bplib.h"
@@ -25,15 +23,14 @@
 #  define BPLIB_EXAMPLE_REMOTE_NODE_NO      200
 #endif
 
-/* Note: Not changed through makefile, here both devices have the same service number,
- * but it could be changed like the node number. It is the analog to an IP port. */
+// Note: Not changed through makefile, here both devices have the same service number,
+// but it could be changed like the node number. It is the analog to an IP port.
 #define BPLIB_EXAMPLE_REMOTE_SERVICE_NO     123
 
 static char stack_egress[THREAD_STACKSIZE_MEDIUM];
 static char recv_buffer[CONFIG_BPLIB_CLA_BLE_MTU];
 
-static void* _poll_bp(void* arg)
-{
+static void* _poll_bp(void* arg) {
     (void) arg;
     BPLib_Status_t rv;
     size_t size;
@@ -53,9 +50,8 @@ static void* _poll_bp(void* arg)
     return NULL;
 }
 
-static void _config_nc(void)
-{
-    /* Configure the channel */
+static void _config_nc(void) {
+    // Configure the channel
     BPLib_EID_t dest = {
        .Scheme = BPLIB_EID_SCHEME_IPN,
        .IpnSspFormat = BPLIB_EID_IPN_SSP_FORMAT_TWO_DIGIT,
@@ -73,24 +69,24 @@ static void _config_nc(void)
 
     bplib_channel_set_block_crc_type(0, BPLIB_PAYLOAD_BLOCK, BPLib_CRC_Type_CRC32C);
 
-    /* Note: Make sure every canonical block has a unique block number, the payload
-     * has 1 statically and the primary block has 0 implicitly */
+    // Note: Make sure every canonical block has a unique block number, the payload
+    // has 1 statically and the primary block has 0 implicitly
     bplib_channel_set_block_num(0, BPLIB_BUNDLE_AGE_BLOCK, 2);
     bplib_channel_set_block_crc_type(0, BPLIB_BUNDLE_AGE_BLOCK, BPLib_CRC_Type_CRC16);
 
-    /* Uncomment these to generate the hop count block with the given limit
-    bplib_channel_set_hop_limit(0, 10);
-    bplib_channel_set_block_include(0, BPLIB_HOP_COUNT_BLOCK, true);
-    bplib_channel_set_block_num(0, BPLIB_HOP_COUNT_BLOCK, 3);
-    bplib_channel_set_block_crc_type(0, BPLIB_HOP_COUNT_BLOCK, BPLib_CRC_Type_None); */
+    // Uncomment these to generate the hop count block with the given limit
+    // bplib_channel_set_hop_limit(0, 10);
+    // bplib_channel_set_block_include(0, BPLIB_HOP_COUNT_BLOCK, true);
+    // bplib_channel_set_block_num(0, BPLIB_HOP_COUNT_BLOCK, 3);
+    // bplib_channel_set_block_crc_type(0, BPLIB_HOP_COUNT_BLOCK, BPLib_CRC_Type_None);
 
-    /* Uncomment these to generate the previous node block
-    bplib_channel_set_block_include(0, BPLIB_PREVIOUS_NODE_BLOCK, true);
-    bplib_channel_set_block_num(0, BPLIB_PREVIOUS_NODE_BLOCK, 4);
-    bplib_channel_set_block_crc_type(0, BPLIB_PREVIOUS_NODE_BLOCK, BPLib_CRC_Type_None); */
+    // Uncomment these to generate the previous node block
+    // bplib_channel_set_block_include(0, BPLIB_PREVIOUS_NODE_BLOCK, true);
+    // bplib_channel_set_block_num(0, BPLIB_PREVIOUS_NODE_BLOCK, 4);
+    // bplib_channel_set_block_crc_type(0, BPLIB_PREVIOUS_NODE_BLOCK, BPLib_CRC_Type_None);
 
-    /* Configure the contact. The MAC address needs to be adjusted to your target server.
-     * For the server this value is currently ignored, it accepts any connection. */
+    // Configure the contact. The MAC address needs to be adjusted to your target server.
+    // For the server this value is currently ignored, it accepts any connection.
     BPLib_EID_Pattern_t reachable_eids = {
         .Scheme       = BPLIB_EID_SCHEME_IPN,
         .IpnSspFormat = BPLIB_EID_IPN_SSP_FORMAT_TWO_DIGIT,
@@ -105,8 +101,7 @@ static void _config_nc(void)
     bplib_contact_set_out_addr(0, BPLIB_EXAMPLE_REMOTE, 0);
 }
 
-int main(void)
-{
+int main(void) {
     int rv = bplib_init();
     if (rv != 0) {
         printf("Error Initializing bplib %i\n", rv);
@@ -123,11 +118,11 @@ int main(void)
         }
     }
 
-    /* Add and start the application level I/O socket */
+    // Add and start the application level I/O socket
     BPLib_PI_AddApplication(0);
     BPLib_PI_StartApplication(0);
 
-    /* Let bplib know the contact started */
+    // Let bplib know the contact started
     BPLib_CLA_ContactSetup(0);
     BPLib_CLA_ContactStart(0);
 
@@ -138,9 +133,9 @@ int main(void)
     char buffer[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, buffer, SHELL_DEFAULT_BUFSIZE);
 
-    /* Note: Make sure to call BPLib_CLA_ContactTeardown and BPLib_PI_RemoveApplication
-     * in production, since this includes some measures to push bundles not yet sent, but queued,
-     * back into storage. This is not reachable here due to the shell. */
+    // Note: Make sure to call BPLib_CLA_ContactTeardown and BPLib_PI_RemoveApplication
+    // in production, since this includes some measures to push bundles not yet sent, but queued,
+    // back into storage. This is not reachable here due to the shell.
     bplib_cla_ble_stop();
     BPLib_CLA_ContactStop(0);
     BPLib_CLA_ContactTeardown(&bplib_instance_data.BPLibInst, 0);

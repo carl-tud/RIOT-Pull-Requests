@@ -1,50 +1,40 @@
-/*
- * SPDX-FileCopyrightText: 2020 Locha Inc
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Locha Inc
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_bq2429x
- *
- * @{
- * @file
- * @brief       Internal address, registers, constants for the BQ2429x family
- *              power ICs.
- *
- * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
- */
+/// @ingroup     drivers_bq2429x
+///
+/// @{
+/// @file
+/// @brief       Internal address, registers, constants for the BQ2429x family
+///              power ICs.
+///
+/// @author      Jean Pierre Dudey <jeandudey@hotmail.com>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief   BQ2429x I2C device slave address
- */
+/// @brief   BQ2429x I2C device slave address
 #define BQ2429X_I2C_ADDR            (0x6B)
 
-/**
- * @brief   Registers
- * @{
- */
-#define BQ2429X_REG00               (0x00)  /**< Input Source Control */
-#define BQ2429X_REG01               (0x01)  /**< Power-On Configuration */
-#define BQ2429X_REG02               (0x02)  /**< Charge Current Control */
-#define BQ2429X_REG04               (0x04)  /**< Charge Voltage Control */
+/// @brief   Registers
+/// @{
+#define BQ2429X_REG00               (0x00)  ///< Input Source Control
+#define BQ2429X_REG01               (0x01)  ///< Power-On Configuration
+#define BQ2429X_REG02               (0x02)  ///< Charge Current Control
+#define BQ2429X_REG04               (0x04)  ///< Charge Voltage Control
 #define BQ2429X_REG05               (0x05)  /**< Charge Termination/Timer
                                                  Control */
-#define BQ2429X_REG08               (0x08)  /**< System Status */
-#define BQ2429X_REG09               (0x09)  /**< New Fault Register */
+#define BQ2429X_REG08               (0x08)  ///< System Status
+#define BQ2429X_REG09               (0x09)  ///< New Fault Register
 #define BQ2429X_REG0A               (0x0A)  /**< Vendor / Part / Revision
                                                  Status */
-/** @} */
+/// @}
 
-/**
- * @brief   Register values
- * @{
- */
+/// @brief   Register values
+/// @{
 #define BQ2429X_REG00_VINDPM_m      (0x78)
 #define BQ2429X_REG00_VINDPM_s      (3)
 #define BQ2429X_REG00_IINLIM_m      (0x07)
@@ -94,10 +84,10 @@ extern "C" {
 #define BQ2429X_REG09_NTC_FAULT_1_s (1)
 #define BQ2429X_REG09_NTC_FAULT_0_m (0x01)
 #define BQ2429X_REG09_NTC_FAULT_0_s (0)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

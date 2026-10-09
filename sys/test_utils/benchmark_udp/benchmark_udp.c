@@ -1,19 +1,15 @@
-/*
- * Copyright (C) 2021 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for
- * more details.
- */
+// Copyright (C) 2021 ML!PA Consulting GmbH
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for
+// more details.
 
-/**
- * @ingroup     test_utils_benchmark_udp
- * @{
- *
- * @file
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     test_utils_benchmark_udp
+/// @{
+///
+/// @file
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stdio.h>
 
@@ -49,8 +45,7 @@ struct {
     uint32_t time_tx_us;
 } record_tx[RECORD_CACHE_SIZE];
 
-static uint32_t _get_rtt(uint32_t seq_num, uint32_t prev)
-{
+static uint32_t _get_rtt(uint32_t seq_num, uint32_t prev) {
     uint32_t idx = seq_num % RECORD_CACHE_SIZE;
 
     if (record_tx[idx].seq_no == seq_num) {
@@ -60,8 +55,7 @@ static uint32_t _get_rtt(uint32_t seq_num, uint32_t prev)
     return prev;
 }
 
-static void _put_rtt(uint32_t seq_num)
-{
+static void _put_rtt(uint32_t seq_num) {
     uint32_t now = xtimer_now_usec();
     uint32_t idx = seq_num % RECORD_CACHE_SIZE;
 
@@ -69,8 +63,7 @@ static void _put_rtt(uint32_t seq_num)
     record_tx[idx].time_tx_us = now;
 }
 
-static void *_listen_thread(void *ctx)
-{
+static void *_listen_thread(void *ctx) {
     (void)ctx;
 
     static uint8_t buf[BENCH_PAYLOAD_SIZE_MAX + sizeof(benchmark_msg_ping_t)];
@@ -111,8 +104,7 @@ static void *_listen_thread(void *ctx)
     return NULL;
 }
 
-static void *_send_thread(void *ctx)
-{
+static void *_send_thread(void *ctx) {
     sock_udp_ep_t remote = *(sock_udp_ep_t*)ctx;
 
     DEBUG_PUTS("sending thread start");
@@ -138,8 +130,7 @@ static void *_send_thread(void *ctx)
     return NULL;
 }
 
-int benchmark_udp_start(const char *server, uint16_t port)
-{
+int benchmark_udp_start(const char *server, uint16_t port) {
     netif_t *netif;
     sock_udp_ep_t local = { .family = AF_INET6,
                             .netif = SOCK_ADDR_ANY_NETIF,
@@ -147,7 +138,7 @@ int benchmark_udp_start(const char *server, uint16_t port)
     sock_udp_ep_t remote = { .family = AF_INET6,
                              .port = port };
 
-    /* stop threads first */
+    // stop threads first
     benchmark_udp_stop();
 
     if (sock_udp_create(&sock, &local, NULL, 0) < 0) {
@@ -175,25 +166,24 @@ int benchmark_udp_start(const char *server, uint16_t port)
     return 0;
 }
 
-bool benchmark_udp_stop(void)
-{
+bool benchmark_udp_stop(void) {
     if (!running) {
         return false;
     }
 
-    /* signal threads to stop */
+    // signal threads to stop
     sema_inv_init(&thread_sync, 2);
     running = false;
 
     DEBUG_PUTS("bench_udp: waiting for threads to terminate");
 
-    /* wait for threads to terminate */
+    // wait for threads to terminate
     sema_inv_wait(&thread_sync);
     sock_udp_close(&sock);
 
     DEBUG_PUTS("bench_udp: threads terminated");
 
-    /* clear cookie & stack */
+    // clear cookie & stack
     ping->flags = 0;
     memset(send_thread_stack, 0, sizeof(send_thread_stack));
     memset(listen_thread_stack, 0, sizeof(listen_thread_stack));
@@ -201,8 +191,7 @@ bool benchmark_udp_stop(void)
     return true;
 }
 
-void benchmark_udp_auto_init(void)
-{
+void benchmark_udp_auto_init(void) {
     benchmark_udp_start(BENCH_SERVER_DEFAULT, BENCH_PORT_DEFAULT);
 }
-/** @} */
+/// @}

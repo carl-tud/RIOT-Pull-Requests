@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_saul
- * @{
- *
- * @file
- * @brief       SAUL wrapper for servo motors
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_saul
+/// @{
+///
+/// @file
+/// @brief       SAUL wrapper for servo motors
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <string.h>
 #include <stdint.h>
@@ -25,8 +21,7 @@
 #include "saul_reg.h"
 #include "servo.h"
 
-static int write(const void *dev, const phydat_t *state)
-{
+static int write(const void *dev, const phydat_t *state) {
     servo_t *s = (void *)dev;
     int32_t num = state->val[0];
     switch (state->unit) {

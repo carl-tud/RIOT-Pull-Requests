@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Device-specific test header file LPC1768 ethernet peripheral
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Device-specific test header file LPC1768 ethernet peripheral
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,4 +21,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

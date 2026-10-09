@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_soft_uart
- * @{
- *
- * @file
- * @brief       Software UART configuration
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     drivers_soft_uart
+/// @{
+///
+/// @file
+/// @brief       Software UART configuration
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include "board.h"
 #include "soft_uart.h"
@@ -53,9 +49,7 @@ extern "C" {
                              }
 #endif
 
-/**
- * @brief   Sotware UART port descriptor array
- */
+/// @brief   Sotware UART port descriptor array
 static const soft_uart_conf_t soft_uart_config[] = {
     SOFT_UART_PARAMS,
 };
@@ -66,4 +60,4 @@ static const soft_uart_conf_t soft_uart_config[] = {
 }
 #endif
 
-/** @} */
+/// @}

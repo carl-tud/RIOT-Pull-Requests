@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       Test for memories connected to the STM32 FMC/FSMC peripheral
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @file
+/// @brief       Test for memories connected to the STM32 FMC/FSMC peripheral
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #include <stdio.h>
 #include <string.h>
@@ -27,8 +23,7 @@
 
 uint8_t mem_buf[MEM_BUFSIZ] = {};
 
-void bench_mem_write(uint32_t addr, uint32_t len)
-{
+void bench_mem_write(uint32_t addr, uint32_t len) {
     uint8_t *mem = (uint8_t *)addr;
     uint32_t i = 0;
 
@@ -38,8 +33,7 @@ void bench_mem_write(uint32_t addr, uint32_t len)
     }
 }
 
-int main(void)
-{
+int main(void) {
     printf("FMC HCLK freq %lu MHz\n", CLOCK_AHB/MHZ(1));
 
     uint8_t *data8  = (uint8_t *)(fmc_bank_config[FMC_BANK].address);

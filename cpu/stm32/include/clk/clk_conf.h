@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_stm32
- * @{
- *
- * @file
- * @brief           Main header for STM32 clock configuration
- *
- * @author          Alexandre Abadie <alexandre.abadie@inria.fr>
-*/
+/// @ingroup         cpu_stm32
+/// @{
+///
+/// @file
+/// @brief           Main header for STM32 clock configuration
+///
+/// @author          Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3)
@@ -50,4 +46,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

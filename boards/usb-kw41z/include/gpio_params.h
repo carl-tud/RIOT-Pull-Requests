@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup   boards_usb-kw41z
- * @{
- *
- * @file
- * @brief     Board specific configuration of direct mapped GPIOs
- *
- * @author    Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @ingroup   boards_usb-kw41z
+/// @{
+///
+/// @file
+/// @brief     Board specific configuration of direct mapped GPIOs
+///
+/// @author    Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,14 +18,12 @@
 extern "C" {
 #endif
 
-/**
- * @brief    LED configuration
- */
+/// @brief    LED configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
-    /* There are three LEDs on board, but only two are software controllable,
-     * and one is driven by the debugger interface unless hardware mods have
-     * been applied. See boards/usb-kw41z/include/board.h */
+    // There are three LEDs on board, but only two are software controllable,
+    // and one is driven by the debugger interface unless hardware mods have
+    // been applied. See boards/usb-kw41z/include/board.h
 #ifdef LED0_PIN
     {
         .name = "D2",
@@ -37,7 +31,7 @@ static const  saul_gpio_params_t saul_gpio_params[] =
         .mode = GPIO_OUT,
         .flags = (SAUL_GPIO_INVERTED | SAUL_GPIO_INIT_CLEAR),
     },
-#endif /* LED0_PIN */
+#endif // LED0_PIN
 #ifdef LED1_PIN
     {
         .name = "D3",
@@ -45,7 +39,7 @@ static const  saul_gpio_params_t saul_gpio_params[] =
         .mode = GPIO_OUT,
         .flags = (SAUL_GPIO_INVERTED | SAUL_GPIO_INIT_CLEAR),
     },
-#endif /* LED1_PIN */
+#endif // LED1_PIN
     {
         .name = "SW1",
         .pin = BTN0_PIN,
@@ -58,4 +52,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

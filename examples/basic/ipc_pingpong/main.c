@@ -1,28 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       IPC pingpong application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       IPC pingpong application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
 #include "thread.h"
 #include "msg.h"
 
-void *second_thread(void *arg)
-{
+void *second_thread(void *arg) {
     (void) arg;
 
     printf("2nd thread started, pid: %" PRIkernel_pid "\n", thread_getpid());
@@ -40,8 +35,7 @@ void *second_thread(void *arg)
 
 char second_thread_stack[THREAD_STACKSIZE_MAIN];
 
-int main(void)
-{
+int main(void) {
     printf("Starting IPC Ping-pong example...\n");
     printf("1st thread started, pid: %" PRIkernel_pid "\n", thread_getpid());
 

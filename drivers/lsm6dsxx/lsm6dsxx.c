@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_lsm6dsxx
- * @{
- *
- * @file
- * @brief       Device driver implementation for the LSM6DSXX 3D accelerometer/gyroscope.
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Sebastian Meiling <s@mlng.net>
- * @author      Miquel Borrell <miquel.borrell@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_lsm6dsxx
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the LSM6DSXX 3D accelerometer/gyroscope.
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Sebastian Meiling <s@mlng.net>
+/// @author      Miquel Borrell <miquel.borrell@haw-hamburg.de>
+///
+/// @}
 
 #include <assert.h>
 
@@ -32,21 +28,16 @@
 #define BUS         (dev->params.i2c)
 #define ADDR        (dev->params.addr)
 
-/**
- * order in array [0, 1, 2, 3] is
- * LSM6DSXX_ACC_FS_2G, LSM6DSXX_ACC_FS_16G, LSM6DSXX_ACC_FS_4G, LSM6DSXX_ACC_FS_8G
- */
+/// order in array [0, 1, 2, 3] is
+/// LSM6DSXX_ACC_FS_2G, LSM6DSXX_ACC_FS_16G, LSM6DSXX_ACC_FS_4G, LSM6DSXX_ACC_FS_8G
 static const int16_t range_acc[] = { 2000, 16000, 4000, 8000 };
 
-/**
- * order in array [0, 1, 2, 3] is
- * LSM6DSXX_GYRO_FS_245DPS, LSM6DSXX_GYRO_FS_500DPS,
- * LSM6DSXX_GYRO_FS_1000DPS, LSM6DSXX_GYRO_FS_2000DPS
- */
+/// order in array [0, 1, 2, 3] is
+/// LSM6DSXX_GYRO_FS_245DPS, LSM6DSXX_GYRO_FS_500DPS,
+/// LSM6DSXX_GYRO_FS_1000DPS, LSM6DSXX_GYRO_FS_2000DPS
 static const int16_t range_gyro[] = { 2450, 5000, 10000, 20000 };
 
-int lsm6dsxx_init(lsm6dsxx_t *dev, const lsm6dsxx_params_t *params)
-{
+int lsm6dsxx_init(lsm6dsxx_t *dev, const lsm6dsxx_params_t *params) {
     uint8_t tmp;
     int res;
 
@@ -56,7 +47,7 @@ int lsm6dsxx_init(lsm6dsxx_t *dev, const lsm6dsxx_params_t *params)
 
     i2c_acquire(BUS);
 
-    /* Reboot */
+    // Reboot
     i2c_write_reg(BUS, ADDR, LSM6DSXX_REG_CTRL3_C, LSM6DSXX_CTRL3_C_BOOT, 0);
 
     ztimer_sleep(ZTIMER_MSEC, LSM6DSXX_BOOT_WAIT_MS);
@@ -78,15 +69,15 @@ int lsm6dsxx_init(lsm6dsxx_t *dev, const lsm6dsxx_params_t *params)
         return -LSM6DSXX_ERROR_DEV;
     }
 
-    /* Set acc odr / full scale */
+    // Set acc odr / full scale
     tmp = (dev->params.acc_odr << LSM6DSXX_CTRL_ODR_SHIFT) |
           (dev->params.acc_fs << LSM6DSXX_CTRL_FS_SHIFT);
     res = i2c_write_reg(BUS, ADDR, LSM6DSXX_REG_CTRL1_XL, tmp, 0);
-    /* Set gyro odr / full scale */
+    // Set gyro odr / full scale
     tmp = (dev->params.gyro_odr << LSM6DSXX_CTRL_ODR_SHIFT) |
           (dev->params.gyro_fs << LSM6DSXX_CTRL_FS_SHIFT);
     res += i2c_write_reg(BUS, ADDR, LSM6DSXX_REG_CTRL2_G, tmp, 0);
-    /* Set continuous mode */
+    // Set continuous mode
     uint8_t fifo_odr = MAX(dev->params.acc_odr, dev->params.gyro_odr);
     tmp = (fifo_odr << LSM6DSXX_FIFO_CTRL5_FIFO_ODR_SHIFT) |
           LSM6DSXX_FIFO_CTRL5_CONTINUOUS_MODE;
@@ -104,8 +95,7 @@ int lsm6dsxx_init(lsm6dsxx_t *dev, const lsm6dsxx_params_t *params)
     return LSM6DSXX_OK;
 }
 
-int lsm6dsxx_read_acc(const lsm6dsxx_t *dev, lsm6dsxx_3d_data_t *data)
-{
+int lsm6dsxx_read_acc(const lsm6dsxx_t *dev, lsm6dsxx_3d_data_t *data) {
     int res;
     uint8_t tmp;
 
@@ -140,8 +130,7 @@ int lsm6dsxx_read_acc(const lsm6dsxx_t *dev, lsm6dsxx_3d_data_t *data)
     return LSM6DSXX_OK;
 }
 
-int lsm6dsxx_read_gyro(const lsm6dsxx_t *dev, lsm6dsxx_3d_data_t *data)
-{
+int lsm6dsxx_read_gyro(const lsm6dsxx_t *dev, lsm6dsxx_3d_data_t *data) {
     int res;
     uint8_t tmp;
 
@@ -176,11 +165,10 @@ int lsm6dsxx_read_gyro(const lsm6dsxx_t *dev, lsm6dsxx_3d_data_t *data)
     return LSM6DSXX_OK;
 }
 
-int lsm6dsxx_read_temp(const lsm6dsxx_t *dev, int16_t *data)
-{
+int lsm6dsxx_read_temp(const lsm6dsxx_t *dev, int16_t *data) {
     uint8_t tmp;
     uint16_t traw;
-    /* read raw temperature */
+    // read raw temperature
     i2c_acquire(BUS);
     if (i2c_read_reg(BUS, ADDR, LSM6DSXX_REG_OUT_TEMP_L, &tmp, 0) < 0) {
         i2c_release(BUS);
@@ -193,15 +181,14 @@ int lsm6dsxx_read_temp(const lsm6dsxx_t *dev, int16_t *data)
     }
     traw |= (uint16_t)tmp << 8;
     i2c_release(BUS);
-    /* convert temperature to degC x 100 */
+    // convert temperature to degC x 100
     traw += LSM6DSXX_TEMP_OFFSET << dev->temperature_scaling_factor;
     *data = (int16_t)(((int32_t)traw * 100) >> dev->temperature_scaling_factor);
 
     return LSM6DSXX_OK;
 }
 
-int lsm6dsxx_acc_power_down(const lsm6dsxx_t *dev)
-{
+int lsm6dsxx_acc_power_down(const lsm6dsxx_t *dev) {
     int res;
     uint8_t tmp;
 
@@ -226,8 +213,7 @@ int lsm6dsxx_acc_power_down(const lsm6dsxx_t *dev)
     return LSM6DSXX_OK;
 }
 
-int lsm6dsxx_gyro_power_down(const lsm6dsxx_t *dev)
-{
+int lsm6dsxx_gyro_power_down(const lsm6dsxx_t *dev) {
     int res;
     uint8_t tmp;
 
@@ -252,8 +238,7 @@ int lsm6dsxx_gyro_power_down(const lsm6dsxx_t *dev)
     return LSM6DSXX_OK;
 }
 
-int lsm6dsxx_acc_power_up(const lsm6dsxx_t *dev)
-{
+int lsm6dsxx_acc_power_up(const lsm6dsxx_t *dev) {
     int res;
     uint8_t tmp;
 
@@ -279,8 +264,7 @@ int lsm6dsxx_acc_power_up(const lsm6dsxx_t *dev)
     return LSM6DSXX_OK;
 }
 
-int lsm6dsxx_gyro_power_up(const lsm6dsxx_t *dev)
-{
+int lsm6dsxx_gyro_power_up(const lsm6dsxx_t *dev) {
     int res;
     uint8_t tmp;
 

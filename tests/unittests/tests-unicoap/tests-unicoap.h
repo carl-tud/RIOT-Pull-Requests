@@ -1,21 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024-2025 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2025 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2025 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2025 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @addtogroup unittests
- * @{
- */
+/// @addtogroup unittests
+/// @{
 
-/**
- * @file
- * @brief  Unit tests for the unified CoAP framework
- * @author Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @brief  Unit tests for the unified CoAP framework
+/// @author Carl Seifert <carl.seifert@tu-dresden.de>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -53,13 +47,11 @@
 extern "C" {
 #endif
 
-/**
- * @brief The entry point of this test suite
- */
+/// @brief The entry point of this test suite
 void tests_unicoap(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

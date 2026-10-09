@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_at25xxx
- * @{
- *
- * @file
- * @brief       Driver for the AT25xxx family of SPI-EEPROMs.
- *              This also includes M95xxx, 25AAxxx, 25LCxxx,
- *              CAT25xxx & BR25Sxxx.
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup     drivers_at25xxx
+/// @{
+///
+/// @file
+/// @brief       Driver for the AT25xxx family of SPI-EEPROMs.
+///              This also includes M95xxx, 25AAxxx, 25LCxxx,
+///              CAT25xxx & BR25Sxxx.
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -39,37 +35,30 @@
 #define ADDR_MSK    ((1UL << ADDR_LEN) - 1)
 
 #ifndef AT25XXXX_SET_BUF_SIZE
-/**
- * @brief  Adjust to configure buffer size
- */
+/// @brief  Adjust to configure buffer size
 #define AT225XXXX_SET_BUF_SIZE      (64)
 #endif
 
-static inline void getbus(const at25xxx_t *dev)
-{
+static inline void getbus(const at25xxx_t *dev) {
     spi_acquire(dev->params.spi, dev->params.cs_pin, SPI_MODE_0, dev->params.spi_clk);
 }
 
-static inline uint32_t _pos(uint8_t cmd, uint32_t pos)
-{
-    /* first byte is CMD, then addr with MSB first */
+static inline uint32_t _pos(uint8_t cmd, uint32_t pos) {
+    // first byte is CMD, then addr with MSB first
     pos = htonl((pos & ADDR_MSK) | ((uint32_t)cmd << ADDR_LEN));
     pos >>= 8 * sizeof(pos) - (ADDR_LEN + 8);
     return pos;
 }
 
-static inline bool _write_in_progress(const at25xxx_t *dev)
-{
+static inline bool _write_in_progress(const at25xxx_t *dev) {
     return spi_transfer_reg(dev->params.spi, dev->params.cs_pin, CMD_RDSR, 0) & SR_WIP;
 }
 
-static inline bool _write_enabled(const at25xxx_t *dev)
-{
+static inline bool _write_enabled(const at25xxx_t *dev) {
     return spi_transfer_reg(dev->params.spi, dev->params.cs_pin, CMD_RDSR, 0) & SR_WEL;
 }
 
-static inline int _wait_until_eeprom_ready(const at25xxx_t *dev)
-{
+static inline int _wait_until_eeprom_ready(const at25xxx_t *dev) {
     uint8_t tries = 10;
     while (_write_in_progress(dev) && --tries) {
         spi_release(dev->params.spi);
@@ -80,22 +69,21 @@ static inline int _wait_until_eeprom_ready(const at25xxx_t *dev)
     return tries == 0 ? -ETIMEDOUT : 0;
 }
 
-static int _at25xxx_write_page(const at25xxx_t *dev, uint32_t page, uint32_t offset, const void *data, size_t len)
-{
+static int _at25xxx_write_page(const at25xxx_t *dev, uint32_t page, uint32_t offset, const void *data, size_t len) {
     assert(offset < AT25_PAGE_SIZE);
 
-    /* write no more than to the end of the current page to prevent wrap-around */
+    // write no more than to the end of the current page to prevent wrap-around
     size_t remaining = AT25_PAGE_SIZE - offset;
     len = min(len, remaining);
     uint32_t pos = _pos(CMD_WRITE, page * AT25_PAGE_SIZE + offset);
 
-    /* wait for previous write to finish - may take up to 5 ms */
+    // wait for previous write to finish - may take up to 5 ms
     int res = _wait_until_eeprom_ready(dev);
     if (res) {
         return res;
     }
 
-    /* set write enable and wait for status change */
+    // set write enable and wait for status change
     spi_transfer_byte(dev->params.spi, dev->params.cs_pin, false, CMD_WREN);
 
     unsigned tries = 1000;
@@ -105,15 +93,14 @@ static int _at25xxx_write_page(const at25xxx_t *dev, uint32_t page, uint32_t off
         return -ETIMEDOUT;
     }
 
-    /* write the data */
+    // write the data
     spi_transfer_bytes(dev->params.spi, dev->params.cs_pin, true, &pos, NULL, 1 + ADDR_LEN / 8);
     spi_transfer_bytes(dev->params.spi, dev->params.cs_pin, false, data, NULL, len);
 
     return len;
 }
 
-int at25xxx_write_page(const at25xxx_t *dev, uint32_t page, uint32_t offset, const void *data, size_t len)
-{
+int at25xxx_write_page(const at25xxx_t *dev, uint32_t page, uint32_t offset, const void *data, size_t len) {
     int res;
 
     getbus(dev);
@@ -123,8 +110,7 @@ int at25xxx_write_page(const at25xxx_t *dev, uint32_t page, uint32_t offset, con
     return res;
 }
 
-int at25xxx_write(const at25xxx_t *dev, uint32_t pos, const void *data, size_t len)
-{
+int at25xxx_write(const at25xxx_t *dev, uint32_t pos, const void *data, size_t len) {
     int res = 0;
     const uint8_t *d = data;
 
@@ -132,7 +118,7 @@ int at25xxx_write(const at25xxx_t *dev, uint32_t pos, const void *data, size_t l
         return -ERANGE;
     }
 
-    /* page size is always a power of two */
+    // page size is always a power of two
     const uint32_t page_shift = bitarithm_msb(AT25_PAGE_SIZE);
     const uint32_t page_mask = AT25_PAGE_SIZE - 1;
 
@@ -165,20 +151,18 @@ int at25xxx_write(const at25xxx_t *dev, uint32_t pos, const void *data, size_t l
     return res;
 }
 
-void at25xxx_write_byte(const at25xxx_t *dev, uint32_t pos, uint8_t data)
-{
+void at25xxx_write_byte(const at25xxx_t *dev, uint32_t pos, uint8_t data) {
     at25xxx_write(dev, pos, &data, sizeof(data));
 }
 
-int at25xxx_read(const at25xxx_t *dev, uint32_t pos, void *data, size_t len)
-{
+int at25xxx_read(const at25xxx_t *dev, uint32_t pos, void *data, size_t len) {
     if (pos + len > dev->params.size) {
         return -ERANGE;
     }
 
     getbus(dev);
 
-    /* wait for previous write to finish - may take up to 5 ms */
+    // wait for previous write to finish - may take up to 5 ms
     int res = _wait_until_eeprom_ready(dev);
     if (res) {
         return res;
@@ -193,15 +177,13 @@ int at25xxx_read(const at25xxx_t *dev, uint32_t pos, void *data, size_t len)
     return 0;
 }
 
-uint8_t at25xxx_read_byte(const at25xxx_t *dev, uint32_t pos)
-{
+uint8_t at25xxx_read_byte(const at25xxx_t *dev, uint32_t pos) {
     uint8_t b;
     at25xxx_read(dev, pos, &b, sizeof(b));
     return b;
 }
 
-int at25xxx_set(const at25xxx_t *dev, uint32_t pos, uint8_t val, size_t len)
-{
+int at25xxx_set(const at25xxx_t *dev, uint32_t pos, uint8_t val, size_t len) {
     uint8_t data[AT225XXXX_SET_BUF_SIZE];
 
     if (pos + len > dev->params.size) {
@@ -210,7 +192,7 @@ int at25xxx_set(const at25xxx_t *dev, uint32_t pos, uint8_t val, size_t len)
 
     memset(data, val, sizeof(data));
 
-    /* page size is always a power of two */
+    // page size is always a power of two
     const uint32_t page_shift = bitarithm_msb(AT25_PAGE_SIZE);
     const uint32_t page_mask = AT25_PAGE_SIZE - 1;
 
@@ -231,13 +213,11 @@ int at25xxx_set(const at25xxx_t *dev, uint32_t pos, uint8_t val, size_t len)
     return 0;
 }
 
-int at25xxx_clear(const at25xxx_t *dev, uint32_t pos, size_t len)
-{
+int at25xxx_clear(const at25xxx_t *dev, uint32_t pos, size_t len) {
     return at25xxx_set(dev, pos, 0, len);
 }
 
-int at25xxx_init(at25xxx_t *dev, const at25xxx_params_t *params)
-{
+int at25xxx_init(at25xxx_t *dev, const at25xxx_params_t *params) {
     dev->params = *params;
     spi_init_cs(dev->params.spi, dev->params.cs_pin);
 
@@ -252,8 +232,8 @@ int at25xxx_init(at25xxx_t *dev, const at25xxx_params_t *params)
     }
 
     if (!IS_ACTIVE(NDEBUG)) {
-        /* if assertions are on, trigger an assert on incorrect SPI settings
-         * right on initialization to ease debugging */
+        // if assertions are on, trigger an assert on incorrect SPI settings
+        // right on initialization to ease debugging
         getbus(dev);
         spi_release(dev->params.spi);
     }

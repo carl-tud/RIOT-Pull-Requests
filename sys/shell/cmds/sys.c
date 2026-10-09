@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2014  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2014  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands for system calls
- *
- * @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands for system calls
+///
+/// @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -31,8 +27,7 @@
 #endif
 
 #ifdef MODULE_PERIPH_PM
-static int _reboot_handler(int argc, char **argv)
-{
+static int _reboot_handler(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -42,11 +37,10 @@ static int _reboot_handler(int argc, char **argv)
 }
 
 SHELL_COMMAND(reboot, "Reboot the node", _reboot_handler);
-#endif /* MODULE_PERIPH_PM */
+#endif // MODULE_PERIPH_PM
 
 #ifdef MODULE_USB_BOARD_RESET
-static int _bootloader_handler(int argc, char **argv)
-{
+static int _bootloader_handler(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -58,8 +52,7 @@ static int _bootloader_handler(int argc, char **argv)
 SHELL_COMMAND(bootloader, "Reboot to bootloader", _bootloader_handler);
 #endif
 
-static int _version_handler(int argc, char **argv)
-{
+static int _version_handler(int argc, char **argv) {
     (void) argc;
     (void) argv;
 

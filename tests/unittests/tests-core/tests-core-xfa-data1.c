@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @addtogroup  unittests
- * @{
- *
- * @file
- * @brief       Data elements for the core/xfa unit test
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @addtogroup  unittests
+/// @{
+///
+/// @file
+/// @brief       Data elements for the core/xfa unit test
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 #include "xfa.h"
 #include "tests-core-xfa.h"
 
@@ -28,4 +24,4 @@ XFA_CONST(xfatest_t, xfatest_use_const, 0) _xfatest_use_const1 =
     { .val = 4444, .text = "xfatest_use_const1" };
 
 int hack1;
-/** @} */
+/// @}

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_STDIMPL_H
 #define EMBUNIT_STDIMPL_H
 
@@ -20,8 +18,7 @@ int stdimpl_strlen(const char *str);
 int stdimpl_strcmp(const char *s1, const char *s2);
 char* stdimpl_lltoa(long long v,char *string,int r);
 
-static inline char* stdimpl_itoa(int v,char *string,int r)
-{
+static inline char* stdimpl_itoa(int v,char *string,int r) {
     return stdimpl_lltoa(v,string,r);
 }
 
@@ -29,4 +26,4 @@ static inline char* stdimpl_itoa(int v,char *string,int r)
 }
 #endif
 
-#endif /* EMBUNIT_STDIMPL_H */
+#endif // EMBUNIT_STDIMPL_H

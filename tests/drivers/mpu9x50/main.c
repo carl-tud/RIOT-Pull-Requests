@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the MPU-9X50 (MPU9150 and MPU9250) Nine-Axis driver
- *
- * @author      Fabian Nack <nack@inf.fu-berlin.de>
- * @author      Jannes Volkens <jannes.volkens@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the MPU-9X50 (MPU9150 and MPU9250) Nine-Axis driver
+///
+/// @author      Fabian Nack <nack@inf.fu-berlin.de>
+/// @author      Jannes Volkens <jannes.volkens@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -27,8 +23,7 @@
 #include "mpu9x50.h"
 #include "mpu9x50_params.h"
 
-int main(void)
-{
+int main(void) {
     mpu9x50_t dev;
     mpu9x50_results_t measurement;
     int32_t temperature;
@@ -71,24 +66,24 @@ int main(void)
 
     printf("\n+--------Starting Measurements--------+\n");
     while (1) {
-        /* Get accel data in milli g */
+        // Get accel data in milli g
         mpu9x50_read_accel(&dev, &measurement);
         printf("Accel data [milli g] - X: %"PRId16"   Y: %"PRId16"   Z: %"PRId16"\n",
                 measurement.x_axis, measurement.y_axis, measurement.z_axis);
-        /* Get gyro data in dps */
+        // Get gyro data in dps
         mpu9x50_read_gyro(&dev, &measurement);
         printf("Gyro data [dps] - X: %"PRId16"   Y: %"PRId16"   Z: %"PRId16"\n",
                 measurement.x_axis, measurement.y_axis, measurement.z_axis);
-        /* Get compass data in mikro Tesla */
+        // Get compass data in mikro Tesla
         mpu9x50_read_compass(&dev, &measurement);
         printf("Compass data [micro T] - X: %"PRId16"   Y: %"PRId16"   Z: %"PRId16"\n",
                 measurement.x_axis, measurement.y_axis, measurement.z_axis);
-        /* Get temperature in milli degrees celsius */
+        // Get temperature in milli degrees celsius
         mpu9x50_read_temperature(&dev, &temperature);
         printf("Temperature [milli deg] : %"PRId32"\n", temperature);
         printf("\n+-------------------------------------+\n");
 
-        ztimer_sleep(ZTIMER_MSEC, MS_PER_SEC);  /* 1s delay */
+        ztimer_sleep(ZTIMER_MSEC, MS_PER_SEC);  // 1s delay
     }
 
     return 0;

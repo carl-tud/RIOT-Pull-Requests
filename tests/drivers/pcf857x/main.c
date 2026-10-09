@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 /**
  * @ingroup     tests
@@ -96,26 +94,24 @@
 
 #define BENCH_RUNS_DEFAULT  (100UL * 100)
 
-/* Number of configured PCF857X I/O expander devices */
+// Number of configured PCF857X I/O expander devices
 #define PCF857X_NUM         ARRAY_SIZE(pcf857x_params)
 
-/* Port number of the first PCF857X I/O expander device */
+// Port number of the first PCF857X I/O expander device
 #ifndef PCF857X_PORT_0
 #define PCF857X_PORT_0      (16)
 #endif
 
-/* PCF857X devices allocation */
+// PCF857X devices allocation
 pcf857x_t pcf857x_dev[PCF857X_NUM];
 
 #ifdef MODULE_PCF857X_IRQ
-static void cb(void *arg)
-{
+static void cb(void *arg) {
     printf("INT: external interrupt from pin %i\n", (int)arg);
 }
 #endif
 
-static int init_pin(int argc, char **argv, gpio_mode_t mode)
-{
+static int init_pin(int argc, char **argv, gpio_mode_t mode) {
     if (argc < 3) {
         printf("usage: %s <port> <pin>\n", argv[0]);
         return 1;
@@ -136,34 +132,28 @@ static int init_pin(int argc, char **argv, gpio_mode_t mode)
     return 0;
 }
 
-static int init_out(int argc, char **argv)
-{
+static int init_out(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_OUT);
 }
 
-static int init_in(int argc, char **argv)
-{
+static int init_in(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_IN);
 }
 
-static int init_in_pu(int argc, char **argv)
-{
+static int init_in_pu(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_IN_PU);
 }
 
-static int init_od(int argc, char **argv)
-{
+static int init_od(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_OD);
 }
 
-static int init_od_pu(int argc, char **argv)
-{
+static int init_od_pu(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_OD_PU);
 }
 
 #ifdef MODULE_PCF857X_IRQ
-static int init_int(int argc, char **argv)
-{
+static int init_int(int argc, char **argv) {
     gpio_mode_t mode = GPIO_IN;
     gpio_flank_t flank;
     int fl;
@@ -209,8 +199,7 @@ static int init_int(int argc, char **argv)
     return 0;
 }
 
-static int enable_int(int argc, char **argv)
-{
+static int enable_int(int argc, char **argv) {
     int status;
 
     if (argc < 4) {
@@ -252,10 +241,9 @@ static int enable_int(int argc, char **argv)
 
     return 0;
 }
-#endif /* MODULE_PCF857X_IRQ */
+#endif // MODULE_PCF857X_IRQ
 
-static int read_pin(int argc, char **argv)
-{
+static int read_pin(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <port> <pin>\n", argv[0]);
         return 1;
@@ -282,8 +270,7 @@ static int read_pin(int argc, char **argv)
     return 0;
 }
 
-static int set_pin(int argc, char **argv)
-{
+static int set_pin(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <port> <pin>\n", argv[0]);
         return 1;
@@ -301,8 +288,7 @@ static int set_pin(int argc, char **argv)
     return 0;
 }
 
-static int clear_pin(int argc, char **argv)
-{
+static int clear_pin(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <port> <pin>\n", argv[0]);
         return 1;
@@ -320,8 +306,7 @@ static int clear_pin(int argc, char **argv)
     return 0;
 }
 
-static int toggle_pin(int argc, char **argv)
-{
+static int toggle_pin(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <port> <pin>\n", argv[0]);
         return 1;
@@ -339,8 +324,7 @@ static int toggle_pin(int argc, char **argv)
     return 0;
 }
 
-static int bench(int argc, char **argv)
-{
+static int bench(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <port> <pin> [# of runs]\n", argv[0]);
         return 1;
@@ -401,12 +385,11 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("PCF857X I/O expander GPIO peripheral driver test\n");
     puts("Initializing PCF857X");
 
-    /* initialize configured PCF857X devices */
+    // initialize configured PCF857X devices
     for (unsigned i = 0; i < PCF857X_NUM; i++) {
         if (pcf857x_init(&pcf857x_dev[i], &pcf857x_params[i]) != 0) {
             puts("[Failed]");
@@ -423,7 +406,7 @@ int main(void)
            "      behavior for not existing ports/pins is not defined!\n",
            PCF857X_PORT_0);
 
-    /* start the shell */
+    // start the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  José Ignacio Alamos <jose.alamos@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+/// @author  José Ignacio Alamos <jose.alamos@haw-hamburg.de>
 #include "bitarithm.h"
 #include "kernel_defines.h"
 #include "macros/utils.h"
@@ -26,8 +22,7 @@ static uint8_t dr_bw[GNRC_LORAWAN_DATARATES_NUMOF] =
 { LORA_BW_125_KHZ, LORA_BW_125_KHZ, LORA_BW_125_KHZ, LORA_BW_125_KHZ,
   LORA_BW_125_KHZ, LORA_BW_125_KHZ };
 
-int gnrc_lorawan_set_dr(gnrc_lorawan_t *mac, uint8_t datarate)
-{
+int gnrc_lorawan_set_dr(gnrc_lorawan_t *mac, uint8_t datarate) {
     netdev_t *dev = gnrc_lorawan_get_netdev(mac);
 
     if (!gnrc_lorawan_validate_dr(datarate)) {
@@ -44,15 +39,13 @@ int gnrc_lorawan_set_dr(gnrc_lorawan_t *mac, uint8_t datarate)
 }
 
 #if (IS_ACTIVE(CONFIG_LORAMAC_REGION_EU_868))
-uint8_t gnrc_lorawan_rx1_get_dr_offset(uint8_t dr_up, uint8_t dr_offset)
-{
+uint8_t gnrc_lorawan_rx1_get_dr_offset(uint8_t dr_up, uint8_t dr_offset) {
     DEBUG("gnrc_lorawan_region: RX1DRoffset: %u \n", dr_offset);
     return (dr_up > dr_offset) ? (dr_up - dr_offset) : 0;
 }
 
 #elif (IS_ACTIVE(CONFIG_LORAMAC_REGION_IN_865))
-uint8_t gnrc_lorawan_rx1_get_dr_offset(uint8_t dr_up, uint8_t dr_offset)
-{
+uint8_t gnrc_lorawan_rx1_get_dr_offset(uint8_t dr_up, uint8_t dr_offset) {
     DEBUG("gnrc_lorawan_region: RX1DRoffset: %u \n", dr_offset);
     int dr_eff = dr_offset > 5 ? 5 - dr_offset : dr_offset;
 
@@ -60,8 +53,7 @@ uint8_t gnrc_lorawan_rx1_get_dr_offset(uint8_t dr_up, uint8_t dr_offset)
 }
 #endif
 
-int gnrc_lorawan_phy_set_channel_mask(gnrc_lorawan_t *mac, uint16_t channel_mask)
-{
+int gnrc_lorawan_phy_set_channel_mask(gnrc_lorawan_t *mac, uint16_t channel_mask) {
     if (!channel_mask) {
         return -EINVAL;
     }
@@ -76,9 +68,8 @@ int gnrc_lorawan_phy_set_channel_mask(gnrc_lorawan_t *mac, uint16_t channel_mask
     return 0;
 }
 
-void gnrc_lorawan_channels_init(gnrc_lorawan_t *mac)
-{
-    /* We set the channel mask for the default channels and populate from the list */
+void gnrc_lorawan_channels_init(gnrc_lorawan_t *mac) {
+    // We set the channel mask for the default channels and populate from the list
     mac->channel_mask = UINT16_MAX >> (16 - GNRC_LORAWAN_DEFAULT_CHANNELS_NUMOF);
 
     for (unsigned i = 0; i < GNRC_LORAWAN_DEFAULT_CHANNELS_NUMOF; i++) {
@@ -92,8 +83,7 @@ void gnrc_lorawan_channels_init(gnrc_lorawan_t *mac)
     }
 }
 
-uint8_t gnrc_lorawan_pick_channel(gnrc_lorawan_t *mac)
-{
+uint8_t gnrc_lorawan_pick_channel(gnrc_lorawan_t *mac) {
     uint8_t index = 0;
 
     uint8_t pos = random_uint32_range(0, bitarithm_bits_set(mac->channel_mask));
@@ -106,9 +96,8 @@ uint8_t gnrc_lorawan_pick_channel(gnrc_lorawan_t *mac)
     return index;
 }
 
-void gnrc_lorawan_process_cflist(gnrc_lorawan_t *mac, uint8_t *cflist)
-{
-    /* TODO: Check CFListType to 0 */
+void gnrc_lorawan_process_cflist(gnrc_lorawan_t *mac, uint8_t *cflist) {
+    // TODO: Check CFListType to 0
     for (unsigned i = GNRC_LORAWAN_DEFAULT_CHANNELS_NUMOF; i < 8; i++) {
         le_uint32_t cl;
         cl.u32 = 0;
@@ -120,8 +109,7 @@ void gnrc_lorawan_process_cflist(gnrc_lorawan_t *mac, uint8_t *cflist)
     }
 }
 
-uint8_t gnrc_lorawan_region_mac_payload_max(uint8_t datarate)
-{
+uint8_t gnrc_lorawan_region_mac_payload_max(uint8_t datarate) {
     if (datarate < 3) {
         return GNRC_LORAWAN_MAX_PAYLOAD_1;
     }
@@ -133,8 +121,7 @@ uint8_t gnrc_lorawan_region_mac_payload_max(uint8_t datarate)
     }
 }
 
-bool gnrc_lorawan_validate_dr(uint8_t dr)
-{
+bool gnrc_lorawan_validate_dr(uint8_t dr) {
     if (dr < GNRC_LORAWAN_DATARATES_NUMOF) {
         return true;
     }
@@ -142,4 +129,4 @@ bool gnrc_lorawan_validate_dr(uint8_t dr)
     return false;
 }
 
-/** @} */
+/// @}

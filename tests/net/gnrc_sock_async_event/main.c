@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- *
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+///
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "event.h"
@@ -52,9 +48,8 @@ static uint8_t _buffer[128];
 static sock_ip_t _ip_sock;
 static sock_udp_t _udp_sock;
 
-/* module is not compiled in, so provide this function for the test */
-ipv6_hdr_t *gnrc_ipv6_get_header(gnrc_pktsnip_t *pkt)
-{
+// module is not compiled in, so provide this function for the test
+ipv6_hdr_t *gnrc_ipv6_get_header(gnrc_pktsnip_t *pkt) {
     gnrc_pktsnip_t *tmp = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_IPV6);
     if (tmp == NULL) {
         return NULL;
@@ -67,8 +62,7 @@ ipv6_hdr_t *gnrc_ipv6_get_header(gnrc_pktsnip_t *pkt)
     return ((ipv6_hdr_t*) tmp->data);
 }
 
-static void _recv_udp(sock_udp_t *sock, sock_async_flags_t flags, void *arg)
-{
+static void _recv_udp(sock_udp_t *sock, sock_async_flags_t flags, void *arg) {
     expect(strcmp(arg, "test") == 0);
     printf("UDP event triggered: %04X\n", flags);
     if (flags & SOCK_ASYNC_MSG_RECV) {
@@ -89,8 +83,7 @@ static void _recv_udp(sock_udp_t *sock, sock_async_flags_t flags, void *arg)
     }
 }
 
-static void _recv_ip(sock_ip_t *sock, sock_async_flags_t flags, void *arg)
-{
+static void _recv_ip(sock_ip_t *sock, sock_async_flags_t flags, void *arg) {
     expect(strcmp(arg, "test") == 0);
     printf("IP event triggered: %04X\n", flags);
     if (flags & SOCK_ASYNC_MSG_RECV) {
@@ -110,14 +103,13 @@ static void _recv_ip(sock_ip_t *sock, sock_async_flags_t flags, void *arg)
     }
 }
 
-int main(void)
-{
+int main(void) {
     gnrc_pktsnip_t *pkt;
     sock_udp_ep_t local = SOCK_IPV6_EP_ANY;
     sock_udp_ep_t remote = SOCK_IPV6_EP_ANY;
 
     event_queue_init(&_ev_queue);
-    /* register for IPv6 to have a target */
+    // register for IPv6 to have a target
     gnrc_netreg_entry_init_pid(&_pktdump, GNRC_NETREG_DEMUX_CTX_ALL,
                                gnrc_pktdump_pid);
     gnrc_netreg_register(GNRC_NETTYPE_IPV6, &_pktdump);
@@ -135,29 +127,29 @@ int main(void)
     sock_ip_send(&_ip_sock, _test_payload, sizeof(_test_payload),
                  PROTNUM_RESERVED, (sock_ip_ep_t *)&remote);
 
-    /* create packet to inject for reception */
+    // create packet to inject for reception
     pkt = gnrc_netif_hdr_build(NULL, 0, NULL, 0);
     expect(pkt != NULL);
     memset(pkt->data, 0, pkt->size);
     pkt = gnrc_ipv6_hdr_build(pkt, (ipv6_addr_t *)&_test_remote,
                               (ipv6_addr_t *)&_test_local);
     expect(pkt != NULL);
-    /* module is not compiled in, so set header type manually */
+    // module is not compiled in, so set header type manually
     pkt->type = GNRC_NETTYPE_IPV6;
     pkt = gnrc_udp_hdr_build(pkt, TEST_PORT - 1, TEST_PORT);
     expect(pkt != NULL);
     pkt = gnrc_pktbuf_add(pkt, _test_payload, sizeof(_test_payload),
                           GNRC_NETTYPE_UNDEF);
     expect(pkt != NULL);
-    /* we dispatch twice, so hold one time */
+    // we dispatch twice, so hold one time
     gnrc_pktbuf_hold(pkt, 1);
 
-    /* trigger receive on UDP sock */
+    // trigger receive on UDP sock
     gnrc_netapi_dispatch_receive(GNRC_NETTYPE_UDP, TEST_PORT, pkt);
-    /* trigger receive on IP sock */
+    // trigger receive on IP sock
     gnrc_netapi_dispatch_receive(GNRC_NETTYPE_IPV6, PROTNUM_UDP, pkt);
     event_loop(&_ev_queue);
     return 0;
 }
 
-/** @} */
+/// @}

@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2014-2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    net_gnrc_pkt Packet
- * @ingroup     net_gnrc_pktbuf
- * @brief       Network packet abstraction type and helper functions
- * @{
- *
- * @file
- * @brief   General definitions for network packets and their helper functions
- *
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author  Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @defgroup    net_gnrc_pkt Packet
+/// @ingroup     net_gnrc_pktbuf
+/// @brief       Network packet abstraction type and helper functions
+/// @{
+///
+/// @file
+/// @brief   General definitions for network packets and their helper functions
+///
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author  Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include <inttypes.h>
 #include <stdlib.h>
@@ -101,53 +97,45 @@ extern "C" {
  * @note    This type has no initializer on purpose. Please use @ref net_gnrc_pktbuf
  *          as factory.
  */
-/* packed to be aligned correctly in the static packet buffer */
+// packed to be aligned correctly in the static packet buffer
 typedef struct gnrc_pktsnip {
-    /* the first three fields *MUST* match iolist_t! */
-    struct gnrc_pktsnip *next;      /**< next snip in the packet */
-    void *data;                     /**< pointer to the data of the snip */
-    size_t size;                    /**< the length of the snip in byte */
-    /* end of iolist_t */
+    // the first three fields *MUST* match iolist_t!
+    struct gnrc_pktsnip *next;      ///< next snip in the packet
+    void *data;                     ///< pointer to the data of the snip
+    size_t size;                    ///< the length of the snip in byte
+    // end of iolist_t
 #ifdef MODULE_GNRC_NETERR
     kernel_pid_t err_sub;           /**< subscriber to errors related to this
                                      *   packet snip */
 #endif
-    gnrc_nettype_t type;            /**< protocol of the packet snip */
-    /**
-     * @brief   Counter of threads currently having control over this packet.
-     *
-     * @internal
-     */
+    gnrc_nettype_t type;            ///< protocol of the packet snip
+    /// @brief   Counter of threads currently having control over this packet.
+    ///
+    /// @internal
     uint8_t users;
 } gnrc_pktsnip_t;
 
-/**
- * @brief   Returns the snip before a given snip in a packet
- *
- * @param[in] pkt   A packet.
- * @param[in] snip  The snip for which the predecessor in @p pkt is searched for.
- *
- * @return  The snip before @p snip in @p pkt if @p snip is in @p pkt.
- * @return  `NULL`, if @p snip is not in @p pkt.
- */
+/// @brief   Returns the snip before a given snip in a packet
+///
+/// @param[in] pkt   A packet.
+/// @param[in] snip  The snip for which the predecessor in @p pkt is searched for.
+///
+/// @return  The snip before @p snip in @p pkt if @p snip is in @p pkt.
+/// @return  `NULL`, if @p snip is not in @p pkt.
 static inline gnrc_pktsnip_t *gnrc_pkt_prev_snip(gnrc_pktsnip_t *pkt,
-                                                 gnrc_pktsnip_t *snip)
-{
+                                                 gnrc_pktsnip_t *snip) {
     while ((pkt != NULL) && (pkt->next != snip)) {
         pkt = pkt->next;
     }
     return pkt;
 }
 
-/**
- * @brief Calculates length of a packet in byte.
- *
- * @param[in] pkt  list of packet snips.
- *
- * @return  length of the list of headers.
- */
-static inline size_t gnrc_pkt_len(const gnrc_pktsnip_t *pkt)
-{
+/// @brief Calculates length of a packet in byte.
+///
+/// @param[in] pkt  list of packet snips.
+///
+/// @return  length of the list of headers.
+static inline size_t gnrc_pkt_len(const gnrc_pktsnip_t *pkt) {
     size_t len = 0;
 
     while (pkt != NULL) {
@@ -158,68 +146,59 @@ static inline size_t gnrc_pkt_len(const gnrc_pktsnip_t *pkt)
     return len;
 }
 
-/**
- * @brief   Appends a snip to a packet.
- *
- * @param[in] pkt   A packet.
- * @param[in] snip  A snip.
- *
- * @return  The new head of @p pkt.
- */
+/// @brief   Appends a snip to a packet.
+///
+/// @param[in] pkt   A packet.
+/// @param[in] snip  A snip.
+///
+/// @return  The new head of @p pkt.
 static inline gnrc_pktsnip_t *gnrc_pkt_append(gnrc_pktsnip_t *pkt,
-                                              gnrc_pktsnip_t *snip)
-{
-    /* find last snip in pkt */
+                                              gnrc_pktsnip_t *snip) {
+    // find last snip in pkt
     gnrc_pktsnip_t *last = gnrc_pkt_prev_snip(pkt, NULL);
 
     if (last != NULL) {
         last->next = snip;
     }
     else {
-        /* last == NULL means snip */
+        // last == NULL means snip
         pkt = snip;
     }
     return pkt;
 }
 
-/**
- * @brief   Prepends a snip to a packet.
- *
- * @param[in] pkt   A packet.
- * @param[in] snip  A snip.
- *
- * @return  The new head of @p pkt.
- */
+/// @brief   Prepends a snip to a packet.
+///
+/// @param[in] pkt   A packet.
+/// @param[in] snip  A snip.
+///
+/// @return  The new head of @p pkt.
 static inline gnrc_pktsnip_t *gnrc_pkt_prepend(gnrc_pktsnip_t *pkt,
-                                               gnrc_pktsnip_t *snip)
-{
+                                               gnrc_pktsnip_t *snip) {
     snip->next = pkt;
     return snip;
 }
 
-/**
- * @brief   Deletes a snip from a packet.
- *
- * @param[in] pkt   A packet.
- * @param[in] snip  A snip.
- *
- * @return  The new head of @p pkt.
- */
+/// @brief   Deletes a snip from a packet.
+///
+/// @param[in] pkt   A packet.
+/// @param[in] snip  A snip.
+///
+/// @return  The new head of @p pkt.
 static inline gnrc_pktsnip_t *gnrc_pkt_delete(gnrc_pktsnip_t *pkt,
-                                              gnrc_pktsnip_t *snip)
-{
-    /* Removing head is a no-op. The new head is the next in the list. */
+                                              gnrc_pktsnip_t *snip) {
+    // Removing head is a no-op. The new head is the next in the list.
     if (pkt == snip) {
         return pkt->next;
     }
 
-    /* Removing nothing is a no-op, the new head is the old one */
+    // Removing nothing is a no-op, the new head is the old one
     if (snip == NULL) {
         return pkt;
     }
 
-    /* Iterate over the list and remove the given snip from it, if found.
-     * The new head is the old head. */
+    // Iterate over the list and remove the given snip from it, if found.
+    // The new head is the old head.
     for (gnrc_pktsnip_t *i = pkt; i != NULL; i = i->next) {
         if (i->next == snip) {
             i->next = snip->next;
@@ -230,16 +209,13 @@ static inline gnrc_pktsnip_t *gnrc_pkt_delete(gnrc_pktsnip_t *pkt,
     return pkt;
 }
 
-/**
- * @brief Calculates length of a packet in byte up to (including) a snip with the given type.
- *
- * @param[in] pkt  list of packet snips.
- * @param[in] type type of snip to stop calculation.
- *
- * @return  length of the list of headers.
- */
-static inline size_t gnrc_pkt_len_upto(const gnrc_pktsnip_t *pkt, gnrc_nettype_t type)
-{
+/// @brief Calculates length of a packet in byte up to (including) a snip with the given type.
+///
+/// @param[in] pkt  list of packet snips.
+/// @param[in] type type of snip to stop calculation.
+///
+/// @return  length of the list of headers.
+static inline size_t gnrc_pkt_len_upto(const gnrc_pktsnip_t *pkt, gnrc_nettype_t type) {
     size_t len = 0;
 
     while (pkt != NULL) {
@@ -255,15 +231,12 @@ static inline size_t gnrc_pkt_len_upto(const gnrc_pktsnip_t *pkt, gnrc_nettype_t
     return len;
 }
 
-/**
- * @brief Count the numbers of snips in the given packet
- *
- * @param[in] pkt   first snip in the packet
- *
- * @return  number of snips in the given packet
- */
-static inline size_t gnrc_pkt_count(const gnrc_pktsnip_t *pkt)
-{
+/// @brief Count the numbers of snips in the given packet
+///
+/// @param[in] pkt   first snip in the packet
+///
+/// @return  number of snips in the given packet
+static inline size_t gnrc_pkt_count(const gnrc_pktsnip_t *pkt) {
     size_t count = 0;
 
     while (pkt != NULL) {
@@ -274,15 +247,13 @@ static inline size_t gnrc_pkt_count(const gnrc_pktsnip_t *pkt)
     return count;
 }
 
-/**
- * @brief   Searches the packet for a packet snip of a specific type
- *
- * @param[in] pkt   list of packet snips
- * @param[in] type  the type to search for
- *
- * @return  the packet snip in @p pkt with @ref gnrc_nettype_t @p type
- * @return  NULL, if none of the snips in @p pkt is of @p type
- */
+/// @brief   Searches the packet for a packet snip of a specific type
+///
+/// @param[in] pkt   list of packet snips
+/// @param[in] type  the type to search for
+///
+/// @return  the packet snip in @p pkt with @ref gnrc_nettype_t @p type
+/// @return  NULL, if none of the snips in @p pkt is of @p type
 gnrc_pktsnip_t *gnrc_pktsnip_search_type(gnrc_pktsnip_t *pkt,
                                          gnrc_nettype_t type);
 
@@ -290,4 +261,4 @@ gnrc_pktsnip_t *gnrc_pktsnip_search_type(gnrc_pktsnip_t *pkt,
 }
 #endif
 
-/** @} */
+/// @}

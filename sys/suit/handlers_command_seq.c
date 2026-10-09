@@ -1,26 +1,22 @@
-/*
- * Copyright (C) 2019 Koen Zandberg
- *               2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
-/**
- * @ingroup     sys_suit
- * @{
- *
- * @file
- * @brief       SUIT Handlers for the command sequences in the common section of
- *              a SUIT manifest.
- *
- * This file contains the functions to handle command sequences from a SUIT
- * manifest. This includes both directives and conditions.
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+// Copyright (C) 2019 Koen Zandberg
+//               2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
+/// @ingroup     sys_suit
+/// @{
+///
+/// @file
+/// @brief       SUIT Handlers for the command sequences in the common section of
+///              a SUIT manifest.
+///
+/// This file contains the functions to handle command sequences from a SUIT
+/// manifest. This includes both directives and conditions.
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include <inttypes.h>
 #include <nanocbor/nanocbor.h>
@@ -56,8 +52,7 @@
 
 static int _get_component_size(suit_manifest_t *manifest,
                                suit_component_t *comp,
-                               uint32_t *img_size)
-{
+                               uint32_t *img_size) {
     nanocbor_value_t param_size;
     if ((suit_param_ref_to_cbor(manifest, &comp->param_size, &param_size) == 0)
             || (nanocbor_get_uint32(&param_size, img_size) < 0)) {
@@ -66,18 +61,16 @@ static int _get_component_size(suit_manifest_t *manifest,
     return SUIT_OK;
 }
 
-static suit_component_t *_get_component(suit_manifest_t *manifest)
-{
-    /* Out-of-bounds check has been done in the _dtv_set_comp_idx, True/False
-     * not handled here intentionally */
+static suit_component_t *_get_component(suit_manifest_t *manifest) {
+    // Out-of-bounds check has been done in the _dtv_set_comp_idx, True/False
+    // not handled here intentionally
     assert(manifest->component_current < CONFIG_SUIT_COMPONENT_MAX);
     return &manifest->components[manifest->component_current];
 }
 
 static int _validate_uuid(suit_manifest_t *manifest,
                           suit_param_ref_t *ref,
-                          uuid_t *uuid)
-{
+                          uuid_t *uuid) {
     const uint8_t *uuid_manifest_ptr;
     size_t len = sizeof(uuid_t);
     nanocbor_value_t it;
@@ -100,8 +93,7 @@ static int _validate_uuid(suit_manifest_t *manifest,
 
 static int _cond_vendor_handler(suit_manifest_t *manifest,
                                 int key,
-                                nanocbor_value_t *it)
-{
+                                nanocbor_value_t *it) {
     (void)key;
     (void)it;
     LOG_INFO("validating vendor ID\n");
@@ -117,8 +109,7 @@ static int _cond_vendor_handler(suit_manifest_t *manifest,
 
 static int _cond_class_handler(suit_manifest_t *manifest,
                                int key,
-                               nanocbor_value_t *it)
-{
+                               nanocbor_value_t *it) {
     (void)key;
     (void)it;
     LOG_INFO("validating class id\n");
@@ -134,8 +125,7 @@ static int _cond_class_handler(suit_manifest_t *manifest,
 
 static int _cond_comp_offset(suit_manifest_t *manifest,
                              int key,
-                             nanocbor_value_t *it)
-{
+                             nanocbor_value_t *it) {
     (void)manifest;
     (void)key;
     uint32_t offset;
@@ -143,7 +133,7 @@ static int _cond_comp_offset(suit_manifest_t *manifest,
 
     suit_component_t *comp = _get_component(manifest);
 
-    /* Grab offset from param */
+    // Grab offset from param
     if (nanocbor_get_uint32(it, &report) < 0) {
         LOG_WARNING("_cond_comp_offset(): expected None param\n");
         return SUIT_ERR_INVALID_MANIFEST;
@@ -170,22 +160,21 @@ static int _cond_comp_offset(suit_manifest_t *manifest,
 
 static int _dtv_set_comp_idx(suit_manifest_t *manifest,
                              int key,
-                             nanocbor_value_t *it)
-{
+                             nanocbor_value_t *it) {
     (void)key;
     bool index = false;
     uint32_t new_index;
 
-    /* It can be a bool, meaning all or none of the components */
+    // It can be a bool, meaning all or none of the components
     if (nanocbor_get_bool(it, &index) >= 0) {
         new_index = index ?
             SUIT_MANIFEST_COMPONENT_ALL : SUIT_MANIFEST_COMPONENT_NONE;
     }
-    /* It can be a positive integer, meaning one of the components */
+    // It can be a positive integer, meaning one of the components
     else if (nanocbor_get_uint32(it, &new_index) < 0) {
         return SUIT_ERR_INVALID_MANIFEST;
     }
-    /* And if it is an integer it must be within the allowed bounds */
+    // And if it is an integer it must be within the allowed bounds
     else if (new_index >= CONFIG_SUIT_COMPONENT_MAX) {
         return SUIT_ERR_INVALID_MANIFEST;
     }
@@ -196,13 +185,13 @@ static int _dtv_set_comp_idx(suit_manifest_t *manifest,
     suit_storage_t *storage = component->storage_backend;
     char separator = suit_storage_get_separator(storage);
 
-    /* Done this before in the component stage, shouldn't be different now */
+    // Done this before in the component stage, shouldn't be different now
     suit_component_name_to_string(manifest, component,
                                   separator, name, sizeof(name));
 
     suit_storage_set_active_location(storage, name);
 
-    /* Update the manifest context */
+    // Update the manifest context
     manifest->component_current = new_index;
 
     LOG_INFO("Setting component index to %d\n",
@@ -212,8 +201,7 @@ static int _dtv_set_comp_idx(suit_manifest_t *manifest,
 
 static int _dtv_run_seq_cond(suit_manifest_t *manifest,
                              int key,
-                             nanocbor_value_t *it)
-{
+                             nanocbor_value_t *it) {
     (void)key;
     LOG_DEBUG("Starting conditional sequence handler\n");
     return suit_handle_manifest_structure_bstr(manifest, it,
@@ -221,8 +209,7 @@ static int _dtv_run_seq_cond(suit_manifest_t *manifest,
 }
 
 static int _dtv_try_each(suit_manifest_t *manifest,
-                         int key, nanocbor_value_t *it)
-{
+                         int key, nanocbor_value_t *it) {
     (void)key;
     LOG_DEBUG("Starting suit-directive-try-each handler\n");
     nanocbor_value_t container;
@@ -235,8 +222,8 @@ static int _dtv_try_each(suit_manifest_t *manifest,
     int res = SUIT_ERR_COND;
     while (!nanocbor_at_end(&container)) {
         nanocbor_value_t _container = container;
-        /* `_container` should be CBOR _bstr wrapped according to the spec, but
-         * it is not */
+        // `_container` should be CBOR _bstr wrapped according to the spec, but
+        // it is not
         res = suit_handle_manifest_structure_bstr(manifest, &_container,
                 suit_command_sequence_handlers,
                 suit_command_sequence_handlers_len);
@@ -252,10 +239,9 @@ static int _dtv_try_each(suit_manifest_t *manifest,
 }
 
 static int _dtv_set_param(suit_manifest_t *manifest, int key,
-                          nanocbor_value_t *it)
-{
+                          nanocbor_value_t *it) {
     (void)key;
-    /* `it` points to the entry of the map containing the type and value */
+    // `it` points to the entry of the map containing the type and value
     nanocbor_value_t map;
 
     nanocbor_enter_map(it, &map);
@@ -263,15 +249,15 @@ static int _dtv_set_param(suit_manifest_t *manifest, int key,
     suit_component_t *comp = _get_component(manifest);
 
     while (!nanocbor_at_end(&map)) {
-        /* map points to the key of the param */
+        // map points to the key of the param
         int32_t param_key;
         if (nanocbor_get_int32(&map, &param_key) < 0) {
             return SUIT_ERR_INVALID_MANIFEST;
         }
         LOG_DEBUG("param_key=%" PRIi32 "\n", param_key);
         unsigned int type = nanocbor_get_type(&map);
-        /* Filter 'complex' types and only allow int, nint, bstr and tstr types
-         * for parameter values */
+        // Filter 'complex' types and only allow int, nint, bstr and tstr types
+        // for parameter values
         if (type > NANOCBOR_TYPE_TSTR) {
             return SUIT_ERR_INVALID_MANIFEST;
         }
@@ -302,14 +288,13 @@ static int _dtv_set_param(suit_manifest_t *manifest, int key,
 
         suit_param_cbor_to_ref(manifest, ref, &map);
 
-        /* Simple skip is sufficient to skip non-complex types */
+        // Simple skip is sufficient to skip non-complex types
         nanocbor_skip(&map);
     }
     return SUIT_OK;
 }
 
-static int _start_storage(suit_manifest_t *manifest, suit_component_t *comp)
-{
+static int _start_storage(suit_manifest_t *manifest, suit_component_t *comp) {
     uint32_t img_size = 0;
     char name[CONFIG_SUIT_COMPONENT_MAX_NAME_LEN];
     char separator = suit_storage_get_separator(comp->storage_backend);
@@ -318,7 +303,7 @@ static int _start_storage(suit_manifest_t *manifest, suit_component_t *comp)
         return SUIT_ERR_INVALID_MANIFEST;
     }
 
-    /* Done this before in the component stage, shouldn't be different now */
+    // Done this before in the component stage, shouldn't be different now
     suit_component_name_to_string(manifest, comp,
                                   separator, name, sizeof(name));
 
@@ -330,8 +315,7 @@ static int _start_storage(suit_manifest_t *manifest, suit_component_t *comp)
 __attribute__((unused))
 static inline void _print_download_progress(suit_manifest_t *manifest,
                                             size_t offset, size_t len,
-                                            size_t image_size)
-{
+                                            size_t image_size) {
     (void)manifest;
     (void)offset;
     (void)len;
@@ -353,8 +337,7 @@ static inline void _print_download_progress(suit_manifest_t *manifest,
 
 #if defined(MODULE_SUIT_TRANSPORT_COAP) || defined(MODULE_SUIT_TRANSPORT_VFS)
 static int _storage_helper(void *arg, size_t offset, uint8_t *buf, size_t len,
-                           int more)
-{
+                           int more) {
     suit_manifest_t *manifest = (suit_manifest_t *)arg;
 
     uint32_t image_size;
@@ -363,15 +346,15 @@ static int _storage_helper(void *arg, size_t offset, uint8_t *buf, size_t len,
     suit_component_t *comp = &manifest->components[manifest->component_current];
     suit_param_ref_t *ref_size = &comp->param_size;
 
-    /* Grab the total image size from the manifest */
+    // Grab the total image size from the manifest
     if ((suit_param_ref_to_cbor(manifest, ref_size, &param_size) == 0) ||
             (nanocbor_get_uint32(&param_size, &image_size) < 0)) {
-        /* Early exit if the total image size can't be determined */
+        // Early exit if the total image size can't be determined
         return -1;
     }
 
     if (image_size < offset + len) {
-        /* Extra newline at the start to compensate for the progress bar */
+        // Extra newline at the start to compensate for the progress bar
         LOG_ERROR(
             "\n_suit_coap(): Image beyond size, offset + len=%" PRIuSIZE ", "
             "image_size=%" PRIu32 "\n", total, image_size);
@@ -389,7 +372,7 @@ static int _storage_helper(void *arg, size_t offset, uint8_t *buf, size_t len,
     int res = suit_storage_write(comp->storage_backend, manifest, buf, offset, len);
     if (!more) {
         LOG_INFO("Finalizing payload store\n");
-        /* Finalize the write if no more data available */
+        // Finalize the write if no more data available
         res = suit_storage_finish(comp->storage_backend, manifest);
     }
     return res;
@@ -397,15 +380,14 @@ static int _storage_helper(void *arg, size_t offset, uint8_t *buf, size_t len,
 #endif
 
 static int _dtv_fetch(suit_manifest_t *manifest, int key,
-                      nanocbor_value_t *_it)
-{
+                      nanocbor_value_t *_it) {
     (void)key; (void)_it;
     LOG_DEBUG("_dtv_fetch() key=%i\n", key);
 
     const uint8_t *url;
     size_t url_len;
 
-    /* Check the policy before fetching anything */
+    // Check the policy before fetching anything
     int res = suit_policy_check(manifest);
     if (res) {
         return SUIT_ERR_POLICY_FORBIDDEN;
@@ -413,7 +395,7 @@ static int _dtv_fetch(suit_manifest_t *manifest, int key,
 
     suit_component_t *comp = _get_component(manifest);
 
-    /* Deny the fetch if the component was already fetched before */
+    // Deny the fetch if the component was already fetched before
     if (suit_component_check_flag(comp, SUIT_COMPONENT_STATE_FETCHED)) {
         LOG_ERROR("Component already fetched before\n");
         return SUIT_ERR_INVALID_MANIFEST;
@@ -473,8 +455,8 @@ static int _dtv_fetch(suit_manifest_t *manifest, int key,
 
     if (res) {
         suit_component_set_flag(comp, SUIT_COMPONENT_STATE_FETCH_FAILED);
-        /* TODO: The leftover data from a failed fetch should be purged. It
-         * could contain potential malicious data from an attacker */
+        // TODO: The leftover data from a failed fetch should be purged. It
+        // could contain potential malicious data from an attacker
         LOG_INFO("image download (%s) failed with code %i\n", manifest->urlbuf, res);
         return res;
     }
@@ -484,10 +466,9 @@ static int _dtv_fetch(suit_manifest_t *manifest, int key,
 }
 
 static int _get_digest(nanocbor_value_t *bstr, const uint8_t **digest, size_t
-                       *digest_len)
-{
-    /* Bstr is a byte string with a cbor array containing the type and the
-     * digest */
+                       *digest_len) {
+    // Bstr is a byte string with a cbor array containing the type and the
+    // digest
 
     const uint8_t *digest_struct;
     size_t digest_struct_len;
@@ -504,13 +485,12 @@ static int _get_digest(nanocbor_value_t *bstr, const uint8_t **digest, size_t
 }
 
 static int _validate_payload(suit_component_t *component, const uint8_t *digest,
-                             size_t payload_size)
-{
+                             size_t payload_size) {
     uint8_t payload_digest[SHA256_DIGEST_LENGTH];
     suit_storage_t *storage = component->storage_backend;
 
     if (suit_storage_has_readptr(storage)) {
-        /* Direct read possible */
+        // Direct read possible
         const uint8_t *payload = NULL;
         size_t payload_len = 0;
 
@@ -521,7 +501,7 @@ static int _validate_payload(suit_component_t *component, const uint8_t *digest,
         sha256(payload, payload_len, payload_digest);
     }
     else {
-        /* Piecewise feeding */
+        // Piecewise feeding
         sha256_context_t ctx;
         sha256_init(&ctx);
         size_t pos = 0;
@@ -544,8 +524,7 @@ static int _validate_payload(suit_component_t *component, const uint8_t *digest,
 }
 
 static int _dtv_verify_image_match(suit_manifest_t *manifest, int key,
-                                   nanocbor_value_t *_it)
-{
+                                   nanocbor_value_t *_it) {
     (void)key; (void)_it;
     LOG_DEBUG("dtv_image_match\n");
     const uint8_t *digest;
@@ -557,7 +536,7 @@ static int _dtv_verify_image_match(suit_manifest_t *manifest, int key,
         return SUIT_ERR_INVALID_MANIFEST;
     }
 
-    /* Only check the component if it is fetched, but not failed */
+    // Only check the component if it is fetched, but not failed
     if (!suit_component_check_flag(comp, SUIT_COMPONENT_STATE_FETCHED) ||
             suit_component_check_flag(comp,
                                       SUIT_COMPONENT_STATE_FETCH_FAILED)) {
@@ -579,7 +558,7 @@ static int _dtv_verify_image_match(suit_manifest_t *manifest, int key,
         return SUIT_ERR_INVALID_MANIFEST;
     }
 
-    /* TODO: replace with generic verification (not only sha256) */
+    // TODO: replace with generic verification (not only sha256)
     LOG_INFO("Starting digest verification against image\n");
     res = _validate_payload(comp, digest, img_size);
     if (res == SUIT_OK) {
@@ -601,7 +580,7 @@ static int _dtv_verify_image_match(suit_manifest_t *manifest, int key,
     return res;
 }
 
-/* begin{code-style-ignore} */
+// begin{code-style-ignore}
 const suit_manifest_handler_t suit_command_sequence_handlers[] = {
     [SUIT_COND_VENDOR_ID]        = _cond_vendor_handler,
     [SUIT_COND_CLASS_ID]         = _cond_class_handler,
@@ -614,7 +593,7 @@ const suit_manifest_handler_t suit_command_sequence_handlers[] = {
     [SUIT_DIR_FETCH]             = _dtv_fetch,
     [SUIT_DIR_RUN_SEQUENCE]      = _dtv_run_seq_cond,
 };
-/* end{code-style-ignore} */
+// end{code-style-ignore}
 
 const size_t suit_command_sequence_handlers_len =
         ARRAY_SIZE(suit_command_sequence_handlers);

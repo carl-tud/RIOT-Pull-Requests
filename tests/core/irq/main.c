@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief IRQ test application
- *
- * @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief IRQ test application
+///
+/// @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -23,8 +19,7 @@
 static char busy_stack[THREAD_STACKSIZE_MAIN];
 static volatile int busy, i, k;
 
-void *busy_thread(void *arg)
-{
+void *busy_thread(void *arg) {
     (void) arg;
 
     int j = 0;
@@ -45,8 +40,7 @@ void *busy_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("START");
 
     busy = 1;

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Benchmarks ztimer_acquire() and ztimer_release()
- *
- * @author      Juergen Fitschen <me@jue.yt>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Benchmarks ztimer_acquire() and ztimer_release()
+///
+/// @author      Juergen Fitschen <me@jue.yt>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -49,13 +45,11 @@
 #  define COMPARE_TIMER_FREQ 1000000U
 #endif
 
-static inline uint32_t bench_start(uint32_t adjust)
-{
+static inline uint32_t bench_start(uint32_t adjust) {
     return timer_read(COMPARE_TIMER_DEV) + adjust;
 }
 
-static inline uint32_t bench_finish(const char *name, uint32_t start)
-{
+static inline uint32_t bench_finish(const char *name, uint32_t start) {
     uint32_t stop = timer_read(COMPARE_TIMER_DEV);
     uint32_t diff = stop - start;
     if (name) {
@@ -70,8 +64,7 @@ static inline uint32_t bench_overhead(void) {
     return diff;
 }
 
-int main(void)
-{
+int main(void) {
     uint32_t start, adjust;
     uint32_t first_acquire, second_acquire;
     uint32_t poweron_diff;

@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_l3gxxxx
- * @brief       Default configuration for ST L3Gxxxx 3-axis gyroscope sensor family
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_l3gxxxx
+/// @brief       Default configuration for ST L3Gxxxx 3-axis gyroscope sensor family
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include "board.h"
 #include "l3gxxxx.h"
@@ -21,76 +17,72 @@
 extern "C" {
 #endif
 
-/**
- * @name    Default hardware configuration
- * @{
- */
+/// @name    Default hardware configuration
+/// @{
 #if IS_USED(MODULE_L3GXXXX_I2C) || DOXYGEN
 
 #ifndef L3GXXXX_I2C_DEV
-/** Default I2C device, if the I2C interface is used */
+/// Default I2C device, if the I2C interface is used
 #define L3GXXXX_I2C_DEV     (I2C_DEV(0))
 #endif
 
 #ifndef L3GXXXX_I2C_ADDR
-/** Default I2C address, if the I2C interface is used */
+/// Default I2C address, if the I2C interface is used
 #define L3GXXXX_I2C_ADDR    (L3GXXXX_I2C_ADDR_2)
 #endif
 
 #ifndef L3GXXXX_I2C_IF_PARAMS
-/** Default I2C interface parameter set */
+/// Default I2C interface parameter set
 #define L3GXXXX_I2C_IF_PARAMS   .if_params.type = L3GXXXX_I2C, \
                                 .if_params.i2c.dev = L3GXXXX_I2C_DEV, \
                                 .if_params.i2c.addr = L3GXXXX_I2C_ADDR,
 #endif
 
-#endif /* MODULE_L3GXXXX_I2C || DOXYGEN */
+#endif // MODULE_L3GXXXX_I2C || DOXYGEN
 
 #if IS_USED(MODULE_L3GXXXX_SPI) || DOXYGEN
 
 #ifndef L3GXXXX_SPI_DEV
-/** Default SPI device, if the SPI interface is used */
+/// Default SPI device, if the SPI interface is used
 #define L3GXXXX_SPI_DEV     SPI_DEV(0)
 #endif
 
 #ifndef L3GXXXX_SPI_CLK
-/** Default SPI clock frequency, if the SPI interface is used */
+/// Default SPI clock frequency, if the SPI interface is used
 #define L3GXXXX_SPI_CLK     (SPI_CLK_1MHZ)
 #endif
 
 #ifndef L3GXXXX_SPI_CS
-/** Default SPI CS signal, if the SPI interface is used */
+/// Default SPI CS signal, if the SPI interface is used
 #define L3GXXXX_SPI_CS      (GPIO_PIN(0, 0))
 #endif
 
 #ifndef L3GXXXX_SPI_IF_PARAMS
-/** Default SPI interface parameter set */
+/// Default SPI interface parameter set
 #define L3GXXXX_SPI_IF_PARAMS   .if_params.type = L3GXXXX_SPI, \
                                 .if_params.spi.dev = L3GXXXX_SPI_DEV, \
                                 .if_params.spi.clk = L3GXXXX_SPI_CLK, \
                                 .if_params.spi.cs = L3GXXXX_SPI_CS,
 #endif
 
-#endif /* MODULE_L3GXXXX_SPI || DOXYGEN */
+#endif // MODULE_L3GXXXX_SPI || DOXYGEN
 
 #ifndef L3GXXXX_INT1_PIN
-/** Default MCU pin for INT1 signal */
+/// Default MCU pin for INT1 signal
 #define L3GXXXX_INT1_PIN    (GPIO_PIN(0, 1))
 #endif
 
 #ifndef L3GXXXX_INT2_PIN
-/** Default MCU pin for INT2/DRDY signal */
+/// Default MCU pin for INT2/DRDY signal
 #define L3GXXXX_INT2_PIN    (GPIO_PIN(0, 2))
 #endif
 
-/** @} */
+/// @}
 
-/**
- * @name    Default sensor configuration
- * @{
- */
+/// @name    Default sensor configuration
+/// @{
 #if !DOXYGEN
-/* Mapping of Kconfig defines to the respective driver enumeration values */
+// Mapping of Kconfig defines to the respective driver enumeration values
 
 #ifdef CONFIG_L3GXXXX_ODR_100_12
 #define CONFIG_L3GXXXX_ODR              (L3GXXXX_ODR_100_12)
@@ -180,105 +172,105 @@ extern "C" {
 #define CONFIG_L3GXXXX_INT1_FILTER      (L3GXXXX_HPF_AND_LPF2)
 #endif
 
-#endif /* !DOXYGEN */
+#endif // !DOXYGEN
 
 #ifndef CONFIG_L3GXXXX_ODR
-/** Default ODR and cut-off frequency */
+/// Default ODR and cut-off frequency
 #define CONFIG_L3GXXXX_ODR              (L3GXXXX_ODR_100_25)
 #endif
 
 #ifndef CONFIG_L3GXXXX_SCALE
-/** Default full scale */
+/// Default full scale
 #define CONFIG_L3GXXXX_SCALE            (L3GXXXX_SCALE_245_DPS)
 #endif
 
 #ifndef CONFIG_L3GXXXX_FILTER_SEL
-/** Default filter selection used for output data */
+/// Default filter selection used for output data
 #define CONFIG_L3GXXXX_FILTER_SEL       (L3GXXXX_HPF_AND_LPF2)
 #endif
 
 #ifndef CONFIG_L3GXXXX_HPF_MODE
-/** Default HPF mode used for output data */
+/// Default HPF mode used for output data
 #define CONFIG_L3GXXXX_HPF_MODE         (L3GXXXX_HPF_NORMAL)
 #endif
 
 #ifndef CONFIG_L3GXXXX_HPF_CUTOFF
-/** Default HPF cutoff frequency 8 Hz */
+/// Default HPF cutoff frequency 8 Hz
 #define CONFIG_L3GXXXX_HPF_CUTOFF       (0)
 #endif
 
 #ifndef CONFIG_L3GXXXX_FIFO_MODE
-/** Default FIFO mode if FIO is used */
+/// Default FIFO mode if FIO is used
 #define CONFIG_L3GXXXX_FIFO_MODE        (L3GXXXX_FIFO)
 #endif
 
 #ifndef CONFIG_L3GXXXX_FIFO_WATERMARK
-/** Default FIFO watermark level (threshold) value if FIO is used */
+/// Default FIFO watermark level (threshold) value if FIO is used
 #define CONFIG_L3GXXXX_FIFO_WATERMARK   (23)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_X_THRESH
-/** Default INT1 threshold for X axis events (~30 dps at fulls scale of ±245 dps) */
+/// Default INT1 threshold for X axis events (~30 dps at fulls scale of ±245 dps)
 #define CONFIG_L3GXXXX_INT1_X_THRESH    (4012)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_X_GT_THRESH
-/** Default INT1 interrupt enable for |X| > X threshold (X high event) */
+/// Default INT1 interrupt enable for |X| > X threshold (X high event)
 #define CONFIG_L3GXXXX_INT1_X_GT_THRESH (true)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_X_LT_THRESH
-/** Default INT1 interrupt enable for |X| < X threshold (X low event) */
+/// Default INT1 interrupt enable for |X| < X threshold (X low event)
 #define CONFIG_L3GXXXX_INT1_X_LT_THRESH (false)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_Y_THRESH
-/** Default INT1 threshold for Y axis events (~30 dps at fulls scale of ±245 dps) */
+/// Default INT1 threshold for Y axis events (~30 dps at fulls scale of ±245 dps)
 #define CONFIG_L3GXXXX_INT1_Y_THRESH    (4012)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_Y_GT_THRESH
-/** Default INT1 interrupt enable for |Y| < Y threshold (Y low event) */
+/// Default INT1 interrupt enable for |Y| < Y threshold (Y low event)
 #define CONFIG_L3GXXXX_INT1_Y_GT_THRESH (true)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_Y_LT_THRESH
-/** Default INT1 interrupt enable for |Y| > Y threshold (Y high event) */
+/// Default INT1 interrupt enable for |Y| > Y threshold (Y high event)
 #define CONFIG_L3GXXXX_INT1_Y_LT_THRESH (false)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_Z_THRESH
-/** Default INT1 threshold for Z axis events (~30 dps at fulls scale of ±245 dps) */
+/// Default INT1 threshold for Z axis events (~30 dps at fulls scale of ±245 dps)
 #define CONFIG_L3GXXXX_INT1_Z_THRESH    (4012)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_Z_GT_THRESH
-/** Default INT1 interrupt enable for |Z| < Z threshold (Z low event) */
+/// Default INT1 interrupt enable for |Z| < Z threshold (Z low event)
 #define CONFIG_L3GXXXX_INT1_Z_GT_THRESH (true)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_Z_LT_THRESH
-/** Default INT1 interrupt enable for |Z| > Z threshold (Z high event) */
+/// Default INT1 interrupt enable for |Z| > Z threshold (Z high event)
 #define CONFIG_L3GXXXX_INT1_Z_LT_THRESH (false)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_FILTER
-/** Default filter selection used for INT1 interrupt */
+/// Default filter selection used for INT1 interrupt
 #define CONFIG_L3GXXXX_INT1_FILTER      (L3GXXXX_HPF_AND_LPF2)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_AND
-/** Default event interrupt combination is OR */
+/// Default event interrupt combination is OR
 #define CONFIG_L3GXXXX_INT1_AND         (false)
 #endif
 
 #ifndef CONFIG_L3GXXXX_INT1_LATCH
-/** Default INT1 event interrupt latch enabled */
+/// Default INT1 event interrupt latch enabled
 #define CONFIG_L3GXXXX_INT1_LATCH       (true)
 #endif
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_EVENT) || DOXYGEN
-/** Default INT1 parameter set */
+/// Default INT1 parameter set
 #define L3GXXXX_INT1_PARAMS     .int1_pin =  L3GXXXX_INT1_PIN, \
                                 .int1_cfg.x_high_enabled = CONFIG_L3GXXXX_INT1_X_GT_THRESH, \
                                 .int1_cfg.y_high_enabled = CONFIG_L3GXXXX_INT1_Y_GT_THRESH, \
@@ -297,14 +289,14 @@ extern "C" {
 #endif
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_DATA) || DOXYGEN
-/** Default INT2 parameter set */
+/// Default INT2 parameter set
 #define L3GXXXX_INT2_PARAMS     .int2_pin =  L3GXXXX_INT2_PIN,
 #else
 #define L3GXXXX_INT2_PARAMS
 #endif
 
 #if IS_USED(MODULE_L3GXXXX_FIFO) || DOXYGEN
-/** Default FIFO parameter set */
+/// Default FIFO parameter set
 #define L3GXXXX_FIFO_PARAMS     .fifo_mode =  CONFIG_L3GXXXX_FIFO_MODE, \
                                 .fifo_watermark  =  CONFIG_L3GXXXX_FIFO_WATERMARK,
 #else
@@ -314,7 +306,7 @@ extern "C" {
 #if IS_USED(MODULE_L3GXXXX_I2C) || DOXYGEN
 
 #ifndef L3GXXXX_I2C_PARAMS
-/** Default I2C device parameter set */
+/// Default I2C device parameter set
 #define L3GXXXX_I2C_PARAMS  { \
                                 L3GXXXX_I2C_IF_PARAMS \
                                 .odr = CONFIG_L3GXXXX_ODR, \
@@ -327,11 +319,11 @@ extern "C" {
                                 L3GXXXX_INT2_PARAMS \
                             }
 #endif
-#endif /* MODULE_L3GXXXX_I2C || DOXYGEN */
+#endif // MODULE_L3GXXXX_I2C || DOXYGEN
 
 #if IS_USED(MODULE_L3GXXXX_SPI) || DOXYGEN
 #ifndef L3GXXXX_SPI_PARAMS
-/** Default SPI device parameter set */
+/// Default SPI device parameter set
 #define L3GXXXX_SPI_PARAMS  { \
                                 L3GXXXX_SPI_IF_PARAMS \
                                 .odr = CONFIG_L3GXXXX_ODR, \
@@ -344,17 +336,15 @@ extern "C" {
                                 L3GXXXX_INT2_PARAMS \
                             }
 #endif
-#endif /* MODULE_L3GXXXX_SPI || DOXYGEN */
+#endif // MODULE_L3GXXXX_SPI || DOXYGEN
 
 #ifndef L3GXXXX_SAUL_INFO
-/** Default SAUL device info */
+/// Default SAUL device info
 #define L3GXXXX_SAUL_INFO   { .name = "l3gxxxx" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const l3gxxxx_params_t l3gxxxx_params[] =
 {
 #if IS_USED(MODULE_L3GXXXX_I2C) || DOXYGEN
@@ -365,9 +355,7 @@ static const l3gxxxx_params_t l3gxxxx_params[] =
 #endif
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t l3gxxxx_saul_info[] =
 {
     L3GXXXX_SAUL_INFO
@@ -377,4 +365,4 @@ static const saul_reg_info_t l3gxxxx_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

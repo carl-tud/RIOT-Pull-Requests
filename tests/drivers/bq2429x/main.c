@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2020 Locha Inc
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Locha Inc
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @brief       Test application for the BQ24298x device driver
- * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
- * @file
- */
+/// @ingroup     tests
+/// @brief       Test application for the BQ24298x device driver
+/// @author      Jean Pierre Dudey <jeandudey@hotmail.com>
+/// @file
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,39 +15,39 @@
 
 static bq2429x_t _dev;
 
-/* Status and faults */
+// Status and faults
 static int _bq2429x_get_status_cmd(int argc, char **argv);
 static int _bq2429x_get_fault_cmd(int argc, char **argv);
-/* OTG */
+// OTG
 static int _bq2429x_enable_otg_cmd(int argc, char **argv);
 static int _bq2429x_disable_otg_cmd(int argc, char **argv);
-/* Charge */
+// Charge
 static int _bq2429x_enable_chg_cmd(int argc, char **argv);
 static int _bq2429x_disable_chg_cmd(int argc, char **argv);
-/* Set charge parameters */
+// Set charge parameters
 static int _bq2429x_set_vlim_cmd(int argc, char **argv);
 static int _bq2429x_set_ilim_cmd(int argc, char **argv);
 static int _bq2429x_set_ichg_cmd(int argc, char **argv);
 static int _bq2429x_set_vreg_cmd(int argc, char **argv);
-/* Get charge parameters */
+// Get charge parameters
 static int _bq2429x_get_vlim_cmd(int argc, char **argv);
 static int _bq2429x_get_ilim_cmd(int argc, char **argv);
 static int _bq2429x_get_ichg_cmd(int argc, char **argv);
 static int _bq2429x_get_vreg_cmd(int argc, char **argv);
 
 static const shell_command_t shell_commands[] = {
-    /* Status and faults */
+    // Status and faults
     { "bq2429x_get_status", "Get device status", _bq2429x_get_status_cmd },
     { "bq2429x_get_fault", "Get device faults", _bq2429x_get_fault_cmd },
-    /* OTG */
+    // OTG
     { "bq2429x_enable_otg", "Enable OTG mode", _bq2429x_enable_otg_cmd },
     { "bq2429x_disable_otg", "Disable OTG mode", _bq2429x_disable_otg_cmd },
-    /* Charge */
+    // Charge
     { "bq2429x_enable_charge", "Enable battery charge",
       _bq2429x_enable_chg_cmd },
     { "bq2429x_disable_charge", "Disable battery charge",
       _bq2429x_disable_chg_cmd },
-    /* Set charge parameters */
+    // Set charge parameters
     { "bq2429x_set_vlim", "Set input voltage limit (0=3880 mV .. 15=5080 mV)",
       _bq2429x_set_vlim_cmd },
     { "bq2429x_set_ilim", "Set input current limit (0=100 mA .. 7=3000 mA)",
@@ -60,7 +56,7 @@ static const shell_command_t shell_commands[] = {
       _bq2429x_set_ichg_cmd },
     { "bq2429x_set_vreg", "Set charge voltage limit (0=3504 mV .. 9=4400 mV)",
       _bq2429x_set_vreg_cmd },
-    /* Get charge parameters */
+    // Get charge parameters
     { "bq2429x_get_vlim", "Get input voltage limit", _bq2429x_get_vlim_cmd },
     { "bq2429x_get_ilim", "Get input current limit", _bq2429x_get_ilim_cmd },
     { "bq2429x_get_ichg", "Get charge current", _bq2429x_get_ichg_cmd },
@@ -68,8 +64,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
 
     puts("BQ2429x driver test application\n");
 
@@ -84,12 +79,11 @@ int main(void)
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should never be reached */
+    // should never be reached
     return 0;
 }
 
-static int _bq2429x_get_status_cmd(int argc, char **argv)
-{
+static int _bq2429x_get_status_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -115,8 +109,7 @@ static int _bq2429x_get_status_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_get_fault_cmd(int argc, char **argv)
-{
+static int _bq2429x_get_fault_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -140,8 +133,7 @@ static int _bq2429x_get_fault_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_enable_otg_cmd(int argc, char **argv)
-{
+static int _bq2429x_enable_otg_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -154,8 +146,7 @@ static int _bq2429x_enable_otg_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_disable_otg_cmd(int argc, char **argv)
-{
+static int _bq2429x_disable_otg_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -168,8 +159,7 @@ static int _bq2429x_disable_otg_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_enable_chg_cmd(int argc, char **argv)
-{
+static int _bq2429x_enable_chg_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -182,8 +172,7 @@ static int _bq2429x_enable_chg_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_disable_chg_cmd(int argc, char **argv)
-{
+static int _bq2429x_disable_chg_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -196,8 +185,7 @@ static int _bq2429x_disable_chg_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_set_vlim_cmd(int argc, char **argv)
-{
+static int _bq2429x_set_vlim_cmd(int argc, char **argv) {
     if (argc < 2 || argc > 2) {
         printf("usage: %s [vlim]\n", argv[0]);
         return 1;
@@ -223,8 +211,7 @@ static int _bq2429x_set_vlim_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_set_ilim_cmd(int argc, char **argv)
-{
+static int _bq2429x_set_ilim_cmd(int argc, char **argv) {
     if (argc < 2 || argc > 2) {
         printf("usage: %s [ilim]\n", argv[0]);
         return 1;
@@ -250,8 +237,7 @@ static int _bq2429x_set_ilim_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_set_ichg_cmd(int argc, char **argv)
-{
+static int _bq2429x_set_ichg_cmd(int argc, char **argv) {
     const bq2429x_charge_current_t ichg_lookup_table[] = {
         BQ2429X_ICHG_512,
         BQ2429X_ICHG_1024,
@@ -289,8 +275,7 @@ static int _bq2429x_set_ichg_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_set_vreg_cmd(int argc, char **argv)
-{
+static int _bq2429x_set_vreg_cmd(int argc, char **argv) {
     const bq2429x_charge_voltage_limit_t vreg_lookup_table[] = {
         BQ2429X_VREG_3504,
         BQ2429X_VREG_3600,
@@ -332,8 +317,7 @@ static int _bq2429x_set_vreg_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_get_vlim_cmd(int argc, char **argv)
-{
+static int _bq2429x_get_vlim_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -349,8 +333,7 @@ static int _bq2429x_get_vlim_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_get_ilim_cmd(int argc, char **argv)
-{
+static int _bq2429x_get_ilim_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -366,8 +349,7 @@ static int _bq2429x_get_ilim_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_get_ichg_cmd(int argc, char **argv)
-{
+static int _bq2429x_get_ichg_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -383,8 +365,7 @@ static int _bq2429x_get_ichg_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _bq2429x_get_vreg_cmd(int argc, char **argv)
-{
+static int _bq2429x_get_vreg_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 

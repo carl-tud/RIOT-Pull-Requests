@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 University of California, Berkeley
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 University of California, Berkeley
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mma7660
- * @{
- *
- * @file
- * @brief       Driver for the Freescale MMA7660 accelerometer.
- *
- * @author      Michael Andersen <m.andersen@cs.berkeley.edu>
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     drivers_mma7660
+/// @{
+///
+/// @file
+/// @brief       Driver for the Freescale MMA7660 accelerometer.
+///
+/// @author      Michael Andersen <m.andersen@cs.berkeley.edu>
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -41,9 +37,8 @@
 #define DEV_I2C          (dev->params.i2c)
 #define DEV_ADDR         (dev->params.addr)
 
-int mma7660_init(mma7660_t *dev, const mma7660_params_t *params)
-{
-    /* write device descriptor */
+int mma7660_init(mma7660_t *dev, const mma7660_params_t *params) {
+    // write device descriptor
     dev->params = *params;
 
     if (mma7660_set_mode(dev, 0, 0, 0, 0) != MMA7660_OK) {
@@ -62,7 +57,7 @@ int mma7660_init(mma7660_t *dev, const mma7660_params_t *params)
         return -MMA7660_I2C_WRITE_ERR;
     }
 
-    /* set device active after configuration */
+    // set device active after configuration
     if (mma7660_set_mode(dev, 1, 0, 0, 0) != MMA7660_OK) {
         DEBUG("mma7660_set_mode failed!\n");
         return -MMA7660_I2C_WRITE_ERR;
@@ -72,8 +67,7 @@ int mma7660_init(mma7660_t *dev, const mma7660_params_t *params)
 }
 
 int mma7660_set_mode(const mma7660_t *dev, uint8_t active,
-                     uint8_t autowake, uint8_t autosleep, uint8_t prescale)
-{
+                     uint8_t autowake, uint8_t autosleep, uint8_t prescale) {
     char reg;
     int rv;
     reg = (active << MODE_ACTIVE_SHIFT)       |
@@ -91,8 +85,7 @@ int mma7660_set_mode(const mma7660_t *dev, uint8_t active,
     return MMA7660_OK;
 }
 
-int mma7660_read_tilt(const mma7660_t *dev, uint8_t *res)
-{
+int mma7660_read_tilt(const mma7660_t *dev, uint8_t *res) {
     int rv;
     i2c_acquire(DEV_I2C);
     rv = i2c_read_reg(DEV_I2C, DEV_ADDR, MMA7660_TILT, (char *)res, 0);
@@ -104,8 +97,7 @@ int mma7660_read_tilt(const mma7660_t *dev, uint8_t *res)
     return MMA7660_OK;
 }
 
-int mma7660_write_sleep_count(const mma7660_t *dev, uint8_t sleep)
-{
+int mma7660_write_sleep_count(const mma7660_t *dev, uint8_t sleep) {
     int rv;
     i2c_acquire(DEV_I2C);
     rv = i2c_write_reg(DEV_I2C, DEV_ADDR, MMA7660_SPCNT, sleep, 0);
@@ -117,8 +109,7 @@ int mma7660_write_sleep_count(const mma7660_t *dev, uint8_t sleep)
     return MMA7660_OK;
 }
 
-int mma7660_config_interrupts(const mma7660_t *dev, uint8_t isource_flags)
-{
+int mma7660_config_interrupts(const mma7660_t *dev, uint8_t isource_flags) {
     int rv;
     i2c_acquire(DEV_I2C);
     rv = i2c_write_reg(DEV_I2C, DEV_ADDR, MMA7660_INTSU, isource_flags, 0);
@@ -130,8 +121,7 @@ int mma7660_config_interrupts(const mma7660_t *dev, uint8_t isource_flags)
     return MMA7660_OK;
 }
 
-int mma7660_config_samplerate(const mma7660_t *dev, uint8_t amsr, uint8_t awsr, uint8_t filt)
-{
+int mma7660_config_samplerate(const mma7660_t *dev, uint8_t amsr, uint8_t awsr, uint8_t filt) {
     int rv;
     char ch = amsr | awsr | (filt << SR_FILT_SHIFT);
     i2c_acquire(DEV_I2C);
@@ -169,8 +159,7 @@ int mma7660_config_pd(const mma7660_t *dev, uint8_t pd) {
     return MMA7660_OK;
 }
 
-int mma7660_read_counts(const mma7660_t *dev, int8_t *x, int8_t *y, int8_t *z)
-{
+int mma7660_read_counts(const mma7660_t *dev, int8_t *x, int8_t *y, int8_t *z) {
     int retries = 6;
     char t;
     i2c_acquire(DEV_I2C);
@@ -229,8 +218,7 @@ int mma7660_read_counts(const mma7660_t *dev, int8_t *x, int8_t *y, int8_t *z)
     return -MMA7660_READ_ERR;
 }
 
-int mma7660_read(const mma7660_t *dev, mma7660_data_t *data)
-{
+int mma7660_read(const mma7660_t *dev, mma7660_data_t *data) {
     int8_t countx, county, countz;
     int rv;
 

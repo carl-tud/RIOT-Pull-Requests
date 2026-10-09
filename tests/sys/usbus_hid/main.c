@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Nils Ollrogge
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Nils Ollrogge
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @brief
- * @{
- *
- * @brief       Tests for USB HID
- *
- * @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
- */
+/// @ingroup     tests
+/// @brief
+/// @{
+///
+/// @brief       Tests for USB HID
+///
+/// @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,11 +17,9 @@
 #include "usb/usbus/hid.h"
 #include "usb/usbus/hid_io.h"
 
-/*
-   this descriptor is used, because the basic usb_hid interface was developed in
-   conjunction with FIDO2. Descriptor is taken from CTAP specification
-   (version 20190130) section 8.1.8.2
- */
+//    this descriptor is used, because the basic usb_hid interface was developed in
+//    conjunction with FIDO2. Descriptor is taken from CTAP specification
+//    (version 20190130) section 8.1.8.2
 static const uint8_t report_desc_ctap[] = {
     USB_HID_USAGE_PAGE16(USB_HID_USAGE_FIDO),
     USB_HID_USAGE(USB_HID_USAGE_FIDO_U2F_AUTHENTICATOR_DEVICE),
@@ -49,13 +43,11 @@ static usbus_t usbus;
 static char _stack[USBUS_STACKSIZE];
 static char test_arg[] = { "Test argument" };
 
-static void rx_cb(void *arg)
-{
+static void rx_cb(void *arg) {
     printf("USB_HID rx_cb: %s \n", (char *)arg);
 }
 
-static void init(void)
-{
+static void init(void) {
     usbdev_t *usbdev = usbdev_get_ctx(0);
 
     usbus_init(&usbus, usbdev);
@@ -64,9 +56,8 @@ static void init(void)
     usbus_create(_stack, USBUS_STACKSIZE, USBUS_PRIO, USBUS_TNAME, &usbus);
 }
 
-int main(void)
-{
-    /* sleep to wait for Pyterm attaching in order to see puts messages */
+int main(void) {
+    // sleep to wait for Pyterm attaching in order to see puts messages
     xtimer_sleep(3);
     init();
     puts("RIOT USB HID echo test");

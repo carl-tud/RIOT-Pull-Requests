@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       (Mock-up) BLE heart rate sensor example
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       (Mock-up) BLE heart rate sensor example
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -31,8 +27,8 @@
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 
-#define HRS_FLAGS_DEFAULT       (0x01)      /* 16-bit BPM value */
-#define SENSOR_LOCATION         (0x02)      /* wrist sensor */
+#define HRS_FLAGS_DEFAULT       (0x01)      // 16-bit BPM value
+#define SENSOR_LOCATION         (0x02)      // wrist sensor
 #define UPDATE_INTERVAL         (250U)
 #define BPM_MIN                 (80U)
 #define BPM_MAX                 (210U)
@@ -71,10 +67,10 @@ static int _bas_handler(uint16_t conn_handle, uint16_t attr_handle,
 static void _start_updating(void);
 static void _stop_updating(void);
 
-/* GATT service definitions */
+// GATT service definitions
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     {
-        /* Heart Rate Service */
+        // Heart Rate Service
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
         .uuid = BLE_UUID16_DECLARE(BLE_GATT_SVC_HRS),
         .characteristics = (struct ble_gatt_chr_def[]) { {
@@ -87,11 +83,11 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
             .access_cb = _hrs_handler,
             .flags = BLE_GATT_CHR_F_READ,
         }, {
-            0, /* no more characteristics in this service */
+            0, // no more characteristics in this service
         }, }
     },
     {
-        /* Device Information Service */
+        // Device Information Service
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
         .uuid = BLE_UUID16_DECLARE(BLE_GATT_SVC_DEVINFO),
         .characteristics = (struct ble_gatt_chr_def[]) { {
@@ -115,11 +111,11 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
             .access_cb = _devinfo_handler,
             .flags = BLE_GATT_CHR_F_READ,
         }, {
-            0, /* no more characteristics in this service */
+            0, // no more characteristics in this service
         }, }
     },
     {
-        /* Battery Level Service */
+        // Battery Level Service
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
         .uuid = BLE_UUID16_DECLARE(BLE_GATT_SVC_BAS),
         .characteristics = (struct ble_gatt_chr_def[]) { {
@@ -127,17 +123,16 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
             .access_cb = _bas_handler,
             .flags = BLE_GATT_CHR_F_READ,
         }, {
-            0, /* no more characteristics in this service */
+            0, // no more characteristics in this service
         }, }
     },
     {
-        0, /* no more services */
+        0, // no more services
     },
 };
 
 static int _hrs_handler(uint16_t conn_handle, uint16_t attr_handle,
-                        struct ble_gatt_access_ctxt *ctxt, void *arg)
-{
+                        struct ble_gatt_access_ctxt *ctxt, void *arg) {
     (void)conn_handle;
     (void)attr_handle;
     (void)arg;
@@ -154,8 +149,7 @@ static int _hrs_handler(uint16_t conn_handle, uint16_t attr_handle,
 }
 
 static int _devinfo_handler(uint16_t conn_handle, uint16_t attr_handle,
-                            struct ble_gatt_access_ctxt *ctxt, void *arg)
-{
+                            struct ble_gatt_access_ctxt *ctxt, void *arg) {
     (void)conn_handle;
     (void)attr_handle;
     (void)arg;
@@ -191,21 +185,19 @@ static int _devinfo_handler(uint16_t conn_handle, uint16_t attr_handle,
 }
 
 static int _bas_handler(uint16_t conn_handle, uint16_t attr_handle,
-                        struct ble_gatt_access_ctxt *ctxt, void *arg)
-{
+                        struct ble_gatt_access_ctxt *ctxt, void *arg) {
     (void)conn_handle;
     (void)attr_handle;
     (void)arg;
 
     puts("[READ] battery level service: battery level value");
 
-    uint8_t level = BAT_LEVEL;  /* this battery will never drain :-) */
+    uint8_t level = BAT_LEVEL;  // this battery will never drain :-)
     int res = os_mbuf_append(ctxt->om, &level, sizeof(level));
     return (res == 0) ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
 }
 
-static int gap_event_cb(struct ble_gap_event *event, void *arg)
-{
+static int gap_event_cb(struct ble_gap_event *event, void *arg) {
     (void)arg;
 
     switch (event->type) {
@@ -238,24 +230,21 @@ static int gap_event_cb(struct ble_gap_event *event, void *arg)
     return 0;
 }
 
-static void _start_updating(void)
-{
+static void _start_updating(void) {
     event_timeout_set(&_update_timeout_evt, UPDATE_INTERVAL);
     puts("[NOTIFY_ENABLED] heart rate service");
 }
 
-static void _stop_updating(void)
-{
+static void _stop_updating(void) {
     event_timeout_clear(&_update_timeout_evt);
     puts("[NOTIFY_DISABLED] heart rate service");
 }
 
-static void _hr_update(event_t *e)
-{
+static void _hr_update(event_t *e) {
     (void)e;
     struct os_mbuf *om;
 
-    /* our mock-up heart rate is going up and down */
+    // our mock-up heart rate is going up and down
     if ((_hr_data.bpm == BPM_MIN) || (_hr_data.bpm == BPM_MAX)) {
         step *= -1;
     }
@@ -263,38 +252,37 @@ static void _hr_update(event_t *e)
 
     printf("[NOTIFY] heart rate service: measurement %i\n", (int)_hr_data.bpm);
 
-    /* send heart rate data notification to GATT client */
+    // send heart rate data notification to GATT client
     om = ble_hs_mbuf_from_flat(&_hr_data, sizeof(_hr_data));
     assert(om != NULL);
     int res = ble_gattc_notify_custom(_conn_handle, _hrs_val_handle, om);
     assert(res == 0);
     (void)res;
 
-    /* schedule next update event */
+    // schedule next update event
     event_timeout_set(&_update_timeout_evt, UPDATE_INTERVAL);
 }
 
-int main(void)
-{
+int main(void) {
     puts("NimBLE Heart Rate Sensor Example");
 
     int res = 0;
     (void)res;
 
-    /* setup local event queue (for handling heart rate updates) */
+    // setup local event queue (for handling heart rate updates)
     event_queue_init(&_eq);
     _update_evt.handler = _hr_update;
     event_timeout_ztimer_init(&_update_timeout_evt, ZTIMER_MSEC, &_eq, &_update_evt);
 
-    /* verify and add our custom services */
+    // verify and add our custom services
     res = ble_gatts_count_cfg(gatt_svr_svcs);
     assert(res == 0);
     res = ble_gatts_add_svcs(gatt_svr_svcs);
     assert(res == 0);
 
-    /* set the device name */
+    // set the device name
     ble_svc_gap_device_name_set(CONFIG_NIMBLE_AUTOADV_DEVICE_NAME);
-    /* reload the GATT server to link our added services */
+    // reload the GATT server to link our added services
     ble_gatts_start();
 
     nimble_autoadv_cfg_t cfg = {
@@ -308,19 +296,19 @@ int main(void)
         .phy = NIMBLE_PHY_1M,
         .tx_power = 0,
     };
-    /* set advertise params */
+    // set advertise params
     nimble_autoadv_cfg_update(&cfg);
 
-    /* configure and set the advertising data */
+    // configure and set the advertising data
     uint16_t hrs_uuid = BLE_GATT_SVC_HRS;
     nimble_autoadv_add_field(BLE_GAP_AD_UUID16_INCOMP, &hrs_uuid, sizeof(hrs_uuid));
 
     nimble_autoadv_set_gap_cb(&gap_event_cb, NULL);
 
-    /* start to advertise this node */
+    // start to advertise this node
     nimble_autoadv_start(NULL);
 
-    /* run an event loop for handling the heart rate update events */
+    // run an event loop for handling the heart rate update events
     event_loop(&_eq);
 
     return 0;

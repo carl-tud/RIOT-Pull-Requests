@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_sps30
- * @brief       Default configuration for Sensirion SPS30 sensors devices
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * @file
- * @{
- */
+/// @ingroup     drivers_sps30
+/// @brief       Default configuration for Sensirion SPS30 sensors devices
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+/// @file
+/// @{
 
 #include "board.h"
 #include "sps30.h"
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    SPS30 default configuration parameters
- * @{
- */
+/// @name    SPS30 default configuration parameters
+/// @{
 #ifndef SPS30_PARAM_I2C_DEV
 #define SPS30_PARAM_I2C_DEV  (I2C_DEV(0))
 #endif
@@ -34,36 +28,28 @@ extern "C" {
 #ifndef SPS30_SAUL_INFO
 #define SPS30_SAUL_INFO      { .name = "sps30" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   SPS30 configuration
- */
+/// @brief   SPS30 configuration
 static const sps30_params_t sps30_params[] =
 {
     SPS30_PARAMS
 };
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define SPS30_NUM               ARRAY_SIZE(sps30_params)
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t sps30_saul_info[] =
 {
     SPS30_SAUL_INFO
 };
 
-/**
- * @brief   Number of saul info structs
- */
+/// @brief   Number of saul info structs
 #define SPS30_INFO_NUM ARRAY_SIZE(sps30_saul_info)
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

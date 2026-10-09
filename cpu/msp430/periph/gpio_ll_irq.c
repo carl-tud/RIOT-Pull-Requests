@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2024 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_msp430
- * @ingroup     drivers_periph_gpio_ll_irq
- * @{
- *
- * @file
- * @brief       IRQ implementation of the GPIO Low-Level API for MSP430
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
- *
- * @}
- */
+/// @ingroup     cpu_msp430
+/// @ingroup     drivers_periph_gpio_ll_irq
+/// @{
+///
+/// @file
+/// @brief       IRQ implementation of the GPIO Low-Level API for MSP430
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
+///
+/// @}
 
 #include <errno.h>
 #include <stdbool.h>
@@ -38,8 +34,7 @@ struct isr_ctx {
 
 static struct isr_ctx _isr_ctx[ISR_NUMOF];
 
-static unsigned _idx(uword_t port_num, uint8_t pin)
-{
+static unsigned _idx(uword_t port_num, uint8_t pin) {
     if (port_num == 2) {
         return pin + 8;
     }
@@ -48,8 +43,7 @@ static unsigned _idx(uword_t port_num, uint8_t pin)
 }
 
 int gpio_ll_irq(gpio_port_t _port, uint8_t pin, gpio_irq_trig_t trig,
-                gpio_ll_cb_t cb, void *arg)
-{
+                gpio_ll_cb_t cb, void *arg) {
     uword_t port_num = gpio_port_num(_port);
     if (unlikely((port_num > 2) || (port_num == 0))) {
         DEBUG_PUTS("[gpio_ll_irq] GPIO port without IRQ support used");
@@ -70,54 +64,50 @@ int gpio_ll_irq(gpio_port_t _port, uint8_t pin, gpio_irq_trig_t trig,
     unsigned idx = _idx(port_num, pin);
     uword_t mask = 1U << pin;
 
-    /* Disable IRQs to avoid race when updating CTX. Relying on compiler to
-     * use BIC.B instruction to implement this, which is inherently atomic. */
+    // Disable IRQs to avoid race when updating CTX. Relying on compiler to
+    // use BIC.B instruction to implement this, which is inherently atomic.
     port->IE &= ~mask;
     _isr_ctx[idx].cb = cb;
     _isr_ctx[idx].arg = arg;
 
-    /* Configuring interrupt edge select. Relying on atomic BIS.B and BIC.B
-     * instructions used by the compiler */
+    // Configuring interrupt edge select. Relying on atomic BIS.B and BIC.B
+    // instructions used by the compiler
     port->IES &= ~mask;
     if (trig == GPIO_TRIGGER_EDGE_FALLING) {
         port->IES |= mask;
     }
 
-    /* Clear pending IRQs, relying on atomic BIC.B instruction used by the
-     * compiler. */
+    // Clear pending IRQs, relying on atomic BIC.B instruction used by the
+    // compiler.
     port->IFG &= ~mask;
 
-    /* Finally, enabling the IRQ, relying on atomic BIS.B instruction used by
-     * the compiler */
+    // Finally, enabling the IRQ, relying on atomic BIS.B instruction used by
+    // the compiler
     port->IE |= mask;
 
     return 0;
 }
 
-/* It appears that disabling the interrupt in IE does not only mask IRQs,
- * but disables the IRQ edge detector hardware completely. Hence, IRQs
- * that came in while masked will not trigger after unmasking, as the
- * API would expect. For this reason, we don't provide gpio_ll_irq_unmask() but
- * only gpio_ll_irq_unmask_and_clear().
- */
-void gpio_ll_irq_mask(gpio_port_t _port, uint8_t pin)
-{
+// It appears that disabling the interrupt in IE does not only mask IRQs,
+// but disables the IRQ edge detector hardware completely. Hence, IRQs
+// that came in while masked will not trigger after unmasking, as the
+// API would expect. For this reason, we don't provide gpio_ll_irq_unmask() but
+// only gpio_ll_irq_unmask_and_clear().
+void gpio_ll_irq_mask(gpio_port_t _port, uint8_t pin) {
     msp430_port_p1_p2_t *port = container_of((msp430_port_t *)_port, msp430_port_p1_p2_t, base);
     port->IE &= ~(1U << pin);
 }
 
-void gpio_ll_irq_unmask_and_clear(gpio_port_t _port, uint8_t pin)
-{
+void gpio_ll_irq_unmask_and_clear(gpio_port_t _port, uint8_t pin) {
     msp430_port_p1_p2_t *port = container_of((msp430_port_t *)_port, msp430_port_p1_p2_t, base);
     uword_t mask = 1U << pin;
-    /* We clear IFG anyway despite bits in IFG not getting set without IE, a
-     * call may rely on this function clearing IRQs while already unmasked. */
+    // We clear IFG anyway despite bits in IFG not getting set without IE, a
+    // call may rely on this function clearing IRQs while already unmasked.
     port->IFG &= ~mask;
     port->IE |= mask;
 }
 
-static void _isr_handler(msp430_port_p1_p2_t *port, int ctx)
-{
+static void _isr_handler(msp430_port_p1_p2_t *port, int ctx) {
     for (unsigned i = 0; i < PINS_PER_PORT; i++) {
         unsigned mask = 1U << i;
         if ((port->IE & mask) && (port->IFG & mask)) {
@@ -127,15 +117,13 @@ static void _isr_handler(msp430_port_p1_p2_t *port, int ctx)
     }
 }
 
-ISR(PORT1_VECTOR, isr_port1)
-{
+ISR(PORT1_VECTOR, isr_port1) {
     __enter_isr();
     _isr_handler(&PORT_1, 0);
     __exit_isr();
 }
 
-ISR(PORT2_VECTOR, isr_port2)
-{
+ISR(PORT2_VECTOR, isr_port2) {
     __enter_isr();
     _isr_handler(&PORT_2, 8);
     __exit_isr();

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 TriaGnoSys GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 TriaGnoSys GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the PN532 NFC reader
- *
- * @author      Víctor Ariño <victor.arino@triagnosys.com>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the PN532 NFC reader
+///
+/// @author      Víctor Ariño <victor.arino@triagnosys.com>
+///
+/// @}
 
 #include "board.h"
 #include "macros/utils.h"
@@ -24,8 +20,7 @@
 #define LOG_LEVEL LOG_INFO
 #include "log.h"
 
-static void printbuff(char *buff, unsigned len)
-{
+static void printbuff(char *buff, unsigned len) {
     while (len) {
         len--;
         printf("%02x ", *buff++);
@@ -33,8 +28,7 @@ static void printbuff(char *buff, unsigned len)
     puts("");
 }
 
-int main(void)
-{
+int main(void) {
     static char data[16];
     static nfc_iso14443a_t card;
     static pn532_t pn532;
@@ -67,7 +61,7 @@ int main(void)
     }
 
     while (1) {
-        /* Delay not to be always polling the interface */
+        // Delay not to be always polling the interface
         ztimer_sleep(ZTIMER_MSEC, 250);
 
         ret = pn532_get_passive_iso14443a(&pn532, &card, 0x50);

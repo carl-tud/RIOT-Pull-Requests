@@ -1,49 +1,43 @@
-/*
- * SPDX-FileCopyrightText: 2016 Unwired Devices <info@unwds.com>
- * SPDX-FileCopyrightText: 2016 Inria Chile
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Unwired Devices <info@unwds.com>
+// SPDX-FileCopyrightText: 2016 Inria Chile
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_sx127x
- * @{
- *
- * @file
- * @brief       SX127X registers
- *
- * @author      Eugene P. <ep@unwds.com>
- * @author      José Ignacio Alamos <jose.alamos@inria.cl>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- */
+/// @ingroup     drivers_sx127x
+/// @{
+///
+/// @file
+/// @brief       SX127X registers
+///
+/// @author      Eugene P. <ep@unwds.com>
+/// @author      José Ignacio Alamos <jose.alamos@inria.cl>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name   SX127X LoRa modem internal registers addresses
- * @{
- */
+/// @name   SX127X LoRa modem internal registers addresses
+/// @{
 
-/* Common settings */
+// Common settings
 #define SX127X_REG_LR_OPMODE                                         (0x01)
 #define SX127X_REG_LR_FRFMSB                                         (0x06)
 #define SX127X_REG_LR_FRFMID                                         (0x07)
 #define SX127X_REG_LR_FRFLSB                                         (0x08)
 
-/* Tx settings */
+// Tx settings
 #define SX127X_REG_LR_PACONFIG                                       (0x09)
 #define SX127X_REG_LR_PARAMP                                         (0x0A)
 #define SX127X_REG_LR_OCP                                            (0x0B)
 
-/* Rx settings */
+// Rx settings
 #define SX127X_REG_LR_LNA                                            (0x0C)
 
-/* LoRa registers */
+// LoRa registers
 #define SX127X_REG_LR_FIFOADDRPTR                                    (0x0D)
 #define SX127X_REG_LR_FIFOTXBASEADDR                                 (0x0E)
 #define SX127X_REG_LR_FIFORXBASEADDR                                 (0x0F)
@@ -84,14 +78,14 @@ extern "C" {
 #define SX127X_REG_LR_TEST3A                                         (0x3A)
 #define SX127X_REG_LR_INVERTIQ2                                      (0x3B)
 
-/* I/O settings */
+// I/O settings
 #define SX127X_REG_LR_DIOMAPPING1                                    (0x40)
 #define SX127X_REG_LR_DIOMAPPING2                                    (0x41)
 
-/* Version */
+// Version
 #define SX127X_REG_LR_VERSION                                        (0x42)
 
-/* Additional settings */
+// Additional settings
 #define SX127X_REG_LR_PLLHOP                                         (0x44)
 #define SX127X_REG_LR_TCXO                                           (0x4B)
 #define SX127X_REG_LR_PADAC                                          (0x4D)
@@ -102,67 +96,63 @@ extern "C" {
 #define SX127X_REG_LR_AGCTHRESH2                                     (0x63)
 #define SX127X_REG_LR_AGCTHRESH3                                     (0x64)
 #define SX127X_REG_LR_PLL                                            (0x70)
-/** @} */
+/// @}
 
-/**
- * @name   Modem settings for random number generator
- * @{
- */
+/// @name   Modem settings for random number generator
+/// @{
 #define SX127X_RNG_REG_MODEM_CONFIG1                                 (0x0A)
 #define SX127X_RNG_REG_MODEM_CONFIG2                                 (0x70)
-/** @} */
+/// @}
 
-/**
- * @name   SX127X LoRa bits control definition
- * @{
- */
+/// @name   SX127X LoRa bits control definition
+/// @{
 
-/* RegFifo */
+// RegFifo
 #define SX127X_REG_LR_FIFO                                           (0x00)
 
-/* RegOpMode */
+// RegOpMode
 #define SX127X_RF_LORA_OPMODE_LONGRANGEMODE_MASK                     (0x7F)
-#define SX127X_RF_LORA_OPMODE_LONGRANGEMODE_OFF                      (0x00) /* Default */
+#define SX127X_RF_LORA_OPMODE_LONGRANGEMODE_OFF                      (0x00) // Default
 #define SX127X_RF_LORA_OPMODE_LONGRANGEMODE_ON                       (0x80)
 
 #define SX127X_RF_LORA_OPMODE_ACCESSSHAREDSX127X_REG_MASK            (0xBF)
 #define SX127X_RF_LORA_OPMODE_ACCESSSHAREDSX127X_REG_ENABLE          (0x40)
-#define SX127X_RF_LORA_OPMODE_ACCESSSHAREDSX127X_REG_DISABLE         (0x00) /* Default */
+#define SX127X_RF_LORA_OPMODE_ACCESSSHAREDSX127X_REG_DISABLE         (0x00) // Default
 
 #define SX127X_RF_LORA_OPMODE_FREQMODE_ACCESS_MASK                   (0xF7)
-#define SX127X_RF_LORA_OPMODE_FREQMODE_ACCESS_LF                     (0x08) /* Default */
+#define SX127X_RF_LORA_OPMODE_FREQMODE_ACCESS_LF                     (0x08) // Default
 #define SX127X_RF_LORA_OPMODE_FREQMODE_ACCESS_HF                     (0x00)
 
 #define SX127X_RF_LORA_OPMODE_MASK                                   (0xF8)
 #define SX127X_RF_LORA_OPMODE_SLEEP                                  (0x00)
-#define SX127X_RF_LORA_OPMODE_STANDBY                                (0x01) /* Default */
+#define SX127X_RF_LORA_OPMODE_STANDBY                                (0x01) // Default
 #define SX127X_RF_LORA_OPMODE_SYNTHESIZER_TX                         (0x02)
 #define SX127X_RF_LORA_OPMODE_TRANSMITTER                            (0x03)
 #define SX127X_RF_LORA_OPMODE_SYNTHESIZER_RX                         (0x04)
 #define SX127X_RF_LORA_OPMODE_RECEIVER                               (0x05)
 
-/* LoRa specific modes */
+// LoRa specific modes
 #define SX127X_RF_LORA_OPMODE_RECEIVER_SINGLE                        (0x06)
 #define SX127X_RF_LORA_OPMODE_CAD                                    (0x07)
 
-/* RegFrf (MHz) */
-#define SX127X_RF_LORA_FRFMSB_434_MHZ                                (0x6C) /* Default */
-#define SX127X_RF_LORA_FRFMID_434_MHZ                                (0x80) /* Default */
-#define SX127X_RF_LORA_FRFLSB_434_MHZ                                (0x00) /* Default */
+// RegFrf (MHz)
+#define SX127X_RF_LORA_FRFMSB_434_MHZ                                (0x6C) // Default
+#define SX127X_RF_LORA_FRFMID_434_MHZ                                (0x80) // Default
+#define SX127X_RF_LORA_FRFLSB_434_MHZ                                (0x00) // Default
 
-/* RegPaConfig */
+// RegPaConfig
 #define SX127X_RF_LORA_PACONFIG_PASELECT_MASK                        (0x7F)
 #define SX127X_RF_LORA_PACONFIG_PASELECT_PABOOST                     (0x80)
-#define SX127X_RF_LORA_PACONFIG_PASELECT_RFO                         (0x00) /* Default */
+#define SX127X_RF_LORA_PACONFIG_PASELECT_RFO                         (0x00) // Default
 
 #define SX127X_RF_LORA_PACONFIG_MAX_POWER_MASK                       (0x8F)
 
 #define SX127X_RF_LORA_PACONFIG_OUTPUTPOWER_MASK                     (0xF0)
 
-/* RegPaRamp */
+// RegPaRamp
 #define SX127X_RF_LORA_PARAMP_TXBANDFORCE_MASK                       (0xEF)
 #define SX127X_RF_LORA_PARAMP_TXBANDFORCE_BAND_SEL                   (0x10)
-#define SX127X_RF_LORA_PARAMP_TXBANDFORCE_AUTO                       (0x00) /* Default */
+#define SX127X_RF_LORA_PARAMP_TXBANDFORCE_AUTO                       (0x00) // Default
 
 #define SX127X_RF_LORA_PARAMP_MASK                                   (0xF0)
 #define SX127X_RF_LORA_PARAMP_3400_US                                (0x00)
@@ -174,7 +164,7 @@ extern "C" {
 #define SX127X_RF_LORA_PARAMP_0100_US                                (0x06)
 #define SX127X_RF_LORA_PARAMP_0062_US                                (0x07)
 #define SX127X_RF_LORA_PARAMP_0050_US                                (0x08)
-#define SX127X_RF_LORA_PARAMP_0040_US                                (0x09) /* Default */
+#define SX127X_RF_LORA_PARAMP_0040_US                                (0x09) // Default
 #define SX127X_RF_LORA_PARAMP_0031_US                                (0x0A)
 #define SX127X_RF_LORA_PARAMP_0025_US                                (0x0B)
 #define SX127X_RF_LORA_PARAMP_0020_US                                (0x0C)
@@ -182,9 +172,9 @@ extern "C" {
 #define SX127X_RF_LORA_PARAMP_0012_US                                (0x0E)
 #define SX127X_RF_LORA_PARAMP_0010_US                                (0x0F)
 
-/* RegOcp */
+// RegOcp
 #define SX127X_RF_LORA_OCP_MASK                                      (0xDF)
-#define SX127X_RF_LORA_OCP_ON                                        (0x20) /* Default */
+#define SX127X_RF_LORA_OCP_ON                                        (0x20) // Default
 #define SX127X_RF_LORA_OCP_OFF                                       (0x00)
 
 #define SX127X_RF_LORA_OCP_TRIM_MASK                                 (0xE0)
@@ -199,7 +189,7 @@ extern "C" {
 #define SX127X_RF_LORA_OCP_TRIM_085_MA                               (0x08)
 #define SX127X_RF_LORA_OCP_TRIM_090_MA                               (0x09)
 #define SX127X_RF_LORA_OCP_TRIM_095_MA                               (0x0A)
-#define SX127X_RF_LORA_OCP_TRIM_100_MA                               (0x0B)  /* Default */
+#define SX127X_RF_LORA_OCP_TRIM_100_MA                               (0x0B)  // Default
 #define SX127X_RF_LORA_OCP_TRIM_105_MA                               (0x0C)
 #define SX127X_RF_LORA_OCP_TRIM_110_MA                               (0x0D)
 #define SX127X_RF_LORA_OCP_TRIM_115_MA                               (0x0E)
@@ -217,9 +207,9 @@ extern "C" {
 #define SX127X_RF_LORA_OCP_TRIM_230_MA                               (0x1A)
 #define SX127X_RF_LORA_OCP_TRIM_240_MA                               (0x1B)
 
-/* RegLna */
+// RegLna
 #define SX127X_RF_LORA_LNA_GAIN_MASK                                 (0x1F)
-#define SX127X_RF_LORA_LNA_GAIN_G1                                   (0x20) /* Default */
+#define SX127X_RF_LORA_LNA_GAIN_G1                                   (0x20) // Default
 #define SX127X_RF_LORA_LNA_GAIN_G2                                   (0x40)
 #define SX127X_RF_LORA_LNA_GAIN_G3                                   (0x60)
 #define SX127X_RF_LORA_LNA_GAIN_G4                                   (0x80)
@@ -227,22 +217,22 @@ extern "C" {
 #define SX127X_RF_LORA_LNA_GAIN_G6                                   (0xC0)
 
 #define SX127X_RF_LORA_LNA_BOOST_LF_MASK                             (0xE7)
-#define SX127X_RF_LORA_LNA_BOOST_LF_DEFAULT                          (0x00) /* Default */
+#define SX127X_RF_LORA_LNA_BOOST_LF_DEFAULT                          (0x00) // Default
 
 #define SX127X_RF_LORA_LNA_BOOST_HF_MASK                             (0xFC)
-#define SX127X_RF_LORA_LNA_BOOST_HF_OFF                              (0x00) /* Default */
+#define SX127X_RF_LORA_LNA_BOOST_HF_OFF                              (0x00) // Default
 #define SX127X_RF_LORA_LNA_BOOST_HF_ON                               (0x03)
 
-/* RegFifoAddrPtr */
-#define SX127X_RF_LORA_FIFOADDRPTR                                   (0x00) /* Default */
+// RegFifoAddrPtr
+#define SX127X_RF_LORA_FIFOADDRPTR                                   (0x00) // Default
 
-/* RegFifoTxBaseAddr */
-#define SX127X_RF_LORA_FIFOTXBASEADDR                                (0x80) /* Default */
+// RegFifoTxBaseAddr
+#define SX127X_RF_LORA_FIFOTXBASEADDR                                (0x80) // Default
 
-/* RegFifoTxBaseAddr */
-#define SX127X_RF_LORA_FIFORXBASEADDR                                (0x00) /* Default */
+// RegFifoTxBaseAddr
+#define SX127X_RF_LORA_FIFORXBASEADDR                                (0x00) // Default
 
-/* RegIrqFlagsMask */
+// RegIrqFlagsMask
 #define SX127X_RF_LORA_IRQFLAGS_RXTIMEOUT_MASK                       (0x80)
 #define SX127X_RF_LORA_IRQFLAGS_RXDONE_MASK                          (0x40)
 #define SX127X_RF_LORA_IRQFLAGS_PAYLOADCRCERROR_MASK                 (0x20)
@@ -252,7 +242,7 @@ extern "C" {
 #define SX127X_RF_LORA_IRQFLAGS_FHSSCHANGEDCHANNEL_MASK              (0x02)
 #define SX127X_RF_LORA_IRQFLAGS_CADDETECTED_MASK                     (0x01)
 
-/* RegIrqFlags */
+// RegIrqFlags
 #define SX127X_RF_LORA_IRQFLAGS_RXTIMEOUT                            (0x80)
 #define SX127X_RF_LORA_IRQFLAGS_RXDONE                               (0x40)
 #define SX127X_RF_LORA_IRQFLAGS_PAYLOADCRCERROR                      (0x20)
@@ -262,29 +252,29 @@ extern "C" {
 #define SX127X_RF_LORA_IRQFLAGS_FHSSCHANGEDCHANNEL                   (0x02)
 #define SX127X_RF_LORA_IRQFLAGS_CADDETECTED                          (0x01)
 
-/* RegModemStat (Read Only) */
+// RegModemStat (Read Only)
 #define SX127X_RF_LORA_MODEMSTAT_RX_CR_MASK                          (0x1F)
 #define SX127X_RF_LORA_MODEMSTAT_MODEM_STATUS_MASK                   (0xE0)
-#define SX127X_RF_LORA_MODEMSTAT_MODEM_STATUS_MODEM_CLEAR            (0x10) /* Default */
+#define SX127X_RF_LORA_MODEMSTAT_MODEM_STATUS_MODEM_CLEAR            (0x10) // Default
 #define SX127X_RF_LORA_MODEMSTAT_MODEM_STATUS_HEADER_VALID           (0x08)
 #define SX127X_RF_LORA_MODEMSTAT_MODEM_STATUS_RX_ONGOING             (0x04)
 #define SX127X_RF_LORA_MODEMSTAT_MODEM_STATUS_SIGNAL_SYNCHRONIZED    (0x02)
 #define SX127X_RF_LORA_MODEMSTAT_MODEM_STATUS_SIGNAL_DETECTED        (0x01)
 
-/* RegHopChannel (Read Only) */
+// RegHopChannel (Read Only)
 #define SX127X_RF_LORA_HOPCHANNEL_PLL_LOCK_TIMEOUT_MASK              (0x7F)
 #define SX127X_RF_LORA_HOPCHANNEL_PLL_LOCK_FAIL                      (0x80)
-#define SX127X_RF_LORA_HOPCHANNEL_PLL_LOCK_SUCCEED                   (0x00) /* Default */
+#define SX127X_RF_LORA_HOPCHANNEL_PLL_LOCK_SUCCEED                   (0x00) // Default
 
 #define SX127X_RF_LORA_HOPCHANNEL_CRCONPAYLOAD_MASK                  (0xBF)
 #define SX127X_RF_LORA_HOPCHANNEL_CRCONPAYLOAD_ON                    (0x40)
-#define SX127X_RF_LORA_HOPCHANNEL_CRCONPAYLOAD_OFF                   (0x00) /* Default */
+#define SX127X_RF_LORA_HOPCHANNEL_CRCONPAYLOAD_OFF                   (0x00) // Default
 
 #define SX127X_RF_LORA_HOPCHANNEL_CHANNEL_MASK                       (0x3F)
 
-/* RegModemConfig1 */
+// RegModemConfig1
 #define SX1272_RF_LORA_MODEMCONFIG1_BW_MASK                          (0x3F)
-#define SX1272_RF_LORA_MODEMCONFIG1_BW_125_KHZ                       (0x00) /* Default */
+#define SX1272_RF_LORA_MODEMCONFIG1_BW_125_KHZ                       (0x00) // Default
 #define SX1272_RF_LORA_MODEMCONFIG1_BW_250_KHZ                       (0x40)
 #define SX1272_RF_LORA_MODEMCONFIG1_BW_500_KHZ                       (0x80)
 
@@ -296,37 +286,37 @@ extern "C" {
 #define SX1276_RF_LORA_MODEMCONFIG1_BW_31_25_KHZ                     (0x40)
 #define SX1276_RF_LORA_MODEMCONFIG1_BW_41_66_KHZ                     (0x50)
 #define SX1276_RF_LORA_MODEMCONFIG1_BW_62_50_KHZ                     (0x60)
-#define SX1276_RF_LORA_MODEMCONFIG1_BW_125_KHZ                       (0x70) /* Default */
+#define SX1276_RF_LORA_MODEMCONFIG1_BW_125_KHZ                       (0x70) // Default
 #define SX1276_RF_LORA_MODEMCONFIG1_BW_250_KHZ                       (0x80)
 #define SX1276_RF_LORA_MODEMCONFIG1_BW_500_KHZ                       (0x90)
 
 #define SX1272_RF_LORA_MODEMCONFIG1_CODINGRATE_MASK                  (0xC7)
 #define SX1272_RF_LORA_MODEMCONFIG1_CODINGRATE_4_5                   (0x08)
-#define SX1272_RF_LORA_MODEMCONFIG1_CODINGRATE_4_6                   (0x10) /* Default */
+#define SX1272_RF_LORA_MODEMCONFIG1_CODINGRATE_4_6                   (0x10) // Default
 #define SX1272_RF_LORA_MODEMCONFIG1_CODINGRATE_4_7                   (0x18)
 #define SX1272_RF_LORA_MODEMCONFIG1_CODINGRATE_4_8                   (0x20)
 
 #define SX1276_RF_LORA_MODEMCONFIG1_CODINGRATE_MASK                  (0xF1)
 #define SX1276_RF_LORA_MODEMCONFIG1_CODINGRATE_4_5                   (0x02)
-#define SX1276_RF_LORA_MODEMCONFIG1_CODINGRATE_4_6                   (0x04) /* Default */
+#define SX1276_RF_LORA_MODEMCONFIG1_CODINGRATE_4_6                   (0x04) // Default
 #define SX1276_RF_LORA_MODEMCONFIG1_CODINGRATE_4_7                   (0x06)
 #define SX1276_RF_LORA_MODEMCONFIG1_CODINGRATE_4_8                   (0x08)
 
 #define SX1272_RF_LORA_MODEMCONFIG1_IMPLICITHEADER_MASK              (0xFB)
 #define SX1276_RF_LORA_MODEMCONFIG1_IMPLICITHEADER_MASK              (0xFE)
 #define SX127X_RF_LORA_MODEMCONFIG1_IMPLICITHEADER_ON                (0x01)
-#define SX127X_RF_LORA_MODEMCONFIG1_IMPLICITHEADER_OFF               (0x00) /* Default */
+#define SX127X_RF_LORA_MODEMCONFIG1_IMPLICITHEADER_OFF               (0x00) // Default
 
 #define SX1272_RF_LORA_MODEMCONFIG1_RXPAYLOADCRC_MASK                (0xFD)
 #define SX1272_RF_LORA_MODEMCONFIG1_RXPAYLOADCRC_ON                  (0x02)
-#define SX1272_RF_LORA_MODEMCONFIG1_RXPAYLOADCRC_OFF                 (0x00) /* Default */
+#define SX1272_RF_LORA_MODEMCONFIG1_RXPAYLOADCRC_OFF                 (0x00) // Default
 
 #define SX127X_RF_LORA_MODEMCONFIG1_LOWDATARATEOPTIMIZE_MASK         (0xFE)
 
-/* RegModemConfig2 */
+// RegModemConfig2
 #define SX127X_RF_LORA_MODEMCONFIG2_SF_MASK                          (0x0F)
 #define SX127X_RF_LORA_MODEMCONFIG2_SF_6                             (0x60)
-#define SX127X_RF_LORA_MODEMCONFIG2_SF_7                             (0x70) /* Default */
+#define SX127X_RF_LORA_MODEMCONFIG2_SF_7                             (0x70) // Default
 #define SX127X_RF_LORA_MODEMCONFIG2_SF_8                             (0x80)
 #define SX127X_RF_LORA_MODEMCONFIG2_SF_9                             (0x90)
 #define SX127X_RF_LORA_MODEMCONFIG2_SF_10                            (0xA0)
@@ -339,44 +329,44 @@ extern "C" {
 
 #define SX1276_RF_LORA_MODEMCONFIG2_RXPAYLOADCRC_MASK                (0xFB)
 #define SX1276_RF_LORA_MODEMCONFIG2_RXPAYLOADCRC_ON                  (0x04)
-#define SX1276_RF_LORA_MODEMCONFIG2_RXPAYLOADCRC_OFF                 (0x00) /* Default */
+#define SX1276_RF_LORA_MODEMCONFIG2_RXPAYLOADCRC_OFF                 (0x00) // Default
 
 #define SX127X_RF_LORA_MODEMCONFIG2_SYMBTIMEOUTMSB_MASK              (0xFC)
-#define SX127X_RF_LORA_MODEMCONFIG2_SYMBTIMEOUTMSB                   (0x00) /* Default */
+#define SX127X_RF_LORA_MODEMCONFIG2_SYMBTIMEOUTMSB                   (0x00) // Default
 
-/* RegSymbTimeoutLsb */
-#define SX127X_RF_LORA_SYMBTIMEOUTLSB_SYMBTIMEOUT                    (0x64) /* Default */
+// RegSymbTimeoutLsb
+#define SX127X_RF_LORA_SYMBTIMEOUTLSB_SYMBTIMEOUT                    (0x64) // Default
 
-/* RegPreambleLengthMsb */
-#define SX127X_RF_LORA_PREAMBLELENGTHMSB                             (0x00) /* Default */
+// RegPreambleLengthMsb
+#define SX127X_RF_LORA_PREAMBLELENGTHMSB                             (0x00) // Default
 
-/* RegPreambleLengthLsb */
-#define SX127X_RF_LORA_PREAMBLELENGTHLSB                             (0x08) /* Default */
+// RegPreambleLengthLsb
+#define SX127X_RF_LORA_PREAMBLELENGTHLSB                             (0x08) // Default
 
-/* RegPayloadLength */
-#define SX127X_RF_LORA_PAYLOADLENGTH                                 (0x0E) /* Default */
+// RegPayloadLength
+#define SX127X_RF_LORA_PAYLOADLENGTH                                 (0x0E) // Default
 
-/* RegPayloadMaxLength */
-#define SX127X_RF_LORA_PAYLOADMAXLENGTH                              (0xFF) /* Default */
+// RegPayloadMaxLength
+#define SX127X_RF_LORA_PAYLOADMAXLENGTH                              (0xFF) // Default
 
-/* RegHopPeriod */
-#define SX127X_RF_LORA_HOPPERIOD_FREQFOPPINGPERIOD                   (0x00) /* Default */
+// RegHopPeriod
+#define SX127X_RF_LORA_HOPPERIOD_FREQFOPPINGPERIOD                   (0x00) // Default
 
-/* RegModemConfig3 */
+// RegModemConfig3
 #define SX127X_RF_LORA_MODEMCONFIG3_LOWDATARATEOPTIMIZE_MASK         (0xF7)
 #define SX127X_RF_LORA_MODEMCONFIG3_LOWDATARATEOPTIMIZE_ON           (0x08)
-#define SX127X_RF_LORA_MODEMCONFIG3_LOWDATARATEOPTIMIZE_OFF          (0x00) /* Default */
+#define SX127X_RF_LORA_MODEMCONFIG3_LOWDATARATEOPTIMIZE_OFF          (0x00) // Default
 
 #define SX127X_RF_LORA_MODEMCONFIG3_AGCAUTO_MASK                     (0xFB)
-#define SX127X_RF_LORA_MODEMCONFIG3_AGCAUTO_ON                       (0x04) /* Default */
+#define SX127X_RF_LORA_MODEMCONFIG3_AGCAUTO_ON                       (0x04) // Default
 #define SX127X_RF_LORA_MODEMCONFIG3_AGCAUTO_OFF                      (0x00)
 
-/* RegDetectOptimize */
+// RegDetectOptimize
 #define SX127X_RF_LORA_DETECTIONOPTIMIZE_MASK                        (0xF8)
-#define SX127X_RF_LORA_DETECTIONOPTIMIZE_SF7_TO_SF12                 (0x03) /* Default */
+#define SX127X_RF_LORA_DETECTIONOPTIMIZE_SF7_TO_SF12                 (0x03) // Default
 #define SX127X_RF_LORA_DETECTIONOPTIMIZE_SF6                         (0x05)
 
-/* RegInvertIQ */
+// RegInvertIQ
 #define SX127X_RF_LORA_INVERTIQ_RX_MASK                              (0xBF)
 #define SX127X_RF_LORA_INVERTIQ_RX_OFF                               (0x00)
 #define SX127X_RF_LORA_INVERTIQ_RX_ON                                (0x40)
@@ -384,91 +374,89 @@ extern "C" {
 #define SX127X_RF_LORA_INVERTIQ_TX_OFF                               (0x01)
 #define SX127X_RF_LORA_INVERTIQ_TX_ON                                (0x00)
 
-/* RegDetectionThreshold */
-#define SX127X_RF_LORA_DETECTIONTHRESH_SF7_TO_SF12                   (0x0A) /* Default */
+// RegDetectionThreshold
+#define SX127X_RF_LORA_DETECTIONTHRESH_SF7_TO_SF12                   (0x0A) // Default
 #define SX127X_RF_LORA_DETECTIONTHRESH_SF6                           (0x0C)
 
-/* RegInvertIQ2 */
+// RegInvertIQ2
 #define SX127X_RF_LORA_INVERTIQ2_ON                                  (0x19)
 #define SX127X_RF_LORA_INVERTIQ2_OFF                                 (0x1D)
 
-/* RegDioMapping1 */
+// RegDioMapping1
 #define SX127X_RF_LORA_DIOMAPPING1_DIO0_MASK                         (0x3F)
-#define SX127X_RF_LORA_DIOMAPPING1_DIO0_00                           (0x00)  /* Default */
+#define SX127X_RF_LORA_DIOMAPPING1_DIO0_00                           (0x00)  // Default
 #define SX127X_RF_LORA_DIOMAPPING1_DIO0_01                           (0x40)
 #define SX127X_RF_LORA_DIOMAPPING1_DIO0_10                           (0x80)
 #define SX127X_RF_LORA_DIOMAPPING1_DIO0_11                           (0xC0)
 
 #define SX127X_RF_LORA_DIOMAPPING1_DIO1_MASK                         (0xCF)
-#define SX127X_RF_LORA_DIOMAPPING1_DIO1_00                           (0x00)  /* Default */
+#define SX127X_RF_LORA_DIOMAPPING1_DIO1_00                           (0x00)  // Default
 #define SX127X_RF_LORA_DIOMAPPING1_DIO1_01                           (0x10)
 #define SX127X_RF_LORA_DIOMAPPING1_DIO1_10                           (0x20)
 #define SX127X_RF_LORA_DIOMAPPING1_DIO1_11                           (0x30)
 
 #define SX127X_RF_LORA_DIOMAPPING1_DIO2_MASK                         (0xF3)
-#define SX127X_RF_LORA_DIOMAPPING1_DIO2_00                           (0x00)  /* Default */
+#define SX127X_RF_LORA_DIOMAPPING1_DIO2_00                           (0x00)  // Default
 #define SX127X_RF_LORA_DIOMAPPING1_DIO2_01                           (0x04)
 #define SX127X_RF_LORA_DIOMAPPING1_DIO2_10                           (0x08)
 #define SX127X_RF_LORA_DIOMAPPING1_DIO2_11                           (0x0C)
 
 #define SX127X_RF_LORA_DIOMAPPING1_DIO3_MASK                         (0xFC)
-#define SX127X_RF_LORA_DIOMAPPING1_DIO3_00                           (0x00)  /* Default */
+#define SX127X_RF_LORA_DIOMAPPING1_DIO3_00                           (0x00)  // Default
 #define SX127X_RF_LORA_DIOMAPPING1_DIO3_01                           (0x01)
 #define SX127X_RF_LORA_DIOMAPPING1_DIO3_10                           (0x02)
 #define SX127X_RF_LORA_DIOMAPPING1_DIO3_11                           (0x03)
 
-/* RegDioMapping2 */
+// RegDioMapping2
 #define SX127X_RF_LORA_DIOMAPPING2_DIO4_MASK                         (0x3F)
-#define SX127X_RF_LORA_DIOMAPPING2_DIO4_00                           (0x00)  /* Default */
+#define SX127X_RF_LORA_DIOMAPPING2_DIO4_00                           (0x00)  // Default
 #define SX127X_RF_LORA_DIOMAPPING2_DIO4_01                           (0x40)
 #define SX127X_RF_LORA_DIOMAPPING2_DIO4_10                           (0x80)
 #define SX127X_RF_LORA_DIOMAPPING2_DIO4_11                           (0xC0)
 
 #define SX127X_RF_LORA_DIOMAPPING2_DIO5_MASK                         (0xCF)
-#define SX127X_RF_LORA_DIOMAPPING2_DIO5_00                           (0x00)  /* Default */
+#define SX127X_RF_LORA_DIOMAPPING2_DIO5_00                           (0x00)  // Default
 #define SX127X_RF_LORA_DIOMAPPING2_DIO5_01                           (0x10)
 #define SX127X_RF_LORA_DIOMAPPING2_DIO5_10                           (0x20)
 #define SX127X_RF_LORA_DIOMAPPING2_DIO5_11                           (0x30)
 
 #define SX127X_RF_LORA_DIOMAPPING2_MAP_MASK                          (0xFE)
 #define SX127X_RF_LORA_DIOMAPPING2_MAP_PREAMBLEDETECT                (0x01)
-#define SX127X_RF_LORA_DIOMAPPING2_MAP_RSSI                          (0x00)  /* Default */
+#define SX127X_RF_LORA_DIOMAPPING2_MAP_RSSI                          (0x00)  // Default
 
-/* RegPllHop */
+// RegPllHop
 #define SX127X_RF_LORA_PLLHOP_FASTHOP_MASK                           (0x7F)
 #define SX127X_RF_LORA_PLLHOP_FASTHOP_ON                             (0x80)
-#define SX127X_RF_LORA_PLLHOP_FASTHOP_OFF                            (0x00)  /* Default */
+#define SX127X_RF_LORA_PLLHOP_FASTHOP_OFF                            (0x00)  // Default
 
-/* RegTcxo */
+// RegTcxo
 #define SX127X_RF_LORA_TCXO_TCXOINPUT_MASK                           (0xEF)
 #define SX127X_RF_LORA_TCXO_TCXOINPUT_ON                             (0x10)
-#define SX127X_RF_LORA_TCXO_TCXOINPUT_OFF                            (0x00)  /* Default */
+#define SX127X_RF_LORA_TCXO_TCXOINPUT_OFF                            (0x00)  // Default
 
-/* RegPaDac */
+// RegPaDac
 #define SX127X_RF_LORA_PADAC_20DBM_MASK                              (0xF8)
 #define SX127X_RF_LORA_PADAC_20DBM_ON                                (0x07)
-#define SX127X_RF_LORA_PADAC_20DBM_OFF                               (0x04)  /* Default */
+#define SX127X_RF_LORA_PADAC_20DBM_OFF                               (0x04)  // Default
 
-/* RegBitrateFrac */
+// RegBitrateFrac
 #define RF_BITRATEFRAC_MASK                                          (0xF0)
 
-/* RegPll */
+// RegPll
 #define RF_PLL_BANDWIDTH_MASK                                        (0x3F)
 #define RF_PLL_BANDWIDTH_75                                          (0x00)
 #define RF_PLL_BANDWIDTH_150                                         (0x40)
 #define RF_PLL_BANDWIDTH_225                                         (0x80)
-#define RF_PLL_BANDWIDTH_300                                         (0xC0)  /* Default */
-/** @} */
+#define RF_PLL_BANDWIDTH_300                                         (0xC0)  // Default
+/// @}
 
-/* FSK modem definitions */
+// FSK modem definitions
 
-/**
- * @name   SX127X FSK modem internal registers address
- * @{
- */
+/// @name   SX127X FSK modem internal registers address
+/// @{
 #define SX127X_REG_FIFO                                              (0x00)
 
-/* Common settings */
+// Common settings
 #define SX127X_REG_OPMODE                                            (0x01)
 #define SX127X_REG_BITRATEMSB                                        (0x02)
 #define SX127X_REG_BITRATELSB                                        (0x03)
@@ -478,12 +466,12 @@ extern "C" {
 #define SX127X_REG_FRFMID                                            (0x07)
 #define SX127X_REG_FRFLSB                                            (0x08)
 
-/* Tx settings */
+// Tx settings
 #define SX127X_REG_PACONFIG                                          (0x09)
 #define SX127X_REG_PARAMP                                            (0x0A)
 #define SX127X_REG_OCP                                               (0x0B)
 
-/* Rx settings */
+// Rx settings
 #define SX127X_REG_LNA                                               (0x0C)
 #define SX127X_REG_RXCONFIG                                          (0x0D)
 #define SX127X_REG_RSSICONFIG                                        (0x0E)
@@ -509,10 +497,10 @@ extern "C" {
 #define SX127X_REG_RXTIMEOUT3                                        (0x22)
 #define SX127X_REG_RXDELAY                                           (0x23)
 
-/* Oscillator settings */
+// Oscillator settings
 #define SX127X_REG_OSC                                               (0x24)
 
-/* Packet handler settings */
+// Packet handler settings
 #define SX127X_REG_PREAMBLEMSB                                       (0x25)
 #define SX127X_REG_PREAMBLELSB                                       (0x26)
 #define SX127X_REG_SYNCCONFIG                                        (0x27)
@@ -531,33 +519,33 @@ extern "C" {
 #define SX127X_REG_BROADCASTADRS                                     (0x34)
 #define SX127X_REG_FIFOTHRESH                                        (0x35)
 
-/* SM settings */
+// SM settings
 #define SX127X_REG_SEQCONFIG1                                        (0x36)
 #define SX127X_REG_SEQCONFIG2                                        (0x37)
 #define SX127X_REG_TIMERRESOL                                        (0x38)
 #define SX127X_REG_TIMER1COEF                                        (0x39)
 #define SX127X_REG_TIMER2COEF                                        (0x3A)
 
-/* Service settings */
+// Service settings
 #define SX127X_REG_IMAGECAL                                          (0x3B)
 #define SX127X_REG_TEMP                                              (0x3C)
 #define SX127X_REG_LOWBAT                                            (0x3D)
 
-/* Status */
+// Status
 #define SX127X_REG_IRQFLAGS1                                         (0x3E)
 #define SX127X_REG_IRQFLAGS2                                         (0x3F)
 
-/* I/O settings */
+// I/O settings
 #define SX127X_REG_DIOMAPPING1                                       (0x40)
 #define SX127X_REG_DIOMAPPING2                                       (0x41)
 
-/* Version */
+// Version
 #define SX127X_REG_VERSION                                           (0x42)
 #define VERSION_SX1276                                               (0x12)
 #define VERSION_SX1276_WLR089                                        (0x13)
 #define VERSION_SX1272                                               (0x22)
 
-/* Additional settings */
+// Additional settings
 #define SX127X_REG_PLLHOP                                            (0x44)
 #define SX127X_REG_TCXO                                              (0x4B)
 #define SX1276_REG_PADAC                                             (0x4D)
@@ -569,44 +557,42 @@ extern "C" {
 #define SX127X_REG_AGCTHRESH2                                        (0x63)
 #define SX127X_REG_AGCTHRESH3                                        (0x64)
 #define SX127X_REG_PLL                                               (0x70)
-/** @} */
+/// @}
 
-/**
- * @name   SX127X FSK bits control definition
- * @{
- */
+/// @name   SX127X FSK bits control definition
+/// @{
 
-/* RegOpMode */
+// RegOpMode
 #define SX127X_RF_OPMODE_LONGRANGEMODE_MASK                          (0x7F)
 #define SX127X_RF_OPMODE_LONGRANGEMODE_OFF                           (0x00)
 #define SX127X_RF_OPMODE_LONGRANGEMODE_ON                            (0x80)
 
 #define SX127X_RF_OPMODE_MODULATIONTYPE_MASK                         (0x9F)
-#define SX127X_RF_OPMODE_MODULATIONTYPE_FSK                          (0x00)  /* Default */
+#define SX127X_RF_OPMODE_MODULATIONTYPE_FSK                          (0x00)  // Default
 #define SX127X_RF_OPMODE_MODULATIONTYPE_OOK                          (0x20)
 
 #define SX127X_RF_OPMODE_MODULATIONSHAPING_MASK                      (0xE7)
-#define SX127X_RF_OPMODE_MODULATIONSHAPING_00                        (0x00)  /* Default */
+#define SX127X_RF_OPMODE_MODULATIONSHAPING_00                        (0x00)  // Default
 #define SX127X_RF_OPMODE_MODULATIONSHAPING_01                        (0x08)
 #define SX127X_RF_OPMODE_MODULATIONSHAPING_10                        (0x10)
 #define SX127X_RF_OPMODE_MODULATIONSHAPING_11                        (0x18)
 
 #define SX127X_RF_OPMODE_MASK                                        (0xF8)
 #define SX127X_RF_OPMODE_SLEEP                                       (0x00)
-#define SX127X_RF_OPMODE_STANDBY                                     (0x01)  /* Default */
+#define SX127X_RF_OPMODE_STANDBY                                     (0x01)  // Default
 #define SX127X_RF_OPMODE_SYNTHESIZER_TX                              (0x02)
 #define SX127X_RF_OPMODE_TRANSMITTER                                 (0x03)
 #define SX127X_RF_OPMODE_SYNTHESIZER_RX                              (0x04)
 #define SX127X_RF_OPMODE_RECEIVER                                    (0x05)
 #define SX127X_RF_OPMODE_RECEIVER_SINGLE                             (0x06)
 
-/* RegBitRate (bits/sec) */
+// RegBitRate (bits/sec)
 #define SX127X_RF_BITRATEMSB_1200_BPS                                (0x68)
 #define SX127X_RF_BITRATELSB_1200_BPS                                (0x2B)
 #define SX127X_RF_BITRATEMSB_2400_BPS                                (0x34)
 #define SX127X_RF_BITRATELSB_2400_BPS                                (0x15)
-#define SX127X_RF_BITRATEMSB_4800_BPS                                (0x1A)  /* Default */
-#define SX127X_RF_BITRATELSB_4800_BPS                                (0x0B)  /* Default */
+#define SX127X_RF_BITRATEMSB_4800_BPS                                (0x1A)  // Default
+#define SX127X_RF_BITRATELSB_4800_BPS                                (0x0B)  // Default
 #define SX127X_RF_BITRATEMSB_9600_BPS                                (0x0D)
 #define SX127X_RF_BITRATELSB_9600_BPS                                (0x05)
 #define SX127X_RF_BITRATEMSB_15000_BPS                               (0x08)
@@ -640,11 +626,11 @@ extern "C" {
 #define SX127X_RF_BITRATEMSB_32768_BPS                               (0x03)
 #define SX127X_RF_BITRATELSB_32768_BPS                               (0xD1)
 
-/* RegFdev (Hz) */
+// RegFdev (Hz)
 #define SX127X_RF_FDEVMSB_2000_HZ                                    (0x00)
 #define SX127X_RF_FDEVLSB_2000_HZ                                    (0x21)
-#define SX127X_RF_FDEVMSB_5000_HZ                                    (0x00)  /* Default */
-#define SX127X_RF_FDEVLSB_5000_HZ                                    (0x52)  /* Default */
+#define SX127X_RF_FDEVMSB_5000_HZ                                    (0x00)  // Default
+#define SX127X_RF_FDEVLSB_5000_HZ                                    (0x52)  // Default
 #define SX127X_RF_FDEVMSB_10000_HZ                                   (0x00)
 #define SX127X_RF_FDEVLSB_10000_HZ                                   (0xA4)
 #define SX127X_RF_FDEVMSB_15000_HZ                                   (0x00)
@@ -704,7 +690,7 @@ extern "C" {
 #define SX127X_RF_FDEVMSB_200000_HZ                                  (0x0C)
 #define SX127X_RF_FDEVLSB_200000_HZ                                  (0xCD)
 
-/* RegFrf (MHz) */
+// RegFrf (MHz)
 #define SX127X_RF_FRFMSB_863_MHZ                                     (0xD7)
 #define SX127X_RF_FRFMID_863_MHZ                                     (0xC0)
 #define SX127X_RF_FRFLSB_863_MHZ                                     (0x00)
@@ -769,9 +755,9 @@ extern "C" {
 #define SX127X_RF_FRFMSB_914_MHZ                                     (0xE4)
 #define SX127X_RF_FRFMID_914_MHZ                                     (0x80)
 #define SX127X_RF_FRFLSB_914_MHZ                                     (0x00)
-#define SX127X_RF_FRFMSB_915_MHZ                                     (0xE4)  /* Default */
-#define SX127X_RF_FRFMID_915_MHZ                                     (0xC0)  /* Default */
-#define SX127X_RF_FRFLSB_915_MHZ                                     (0x00)  /* Default */
+#define SX127X_RF_FRFMSB_915_MHZ                                     (0xE4)  // Default
+#define SX127X_RF_FRFMID_915_MHZ                                     (0xC0)  // Default
+#define SX127X_RF_FRFLSB_915_MHZ                                     (0x00)  // Default
 #define SX127X_RF_FRFMSB_916_MHZ                                     (0xE5)
 #define SX127X_RF_FRFMID_916_MHZ                                     (0x00)
 #define SX127X_RF_FRFLSB_916_MHZ                                     (0x00)
@@ -812,18 +798,18 @@ extern "C" {
 #define SX127X_RF_FRFMID_928_MHZ                                     (0x00)
 #define SX127X_RF_FRFLSB_928_MHZ                                     (0x00)
 
-/* RegPaConfig */
+// RegPaConfig
 #define SX127X_RF_PACONFIG_PASELECT_MASK                             (0x7F)
 #define SX127X_RF_PACONFIG_PASELECT_PABOOST                          (0x80)
-#define SX127X_RF_PACONFIG_PASELECT_RFO                              (0x00) /* Default */
+#define SX127X_RF_PACONFIG_PASELECT_RFO                              (0x00) // Default
 
 #define SX127X_RF_PACONFIG_MAX_POWER_MASK                            (0x8F)
 
 #define SX127X_RF_PACONFIG_OUTPUTPOWER_MASK                          (0xF0)
 
-/* RegPaRamp */
+// RegPaRamp
 #define SX127X_RF_PARAMP_LOWPNTXPLL_MASK                             (0xE0)
-#define SX127X_RF_PARAMP_LOWPNTXPLL_OFF                              (0x10)  /* Default */
+#define SX127X_RF_PARAMP_LOWPNTXPLL_OFF                              (0x10)  // Default
 #define SX127X_RF_PARAMP_LOWPNTXPLL_ON                               (0x00)
 
 #define SX127X_RF_PARAMP_MASK                                        (0xF0)
@@ -836,7 +822,7 @@ extern "C" {
 #define SX127X_RF_PARAMP_0100_US                                     (0x06)
 #define SX127X_RF_PARAMP_0062_US                                     (0x07)
 #define SX127X_RF_PARAMP_0050_US                                     (0x08)
-#define SX127X_RF_PARAMP_0040_US                                     (0x09)  /* Default */
+#define SX127X_RF_PARAMP_0040_US                                     (0x09)  // Default
 #define SX127X_RF_PARAMP_0031_US                                     (0x0A)
 #define SX127X_RF_PARAMP_0025_US                                     (0x0B)
 #define SX127X_RF_PARAMP_0020_US                                     (0x0C)
@@ -844,9 +830,9 @@ extern "C" {
 #define SX127X_RF_PARAMP_0012_US                                     (0x0E)
 #define SX127X_RF_PARAMP_0010_US                                     (0x0F)
 
-/* RegOcp */
+// RegOcp
 #define SX127X_RF_OCP_MASK                                           (0xDF)
-#define SX127X_RF_OCP_ON                                             (0x20)  /* Default */
+#define SX127X_RF_OCP_ON                                             (0x20)  // Default
 #define SX127X_RF_OCP_OFF                                            (0x00)
 
 #define SX127X_RF_OCP_TRIM_MASK                                      (0xE0)
@@ -861,7 +847,7 @@ extern "C" {
 #define SX127X_RF_OCP_TRIM_085_MA                                    (0x08)
 #define SX127X_RF_OCP_TRIM_090_MA                                    (0x09)
 #define SX127X_RF_OCP_TRIM_095_MA                                    (0x0A)
-#define SX127X_RF_OCP_TRIM_100_MA                                    (0x0B)  /* Default */
+#define SX127X_RF_OCP_TRIM_100_MA                                    (0x0B)  // Default
 #define SX127X_RF_OCP_TRIM_105_MA                                    (0x0C)
 #define SX127X_RF_OCP_TRIM_110_MA                                    (0x0D)
 #define SX127X_RF_OCP_TRIM_115_MA                                    (0x0E)
@@ -879,9 +865,9 @@ extern "C" {
 #define SX127X_RF_OCP_TRIM_230_MA                                    (0x1A)
 #define SX127X_RF_OCP_TRIM_240_MA                                    (0x1B)
 
-/* RegLna */
+// RegLna
 #define SX127X_RF_LNA_GAIN_MASK                                      (0x1F)
-#define SX127X_RF_LNA_GAIN_G1                                        (0x20)  /* Default */
+#define SX127X_RF_LNA_GAIN_G1                                        (0x20)  // Default
 #define SX127X_RF_LNA_GAIN_G2                                        (0x40)
 #define SX127X_RF_LNA_GAIN_G3                                        (0x60)
 #define SX127X_RF_LNA_GAIN_G4                                        (0x80)
@@ -889,35 +875,35 @@ extern "C" {
 #define SX127X_RF_LNA_GAIN_G6                                        (0xC0)
 
 #define SX127X_RF_LNA_BOOST_MASK                                     (0xFC)
-#define SX127X_RF_LNA_BOOST_OFF                                      (0x00)  /* Default */
+#define SX127X_RF_LNA_BOOST_OFF                                      (0x00)  // Default
 #define SX127X_RF_LNA_BOOST_ON                                       (0x03)
 
-/* RegRxConfig */
+// RegRxConfig
 #define SX127X_RF_RXCONFIG_RESTARTRXONCOLLISION_MASK                 (0x7F)
 #define SX127X_RF_RXCONFIG_RESTARTRXONCOLLISION_ON                   (0x80)
-#define SX127X_RF_RXCONFIG_RESTARTRXONCOLLISION_OFF                  (0x00) /* Default */
+#define SX127X_RF_RXCONFIG_RESTARTRXONCOLLISION_OFF                  (0x00) // Default
 
-#define SX127X_RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK                   (0x40) /* Write only */
+#define SX127X_RF_RXCONFIG_RESTARTRXWITHOUTPLLLOCK                   (0x40) // Write only
 
-#define SX127X_RF_RXCONFIG_RESTARTRXWITHPLLLOCK                      (0x20) /* Write only */
+#define SX127X_RF_RXCONFIG_RESTARTRXWITHPLLLOCK                      (0x20) // Write only
 
 #define SX127X_RF_RXCONFIG_AFCAUTO_MASK                              (0xEF)
 #define SX127X_RF_RXCONFIG_AFCAUTO_ON                                (0x10)
-#define SX127X_RF_RXCONFIG_AFCAUTO_OFF                               (0x00)  /* Default */
+#define SX127X_RF_RXCONFIG_AFCAUTO_OFF                               (0x00)  // Default
 
 #define SX127X_RF_RXCONFIG_AGCAUTO_MASK                              (0xF7)
-#define SX127X_RF_RXCONFIG_AGCAUTO_ON                                (0x08)  /* Default */
+#define SX127X_RF_RXCONFIG_AGCAUTO_ON                                (0x08)  // Default
 #define SX127X_RF_RXCONFIG_AGCAUTO_OFF                               (0x00)
 
 #define SX127X_RF_RXCONFIG_RXTRIGER_MASK                             (0xF8)
 #define SX127X_RF_RXCONFIG_RXTRIGER_OFF                              (0x00)
 #define SX127X_RF_RXCONFIG_RXTRIGER_RSSI                             (0x01)
-#define SX127X_RF_RXCONFIG_RXTRIGER_PREAMBLEDETECT                   (0x06)  /* Default */
+#define SX127X_RF_RXCONFIG_RXTRIGER_PREAMBLEDETECT                   (0x06)  // Default
 #define SX127X_RF_RXCONFIG_RXTRIGER_RSSI_PREAMBLEDETECT              (0x07)
 
-/* RegRssiConfig */
+// RegRssiConfig
 #define SX127X_RF_RSSICONFIG_OFFSET_MASK                             (0x07)
-#define SX127X_RF_RSSICONFIG_OFFSET_P_00_DB                          (0x00)  /* Default */
+#define SX127X_RF_RSSICONFIG_OFFSET_P_00_DB                          (0x00)  // Default
 #define SX127X_RF_RSSICONFIG_OFFSET_P_01_DB                          (0x08)
 #define SX127X_RF_RSSICONFIG_OFFSET_P_02_DB                          (0x10)
 #define SX127X_RF_RSSICONFIG_OFFSET_P_03_DB                          (0x18)
@@ -953,24 +939,24 @@ extern "C" {
 #define SX127X_RF_RSSICONFIG_SMOOTHING_MASK                          (0xF8)
 #define SX127X_RF_RSSICONFIG_SMOOTHING_2                             (0x00)
 #define SX127X_RF_RSSICONFIG_SMOOTHING_4                             (0x01)
-#define SX127X_RF_RSSICONFIG_SMOOTHING_8                             (0x02)  /* Default */
+#define SX127X_RF_RSSICONFIG_SMOOTHING_8                             (0x02)  // Default
 #define SX127X_RF_RSSICONFIG_SMOOTHING_16                            (0x03)
 #define SX127X_RF_RSSICONFIG_SMOOTHING_32                            (0x04)
 #define SX127X_RF_RSSICONFIG_SMOOTHING_64                            (0x05)
 #define SX127X_RF_RSSICONFIG_SMOOTHING_128                           (0x06)
 #define SX127X_RF_RSSICONFIG_SMOOTHING_256                           (0x07)
 
-/* RegRssiCollision */
-#define SX127X_RF_RSSICOLISION_THRESHOLD                             (0x0A)  /* Default */
+// RegRssiCollision
+#define SX127X_RF_RSSICOLISION_THRESHOLD                             (0x0A)  // Default
 
-/* RegRssiThresh */
-#define SX127X_RF_RSSITHRESH_THRESHOLD                               (0xFF)  /* Default */
+// RegRssiThresh
+#define SX127X_RF_RSSITHRESH_THRESHOLD                               (0xFF)  // Default
 
-/* RegRxBw */
+// RegRxBw
 #define SX127X_RF_RXBW_MANT_MASK                                     (0xE7)
 #define SX127X_RF_RXBW_MANT_16                                       (0x00)
 #define SX127X_RF_RXBW_MANT_20                                       (0x08)
-#define SX127X_RF_RXBW_MANT_24                                       (0x10)  /* Default */
+#define SX127X_RF_RXBW_MANT_24                                       (0x10)  // Default
 
 #define SX127X_RF_RXBW_EXP_MASK                                      (0xF8)
 #define SX127X_RF_RXBW_EXP_0                                         (0x00)
@@ -978,38 +964,38 @@ extern "C" {
 #define SX127X_RF_RXBW_EXP_2                                         (0x02)
 #define SX127X_RF_RXBW_EXP_3                                         (0x03)
 #define SX127X_RF_RXBW_EXP_4                                         (0x04)
-#define SX127X_RF_RXBW_EXP_5                                         (0x05)  /* Default */
+#define SX127X_RF_RXBW_EXP_5                                         (0x05)  // Default
 #define SX127X_RF_RXBW_EXP_6                                         (0x06)
 #define SX127X_RF_RXBW_EXP_7                                         (0x07)
 
-/* RegAfcBw */
+// RegAfcBw
 #define SX127X_RF_AFCBW_MANTAFC_MASK                                 (0xE7)
 #define SX127X_RF_AFCBW_MANTAFC_16                                   (0x00)
-#define SX127X_RF_AFCBW_MANTAFC_20                                   (0x08)  /* Default */
+#define SX127X_RF_AFCBW_MANTAFC_20                                   (0x08)  // Default
 #define SX127X_RF_AFCBW_MANTAFC_24                                   (0x10)
 
 #define SX127X_RF_AFCBW_EXPAFC_MASK                                  (0xF8)
 #define SX127X_RF_AFCBW_EXPAFC_0                                     (0x00)
 #define SX127X_RF_AFCBW_EXPAFC_1                                     (0x01)
 #define SX127X_RF_AFCBW_EXPAFC_2                                     (0x02)
-#define SX127X_RF_AFCBW_EXPAFC_3                                     (0x03)  /* Default */
+#define SX127X_RF_AFCBW_EXPAFC_3                                     (0x03)  // Default
 #define SX127X_RF_AFCBW_EXPAFC_4                                     (0x04)
 #define SX127X_RF_AFCBW_EXPAFC_5                                     (0x05)
 #define SX127X_RF_AFCBW_EXPAFC_6                                     (0x06)
 #define SX127X_RF_AFCBW_EXPAFC_7                                     (0x07)
 
-/* RegOokPeak */
-#define SX127X_RF_OOKPEAK_BITSYNC_MASK                               (0xDF)  /* Default */
-#define SX127X_RF_OOKPEAK_BITSYNC_ON                                 (0x20)  /* Default */
+// RegOokPeak
+#define SX127X_RF_OOKPEAK_BITSYNC_MASK                               (0xDF)  // Default
+#define SX127X_RF_OOKPEAK_BITSYNC_ON                                 (0x20)  // Default
 #define SX127X_RF_OOKPEAK_BITSYNC_OFF                                (0x00)
 
 #define SX127X_RF_OOKPEAK_OOKTHRESHTYPE_MASK                         (0xE7)
 #define SX127X_RF_OOKPEAK_OOKTHRESHTYPE_FIXED                        (0x00)
-#define SX127X_RF_OOKPEAK_OOKTHRESHTYPE_PEAK                         (0x08)  /* Default */
+#define SX127X_RF_OOKPEAK_OOKTHRESHTYPE_PEAK                         (0x08)  // Default
 #define SX127X_RF_OOKPEAK_OOKTHRESHTYPE_AVERAGE                      (0x10)
 
 #define SX127X_RF_OOKPEAK_OOKPEAKTHRESHSTEP_MASK                     (0xF8)
-#define SX127X_RF_OOKPEAK_OOKPEAKTHRESHSTEP_0_5_DB                   (0x00)  /* Default */
+#define SX127X_RF_OOKPEAK_OOKPEAKTHRESHSTEP_0_5_DB                   (0x00)  // Default
 #define SX127X_RF_OOKPEAK_OOKPEAKTHRESHSTEP_1_0_DB                   (0x01)
 #define SX127X_RF_OOKPEAK_OOKPEAKTHRESHSTEP_1_5_DB                   (0x02)
 #define SX127X_RF_OOKPEAK_OOKPEAKTHRESHSTEP_2_0_DB                   (0x03)
@@ -1018,12 +1004,12 @@ extern "C" {
 #define SX127X_RF_OOKPEAK_OOKPEAKTHRESHSTEP_5_0_DB                   (0x06)
 #define SX127X_RF_OOKPEAK_OOKPEAKTHRESHSTEP_6_0_DB                   (0x07)
 
-/* RegOokFix */
-#define SX127X_RF_OOKFIX_OOKFIXEDTHRESHOLD                           (0x0C)  /* Default */
+// RegOokFix
+#define SX127X_RF_OOKFIX_OOKFIXEDTHRESHOLD                           (0x0C)  // Default
 
-/* RegOokAvg */
+// RegOokAvg
 #define SX127X_RF_OOKAVG_OOKPEAKTHRESHDEC_MASK                       (0x1F)
-#define SX127X_RF_OOKAVG_OOKPEAKTHRESHDEC_000                        (0x00)  /* Default */
+#define SX127X_RF_OOKAVG_OOKPEAKTHRESHDEC_000                        (0x00)  // Default
 #define SX127X_RF_OOKAVG_OOKPEAKTHRESHDEC_001                        (0x20)
 #define SX127X_RF_OOKAVG_OOKPEAKTHRESHDEC_010                        (0x40)
 #define SX127X_RF_OOKAVG_OOKPEAKTHRESHDEC_011                        (0x60)
@@ -1033,7 +1019,7 @@ extern "C" {
 #define SX127X_RF_OOKAVG_OOKPEAKTHRESHDEC_111                        (0xE0)
 
 #define SX127X_RF_OOKAVG_AVERAGEOFFSET_MASK                          (0xF3)
-#define SX127X_RF_OOKAVG_AVERAGEOFFSET_0_DB                          (0x00)  /* Default */
+#define SX127X_RF_OOKAVG_AVERAGEOFFSET_0_DB                          (0x00)  // Default
 #define SX127X_RF_OOKAVG_AVERAGEOFFSET_2_DB                          (0x04)
 #define SX127X_RF_OOKAVG_AVERAGEOFFSET_4_DB                          (0x08)
 #define SX127X_RF_OOKAVG_AVERAGEOFFSET_6_DB                          (0x0C)
@@ -1041,26 +1027,26 @@ extern "C" {
 #define SX127X_RF_OOKAVG_OOKAVERAGETHRESHFILT_MASK                   (0xFC)
 #define SX127X_RF_OOKAVG_OOKAVERAGETHRESHFILT_00                     (0x00)
 #define SX127X_RF_OOKAVG_OOKAVERAGETHRESHFILT_01                     (0x01)
-#define SX127X_RF_OOKAVG_OOKAVERAGETHRESHFILT_10                     (0x02)  /* Default */
+#define SX127X_RF_OOKAVG_OOKAVERAGETHRESHFILT_10                     (0x02)  // Default
 #define SX127X_RF_OOKAVG_OOKAVERAGETHRESHFILT_11                     (0x03)
 
-/* RegAfcFei */
+// RegAfcFei
 #define SX127X_RF_AFCFEI_AGCSTART                                    (0x10)
 
 #define SX127X_RF_AFCFEI_AFCCLEAR                                    (0x02)
 
 #define SX127X_RF_AFCFEI_AFCAUTOCLEAR_MASK                           (0xFE)
 #define SX127X_RF_AFCFEI_AFCAUTOCLEAR_ON                             (0x01)
-#define SX127X_RF_AFCFEI_AFCAUTOCLEAR_OFF                            (0x00)  /* Default */
+#define SX127X_RF_AFCFEI_AFCAUTOCLEAR_OFF                            (0x00)  // Default
 
-/* RegPreambleDetect */
+// RegPreambleDetect
 #define SX127X_RF_PREAMBLEDETECT_DETECTOR_MASK                       (0x7F)
-#define SX127X_RF_PREAMBLEDETECT_DETECTOR_ON                         (0x80)  /* Default */
+#define SX127X_RF_PREAMBLEDETECT_DETECTOR_ON                         (0x80)  // Default
 #define SX127X_RF_PREAMBLEDETECT_DETECTOR_OFF                        (0x00)
 
 #define SX127X_RF_PREAMBLEDETECT_DETECTORSIZE_MASK                   (0x9F)
 #define SX127X_RF_PREAMBLEDETECT_DETECTORSIZE_1                      (0x00)
-#define SX127X_RF_PREAMBLEDETECT_DETECTORSIZE_2                      (0x20)  /* Default */
+#define SX127X_RF_PREAMBLEDETECT_DETECTORSIZE_2                      (0x20)  // Default
 #define SX127X_RF_PREAMBLEDETECT_DETECTORSIZE_3                      (0x40)
 #define SX127X_RF_PREAMBLEDETECT_DETECTORSIZE_4                      (0x60)
 
@@ -1075,7 +1061,7 @@ extern "C" {
 #define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_7                       (0x07)
 #define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_8                       (0x08)
 #define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_9                       (0x09)
-#define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_10                      (0x0A)  /* Default */
+#define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_10                      (0x0A)  // Default
 #define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_11                      (0x0B)
 #define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_12                      (0x0C)
 #define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_13                      (0x0D)
@@ -1098,19 +1084,19 @@ extern "C" {
 #define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_30                      (0x1E)
 #define SX127X_RF_PREAMBLEDETECT_DETECTORTOL_31                      (0x1F)
 
-/* RegRxTimeout1 */
-#define SX127X_RF_RXTIMEOUT1_TIMEOUTRXRSSI                           (0x00)  /* Default */
+// RegRxTimeout1
+#define SX127X_RF_RXTIMEOUT1_TIMEOUTRXRSSI                           (0x00)  // Default
 
-/* RegRxTimeout2 */
-#define SX127X_RF_RXTIMEOUT2_TIMEOUTRXPREAMBLE                       (0x00)  /* Default */
+// RegRxTimeout2
+#define SX127X_RF_RXTIMEOUT2_TIMEOUTRXPREAMBLE                       (0x00)  // Default
 
-/* RegRxTimeout3 */
-#define SX127X_RF_RXTIMEOUT3_TIMEOUTSIGNALSYNC                       (0x00)  /* Default */
+// RegRxTimeout3
+#define SX127X_RF_RXTIMEOUT3_TIMEOUTSIGNALSYNC                       (0x00)  // Default
 
-/* RegRxDelay */
-#define SX127X_RF_RXDELAY_INTERPACKETRXDELAY                         (0x00)  /* Default */
+// RegRxDelay
+#define SX127X_RF_RXDELAY_INTERPACKETRXDELAY                         (0x00)  // Default
 
-/* RegOsc */
+// RegOsc
 #define SX127X_RF_OSC_RCCALSTART                                     (0x08)
 
 #define SX127X_RF_OSC_CLKOUT_MASK                                    (0xF8)
@@ -1119,141 +1105,141 @@ extern "C" {
 #define SX127X_RF_OSC_CLKOUT_8_MHZ                                   (0x02)
 #define SX127X_RF_OSC_CLKOUT_4_MHZ                                   (0x03)
 #define SX127X_RF_OSC_CLKOUT_2_MHZ                                   (0x04)
-#define SX127X_RF_OSC_CLKOUT_1_MHZ                                   (0x05)  /* Default */
+#define SX127X_RF_OSC_CLKOUT_1_MHZ                                   (0x05)  // Default
 #define SX127X_RF_OSC_CLKOUT_RC                                      (0x06)
 #define SX127X_RF_OSC_CLKOUT_OFF                                     (0x07)
 
-/* RegPreambleMsb/RegPreambleLsb */
-#define SX127X_RF_PREAMBLEMSB_SIZE                                   (0x00)  /* Default */
-#define SX127X_RF_PREAMBLELSB_SIZE                                   (0x03)  /* Default */
+// RegPreambleMsb/RegPreambleLsb
+#define SX127X_RF_PREAMBLEMSB_SIZE                                   (0x00)  // Default
+#define SX127X_RF_PREAMBLELSB_SIZE                                   (0x03)  // Default
 
-/* RegSyncConfig */
+// RegSyncConfig
 #define SX127X_RF_SYNCCONFIG_AUTORESTARTRXMODE_MASK                  (0x3F)
-#define SX127X_RF_SYNCCONFIG_AUTORESTARTRXMODE_WAITPLL_ON            (0x80)  /* Default */
+#define SX127X_RF_SYNCCONFIG_AUTORESTARTRXMODE_WAITPLL_ON            (0x80)  // Default
 #define SX127X_RF_SYNCCONFIG_AUTORESTARTRXMODE_WAITPLL_OFF           (0x40)
 #define SX127X_RF_SYNCCONFIG_AUTORESTARTRXMODE_OFF                   (0x00)
 
 #define SX127X_RF_SYNCCONFIG_PREAMBLEPOLARITY_MASK                   (0xDF)
 #define SX127X_RF_SYNCCONFIG_PREAMBLEPOLARITY_55                     (0x20)
-#define SX127X_RF_SYNCCONFIG_PREAMBLEPOLARITY_AA                     (0x00)  /* Default */
+#define SX127X_RF_SYNCCONFIG_PREAMBLEPOLARITY_AA                     (0x00)  // Default
 
 #define SX127X_RF_SYNCCONFIG_SYNC_MASK                               (0xEF)
-#define SX127X_RF_SYNCCONFIG_SYNC_ON                                 (0x10)  /* Default */
+#define SX127X_RF_SYNCCONFIG_SYNC_ON                                 (0x10)  // Default
 #define SX127X_RF_SYNCCONFIG_SYNC_OFF                                (0x00)
 
 #define SX127X_RF_SYNCCONFIG_SYNCSIZE_MASK                           (0xF8)
 #define SX127X_RF_SYNCCONFIG_SYNCSIZE_1                              (0x00)
 #define SX127X_RF_SYNCCONFIG_SYNCSIZE_2                              (0x01)
 #define SX127X_RF_SYNCCONFIG_SYNCSIZE_3                              (0x02)
-#define SX127X_RF_SYNCCONFIG_SYNCSIZE_4                              (0x03)  /* Default */
+#define SX127X_RF_SYNCCONFIG_SYNCSIZE_4                              (0x03)  // Default
 #define SX127X_RF_SYNCCONFIG_SYNCSIZE_5                              (0x04)
 #define SX127X_RF_SYNCCONFIG_SYNCSIZE_6                              (0x05)
 #define SX127X_RF_SYNCCONFIG_SYNCSIZE_7                              (0x06)
 #define SX127X_RF_SYNCCONFIG_SYNCSIZE_8                              (0x07)
 
-/* RegSyncValue1-8 */
-#define SX127X_RF_SYNCVALUE1_SYNCVALUE                               (0x01)  /* Default */
-#define SX127X_RF_SYNCVALUE2_SYNCVALUE                               (0x01)  /* Default */
-#define SX127X_RF_SYNCVALUE3_SYNCVALUE                               (0x01)  /* Default */
-#define SX127X_RF_SYNCVALUE4_SYNCVALUE                               (0x01)  /* Default */
-#define SX127X_RF_SYNCVALUE5_SYNCVALUE                               (0x01)  /* Default */
-#define SX127X_RF_SYNCVALUE6_SYNCVALUE                               (0x01)  /* Default */
-#define SX127X_RF_SYNCVALUE7_SYNCVALUE                               (0x01)  /* Default */
-#define SX127X_RF_SYNCVALUE8_SYNCVALUE                               (0x01)  /* Default */
+// RegSyncValue1-8
+#define SX127X_RF_SYNCVALUE1_SYNCVALUE                               (0x01)  // Default
+#define SX127X_RF_SYNCVALUE2_SYNCVALUE                               (0x01)  // Default
+#define SX127X_RF_SYNCVALUE3_SYNCVALUE                               (0x01)  // Default
+#define SX127X_RF_SYNCVALUE4_SYNCVALUE                               (0x01)  // Default
+#define SX127X_RF_SYNCVALUE5_SYNCVALUE                               (0x01)  // Default
+#define SX127X_RF_SYNCVALUE6_SYNCVALUE                               (0x01)  // Default
+#define SX127X_RF_SYNCVALUE7_SYNCVALUE                               (0x01)  // Default
+#define SX127X_RF_SYNCVALUE8_SYNCVALUE                               (0x01)  // Default
 
-/* RegPacketConfig1 */
+// RegPacketConfig1
 #define SX127X_RF_PACKETCONFIG1_PACKETFORMAT_MASK                    (0x7F)
 #define SX127X_RF_PACKETCONFIG1_PACKETFORMAT_FIXED                   (0x00)
-#define SX127X_RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE                (0x80)  /* Default */
+#define SX127X_RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE                (0x80)  // Default
 
 #define SX127X_RF_PACKETCONFIG1_DCFREE_MASK                          (0x9F)
-#define SX127X_RF_PACKETCONFIG1_DCFREE_OFF                           (0x00)  /* Default */
+#define SX127X_RF_PACKETCONFIG1_DCFREE_OFF                           (0x00)  // Default
 #define SX127X_RF_PACKETCONFIG1_DCFREE_MANCHESTER                    (0x20)
 #define SX127X_RF_PACKETCONFIG1_DCFREE_WHITENING                     (0x40)
 
 #define SX127X_RF_PACKETCONFIG1_CRC_MASK                             (0xEF)
-#define SX127X_RF_PACKETCONFIG1_CRC_ON                               (0x10)  /* Default */
+#define SX127X_RF_PACKETCONFIG1_CRC_ON                               (0x10)  // Default
 #define SX127X_RF_PACKETCONFIG1_CRC_OFF                              (0x00)
 
 #define SX127X_RF_PACKETCONFIG1_CRCAUTOCLEAR_MASK                    (0xF7)
-#define SX127X_RF_PACKETCONFIG1_CRCAUTOCLEAR_ON                      (0x00)  /* Default */
+#define SX127X_RF_PACKETCONFIG1_CRCAUTOCLEAR_ON                      (0x00)  // Default
 #define SX127X_RF_PACKETCONFIG1_CRCAUTOCLEAR_OFF                     (0x08)
 
 #define SX127X_RF_PACKETCONFIG1_ADDRSFILTERING_MASK                  (0xF9)
-#define SX127X_RF_PACKETCONFIG1_ADDRSFILTERING_OFF                   (0x00)  /* Default */
+#define SX127X_RF_PACKETCONFIG1_ADDRSFILTERING_OFF                   (0x00)  // Default
 #define SX127X_RF_PACKETCONFIG1_ADDRSFILTERING_NODE                  (0x02)
 #define SX127X_RF_PACKETCONFIG1_ADDRSFILTERING_NODEBROADCAST         (0x04)
 
 #define SX127X_RF_PACKETCONFIG1_CRCWHITENINGTYPE_MASK                (0xFE)
-#define SX127X_RF_PACKETCONFIG1_CRCWHITENINGTYPE_CCITT               (0x00)  /* Default */
+#define SX127X_RF_PACKETCONFIG1_CRCWHITENINGTYPE_CCITT               (0x00)  // Default
 #define SX127X_RF_PACKETCONFIG1_CRCWHITENINGTYPE_IBM                 (0x01)
 
-/* RegPacketConfig2 */
+// RegPacketConfig2
 #define SX127X_RF_PACKETCONFIG2_WMBUS_CRC_ENABLE_MASK                (0x7F)
 #define SX127X_RF_PACKETCONFIG2_WMBUS_CRC_ENABLE                     (0x80)
-#define SX127X_RF_PACKETCONFIG2_WMBUS_CRC_DISABLE                    (0x00)  /* Default */
+#define SX127X_RF_PACKETCONFIG2_WMBUS_CRC_DISABLE                    (0x00)  // Default
 
 #define SX127X_RF_PACKETCONFIG2_DATAMODE_MASK                        (0xBF)
 #define SX127X_RF_PACKETCONFIG2_DATAMODE_CONTINUOUS                  (0x00)
-#define SX127X_RF_PACKETCONFIG2_DATAMODE_PACKET                      (0x40)  /* Default */
+#define SX127X_RF_PACKETCONFIG2_DATAMODE_PACKET                      (0x40)  // Default
 
 #define SX127X_RF_PACKETCONFIG2_IOHOME_MASK                          (0xDF)
 #define SX127X_RF_PACKETCONFIG2_IOHOME_ON                            (0x20)
-#define SX127X_RF_PACKETCONFIG2_IOHOME_OFF                           (0x00)  /* Default */
+#define SX127X_RF_PACKETCONFIG2_IOHOME_OFF                           (0x00)  // Default
 
 #define SX127X_RF_PACKETCONFIG2_BEACON_MASK                          (0xF7)
 #define SX127X_RF_PACKETCONFIG2_BEACON_ON                            (0x08)
-#define SX127X_RF_PACKETCONFIG2_BEACON_OFF                           (0x00)  /* Default */
+#define SX127X_RF_PACKETCONFIG2_BEACON_OFF                           (0x00)  // Default
 
 #define SX127X_RF_PACKETCONFIG2_PAYLOADLENGTH_MSB_MASK               (0xF8)
 
-/* RegPayloadLength */
-#define SX127X_RF_PAYLOADLENGTH_LENGTH                               (0x40)  /* Default */
+// RegPayloadLength
+#define SX127X_RF_PAYLOADLENGTH_LENGTH                               (0x40)  // Default
 
-/* RegNodeAdrs */
+// RegNodeAdrs
 #define SX127X_RF_NODEADDRESS_ADDRESS                                (0x00)
 
-/* RegBroadcastAdrs */
+// RegBroadcastAdrs
 #define SX127X_RF_BROADCASTADDRESS_ADDRESS                           (0x00)
 
-/* RegFifoThresh */
+// RegFifoThresh
 #define SX127X_RF_FIFOTHRESH_TXSTARTCONDITION_MASK                   (0x7F)
-#define SX127X_RF_FIFOTHRESH_TXSTARTCONDITION_FIFOTHRESH             (0x00)  /* Default */
+#define SX127X_RF_FIFOTHRESH_TXSTARTCONDITION_FIFOTHRESH             (0x00)  // Default
 #define SX127X_RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY           (0x80)
 
 #define SX127X_RF_FIFOTHRESH_FIFOTHRESHOLD_MASK                      (0xC0)
-#define SX127X_RF_FIFOTHRESH_FIFOTHRESHOLD_THRESHOLD                 (0x0F)  /* Default */
+#define SX127X_RF_FIFOTHRESH_FIFOTHRESHOLD_THRESHOLD                 (0x0F)  // Default
 
-/* RegSeqConfig1 */
+// RegSeqConfig1
 #define SX127X_RF_SEQCONFIG1_SEQUENCER_START                         (0x80)
 
 #define SX127X_RF_SEQCONFIG1_SEQUENCER_STOP                          (0x40)
 
 #define SX127X_RF_SEQCONFIG1_IDLEMODE_MASK                           (0xDF)
 #define SX127X_RF_SEQCONFIG1_IDLEMODE_SLEEP                          (0x20)
-#define SX127X_RF_SEQCONFIG1_IDLEMODE_STANDBY                        (0x00)  /* Default */
+#define SX127X_RF_SEQCONFIG1_IDLEMODE_STANDBY                        (0x00)  // Default
 
 #define SX127X_RF_SEQCONFIG1_FROMSTART_MASK                          (0xE7)
-#define SX127X_RF_SEQCONFIG1_FROMSTART_TOLPS                         (0x00)  /* Default */
+#define SX127X_RF_SEQCONFIG1_FROMSTART_TOLPS                         (0x00)  // Default
 #define SX127X_RF_SEQCONFIG1_FROMSTART_TORX                          (0x08)
 #define SX127X_RF_SEQCONFIG1_FROMSTART_TOTX                          (0x10)
 #define SX127X_RF_SEQCONFIG1_FROMSTART_TOTX_ONFIFOLEVEL              (0x18)
 
 #define SX127X_RF_SEQCONFIG1_LPS_MASK                                (0xFB)
-#define SX127X_RF_SEQCONFIG1_LPS_SEQUENCER_OFF                       (0x00)  /* Default */
+#define SX127X_RF_SEQCONFIG1_LPS_SEQUENCER_OFF                       (0x00)  // Default
 #define SX127X_RF_SEQCONFIG1_LPS_IDLE                                (0x04)
 
 #define SX127X_RF_SEQCONFIG1_FROMIDLE_MASK                           (0xFD)
-#define SX127X_RF_SEQCONFIG1_FROMIDLE_TOTX                           (0x00)  /* Default */
+#define SX127X_RF_SEQCONFIG1_FROMIDLE_TOTX                           (0x00)  // Default
 #define SX127X_RF_SEQCONFIG1_FROMIDLE_TORX                           (0x02)
 
 #define SX127X_RF_SEQCONFIG1_FROMTX_MASK                             (0xFE)
-#define SX127X_RF_SEQCONFIG1_FROMTX_TOLPS                            (0x00)  /* Default */
+#define SX127X_RF_SEQCONFIG1_FROMTX_TOLPS                            (0x00)  // Default
 #define SX127X_RF_SEQCONFIG1_FROMTX_TORX                             (0x01)
 
-/* RegSeqConfig2 */
+// RegSeqConfig2
 #define SX127X_RF_SEQCONFIG2_FROMRX_MASK                             (0x1F)
-#define SX127X_RF_SEQCONFIG2_FROMRX_TOUNUSED_000                     (0x00)  /* Default */
+#define SX127X_RF_SEQCONFIG2_FROMRX_TOUNUSED_000                     (0x00)  // Default
 #define SX127X_RF_SEQCONFIG2_FROMRX_TORXPKT_ONPLDRDY                 (0x20)
 #define SX127X_RF_SEQCONFIG2_FROMRX_TOLPS_ONPLDRDY                   (0x40)
 #define SX127X_RF_SEQCONFIG2_FROMRX_TORXPKT_ONCRCOK                  (0x60)
@@ -1263,77 +1249,77 @@ extern "C" {
 #define SX127X_RF_SEQCONFIG2_FROMRX_TOUNUSED_111                     (0xE0)
 
 #define SX127X_RF_SEQCONFIG2_FROMRXTIMEOUT_MASK                      (0xE7)
-#define SX127X_RF_SEQCONFIG2_FROMRXTIMEOUT_TORXRESTART               (0x00)  /* Default */
+#define SX127X_RF_SEQCONFIG2_FROMRXTIMEOUT_TORXRESTART               (0x00)  // Default
 #define SX127X_RF_SEQCONFIG2_FROMRXTIMEOUT_TOTX                      (0x08)
 #define SX127X_RF_SEQCONFIG2_FROMRXTIMEOUT_TOLPS                     (0x10)
 #define SX127X_RF_SEQCONFIG2_FROMRXTIMEOUT_TOSEQUENCEROFF            (0x18)
 
 #define SX127X_RF_SEQCONFIG2_FROMRXPKT_MASK                          (0xF8)
-#define SX127X_RF_SEQCONFIG2_FROMRXPKT_TOSEQUENCEROFF                (0x00)  /* Default */
+#define SX127X_RF_SEQCONFIG2_FROMRXPKT_TOSEQUENCEROFF                (0x00)  // Default
 #define SX127X_RF_SEQCONFIG2_FROMRXPKT_TOTX_ONFIFOEMPTY              (0x01)
 #define SX127X_RF_SEQCONFIG2_FROMRXPKT_TOLPS                         (0x02)
 #define SX127X_RF_SEQCONFIG2_FROMRXPKT_TOSYNTHESIZERRX               (0x03)
 #define SX127X_RF_SEQCONFIG2_FROMRXPKT_TORX                          (0x04)
 
-/* RegTimerResol */
+// RegTimerResol
 #define SX127X_RF_TIMERRESOL_TIMER1RESOL_MASK                        (0xF3)
-#define SX127X_RF_TIMERRESOL_TIMER1RESOL_OFF                         (0x00)  /* Default */
+#define SX127X_RF_TIMERRESOL_TIMER1RESOL_OFF                         (0x00)  // Default
 #define SX127X_RF_TIMERRESOL_TIMER1RESOL_000064_US                   (0x04)
 #define SX127X_RF_TIMERRESOL_TIMER1RESOL_004100_US                   (0x08)
 #define SX127X_RF_TIMERRESOL_TIMER1RESOL_262000_US                   (0x0C)
 
 #define SX127X_RF_TIMERRESOL_TIMER2RESOL_MASK                        (0xFC)
-#define SX127X_RF_TIMERRESOL_TIMER2RESOL_OFF                         (0x00)  /* Default */
+#define SX127X_RF_TIMERRESOL_TIMER2RESOL_OFF                         (0x00)  // Default
 #define SX127X_RF_TIMERRESOL_TIMER2RESOL_000064_US                   (0x01)
 #define SX127X_RF_TIMERRESOL_TIMER2RESOL_004100_US                   (0x02)
 #define SX127X_RF_TIMERRESOL_TIMER2RESOL_262000_US                   (0x03)
 
-/* RegTimer1Coef */
-#define SX127X_RF_TIMER1COEF_TIMER1COEFFICIENT                       (0xF5)  /* Default */
+// RegTimer1Coef
+#define SX127X_RF_TIMER1COEF_TIMER1COEFFICIENT                       (0xF5)  // Default
 
-/* RegTimer2Coef */
-#define SX127X_RF_TIMER2COEF_TIMER2COEFFICIENT                       (0x20)  /* Default */
+// RegTimer2Coef
+#define SX127X_RF_TIMER2COEF_TIMER2COEFFICIENT                       (0x20)  // Default
 
-/* RegImageCal */
+// RegImageCal
 #define SX127X_RF_IMAGECAL_AUTOIMAGECAL_MASK                         (0x7F)
 #define SX127X_RF_IMAGECAL_AUTOIMAGECAL_ON                           (0x80)
-#define SX127X_RF_IMAGECAL_AUTOIMAGECAL_OFF                          (0x00)  /* Default */
+#define SX127X_RF_IMAGECAL_AUTOIMAGECAL_OFF                          (0x00)  // Default
 
 #define SX127X_RF_IMAGECAL_IMAGECAL_MASK                             (0xBF)
 #define SX127X_RF_IMAGECAL_IMAGECAL_START                            (0x40)
 
 #define SX127X_RF_IMAGECAL_IMAGECAL_RUNNING                          (0x20)
-#define SX127X_RF_IMAGECAL_IMAGECAL_DONE                             (0x00)  /* Default */
+#define SX127X_RF_IMAGECAL_IMAGECAL_DONE                             (0x00)  // Default
 
 #define SX127X_RF_IMAGECAL_TEMPCHANGE_HIGHER                         (0x08)
 #define SX127X_RF_IMAGECAL_TEMPCHANGE_LOWER                          (0x00)
 
 #define SX127X_RF_IMAGECAL_TEMPTHRESHOLD_MASK                        (0xF9)
 #define SX127X_RF_IMAGECAL_TEMPTHRESHOLD_05                          (0x00)
-#define SX127X_RF_IMAGECAL_TEMPTHRESHOLD_10                          (0x02)  /* Default */
+#define SX127X_RF_IMAGECAL_TEMPTHRESHOLD_10                          (0x02)  // Default
 #define SX127X_RF_IMAGECAL_TEMPTHRESHOLD_15                          (0x04)
 #define SX127X_RF_IMAGECAL_TEMPTHRESHOLD_20                          (0x06)
 
 #define SX127X_RF_IMAGECAL_TEMPMONITOR_MASK                          (0xFE)
-#define SX127X_RF_IMAGECAL_TEMPMONITOR_ON                            (0x00)  /* Default */
+#define SX127X_RF_IMAGECAL_TEMPMONITOR_ON                            (0x00)  // Default
 #define SX127X_RF_IMAGECAL_TEMPMONITOR_OFF                           (0x01)
 
-/* RegLowBat */
+// RegLowBat
 #define SX127X_RF_LOWBAT_MASK                                        (0xF7)
 #define SX127X_RF_LOWBAT_ON                                          (0x08)
-#define SX127X_RF_LOWBAT_OFF                                         (0x00)  /* Default */
+#define SX127X_RF_LOWBAT_OFF                                         (0x00)  // Default
 
 #define SX127X_RF_LOWBAT_TRIM_MASK                                   (0xF8)
 #define SX127X_RF_LOWBAT_TRIM_1695                                   (0x00)
 #define SX127X_RF_LOWBAT_TRIM_1764                                   (0x01)
-#define SX127X_RF_LOWBAT_TRIM_1835                                   (0x02)  /* Default */
+#define SX127X_RF_LOWBAT_TRIM_1835                                   (0x02)  // Default
 #define SX127X_RF_LOWBAT_TRIM_1905                                   (0x03)
 #define SX127X_RF_LOWBAT_TRIM_1976                                   (0x04)
 #define SX127X_RF_LOWBAT_TRIM_2045                                   (0x05)
 #define SX127X_RF_LOWBAT_TRIM_2116                                   (0x06)
 #define SX127X_RF_LOWBAT_TRIM_2185                                   (0x07)
 
-/* RegIrqFlags1 */
+// RegIrqFlags1
 #define SX127X_RF_IRQFLAGS1_MODEREADY                                (0x80)
 #define SX127X_RF_IRQFLAGS1_RXREADY                                  (0x40)
 #define SX127X_RF_IRQFLAGS1_TXREADY                                  (0x20)
@@ -1343,7 +1329,7 @@ extern "C" {
 #define SX127X_RF_IRQFLAGS1_PREAMBLEDETECT                           (0x02)
 #define SX127X_RF_IRQFLAGS1_SYNCADDRESSMATCH                         (0x01)
 
-/* RegIrqFlags2 */
+// RegIrqFlags2
 #define SX127X_RF_IRQFLAGS2_FIFOFULL                                 (0x80)
 #define SX127X_RF_IRQFLAGS2_FIFOEMPTY                                (0x40)
 #define SX127X_RF_IRQFLAGS2_FIFOLEVEL                                (0x20)
@@ -1353,76 +1339,76 @@ extern "C" {
 #define SX127X_RF_IRQFLAGS2_CRCOK                                    (0x02)
 #define SX127X_RF_IRQFLAGS2_LOWBAT                                   (0x01)
 
-/* RegDioMapping1 */
+// RegDioMapping1
 #define SX127X_RF_DIOMAPPING1_DIO0_MASK                              (0x3F)
-#define SX127X_RF_DIOMAPPING1_DIO0_00                                (0x00)  /* Default */
+#define SX127X_RF_DIOMAPPING1_DIO0_00                                (0x00)  // Default
 #define SX127X_RF_DIOMAPPING1_DIO0_01                                (0x40)
 #define SX127X_RF_DIOMAPPING1_DIO0_10                                (0x80)
 #define SX127X_RF_DIOMAPPING1_DIO0_11                                (0xC0)
 
 #define SX127X_RF_DIOMAPPING1_DIO1_MASK                              (0xCF)
-#define SX127X_RF_DIOMAPPING1_DIO1_00                                (0x00)  /* Default */
+#define SX127X_RF_DIOMAPPING1_DIO1_00                                (0x00)  // Default
 #define SX127X_RF_DIOMAPPING1_DIO1_01                                (0x10)
 #define SX127X_RF_DIOMAPPING1_DIO1_10                                (0x20)
 #define SX127X_RF_DIOMAPPING1_DIO1_11                                (0x30)
 
 #define SX127X_RF_DIOMAPPING1_DIO2_MASK                              (0xF3)
-#define SX127X_RF_DIOMAPPING1_DIO2_00                                (0x00)  /* Default */
+#define SX127X_RF_DIOMAPPING1_DIO2_00                                (0x00)  // Default
 #define SX127X_RF_DIOMAPPING1_DIO2_01                                (0x04)
 #define SX127X_RF_DIOMAPPING1_DIO2_10                                (0x08)
 #define SX127X_RF_DIOMAPPING1_DIO2_11                                (0x0C)
 
 #define SX127X_RF_DIOMAPPING1_DIO3_MASK                              (0xFC)
-#define SX127X_RF_DIOMAPPING1_DIO3_00                                (0x00)  /* Default */
+#define SX127X_RF_DIOMAPPING1_DIO3_00                                (0x00)  // Default
 #define SX127X_RF_DIOMAPPING1_DIO3_01                                (0x01)
 #define SX127X_RF_DIOMAPPING1_DIO3_10                                (0x02)
 #define SX127X_RF_DIOMAPPING1_DIO3_11                                (0x03)
 
-/* RegDioMapping2 */
+// RegDioMapping2
 #define SX127X_RF_DIOMAPPING2_DIO4_MASK                              (0x3F)
-#define SX127X_RF_DIOMAPPING2_DIO4_00                                (0x00)  /* Default */
+#define SX127X_RF_DIOMAPPING2_DIO4_00                                (0x00)  // Default
 #define SX127X_RF_DIOMAPPING2_DIO4_01                                (0x40)
 #define SX127X_RF_DIOMAPPING2_DIO4_10                                (0x80)
 #define SX127X_RF_DIOMAPPING2_DIO4_11                                (0xC0)
 
 #define SX127X_RF_DIOMAPPING2_DIO5_MASK                              (0xCF)
-#define SX127X_RF_DIOMAPPING2_DIO5_00                                (0x00)  /* Default */
+#define SX127X_RF_DIOMAPPING2_DIO5_00                                (0x00)  // Default
 #define SX127X_RF_DIOMAPPING2_DIO5_01                                (0x10)
 #define SX127X_RF_DIOMAPPING2_DIO5_10                                (0x20)
 #define SX127X_RF_DIOMAPPING2_DIO5_11                                (0x30)
 
 #define SX127X_RF_DIOMAPPING2_MAP_MASK                               (0xFE)
 #define SX127X_RF_DIOMAPPING2_MAP_PREAMBLEDETECT                     (0x01)
-#define SX127X_RF_DIOMAPPING2_MAP_RSSI                               (0x00)  /* Default */
+#define SX127X_RF_DIOMAPPING2_MAP_RSSI                               (0x00)  // Default
 
-/* RegPllHop */
+// RegPllHop
 #define SX127X_RF_PLLHOP_FASTHOP_MASK                                (0x7F)
 #define SX127X_RF_PLLHOP_FASTHOP_ON                                  (0x80)
-#define SX127X_RF_PLLHOP_FASTHOP_OFF                                 (0x00) /* Default */
+#define SX127X_RF_PLLHOP_FASTHOP_OFF                                 (0x00) // Default
 
-/* RegTcxo */
+// RegTcxo
 #define SX127X_RF_TCXO_TCXOINPUT_MASK                                (0xEF)
 #define SX127X_RF_TCXO_TCXOINPUT_ON                                  (0x10)
-#define SX127X_RF_TCXO_TCXOINPUT_OFF                                 (0x00)  /* Default */
+#define SX127X_RF_TCXO_TCXOINPUT_OFF                                 (0x00)  // Default
 
-/* RegPaDac */
+// RegPaDac
 #define SX127X_RF_PADAC_20DBM_MASK                                   (0xF8)
 #define SX127X_RF_PADAC_20DBM_ON                                     (0x07)
-#define SX127X_RF_PADAC_20DBM_OFF                                    (0x04)  /* Default */
+#define SX127X_RF_PADAC_20DBM_OFF                                    (0x04)  // Default
 
-/* RegBitrateFrac */
+// RegBitrateFrac
 #define SX127X_RF_BITRATEFRAC_MASK                                   (0xF0)
 
-/* RegPll */
+// RegPll
 #define SX127X_RF_PLL_BANDWIDTH_MASK                                 (0x3F)
 #define SX127X_RF_PLL_BANDWIDTH_75                                   (0x00)
 #define SX127X_RF_PLL_BANDWIDTH_150                                  (0x40)
 #define SX127X_RF_PLL_BANDWIDTH_225                                  (0x80)
-#define SX127X_RF_PLL_BANDWIDTH_300                                  (0xC0)  /* Default */
-/** @} */
+#define SX127X_RF_PLL_BANDWIDTH_300                                  (0xC0)  // Default
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

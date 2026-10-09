@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       PBKDF2 key derivation implementation- only sha256 is supported
- *              at the moment, and the key size is fixed.
- *
- * @author      Juan I Carrano <j.carrano@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       PBKDF2 key derivation implementation- only sha256 is supported
+///              at the moment, and the key size is fixed.
+///
+/// @author      Juan I Carrano <j.carrano@fu-berlin.de>
+///
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -23,16 +19,14 @@
 #include "hashes/pbkdf2.h"
 #include "crypto/helper.h"
 
-static void inplace_xor_scalar(uint8_t *bytes, size_t len, uint8_t c)
-{
+static void inplace_xor_scalar(uint8_t *bytes, size_t len, uint8_t c) {
     while (len--) {
         *bytes ^= c;
         bytes++;
     }
 }
 
-static void inplace_xor_digests(uint8_t *d1, const uint8_t *d2)
-{
+static void inplace_xor_digests(uint8_t *d1, const uint8_t *d2) {
     int len = SHA256_DIGEST_LENGTH;
 
     while (len--) {
@@ -45,8 +39,7 @@ static void inplace_xor_digests(uint8_t *d1, const uint8_t *d2)
 void pbkdf2_sha256(const void *password, size_t password_len,
                    const void *salt, size_t salt_len,
                    int iterations,
-                   uint8_t *output)
-{
+                   uint8_t *output) {
     assert(iterations > 0);
 
     sha256_context_t inner;
@@ -68,10 +61,9 @@ void pbkdf2_sha256(const void *password, size_t password_len,
         sha256_init(&inner);
         sha256_init(&outer);
 
-        /* Trick: doing inner.update(processed_pass XOR 0x36) followed by
-         * inner.update(processed_pass XOR 0x5C) requires remembering
-         * processed_pass. Instead undo the first XOR while doing the second.
-         */
+        // Trick: doing inner.update(processed_pass XOR 0x36) followed by
+        // inner.update(processed_pass XOR 0x5C) requires remembering
+        // processed_pass. Instead undo the first XOR while doing the second.
         inplace_xor_scalar(processed_pass, sizeof(processed_pass), 0x36);
         sha256_update(&inner, processed_pass, sizeof(processed_pass));
 

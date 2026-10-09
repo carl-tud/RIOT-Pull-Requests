@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- * @file
- * @brief       initializes can device init function
- *
- * @author      Toon Stegen <toon.stegen@altran.com>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Aurelien Gonce <aurelien.gonce@altran.com>
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+/// @file
+/// @brief       initializes can device init function
+///
+/// @author      Toon Stegen <toon.stegen@altran.com>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Aurelien Gonce <aurelien.gonce@altran.com>
+/// @}
 
 #include <stdio.h>
 
@@ -36,8 +32,7 @@
 static char isotp_stack[ISOTP_STACK_SIZE];
 #endif
 
-void auto_init_candev(void)
-{
+void auto_init_candev(void) {
     DEBUG("auto_init_can: init dll\n");
     can_dll_init();
 

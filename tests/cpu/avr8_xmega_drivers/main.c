@@ -1,25 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gerson Fernando Budke <nandojve@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gerson Fernando Budke <nandojve@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Main test application for ATxmega
- *
- * @author      Gerson Fernando Budke <nandojve@gmail.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Main test application for ATxmega
+///
+/// @author      Gerson Fernando Budke <nandojve@gmail.com>
+///
+/// @}
 
 #include "stdio.h"
 #include "cpu_tests.h"
 
-int main(void)
-{
+int main(void) {
     puts("Start XMEGA tests");
 
 #if defined(MODULE_ATXMEGA_EBI)

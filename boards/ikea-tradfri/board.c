@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017-2020 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017-2020 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_ikea-tradfri
- * @{
- *
- * @file
- * @brief       Board specific implementations IKEA TRÅDFRI modules
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     boards_ikea-tradfri
+/// @{
+///
+/// @file
+/// @brief       Board specific implementations IKEA TRÅDFRI modules
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include "board.h"
 #include "cpu.h"
@@ -48,12 +44,11 @@ static mtd_spi_nor_t ikea_tradfri_nor_dev = {
 };
 
 MTD_XFA_ADD(ikea_tradfri_nor_dev, 0);
-#endif /* MODULE_MTD */
+#endif // MODULE_MTD
 
-void board_init(void)
-{
+void board_init(void) {
 #ifdef MODULE_MTD
-    /* enable NOR flash (only on the ICC-1-A) */
+    // enable NOR flash (only on the ICC-1-A)
     if (gpio_is_valid(IKEA_TRADFRI_NOR_EN)) {
         gpio_init(IKEA_TRADFRI_NOR_EN, GPIO_OUT);
         gpio_set(IKEA_TRADFRI_NOR_EN);

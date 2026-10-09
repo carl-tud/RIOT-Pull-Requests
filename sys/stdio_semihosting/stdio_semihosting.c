@@ -1,25 +1,21 @@
-/*
- * Copyright (C) 2020 Koen Zandberg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Koen Zandberg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys
- * @{
- *
- * @file
- * @brief       STDIO over ARM and RISC-V Semihosting implementation
- *
- * RISC-V semihosting closely mimics ARM semihosting. Only the break sequence is
- * different, but all defined values are also used with RISC-V
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     sys
+/// @{
+///
+/// @file
+/// @brief       STDIO over ARM and RISC-V Semihosting implementation
+///
+/// RISC-V semihosting closely mimics ARM semihosting. Only the break sequence is
+/// different, but all defined values are also used with RISC-V
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include <errno.h>
 #include <string.h>
@@ -27,61 +23,51 @@
 #include "stdio_semihosting.h"
 #include "ztimer/periodic.h"
 
-/**
- * @brief Rate at which the stdin read polls (breaks) the debugger for input
- * data in milliseconds
- */
+/// @brief Rate at which the stdin read polls (breaks) the debugger for input
+/// data in milliseconds
 #define STDIO_SEMIHOSTING_POLL_RATE_MS     (10)
 
-/**
- * @brief ARM Semihosting STDIN file descriptor. Also used with RISC-V
- */
+/// @brief ARM Semihosting STDIN file descriptor. Also used with RISC-V
 #define STDIO_SEMIHOSTING_F_STDIN       (1)
 
-/**
- * @brief ARM Semihosting STDOUT file descriptor. Also used with RISC-V
- */
+/// @brief ARM Semihosting STDOUT file descriptor. Also used with RISC-V
 #define STDIO_SEMIHOSTING_F_STDOUT      (1)
 
-/**
- * @name ARM Semihosting commands.
- *
- * RISC-V copied over these command names and values
- *
- * Extend when required
- * @{
- */
-#define STDIO_SEMIHOSTING_SYS_WRITE     (0x05) /**< Write command */
-#define STDIO_SEMIHOSTING_SYS_READ      (0x06) /**< Read command  */
-/** @} */
+/// @name ARM Semihosting commands.
+///
+/// RISC-V copied over these command names and values
+///
+/// Extend when required
+/// @{
+#define STDIO_SEMIHOSTING_SYS_WRITE     (0x05) ///< Write command
+#define STDIO_SEMIHOSTING_SYS_READ      (0x06) ///< Read command
+/// @}
 
 static ztimer_periodic_t stdin_timer;
 
 #if defined(MODULE_RISCV_COMMON)
 
-static uintptr_t _semihosting_raw(int cmd, uintptr_t *args)
-{
+static uintptr_t _semihosting_raw(int cmd, uintptr_t *args) {
     uintptr_t result = 0;
-    /* Moves cmd and args to r0 and r1. Then triggers a breakpoint.
-     * Finally moves the results stored in r0 to result
-     */
+    // Moves cmd and args to r0 and r1. Then triggers a breakpoint.
+    // Finally moves the results stored in r0 to result
     __asm__(
         ".option norvc      \n"
         "mv a0, %[cmd]      \n"
         "mv a1, %[args]     \n"
-        /* Wrapping the ebreak instruction in two NOP SLLI and SRAI instructions
-         * act as indicator to the GDB session that this is a
-         * semihosting trap */
+        // Wrapping the ebreak instruction in two NOP SLLI and SRAI instructions
+        // act as indicator to the GDB session that this is a
+        // semihosting trap
         "slli x0, x0, 0x1f  \n"
         "ebreak             \n"
         "srai x0, x0, 7     \n"
         "mv %[result], a0   \n"
-        : /* Outputs */
+        : // Outputs
         [result] "=r" (result)
-        : /* Inputs */
+        : // Inputs
         [cmd] "r" (cmd),
         [args] "r" (args)
-        : /* Clobbered registers */
+        : // Clobbered registers
         "a0", "a1", "memory"
     );
     return result;
@@ -89,23 +75,21 @@ static uintptr_t _semihosting_raw(int cmd, uintptr_t *args)
 
 #elif defined(MODULE_CORTEXM_COMMON)
 
-static uintptr_t _semihosting_raw(int cmd, uintptr_t *args)
-{
+static uintptr_t _semihosting_raw(int cmd, uintptr_t *args) {
     uintptr_t result = 0;
-    /* Moves cmd and args to r0 and r1. Then triggers a breakpoint.
-     * Finally moves the results stored in r0 to result
-     */
+    // Moves cmd and args to r0 and r1. Then triggers a breakpoint.
+    // Finally moves the results stored in r0 to result
     __asm__(
         "mov r0, %[cmd] \n"
         "mov r1, %[args] \n"
         "bkpt #0xAB \n"
         "mov %[result], r0\n"
-        : /* Outputs */
+        : // Outputs
         [result] "=r" (result)
-        : /* Inputs */
+        : // Inputs
         [cmd] "r" (cmd),
         [args] "r" (args)
-        : /* Clobbered registers */
+        : // Clobbered registers
         "r0", "r1", "memory"
     );
     return result;
@@ -114,15 +98,14 @@ static uintptr_t _semihosting_raw(int cmd, uintptr_t *args)
 
 static bool _semihosting_connected(void) {
 #ifdef CoreDebug_DHCSR_C_DEBUGEN_Msk
-    /* Best effort attempt to detect if a debug session is active */
+    // Best effort attempt to detect if a debug session is active
     return CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk;
 #else
     return true;
 #endif
 }
 
-static size_t _semihosting_write(const uint8_t *buffer, size_t len)
-{
+static size_t _semihosting_write(const uint8_t *buffer, size_t len) {
     uintptr_t args[3] = {
         STDIO_SEMIHOSTING_F_STDOUT,
         (uintptr_t)buffer,
@@ -131,8 +114,7 @@ static size_t _semihosting_write(const uint8_t *buffer, size_t len)
     return _semihosting_raw(STDIO_SEMIHOSTING_SYS_WRITE, args);
 }
 
-static ssize_t _semihosting_read(uint8_t *buffer, size_t len)
-{
+static ssize_t _semihosting_read(uint8_t *buffer, size_t len) {
     uintptr_t args[3] = {
         STDIO_SEMIHOSTING_F_STDIN,
         (uintptr_t)buffer,
@@ -142,8 +124,7 @@ static ssize_t _semihosting_read(uint8_t *buffer, size_t len)
     return len - remaining;
 }
 
-static bool _read_cb(void *arg)
-{
+static bool _read_cb(void *arg) {
     (void)arg;
 
     uint8_t buffer[STDIO_RX_BUFSIZE];
@@ -167,7 +148,7 @@ static void _init(void) {
     }
 
     if (!thread_getpid()) {
-        /* we can't use ztimer in early init */
+        // we can't use ztimer in early init
         return;
     }
 
@@ -177,15 +158,13 @@ static void _init(void) {
     _init_done = true;
 }
 
-static void _detach(void)
-{
+static void _detach(void) {
     if (STDIO_SEMIHOSTING_RX) {
         ztimer_periodic_stop(&stdin_timer);
     }
 }
 
-static ssize_t _write(const void* buffer, size_t len)
-{
+static ssize_t _write(const void* buffer, size_t len) {
     if (!_semihosting_connected()) {
         return len;
     }
@@ -199,8 +178,7 @@ static ssize_t _write(const void* buffer, size_t len)
 }
 
 #ifndef MODULE_STDIO_DISPATCH
-ssize_t stdio_read(void* buffer, size_t count)
-{
+ssize_t stdio_read(void* buffer, size_t count) {
     if (!STDIO_SEMIHOSTING_RX) {
         return -ENOTSUP;
     }
@@ -215,8 +193,7 @@ ssize_t stdio_read(void* buffer, size_t count)
     return bytes_read;
 }
 
-int stdio_available(void)
-{
+int stdio_available(void) {
     return -ENOTSUP;
 }
 #endif

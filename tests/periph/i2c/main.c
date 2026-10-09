@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the low-level I2C peripheral driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the low-level I2C peripheral driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,15 +35,14 @@
 
 #define ARG_ERROR       (-1)
 
-/* i2c_buf is global to reduce stack memory consumption */
+// i2c_buf is global to reduce stack memory consumption
 static uint8_t i2c_buf[BUFSIZE];
 
 #if IS_USED(MODULE_PERIPH_I2C_MOCK)
-/* The write function of periph_i2c_mock is usually a complete no-op. This
- * function illustrates how the mock functions are customized. */
+// The write function of periph_i2c_mock is usually a complete no-op. This
+// function illustrates how the mock functions are customized.
 int i2c_write_bytes(i2c_t dev, uint16_t addr, const void *data, size_t len,
-  uint8_t flags)
-{
+  uint8_t flags) {
     (void)dev;
     (void)addr;
     (void)data;
@@ -58,8 +53,7 @@ int i2c_write_bytes(i2c_t dev, uint16_t addr, const void *data, size_t len,
 #endif
 
 static inline void _print_i2c_read(i2c_t dev, uint16_t *reg, uint8_t *buf,
-    int len)
-{
+    int len) {
     printf("Success: i2c_%i read %i byte(s) ", dev, len);
     if (reg != NULL) {
         printf("from reg 0x%02x ", *reg);
@@ -74,8 +68,7 @@ static inline void _print_i2c_read(i2c_t dev, uint16_t *reg, uint8_t *buf,
     printf("]\n");
 }
 
-static inline int _get_num(const char *str)
-{
+static inline int _get_num(const char *str) {
     errno = 0;
     char *temp;
     long val = strtol(str, &temp, 0);
@@ -87,8 +80,7 @@ static inline int _get_num(const char *str)
     return (int)val;
 }
 
-static int _check_param(int argc, char **argv, int c_min, int c_max, char *use)
-{
+static int _check_param(int argc, char **argv, int c_min, int c_max, char *use) {
     int dev;
 
     if (argc - 1 < c_min || argc - 1 > c_max) {
@@ -105,8 +97,7 @@ static int _check_param(int argc, char **argv, int c_min, int c_max, char *use)
     return dev;
 }
 
-static int _print_i2c_error(int res)
-{
+static int _print_i2c_error(int res) {
     if (res == -EOPNOTSUPP) {
         printf("Error: EOPNOTSUPP [%d]\n", -res);
         return 1;
@@ -139,8 +130,7 @@ static int _print_i2c_error(int res)
     return 1;
 }
 
-int cmd_i2c_acquire(int argc, char **argv)
-{
+int cmd_i2c_acquire(int argc, char **argv) {
     int dev;
 
     dev = _check_param(argc, argv, 1, 1, "DEV");
@@ -155,8 +145,7 @@ int cmd_i2c_acquire(int argc, char **argv)
     return 0;
 }
 
-int cmd_i2c_release(int argc, char **argv)
-{
+int cmd_i2c_release(int argc, char **argv) {
     int dev;
 
     dev = _check_param(argc, argv, 1, 1, "DEV");
@@ -172,8 +161,7 @@ int cmd_i2c_release(int argc, char **argv)
 }
 
 #ifdef MODULE_PERIPH_I2C_RECONFIGURE
-int cmd_i2c_gpio(int argc, char **argv)
-{
+int cmd_i2c_gpio(int argc, char **argv) {
     int dev;
 
     dev = _check_param(argc, argv, 1, 1, "DEV");
@@ -212,8 +200,7 @@ int cmd_i2c_gpio(int argc, char **argv)
 }
 #endif
 
-int cmd_i2c_read_reg(int argc, char **argv)
-{
+int cmd_i2c_read_reg(int argc, char **argv) {
     int res;
     uint16_t addr;
     uint16_t reg;
@@ -241,8 +228,7 @@ int cmd_i2c_read_reg(int argc, char **argv)
     return _print_i2c_error(res);
 }
 
-int cmd_i2c_read_regs(int argc, char **argv)
-{
+int cmd_i2c_read_regs(int argc, char **argv) {
     int res;
     uint16_t addr;
     uint16_t reg;
@@ -277,8 +263,7 @@ int cmd_i2c_read_regs(int argc, char **argv)
     return _print_i2c_error(res);
 }
 
-int cmd_i2c_read_byte(int argc, char **argv)
-{
+int cmd_i2c_read_byte(int argc, char **argv) {
     int res;
     uint16_t addr;
     uint8_t flags = 0;
@@ -303,8 +288,7 @@ int cmd_i2c_read_byte(int argc, char **argv)
     return _print_i2c_error(res);
 }
 
-int cmd_i2c_read_bytes(int argc, char **argv)
-{
+int cmd_i2c_read_bytes(int argc, char **argv) {
     int res;
     uint16_t addr;
     uint8_t flags = 0;
@@ -337,8 +321,7 @@ int cmd_i2c_read_bytes(int argc, char **argv)
     return _print_i2c_error(res);
 }
 
-int cmd_i2c_write_byte(int argc, char **argv)
-{
+int cmd_i2c_write_byte(int argc, char **argv) {
     int res;
     uint16_t addr;
     uint8_t flags = 0;
@@ -366,8 +349,7 @@ int cmd_i2c_write_byte(int argc, char **argv)
     return _print_i2c_error(res);
 }
 
-int cmd_i2c_write_bytes(int argc, char **argv)
-{
+int cmd_i2c_write_bytes(int argc, char **argv) {
     int res;
     uint16_t addr;
     uint8_t flags = 0;
@@ -404,8 +386,7 @@ int cmd_i2c_write_bytes(int argc, char **argv)
     return _print_i2c_error(res);
 }
 
-int cmd_i2c_write_reg(int argc, char **argv)
-{
+int cmd_i2c_write_reg(int argc, char **argv) {
     int res;
     uint16_t addr;
     uint16_t reg;
@@ -435,8 +416,7 @@ int cmd_i2c_write_reg(int argc, char **argv)
     return _print_i2c_error(res);
 }
 
-int cmd_i2c_write_regs(int argc, char **argv)
-{
+int cmd_i2c_write_regs(int argc, char **argv) {
     int res;
     uint16_t addr;
     uint16_t reg;
@@ -476,8 +456,7 @@ int cmd_i2c_write_regs(int argc, char **argv)
     return _print_i2c_error(res);
 }
 
-int cmd_i2c_get_devs(int argc, char **argv)
-{
+int cmd_i2c_get_devs(int argc, char **argv) {
     (void)argv;
     (void)argc;
     printf("Command: return I2C_NUMOF\n");
@@ -485,8 +464,7 @@ int cmd_i2c_get_devs(int argc, char **argv)
     return 0;
 }
 
-int cmd_i2c_get_id(int argc, char **argv)
-{
+int cmd_i2c_get_id(int argc, char **argv) {
     (void)argv;
     (void)argc;
     puts("Success: [periph_i2c]");
@@ -512,8 +490,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("Start: Test for the low-level I2C driver");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

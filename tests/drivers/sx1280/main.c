@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 Inria
- * SPDX-FileCopyrightText: 2020-2022 Université Grenoble Alpes
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Inria
+// SPDX-FileCopyrightText: 2020-2022 Université Grenoble Alpes
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test Application For SX1280 Driver
- *
- * @author      Aymeric Brochier <aymeric.brochier@univ-grenoble-alpes.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test Application For SX1280 Driver
+///
+/// @author      Aymeric Brochier <aymeric.brochier@univ-grenoble-alpes.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,8 +42,7 @@ static char message[SX1280_MAX_PAYLOAD_LEN];
 
 static sx1280_t sx1280;
 
-static void _event_cb(netdev_t *dev, netdev_event_t event)
-{
+static void _event_cb(netdev_t *dev, netdev_event_t event) {
     if (event == NETDEV_EVENT_ISR) {
         msg_t msg;
         msg.type = SX1280_MSG_TYPE_ISR;
@@ -87,8 +82,7 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
     }
 }
 
-void *_recv_thread(void *arg)
-{
+void *_recv_thread(void *arg) {
     netdev_t *netdev = arg;
 
     static msg_t _msg_queue[SX1280_MSG_QUEUE];
@@ -107,28 +101,23 @@ void *_recv_thread(void *arg)
     }
 }
 
-static void _get_usage(const char *cmd)
-{
+static void _get_usage(const char *cmd) {
     printf("Usage: %s get <type|freq|bw|sf|cr>\n", cmd);
 }
 
-static void _usage_freq(void)
-{
+static void _usage_freq(void) {
     printf("Usage: use freq between 2400000000 + (bw/2) and 2500000000 - (bw/2) (Hz) !\n");
 }
 
-static void _usage_bw(void)
-{
+static void _usage_bw(void) {
     printf("Usage: use 200, 400, 800, 1600 (kHz)\n");
 }
 
-static void _usage_sf(void)
-{
+static void _usage_sf(void) {
     printf("Usage: use SF between 5 and 12\n");
 }
 
-static void _usage_cr(void)
-{
+static void _usage_cr(void) {
     printf(
         "Usage: use\n \
     LORA_CR_4_5 = 1\n \
@@ -140,8 +129,7 @@ static void _usage_cr(void)
     LORA_CR_LI_4_8 = 7\n");
 }
 
-static int sx1280_get_cmd(netdev_t *netdev, int argc, char **argv)
-{
+static int sx1280_get_cmd(netdev_t *netdev, int argc, char **argv) {
     if (argc == 2) {
         _get_usage(argv[0]);
         return -1;
@@ -181,13 +169,11 @@ static int sx1280_get_cmd(netdev_t *netdev, int argc, char **argv)
     return 0;
 }
 
-static void _set_usage(const char *cmd)
-{
+static void _set_usage(const char *cmd) {
     printf("Usage: %s set <freq|bw|sf|cr|> <value>\n", cmd);
 }
 
-static int sx1280_set_cmd(netdev_t *netdev, int argc, char **argv)
-{
+static int sx1280_set_cmd(netdev_t *netdev, int argc, char **argv) {
     if (argc == 3) {
         if (!strcmp("freq", argv[2])) {
             _usage_freq();
@@ -239,26 +225,24 @@ static int sx1280_set_cmd(netdev_t *netdev, int argc, char **argv)
     return 0;
 }
 
-static void _rx_usage(const char *cmd)
-{
+static void _rx_usage(const char *cmd) {
     printf("Usage: %s rx <start|stop>\n", cmd);
 }
 
-static int sx1280_rx_cmd(netdev_t *netdev, int argc, char **argv)
-{
+static int sx1280_rx_cmd(netdev_t *netdev, int argc, char **argv) {
     if (argc == 2) {
         _rx_usage(argv[0]);
         return -1;
     }
 
     if (!strcmp("start", argv[2])) {
-        /* Switch to RX (IDLE) state */
+        // Switch to RX (IDLE) state
         netopt_state_t state = NETOPT_STATE_IDLE;
         netdev->driver->set(netdev, NETOPT_STATE, &state, sizeof(state));
         printf("Listen mode started\n");
     }
     else if (!strcmp("stop", argv[2])) {
-        /* Switch to STANDBY state */
+        // Switch to STANDBY state
         netopt_state_t state = NETOPT_STATE_STANDBY;
         netdev->driver->set(netdev, NETOPT_STATE, &state, sizeof(state));
         printf("Listen mode stopped\n");
@@ -271,8 +255,7 @@ static int sx1280_rx_cmd(netdev_t *netdev, int argc, char **argv)
     return 0;
 }
 
-static int sx1280_tx_cmd(netdev_t *netdev, int argc, char **argv)
-{
+static int sx1280_tx_cmd(netdev_t *netdev, int argc, char **argv) {
     if (argc == 2) {
         printf("Usage: %s tx <payload>\n", argv[0]);
         return -1;
@@ -293,8 +276,7 @@ static int sx1280_tx_cmd(netdev_t *netdev, int argc, char **argv)
     return 0;
 }
 
-static int sx1280_reset_cmd(netdev_t *netdev, int argc, char **argv)
-{
+static int sx1280_reset_cmd(netdev_t *netdev, int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -305,8 +287,7 @@ static int sx1280_reset_cmd(netdev_t *netdev, int argc, char **argv)
     return 0;
 
 }
-int sx1280_cmd(int argc, char **argv)
-{
+int sx1280_cmd(int argc, char **argv) {
     if (argc < 2) {
         printf("Usage: %s <get|set|rx|tx|reset>\n", argv[0]);
         return -1;
@@ -343,8 +324,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     sx1280_setup(&sx1280, &sx1280_params[0], 0);
 
     netdev_t *netdev = &sx1280.netdev;

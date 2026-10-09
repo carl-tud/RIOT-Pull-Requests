@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of LIS3DH accelerometers
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of LIS3DH accelerometers
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,33 +17,22 @@
 #include "lis3dh.h"
 #include "lis3dh_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define LIS3DH_NUM    ARRAY_SIZE(lis3dh_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static lis3dh_t lis3dh_devs[LIS3DH_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[LIS3DH_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define LIS3DH_INFO_NUM    ARRAY_SIZE(lis3dh_saul_info)
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern saul_driver_t lis3dh_saul_driver;
 
-void auto_init_lis3dh(void)
-{
+void auto_init_lis3dh(void) {
     assert(LIS3DH_NUM == LIS3DH_INFO_NUM);
 
     for (unsigned int i = 0; i < LIS3DH_NUM; i++) {

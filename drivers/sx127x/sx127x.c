@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 Unwired Devices <info@unwds.com>
- * SPDX-FileCopyrightText: 2017 Inria Chile
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Unwired Devices <info@unwds.com>
+// SPDX-FileCopyrightText: 2017 Inria Chile
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sx127x
- * @{
- * @file
- * @brief       Basic functionality of sx127x driver
- *
- * @author      Eugene P. <ep@unwds.com>
- * @author      José Ignacio Alamos <jose.alamos@inria.cl>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     drivers_sx127x
+/// @{
+/// @file
+/// @brief       Basic functionality of sx127x driver
+///
+/// @author      Eugene P. <ep@unwds.com>
+/// @author      José Ignacio Alamos <jose.alamos@inria.cl>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include <assert.h>
 #include <stdbool.h>
@@ -41,37 +37,36 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* The reset signal must be applied for at least 100 µs to trigger the manual
-   reset of the device. In order to avoid a dependency to the high frequency
-   timers, we round it to 1 ms */
+// The reset signal must be applied for at least 100 µs to trigger the manual
+//    reset of the device. In order to avoid a dependency to the high frequency
+//    timers, we round it to 1 ms
 #define SX127X_MANUAL_RESET_SIGNAL_LEN_MS       (1U)
 
-/* After triggering a manual reset the device needs at least 5 ms to become
-   ready before interacting with it. We round up to 6 ms in case the clock
-   source is not accurate enough */
+// After triggering a manual reset the device needs at least 5 ms to become
+//    ready before interacting with it. We round up to 6 ms in case the clock
+//    source is not accurate enough
 #define SX127X_MANUAL_RESET_WAIT_FOR_READY_MS   (6U)
 
-/* When the device is started by enabling its power supply for the first time
-   i.e. on Power-on-Reset (POR), it needs at least 10 ms after the POR cycle is
-   done to become ready. To ensure this value is big enough even with an
-   inaccurate clock source, an additional 10 % error margin is added. */
+// When the device is started by enabling its power supply for the first time
+//    i.e. on Power-on-Reset (POR), it needs at least 10 ms after the POR cycle is
+//    done to become ready. To ensure this value is big enough even with an
+//    inaccurate clock source, an additional 10 % error margin is added.
 #define SX127X_POR_WAIT_FOR_READY_MS            (11U)
 
-/* Internal functions */
+// Internal functions
 static int _init_spi(sx127x_t *dev);
 static int _init_gpios(sx127x_t *dev);
 static void _init_timers(sx127x_t *dev);
 static void _on_tx_timeout(void *arg);
 static void _on_rx_timeout(void *arg);
 
-/* SX127X DIO interrupt handlers initialization */
+// SX127X DIO interrupt handlers initialization
 static void sx127x_on_dio0_isr(void *arg);
 static void sx127x_on_dio1_isr(void *arg);
 static void sx127x_on_dio2_isr(void *arg);
 static void sx127x_on_dio3_isr(void *arg);
 
-void sx127x_setup(sx127x_t *dev, const sx127x_params_t *params, uint8_t index)
-{
+void sx127x_setup(sx127x_t *dev, const sx127x_params_t *params, uint8_t index) {
     netdev_t *netdev = &dev->netdev;
 
     netdev->driver = &sx127x_driver;
@@ -79,43 +74,40 @@ void sx127x_setup(sx127x_t *dev, const sx127x_params_t *params, uint8_t index)
     netdev_register(&dev->netdev, NETDEV_SX127X, index);
 }
 
-int sx127x_reset(const sx127x_t *dev)
-{
+int sx127x_reset(const sx127x_t *dev) {
 #ifdef SX127X_USE_TX_SWITCH
-    /* tx switch as output, start in rx */
+    // tx switch as output, start in rx
     gpio_init(dev->params.tx_switch_pin, GPIO_OUT);
     gpio_clear(dev->params.tx_switch_pin);
 #endif
 #ifdef SX127X_USE_RX_SWITCH
-    /* rx switch as output, start in rx */
+    // rx switch as output, start in rx
     gpio_init(dev->params.rx_switch_pin, GPIO_OUT);
     gpio_set(dev->params.rx_switch_pin);
 #endif
 
-    /*
-     * This reset scheme complies with 7.2 chapter of the SX1272/1276 datasheet
-     * See http://www.semtech.com/images/datasheet/sx1276.pdf for SX1276
-     * See http://www.semtech.com/images/datasheet/sx1272.pdf for SX1272
-     *
-     * For SX1272:
-     * 1. Set Reset pin to HIGH for at least 100 us
-     *
-     * For SX1276:
-     * 1. Set NReset pin to LOW for at least 100 us
-     *
-     * For both:
-     * 2. Set NReset in Hi-Z state
-     * 3. Wait at least 5 milliseconds
-     */
+    // This reset scheme complies with 7.2 chapter of the SX1272/1276 datasheet
+    // See http://www.semtech.com/images/datasheet/sx1276.pdf for SX1276
+    // See http://www.semtech.com/images/datasheet/sx1272.pdf for SX1272
+    //
+    // For SX1272:
+    // 1. Set Reset pin to HIGH for at least 100 us
+    //
+    // For SX1276:
+    // 1. Set NReset pin to LOW for at least 100 us
+    //
+    // For both:
+    // 2. Set NReset in Hi-Z state
+    // 3. Wait at least 5 milliseconds
     if (gpio_is_valid(dev->params.reset_pin)) {
         gpio_init(dev->params.reset_pin, GPIO_OUT);
 
-        /* set reset pin to the state that triggers manual reset */
+        // set reset pin to the state that triggers manual reset
         gpio_write(dev->params.reset_pin, SX127X_POR_ACTIVE_LOGIC_LEVEL);
 
         ztimer_sleep(ZTIMER_MSEC, SX127X_MANUAL_RESET_SIGNAL_LEN_MS);
 
-        /* Put reset pin in High-Z */
+        // Put reset pin in High-Z
         gpio_init(dev->params.reset_pin, GPIO_IN);
 
         ztimer_sleep(ZTIMER_MSEC, SX127X_MANUAL_RESET_WAIT_FOR_READY_MS);
@@ -124,15 +116,14 @@ int sx127x_reset(const sx127x_t *dev)
     return 0;
 }
 
-int sx127x_init(sx127x_t *dev)
-{
-    /* Do internal initialization routines */
+int sx127x_init(sx127x_t *dev) {
+    // Do internal initialization routines
     if (_init_spi(dev) < 0) {
         DEBUG("[sx127x] error: failed to initialize SPI\n");
         return -SX127X_ERR_SPI;
     }
 
-    /* Check presence of SX127X */
+    // Check presence of SX127X
     if (sx127x_check_version(dev) < 0) {
         DEBUG("[sx127x] error: no valid device found\n");
         return -SX127X_ERR_NODEV;
@@ -141,15 +132,15 @@ int sx127x_init(sx127x_t *dev)
     _init_timers(dev);
 
     if (gpio_is_valid(dev->params.reset_pin)) {
-        /* reset pin should be left floating during POR */
+        // reset pin should be left floating during POR
         gpio_init(dev->params.reset_pin, GPIO_IN);
 
-        /* wait till device signals end of POR cycle */
+        // wait till device signals end of POR cycle
         while ((gpio_read(dev->params.reset_pin) > 0) ==
                SX127X_POR_ACTIVE_LOGIC_LEVEL) {}
     }
 
-    /* wait for the device to become ready */
+    // wait for the device to become ready
     ztimer_sleep(ZTIMER_MSEC, SX127X_POR_WAIT_FOR_READY_MS);
 
     sx127x_reset(dev);
@@ -167,8 +158,7 @@ int sx127x_init(sx127x_t *dev)
     return SX127X_INIT_OK;
 }
 
-void sx127x_init_radio_settings(sx127x_t *dev)
-{
+void sx127x_init_radio_settings(sx127x_t *dev) {
     DEBUG("[sx127x] initializing radio settings\n");
     sx127x_set_channel(dev, SX127X_CHANNEL_DEFAULT);
     sx127x_set_modem(dev, SX127X_MODEM_DEFAULT);
@@ -189,13 +179,12 @@ void sx127x_init_radio_settings(sx127x_t *dev)
     sx127x_set_tx_timeout(dev, SX127X_TX_TIMEOUT_DEFAULT);
 }
 
-uint32_t sx127x_random(sx127x_t *dev)
-{
+uint32_t sx127x_random(sx127x_t *dev) {
     uint32_t rnd = 0;
 
-    sx127x_set_modem(dev, SX127X_MODEM_LORA); /* Set LoRa modem ON */
+    sx127x_set_modem(dev, SX127X_MODEM_LORA); // Set LoRa modem ON
 
-    /* Disable LoRa modem interrupts */
+    // Disable LoRa modem interrupts
     sx127x_reg_write(dev, SX127X_REG_LR_IRQFLAGSMASK, SX127X_RF_LORA_IRQFLAGS_RXTIMEOUT |
                      SX127X_RF_LORA_IRQFLAGS_RXDONE |
                      SX127X_RF_LORA_IRQFLAGS_PAYLOADCRCERROR |
@@ -205,13 +194,13 @@ uint32_t sx127x_random(sx127x_t *dev)
                      SX127X_RF_LORA_IRQFLAGS_FHSSCHANGEDCHANNEL |
                      SX127X_RF_LORA_IRQFLAGS_CADDETECTED);
 
-    /* Set radio in continuous reception */
+    // Set radio in continuous reception
     sx127x_set_op_mode(dev, SX127X_RF_OPMODE_RECEIVER);
 
     for (unsigned i = 0; i < 32; i++) {
-        ztimer_sleep(ZTIMER_MSEC, 1);   /* wait one millisecond */
+        ztimer_sleep(ZTIMER_MSEC, 1);   // wait one millisecond
 
-        /* Non-filtered RSSI value reading. Only takes the LSB value */
+        // Non-filtered RSSI value reading. Only takes the LSB value
         rnd |= ((uint32_t)sx127x_reg_read(dev, SX127X_REG_LR_RSSIWIDEBAND) & 0x01) << i;
     }
 
@@ -220,46 +209,37 @@ uint32_t sx127x_random(sx127x_t *dev)
     return rnd;
 }
 
-/**
- * IRQ handlers
- */
-void sx127x_isr(netdev_t *dev)
-{
+/// IRQ handlers
+void sx127x_isr(netdev_t *dev) {
     netdev_trigger_event_isr(dev);
 }
 
-static void sx127x_on_dio_isr(sx127x_t *dev, sx127x_flags_t flag)
-{
+static void sx127x_on_dio_isr(sx127x_t *dev, sx127x_flags_t flag) {
     dev->irq |= flag;
     sx127x_isr(&dev->netdev);
 }
 
-static void sx127x_on_dio0_isr(void *arg)
-{
+static void sx127x_on_dio0_isr(void *arg) {
     sx127x_on_dio_isr(arg, SX127X_IRQ_DIO0);
 }
 
-static void sx127x_on_dio1_isr(void *arg)
-{
+static void sx127x_on_dio1_isr(void *arg) {
     sx127x_on_dio_isr(arg, SX127X_IRQ_DIO1);
 }
 
-static void sx127x_on_dio2_isr(void *arg)
-{
+static void sx127x_on_dio2_isr(void *arg) {
     sx127x_on_dio_isr(arg, SX127X_IRQ_DIO2);
 }
 
-static void sx127x_on_dio3_isr(void *arg)
-{
+static void sx127x_on_dio3_isr(void *arg) {
     sx127x_on_dio_isr(arg, SX127X_IRQ_DIO3);
 }
 
-/* Internal event handlers */
-static int _init_gpios(sx127x_t *dev)
-{
+// Internal event handlers
+static int _init_gpios(sx127x_t *dev) {
     int res;
 
-    /* Check if DIO0 pin is defined */
+    // Check if DIO0 pin is defined
     if (gpio_is_valid(dev->params.dio0_pin)) {
         res = gpio_init_int(dev->params.dio0_pin, SX127X_DIO_PULL_MODE,
                             GPIO_RISING, sx127x_on_dio0_isr, dev);
@@ -274,7 +254,7 @@ static int _init_gpios(sx127x_t *dev)
         return SX127X_ERR_GPIOS;
     }
 
-    /* Check if DIO1 pin is defined */
+    // Check if DIO1 pin is defined
     if (gpio_is_valid(dev->params.dio1_pin)) {
         res = gpio_init_int(dev->params.dio1_pin, SX127X_DIO_PULL_MODE,
                             GPIO_RISING, sx127x_on_dio1_isr, dev);
@@ -284,7 +264,7 @@ static int _init_gpios(sx127x_t *dev)
         }
     }
 
-    /* check if DIO2 pin is defined */
+    // check if DIO2 pin is defined
     if (gpio_is_valid(dev->params.dio2_pin)) {
         res = gpio_init_int(dev->params.dio2_pin, SX127X_DIO_PULL_MODE,
                             GPIO_RISING, sx127x_on_dio2_isr, dev);
@@ -294,11 +274,11 @@ static int _init_gpios(sx127x_t *dev)
         }
     }
     else {
-        /* if frequency hopping is enabled, DIO2 pin must be defined */
+        // if frequency hopping is enabled, DIO2 pin must be defined
         assert(!IS_ACTIVE(CONFIG_LORA_FREQUENCY_HOPPING_DEFAULT));
     }
 
-    /* check if DIO3 pin is defined */
+    // check if DIO3 pin is defined
     if (gpio_is_valid(dev->params.dio3_pin)) {
         res = gpio_init_int(dev->params.dio3_pin, SX127X_DIO_PULL_MODE,
                             GPIO_RISING, sx127x_on_dio3_isr, dev);
@@ -311,22 +291,19 @@ static int _init_gpios(sx127x_t *dev)
     return res;
 }
 
-static void _on_tx_timeout(void *arg)
-{
+static void _on_tx_timeout(void *arg) {
     netdev_t *dev = arg;
 
     dev->event_callback(dev, NETDEV_EVENT_TX_TIMEOUT);
 }
 
-static void _on_rx_timeout(void *arg)
-{
+static void _on_rx_timeout(void *arg) {
     netdev_t *dev = arg;
 
     dev->event_callback(dev, NETDEV_EVENT_RX_TIMEOUT);
 }
 
-static void _init_timers(sx127x_t *dev)
-{
+static void _init_timers(sx127x_t *dev) {
     dev->_internal.tx_timeout_timer.arg = dev;
     dev->_internal.tx_timeout_timer.callback = _on_tx_timeout;
 
@@ -334,11 +311,10 @@ static void _init_timers(sx127x_t *dev)
     dev->_internal.rx_timeout_timer.callback = _on_rx_timeout;
 }
 
-static int _init_spi(sx127x_t *dev)
-{
+static int _init_spi(sx127x_t *dev) {
     int res;
 
-    /* Setup SPI for SX127X */
+    // Setup SPI for SX127X
     res = spi_init_cs(dev->params.spi, dev->params.nss_pin);
 
 #ifdef MODULE_PERIPH_SPI_GPIO_MODE

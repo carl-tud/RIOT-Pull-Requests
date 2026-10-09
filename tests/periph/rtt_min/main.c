@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test to figure out RTT_MIN_OFFSET
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test to figure out RTT_MIN_OFFSET
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -26,24 +22,22 @@
 #include "xtimer.h"
 
 #define US_PER_TICK     (US_PER_SEC / RTT_FREQUENCY)
-/* min. amount of time to wait between set_alarm() */
+// min. amount of time to wait between set_alarm()
 #define MIN_WAIT_US     (3 * US_PER_TICK)
 
 #ifndef SAMPLES
 #define SAMPLES 1024LU
 #endif
 
-void cb(void *arg)
-{
+void cb(void *arg) {
     mutex_unlock(arg);
 }
 
-int main(void)
-{
+int main(void) {
     uint32_t value = 0;
     uint32_t samples = 0;
-    /* mutex starts out locked, and each time an rtt callback is successfully
-       called it will be locked again for the next iteration */
+    // mutex starts out locked, and each time an rtt callback is successfully
+    //    called it will be locked again for the next iteration
     mutex_t lock = MUTEX_INIT_LOCKED;
 
     rtt_init();

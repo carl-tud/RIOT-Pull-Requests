@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Ell-i open source co-operative
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Ell-i open source co-operative
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_encx24j600
- * @{
- *
- * @file
- * @brief       Internal functions for the ENCX24J600 driver
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     drivers_encx24j600
+/// @{
+///
+/// @file
+/// @brief       Internal functions for the ENCX24J600 driver
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <errno.h>
 
@@ -40,7 +36,7 @@
 #define ENC_BUFFER_START        (0x0000)
 #define ENC_BUFFER_SIZE         (0x6000)
 #define ENC_BUFFER_END          (0x5FFF)
-#define RX_BUFFER_START         (0x5340) /* Default value */
+#define RX_BUFFER_START         (0x5340) // Default value
 #define RX_BUFFER_END           (ENC_BUFFER_END)
 #define TX_BUFFER_LEN           (0x2000)
 #define TX_BUFFER_END           (RX_BUFFER_START)
@@ -54,7 +50,7 @@ static inline int _packets_available(encx24j600_t *dev);
 
 static void _get_mac_addr(netdev_t *dev, uint8_t* buf);
 
-/* netdev interface */
+// netdev interface
 static int _send(netdev_t *netdev, const iolist_t *iolist);
 static int _recv(netdev_t *netdev, void *buf, size_t len, void *info);
 static int _init(netdev_t *dev);
@@ -78,8 +74,7 @@ static inline void unlock(encx24j600_t *dev) {
     spi_release(dev->spi);
 }
 
-void encx24j600_setup(encx24j600_t *dev, const encx24j600_params_t *params, uint8_t index)
-{
+void encx24j600_setup(encx24j600_t *dev, const encx24j600_params_t *params, uint8_t index) {
     dev->netdev.driver = &netdev_driver_encx24j600;
     dev->spi = params->spi;
     dev->cs = params->cs_pin;
@@ -89,19 +84,17 @@ void encx24j600_setup(encx24j600_t *dev, const encx24j600_params_t *params, uint
     netdev_register(&dev->netdev, NETDEV_ENCX24J600, index);
 }
 
-static void encx24j600_isr(void *arg)
-{
+static void encx24j600_isr(void *arg) {
     encx24j600_t *dev = arg;
 
-    /* disable interrupt line */
+    // disable interrupt line
     gpio_irq_disable(dev->int_pin);
 
-    /* call netdev hook */
+    // call netdev hook
     netdev_trigger_event_isr(&dev->netdev);
 }
 
-static void _isr(netdev_t *netdev)
-{
+static void _isr(netdev_t *netdev) {
     encx24j600_t *dev = (encx24j600_t *) netdev;
 
     uint16_t eir;
@@ -111,7 +104,7 @@ static void _isr(netdev_t *netdev)
 
     eir = reg_get(dev, ENC_EIR);
 
-    /* check & handle link state change */
+    // check & handle link state change
     if (eir & ENC_LINKIF) {
         uint16_t estat = reg_get(dev, ENC_ESTAT);
 
@@ -122,7 +115,7 @@ static void _isr(netdev_t *netdev)
         netdev->event_callback(netdev, event);
     }
 
-    /* check & handle available packets */
+    // check & handle available packets
     if (eir & ENC_PKTIF) {
         while (_packets_available(dev)) {
             unlock(dev);
@@ -131,23 +124,21 @@ static void _isr(netdev_t *netdev)
         }
     }
 
-    /* drop all flags */
+    // drop all flags
     reg_clear_bits(dev, ENC_EIR, ENC_LINKIF);
 
-    /* re-enable interrupt */
+    // re-enable interrupt
     gpio_irq_enable(dev->int_pin);
     cmd(dev, ENC_SETEIE);
 
     unlock(dev);
 }
 
-static inline void enc_spi_transfer(encx24j600_t *dev, char *out, char *in, int len)
-{
+static inline void enc_spi_transfer(encx24j600_t *dev, char *out, char *in, int len) {
     spi_transfer_bytes(dev->spi, dev->cs, false, out, in, len);
 }
 
-static inline uint16_t reg_get(encx24j600_t *dev, uint8_t reg)
-{
+static inline uint16_t reg_get(encx24j600_t *dev, uint8_t reg) {
     char cmd_buf[4] = { ENC_RCRU, reg, 0, 0 };
     char result[4];
 
@@ -170,35 +161,29 @@ static void cmdn(encx24j600_t *dev, uint8_t cmd, char *out, char *in, int len) {
     spi_transfer_bytes(dev->spi, dev->cs, false, out, in, len);
 }
 
-static void reg_set(encx24j600_t *dev, uint8_t reg, uint16_t value)
-{
+static void reg_set(encx24j600_t *dev, uint8_t reg, uint16_t value) {
     char cmd_buf[4] = { ENC_WCRU, reg, value, value >> 8 };
     enc_spi_transfer(dev, cmd_buf, NULL, 4);
 }
 
-static void reg_set_bits(encx24j600_t *dev, uint8_t reg, uint16_t mask)
-{
+static void reg_set_bits(encx24j600_t *dev, uint8_t reg, uint16_t mask) {
     char cmd_buf[4] = { ENC_BFSU, reg, mask, mask >> 8 };
     enc_spi_transfer(dev, cmd_buf, NULL, 4);
 }
 
-static void reg_clear_bits(encx24j600_t *dev, uint8_t reg, uint16_t mask)
-{
+static void reg_clear_bits(encx24j600_t *dev, uint8_t reg, uint16_t mask) {
     char cmd_buf[4] = { ENC_BFCU, reg, mask, mask >> 8 };
     enc_spi_transfer(dev, cmd_buf, NULL, 4);
 }
 
-/*
- * @brief Read/Write to encx24j600's SRAM
- *
- * @param[in] dev   ptr to encx24j600 device handle
- * @param[in] cmd   either ENC_WGPDATA, ENC_RGPDATA, ENC_WRXDATA, ENC_RRXDATA, ENC_WUDADATA, ENC_RUDADATA
- * @param[in] addr  SRAM address to start reading. 0xFFFF means continue from old address
- * @param     ptr   pointer to buffer to read from / write to
- * @param[in] len   nr of bytes to read/write
- */
-static void sram_op(encx24j600_t *dev, uint16_t cmd, uint16_t addr, char *ptr, int len)
-{
+// @brief Read/Write to encx24j600's SRAM
+//
+// @param[in] dev   ptr to encx24j600 device handle
+// @param[in] cmd   either ENC_WGPDATA, ENC_RGPDATA, ENC_WRXDATA, ENC_RRXDATA, ENC_WUDADATA, ENC_RUDADATA
+// @param[in] addr  SRAM address to start reading. 0xFFFF means continue from old address
+// @param     ptr   pointer to buffer to read from / write to
+// @param[in] len   nr of bytes to read/write
+static void sram_op(encx24j600_t *dev, uint16_t cmd, uint16_t addr, char *ptr, int len) {
     uint16_t reg;
     char* in = NULL;
     char* out = NULL;
@@ -207,36 +192,34 @@ static void sram_op(encx24j600_t *dev, uint16_t cmd, uint16_t addr, char *ptr, i
         return;
     }
 
-    /* determine pointer addr
-     *
-     * all SRAM access commands have an
-     * offset 0x5e to their pointer registers
-     * */
+    // determine pointer addr
+    //
+    // all SRAM access commands have an
+    // offset 0x5e to their pointer registers
     reg = cmd + 0x5e;
 
-    /* read or write? bit 1 tells us */
+    // read or write? bit 1 tells us
     if (reg & 0x2) {
         out = ptr;
     } else {
         in = ptr;
     }
 
-    /* set pointer */
+    // set pointer
     if (addr != 0xFFFF) {
         reg_set(dev, reg, addr);
     }
 
-    /* copy data */
+    // copy data
     cmdn(dev, cmd, in, out, len);
 }
 
-static int _init(netdev_t *encdev)
-{
+static int _init(netdev_t *encdev) {
     encx24j600_t *dev = (encx24j600_t *) encdev;
 
     DEBUG("encx24j600: starting initialization...\n");
 
-    /* setup IO */
+    // setup IO
     if (spi_init_cs(dev->spi, dev->cs) != SPI_OK) {
         return -1;
     }
@@ -244,7 +227,7 @@ static int _init(netdev_t *encdev)
 
     lock(dev);
 
-    /* initialization procedure as described in data sheet (39935c.pdf) */
+    // initialization procedure as described in data sheet (39935c.pdf)
     do {
         do {
             xtimer_usleep(ENCX24J600_INIT_DELAY);
@@ -254,26 +237,26 @@ static int _init(netdev_t *encdev)
 
         while (!(reg_get(dev, ENC_ESTAT) & ENC_CLKRDY)) {}
 
-        /* issue System Reset */
+        // issue System Reset
         cmd(dev, ENC_SETETHRST);
 
-        /* make sure initialization finalizes */
+        // make sure initialization finalizes
         xtimer_usleep(1000);
     } while (!(reg_get(dev, ENC_EUDAST) == 0x0000));
 
-    /* configure flow control */
+    // configure flow control
     phy_reg_set(dev, ENC_PHANA, 0x05E1);
     reg_set_bits(dev, ENC_ECON2, ENC_AUTOFC);
 
-    /* setup receive buffer */
+    // setup receive buffer
     reg_set(dev, ENC_ERXST, RX_BUFFER_START);
     reg_set(dev, ENC_ERXTAIL, RX_BUFFER_END);
     dev->rx_next_ptr = RX_BUFFER_START;
 
-    /* configure receive filter to receive multicast frames */
+    // configure receive filter to receive multicast frames
     reg_set_bits(dev, ENC_ERXFCON, ENC_MCEN);
 
-    /* setup interrupts */
+    // setup interrupts
     reg_set_bits(dev, ENC_EIE, ENC_PKTIE | ENC_LINKIE);
     cmd(dev, ENC_ENABLERX);
     cmd(dev, ENC_SETEIE);
@@ -289,10 +272,10 @@ static int _send(netdev_t *netdev, const iolist_t *iolist) {
     encx24j600_t * dev = (encx24j600_t *) netdev;
     lock(dev);
 
-    /* wait until previous packet has been sent */
+    // wait until previous packet has been sent
     while ((reg_get(dev, ENC_ECON1) & ENC_TXRTS)) {}
 
-    /* copy packet to SRAM */
+    // copy packet to SRAM
     size_t len = 0;
 
     for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
@@ -300,30 +283,28 @@ static int _send(netdev_t *netdev, const iolist_t *iolist) {
         len += iol->iol_len;
     }
 
-    /* set start of TX packet and length */
+    // set start of TX packet and length
     reg_set(dev, ENC_ETXST, TX_BUFFER_START);
     reg_set(dev, ENC_ETXLEN, len);
 
-    /* initiate sending */
+    // initiate sending
     cmd(dev, ENC_SETTXRTS);
 
-    /* wait for sending to complete */
-    /* (not sure if it is needed, keeping the line uncommented) */
-    /*while ((reg_get(dev, ENC_ECON1) & ENC_TXRTS)) {}*/
+    // wait for sending to complete
+    // (not sure if it is needed, keeping the line uncommented)
+    // while ((reg_get(dev, ENC_ECON1) & ENC_TXRTS)) {}
 
     unlock(dev);
 
     return len;
 }
 
-static inline int _packets_available(encx24j600_t *dev)
-{
-    /* return ENC_PKTCNT (low byte of ENC_ESTAT) */
+static inline int _packets_available(encx24j600_t *dev) {
+    // return ENC_PKTCNT (low byte of ENC_ESTAT)
     return reg_get(dev, ENC_ESTAT) & ~0xFF00;
 }
 
-static void _get_mac_addr(netdev_t *encdev, uint8_t* buf)
-{
+static void _get_mac_addr(netdev_t *encdev, uint8_t* buf) {
     encx24j600_t * dev = (encx24j600_t *) encdev;
     uint16_t addr[3];
 
@@ -338,33 +319,32 @@ static void _get_mac_addr(netdev_t *encdev, uint8_t* buf)
     unlock(dev);
 }
 
-static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     encx24j600_t * dev = (encx24j600_t *) netdev;
     encx24j600_frame_hdr_t hdr;
 
     (void)info;
     lock(dev);
 
-    /* read frame header */
+    // read frame header
     sram_op(dev, ENC_RRXDATA, dev->rx_next_ptr, (char*)&hdr, sizeof(hdr));
 
-    /* hdr.frame_len given by device contains 4 bytes checksum */
+    // hdr.frame_len given by device contains 4 bytes checksum
     size_t payload_len = hdr.frame_len - 4;
 
     if (buf) {
         if (payload_len > len) {
-            /* payload exceeds buffer size */
+            // payload exceeds buffer size
             unlock(dev);
             return -ENOBUFS;
         }
-        /* read packet (without 4 bytes checksum) */
+        // read packet (without 4 bytes checksum)
         sram_op(dev, ENC_RRXDATA, 0xFFFF, buf, payload_len);
     }
 
-    /* Frame was retrieved or drop was requested --> remove it from buffer */
+    // Frame was retrieved or drop was requested --> remove it from buffer
     if (buf || (len > 0)) {
-        /* decrement available packet count */
+        // decrement available packet count
         cmd(dev, ENC_SETPKTDEC);
 
         dev->rx_next_ptr = hdr.rx_next_ptr;
@@ -377,8 +357,7 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
     return payload_len;
 }
 
-static int _get(netdev_t *dev, netopt_t opt, void *value, size_t max_len)
-{
+static int _get(netdev_t *dev, netopt_t opt, void *value, size_t max_len) {
     int res = 0;
 
     switch (opt) {

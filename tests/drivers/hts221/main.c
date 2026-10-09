@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       HTS221 humidity and temperature sensor driver test application
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       HTS221 humidity and temperature sensor driver test application
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,8 +21,7 @@
 #define SLEEP_S     (2U)
 static hts221_t dev;
 
-int main(void)
-{
+int main(void) {
     printf("Init HTS221 on I2C_DEV(%i)\n", (int)hts221_params[0].i2c);
     if (hts221_init(&dev, &hts221_params[0]) != HTS221_OK) {
         puts("[FAILED]");

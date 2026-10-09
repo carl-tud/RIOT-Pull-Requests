@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 iosabi
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 iosabi
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of SI1133 driver.
- *
- * @author      iosabi <iosabi@protonmail.com>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of SI1133 driver.
+///
+/// @author      iosabi <iosabi@protonmail.com>
+///
+/// @}
 
 #ifdef MODULE_SI1133
 
@@ -23,37 +19,26 @@
 #include "si1133.h"
 #include "si1133_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define SI1133_NUMOF    ARRAY_SIZE(si1133_params)
 
-/**
- * @brief   Allocation of memory for device descriptors
- */
+/// @brief   Allocation of memory for device descriptors
 static si1133_t si1133_devs[SI1133_NUMOF];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[SI1133_NUMOF * 4];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define SI1133_INFO_NUMOF    ARRAY_SIZE(si1133_saul_reg_info)
 
-/**
- * @name    Reference the driver structs
- * @{
- */
+/// @name    Reference the driver structs
+/// @{
 extern const saul_driver_t si1133_uv_saul_driver;
 extern const saul_driver_t si1133_ir_saul_driver;
 extern const saul_driver_t si1133_visible_saul_driver;
-/** @} */
+/// @}
 
-void auto_init_si1133(void)
-{
+void auto_init_si1133(void) {
     assert(SI1133_INFO_NUMOF == SI1133_NUMOF);
     unsigned entry = 0;
     for (unsigned i = 0; i < SI1133_NUMOF; i++) {
@@ -66,19 +51,19 @@ void auto_init_si1133(void)
             continue;
         }
 
-        /* UV index */
+        // UV index
         saul_entries[entry].dev = &si1133_devs[i];
         saul_entries[entry].name = si1133_saul_reg_info[i].name;
         saul_entries[entry].driver = &si1133_uv_saul_driver;
         saul_reg_add(&saul_entries[entry++]);
 
-        /* Infra red */
+        // Infra red
         saul_entries[entry].dev = &si1133_devs[i];
         saul_entries[entry].name = si1133_saul_reg_info[i].name;
         saul_entries[entry].driver = &si1133_ir_saul_driver;
         saul_reg_add(&saul_entries[entry++]);
 
-        /* Visible */
+        // Visible
         saul_entries[entry].dev = &si1133_devs[i];
         saul_entries[entry].name = si1133_saul_reg_info[i].name;
         saul_entries[entry].driver = &si1133_visible_saul_driver;
@@ -88,4 +73,4 @@ void auto_init_si1133(void)
 
 #else
 typedef int dont_be_pedantic;
-#endif /* MODULE_SI1133 */
+#endif // MODULE_SI1133

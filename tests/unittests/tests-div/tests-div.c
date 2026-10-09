@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <string.h>
 #include <inttypes.h>
@@ -43,9 +41,9 @@ static const uint64_t u64_test_values[] = {
     0x8000000000000000ull,
 };
 
-/* These expected values for test_div_u64_by_15625div512
- * were computed from the expression (u64_test_values * 512) / 15625 using 128
- * bit integers. */
+// These expected values for test_div_u64_by_15625div512
+// were computed from the expression (u64_test_values * 512) / 15625 using 128
+// bit integers.
 static const uint64_t u64_15625_512_expected_values[] = {
     364088888,
     140737488,
@@ -66,8 +64,7 @@ static const uint64_t u64_15625_512_expected_values[] = {
 #define N_U32_VALS ARRAY_SIZE(u32_test_values)
 #define N_U64_VALS ARRAY_SIZE(u64_test_values)
 
-static void test_div_u64_by_15625(void)
-{
+static void test_div_u64_by_15625(void) {
     for (unsigned i = 0; i < N_U32_VALS; i++) {
         DEBUG("Dividing %12"PRIu32" by 15625...\n", u32_test_values[i]);
         TEST_ASSERT_EQUAL_INT(
@@ -89,8 +86,7 @@ static void test_div_u64_by_15625(void)
     }
 }
 
-static void test_div_u32_by_15625div512(void)
-{
+static void test_div_u32_by_15625div512(void) {
     for (unsigned i = 0; i < N_U32_VALS; i++) {
         DEBUG("Dividing %"PRIu32" by (15625/512)...\n", u32_test_values[i]);
         TEST_ASSERT_EQUAL_INT(
@@ -99,8 +95,7 @@ static void test_div_u32_by_15625div512(void)
     }
 }
 
-static void test_div_u64_by_1000000(void)
-{
+static void test_div_u64_by_1000000(void) {
     for (unsigned i = 0; i < N_U32_VALS; i++) {
         DEBUG("Dividing %"PRIu32" by 1000000...\n", u32_test_values[i]);
         TEST_ASSERT_EQUAL_INT(
@@ -121,8 +116,7 @@ static void test_div_u64_by_1000000(void)
     }
 }
 
-static void test_div_u64_by_15625div512(void)
-{
+static void test_div_u64_by_15625div512(void) {
     for (unsigned i = 0; i < N_U32_VALS; i++) {
         DEBUG("Dividing %"PRIu32" by (15625/512)...\n", u32_test_values[i]);
         TEST_ASSERT_EQUAL_INT(
@@ -143,8 +137,7 @@ static void test_div_u64_by_15625div512(void)
     }
 }
 
-Test *tests_div_tests(void)
-{
+Test *tests_div_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_div_u64_by_15625),
         new_TestFixture(test_div_u32_by_15625div512),
@@ -157,7 +150,6 @@ Test *tests_div_tests(void)
     return (Test *)&div_tests;
 }
 
-void tests_div(void)
-{
+void tests_div(void) {
     TESTS_RUN(tests_div_tests());
 }

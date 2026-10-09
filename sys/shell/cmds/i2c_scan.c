@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2019 Otto-von-Guericke-Universität Magdeburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Otto-von-Guericke-Universität Magdeburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       An I2C bus scanner
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       An I2C bus scanner
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdint.h>
@@ -28,8 +24,7 @@
 #include "periph/i2c.h"
 #include "shell.h"
 
-static int get_dev(i2c_t *dev, int argc, char **argv)
-{
+static int get_dev(i2c_t *dev, int argc, char **argv) {
     if (argc == 2) {
         int idx = atoi(argv[1]);
         if ((idx < 0) || (idx >= (int)I2C_NUMOF)) {
@@ -44,16 +39,14 @@ static int get_dev(i2c_t *dev, int argc, char **argv)
     return -1;
 }
 
-static inline int is_addr_reserved(uint16_t addr)
-{
+static inline int is_addr_reserved(uint16_t addr) {
     if ((addr < 0x8) || (addr > 0x77))
         return 1;
 
     return 0;
 }
 
-static int _i2c_scan(int argc, char **argv)
-{
+static int _i2c_scan(int argc, char **argv) {
     i2c_t dev;
     if (get_dev(&dev, argc, argv)) {
         return -1;
@@ -81,19 +74,19 @@ static int _i2c_scan(int argc, char **argv)
                 char dummy[1];
                 int retval;
                 while (-EAGAIN == (retval = i2c_read_byte(dev, addr, dummy, 0))) {
-                    /* retry until bus arbitration succeeds */
+                    // retry until bus arbitration succeeds
                 }
 
                 switch (retval) {
                     case 0:
-                        /* success: Device did respond */
+                        // success: Device did respond
                         str[1] = 'X';
                         break;
                     case -ENXIO:
-                        /* No ACK --> no device */
+                        // No ACK --> no device
                         break;
                     default:
-                        /* Some unexpected error */
+                        // Some unexpected error
                         str[1] = 'E';
                         break;
                 }

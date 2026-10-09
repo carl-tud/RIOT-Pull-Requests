@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   Inverse Semaphore Test Application
- *
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   Inverse Semaphore Test Application
+///
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include <assert.h>
 #include <stdio.h>
@@ -29,8 +25,7 @@ struct thread_ctx {
     unsigned id;
 };
 
-static void *thread_count(void *arg)
-{
+static void *thread_count(void *arg) {
     struct thread_ctx *ctx = arg;
 
     printf("THREAD %u start\n", ctx->id);
@@ -44,8 +39,7 @@ static void *thread_count(void *arg)
     return arg;
 }
 
-static void *thread_bit(void *arg)
-{
+static void *thread_bit(void *arg) {
     struct thread_ctx *ctx = arg;
 
     printf("THREAD %u start\n", ctx->id);
@@ -59,8 +53,7 @@ static void *thread_bit(void *arg)
     return arg;
 }
 
-static void test_counter_mode(void)
-{
+static void test_counter_mode(void) {
     sema_inv_t sync;
 
     struct thread_ctx ctx[3] = {
@@ -82,12 +75,11 @@ static void test_counter_mode(void)
     sema_inv_wait(&sync);
     puts("thread synced");
 
-    /* wait for all threads to terminate, we are going to reuse the stack */
+    // wait for all threads to terminate, we are going to reuse the stack
     ztimer_sleep(ZTIMER_MSEC, 50);
 }
 
-static void test_mask_mode(void)
-{
+static void test_mask_mode(void) {
     sema_inv_t sync;
 
     struct thread_ctx ctx[3] = {
@@ -109,12 +101,11 @@ static void test_mask_mode(void)
     sema_inv_wait(&sync);
     puts("thread synced");
 
-    /* wait for all threads to terminate, we are going to reuse the stack */
+    // wait for all threads to terminate, we are going to reuse the stack
     ztimer_sleep(ZTIMER_MSEC, 50);
 }
 
-int main(void)
-{
+int main(void) {
     test_counter_mode();
     test_mask_mode();
 

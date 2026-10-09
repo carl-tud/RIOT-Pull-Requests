@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- * @file
- * @brief       Test application for GNRC LoRaWAN
- *
- * @author      José Ignacio Alamos <jose.alamos@haw-hamburg.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+/// @file
+/// @brief       Test application for GNRC LoRaWAN
+///
+/// @author      José Ignacio Alamos <jose.alamos@haw-hamburg.de>
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -31,12 +27,11 @@
 #include "net/gnrc/pktdump.h"
 #include "net/loramac.h"
 
-int main(void)
-{
-    /* start the shell */
+int main(void) {
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
-    /* Receive LoRaWAN packets in GNRC pktdump */
+    // Receive LoRaWAN packets in GNRC pktdump
     gnrc_netreg_entry_t dump = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX_CTX_ALL,
                                                           gnrc_pktdump_pid);
 

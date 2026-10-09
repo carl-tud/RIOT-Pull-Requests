@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the HIH6130 sensor driver
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the HIH6130 sensor driver
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+///
+/// @}
 
 #ifndef TEST_HIH6130_I2C
 #error "TEST_HIH6130_I2C not defined"
@@ -28,8 +24,7 @@
 
 #define SLEEP_MSEC  100
 
-int main(void)
-{
+int main(void) {
     hih6130_t dev;
 
     print_str("HIH6130 sensor driver test application\n");

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Fundacion Inria Chile
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Fundacion Inria Chile
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nz32-sc151
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the limifrog-v1 board
- *
- * @author      Francisco Molina <francisco.molina@inria.cl>
- */
+/// @ingroup     boards_nz32-sc151
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the limifrog-v1 board
+///
+/// @author      Francisco Molina <francisco.molina@inria.cl>
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev      = USART3,
@@ -65,12 +59,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM3,
@@ -85,12 +77,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -134,12 +124,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
-  * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -158,39 +146,35 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_0_ISR           isr_i2c1_ev
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_C, 0), 10 },
     { GPIO_PIN(PORT_C, 1), 11 },
     { GPIO_PIN(PORT_C, 2), 12 },
-    /* ADC Temperature channel */
+    // ADC Temperature channel
     { GPIO_UNDEF,          16 },
-    /* ADC VREF channel */
+    // ADC VREF channel
     { GPIO_UNDEF,          17 },
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name   DAC configuration
- * @{
- */
+/// @name   DAC configuration
+/// @{
 static const dac_conf_t dac_config[] = {
     { .pin = GPIO_PIN(PORT_A,  4), .chan = 0 },
     { .pin = GPIO_PIN(PORT_A,  5), .chan = 1 }
 };
 
 #define DAC_NUMOF           ARRAY_SIZE(dac_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

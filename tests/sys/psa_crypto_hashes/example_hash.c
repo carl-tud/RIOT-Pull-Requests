@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2023 TU Dresden
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 TU Dresden
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @brief       Tests the PSA hash configurations
- *              Contents have been copied from `examples/advanced/psa_crypto`
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @brief       Tests the PSA hash configurations
+///              Contents have been copied from `examples/advanced/psa_crypto`
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -111,14 +107,11 @@ static const uint8_t hash_long_sha512_256[] = {
     0x63, 0x52, 0x68, 0x81, 0x4a, 0xce
 };
 
-/**
- * @brief   Example function to use different hash algorithms
- *          with the PSA Crypto API.
- *
- * @return  psa_status_t
- */
-psa_status_t example_hash(void)
-{
+/// @brief   Example function to use different hash algorithms
+///          with the PSA Crypto API.
+///
+/// @return  psa_status_t
+psa_status_t example_hash(void) {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
 
     status = psa_hash_compare(PSA_ALG_SHA_224, msg, msg_len, hash_sha224, sizeof(hash_sha224));

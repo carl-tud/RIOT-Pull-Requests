@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gerson Fernando Budke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gerson Fernando Budke
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_atxmega-a1-xplained
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the ATxmegaA1 Xplained board.
- *
- * @author      Gerson Fernando Budke <nandojve@gmail.com>
- */
+/// @ingroup     boards_atxmega-a1-xplained
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the ATxmegaA1 Xplained board.
+///
+/// @author      Gerson Fernando Budke <nandojve@gmail.com>
 #include "mutex.h"
 
 #ifdef __cplusplus
@@ -25,10 +21,8 @@ extern "C" {
 
 #include "periph_cpu.h"
 
-/**
- * @name    Timer peripheral configuration
- * @{
- */
+/// @name    Timer peripheral configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev            = (void *)&TCC1,
@@ -58,14 +52,12 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISRD      TCC0_CCD_vect
 
 #define TIMER_NUMOF       ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    {   /* J1 */
+    {   // J1
         .dev            = &USARTF0,
         .pwr            = PWR_RED_REG(PWR_PORT_F, PR_USART0_bm),
         .rx_pin         = GPIO_PIN(PORT_F, 2),
@@ -78,7 +70,7 @@ static const uart_conf_t uart_config[] = {
         .tx_int_lvl     = CPU_INT_LVL_LOW,
         .dre_int_lvl    = CPU_INT_LVL_OFF,
     },
-    {   /* J3 - Shared with SAUL */
+    {   // J3 - Shared with SAUL
         .dev            = &USARTD0,
         .pwr            = PWR_RED_REG(PWR_PORT_D, PR_USART0_bm),
         .rx_pin         = GPIO_PIN(PORT_D, 2),
@@ -91,7 +83,7 @@ static const uart_conf_t uart_config[] = {
         .tx_int_lvl     = CPU_INT_LVL_LOW,
         .dre_int_lvl    = CPU_INT_LVL_OFF,
     },
-    {   /* J4 */
+    {   // J4
         .dev            = &USARTC0,
         .pwr            = PWR_RED_REG(PWR_PORT_C, PR_USART0_bm),
         .rx_pin         = GPIO_PIN(PORT_C, 2),
@@ -106,10 +98,10 @@ static const uart_conf_t uart_config[] = {
     },
 };
 
-/* interrupt function name mapping */
-#define UART_0_RXC_ISR    USARTF0_RXC_vect    /* Reception Complete Interrupt */
-#define UART_0_DRE_ISR    USARTF0_DRE_vect    /* Data Register Empty Interrupt */
-#define UART_0_TXC_ISR    USARTF0_TXC_vect    /* Transmission Complete Interrupt */
+// interrupt function name mapping
+#define UART_0_RXC_ISR    USARTF0_RXC_vect    // Reception Complete Interrupt
+#define UART_0_DRE_ISR    USARTF0_DRE_vect    // Data Register Empty Interrupt
+#define UART_0_TXC_ISR    USARTF0_TXC_vect    // Transmission Complete Interrupt
 
 #define UART_1_RXC_ISR    USARTD0_RXC_vect
 #define UART_1_DRE_ISR    USARTD0_DRE_vect
@@ -120,12 +112,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_TXC_ISR    USARTC0_TXC_vect
 
 #define UART_NUMOF        ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev                = &TWIF,
@@ -149,12 +139,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           TWIC_TWIM_vect
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev            = &SPIF,
@@ -175,15 +163,13 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF         ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name EBI configuration
- *
- * For more information, see ebi_conf_t structure.
- *
- * @{
- */
+/// @name EBI configuration
+///
+/// For more information, see ebi_conf_t structure.
+///
+/// @{
 static const ebi_conf_t ebi_config = {
     .addr_bits              = 12,
     .flags                  = (EBI_PORT_SDRAM | EBI_PORT_3PORT),
@@ -226,7 +212,7 @@ static const ebi_conf_t ebi_config = {
                                 },
                               },
 };
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
@@ -234,4 +220,4 @@ static const ebi_conf_t ebi_config = {
 
 #include "periph_conf_common.h"
 
-/** @} */
+/// @}

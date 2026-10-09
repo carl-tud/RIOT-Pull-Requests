@@ -1,36 +1,30 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_hmc5883l
- * @brief       Register definitions for the Honeywell HMC5883L 3-axis digital compass
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_hmc5883l
+/// @brief       Register definitions for the Honeywell HMC5883L 3-axis digital compass
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-/** HMC5883L I2C address*/
+/// HMC5883L I2C address
 #define HMC5883L_I2C_ADDRESS    (0x1e)
 
-/** HMC5883L chip id defined in Identification Registers A..C */
+/// HMC5883L chip id defined in Identification Registers A..C
 #define HMC5883L_ID                 { 0x48, 0x34, 0x33 }
 
-/** HMC5883L chip id length */
+/// HMC5883L chip id length
 #define HMC5883L_ID_LEN             (3)
 
-/**
- * @name    Register addresses
- * @{
- */
+/// @name    Register addresses
+/// @{
 #define HMC5883L_REG_CFG_A          (0x00)
 #define HMC5883L_REG_CFG_B          (0x01)
 #define HMC5883L_REG_MODE           (0x02)
@@ -44,28 +38,26 @@ extern "C"
 #define HMC5883L_REG_ID_A           (0x0a)
 #define HMC5883L_REG_ID_B           (0x0b)
 #define HMC5883L_REG_ID_C           (0x0c)
-/** @} */
+/// @}
 
-/**
- * @name    Register structure definitions
- * @{
- */
-#define HMC5883L_REG_CFG_A_MA       (0x60)  /**< HMC5883L_REG_CFG_A<6:5> */
-#define HMC5883L_REG_CFG_A_DO       (0x1c)  /**< HMC5883L_REG_CFG_A<4:2> */
-#define HMC5883L_REG_CFG_A_MS       (0x03)  /**< HMC5883L_REG_CFG_A<1:0> */
+/// @name    Register structure definitions
+/// @{
+#define HMC5883L_REG_CFG_A_MA       (0x60)  ///< HMC5883L_REG_CFG_A<6:5>
+#define HMC5883L_REG_CFG_A_DO       (0x1c)  ///< HMC5883L_REG_CFG_A<4:2>
+#define HMC5883L_REG_CFG_A_MS       (0x03)  ///< HMC5883L_REG_CFG_A<1:0>
 
-#define HMC5883L_REG_CFG_B_GN       (0xe0)  /**< HMC5883L_REG_CFG_N<7:5> */
-#define HMC5883L_REG_CFG_B_GN_S     (5)     /**< HMC5883L_REG_CFG_N<7:5> shift */
+#define HMC5883L_REG_CFG_B_GN       (0xe0)  ///< HMC5883L_REG_CFG_N<7:5>
+#define HMC5883L_REG_CFG_B_GN_S     (5)     ///< HMC5883L_REG_CFG_N<7:5> shift
 
-#define HMC5883L_REG_MODE_HS        (0x80)  /**< HMC5883L_REG_MODE<7> */
-#define HMC5883L_REG_MODE_MD        (0x03)  /**< HMC5883L_REG_MODE<1:0> */
+#define HMC5883L_REG_MODE_HS        (0x80)  ///< HMC5883L_REG_MODE<7>
+#define HMC5883L_REG_MODE_MD        (0x03)  ///< HMC5883L_REG_MODE<1:0>
 
-#define HMC5883L_REG_STATUS_LOCK    (0x02)  /**< HMC5883L_REG_STATUS<1> */
-#define HMC5883L_REG_STATUS_RDY     (0x01)  /**< HMC5883L_REG_STATUS<0> */
-/** @} */
+#define HMC5883L_REG_STATUS_LOCK    (0x02)  ///< HMC5883L_REG_STATUS<1>
+#define HMC5883L_REG_STATUS_RDY     (0x01)  ///< HMC5883L_REG_STATUS<0>
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

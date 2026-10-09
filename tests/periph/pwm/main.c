@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test for low-level PWM drivers
- *
- * This test initializes the given PWM device to run at 1KHz with a 1000 step
- * resolution.
- *
- * The PWM is then continuously oscillating it's duty cycle between 0% to 100%
- * every 1s on every channel.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test for low-level PWM drivers
+///
+/// This test initializes the given PWM device to run at 1KHz with a 1000 step
+/// resolution.
+///
+/// The PWM is then continuously oscillating it's duty cycle between 0% to 100%
+/// every 1s on every channel.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +28,7 @@
 #include "timex.h"
 #include "periph/pwm.h"
 
-#define OSC_INTERVAL    (10LU * US_PER_MS) /* 10 ms */
+#define OSC_INTERVAL    (10LU * US_PER_MS) // 10 ms
 #define OSC_STEP        (10)
 #define OSC_MODE        PWM_LEFT
 #define OSC_FREQU       (1000U)
@@ -41,8 +37,7 @@
 
 static uint32_t initialized;
 
-static unsigned _get_dev(const char *dev_str)
-{
+static unsigned _get_dev(const char *dev_str) {
     unsigned dev = atoi(dev_str);
     if (dev >= PWM_NUMOF) {
         printf("Error: device PWM_DEV(%u) is unknown\n", dev);
@@ -51,8 +46,7 @@ static unsigned _get_dev(const char *dev_str)
     return dev;
 }
 
-static int _init(int argc, char** argv)
-{
+static int _init(int argc, char** argv) {
     if (argc != 5) {
         printf("usage: %s <dev> <mode> <frequency> <resolution>\n", argv[0]);
         printf("\tdev: device by number between 0 and %u\n", PWM_NUMOF - 1);
@@ -99,8 +93,7 @@ static int _init(int argc, char** argv)
     return 1;
 }
 
-static int _set(int argc, char**argv)
-{
+static int _set(int argc, char**argv) {
     if (argc != 4) {
         printf("usage: %s <dev> <ch> <val>\n", argv[0]);
         printf("\tdev: device by number between 0 and %d\n", PWM_NUMOF - 1);
@@ -130,8 +123,7 @@ static int _set(int argc, char**argv)
     return 0;
 }
 
-static int _oscillate(int argc, char** argv)
-{
+static int _oscillate(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
@@ -173,8 +165,7 @@ static int _oscillate(int argc, char** argv)
     return 0;
 }
 
-static int _power(int argc, char** argv)
-{
+static int _power(int argc, char** argv) {
     if (argc != 3) {
         printf("usage: %s <dev> <state>\n", argv[0]);
         printf("\tdev: device by number between 0 and %d\n", PWM_NUMOF - 1);
@@ -205,8 +196,7 @@ static int _power(int argc, char** argv)
     return 0;
 }
 
-static int _power_test(int argc, char** argv)
-{
+static int _power_test(int argc, char** argv) {
     if (argc != 2) {
         printf("usage: %s <dev>\n", argv[0]);
         printf("\tdev: device by number between 0 and %d\n", PWM_NUMOF - 1);
@@ -239,8 +229,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("PWM peripheral driver test\n");
     initialized = 0;
 

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands for the bplib package
- *
- * @author      Simon Grund <mail@simongrund.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands for the bplib package
+///
+/// @author      Simon Grund <mail@simongrund.de>
+///
+/// @}
 #include "bplib.h"
 #include "bplib_init.h"
 
@@ -22,21 +18,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-/* Strings used for contact and channel config */
+// Strings used for contact and channel config
 #define STR_INVALID_CHANNEL_CONTACT "Invalid channel/contact: %i\n"
 #define STR_INVALID_STATE_KW        "Invalid state keyword '%s'\n"
 #define STR_CURRENT_STATE           "Current state: %s\n"
 
-static void __bp_print_help(void)
-{
+static void __bp_print_help(void) {
     puts("Usage: bplib <subcommand>\n"
          " send    <channel_id> \"PAYLOAD\"\n"
          " contact <contact_id> [<setup / start / stop / teardown>]\n"
          " channel <channel_id> [<add / start / stop / remove>]");
 }
 
-static bool __validate_channel(int chan)
-{
+static bool __validate_channel(int chan) {
     if ((chan >= 0) && (chan < BPLIB_MAX_NUM_CHANNELS)) {
         return true;
     }
@@ -46,8 +40,7 @@ static bool __validate_channel(int chan)
     }
 }
 
-static bool __validate_contact(int cont)
-{
+static bool __validate_contact(int cont) {
     if ((cont >= 0) && (cont < BPLIB_MAX_NUM_CONTACTS)) {
         return true;
     }
@@ -57,8 +50,7 @@ static bool __validate_contact(int cont)
     }
 }
 
-static void __bp_print_contact_channel_feedback(BPLib_Status_t status)
-{
+static void __bp_print_contact_channel_feedback(BPLib_Status_t status) {
     if (status == BPLIB_SUCCESS) {
         puts("Success");
     }
@@ -70,8 +62,7 @@ static void __bp_print_contact_channel_feedback(BPLib_Status_t status)
     }
 }
 
-static void __bp_contact(int c, char* arg)
-{
+static void __bp_contact(int c, char* arg) {
     BPLib_Status_t status;
 
     if (strcmp(arg, "setup") == 0) {
@@ -94,8 +85,7 @@ static void __bp_contact(int c, char* arg)
     __bp_print_contact_channel_feedback(status);
 }
 
-static void __bp_channel(int c, char* arg)
-{
+static void __bp_channel(int c, char* arg) {
     BPLib_Status_t status;
 
     if (strcmp(arg, "add") == 0) {
@@ -148,8 +138,7 @@ static const char* __bp_resolve_channel_state(BPLib_NC_ApplicationState_t state)
     }
 }
 
-static int _bp(int argc, char **argv)
-{
+static int _bp(int argc, char **argv) {
     if (argc < 3) {
         __bp_print_help();
         return 1;
@@ -174,7 +163,7 @@ static int _bp(int argc, char **argv)
             return 1;
         }
 
-        /* Return current state */
+        // Return current state
         if (argc == 3) {
             BPLib_CLA_ContactRunState_t state;
             BPLib_CLA_GetContactRunState(c, &state);
@@ -190,7 +179,7 @@ static int _bp(int argc, char **argv)
             return 1;
         }
 
-        /* Return current state */
+        // Return current state
         if (argc == 3) {
             BPLib_NC_ApplicationState_t state = BPLib_NC_GetAppState(c);
 

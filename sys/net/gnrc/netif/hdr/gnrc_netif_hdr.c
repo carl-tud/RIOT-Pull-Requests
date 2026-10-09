@@ -1,22 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <assert.h>
 
 #include "net/gnrc/netif/hdr.h"
 
 gnrc_pktsnip_t *gnrc_netif_hdr_build(const uint8_t *src, uint8_t src_len,
-                                     const uint8_t *dst, uint8_t dst_len)
-{
+                                     const uint8_t *dst, uint8_t dst_len) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, NULL,
                                           sizeof(gnrc_netif_hdr_t) + src_len + dst_len,
                                           GNRC_NETTYPE_NETIF);
@@ -38,8 +33,7 @@ gnrc_pktsnip_t *gnrc_netif_hdr_build(const uint8_t *src, uint8_t src_len,
     return pkt;
 }
 
-uint8_t gnrc_netif_hdr_get_flag(gnrc_pktsnip_t* pkt)
-{
+uint8_t gnrc_netif_hdr_get_flag(gnrc_pktsnip_t* pkt) {
     assert(pkt != NULL);
 
     pkt = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_NETIF);
@@ -50,8 +44,7 @@ uint8_t gnrc_netif_hdr_get_flag(gnrc_pktsnip_t* pkt)
     return 0U;
 }
 
-int gnrc_netif_hdr_get_dstaddr(gnrc_pktsnip_t* pkt, uint8_t** pointer_to_addr)
-{
+int gnrc_netif_hdr_get_dstaddr(gnrc_pktsnip_t* pkt, uint8_t** pointer_to_addr) {
     assert(pkt != NULL);
 
     pkt = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_NETIF);
@@ -65,8 +58,7 @@ int gnrc_netif_hdr_get_dstaddr(gnrc_pktsnip_t* pkt, uint8_t** pointer_to_addr)
     return -ENOENT;
 }
 
-int gnrc_netif_hdr_get_srcaddr(gnrc_pktsnip_t* pkt, uint8_t** pointer_to_addr)
-{
+int gnrc_netif_hdr_get_srcaddr(gnrc_pktsnip_t* pkt, uint8_t** pointer_to_addr) {
     assert(pkt != NULL);
 
     pkt = gnrc_pktsnip_search_type(pkt, GNRC_NETTYPE_NETIF);
@@ -80,4 +72,4 @@ int gnrc_netif_hdr_get_srcaddr(gnrc_pktsnip_t* pkt, uint8_t** pointer_to_addr)
     return -ENOENT;
 }
 
-/** @} */
+/// @}

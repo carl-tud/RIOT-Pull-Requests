@@ -1,31 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2013 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2013 INRIA
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2013 INRIA
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup  core_util
- * @{
- * @file
- * @author Kaspar Schleiser <kaspar@schleiser.de>
- * @author René Kijewski <rene.kijewski@fu-berlin.de>
- * @}
- */
+/// @ingroup  core_util
+/// @{
+/// @file
+/// @author Kaspar Schleiser <kaspar@schleiser.de>
+/// @author René Kijewski <rene.kijewski@fu-berlin.de>
+/// @}
 
 #include "ringbuffer.h"
 
 #include <string.h>
 
-/**
- * @brief           Add an element to the end of the ringbuffer.
- * @details         This helper function does not check the pre-requirements for adding,
- *                  i.e. the caller has to ensure that ringbuffer_full() is false.
- * @param[in,out]   rb   Ringbuffer to operate on.
- * @param[in]       c    Element to add.
- */
-static void add_tail(ringbuffer_t *restrict rb, char c)
-{
+/// @brief           Add an element to the end of the ringbuffer.
+/// @details         This helper function does not check the pre-requirements for adding,
+///                  i.e. the caller has to ensure that ringbuffer_full() is false.
+/// @param[in,out]   rb   Ringbuffer to operate on.
+/// @param[in]       c    Element to add.
+static void add_tail(ringbuffer_t *restrict rb, char c) {
     unsigned pos = rb->start + rb->avail++;
 
     if (pos >= rb->size) {
@@ -34,15 +27,12 @@ static void add_tail(ringbuffer_t *restrict rb, char c)
     rb->buf[pos] = c;
 }
 
-/**
- * @brief           Remove an element from the start of the ringbuffer.
- * @details         This helper function does not check the pre-requirements for reading,
- *                  i.e. the caller has to ensure that ringbuffer_empty() is false.
- * @param[in,out]   rb   Ringbuffer to operate on.
- * @returns         The removed element.
- */
-static char get_head(ringbuffer_t *restrict rb)
-{
+/// @brief           Remove an element from the start of the ringbuffer.
+/// @details         This helper function does not check the pre-requirements for reading,
+///                  i.e. the caller has to ensure that ringbuffer_empty() is false.
+/// @param[in,out]   rb   Ringbuffer to operate on.
+/// @returns         The removed element.
+static char get_head(ringbuffer_t *restrict rb) {
     char result = rb->buf[rb->start];
 
     if ((--rb->avail == 0) || (++rb->start == rb->size)) {
@@ -51,8 +41,7 @@ static char get_head(ringbuffer_t *restrict rb)
     return result;
 }
 
-unsigned ringbuffer_add(ringbuffer_t *restrict rb, const char *buf, unsigned n)
-{
+unsigned ringbuffer_add(ringbuffer_t *restrict rb, const char *buf, unsigned n) {
     unsigned i;
 
     for (i = 0; i < n; i++) {
@@ -64,8 +53,7 @@ unsigned ringbuffer_add(ringbuffer_t *restrict rb, const char *buf, unsigned n)
     return i;
 }
 
-int ringbuffer_add_one(ringbuffer_t *restrict rb, char c)
-{
+int ringbuffer_add_one(ringbuffer_t *restrict rb, char c) {
     int result = -1;
 
     if (ringbuffer_full(rb)) {
@@ -75,8 +63,7 @@ int ringbuffer_add_one(ringbuffer_t *restrict rb, char c)
     return result;
 }
 
-int ringbuffer_get_one(ringbuffer_t *restrict rb)
-{
+int ringbuffer_get_one(ringbuffer_t *restrict rb) {
     if (!ringbuffer_empty(rb)) {
         return (unsigned char)get_head(rb);
     }
@@ -85,8 +72,7 @@ int ringbuffer_get_one(ringbuffer_t *restrict rb)
     }
 }
 
-unsigned ringbuffer_get(ringbuffer_t *restrict rb, char *buf, unsigned n)
-{
+unsigned ringbuffer_get(ringbuffer_t *restrict rb, char *buf, unsigned n) {
     if (n > rb->avail) {
         n = rb->avail;
     }
@@ -111,8 +97,7 @@ unsigned ringbuffer_get(ringbuffer_t *restrict rb, char *buf, unsigned n)
     return n;
 }
 
-unsigned ringbuffer_remove(ringbuffer_t *restrict rb, unsigned n)
-{
+unsigned ringbuffer_remove(ringbuffer_t *restrict rb, unsigned n) {
     if (n > rb->avail) {
         n = rb->avail;
         rb->start = rb->avail = 0;
@@ -121,7 +106,7 @@ unsigned ringbuffer_remove(ringbuffer_t *restrict rb, unsigned n)
         rb->start += n;
         rb->avail -= n;
 
-        /* compensate underflow */
+        // compensate underflow
         if (rb->start >= rb->size) {
             rb->start -= rb->size;
         }
@@ -130,16 +115,14 @@ unsigned ringbuffer_remove(ringbuffer_t *restrict rb, unsigned n)
     return n;
 }
 
-int ringbuffer_peek_one(const ringbuffer_t *restrict rb_)
-{
+int ringbuffer_peek_one(const ringbuffer_t *restrict rb_) {
     ringbuffer_t rb = *rb_;
 
     return ringbuffer_get_one(&rb);
 }
 
 unsigned ringbuffer_peek(const ringbuffer_t *restrict rb_, char *buf,
-                         unsigned n)
-{
+                         unsigned n) {
     ringbuffer_t rb = *rb_;
 
     return ringbuffer_get(&rb, buf, n);

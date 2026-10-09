@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <assert.h>
 #include <math.h>
@@ -31,16 +27,15 @@
 #define IEEE802154_SHORT_ADDRESS_LEN_STR_MAX \
     (sizeof("00:00"))
 
-/* See 7.2.31.1 Units of TX Power Control */
+// See 7.2.31.1 Units of TX Power Control
 #define DW1000_TX_POWER_COARSE_SHIFT        (5)
 #define DW1000_TX_POWER_COARSE_MASK         (0xE0)
 #define DW1000_TX_POWER_FINE_MASK           (0x1F)
 #define DW1000_TX_POWER_MULTI               (10)
-#define DW1000_TX_POWER_COARSE_STEP         (30)        /* 3dbM * 10 */
-#define DW1000_TX_POWER_FINE_STEP           (5)         /* 0.5dbM * 10 */
+#define DW1000_TX_POWER_COARSE_STEP         (30)        // 3dbM * 10
+#define DW1000_TX_POWER_FINE_STEP           (5)         // 0.5dbM * 10
 
-static int _twr_ifconfig(int argc, char **argv)
-{
+static int _twr_ifconfig(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -59,7 +54,7 @@ static int _twr_ifconfig(int argc, char **argv)
     byteorder_htobebufll(buffer, udev->euid);
     printf("\t\tLong HWaddr: %s\n",
            l2util_addr_to_str(buffer, IEEE802154_LONG_ADDRESS_LEN, addr_str));
-    /* 000 -> 18dBM gain, 110 -> 0dBm gain */
+    // 000 -> 18dBM gain, 110 -> 0dBm gain
     int tx_power =
         DW1000_TX_POWER_COARSE_STEP  *
         (6 -
@@ -77,8 +72,7 @@ static int _twr_ifconfig(int argc, char **argv)
 
 SHELL_COMMAND(ifconfig, "Network interface information", _twr_ifconfig);
 
-static void _print_usage(void)
-{
+static void _print_usage(void) {
     puts("Usage:");
     puts("\ttwr req <short_addr> [-p <proto>] [-c <count>] [-h]"
          "[-i <ms interval>] ");
@@ -91,8 +85,7 @@ static void _print_usage(void)
     puts("\ttwr lst off: stop listening for ranging requests");
 }
 
-static int _twr_handler(int argc, char **argv)
-{
+static int _twr_handler(int argc, char **argv) {
     if (argc < 2) {
         _print_usage();
         return -1;
@@ -126,7 +119,7 @@ static int _twr_handler(int argc, char **argv)
             _print_usage();
             return -1;
         }
-        /* parse command line arguments */
+        // parse command line arguments
         for (int i = 2; i < argc; i++) {
             char *arg = argv[i];
             if (arg[0] != '-') {
@@ -153,11 +146,11 @@ static int _twr_handler(int argc, char **argv)
                         }
                         res = 1;
                     }
-                /* intentionally falls through */
+                // intentionally falls through
                 case 'h':
                     res = 1;
                     continue;
-                /* intentionally falls through */
+                // intentionally falls through
                 case 'p':
                     if ((++i) < argc) {
                         if (!strcmp(argv[i], "ss")) {
@@ -185,13 +178,13 @@ static int _twr_handler(int argc, char **argv)
                             res = 1;
                         }
                     }
-                /* intentionally falls through */
+                // intentionally falls through
                 case 'i':
                     if ((++i) < argc) {
                         interval_ms = atoi(argv[i]);
                         continue;
                     }
-                /* intentionally falls through */
+                // intentionally falls through
                 default:
                     res = 1;
                     break;
@@ -208,7 +201,7 @@ static int _twr_handler(int argc, char **argv)
             while (uwb_core_rng_req_remaining()) {
                 ztimer_sleep(ZTIMER_MSEC, interval_ms);
             }
-            /* some time to finish up */
+            // some time to finish up
             ztimer_sleep(ZTIMER_MSEC, 100 + interval_ms);
         }
         return 0;

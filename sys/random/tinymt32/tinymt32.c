@@ -1,50 +1,39 @@
-/**
- * @file tinymt32.c
- *
- * @brief Tiny Mersenne Twister only 127 bit internal state
- *
- * @author Mutsuo Saito (Hiroshima University)
- * @author Makoto Matsumoto (The University of Tokyo)
- *
- * Copyright (C) 2011 Mutsuo Saito, Makoto Matsumoto,
- * Hiroshima University and The University of Tokyo.
- * All rights reserved.
- *
- * The 3-clause BSD License is applied to this software, see
- * LICENSE.txt
- */
+/// @file tinymt32.c
+///
+/// @brief Tiny Mersenne Twister only 127 bit internal state
+///
+/// @author Mutsuo Saito (Hiroshima University)
+/// @author Makoto Matsumoto (The University of Tokyo)
+///
+/// Copyright (C) 2011 Mutsuo Saito, Makoto Matsumoto,
+/// Hiroshima University and The University of Tokyo.
+/// All rights reserved.
+///
+/// The 3-clause BSD License is applied to this software, see
+/// LICENSE.txt
 #include "tinymt32.h"
 #define MIN_LOOP 8
 #define PRE_LOOP 8
 
-/**
- * This function represents a function used in the initialization
- * by init_by_array
- * @param x 32-bit integer
- * @return 32-bit integer
- */
-static uint32_t ini_func1(uint32_t x)
-{
+/// This function represents a function used in the initialization
+/// by init_by_array
+/// @param x 32-bit integer
+/// @return 32-bit integer
+static uint32_t ini_func1(uint32_t x) {
     return (x ^ (x >> 27)) * UINT32_C(1664525);
 }
 
-/**
- * This function represents a function used in the initialization
- * by init_by_array
- * @param x 32-bit integer
- * @return 32-bit integer
- */
-static uint32_t ini_func2(uint32_t x)
-{
+/// This function represents a function used in the initialization
+/// by init_by_array
+/// @param x 32-bit integer
+/// @return 32-bit integer
+static uint32_t ini_func2(uint32_t x) {
     return (x ^ (x >> 27)) * UINT32_C(1566083941);
 }
 
-/**
- * This function certificate the period of 2^127-1.
- * @param random tinymt state vector.
- */
-static void period_certification(tinymt32_t *random)
-{
+/// This function certificate the period of 2^127-1.
+/// @param random tinymt state vector.
+static void period_certification(tinymt32_t *random) {
     if ((random->status[0] & TINYMT32_MASK) == 0 &&
         random->status[1] == 0 &&
         random->status[2] == 0 &&
@@ -56,14 +45,11 @@ static void period_certification(tinymt32_t *random)
     }
 }
 
-/**
- * This function initializes the internal state array with a 32-bit
- * unsigned integer seed.
- * @param random tinymt state vector.
- * @param seed a 32-bit unsigned integer used as a seed.
- */
-void tinymt32_init(tinymt32_t *random, uint32_t seed)
-{
+/// This function initializes the internal state array with a 32-bit
+/// unsigned integer seed.
+/// @param random tinymt state vector.
+/// @param seed a 32-bit unsigned integer used as a seed.
+void tinymt32_init(tinymt32_t *random, uint32_t seed) {
     random->status[0] = seed;
     random->status[1] = random->mat1;
     random->status[2] = random->mat2;
@@ -79,16 +65,13 @@ void tinymt32_init(tinymt32_t *random, uint32_t seed)
     }
 }
 
-/**
- * This function initializes the internal state array,
- * with an array of 32-bit unsigned integers used as seeds
- * @param random tinymt state vector.
- * @param init_key the array of 32-bit integers, used as a seed.
- * @param key_length the length of init_key.
- */
+/// This function initializes the internal state array,
+/// with an array of 32-bit unsigned integers used as seeds
+/// @param random tinymt state vector.
+/// @param init_key the array of 32-bit integers, used as a seed.
+/// @param key_length the length of init_key.
 void tinymt32_init_by_array(tinymt32_t *random, uint32_t init_key[],
-                            int key_length)
-{
+                            int key_length) {
     const int lag = 1;
     const int mid = 1;
     const int size = 4;

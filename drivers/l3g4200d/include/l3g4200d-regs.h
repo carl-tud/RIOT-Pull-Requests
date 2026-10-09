@@ -1,33 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_l3g4200d
- * @{
- *
- * @file
- * @brief       Definitions for the L3G4200D gyroscope
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_l3g4200d
+/// @{
+///
+/// @file
+/// @brief       Definitions for the L3G4200D gyroscope
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-/**
- * @brief   Flag for reading multiple bytes
- */
+/// @brief   Flag for reading multiple bytes
 #define L3G4200D_AUTOINC                0x80
 
-/**
- * @name    L3G4200D register definitions
- * @{
- */
+/// @name    L3G4200D register definitions
+/// @{
 #define L3G4200D_REG_WHO_AM_I           0x0f
 #define L3G4200D_REG_CTRL1              0x20
 #define L3G4200D_REG_CTRL2              0x21
@@ -54,24 +46,20 @@
 #define L3G4200D_REG_INT1_THS_ZL        0x36
 #define L3G4200D_REG_INT1_THS_ZH        0x37
 #define L3G4200D_REG_INT1_DURATION      0x38
-/** @} */
+/// @}
 
-/**
- * @name    CTRL1 bitfields
- * @{
- */
+/// @name    CTRL1 bitfields
+/// @{
 #define L3G4200D_CTRL1_PD               0x08
 #define L3G4200D_CTRL1_ZEN              0x04
 #define L3G4200D_CTRL1_YEN              0x02
 #define L3G4200D_CTRL1_XEN              0x01
 #define L3G4200D_CTRL1_ALLON            0x0f
 #define L3G4200D_CTRL1_MODE_POS         (4)
-/** @} */
+/// @}
 
-/**
- * @name    CTRL4 bitfields
- * @{
- */
+/// @name    CTRL4 bitfields
+/// @{
 #define L3G4200D_CTRL4_BDU              0x80
 #define L3G4200D_CTRL4_BLE              0x40
 #define L3G4200D_CTRL4_FS1              0x20
@@ -80,10 +68,10 @@
 #define L3G4200D_CTRL4_ST2              0x02
 #define L3G4200D_CTRL4_SIM              0x01
 #define L3G4200D_CTRL4_FS_POS           (4)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,52 +1,36 @@
-/*
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       PSK and RPK server credentials for the dtls-sock example.
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       PSK and RPK server credentials for the dtls-sock example.
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de
+///
+/// @}
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
- * Pre-Shared Key (PSK) credentials (client and server must have a copy)
- */
+// Pre-Shared Key (PSK) credentials (client and server must have a copy)
 
-/**
- * @brief The identity is used to indicate which key is used during the handshake.
- */
+/// @brief The identity is used to indicate which key is used during the handshake.
 #define SERVER_PSK_IDENTITY "Identity_1"
 
-/**
- * @brief The pre-shared key itself.
- */
+/// @brief The pre-shared key itself.
 #define SERVER_PSK_IDENTITY_KEY "yetAnotherSecret"
 
-/**
- * @brief The identity hint is sent by the server to the client to help it decide on
- *        which identity to use.
- */
+/// @brief The identity hint is sent by the server to the client to help it decide on
+///        which identity to use.
 #define SERVER_PSK_IDENTITY_HINT "Prefer_Id_1"
 
-/*
- * Raw Public Key (RPK) credentials
- */
-/**
- * @brief The private part of the server key 0.
- */
+// Raw Public Key (RPK) credentials
+/// @brief The private part of the server key 0.
 static const unsigned char server_private_key_0[] = {
     0x23, 0xbd, 0xd3, 0x6c, 0x10, 0x17, 0xe9, 0x0d,
     0xc1, 0x0a, 0x8f, 0x02, 0xf2, 0x0e, 0xe9, 0x5d,
@@ -54,9 +38,7 @@ static const unsigned char server_private_key_0[] = {
     0x20, 0xa6, 0xa7, 0x86, 0x2f, 0xd1, 0xc8, 0xe5
 };
 
-/**
- * @brief The x coordinate of the public part of the server key 0.
- */
+/// @brief The x coordinate of the public part of the server key 0.
 static const unsigned char server_public_key_0_x[] = {
     0xef, 0x30, 0x0c, 0x57, 0x0a, 0x65, 0x7b, 0x98,
     0x53, 0x34, 0xfa, 0x52, 0x81, 0xd7, 0x9b, 0x72,
@@ -64,9 +46,7 @@ static const unsigned char server_public_key_0_x[] = {
     0xa7, 0x35, 0x61, 0x3c, 0x06, 0xfb, 0x9c, 0xe7,
 };
 
-/**
- * @brief The y coordinate of the public part of the server key 0.
- */
+/// @brief The y coordinate of the public part of the server key 0.
 static const unsigned char server_public_key_0_y[] = {
     0xd1, 0x98, 0xe6, 0x0a, 0x96, 0x41, 0xc7, 0x8a,
     0xac, 0x69, 0x09, 0x47, 0x64, 0x24, 0x30, 0x5f,
@@ -74,9 +54,7 @@ static const unsigned char server_public_key_0_y[] = {
     0xdb, 0x6d, 0x11, 0xe0, 0x36, 0xb9, 0x1e, 0x87
 };
 
-/**
- * @brief The private part of the server key 1.
- */
+/// @brief The private part of the server key 1.
 static const unsigned char server_private_key_1[] = {
     0xac, 0x40, 0x25, 0x94, 0xd2, 0xd7, 0x33, 0x0b,
     0xaa, 0xd5, 0x51, 0x27, 0xd6, 0x76, 0xe8, 0xb7,
@@ -84,9 +62,7 @@ static const unsigned char server_private_key_1[] = {
     0xcf, 0x3d, 0x8b, 0x7a, 0x0d, 0x38, 0x03, 0x00
 };
 
-/**
- * @brief The x coordinate of the public part of the server key 1.
- */
+/// @brief The x coordinate of the public part of the server key 1.
 static const unsigned char server_public_key_1_x[] = {
     0x54, 0xe4, 0x3a, 0xa6, 0xe1, 0x19, 0xaf, 0x85,
     0xe4, 0x50, 0x0b, 0x67, 0x89, 0x57, 0x02, 0x82,
@@ -94,9 +70,7 @@ static const unsigned char server_public_key_1_x[] = {
     0xc0, 0xfc, 0xc2, 0xeb, 0xdc, 0x48, 0x7f, 0x92
 };
 
-/**
- * @brief The y coordinate of the public part of the server key 1.
- */
+/// @brief The y coordinate of the public part of the server key 1.
 static const unsigned char server_public_key_1_y[] = {
     0x25, 0x5f, 0x92, 0x94, 0x38, 0x73, 0xb4, 0xfd,
     0x17, 0x9e, 0xe0, 0x7f, 0x12, 0x93, 0xb9, 0xf4,
@@ -104,9 +78,7 @@ static const unsigned char server_public_key_1_y[] = {
     0x8a, 0x66, 0x75, 0x86, 0xc3, 0x34, 0x39, 0x8b
 };
 
-/**
- * @brief The x coordinate of the public part of the key 0 of a known client.
- */
+/// @brief The x coordinate of the public part of the key 0 of a known client.
 static const unsigned char known_client_public_key_0_x[] = {
     0x36, 0xDF, 0xE2, 0xC6, 0xF9, 0xF2, 0xED, 0x29,
     0xDA, 0x0A, 0x9A, 0x8F, 0x62, 0x68, 0x4E, 0x91,
@@ -114,9 +86,7 @@ static const unsigned char known_client_public_key_0_x[] = {
     0xE4, 0x7C, 0xFB, 0xF2, 0x5F, 0xA5, 0x8F, 0x52
 };
 
-/**
- * @brief The y coordinate of the public part of the key 0 of a known client.
- */
+/// @brief The y coordinate of the public part of the key 0 of a known client.
 static const unsigned char known_client_public_key_0_y[] = {
     0x71, 0xA0, 0xD4, 0xFC, 0xDE, 0x1A, 0xB8, 0x78,
     0x5A, 0x3C, 0x78, 0x69, 0x35, 0xA7, 0xCF, 0xAB,

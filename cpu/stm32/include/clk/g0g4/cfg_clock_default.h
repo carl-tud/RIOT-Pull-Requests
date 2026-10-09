@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Configure STM32G0/G4 clock
- *
- * CORECLOCK cannot exceeds 64MHz core clock. LSE is 32768Hz.
- * Default configuration use PLL clock as system clock. PLL input clock is HSI
- * by default.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Configure STM32G0/G4 clock
+///
+/// CORECLOCK cannot exceeds 64MHz core clock. LSE is 32768Hz.
+/// Default configuration use PLL clock as system clock. PLL input clock is HSI
+/// by default.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "cfg_clock_common_fx_gx_mp1_c0.h"
 #include "kernel_defines.h"
@@ -27,11 +23,9 @@
 extern "C" {
 #endif
 
-/**
- * @name    G0/G4 clock settings
- *
- * @{
- */
+/// @name    G0/G4 clock settings
+///
+/// @{
 #if IS_ACTIVE(CONFIG_BOARD_HAS_HSE) && (CONFIG_CLOCK_HSE < MHZ(4) || CONFIG_CLOCK_HSE > MHZ(48))
 #error "HSE clock frequency must be between 4MHz and 48MHz"
 #endif
@@ -44,11 +38,11 @@ extern "C" {
 
 #if IS_ACTIVE(CONFIG_BOARD_HAS_HSE)
 #define CLOCK_PLL_SRC                   (CONFIG_CLOCK_HSE)
-#else /* CONFIG_CLOCK_HSI */
+#else // CONFIG_CLOCK_HSI
 #define CLOCK_PLL_SRC                   (CONFIG_CLOCK_HSI)
 #endif
 
-/* The following parameters configure a 64MHz system clock with HSI as input clock */
+// The following parameters configure a 64MHz system clock with HSI as input clock
 #ifndef CONFIG_CLOCK_PLL_M
 #ifdef CPU_FAM_STM32G0
 #define CONFIG_CLOCK_PLL_M              (1)
@@ -91,29 +85,29 @@ extern "C" {
 #if CLOCK_CORECLOCK > MHZ(64)
 #error "SYSCLK cannot exceed 64MHz"
 #endif
-#else /* CPU_FAM_STM32G4 */
+#else // CPU_FAM_STM32G4
 #if CLOCK_CORECLOCK > MHZ(170)
 #error "SYSCLK cannot exceed 170MHz"
 #endif
 #endif
-#endif /* CONFIG_USE_CLOCK_PLL */
+#endif // CONFIG_USE_CLOCK_PLL
 
-#define CLOCK_AHB                       CLOCK_CORECLOCK  /* max: 64MHz (G0), 170MHZ (G4) */
+#define CLOCK_AHB                       CLOCK_CORECLOCK  // max: 64MHz (G0), 170MHZ (G4)
 
 #ifndef CONFIG_CLOCK_APB1_DIV
 #define CONFIG_CLOCK_APB1_DIV           (1)
 #endif
-#define CLOCK_APB1                      (CLOCK_CORECLOCK / CONFIG_CLOCK_APB1_DIV)   /* max: 64MHz (G0), 170MHZ (G4) */
+#define CLOCK_APB1                      (CLOCK_CORECLOCK / CONFIG_CLOCK_APB1_DIV)   // max: 64MHz (G0), 170MHZ (G4)
 #ifdef CPU_FAM_STM32G4
 #ifndef CONFIG_CLOCK_APB2_DIV
 #define CONFIG_CLOCK_APB2_DIV           (1)
 #endif
-#define CLOCK_APB2                      (CLOCK_AHB / CONFIG_CLOCK_APB2_DIV)     /* max: 170MHz (only on G4) */
+#define CLOCK_APB2                      (CLOCK_AHB / CONFIG_CLOCK_APB2_DIV)     // max: 170MHz (only on G4)
 #endif
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

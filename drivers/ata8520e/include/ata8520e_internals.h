@@ -1,28 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ata8520e
- * @brief       Internal addresses, registers, constants for the ATA8520E device
- * @{
- * @file
- * @brief       Internal addresses, registers, constants for the ATA8520E device
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_ata8520e
+/// @brief       Internal addresses, registers, constants for the ATA8520E device
+/// @{
+/// @file
+/// @brief       Internal addresses, registers, constants for the ATA8520E device
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name SPI commands for ATA8520E
- * @{
- */
+/// @name SPI commands for ATA8520E
+/// @{
 #define ATA8520E_SYSTEM_RESET                (0x01)
 #define ATA8520E_IO_INIT                     (0x02)
 #define ATA8520E_IO_WRITE                    (0x03)
@@ -45,39 +39,33 @@ extern "C" {
 #define ATA8520E_TX_TEST_MODE                (0x15)
 #define ATA8520E_SEND_CW                     (0x17)
 #define ATA8520E_SET_TX_FREQUENCY            (0x1B)
-/** @} */
+/// @}
 
-/**
- * @name Constants for ATA8520E
- * @{
- */
+/// @name Constants for ATA8520E
+/// @{
 #define ATA8520E_ATMEL_SYSTEM_READY_MASK     (0x20)
 #define ATA8520E_ATMEL_FRAME_SENT_MASK       (0x10)
 #define ATA8520E_ATMEL_PA_MASK               (0x01)
-/** @} */
+/// @}
 
-/**
- * @name Sigfox errors codes
- * @{
- */
+/// @name Sigfox errors codes
+/// @{
 #define ATA8520E_SIGFOX_NO_ERROR             (0x00)
 #define ATA8520E_SIGFOX_TX_LEN_TOO_LONG      (0x30)
 #define ATA8520E_SIGFOX_RX_TIMEOUT           (0x3E)
 #define ATA8520E_SIGFOX_RX_BIT_TIMEOUT       (0x4E)
-/** @} */
+/// @}
 
-/**
- * @name Sigfox2 errors codes
- * @{
- */
+/// @name Sigfox2 errors codes
+/// @{
 #define ATA8520E_SIGFOX2_INIT_ERROR          (0x10)
 #define ATA8520E_SIGFOX2_TX_ERROR            (0x18)
 #define ATA8520E_SIGFOX2_RF_ERROR            (0x40)
 #define ATA8520E_SIGFOX2_DF_WAIT_ERROR       (0x68)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

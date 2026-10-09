@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_periph_init
- * @{
- *
- * @file
- * @brief       Init on board LEDs
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup     drivers_periph_init
+/// @{
+///
+/// @file
+/// @brief       Init on board LEDs
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include "led.h"
 #include "periph/gpio.h"
@@ -26,16 +22,15 @@
                     } while (0)
 
 __attribute__ ((weak))
-void led_init(void)
-{
+void led_init(void) {
     if (!IS_USED(MODULE_PERIPH_GPIO)) {
         return;
     }
 
-    /* The condition is dual: We don't init if the LED is absent (eg. when a
-     * LEDn_PIN is defined, but there is a higher level driver such as SAUL PWM that makes the
-     * direct use impossible), but we also don't init if there is no pin (eg.
-     * on native where there is a different mechanism for LEDs). */
+    // The condition is dual: We don't init if the LED is absent (eg. when a
+    // LEDn_PIN is defined, but there is a higher level driver such as SAUL PWM that makes the
+    // direct use impossible), but we also don't init if there is no pin (eg.
+    // on native where there is a different mechanism for LEDs).
 #if defined(LED0_IS_PRESENT) && defined(LED0_PIN)
     LED_INIT(0);
 #endif

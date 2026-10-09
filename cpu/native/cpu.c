@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief  Native CPU kernel_intern.h and sched.h implementation
- * @author Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * @author Kaspar Schleiser <kaspar@schleiser.de>
- *
- * In-process preemptive context switching utilizes POSIX ucontexts.
- * (ucontext provides for architecture independent stack handling)
- */
+/// @file
+/// @brief  Native CPU kernel_intern.h and sched.h implementation
+/// @author Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+/// @author Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// In-process preemptive context switching utilizes POSIX ucontexts.
+/// (ucontext provides for architecture independent stack handling)
 
 #include <err.h>
 #include <stdio.h>
@@ -42,29 +38,24 @@ extern netdev_tap_t netdev_tap;
 
 static ucontext_t _end_context;
 
-/**
- * TODO: implement
- */
-void thread_print_stack(void)
-{
+/// TODO: implement
+void thread_print_stack(void) {
     DEBUG_CPU("thread_print_stack\n");
     return;
 }
 
-/* This function calculates the ISR_usage */
-int thread_isr_stack_usage(void)
-{
-    /* TODO */
+// This function calculates the ISR_usage
+int thread_isr_stack_usage(void) {
+    // TODO
     return -1;
 }
 
-void native_breakpoint(void)
-{
+void native_breakpoint(void) {
     raise(SIGTRAP);
 }
 
-/* ========================================= */
-/* ISR -> user  switch function */
+// =========================================
+// ISR -> user  switch function
 
 void _isr_switch_to_user(void) {
     DEBUG_CPU("... ISR: switching to user thread, calling setcontext(PID %" PRIkernel_pid ")\n\n", thread_getpid());
@@ -72,17 +63,16 @@ void _isr_switch_to_user(void) {
     ucontext_t *context = _native_user_context();
     _native_interrupts_enabled = true;
 
-    /* Get PC/LR. This is where we will resume execution on the userspace thread. */
+    // Get PC/LR. This is where we will resume execution on the userspace thread.
     _native_user_fptr = (uintptr_t)_context_get_fptr(context);
 
-    /* Now we want to go to _native_isr_leave before resuming execution at _native_user_fptr. */
+    // Now we want to go to _native_isr_leave before resuming execution at _native_user_fptr.
     _context_set_fptr(context, (uintptr_t)_native_isr_leave);
 
-    /* libucontext does not restore signal mask on setcontext() [1], so we
-     * need to enable signals again to not get locked up
-     *
-     * [1]: https://man.archlinux.org/man/libucontext.3.en#CAVEATS
-     */
+    // libucontext does not restore signal mask on setcontext() [1], so we
+    // need to enable signals again to not get locked up
+    //
+    // [1]: https://man.archlinux.org/man/libucontext.3.en#CAVEATS
     if (IS_ACTIVE(USE_LIBUCONTEXT)) {
         if (sigprocmask(SIG_SETMASK, &_native_sig_set, NULL) == -1) {
             err(EXIT_FAILURE, "irq_enable: sigprocmask");
@@ -95,31 +85,28 @@ void _isr_switch_to_user(void) {
     errx(EXIT_FAILURE, "2 this should have never been reached!!");
 }
 
-/* ========================================= */
+// =========================================
 
-void _isr_context_switch_exit(void)
-{
+void _isr_context_switch_exit(void) {
     DEBUG_CPU("_isr_schedule_and_switch\n");
-    /* Schedule thread job if no active thread */
+    // Schedule thread job if no active thread
     if (((sched_context_switch_request == 1) || (thread_get_active() == NULL))
         && IS_USED(MODULE_CORE_THREAD)) {
-        /* Schedule active thread */
+        // Schedule active thread
         sched_run();
     }
 
-    /* Switch to active userspace thread */
+    // Switch to active userspace thread
     _isr_switch_to_user();
 }
 
-/*               ^
- *               |
- *               |
- * cpu_switch_context_exit continues
- * in ISR context in _isr_context_switch_exit
- */
+// ^
+//               |
+//               |
+// cpu_switch_context_exit continues
+// in ISR context in _isr_context_switch_exit
 
-void cpu_switch_context_exit(void)
-{
+void cpu_switch_context_exit(void) {
 # ifdef NATIVE_AUTO_EXIT
     if (sched_num_threads <= 1) {
         extern unsigned _native_retval;
@@ -129,7 +116,7 @@ void cpu_switch_context_exit(void)
 # endif
 
     if (_native_in_isr == 0) {
-        /* Disable interrupts while switching */
+        // Disable interrupts while switching
         irq_disable();
         _native_in_isr = 1;
 
@@ -145,10 +132,9 @@ void cpu_switch_context_exit(void)
     errx(EXIT_FAILURE, "3 this should have never been reached!!");
 }
 
-/* ========================================= */
+// =========================================
 
-void _isr_thread_yield(void)
-{
+void _isr_thread_yield(void) {
     DEBUG_CPU("... ISR: switched to ISR context, scheduling\n");
 
     if (_native_pending_signals > 0) {
@@ -160,22 +146,20 @@ void _isr_thread_yield(void)
         return;
     }
 
-    /* Set active thread */
+    // Set active thread
     sched_run();
 
-    /* Switch to active userspace thread */
+    // Switch to active userspace thread
     _isr_switch_to_user();
 }
 
-/*               ^
- *               |
- *               |
- * thread_yield_higher continues
- * in ISR context in _isr_thread_yield
- */
+// ^
+//               |
+//               |
+// thread_yield_higher continues
+// in ISR context in _isr_thread_yield
 
-void thread_yield_higher(void)
-{
+void thread_yield_higher(void) {
     sched_context_switch_request = 1;
 
     if (_native_in_isr == 0 && _native_interrupts_enabled) {
@@ -184,7 +168,7 @@ void thread_yield_higher(void)
         _native_in_isr = 1;
         irq_disable();
 
-        /* Create the ISR context, will execute isr_thread_yield */
+        // Create the ISR context, will execute isr_thread_yield
         _native_isr_context_make(_isr_thread_yield);
         if (swapcontext(_native_user_context(), _native_isr_context) == -1) {
             err(EXIT_FAILURE, "thread_yield_higher: swapcontext");
@@ -193,24 +177,22 @@ void thread_yield_higher(void)
     }
 }
 
-/* ========================================= */
+// =========================================
 
-void native_cpu_init(void)
-{
+void native_cpu_init(void) {
     if (getcontext(&_end_context) == -1) {
         err(EXIT_FAILURE, "native_cpu_init: getcontext");
     }
 
-    /* The _end_context allows RIOT to execute code after a thread task func returns.
-     * This works as follows (explanation based on libplatform)
-     *  - In thread_stack_init, we call makecontext with the thread task func
-     *    and uc_link = _end_context.
-     *  - makecontext modifies the ucontext so that _ctx_start (in the libc/libplatform impl)
-     *    is called when setcontext is executed. The thread task func resides in a register.
-     *  - When the thread is started using setcontext, _ctx_start branches and links to the
-     *    the task func. After the task func returns, _ctx_start would normally call exit.
-     *    However, if _end_context is set, it calls setcontext on th bespoke _end_context.
-     */
+    // The _end_context allows RIOT to execute code after a thread task func returns.
+    // This works as follows (explanation based on libplatform)
+    //  - In thread_stack_init, we call makecontext with the thread task func
+    //    and uc_link = _end_context.
+    //  - makecontext modifies the ucontext so that _ctx_start (in the libc/libplatform impl)
+    //    is called when setcontext is executed. The thread task func resides in a register.
+    //  - When the thread is started using setcontext, _ctx_start branches and links to the
+    //    the task func. After the task func returns, _ctx_start would normally call exit.
+    //    However, if _end_context is set, it calls setcontext on th bespoke _end_context.
     _end_context.uc_stack.ss_sp = malloc(SIGSTKSZ);
     expect(_end_context.uc_stack.ss_sp != NULL);
     _end_context.uc_stack.ss_size = SIGSTKSZ;
@@ -226,10 +208,9 @@ void native_cpu_init(void)
     DEBUG_CPU("RIOT native cpu initialized.\n");
 }
 
-/* ========================================= */
+// =========================================
 
-static inline void *align_stack(uintptr_t start, int *stacksize)
-{
+static inline void *align_stack(uintptr_t start, int *stacksize) {
     const size_t alignment = sizeof(uintptr_t);
     const uintptr_t align_mask = alignment - 1;
     size_t unalignment = (start & align_mask)
@@ -240,8 +221,7 @@ static inline void *align_stack(uintptr_t start, int *stacksize)
     return (void *)start;
 }
 
-char *thread_stack_init(thread_task_func_t task_func, void *arg, void *stack_start, int stacksize)
-{
+char *thread_stack_init(thread_task_func_t task_func, void *arg, void *stack_start, int stacksize) {
     ucontext_t *p;
 
     stack_start = align_stack((uintptr_t)stack_start, &stacksize);
@@ -252,10 +232,10 @@ char *thread_stack_init(thread_task_func_t task_func, void *arg, void *stack_sta
 
     DEBUG_CPU("thread_stack_init\n");
 
-    /* Use intermediate cast to uintptr_t to silence -Wcast-align. The stack
-     * is aligned to word size above. */
+    // Use intermediate cast to uintptr_t to silence -Wcast-align. The stack
+    // is aligned to word size above.
     p = (ucontext_t *)(uintptr_t)((uint8_t *)stack_start + (stacksize - sizeof(ucontext_t)));
-    /* Stack guards might be in the way. */
+    // Stack guards might be in the way.
     memset(p, 0, sizeof(ucontext_t));
     stacksize -= sizeof(ucontext_t);
 

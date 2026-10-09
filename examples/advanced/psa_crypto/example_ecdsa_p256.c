@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup examples
- * @{
- *
- * @brief   Example functions for ECDSA with PSA Crypto
- *
- * @author  Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup examples
+/// @{
+///
+/// @brief   Example functions for ECDSA with PSA Crypto
+///
+/// @author  Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -26,14 +22,11 @@
 #define ECC_ALG_HASH (PSA_ALG_SHA_256)
 #define ECC_ALG (PSA_ALG_ECDSA(ECC_ALG_HASH))
 
-/**
- * @brief   Example function to perform an ECDSA operation with a NIST P256 curve
- *          with the PSA Crypto API.
- *
- * @return  psa_status_t
- */
-psa_status_t example_ecdsa_p256(void)
-{
+/// @brief   Example function to perform an ECDSA operation with a NIST P256 curve
+///          with the PSA Crypto API.
+///
+/// @return  psa_status_t
+psa_status_t example_ecdsa_p256(void) {
     psa_key_id_t privkey_id;
     psa_key_attributes_t privkey_attr = psa_key_attributes_init();
     psa_key_id_t pubkey_id;
@@ -78,7 +71,7 @@ psa_status_t example_ecdsa_p256(void)
     }
 
 #ifdef SECURE_ELEMENT
-    /* Currently there is no support for message signature and verification on secure elements */
+    // Currently there is no support for message signature and verification on secure elements
     psa_set_key_lifetime(&pubkey_attr, lifetime);
     psa_set_key_usage_flags(&pubkey_attr, PSA_KEY_USAGE_VERIFY_HASH);
 #else
@@ -100,18 +93,17 @@ psa_status_t example_ecdsa_p256(void)
     }
 
 #ifdef SECURE_ELEMENT
-    /* Currently there is only support for hash signature and verification on secure elements,
-       so we can't verify the message, but only the hash */
+    // Currently there is only support for hash signature and verification on secure elements,
+    //    so we can't verify the message, but only the hash
     return psa_verify_hash(pubkey_id, ECC_ALG, hash, sizeof(hash), signature, sig_length);
 #endif
 
-    /* verify on original message with internal hashing operation */
+    // verify on original message with internal hashing operation
     return psa_verify_message(pubkey_id, ECC_ALG, msg, sizeof(msg), signature, sig_length);
 }
 
 #ifdef MULTIPLE_SE
-psa_status_t example_ecdsa_p256_sec_se(void)
-{
+psa_status_t example_ecdsa_p256_sec_se(void) {
     psa_key_id_t privkey_id;
     psa_key_attributes_t privkey_attr = psa_key_attributes_init();
     psa_key_id_t pubkey_id;

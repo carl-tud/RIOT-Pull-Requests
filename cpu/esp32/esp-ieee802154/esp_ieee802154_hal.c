@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2025 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "esp_ieee802154.h"
 
@@ -13,15 +11,15 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* ACK frame timeout in microseconds, should be a multiple of 16 */
+// ACK frame timeout in microseconds, should be a multiple of 16
 #define ESP_IEEE802154_ACK_TIMEOUT_US (3456)
 
 _Static_assert((3456 % 16 == 0), "ACK frame timeout should be a multiple of 16");
 
-/* Although the device driver supports IEEE802154_CAP_IRQ_TX_START,
- * IEEE802154_CAP_IRQ_RX_START and IEEE802154_CAP_IRQ_CCA_DONE, we are not
- * using it for now to avoid unnecessary performance degradation as it is
- * not used by any link layer driver */
+// Although the device driver supports IEEE802154_CAP_IRQ_TX_START,
+// IEEE802154_CAP_IRQ_RX_START and IEEE802154_CAP_IRQ_CCA_DONE, we are not
+// using it for now to avoid unnecessary performance degradation as it is
+// not used by any link layer driver
 #define _USE_RX_START   0
 #define _USE_TX_START   0
 #define _USE_CCA_DONE   0
@@ -32,7 +30,7 @@ _Static_assert((3456 % 16 == 0), "ACK frame timeout should be a multiple of 16")
 static const ieee802154_radio_ops_t esp_ieee802154_driver;
 static ieee802154_dev_t *esp_ieee802154_dev;
 
-static uint8_t  _tx_frame[IEEE802154_FRAME_LEN_MAX + 1]; /* additional byte 0 is used for length */
+static uint8_t  _tx_frame[IEEE802154_FRAME_LEN_MAX + 1]; // additional byte 0 is used for length
 static uint8_t *_rx_frame;
 static const uint8_t *_ack_frame;
 
@@ -41,18 +39,17 @@ static esp_ieee802154_frame_info_t *_ack_frame_info;
 
 static bool _channel_clear;
 
-static esp_ieee802154_tx_error_t _tx_error;     /* error on last transmit */
+static esp_ieee802154_tx_error_t _tx_error;     // error on last transmit
 
-static int _write(ieee802154_dev_t *dev, const iolist_t *psdu)
-{
+static int _write(ieee802154_dev_t *dev, const iolist_t *psdu) {
     (void)dev;
 
     DEBUG("[esp_ieee802154] %s\n", __func__);
 
     assert(psdu);
 
-    /* copy packet data into the _tx_frame buffer */
-    uint8_t *dst = &_tx_frame[1];   /* first byte is frame length */
+    // copy packet data into the _tx_frame buffer
+    uint8_t *dst = &_tx_frame[1];   // first byte is frame length
 
     for (; psdu; psdu = psdu->iol_next) {
         if (psdu->iol_len) {
@@ -63,7 +60,7 @@ static int _write(ieee802154_dev_t *dev, const iolist_t *psdu)
         }
     }
 
-    /* length of the package. */
+    // length of the package.
     _tx_frame[0] = (dst - &_tx_frame[1]) + IEEE802154_FCS_LEN;
 
     DEBUG("[esp_ieee802154] %s: put %d bytes to _tx_frame\n", __func__, _tx_frame[0]);
@@ -71,15 +68,13 @@ static int _write(ieee802154_dev_t *dev, const iolist_t *psdu)
     return 0;
 }
 
-static int _len(ieee802154_dev_t *dev)
-{
+static int _len(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[esp_ieee802154] %s\n", __func__);
     return _rx_frame[0] - IEEE802154_FCS_LEN;
 }
 
-static int _read(ieee802154_dev_t *dev, void *buf, size_t size, ieee802154_rx_info_t *info)
-{
+static int _read(ieee802154_dev_t *dev, void *buf, size_t size, ieee802154_rx_info_t *info) {
     (void)dev;
 
     DEBUG("[esp_ieee802154] %s: buf=%p size=%u info=%p\n",
@@ -108,31 +103,27 @@ static int _read(ieee802154_dev_t *dev, void *buf, size_t size, ieee802154_rx_in
     return res;
 }
 
-static int _off(ieee802154_dev_t *dev)
-{
+static int _off(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[esp_ieee802154] %s\n", __func__);
     esp_ieee802154_disable();
     return 0;
 }
 
-static int _request_on(ieee802154_dev_t *dev)
-{
+static int _request_on(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[esp_ieee802154] %s\n", __func__);
     esp_ieee802154_enable();
     return 0;
 }
 
-static int _confirm_on(ieee802154_dev_t *dev)
-{
+static int _confirm_on(ieee802154_dev_t *dev) {
     (void)dev;
     DEBUG("[esp_ieee802154] %s\n", __func__);
     return 0;
 }
 
-static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
-{
+static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx) {
     (void)dev;
     (void)ctx;
 
@@ -147,7 +138,7 @@ static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
         DEBUG("[esp_ieee802154] %s: IEEE802154_HAL_OP_SET_RX\n", __func__);
         return (IS_ACTIVE(_USE_SET_RX) && esp_ieee802154_receive()) ? -EIO : 0;
     case IEEE802154_HAL_OP_SET_IDLE:
-        /* TODO: ctx = (bool *force) */
+        // TODO: ctx = (bool *force)
         DEBUG("[esp_ieee802154] %s: IEEE802154_HAL_OP_SET_IDLE\n", __func__);
         return (IS_ACTIVE(_USE_SET_IDLE) && esp_ieee802154_sleep()) ? -EIO : 0;
         return 0;
@@ -160,8 +151,7 @@ static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
     return -EINVAL;
 }
 
-static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
-{
+static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx) {
     (void)dev;
 
     esp_ieee802154_state_t state = esp_ieee802154_get_state();
@@ -211,15 +201,13 @@ static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
     return -EINVAL;
 }
 
-static int _set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold)
-{
+static int _set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold) {
     (void)dev;
     DEBUG("[esp_ieee802154] %s: threshold %i\n", __func__, threshold);
     return esp_ieee802154_set_cca_threshold(threshold) ? -EIO : 0;
 }
 
-static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
-{
+static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode) {
     (void)dev;
 
     switch (mode) {
@@ -240,8 +228,7 @@ static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
     return -EINVAL;
 }
 
-static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf)
-{
+static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf) {
     (void)dev;
 
     assert(conf);
@@ -256,30 +243,26 @@ static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf)
     return 0;
 }
 
-static int _set_frame_retrans(ieee802154_dev_t *dev, uint8_t retrans)
-{
+static int _set_frame_retrans(ieee802154_dev_t *dev, uint8_t retrans) {
     (void)dev;
     DEBUG("[esp_ieee802154] %s\n", __func__);
     return -ENOTSUP;
 }
 
 static int _set_csma_params(ieee802154_dev_t *dev, const ieee802154_csma_be_t *bd,
-                            int8_t retries)
-{
+                            int8_t retries) {
     (void)dev;
     DEBUG("[esp_ieee802154] %s\n", __func__);
     return -ENOTSUP;
 }
 
-static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t mode)
-{
+static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t mode) {
     (void)dev;
     DEBUG("[esp_ieee802154] %s\n", __func__);
     return -ENOTSUP;
 }
 
-static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value)
-{
+static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value) {
     (void)dev;
 
     assert(value);
@@ -309,8 +292,7 @@ static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, c
 }
 
 static int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t cmd,
-                                  const void *value)
-{
+                                  const void *value) {
     (void)dev;
 
     bool enable = *((bool*)value);
@@ -338,10 +320,9 @@ static int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t 
     return -EINVAL;
 }
 
-/* following functions are called back from ESP-IDF driver */
+// following functions are called back from ESP-IDF driver
 
-void esp_ieee802154_cca_done(bool channel_busy)
-{
+void esp_ieee802154_cca_done(bool channel_busy) {
     DEBUG("[esp_ieee802154] %s %d\n", __func__, channel_busy);
     _channel_clear = !channel_busy;
 
@@ -350,16 +331,14 @@ void esp_ieee802154_cca_done(bool channel_busy)
     }
 }
 
-void esp_ieee802154_receive_sfd_done(void)
-{
+void esp_ieee802154_receive_sfd_done(void) {
     DEBUG("[esp_ieee802154] %s\n", __func__);
     if (IS_ACTIVE(_USE_RX_START)) {
         esp_ieee802154_dev->cb(esp_ieee802154_dev, IEEE802154_RADIO_INDICATION_RX_START);
     }
 }
 
-void esp_ieee802154_receive_done(uint8_t *frame, esp_ieee802154_frame_info_t *frame_info)
-{
+void esp_ieee802154_receive_done(uint8_t *frame, esp_ieee802154_frame_info_t *frame_info) {
     assert(frame);
     assert(frame_info);
 
@@ -372,8 +351,7 @@ void esp_ieee802154_receive_done(uint8_t *frame, esp_ieee802154_frame_info_t *fr
     esp_ieee802154_dev->cb(esp_ieee802154_dev, IEEE802154_RADIO_INDICATION_RX_DONE);
 }
 
-void esp_ieee802154_transmit_sfd_done(uint8_t *frame)
-{
+void esp_ieee802154_transmit_sfd_done(uint8_t *frame) {
     DEBUG("[esp_ieee802154] %s: frame=%p\n", __func__, frame);
     if (IS_ACTIVE(_USE_TX_START)) {
         esp_ieee802154_dev->cb(esp_ieee802154_dev, IEEE802154_RADIO_INDICATION_TX_START);
@@ -381,8 +359,7 @@ void esp_ieee802154_transmit_sfd_done(uint8_t *frame)
 }
 
 void esp_ieee802154_transmit_done(const uint8_t *frame, const uint8_t *ack,
-                                  esp_ieee802154_frame_info_t *ack_frame_info)
-{
+                                  esp_ieee802154_frame_info_t *ack_frame_info) {
     DEBUG("[esp_ieee802154] %s: frame=%p ack_frame=%p ack_frame_info=%p\n",
           __func__, frame, ack, ack_frame_info);
 
@@ -392,8 +369,7 @@ void esp_ieee802154_transmit_done(const uint8_t *frame, const uint8_t *ack,
     esp_ieee802154_dev->cb(esp_ieee802154_dev, IEEE802154_RADIO_CONFIRM_TX_DONE);
 }
 
-void esp_ieee802154_transmit_failed(const uint8_t *frame, esp_ieee802154_tx_error_t error)
-{
+void esp_ieee802154_transmit_failed(const uint8_t *frame, esp_ieee802154_tx_error_t error) {
     DEBUG("[esp_ieee802154] %s: frame=%p error=%u\n", __func__, frame, error);
 
     _tx_error = error;
@@ -401,13 +377,11 @@ void esp_ieee802154_transmit_failed(const uint8_t *frame, esp_ieee802154_tx_erro
     esp_ieee802154_dev->cb(esp_ieee802154_dev, IEEE802154_RADIO_CONFIRM_TX_DONE);
 }
 
-void esp_ieee802154_energy_detect_done(int8_t power)
-{
+void esp_ieee802154_energy_detect_done(int8_t power) {
     DEBUG("[esp_ieee802154] %s: power %i\n", __func__, power);
 }
 
-void esp_ieee802154_setup(ieee802154_dev_t *dev)
-{
+void esp_ieee802154_setup(ieee802154_dev_t *dev) {
     assert(dev);
 
     DEBUG("[esp_ieee802154] %s: dev=%p\n", __func__, dev);
@@ -416,8 +390,7 @@ void esp_ieee802154_setup(ieee802154_dev_t *dev)
     esp_ieee802154_dev = dev;
 }
 
-int esp_ieee802154_init(void)
-{
+int esp_ieee802154_init(void) {
     DEBUG("[esp_ieee802154] %s\n", __func__);
 
     esp_ieee802154_enable();

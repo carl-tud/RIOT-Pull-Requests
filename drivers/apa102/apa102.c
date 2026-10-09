@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_apa102
- * @{
- *
- * @file
- * @brief       APA 102 RGB LED driver implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_apa102
+/// @{
+///
+/// @file
+/// @brief       APA 102 RGB LED driver implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -32,8 +28,7 @@
 #define BLUE_SHIFT      (16U)
 #define GREEN_SHIFT     (8U)
 
-static inline void shift(const apa102_t *dev, uint32_t data)
-{
+static inline void shift(const apa102_t *dev, uint32_t data) {
     for (int i = 31; i >= 0; i--) {
         gpio_write(dev->data_pin, ((data >> i) & 0x01));
         gpio_set(dev->clk_pin);
@@ -41,8 +36,7 @@ static inline void shift(const apa102_t *dev, uint32_t data)
     }
 }
 
-void apa102_init(apa102_t *dev, const apa102_params_t *params)
-{
+void apa102_init(apa102_t *dev, const apa102_params_t *params) {
     assert(dev && params);
 
     *dev = *params;
@@ -53,15 +47,14 @@ void apa102_init(apa102_t *dev, const apa102_params_t *params)
     gpio_clear(dev->clk_pin);
 }
 
-void apa102_load_rgba(const apa102_t *dev, const color_rgba_t vals[])
-{
+void apa102_load_rgba(const apa102_t *dev, const color_rgba_t vals[]) {
     assert(dev && vals);
 
     shift(dev, START);
     for (int i = 0; i < dev->led_numof; i++) {
         uint32_t data = HEAD;
-        /* we scale the 8-bit alpha value to a 5-bit value by cutting off the
-         * 3 least significant bits */
+        // we scale the 8-bit alpha value to a 5-bit value by cutting off the
+        // 3 least significant bits
         data |= (((uint32_t)vals[i].alpha << BRIGHT_SHIFT) & BRIGHT);
         data |= ((uint32_t)vals[i].color.b << BLUE_SHIFT);
         data |= ((uint32_t)vals[i].color.g << GREEN_SHIFT);

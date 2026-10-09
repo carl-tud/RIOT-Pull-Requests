@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2015 Cenk Gündoğan <cnkgndgn@gmail.com>
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Cenk Gündoğan <cnkgndgn@gmail.com>
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author Cenk Gündoğan <cnkgndgn@gmail.com>
- * @author Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author Cenk Gündoğan <cnkgndgn@gmail.com>
+/// @author Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <assert.h>
 #include <string.h>
@@ -27,13 +23,12 @@
 
 static char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
-/* checks if multiple addresses within the source routing header exist on my
- * interfaces */
+// checks if multiple addresses within the source routing header exist on my
+// interfaces
 static void *_contains_multiple_of_my_addr(const ipv6_addr_t *dst,
                                            const gnrc_rpl_srh_t *rh,
                                            unsigned num_addr,
-                                           unsigned compri_addr_len)
-{
+                                           unsigned compri_addr_len) {
     ipv6_addr_t addr;
     uint8_t *addr_vec = (uint8_t *) (rh + 1);
     bool found = false;
@@ -63,8 +58,7 @@ static void *_contains_multiple_of_my_addr(const ipv6_addr_t *dst,
     return NULL;
 }
 
-int gnrc_rpl_srh_process(ipv6_hdr_t *ipv6, gnrc_rpl_srh_t *rh, void **err_ptr)
-{
+int gnrc_rpl_srh_process(ipv6_hdr_t *ipv6, gnrc_rpl_srh_t *rh, void **err_ptr) {
     ipv6_addr_t addr;
     uint8_t *addr_vec = (uint8_t *) (rh + 1), *current_address;
     uint8_t num_addr;
@@ -111,7 +105,7 @@ int gnrc_rpl_srh_process(ipv6_hdr_t *ipv6, gnrc_rpl_srh_t *rh, void **err_ptr)
         return GNRC_IPV6_EXT_RH_ERROR;
     }
 
-    /* check if multiple addresses of my interface exist */
+    // check if multiple addresses of my interface exist
     if ((*err_ptr = _contains_multiple_of_my_addr(&ipv6->dst, rh, num_addr,
                                                   compri_addr_len))) {
         return GNRC_IPV6_EXT_RH_ERROR;
@@ -127,4 +121,4 @@ int gnrc_rpl_srh_process(ipv6_hdr_t *ipv6, gnrc_rpl_srh_t *rh, void **err_ptr)
     return GNRC_IPV6_EXT_RH_FORWARDED;
 }
 
-/** @} */
+/// @}

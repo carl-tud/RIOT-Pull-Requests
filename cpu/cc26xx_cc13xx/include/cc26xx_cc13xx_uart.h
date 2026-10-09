@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Leon George
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Leon George
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @addtogroup      cpu_cc26xx_cc13xx_definitions
- * @{
- *
- * @file
- * @brief           CC26xx/CC13xx UART interface
- *
- */
+/// @addtogroup      cpu_cc26xx_cc13xx_definitions
+/// @{
+///
+/// @file
+/// @brief           CC26xx/CC13xx UART interface
+///
 
 #include "cc26xx_cc13xx.h"
 
@@ -20,34 +16,30 @@
 extern "C" {
 #endif
 
-/**
- * @brief    UART component registers
- */
+/// @brief    UART component registers
 typedef struct {
-    reg32_t DR; /**< Data */
+    reg32_t DR; ///< Data
     union {
-        reg32_t RSR; /**< Status */
-        reg32_t ECR; /**< Error clear */
+        reg32_t RSR; ///< Status
+        reg32_t ECR; ///< Error clear
     };
-    reg32_t __reserved1[4]; /**< Reserved */
-    reg32_t FR; /**< flag */
-    reg32_t __reserved2[2]; /**< Reserved */
-    reg32_t IBRD; /**< Integer baud-rate divisor */
-    reg32_t FBRD; /**< Fractional baud-rate divisor */
-    reg32_t LCRH; /**< Line control */
-    reg32_t CTL; /**< Control */
-    reg32_t IFLS; /**< Interrupt fifo level select */
-    reg32_t IMSC; /**< Interrupt mask set/clear */
-    reg32_t RIS; /**< Raw interrupt status */
-    reg32_t MIS; /**< Masked interrupt status */
-    reg32_t ICR; /**< Interrupt clear */
-    reg32_t DMACTL; /**< MMA control */
+    reg32_t __reserved1[4]; ///< Reserved
+    reg32_t FR; ///< flag
+    reg32_t __reserved2[2]; ///< Reserved
+    reg32_t IBRD; ///< Integer baud-rate divisor
+    reg32_t FBRD; ///< Fractional baud-rate divisor
+    reg32_t LCRH; ///< Line control
+    reg32_t CTL; ///< Control
+    reg32_t IFLS; ///< Interrupt fifo level select
+    reg32_t IMSC; ///< Interrupt mask set/clear
+    reg32_t RIS; ///< Raw interrupt status
+    reg32_t MIS; ///< Masked interrupt status
+    reg32_t ICR; ///< Interrupt clear
+    reg32_t DMACTL; ///< MMA control
 } uart_regs_t;
 
-/**
- * @brief   UART register values
- * @{
- */
+/// @brief   UART register values
+/// @{
 #define UART_DR_DATA_mask       0xFF
 #define UART_DR_FE              0x100
 #define UART_DR_PE              0x200
@@ -114,27 +106,21 @@ typedef struct {
 #define UART_IFLS_RXSEL_4_8     0x10
 #define UART_IFLS_RXSEL_6_8     0x18
 #define UART_IFLS_RXSEL_7_8     0x20
-/** @} */
+/// @}
 
-/**
- * @ingroup cpu_specific_peripheral_memory_map
- * @{
- */
-#define UART0_BASE       (PERIPH_BASE + 0x1000) /**< UART0 base address */
-#define UART1_BASE       (PERIPH_BASE + 0xB000) /**< UART1 base address */
-/** @} */
+/// @ingroup cpu_specific_peripheral_memory_map
+/// @{
+#define UART0_BASE       (PERIPH_BASE + 0x1000) ///< UART0 base address
+#define UART1_BASE       (PERIPH_BASE + 0xB000) ///< UART1 base address
+/// @}
 
-/**
- * @brief   UART0 register bank
- */
+/// @brief   UART0 register bank
 #define UART0            ((uart_regs_t *) (UART0_BASE))
-/**
- * @brief   UART1 register bank
- */
+/// @brief   UART1 register bank
 #define UART1            ((uart_regs_t *) (UART1_BASE))
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

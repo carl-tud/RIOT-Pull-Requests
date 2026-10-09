@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 Víctor Ariño
- * SPDX-FileCopyrightText: 2023 Hugues Larrive
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Víctor Ariño
+// SPDX-FileCopyrightText: 2023 Hugues Larrive
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_atmega_common
- * @ingroup     drivers_periph_pwm
- * @{
- *
- * @file
- * @brief       Low-level PWM driver implementation
- *
- * @author      Víctor Ariño <victor@lebrush.org>
- * @author      Hugues Larrive <hugues.larrive@pm.me>
- *
- * @}
- */
+/// @ingroup     cpu_atmega_common
+/// @ingroup     drivers_periph_pwm
+/// @{
+///
+/// @file
+/// @brief       Low-level PWM driver implementation
+///
+/// @author      Víctor Ariño <victor@lebrush.org>
+/// @author      Hugues Larrive <hugues.larrive@pm.me>
+///
+/// @}
 
 #include "cpu.h"
 #include "assert.h"
@@ -43,8 +39,7 @@ static struct {
     uint8_t res;
 } state[PWM_NUMOF];
 
-static inline uint8_t get_prescaler(pwm_t dev, uint32_t *scale)
-{
+static inline uint8_t get_prescaler(pwm_t dev, uint32_t *scale) {
     uint16_t divmask = pwm_conf[dev].div;
     uint32_t target = *scale;
     uint8_t div, pre = 0;
@@ -64,8 +59,7 @@ static inline uint8_t get_prescaler(pwm_t dev, uint32_t *scale)
 }
 
 #if (defined(TCCR0A) && defined(TCCR0B)) || (defined(TCCR2A) && defined(TCCR2B))
-static inline void compute_cra_and_crb(pwm_t dev, uint8_t pre)
-{
+static inline void compute_cra_and_crb(pwm_t dev, uint8_t pre) {
     uint8_t cra = (1 << WGM1) | (1 << WGM0);
     uint8_t crb = pre;
 
@@ -85,8 +79,7 @@ static inline void compute_cra_and_crb(pwm_t dev, uint8_t pre)
 }
 #endif
 
-static inline void apply_config(pwm_t dev)
-{
+static inline void apply_config(pwm_t dev) {
 #if (defined(TCCR0A) && defined(TCCR0B)) || (defined(TCCR2A) && defined(TCCR2B))
     pwm_conf[dev].dev->CRA = state[dev].CRA;
     pwm_conf[dev].dev->CRB = state[dev].CRB;
@@ -95,8 +88,8 @@ static inline void apply_config(pwm_t dev)
 #endif
 
     if (pwm_conf[dev].pin_ch[0] == GPIO_UNDEF) {
-        /* If channel 0 is not used, variable resolutions can be used for
-         * channel 1 */
+        // If channel 0 is not used, variable resolutions can be used for
+        // channel 1
 #if (defined(OCR0A) && defined(OCR0B)) || (defined(OCR2A) && defined(OCR2B))
         pwm_conf[dev].dev->OCR[0] = state[dev].res;
 #elif defined(OCR2)
@@ -105,15 +98,14 @@ static inline void apply_config(pwm_t dev)
     }
 }
 
-uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
-{
+uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res) {
     (void)mode;
-    /* only left implemented, max resolution 256 */
+    // only left implemented, max resolution 256
     assert(dev < PWM_NUMOF && mode == PWM_LEFT && res <= 256);
-    /* resolution != 256 only valid if ch0 not used */
+    // resolution != 256 only valid if ch0 not used
     assert(!(res != 256 && pwm_conf[dev].pin_ch[0] != GPIO_UNDEF));
 
-    /* disable PWM */
+    // disable PWM
 #if (defined(TCCR0A) && defined(TCCR0B)) || (defined(TCCR2A) && defined(TCCR2B))
     pwm_conf[dev].dev->CRA = 0x00;
     pwm_conf[dev].dev->CRB = 0x00;
@@ -125,7 +117,7 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
 #endif
 
 #if defined(PRT2) || defined(PRTIM2) || defined(PRT0) || defined(PRTIM0)
-    /* disable power reduction */
+    // disable power reduction
     if (dev) {
         power_timer2_enable();
     }
@@ -134,13 +126,13 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
     }
 #endif
 
-    /* find out prescaler */
+    // find out prescaler
     uint32_t scale = (CLOCK_CORECLOCK / (freq * (uint32_t)res));
     uint8_t pre = get_prescaler(dev, &scale);
     freq = (CLOCK_CORECLOCK / (scale * (uint32_t)res));
 
-    /* Compute configuration and store it in the state. (The state is needed
-     * for later calls to pwm_poweron().)*/
+    // Compute configuration and store it in the state. (The state is needed
+    // for later calls to pwm_poweron().)
 #if (defined(TCCR0A) && defined(TCCR0B)) || (defined(TCCR2A) && defined(TCCR2B))
     compute_cra_and_crb(dev, pre);
 #elif defined(TCCR2)
@@ -149,10 +141,10 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
 #endif
     state[dev].res = res - 1;
 
-    /* Apply configuration stored in state */
+    // Apply configuration stored in state
     apply_config(dev);
 
-    /* Enable outputs */
+    // Enable outputs
     if (pwm_conf[dev].pin_ch[0] != GPIO_UNDEF) {
         gpio_init(pwm_conf[dev].pin_ch[0], GPIO_OUT);
     }
@@ -160,16 +152,15 @@ uint32_t pwm_init(pwm_t dev, pwm_mode_t mode, uint32_t freq, uint16_t res)
         gpio_init(pwm_conf[dev].pin_ch[1], GPIO_OUT);
     }
 
-    /* return real frequency */
+    // return real frequency
     return freq;
 }
 
-uint8_t pwm_channels(pwm_t dev)
-{
+uint8_t pwm_channels(pwm_t dev) {
     assert(dev < PWM_NUMOF);
 
-    /* a pwm with no channels enabled makes no sense. Assume at least one is
-     * enabled */
+    // a pwm with no channels enabled makes no sense. Assume at least one is
+    // enabled
     if (pwm_conf[dev].pin_ch[0] == GPIO_UNDEF ||
         pwm_conf[dev].pin_ch[1] == GPIO_UNDEF) {
         return 1;
@@ -178,8 +169,7 @@ uint8_t pwm_channels(pwm_t dev)
     return 2;
 }
 
-void pwm_set(pwm_t dev, uint8_t ch, uint16_t value)
-{
+void pwm_set(pwm_t dev, uint8_t ch, uint16_t value) {
 #ifdef OCR2
     (void)ch;
 #endif
@@ -200,11 +190,10 @@ void pwm_set(pwm_t dev, uint8_t ch, uint16_t value)
     }
 }
 
-void pwm_poweron(pwm_t dev)
-{
+void pwm_poweron(pwm_t dev) {
     assert(dev < PWM_NUMOF);
 #if defined(PRT2) || defined(PRTIM2) || defined(PRT0) || defined(PRTIM0)
-    /* disable power reduction */
+    // disable power reduction
     if (dev) {
         power_timer2_enable();
     }
@@ -216,13 +205,12 @@ void pwm_poweron(pwm_t dev)
     apply_config(dev);
 }
 
-void pwm_poweroff(pwm_t dev)
-{
+void pwm_poweroff(pwm_t dev) {
     assert(dev < PWM_NUMOF);
 #if (defined(TCCR0A) && defined(TCCR0B)) || (defined(TCCR2A) && defined(TCCR2B))
     pwm_conf[dev].dev->CRA = 0x00;
     pwm_conf[dev].dev->CRB = 0x00;
-    /* disable timers to lower power consumption */
+    // disable timers to lower power consumption
     if (dev) {
         power_timer2_disable();
     }
@@ -241,4 +229,4 @@ void pwm_poweroff(pwm_t dev)
         gpio_clear(pwm_conf[dev].pin_ch[1]);
     }
 }
-#endif /* PWM_NUMOF */
+#endif // PWM_NUMOF

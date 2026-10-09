@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- * @file
- * @brief       initializes lcd display device
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+/// @file
+/// @brief       initializes lcd display device
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include <assert.h>
 #include <stddef.h>
@@ -37,8 +33,7 @@ static ili9341_t ili9341_devs[ILI9341_NUMOF];
 
 static disp_dev_reg_t disp_dev_entries[ILI9341_NUMOF];
 
-void auto_init_ili9341(void)
-{
+void auto_init_ili9341(void) {
     assert(ILI9341_NUMOF == ILI9341_SCREEN_NUMOF);
 
     for (size_t i = 0; i < ILI9341_NUMOF; i++) {
@@ -53,7 +48,7 @@ void auto_init_ili9341(void)
         disp_dev_entries[i].screen_id = ili9341_screen_ids[i];
         disp_dev_entries[i].dev->driver = &lcd_disp_dev_driver;
 
-        /* add to disp_dev registry */
+        // add to disp_dev registry
         disp_dev_reg_add(&(disp_dev_entries[i]));
     }
 }

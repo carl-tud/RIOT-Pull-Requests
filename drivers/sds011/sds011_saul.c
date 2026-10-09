@@ -1,27 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sds011
- * @{
- *
- * @file
- * @brief       SAUL adaption for SDS011 sensor
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_sds011
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption for SDS011 sensor
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+///
+/// @}
 
 #include <string.h>
 
 #include "saul.h"
 #include "sds011.h"
 
-static int _read(const void *dev, phydat_t *res)
-{
+static int _read(const void *dev, phydat_t *res) {
     sds011_data_t data;
 
     if (sds011_read((sds011_t *)dev, &data) == SDS011_OK) {

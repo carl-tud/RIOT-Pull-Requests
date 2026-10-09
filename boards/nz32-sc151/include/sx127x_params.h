@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria Chile
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria Chile
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nz32-sc151
- * @{
- *
- * @file
- * @brief       sx127x configuration for nz32-sc15 using modtronix inAir9
- *              LoRa module
- * @author      Francisco Molina <francisco.molina@inria.cl>
-*/
+/// @ingroup     boards_nz32-sc151
+/// @{
+///
+/// @file
+/// @brief       sx127x configuration for nz32-sc15 using modtronix inAir9
+///              LoRa module
+/// @author      Francisco Molina <francisco.molina@inria.cl>
 
 #include "sx127x.h"
 
@@ -21,9 +17,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Board specific SX127X configuration
- */
+/// @brief   Board specific SX127X configuration
 static const sx127x_params_t sx127x_params[] =
 {
     {
@@ -41,4 +35,4 @@ static const sx127x_params_t sx127x_params[] =
 }
 #endif
 
-/** @} */
+/// @}

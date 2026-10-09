@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_arduino_due
- * @{
- *
- * @file
- * @brief       SD card configuration for the Arduino SD card shields
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_common_arduino_due
+/// @{
+///
+/// @file
+/// @brief       SD card configuration for the Arduino SD card shields
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "arduino_pinmap.h"
 
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Default configuration for the sdcard_spi driver
- * @{
- */
+/// @name    Default configuration for the sdcard_spi driver
+/// @{
 #ifndef SDCARD_SPI_PARAM_SPI
 #define SDCARD_SPI_PARAM_SPI         (SPI_DEV(0))
 #endif
@@ -46,14 +40,12 @@ extern "C" {
 #define SDCARD_SPI_PARAM_POWER       (GPIO_UNDEF)
 #endif
 #ifndef SDCARD_SPI_PARAM_POWER_AH
-/** treated as 'don't care' if SDCARD_SPI_PARAM_POWER is GPIO_UNDEF */
+/// treated as 'don't care' if SDCARD_SPI_PARAM_POWER is GPIO_UNDEF
 #define SDCARD_SPI_PARAM_POWER_AH    (true)
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   sdcard_spi configuration
- */
+/// @brief   sdcard_spi configuration
 static const  sdcard_spi_params_t sdcard_spi_params[] = {
     {
         .spi_dev        = SDCARD_SPI_PARAM_SPI,
@@ -70,4 +62,4 @@ static const  sdcard_spi_params_t sdcard_spi_params[] = {
 }
 #endif
 
-/** @} */
+/// @}

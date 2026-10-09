@@ -1,48 +1,35 @@
-/*
- * SPDX-FileCopyrightText: 2018 UC Berkeley
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 UC Berkeley
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization for PIR devices
- *
- * @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization for PIR devices
+//
+// @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
+//
+// @}
 
 #include "log.h"
 #include "saul_reg.h"
 #include "pir_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define PIR_NUM    ARRAY_SIZE(pir_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static pir_t pir_devs[PIR_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[PIR_NUM];
 
-/**
- * @brief   Reference to the occupancy driver struct
- * @{
- */
+/// @brief   Reference to the occupancy driver struct
+/// @{
 extern saul_driver_t pir_saul_occup_driver;
-/** @} */
+/// @}
 
-void auto_init_pir(void)
-{
+void auto_init_pir(void) {
     for (unsigned i = 0; i < PIR_NUM; i++) {
         LOG_DEBUG("[auto_init_saul] initializing pir #%u\n", i);
 

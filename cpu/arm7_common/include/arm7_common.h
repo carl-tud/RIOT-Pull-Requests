@@ -1,23 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2008-2009 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2008-2009 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_arm7_common
- * @{
- */
+/// @ingroup     cpu_arm7_common
+/// @{
 
-/**
- * @file
- * @brief       ARM7 CPU common declarations
- *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
- *
- */
+/// @file
+/// @brief       ARM7 CPU common declarations
+///
+/// @author      Freie Universität Berlin, Computer Systems & Telematics
+///
 
 #include "bitarithm.h"
 
@@ -25,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    PCONP Constants
- * @{
- */
+/// @name    PCONP Constants
+/// @{
 #define PCTIM0      (BIT1)
 #define PCTIM1      (BIT2)
 #define PCUART0     (BIT3)
@@ -54,12 +46,10 @@ extern "C" {
 #define PCGPDMA     (BIT29)
 #define PCENET      (BIT30)
 #define PCUSB       (BIT31)
-/** @} */
+/// @}
 
-/**
- * @name    PCON Constants
- * @{
- */
+/// @name    PCON Constants
+/// @{
 #define PM0         (BIT0)
 #define PM1         (BIT1)
 #define BODPDM      (BIT2)
@@ -71,12 +61,10 @@ extern "C" {
 #define PM_SLEEP            (PM2|PM0)
 #define PM_POWERDOWN        (PM1)
 #define PM_DEEP_POWERDOWN   (PM2|PM1)
-/** @} */
+/// @}
 
-/**
- * @name    Timer Symbols
- * @{
- */
+/// @name    Timer Symbols
+/// @{
 #define MR0I (BIT0)
 #define MR0R (BIT1)
 #define MR0S (BIT2)
@@ -89,10 +77,10 @@ extern "C" {
 #define MR3I (BIT9)
 #define MR3R (BIT10)
 #define MR3S (BIT11)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

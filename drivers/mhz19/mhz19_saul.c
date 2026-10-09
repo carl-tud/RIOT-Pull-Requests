@@ -1,28 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mhz19
- * @{
- *
- * @file
- * @brief       SAUL adaption for MH-Z19 CO2 sensor device
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     drivers_mhz19
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption for MH-Z19 CO2 sensor device
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include "saul.h"
 #include "mhz19.h"
 
-static int read_ppm(const void *dev, phydat_t *res)
-{
+static int read_ppm(const void *dev, phydat_t *res) {
     int16_t ppm;
 
-    /* Drops the const keyword, otherwise the mutex can't be locked */
+    // Drops the const keyword, otherwise the mutex can't be locked
     if (mhz19_get_ppm((mhz19_t *)dev, &ppm) < 0) {
         return -ECANCELED;
     }

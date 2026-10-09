@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    tests_gnrc_ipv6_nib Common header for GNRC's NIB tests
- * @ingroup     tests
- * @brief       Common definitions for GNRC's NIB tests
- * @{
- *
- * @file
- *
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @defgroup    tests_gnrc_ipv6_nib Common header for GNRC's NIB tests
+/// @ingroup     tests
+/// @brief       Common definitions for GNRC's NIB tests
+/// @{
+///
+/// @file
+///
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "net/gnrc/netif.h"
 
@@ -103,4 +99,4 @@ void _test_trigger_recv(gnrc_netif_t *netif, const uint8_t *data,
 }
 #endif
 
-/** @} */
+/// @}

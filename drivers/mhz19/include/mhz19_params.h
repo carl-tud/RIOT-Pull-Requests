@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
- * SPDX-FileCopyrightText: 2018 Beduino Master Projekt - University of Bremen
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
+// SPDX-FileCopyrightText: 2018 Beduino Master Projekt - University of Bremen
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_mhz19
- *
- * @{
- * @file
- * @brief       Default configuration for MH-Z19
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Christian Manal <manal@uni-bremen.de>
- */
+/// @ingroup     drivers_mhz19
+///
+/// @{
+/// @file
+/// @brief       Default configuration for MH-Z19
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Christian Manal <manal@uni-bremen.de>
 
 #include "board.h"
 #include "mhz19.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the MH-Z19
- * @{
- */
+/// @name    Set default configuration parameters for the MH-Z19
+/// @{
 #ifdef MODULE_MHZ19_UART
 #ifndef MHZ19_PARAM_UART_DEV
 #define MHZ19_PARAM_UART_DEV        UART_DEV(1)
@@ -37,7 +31,7 @@ extern "C" {
 #ifndef MHZ19_PARAMS
 #define MHZ19_PARAMS    { .uart = MHZ19_PARAM_UART_DEV }
 #endif
-#endif /* MODULE_MHZ19_UART */
+#endif // MODULE_MHZ19_UART
 
 #ifdef MODULE_MHZ19_PWM
 #ifndef MHZ19_PARAM_PIN
@@ -47,28 +41,24 @@ extern "C" {
 #ifndef MHZ19_PARAMS
 #define MHZ19_PARAMS    { .pin = MHZ19_PARAM_PIN }
 #endif
-#endif /* MODULE_MHZ19_PWM */
+#endif // MODULE_MHZ19_PWM
 
 #ifndef MHZ19_SAUL_INFO
 #define MHZ19_SAUL_INFO { .name = "mh-z19" }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   Configure MHZ19
- */
+/// @brief   Configure MHZ19
 static const mhz19_params_t mhz19_params[] =
 {
     MHZ19_PARAMS
 };
 
-/**
- * @brief   Configuration details of SAUL registry entries
- *
- * This two dimensional array contains static details of the sensors
- * for each device. Please be awar that the indexes are used in
- * auto_init_mhz280, so make sure the indexes match.
- */
+/// @brief   Configuration details of SAUL registry entries
+///
+/// This two dimensional array contains static details of the sensors
+/// for each device. Please be awar that the indexes are used in
+/// auto_init_mhz280, so make sure the indexes match.
 static const saul_reg_info_t mhz19_saul_info[] =
 {
     MHZ19_SAUL_INFO
@@ -78,4 +68,4 @@ static const saul_reg_info_t mhz19_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

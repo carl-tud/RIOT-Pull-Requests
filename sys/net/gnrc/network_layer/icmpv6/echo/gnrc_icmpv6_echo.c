@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <inttypes.h>
 
@@ -23,8 +19,7 @@
 #include "debug.h"
 
 gnrc_pktsnip_t *gnrc_icmpv6_echo_build(uint8_t type, uint16_t id, uint16_t seq,
-                                       const void *data, size_t data_len)
-{
+                                       const void *data, size_t data_len) {
     gnrc_pktsnip_t *pkt;
     icmpv6_echo_t *echo;
 
@@ -51,8 +46,7 @@ gnrc_pktsnip_t *gnrc_icmpv6_echo_build(uint8_t type, uint16_t id, uint16_t seq,
 }
 
 void gnrc_icmpv6_echo_req_handle(gnrc_netif_t *netif, ipv6_hdr_t *ipv6_hdr,
-                                 icmpv6_echo_t *echo, uint16_t len)
-{
+                                 icmpv6_echo_t *echo, uint16_t len) {
     uint8_t *payload = ((uint8_t *)echo) + sizeof(icmpv6_echo_t);
     gnrc_pktsnip_t *hdr, *pkt;
 
@@ -92,7 +86,7 @@ void gnrc_icmpv6_echo_req_handle(gnrc_netif_t *netif, ipv6_hdr_t *ipv6_hdr,
         gnrc_pktbuf_release(pkt);
         return;
     }
-    /* (netif == NULL) => ipv6_hdr->dst is loopback address */
+    // (netif == NULL) => ipv6_hdr->dst is loopback address
     gnrc_netif_hdr_set_netif(hdr->data, netif);
 
     pkt = gnrc_pkt_prepend(pkt, hdr);
@@ -104,8 +98,7 @@ void gnrc_icmpv6_echo_req_handle(gnrc_netif_t *netif, ipv6_hdr_t *ipv6_hdr,
     }
 }
 
-static void _fill_payload(uint8_t *buf, size_t len, uint32_t now)
-{
+static void _fill_payload(uint8_t *buf, size_t len, uint32_t now) {
     uint8_t i = 0;
 
     if (len >= sizeof(uint32_t)) {
@@ -120,8 +113,7 @@ static void _fill_payload(uint8_t *buf, size_t len, uint32_t now)
 }
 
 static void _check_payload(const void *buf, size_t len, uint32_t now,
-                           uint32_t *triptime, int *corrupt)
-{
+                           uint32_t *triptime, int *corrupt) {
     uint8_t i = 0;
     const uint8_t *data = buf;
 
@@ -140,14 +132,13 @@ static void _check_payload(const void *buf, size_t len, uint32_t now,
 }
 
 int gnrc_icmpv6_echo_send(const gnrc_netif_t *netif, const ipv6_addr_t *addr,
-                          uint16_t id, uint16_t seq, uint8_t ttl, size_t len)
-{
+                          uint16_t id, uint16_t seq, uint8_t ttl, size_t len) {
     int res = 0;
     gnrc_pktsnip_t *pkt, *tmp;
     ipv6_hdr_t *ipv6;
     uint8_t *databuf;
 
-    /* max IPv6 payload 65535 minus 8 bytes of icmp header = 65527 */
+    // max IPv6 payload 65535 minus 8 bytes of icmp header = 65527
     if (len > (UINT16_MAX - sizeof(icmpv6_hdr_t))) {
         DEBUG("error: wrong icmpv6 packet length\n");
         return -EINVAL;
@@ -167,7 +158,7 @@ int gnrc_icmpv6_echo_send(const gnrc_netif_t *netif, const ipv6_addr_t *addr,
     }
     pkt = tmp;
     ipv6 = pkt->data;
-    /* if ttl is unset (i.e. 0) gnrc_ipv6 will select hop limit */
+    // if ttl is unset (i.e. 0) gnrc_ipv6 will select hop limit
     ipv6->hl = ttl;
     if (netif != NULL) {
         tmp = gnrc_netif_hdr_build(NULL, 0, NULL, 0);
@@ -180,7 +171,7 @@ int gnrc_icmpv6_echo_send(const gnrc_netif_t *netif, const ipv6_addr_t *addr,
         pkt = gnrc_pkt_prepend(pkt, tmp);
     }
 
-    /* add TX timestamp & test data */
+    // add TX timestamp & test data
     _fill_payload(databuf, len, ztimer_now(ZTIMER_USEC));
 
     res = !gnrc_netapi_dispatch_send(GNRC_NETTYPE_IPV6,
@@ -199,8 +190,7 @@ error_exit:
 }
 
 int gnrc_icmpv6_echo_rsp_handle(gnrc_pktsnip_t *pkt, size_t len,
-                                gnrc_icmpv6_echo_rsp_handle_cb_t cb, void *ctx)
-{
+                                gnrc_icmpv6_echo_rsp_handle_cb_t cb, void *ctx) {
     gnrc_pktsnip_t *ipv6, *icmpv6;
     ipv6_hdr_t *ipv6_hdr;
     uint32_t now = ztimer_now(ZTIMER_USEC);
@@ -215,9 +205,9 @@ int gnrc_icmpv6_echo_rsp_handle(gnrc_pktsnip_t *pkt, size_t len,
     }
     ipv6_hdr = ipv6->data;
 #ifdef MODULE_GNRC_IPV6_NIB
-    /* successful ping to neighbor (NIB handles case if ipv6->src is not a
-     * neighbor) can be taken as upper-layer hint for reachability:
-     * https://tools.ietf.org/html/rfc4861#section-7.3.1 */
+    // successful ping to neighbor (NIB handles case if ipv6->src is not a
+    // neighbor) can be taken as upper-layer hint for reachability:
+    // https://tools.ietf.org/html/rfc4861#section-7.3.1
     gnrc_ipv6_nib_nc_mark_reachable(&ipv6_hdr->src);
 #endif
 
@@ -227,4 +217,4 @@ int gnrc_icmpv6_echo_rsp_handle(gnrc_pktsnip_t *pkt, size_t len,
     return cb(pkt, corrupted, triptime, ctx);
 }
 
-/** @} */
+/// @}

@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- *
- * @file
- * @brief       Test application for the Bosch BMX055 9-axis Sensor driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
- */
+/// @ingroup     tests
+///
+/// @file
+/// @brief       Test application for the Bosch BMX055 9-axis Sensor driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Semjon Kerner <semjon.kerner@fu-berlin.de>
 
 #include <stdio.h>
 
@@ -19,13 +15,10 @@
 #include "saul_reg.h"
 #include "xtimer.h"
 
-/**
- * @brief   Read the sensors every second
- */
+/// @brief   Read the sensors every second
 #define INTERVAL            (1LU * US_PER_SEC)
 
-int main(void)
-{
+int main(void) {
     phydat_t res;
     xtimer_ticks32_t last_wakeup = xtimer_now();
 

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-FileCopyrightText: 2017 OTA keys
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-FileCopyrightText: 2017 OTA keys
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f031k6
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-f031k6 board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Vincent Dupont <vincent@otakeys.com>
- */
+/// @ingroup     boards_nucleo-f031k6
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-f031k6 board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Vincent Dupont <vincent@otakeys.com>
 
 #include "periph_cpu.h"
 #include "clk_conf.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name UART configuration
- * @{
- */
+/// @name UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -45,12 +39,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM1,
@@ -85,12 +77,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -108,27 +98,25 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- * @{
- */
+/// @name   ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_A, 0), 0 },
     { GPIO_PIN(PORT_A, 1), 1 },
     { GPIO_PIN(PORT_A, 3), 3 },
     { GPIO_PIN(PORT_A, 4), 4 },
     { GPIO_PIN(PORT_A, 7), 7 },
-    { GPIO_UNDEF, 18 }, /* VBAT */
+    { GPIO_UNDEF, 18 }, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(5) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(5) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

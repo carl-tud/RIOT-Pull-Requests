@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-or-later
- */
+// SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-/**
- * @ingroup   tests
- * @{
- *
- * @file
- * @brief     Measure the speed of the function in bitarithm.c
- *
- * @author    René Kijewski <rene.kijewski@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup   tests
+/// @{
+///
+/// @file
+/// @brief     Measure the speed of the function in bitarithm.c
+///
+/// @author    René Kijewski <rene.kijewski@fu-berlin.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdatomic.h>
@@ -39,14 +35,12 @@
 
 static atomic_bool done;
 
-static void callback(void *unused)
-{
+static void callback(void *unused) {
     (void)unused;
     atomic_store(&done, true);
 }
 
-static void run_test(const char *name, unsigned (*test)(unsigned))
-{
+static void run_test(const char *name, unsigned (*test)(unsigned)) {
     unsigned i = 0;
     unsigned long count = 0;
     atomic_store(&done, false);
@@ -56,10 +50,9 @@ static void run_test(const char *name, unsigned (*test)(unsigned))
 
     do {
         if (++i == UINT_MAX) {
-            /* bitarithm_lsb must not be called with 0, but if all bits of i are
-             * ones, that ~i will be zero. Therefore, we jump back to start
-             * when all bits of i are ones
-             */
+            // bitarithm_lsb must not be called with 0, but if all bits of i are
+            // ones, that ~i will be zero. Therefore, we jump back to start
+            // when all bits of i are ones
             i = 1;
         }
 
@@ -81,8 +74,7 @@ static void run_test(const char *name, unsigned (*test)(unsigned))
     printf("+ %s: %lu iterations per second\r\n", name, (4*PER_ITERATION) * count / TIMEOUT_MS * 1000);
 }
 
-static unsigned do_test_and_clear(unsigned state)
-{
+static unsigned do_test_and_clear(unsigned state) {
     uint8_t index  = 0;
     unsigned found = 0;
 
@@ -94,8 +86,7 @@ static unsigned do_test_and_clear(unsigned state)
     return found;
 }
 
-static void run_test_test_and_clear(void)
-{
+static void run_test_test_and_clear(void) {
     unsigned long count = 0;
     atomic_store(&done, false);
 
@@ -113,8 +104,7 @@ static void run_test_test_and_clear(void)
 
 #define run_test(test) run_test(#test, test)
 
-int main(void)
-{
+int main(void) {
     printf("Start.\r\n");
 
     run_test(bitarithm_msb);

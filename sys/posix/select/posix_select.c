@@ -1,16 +1,12 @@
-/*
- * Copyright (C) 2019 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- * @file
- * @author  Martine S. Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+/// @file
+/// @author  Martine S. Lenders <m.lenders@fu-berlin.de>
 
 #include <errno.h>
 #include <stdbool.h>
@@ -25,33 +21,29 @@
 extern bool posix_socket_is(int fd);
 extern unsigned posix_socket_avail(int fd);
 extern void posix_socket_select(int fd);
-#else   /* MODULE_POSIX_SOCKETS */
-static inline bool posix_socket_is(int fd)
-{
+#else   // MODULE_POSIX_SOCKETS
+static inline bool posix_socket_is(int fd) {
     (void)fd;
     return false;
 }
 
-static inline unsigned posix_socket_avail(int fd)
-{
+static inline unsigned posix_socket_avail(int fd) {
     (void)fd;
     return 0;
 }
 
-static inline void posix_socket_select(int fd)
-{
+static inline void posix_socket_select(int fd) {
     (void)fd;
     return 0;
 }
-#endif  /* IS_USED(MODULE_POSIX_SOCKETS) */
+#endif  // IS_USED(MODULE_POSIX_SOCKETS)
 
 static int _set_timeout(ztimer64_t *timeout_timer, struct timeval *timeout,
-                        uint32_t offset, bool *wait)
-{
+                        uint32_t offset, bool *wait) {
     if (timeout != NULL) {
         uint64_t t = ((uint64_t)(timeout->tv_sec * US_PER_SEC) +
                       timeout->tv_usec);
-        /* check for potential underflow before subtracting offset */
+        // check for potential underflow before subtracting offset
         if ((t == 0) || (offset > t)) {
             *wait = false;
             return 0;
@@ -59,7 +51,7 @@ static int _set_timeout(ztimer64_t *timeout_timer, struct timeval *timeout,
         t -= offset;
         if (t > UINT32_MAX) {
             errno = EINVAL;
-            /* don't have timer set yet so go to end */
+            // don't have timer set yet so go to end
             return -1;
         }
         else {
@@ -70,8 +62,7 @@ static int _set_timeout(ztimer64_t *timeout_timer, struct timeval *timeout,
 }
 
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *errorfds,
-           struct timeval *timeout)
-{
+           struct timeval *timeout) {
     uint32_t start_time = ztimer64_now(ZTIMER64_USEC);
     fd_set ret_readfds;
     ztimer64_t timeout_timer;
@@ -79,8 +70,8 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *errorfds,
     bool wait = true;
 
     FD_ZERO(&ret_readfds);
-    /* TODO ignored writefds and errorfds for now since there is no point for
-     * them with sockets */
+    // TODO ignored writefds and errorfds for now since there is no point for
+    // them with sockets
     if ((nfds >= FD_SETSIZE) || ((unsigned)nfds >= VFS_MAX_OPEN_FILES)) {
         errno = EINVAL;
         return -1;

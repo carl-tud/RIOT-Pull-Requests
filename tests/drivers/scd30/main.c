@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Puhang Ding
- * SPDX-FileCopyrightText: 2020 Jan Schlichter
- * SPDX-FileCopyrightText: 2020 Nishchay Agrawal
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Puhang Ding
+// SPDX-FileCopyrightText: 2020 Jan Schlichter
+// SPDX-FileCopyrightText: 2020 Nishchay Agrawal
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_scd30
- * @{
- * @file
- * @brief       Sensirion SCD30 sensor driver implementation
- *
- * @author      Puhang Ding      <czarsir@gmail.com>
- * @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
- * @author      Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
- * @}
- */
+/// @ingroup     drivers_scd30
+/// @{
+/// @file
+/// @brief       Sensirion SCD30 sensor driver implementation
+///
+/// @author      Puhang Ding      <czarsir@gmail.com>
+/// @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
+/// @author      Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
+/// @}
 
 #include <stdio.h>
 #include "periph/gpio.h"
@@ -30,8 +26,7 @@ scd30_t scd30_dev;
 scd30_params_t params = SCD30_PARAMS;
 scd30_measurement_t result;
 
-int main(void)
-{
+int main(void) {
     printf("SCD30 Test:\n");
     int i = 0;
 

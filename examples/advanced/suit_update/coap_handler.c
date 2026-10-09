@@ -1,9 +1,7 @@
-/*
- * SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "log.h"
 #include "suit.h"
@@ -16,24 +14,21 @@
 #endif
 
 static ssize_t _riot_board_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
-                                   coap_request_ctx_t *context)
-{
+                                   coap_request_ctx_t *context) {
     (void)context;
     return coap_reply_simple(pkt, COAP_CODE_205, buf, len,
             COAP_FORMAT_TEXT, (uint8_t*)RIOT_BOARD, strlen(RIOT_BOARD));
 }
 
 static ssize_t _version_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
-                                coap_request_ctx_t *context)
-{
+                                coap_request_ctx_t *context) {
     (void)context;
     return coap_reply_simple(pkt, COAP_CODE_205, buf, len,
                              COAP_FORMAT_TEXT, (uint8_t *)"NONE", 4);
 }
 
 static ssize_t _trigger_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
-                                coap_request_ctx_t *context)
-{
+                                coap_request_ctx_t *context) {
     (void)context;
     unsigned code;
     size_t payload_len = pkt->payload_len;
@@ -57,9 +52,8 @@ static ssize_t _trigger_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
 
 #ifdef MODULE_RIOTBOOT_SLOT
 static ssize_t _slot_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len,
-                             coap_request_ctx_t *context)
-{
-    /* context is passed either as NULL or 0x1 for /active or /inactive */
+                             coap_request_ctx_t *context) {
+    // context is passed either as NULL or 0x1 for /active or /inactive
     char c = '0';
 
     if (coap_request_ctx_get_context(context)) {

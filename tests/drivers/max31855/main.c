@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the max31855 thermocouple-to-digital converter driver
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the max31855 thermocouple-to-digital converter driver
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -24,14 +20,13 @@
 
 #define DELAY   (2)
 
-int main(void)
-{
+int main(void) {
     max31855_t dev;
     max31855_data_t data;
 
     puts("MAX31855 Thermocouple-to-Digital converter test application\n");
 
-    /* initialize first configured sensor */
+    // initialize first configured sensor
     printf("Initializing MAX31855 converter...\t");
     if (max31855_init(&dev, &max31855_params[0]) == 0) {
         puts("[OK]\n");
@@ -41,7 +36,7 @@ int main(void)
         return 1;
     }
 
-    /* periodically convert temperature values */
+    // periodically convert temperature values
     while (1) {
         ztimer_sleep(ZTIMER_SEC, DELAY);
         max31855_read(&dev, &data);

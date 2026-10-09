@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <string.h>
 
 #include "embUnit.h"
@@ -17,22 +13,19 @@
 #include "unittests-constants.h"
 #include "tests-netopt.h"
 
-void test_netopt2str(void)
-{
-    /* here we just test if netopt2str has a value defined for any given
-     * NETOPT option code */
+void test_netopt2str(void) {
+    // here we just test if netopt2str has a value defined for any given
+    // NETOPT option code
     for (int i = 0; i < NETOPT_NUMOF; i++) {
         TEST_ASSERT(strcmp(netopt2str(i), "unknown"));
     }
 }
 
-void test_netopt2str_unknown(void)
-{
+void test_netopt2str_unknown(void) {
     TEST_ASSERT_EQUAL_INT(0, strcmp(netopt2str(NETOPT_NUMOF), "unknown"));
 }
 
-Test *tests_netopt_tests(void)
-{
+Test *tests_netopt_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_netopt2str),
         new_TestFixture(test_netopt2str_unknown),
@@ -43,8 +36,7 @@ Test *tests_netopt_tests(void)
     return (Test *)&netopt_tests;
 }
 
-void tests_netopt(void)
-{
+void tests_netopt(void) {
     TESTS_RUN(tests_netopt_tests());
 }
-/** @} */
+/// @}

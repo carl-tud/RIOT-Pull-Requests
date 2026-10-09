@@ -1,18 +1,14 @@
-/*
- * Trickle implementation
- *
- * Copyright (C) 2013, 2014  INRIA.
- *               2017 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Trickle implementation
+//
+// Copyright (C) 2013, 2014  INRIA.
+//               2017 HAW Hamburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @author  Eric Engel <eric.engel@fu-berlin.de>
- * @author  Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- */
+/// @author  Eric Engel <eric.engel@fu-berlin.de>
+/// @author  Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
 
 #include <assert.h>
 
@@ -24,9 +20,8 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-void trickle_callback(trickle_t *trickle)
-{
-    /* Handle k=0 like k=infinity (according to RFC6206, section 6.5) */
+void trickle_callback(trickle_t *trickle) {
+    // Handle k=0 like k=infinity (according to RFC6206, section 6.5)
     if ((trickle->c < trickle->k) || (trickle->k == 0)) {
         (*trickle->callback.func)(trickle->callback.args);
     }
@@ -34,8 +29,7 @@ void trickle_callback(trickle_t *trickle)
     trickle_interval(trickle);
 }
 
-void trickle_interval(trickle_t *trickle)
-{
+void trickle_interval(trickle_t *trickle) {
     assert(trickle->I > 0);
 
     uint32_t old_interval = trickle->I;
@@ -51,15 +45,14 @@ void trickle_interval(trickle_t *trickle)
     DEBUG("trickle: I == %" PRIu32 ", diff == %" PRIu32 "\n", trickle->I, diff);
 
     trickle->c = 0;
-    /* old_interval == trickle->I / 2 */
+    // old_interval == trickle->I / 2
     trickle->t = random_uint32_range(old_interval, trickle->I);
 
     ztimer_set_msg(ZTIMER_MSEC, &trickle->msg_timer, (trickle->t + diff),
                    &trickle->msg, trickle->pid);
 }
 
-void trickle_reset_timer(trickle_t *trickle)
-{
+void trickle_reset_timer(trickle_t *trickle) {
     assert(trickle->I > trickle->Imin);
 
     trickle_stop(trickle);
@@ -68,8 +61,7 @@ void trickle_reset_timer(trickle_t *trickle)
 }
 
 void trickle_start(kernel_pid_t pid, trickle_t *trickle, uint16_t msg_type,
-                   uint32_t Imin, uint8_t Imax, uint8_t k)
-{
+                   uint32_t Imin, uint8_t Imax, uint8_t k) {
     assert(Imin > 0);
     assert((Imin << Imax) < (UINT32_MAX / 2));
 
@@ -86,12 +78,10 @@ void trickle_start(kernel_pid_t pid, trickle_t *trickle, uint16_t msg_type,
     trickle_interval(trickle);
 }
 
-void trickle_stop(trickle_t *trickle)
-{
+void trickle_stop(trickle_t *trickle) {
     ztimer_remove(ZTIMER_MSEC, &trickle->msg_timer);
 }
 
-void trickle_increment_counter(trickle_t *trickle)
-{
+void trickle_increment_counter(trickle_t *trickle) {
     trickle->c++;
 }

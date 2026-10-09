@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of GP8XXX driver.
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of GP8XXX driver.
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include <assert.h>
 
@@ -22,34 +18,22 @@
 #include "gp8xxx.h"
 #include "gp8xxx_params.h"
 
-/**
- * @brief   Define the number of configured actuators
- */
+/// @brief   Define the number of configured actuators
 #define GP8XXX_NUM          ARRAY_SIZE(gp8xxx_params)
 
-/**
- * @brief   Define the number of configured SAUL actuators
- */
+/// @brief   Define the number of configured SAUL actuators
 #define GP8XXX_SAUL_NUM     ARRAY_SIZE(gp8xxx_saul_info)
 
-/**
- * @brief   Allocation of memory for device descriptors
- */
+/// @brief   Allocation of memory for device descriptors
 gp8xxx_t gp8xxx_devs[GP8XXX_NUM];
 
-/**
- * @brief   Allocation of memory for SAUL device descriptors
- */
+/// @brief   Allocation of memory for SAUL device descriptors
 static gp8xxx_saul_t gp8xxx_saul_devs[GP8XXX_SAUL_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[GP8XXX_SAUL_NUM];
 
-/**
- * @name    Reference the driver structs.
- */
+/// @name    Reference the driver structs.
 #if GP8XXX_HAS_VDAC
 extern const saul_driver_t gp8xxx_voltage_saul_driver;
 #endif
@@ -57,8 +41,7 @@ extern const saul_driver_t gp8xxx_voltage_saul_driver;
 extern const saul_driver_t gp8xxx_current_saul_driver;
 #endif
 
-void auto_init_gp8xxx(void)
-{
+void auto_init_gp8xxx(void) {
     unsigned entry = 0;
 
     for (unsigned i = 0; i < GP8XXX_NUM; i++) {

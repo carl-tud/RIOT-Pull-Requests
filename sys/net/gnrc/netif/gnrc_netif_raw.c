@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "net/gnrc/pktbuf.h"
 #include "net/gnrc/netif/hdr.h"
@@ -34,19 +30,16 @@ static const gnrc_netif_ops_t raw_ops = {
 };
 
 int gnrc_netif_raw_create(gnrc_netif_t *netif, char *stack, int stacksize,
-                          char priority, char *name, netdev_t *dev)
-{
+                          char priority, char *name, netdev_t *dev) {
     return gnrc_netif_create(netif, stack, stacksize, priority, name, dev,
                              &raw_ops);
 }
 
-static inline uint8_t _get_version(uint8_t *data)
-{
+static inline uint8_t _get_version(uint8_t *data) {
     return (data[0] & IP_VERSION_MASK);
 }
 
-static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
-{
+static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif) {
     netdev_t *dev = netif->dev;
     int bytes_expected = dev->driver->recv(dev, NULL, 0, NULL);
     gnrc_pktsnip_t *pkt = NULL;
@@ -59,12 +52,12 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
 
         if (!pkt) {
             DEBUG("gnrc_netif_raw: cannot allocate pktsnip.\n");
-            /* drop packet */
+            // drop packet
             dev->driver->recv(dev, NULL, bytes_expected, NULL);
             return pkt;
         }
         nread = dev->driver->recv(dev, pkt->data, bytes_expected, NULL);
-        if (nread <= 1) {   /* we need at least 1 byte to identify IP version */
+        if (nread <= 1) {   // we need at least 1 byte to identify IP version
             DEBUG("gnrc_netif_raw: read error.\n");
             gnrc_pktbuf_release(pkt);
             return NULL;
@@ -83,8 +76,8 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
 #endif
 
         if (nread < bytes_expected) {
-            /* we've got less then the expected packet size,
-             * so free the unused space.*/
+            // we've got less then the expected packet size,
+            // so free the unused space.
             DEBUG("gnrc_netif_raw: reallocating.\n");
             gnrc_pktbuf_realloc_data(pkt, nread);
         }
@@ -95,27 +88,25 @@ static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
                 break;
 #endif
             default:
-                /* leave UNDEF */
+                // leave UNDEF
                 break;
         }
     }
     return pkt;
 }
 
-static gnrc_pktsnip_t *_skip_pkt_head(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
-{
+static gnrc_pktsnip_t *_skip_pkt_head(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt) {
     if (gnrc_netif_netdev_legacy_api(netif)) {
-        /* we don't need the netif snip: remove it */
+        // we don't need the netif snip: remove it
         return gnrc_pktbuf_remove_snip(pkt, pkt);
     }
     else {
-        /* _tx_done() will free the entire list */
+        // _tx_done() will free the entire list
         return pkt->next;
     }
 }
 
-static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
-{
+static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt) {
     int res = -ENOBUFS;
 
     if (pkt->type == GNRC_NETTYPE_NETIF) {
@@ -130,10 +121,10 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *pkt)
 
     res = dev->driver->send(dev, (iolist_t *)pkt);
     if (gnrc_netif_netdev_legacy_api(netif)) {
-        /* only for legacy drivers we need to release pkt here */
+        // only for legacy drivers we need to release pkt here
         gnrc_pktbuf_release(pkt);
     }
     return res;
 }
 
-/** @} */
+/// @}

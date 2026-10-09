@@ -1,22 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_hmc5883l
- * @brief       HMC5883L adaption to the RIOT actuator/sensor interface
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- */
+/// @ingroup     drivers_hmc5883l
+/// @brief       HMC5883L adaption to the RIOT actuator/sensor interface
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
 
 #include <string.h>
 
 #include "saul.h"
 #include "hmc5883l.h"
 
-static int read(const void *dev, phydat_t *res)
-{
+static int read(const void *dev, phydat_t *res) {
     hmc5883l_data_t data;
     int ret = hmc5883l_read((const hmc5883l_t *)dev, &data);
     if (ret < 0) {

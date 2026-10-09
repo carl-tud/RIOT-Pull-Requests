@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <limits.h>
 
@@ -14,14 +12,12 @@
 #include "crypto/modes/ccm.h"
 #include "tests-crypto.h"
 
-/**
- * AES CCM DVTP test vectors (SP 800-38C) for 256 bit keys.
- * https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/cavp-testing-block-cipher-modes
- */
+/// AES CCM DVTP test vectors (SP 800-38C) for 256 bit keys.
+/// https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/cavp-testing-block-cipher-modes
 
 static const size_t nonce_and_len_encoding_size = 15;
 
-/* Alen = 0, Plen = 0, Nlen = 7, Tlen = 4 */
+// Alen = 0, Plen = 0, Nlen = 7, Tlen = 4
 static const uint8_t TEST_DVPT256_GROUP_0_MAC_LEN = 4;
 
 static const uint8_t TEST_DVPT256_GROUP_0_KEY[] = {
@@ -132,7 +128,7 @@ static const uint8_t TEST_DVPT256_13_INPUT[] = {
 };
 static const size_t TEST_DVPT256_13_INPUT_LEN = 0;
 
-/* Alen = 0, Plen = 0, Nlen = 7, Tlen = 16 */
+// Alen = 0, Plen = 0, Nlen = 7, Tlen = 16
 static const uint8_t TEST_DVPT256_GROUP_1_MAC_LEN = 16;
 
 static const uint8_t TEST_DVPT256_GROUP_1_KEY[] = {
@@ -248,7 +244,7 @@ static const uint8_t TEST_DVPT256_28_INPUT[] = {
 };
 static const size_t TEST_DVPT256_28_INPUT_LEN = 0;
 
-/* Alen = 0, Plen = 0, Nlen = 13, Tlen = 4 */
+// Alen = 0, Plen = 0, Nlen = 13, Tlen = 4
 static const uint8_t TEST_DVPT256_GROUP_2_MAC_LEN = 4;
 
 static const uint8_t TEST_DVPT256_GROUP_2_KEY[] = {
@@ -364,7 +360,7 @@ static const uint8_t TEST_DVPT256_43_INPUT[] = {
 };
 static const size_t TEST_DVPT256_43_INPUT_LEN = 0;
 
-/* Alen = 0, Plen = 0, Nlen = 13, Tlen = 16 */
+// Alen = 0, Plen = 0, Nlen = 13, Tlen = 16
 static const uint8_t TEST_DVPT256_GROUP_3_MAC_LEN = 16;
 
 static const uint8_t TEST_DVPT256_GROUP_3_KEY[] = {
@@ -485,7 +481,7 @@ static const uint8_t TEST_DVPT256_58_INPUT[] = {
 };
 static const size_t TEST_DVPT256_58_INPUT_LEN = 0;
 
-/* Alen = 0, Plen = 24, Nlen = 7, Tlen = 4 */
+// Alen = 0, Plen = 24, Nlen = 7, Tlen = 4
 static const uint8_t TEST_DVPT256_GROUP_4_MAC_LEN = 4;
 
 static const uint8_t TEST_DVPT256_GROUP_4_KEY[] = {
@@ -621,7 +617,7 @@ static const uint8_t TEST_DVPT256_73_INPUT[] = {
 };
 static const size_t TEST_DVPT256_73_INPUT_LEN = 24;
 
-/* Alen = 0, Plen = 24, Nlen = 7, Tlen = 16 */
+// Alen = 0, Plen = 24, Nlen = 7, Tlen = 16
 static const uint8_t TEST_DVPT256_GROUP_5_MAC_LEN = 16;
 
 static const uint8_t TEST_DVPT256_GROUP_5_KEY[] = {
@@ -762,7 +758,7 @@ static const uint8_t TEST_DVPT256_88_INPUT[] = {
 };
 static const size_t TEST_DVPT256_88_INPUT_LEN = 24;
 
-/* Alen = 0, Plen = 24, Nlen = 13, Tlen = 4 */
+// Alen = 0, Plen = 24, Nlen = 13, Tlen = 4
 static const uint8_t TEST_DVPT256_GROUP_6_MAC_LEN = 4;
 
 static const uint8_t TEST_DVPT256_GROUP_6_KEY[] = {
@@ -903,7 +899,7 @@ static const uint8_t TEST_DVPT256_103_INPUT[] = {
 };
 static const size_t TEST_DVPT256_103_INPUT_LEN = 24;
 
-/* Alen = 0, Plen = 24, Nlen = 13, Tlen = 16 */
+// Alen = 0, Plen = 24, Nlen = 13, Tlen = 16
 static const uint8_t TEST_DVPT256_GROUP_7_MAC_LEN = 16;
 
 static const uint8_t TEST_DVPT256_GROUP_7_KEY[] = {
@@ -1049,7 +1045,7 @@ static const uint8_t TEST_DVPT256_118_INPUT[] = {
 };
 static const size_t TEST_DVPT256_118_INPUT_LEN = 24;
 
-/* Alen = 32, Plen = 0, Nlen = 7, Tlen = 4 */
+// Alen = 32, Plen = 0, Nlen = 7, Tlen = 4
 static const uint8_t TEST_DVPT256_GROUP_8_MAC_LEN = 4;
 
 static const uint8_t TEST_DVPT256_GROUP_8_KEY[] = {
@@ -1175,7 +1171,7 @@ static const uint8_t TEST_DVPT256_133_INPUT[] = {
 };
 static const size_t TEST_DVPT256_133_INPUT_LEN = 0;
 
-/* Alen = 32, Plen = 0, Nlen = 7, Tlen = 16 */
+// Alen = 32, Plen = 0, Nlen = 7, Tlen = 16
 static const uint8_t TEST_DVPT256_GROUP_9_MAC_LEN = 16;
 
 static const uint8_t TEST_DVPT256_GROUP_9_KEY[] = {
@@ -1306,7 +1302,7 @@ static const uint8_t TEST_DVPT256_148_INPUT[] = {
 };
 static const size_t TEST_DVPT256_148_INPUT_LEN = 0;
 
-/* Alen = 32, Plen = 0, Nlen = 13, Tlen = 4 */
+// Alen = 32, Plen = 0, Nlen = 13, Tlen = 4
 static const uint8_t TEST_DVPT256_GROUP_10_MAC_LEN = 4;
 
 static const uint8_t TEST_DVPT256_GROUP_10_KEY[] = {
@@ -1437,7 +1433,7 @@ static const uint8_t TEST_DVPT256_163_INPUT[] = {
 };
 static const size_t TEST_DVPT256_163_INPUT_LEN = 0;
 
-/* Alen = 32, Plen = 0, Nlen = 13, Tlen = 16 */
+// Alen = 32, Plen = 0, Nlen = 13, Tlen = 16
 static const uint8_t TEST_DVPT256_GROUP_11_MAC_LEN = 16;
 
 static const uint8_t TEST_DVPT256_GROUP_11_KEY[] = {
@@ -1573,7 +1569,7 @@ static const uint8_t TEST_DVPT256_178_INPUT[] = {
 };
 static const size_t TEST_DVPT256_178_INPUT_LEN = 0;
 
-/* Alen = 32, Plen = 24, Nlen = 7, Tlen = 4 */
+// Alen = 32, Plen = 24, Nlen = 7, Tlen = 4
 static const uint8_t TEST_DVPT256_GROUP_12_MAC_LEN = 4;
 
 static const uint8_t TEST_DVPT256_GROUP_12_KEY[] = {
@@ -1724,7 +1720,7 @@ static const uint8_t TEST_DVPT256_193_INPUT[] = {
 };
 static const size_t TEST_DVPT256_193_INPUT_LEN = 24;
 
-/* Alen = 32, Plen = 24, Nlen = 7, Tlen = 16 */
+// Alen = 32, Plen = 24, Nlen = 7, Tlen = 16
 static const uint8_t TEST_DVPT256_GROUP_13_MAC_LEN = 16;
 
 static const uint8_t TEST_DVPT256_GROUP_13_KEY[] = {
@@ -1880,7 +1876,7 @@ static const uint8_t TEST_DVPT256_208_INPUT[] = {
 };
 static const size_t TEST_DVPT256_208_INPUT_LEN = 24;
 
-/* Alen = 32, Plen = 24, Nlen = 13, Tlen = 4 */
+// Alen = 32, Plen = 24, Nlen = 13, Tlen = 4
 static const uint8_t TEST_DVPT256_GROUP_14_MAC_LEN = 4;
 
 static const uint8_t TEST_DVPT256_GROUP_14_KEY[] = {
@@ -2036,7 +2032,7 @@ static const uint8_t TEST_DVPT256_223_INPUT[] = {
 };
 static const size_t TEST_DVPT256_223_INPUT_LEN = 24;
 
-/* Alen = 32, Plen = 24, Nlen = 13, Tlen = 16 */
+// Alen = 32, Plen = 24, Nlen = 13, Tlen = 16
 static const uint8_t TEST_DVPT256_GROUP_15_MAC_LEN = 16;
 
 static const uint8_t TEST_DVPT256_GROUP_15_KEY[] = {
@@ -2197,7 +2193,7 @@ static const uint8_t TEST_DVPT256_238_INPUT[] = {
 };
 static const size_t TEST_DVPT256_238_INPUT_LEN = 24;
 
-/* Share test buffer output */
+// Share test buffer output
 static uint8_t data[512];
 
 static void test_encrypt_op(const uint8_t *key, uint8_t key_len,
@@ -2206,8 +2202,7 @@ static void test_encrypt_op(const uint8_t *key, uint8_t key_len,
                             const uint8_t *plain, size_t plain_len,
                             const uint8_t *output_expected,
                             size_t output_expected_len,
-                            uint8_t mac_length)
-{
+                            uint8_t mac_length) {
     cipher_t cipher;
     int len, err, cmp;
     size_t len_encoding = nonce_and_len_encoding_size - nonce_len;
@@ -2234,8 +2229,7 @@ static void test_decrypt_op(const uint8_t *key, uint8_t key_len,
                             const uint8_t *encrypted, size_t encrypted_len,
                             const uint8_t *output_expected,
                             size_t output_expected_len,
-                            uint8_t mac_length)
-{
+                            uint8_t mac_length) {
     cipher_t cipher;
     int len, err, cmp;
     size_t len_encoding = nonce_and_len_encoding_size - nonce_len;
@@ -2287,8 +2281,7 @@ static void test_decrypt_op(const uint8_t *key, uint8_t key_len,
                         ); \
 } while (0)
 
-static void test_crypto_modes_ccm_decrypt(void)
-{
+static void test_crypto_modes_ccm_decrypt(void) {
     do_test_decrypt_op(DVPT256, 0, 0);
     do_test_decrypt_op(DVPT256, 4, 0);
     do_test_decrypt_op(DVPT256, 6, 0);
@@ -2370,8 +2363,7 @@ static void test_crypto_modes_ccm_decrypt(void)
     do_test_decrypt_op(DVPT256, 236, 15);
     do_test_decrypt_op(DVPT256, 238, 15);
 }
-static void test_crypto_modes_ccm_encrypt(void)
-{
+static void test_crypto_modes_ccm_encrypt(void) {
     do_test_encrypt_op(DVPT256, 0, 0);
     do_test_encrypt_op(DVPT256, 4, 0);
     do_test_encrypt_op(DVPT256, 6, 0);
@@ -2454,8 +2446,7 @@ static void test_crypto_modes_ccm_encrypt(void)
     do_test_encrypt_op(DVPT256, 238, 15);
 }
 
-Test *tests_crypto_modes_ccm_tests_256(void)
-{
+Test *tests_crypto_modes_ccm_tests_256(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_crypto_modes_ccm_encrypt),
         new_TestFixture(test_crypto_modes_ccm_decrypt),

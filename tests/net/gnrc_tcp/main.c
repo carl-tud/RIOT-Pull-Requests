@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Simon Brummer <simon.brummer@posteo.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Simon Brummer <simon.brummer@posteo.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdio.h>
 #include <string.h>
@@ -21,8 +19,7 @@ static gnrc_tcp_tcb_t *tcb = tcbs;
 static gnrc_tcp_tcb_queue_t queue = GNRC_TCP_TCB_QUEUE_INIT;
 static char buffer[BUFFER_SIZE];
 
-void dump_args(int argc, char **argv)
-{
+void dump_args(int argc, char **argv) {
     printf("%s: ", argv[0]);
     printf("argc=%d", argc);
     for (int i = 0; i < argc; ++i) {
@@ -31,23 +28,20 @@ void dump_args(int argc, char **argv)
     printf("\n");
 }
 
-/* API Export for test script */
-int buffer_init_cmd(int argc, char **argv)
-{
+// API Export for test script
+int buffer_init_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     memset(buffer, '\0', sizeof(buffer));
     return 0;
 }
 
-int buffer_get_max_size_cmd(int argc, char **argv)
-{
+int buffer_get_max_size_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     printf("%s: returns %d\n", argv[0], BUFFER_SIZE - 1);
     return 0;
 }
 
-int buffer_write_cmd(int argc, char **argv)
-{
+int buffer_write_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     size_t offset = atol(argv[1]);
     char *src = argv[2];
@@ -59,17 +53,16 @@ int buffer_write_cmd(int argc, char **argv)
     return 0;
 }
 
-int buffer_read_cmd(int argc, char **argv)
-{
+int buffer_read_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     size_t offset = atol(argv[1]);
     size_t size = atol(argv[2]);
 
-    /* Calculate Start and End of readout */
+    // Calculate Start and End of readout
     char *begin = buffer + offset;
     char *end = begin + size;
 
-    /* Place temporary endmarker in buffer and print */
+    // Place temporary endmarker in buffer and print
     char tmp = *end;
     *end = '\0';
 
@@ -80,8 +73,7 @@ int buffer_read_cmd(int argc, char **argv)
     return 0;
 }
 
-int gnrc_tcp_ep_from_str_cmd(int argc, char **argv)
-{
+int gnrc_tcp_ep_from_str_cmd(int argc, char **argv) {
     dump_args(argc, argv);
 
     gnrc_tcp_ep_t ep;
@@ -118,21 +110,18 @@ int gnrc_tcp_ep_from_str_cmd(int argc, char **argv)
     return err;
 }
 
-int gnrc_tcp_tcb_init_cmd(int argc, char **argv)
-{
+int gnrc_tcp_tcb_init_cmd(int argc, char **argv) {
     dump_args(argc, argv);
 
     // Initialize all given TCBs
-    for (int i = 0; i < TCB_QUEUE_SIZE; ++i)
-    {
+    for (int i = 0; i < TCB_QUEUE_SIZE; ++i) {
         gnrc_tcp_tcb_init(&(tcbs[i]));
     }
     printf("%s: returns 0\n", argv[0]);
     return 0;
 }
 
-int gnrc_tcp_open_cmd(int argc, char **argv)
-{
+int gnrc_tcp_open_cmd(int argc, char **argv) {
     dump_args(argc, argv);
 
     gnrc_tcp_ep_t remote;
@@ -175,8 +164,7 @@ int gnrc_tcp_open_cmd(int argc, char **argv)
     return err;
 }
 
-int gnrc_tcp_listen_cmd(int argc, char **argv)
-{
+int gnrc_tcp_listen_cmd(int argc, char **argv) {
     dump_args(argc, argv);
 
     gnrc_tcp_ep_t local;
@@ -206,8 +194,7 @@ int gnrc_tcp_listen_cmd(int argc, char **argv)
     return err;
 }
 
-int gnrc_tcp_accept_cmd(int argc, char **argv)
-{
+int gnrc_tcp_accept_cmd(int argc, char **argv) {
     dump_args(argc, argv);
 
     gnrc_tcp_tcb_t *tmp = NULL;
@@ -241,8 +228,7 @@ int gnrc_tcp_accept_cmd(int argc, char **argv)
     return err;
 }
 
-int gnrc_tcp_send_cmd(int argc, char **argv)
-{
+int gnrc_tcp_send_cmd(int argc, char **argv) {
     dump_args(argc, argv);
 
     size_t timeout = atol(argv[1]);
@@ -279,8 +265,7 @@ int gnrc_tcp_send_cmd(int argc, char **argv)
     return sent;
 }
 
-int gnrc_tcp_recv_cmd(int argc, char **argv)
-{
+int gnrc_tcp_recv_cmd(int argc, char **argv) {
     dump_args(argc, argv);
 
     int timeout = atol(argv[1]);
@@ -322,32 +307,28 @@ int gnrc_tcp_recv_cmd(int argc, char **argv)
     return 0;
 }
 
-int gnrc_tcp_close_cmd(int argc, char **argv)
-{
+int gnrc_tcp_close_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     gnrc_tcp_close(tcb);
     printf("%s: returns\n", argv[0]);
     return 0;
 }
 
-int gnrc_tcp_abort_cmd(int argc, char **argv)
-{
+int gnrc_tcp_abort_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     gnrc_tcp_abort(tcb);
     printf("%s: returns\n", argv[0]);
     return 0;
 }
 
-int gnrc_tcp_stop_listen_cmd(int argc, char **argv)
-{
+int gnrc_tcp_stop_listen_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     gnrc_tcp_stop_listen(&queue);
     printf("%s: returns\n", argv[0]);
     return 0;
 }
 
-int gnrc_tcp_get_local_cmd(int argc, char **argv)
-{
+int gnrc_tcp_get_local_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     gnrc_tcp_ep_t ep;
 
@@ -370,8 +351,7 @@ int gnrc_tcp_get_local_cmd(int argc, char **argv)
     return 0;
 }
 
-int gnrc_tcp_get_remote_cmd(int argc, char **argv)
-{
+int gnrc_tcp_get_remote_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     gnrc_tcp_ep_t ep;
 
@@ -394,8 +374,7 @@ int gnrc_tcp_get_remote_cmd(int argc, char **argv)
     return 0;
 }
 
-int gnrc_tcp_queue_get_local_cmd(int argc, char **argv)
-{
+int gnrc_tcp_queue_get_local_cmd(int argc, char **argv) {
     dump_args(argc, argv);
     gnrc_tcp_ep_t ep;
 
@@ -418,7 +397,7 @@ int gnrc_tcp_queue_get_local_cmd(int argc, char **argv)
     return 0;
 }
 
-/* Exporting GNRC TCP Api to for shell usage */
+// Exporting GNRC TCP Api to for shell usage
 static const shell_command_t shell_commands[] = {
     { "gnrc_tcp_ep_from_str", "Build endpoint from string",
       gnrc_tcp_ep_from_str_cmd },
@@ -457,17 +436,16 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
-    /* we need a message queue for the thread running the shell in order to
-     * receive potentially fast incoming networking packets */
+int main(void) {
+    // we need a message queue for the thread running the shell in order to
+    // receive potentially fast incoming networking packets
     msg_init_queue(main_msg_queue, MAIN_QUEUE_SIZE);
     printf("RIOT GNRC_TCP test application\n");
 
-    /* start shell */
+    // start shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }

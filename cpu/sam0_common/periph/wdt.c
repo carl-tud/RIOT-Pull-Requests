@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam0_common
- * @ingroup     drivers_periph_wdt
- * @{
- *
- * @file        wdt.c
- * @brief       Low-level WDT driver implementation
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     cpu_sam0_common
+/// @ingroup     drivers_periph_wdt
+/// @{
+///
+/// @file        wdt.c
+/// @brief       Low-level WDT driver implementation
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdint.h>
 #include "periph/wdt.h"
@@ -27,7 +23,7 @@
 #define WDT_CLOCK_HZ 1024
 #endif
 
-/* work around inconsistency in header files */
+// work around inconsistency in header files
 #ifndef WDT_CONFIG_PER_8_Val
 #define WDT_CONFIG_PER_8_Val WDT_CONFIG_PER_CYC8_Val
 #endif
@@ -38,9 +34,8 @@
 #define WDT_CONFIG_PER_16K_Val WDT_CONFIG_PER_CYC16384_Val
 #endif
 
-static inline void _wdt_enable(void)
-{
-/* work around strange watchdog behaviour if IDLE2 is used on samd21 */
+static inline void _wdt_enable(void) {
+// work around strange watchdog behaviour if IDLE2 is used on samd21
 #ifdef CPU_COMMON_SAMD21
         pm_block(1);
 #endif
@@ -52,8 +47,7 @@ static inline void _wdt_enable(void)
 #endif
 }
 
-static inline void _wdt_disable(void)
-{
+static inline void _wdt_disable(void) {
 #ifdef WDT_CTRLA_ENABLE
     WDT->CTRLA.reg &= ~WDT_CTRLA_ENABLE;
 #else
@@ -61,8 +55,7 @@ static inline void _wdt_disable(void)
 #endif
 }
 
-static inline void _wait_syncbusy(void)
-{
+static inline void _wait_syncbusy(void) {
 #ifdef WDT_STATUS_SYNCBUSY
     while (WDT->STATUS.reg & WDT_STATUS_SYNCBUSY) {}
 #else
@@ -70,36 +63,32 @@ static inline void _wait_syncbusy(void)
 #endif
 }
 
-static uint32_t ms_to_per(uint32_t ms)
-{
+static uint32_t ms_to_per(uint32_t ms) {
     const uint32_t cycles = (ms * WDT_CLOCK_HZ) / 1024;
 
-    /* Minimum WDT period is 8 clock cycles (register value 0) */
+    // Minimum WDT period is 8 clock cycles (register value 0)
     if (cycles <= 8) {
         return 0;
     }
 
-    /* Round up to next pow2 and calculate the register value */
+    // Round up to next pow2 and calculate the register value
     return 29 - __builtin_clz(cycles - 1);
 }
 
 #ifdef CPU_COMMON_SAMD21
-static void _wdt_clock_setup(void)
-{
-    /* Connect to GCLK3 (~1.024 kHz) */
+static void _wdt_clock_setup(void) {
+    // Connect to GCLK3 (~1.024 kHz)
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID_WDT
                       | GCLK_CLKCTRL_GEN(SAM0_GCLK_1KHZ)
                       | GCLK_CLKCTRL_CLKEN;
 }
 #else
-static void _wdt_clock_setup(void)
-{
-    /* nothing to do here */
+static void _wdt_clock_setup(void) {
+    // nothing to do here
 }
 #endif
 
-void wdt_init(void)
-{
+void wdt_init(void) {
     _wdt_clock_setup();
 #ifdef MCLK
     MCLK->APBAMASK.reg |= MCLK_APBAMASK_WDT;
@@ -111,8 +100,7 @@ void wdt_init(void)
     NVIC_EnableIRQ(WDT_IRQn);
 }
 
-void wdt_setup_reboot(uint32_t min_time, uint32_t max_time)
-{
+void wdt_setup_reboot(uint32_t min_time, uint32_t max_time) {
     uint32_t per, win;
 
     if (max_time == 0) {
@@ -161,20 +149,17 @@ void wdt_setup_reboot(uint32_t min_time, uint32_t max_time)
     _wait_syncbusy();
 }
 
-void wdt_stop(void)
-{
+void wdt_stop(void) {
     _wdt_disable();
     _wait_syncbusy();
 }
 
-void wdt_start(void)
-{
+void wdt_start(void) {
     _wdt_enable();
     _wait_syncbusy();
 }
 
-void wdt_kick(void)
-{
+void wdt_kick(void) {
     WDT->CLEAR.reg = WDT_CLEAR_CLEAR_KEY_Val;
 }
 
@@ -183,8 +168,7 @@ static wdt_cb_t cb;
 static void* cb_arg;
 
 void wdt_setup_reboot_with_callback(uint32_t min_time, uint32_t max_time,
-                                    wdt_cb_t wdt_cb, void *arg)
-{
+                                    wdt_cb_t wdt_cb, void *arg) {
     uint32_t per = ms_to_per(max_time);
 
     if (per == WDT_CONFIG_PER_8_Val && wdt_cb) {
@@ -217,8 +201,7 @@ void wdt_setup_reboot_with_callback(uint32_t min_time, uint32_t max_time,
     wdt_setup_reboot(min_time, max_time);
 }
 
-void isr_wdt(void)
-{
+void isr_wdt(void) {
     WDT->INTFLAG.reg = WDT_INTFLAG_EW;
 
     if (cb != NULL) {
@@ -227,4 +210,4 @@ void isr_wdt(void)
 
     cortexm_isr_end();
 }
-#endif /* MODULE_PERIPH_WDT_CB */
+#endif // MODULE_PERIPH_WDT_CB

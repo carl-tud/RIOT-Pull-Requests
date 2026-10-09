@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2026 Baptiste Le Duc <baptiste.leduc@etik.com>
- * SPDX-FileCopyrightText: 2026 Léandre Le Duc <leandre.leduc38@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Baptiste Le Duc <baptiste.leduc@etik.com>
+// SPDX-FileCopyrightText: 2026 Léandre Le Duc <leandre.leduc38@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_qma6100p
- * @{
- *
- * @file
- * @brief       Driver for the 3-axis QMA6100P accelerometer
- *
- * @author      Baptiste Le Duc <baptiste.leduc@etik.com>
- * @author      Léandre Le Duc <leandre.leduc38@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_qma6100p
+/// @{
+///
+/// @file
+/// @brief       Driver for the 3-axis QMA6100P accelerometer
+///
+/// @author      Baptiste Le Duc <baptiste.leduc@etik.com>
+/// @author      Léandre Le Duc <leandre.leduc38@gmail.com>
+///
+/// @}
 
 #include <assert.h>
 #include <stdint.h>
@@ -35,7 +31,7 @@
 
 #define QMA6100P_OTP_LOAD_RETRIES (10U)
 
-/* Internal function prototypes */
+// Internal function prototypes
 static inline int _read_reg(i2c_t i2c, uint8_t addr, uint8_t reg_addr, uint8_t *reg_value);
 static inline int _write_reg(i2c_t i2c, uint8_t addr, uint8_t reg_addr, uint8_t reg_value);
 static inline void _reg_field_set(uint8_t mask, uint8_t val, uint8_t *reg_value);
@@ -57,12 +53,11 @@ static int _set_intpin_conf(const qma6100p_t *dev, qma6100p_int_pin_num_t pin_nu
 static int _route_data_ready_int(const qma6100p_t *dev, uint8_t map_reg);
 static int _enable_data_ready_int(const qma6100p_t *dev);
 
-/*---------------------------------------------------------------------------*
- *                         QMA6100P Core API                                 *
- *---------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------*
+//                         QMA6100P Core API                                 *
+// ---------------------------------------------------------------------------
 
-int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
-{
+int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params) {
     assert(dev && params);
     assert(params->addr == QMA6100P_I2C_ADDR_LOW || params->addr == QMA6100P_I2C_ADDR_HIGH);
 
@@ -90,8 +85,7 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
     return QMA6100P_OK;
 }
 
-int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data)
-{
+int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data) {
     assert(dev && data);
 
     int res;
@@ -99,7 +93,7 @@ int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data)
 
     i2c_acquire(BUS);
 
-    /* Burst read 6 bytes to ensure atomic update of X/Y/Z samples (avoid LSB/MSB mismatch) */
+    // Burst read 6 bytes to ensure atomic update of X/Y/Z samples (avoid LSB/MSB mismatch)
     res = i2c_read_regs(BUS, ADDR, QMA6100P_REG_DX_LSB, buf, 6, 0);
     if (res < 0) {
         DEBUG("[qma6100p] failed to burst read data regs (%d)\n", res);
@@ -123,8 +117,7 @@ out:
     return res;
 }
 
-int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
-{
+int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data) {
     assert(dev && data);
 
     int res;
@@ -148,19 +141,16 @@ int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
     return res;
 }
 
-int qma6100p_set_low_power(qma6100p_t *dev)
-{
+int qma6100p_set_low_power(qma6100p_t *dev) {
     return _qma6100p_set_power_mode(dev, true);
 }
 
-int qma6100p_set_active_mode(qma6100p_t *dev)
-{
+int qma6100p_set_active_mode(qma6100p_t *dev) {
     return _qma6100p_set_power_mode(dev, false);
 }
 
 int qma6100p_set_data_ready_int(qma6100p_t *dev, qma6100p_int_pin_num_t line,
-                                qma6100p_int_cb_t cb, void *arg)
-{
+                                qma6100p_int_cb_t cb, void *arg) {
     assert(dev && cb);
 
     gpio_t pin = (line == QMA6100P_INT2) ? dev->params.int2_pin : dev->params.int1_pin;
@@ -210,26 +200,23 @@ out:
     return QMA6100P_OK;
 }
 
-/*------------------------------------------------------------------------------------*/
-/*                                Internal functions                                  */
-/*------------------------------------------------------------------------------------*/
+// ------------------------------------------------------------------------------------
+// Internal functions
+// ------------------------------------------------------------------------------------
 
-/**
- * @brief Read one register over I2C, mapping errors to QMA6100P return codes
- *
- * @param[in]  i2c        I2C device
- * @param[in]  addr       I2C address
- * @param[in]  reg_addr   register address to read
- * @param[out] reg_value  value read from the register
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- */
+/// @brief Read one register over I2C, mapping errors to QMA6100P return codes
+///
+/// @param[in]  i2c        I2C device
+/// @param[in]  addr       I2C address
+/// @param[in]  reg_addr   register address to read
+/// @param[out] reg_value  value read from the register
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
 static inline int _read_reg(i2c_t i2c, uint8_t addr, uint8_t reg_addr,
-                            uint8_t *reg_value)
-{
+                            uint8_t *reg_value) {
     int res = i2c_read_reg(i2c, addr, reg_addr, reg_value, 0);
     if (res == -ENXIO) {
         return QMA6100P_NODEV;
@@ -243,22 +230,19 @@ static inline int _read_reg(i2c_t i2c, uint8_t addr, uint8_t reg_addr,
     return QMA6100P_OK;
 }
 
-/**
- * @brief Write one register over I2C, mapping errors to QMA6100P return codes
- *
- * @param[in] i2c        I2C device
- * @param[in] addr       I2C address
- * @param[in] reg_addr   register address to write
- * @param[in] reg_value  value to write
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- */
+/// @brief Write one register over I2C, mapping errors to QMA6100P return codes
+///
+/// @param[in] i2c        I2C device
+/// @param[in] addr       I2C address
+/// @param[in] reg_addr   register address to write
+/// @param[in] reg_value  value to write
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
 static inline int _write_reg(i2c_t i2c, uint8_t addr, uint8_t reg_addr,
-                             uint8_t reg_value)
-{
+                             uint8_t reg_value) {
     int res = i2c_write_reg(i2c, addr, reg_addr, reg_value, 0);
     if (res == -ENXIO) {
         return QMA6100P_NODEV;
@@ -272,42 +256,36 @@ static inline int _write_reg(i2c_t i2c, uint8_t addr, uint8_t reg_addr,
     return QMA6100P_OK;
 }
 
-/**
- * @brief Set a bitfield in reg to val, using mask to locate the field
- *
- * Clears the bits covered by mask in reg, then ORs in val shifted into
- * position (shift derived from the lowest set bit of mask)
- *
- * @param[in]     mask       bitmask of the target field
- * @param[in]     val        unshifted value to write into the field
- * @param[in,out] reg_value  register variable to modify (must not be NULL)
- */
-static inline void _reg_field_set(uint8_t mask, uint8_t val, uint8_t *reg_value)
-{
+/// @brief Set a bitfield in reg to val, using mask to locate the field
+///
+/// Clears the bits covered by mask in reg, then ORs in val shifted into
+/// position (shift derived from the lowest set bit of mask)
+///
+/// @param[in]     mask       bitmask of the target field
+/// @param[in]     val        unshifted value to write into the field
+/// @param[in,out] reg_value  register variable to modify (must not be NULL)
+static inline void _reg_field_set(uint8_t mask, uint8_t val, uint8_t *reg_value) {
     assert(reg_value != NULL);
 
-    /** clear the bits in reg_value covered by the mask */
+    /// clear the bits in reg_value covered by the mask
     *reg_value &= ~mask;
 
-    /** shift val into the field defined by mask */
+    /// shift val into the field defined by mask
     val = val << __builtin_ctz(mask);
 
     *reg_value |= val;
 }
 
-/**
- * @brief Test the QMA6100P I2C communication
- *
- * @param[in] i2c   I2C device
- * @param[in] addr  I2C address
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- */
-static int _qma6100p_init_test(i2c_t i2c, uint8_t addr)
-{
+/// @brief Test the QMA6100P I2C communication
+///
+/// @param[in] i2c   I2C device
+/// @param[in] addr  I2C address
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+static int _qma6100p_init_test(i2c_t i2c, uint8_t addr) {
     uint8_t reg;
 
     i2c_acquire(i2c);
@@ -328,21 +306,18 @@ out:
     return res;
 }
 
-/**
- * @brief Execute the device soft reset
- *
- * @param[in] dev  device descriptor
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- * @retval  QMA6100P_TIMEOUT if OTP load did not complete within the expected time
- *
- * @warning I2C bus must be acquired by the caller
- */
-static int _soft_reset(const qma6100p_t *dev)
-{
+/// @brief Execute the device soft reset
+///
+/// @param[in] dev  device descriptor
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+/// @retval  QMA6100P_TIMEOUT if OTP load did not complete within the expected time
+///
+/// @warning I2C bus must be acquired by the caller
+static int _soft_reset(const qma6100p_t *dev) {
     int res = _write_reg(BUS, ADDR, QMA6100P_REG_SW_RESET, QMA6100P_SW_RESET_VAL);
     if (res < 0) {
         return res;
@@ -357,8 +332,8 @@ static int _soft_reset(const qma6100p_t *dev)
 
     uint8_t nvm_status;
 
-    /* Poll for OTP load completion, datasheet specifies no explicit timeout.
-     * Loading completes within a few I2C reads after reset */
+    // Poll for OTP load completion, datasheet specifies no explicit timeout.
+    // Loading completes within a few I2C reads after reset
     unsigned retries = QMA6100P_OTP_LOAD_RETRIES;
 
     do {
@@ -380,19 +355,16 @@ static int _soft_reset(const qma6100p_t *dev)
     return QMA6100P_OK;
 }
 
-/**
- * @brief Execute the init sequence as described in the section 6.3 of the spec.
- *
- * @param[in] dev  device descriptor
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- * @retval  QMA6100P_TIMEOUT if OTP load did not complete within the expected time
- */
-static int _qma6100p_run_init_seq(const qma6100p_t *dev)
-{
+/// @brief Execute the init sequence as described in the section 6.3 of the spec.
+///
+/// @param[in] dev  device descriptor
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+/// @retval  QMA6100P_TIMEOUT if OTP load did not complete within the expected time
+static int _qma6100p_run_init_seq(const qma6100p_t *dev) {
     int res;
 
     i2c_acquire(BUS);
@@ -413,7 +385,7 @@ static int _qma6100p_run_init_seq(const qma6100p_t *dev)
 
     uint8_t pm = 0;
 
-    /* Enters Active Mode */
+    // Enters Active Mode
     _reg_field_set(QMA6100P_PM_MODE_MASK, 1, &pm);
     res = _write_reg(BUS, ADDR, QMA6100P_REG_PM, pm);
     if (res < 0) {
@@ -453,22 +425,19 @@ out:
     return res;
 }
 
-/**
- * @brief Configure full scale range of the device
- *
- *
- * @param[in,out] dev         device descriptor
- * @param[in]     range       requested scale range
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- *
- * @warning I2C bus must be acquired by the caller
- */
-static int _qma6100p_set_range(const qma6100p_t *dev, qma6100p_range_t range)
-{
+/// @brief Configure full scale range of the device
+///
+///
+/// @param[in,out] dev         device descriptor
+/// @param[in]     range       requested scale range
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+///
+/// @warning I2C bus must be acquired by the caller
+static int _qma6100p_set_range(const qma6100p_t *dev, qma6100p_range_t range) {
     uint8_t range_reg;
 
     int res = _read_reg(BUS, ADDR, QMA6100P_REG_RANGE, &range_reg);
@@ -481,22 +450,19 @@ static int _qma6100p_set_range(const qma6100p_t *dev, qma6100p_range_t range)
     return _write_reg(BUS, ADDR, QMA6100P_REG_RANGE, range_reg);
 }
 
-/**
- * @brief Configure output data rate.
- *
- *
- * @param[in,out] dev         device descriptor
- * @param[in]     odr         requested output data rate
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- *
- * @warning I2C bus must be acquired by the caller
- */
-static int _qma6100p_set_odr(const qma6100p_t *dev, qma6100p_odr_t odr)
-{
+/// @brief Configure output data rate.
+///
+///
+/// @param[in,out] dev         device descriptor
+/// @param[in]     odr         requested output data rate
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+///
+/// @warning I2C bus must be acquired by the caller
+static int _qma6100p_set_odr(const qma6100p_t *dev, qma6100p_odr_t odr) {
     uint8_t odr_reg;
 
     int res = _read_reg(BUS, ADDR, QMA6100P_REG_ODR, &odr_reg);
@@ -509,21 +475,18 @@ static int _qma6100p_set_odr(const qma6100p_t *dev, qma6100p_odr_t odr)
     return _write_reg(BUS, ADDR, QMA6100P_REG_ODR, odr_reg);
 }
 
-/**
- * @brief Configure master clock frequency.
- *
- * @param[in,out] dev         device descriptor
- * @param[in]     mclk        requested master clock
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- *
- * @warning I2C bus must be acquired by the caller
- */
-static int _qma6100p_set_mclk(const qma6100p_t *dev, qma6100p_mclk_t mclk)
-{
+/// @brief Configure master clock frequency.
+///
+/// @param[in,out] dev         device descriptor
+/// @param[in]     mclk        requested master clock
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+///
+/// @warning I2C bus must be acquired by the caller
+static int _qma6100p_set_mclk(const qma6100p_t *dev, qma6100p_mclk_t mclk) {
     uint8_t pm_reg;
 
     int res = _read_reg(BUS, ADDR, QMA6100P_REG_PM, &pm_reg);
@@ -536,21 +499,18 @@ static int _qma6100p_set_mclk(const qma6100p_t *dev, qma6100p_mclk_t mclk)
     return _write_reg(BUS, ADDR, QMA6100P_REG_PM, pm_reg);
 }
 
-/**
- * @brief Set all the common parameter requested by the user
- *
- * Sets full scale range, output data rate and master clock from @p params
- *
- * @param[in,out] dev         device descriptor
- * @param[in]     params      configuration parameters
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- */
-static int _qma6100p_set_common_params(const qma6100p_t *dev, const qma6100p_params_t *params)
-{
+/// @brief Set all the common parameter requested by the user
+///
+/// Sets full scale range, output data rate and master clock from @p params
+///
+/// @param[in,out] dev         device descriptor
+/// @param[in]     params      configuration parameters
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+static int _qma6100p_set_common_params(const qma6100p_t *dev, const qma6100p_params_t *params) {
     int res;
 
     i2c_acquire(BUS);
@@ -578,36 +538,30 @@ out:
     return res;
 }
 
-/**
- * @brief Convert read output data into a 14 bit signed data.
- *
- * Merge two uint8_t register getting all [7:0] from @p msb and
- * [7:2] from @p lsb and convert it into a int16_t signed value.
- *
- * @param[in]  lsb      lsb of the data register
- * @param[in]  msb      msb of the data register
- *
- * @return 14 bits signed data
- */
-static inline int16_t _to_signed14(uint8_t lsb, uint8_t msb)
-{
+/// @brief Convert read output data into a 14 bit signed data.
+///
+/// Merge two uint8_t register getting all [7:0] from @p msb and
+/// [7:2] from @p lsb and convert it into a int16_t signed value.
+///
+/// @param[in]  lsb      lsb of the data register
+/// @param[in]  msb      msb of the data register
+///
+/// @return 14 bits signed data
+static inline int16_t _to_signed14(uint8_t lsb, uint8_t msb) {
     uint16_t raw = (uint16_t)msb << 8 | lsb;
     return (int16_t)((int16_t)raw >> 2);
 }
 
-/**
- * @brief Converts to ug a raw data value given the full scale range
- *
- * Multiplies the raw 14-bit signed ADC value by the resolution (ug/LSB)
- * corresponding to the configured full scale range.
- *
- * @param raw_value raw data to convert in ug
- * @param range     full scale range used
- *
- * @return converted to ug value
- */
-static int32_t _convert_to_ug(int16_t raw_value, qma6100p_range_t range)
-{
+/// @brief Converts to ug a raw data value given the full scale range
+///
+/// Multiplies the raw 14-bit signed ADC value by the resolution (ug/LSB)
+/// corresponding to the configured full scale range.
+///
+/// @param raw_value raw data to convert in ug
+/// @param range     full scale range used
+///
+/// @return converted to ug value
+static int32_t _convert_to_ug(int16_t raw_value, qma6100p_range_t range) {
     int32_t resolution;
 
     switch (range) {
@@ -637,35 +591,29 @@ static int32_t _convert_to_ug(int16_t raw_value, qma6100p_range_t range)
     return raw_value * resolution;
 }
 
-/**
- * @brief Disable all configured interrupts on the device
- *
- * @param[in] dev  device descriptor
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- *
- * @warning I2C bus must be acquired by the caller
- */
-static int _disable_all_interrupt(const qma6100p_t *dev)
-{
+/// @brief Disable all configured interrupts on the device
+///
+/// @param[in] dev  device descriptor
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+///
+/// @warning I2C bus must be acquired by the caller
+static int _disable_all_interrupt(const qma6100p_t *dev) {
     return _write_reg(BUS, ADDR, QMA6100P_REG_INT_EN1, 0x00);
 }
 
-/**
- * @brief Write register sequence to put device into Ultra Low Power State (ULPS)
- *
- * @param[in] dev  device descriptor
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- */
-static int _enter_ulps_mode(const qma6100p_t *dev)
-{
+/// @brief Write register sequence to put device into Ultra Low Power State (ULPS)
+///
+/// @param[in] dev  device descriptor
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+static int _enter_ulps_mode(const qma6100p_t *dev) {
     int res;
 
     i2c_acquire(BUS);
@@ -696,22 +644,19 @@ out:
     return res;
 }
 
-/**
- * @brief Configure interrupt behavior in INT_CFG register
- *
- * Sets the data shadowing mode from @ref qma6100p_params_t::interrupt_shadow
- *
- * @param[in,out] dev  device descriptor
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- *
- * @warning I2C bus must be acquired by the caller
- */
-static int _set_int_params(qma6100p_t *dev)
-{
+/// @brief Configure interrupt behavior in INT_CFG register
+///
+/// Sets the data shadowing mode from @ref qma6100p_params_t::interrupt_shadow
+///
+/// @param[in,out] dev  device descriptor
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+///
+/// @warning I2C bus must be acquired by the caller
+static int _set_int_params(qma6100p_t *dev) {
     uint8_t int_reg;
 
     int res = _read_reg(BUS, ADDR, QMA6100P_REG_INT_CFG, &int_reg);
@@ -724,20 +669,17 @@ static int _set_int_params(qma6100p_t *dev)
     return _write_reg(BUS, ADDR, QMA6100P_REG_INT_CFG, int_reg);
 }
 
-/**
- * @brief Switch the device between Ultra-Low Power State (ULPS) and active mode
- *
- * @param[in,out] dev        device descriptor
- * @param[in]     low_power  true to enter ULPS, false to enter active mode
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- * @retval  QMA6100P_TIMEOUT if OTP load did not complete within the expected time
- */
-static int _qma6100p_set_power_mode(qma6100p_t *dev, bool low_power)
-{
+/// @brief Switch the device between Ultra-Low Power State (ULPS) and active mode
+///
+/// @param[in,out] dev        device descriptor
+/// @param[in]     low_power  true to enter ULPS, false to enter active mode
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+/// @retval  QMA6100P_TIMEOUT if OTP load did not complete within the expected time
+static int _qma6100p_set_power_mode(qma6100p_t *dev, bool low_power) {
     assert(dev);
 
     int res;
@@ -750,7 +692,7 @@ static int _qma6100p_set_power_mode(qma6100p_t *dev, bool low_power)
         goto out;
     }
 
-    /* Exiting ULPS requires a full soft reset according to the spec */
+    // Exiting ULPS requires a full soft reset according to the spec
     res = _qma6100p_run_init_seq(dev);
     if (res < 0) {
         DEBUG("[qma6100p] set_power_mode - error: init sequence failed (%d)\n", res);
@@ -766,27 +708,24 @@ out:
     return res;
 }
 
-/**
- * @brief Configure INTPIN_CONF register and resolve the MAP register for the selected INT pin
- *
- * Sets active level and output mode (push-pull/open-drain) for the chosen INT pin,
- * and writes @p map_reg with the corresponding INTx_MAP1 register address
- *
- * @param[in]  dev      device descriptor
- * @param[in]  pin_num  QMA6100P INT pin to configure (@ref QMA6100P_INT1 or @ref QMA6100P_INT2)
- * @param[out] map_reg  INTx_MAP1 register address for the selected pin
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- *
- * @warning I2C bus must be acquired by the caller
- */
+/// @brief Configure INTPIN_CONF register and resolve the MAP register for the selected INT pin
+///
+/// Sets active level and output mode (push-pull/open-drain) for the chosen INT pin,
+/// and writes @p map_reg with the corresponding INTx_MAP1 register address
+///
+/// @param[in]  dev      device descriptor
+/// @param[in]  pin_num  QMA6100P INT pin to configure (@ref QMA6100P_INT1 or @ref QMA6100P_INT2)
+/// @param[out] map_reg  INTx_MAP1 register address for the selected pin
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+///
+/// @warning I2C bus must be acquired by the caller
 static int _set_intpin_conf(const qma6100p_t *dev,
                             qma6100p_int_pin_num_t pin_num,
-                            uint8_t *map_reg)
-{
+                            uint8_t *map_reg) {
     uint8_t reg;
 
     int res = _read_reg(BUS, ADDR, QMA6100P_REG_INTPIN_CONF, &reg);
@@ -814,21 +753,18 @@ static int _set_intpin_conf(const qma6100p_t *dev,
     return _write_reg(BUS, ADDR, QMA6100P_REG_INTPIN_CONF, reg);
 }
 
-/**
- * @brief Route data-ready interrupt to the selected INT pin via INTx_MAP1 register
- *
- * @param[in] dev      device descriptor
- * @param[in] map_reg  INTx_MAP1 register address (from @ref _set_intpin_conf)
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- *
- * @warning I2C bus must be acquired by the caller
- */
-static int _route_data_ready_int(const qma6100p_t *dev, uint8_t map_reg)
-{
+/// @brief Route data-ready interrupt to the selected INT pin via INTx_MAP1 register
+///
+/// @param[in] dev      device descriptor
+/// @param[in] map_reg  INTx_MAP1 register address (from @ref _set_intpin_conf)
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+///
+/// @warning I2C bus must be acquired by the caller
+static int _route_data_ready_int(const qma6100p_t *dev, uint8_t map_reg) {
     uint8_t reg;
 
     int res = _read_reg(BUS, ADDR, map_reg, &reg);
@@ -841,20 +777,17 @@ static int _route_data_ready_int(const qma6100p_t *dev, uint8_t map_reg)
     return _write_reg(BUS, ADDR, map_reg, reg);
 }
 
-/**
- * @brief Enable data-ready interrupt in INT_EN1 register
- *
- * @param[in] dev  device descriptor
- *
- * @retval  QMA6100P_OK on success
- * @retval  QMA6100P_NODEV if device not found
- * @retval  QMA6100P_INVALID_ARG on invalid argument
- * @retval  QMA6100P_NOI2C on other I2C error
- *
- * @warning I2C bus must be acquired by the caller
- */
-static int _enable_data_ready_int(const qma6100p_t *dev)
-{
+/// @brief Enable data-ready interrupt in INT_EN1 register
+///
+/// @param[in] dev  device descriptor
+///
+/// @retval  QMA6100P_OK on success
+/// @retval  QMA6100P_NODEV if device not found
+/// @retval  QMA6100P_INVALID_ARG on invalid argument
+/// @retval  QMA6100P_NOI2C on other I2C error
+///
+/// @warning I2C bus must be acquired by the caller
+static int _enable_data_ready_int(const qma6100p_t *dev) {
     uint8_t reg;
 
     int res = _read_reg(BUS, ADDR, QMA6100P_REG_INT_EN1, &reg);

@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2014 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_hwrng
- * @brief   HWRNG interface implementation
- * @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_hwrng
+/// @brief   HWRNG interface implementation
+/// @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
 
 #include <string.h>
 #include <stdlib.h>
@@ -29,20 +25,17 @@
 static int initialized = 0;
 static int dev_random = -1;
 
-/* MARK: - Internal API declaration */
+// MARK: - Internal API declaration
 
-/**
- * seed host random module with @ref _native_rng_seed
- */
+/// seed host random module with @ref _native_rng_seed
 void _native_rng_init_det(void);
 void _native_rng_init_hq(void);
 unsigned _native_rng_read_det(uint8_t *buf, unsigned num);
 unsigned _native_rng_read_hq(uint8_t *buf, unsigned num);
 
-/* MARK: - Public API implementation */
+// MARK: - Public API implementation
 
-void hwrng_init(void)
-{
+void hwrng_init(void) {
     DEBUG("hwrng_init: initializing\n");
     switch (_native_rng_mode) {
         case 0:
@@ -60,8 +53,7 @@ void hwrng_init(void)
     initialized = 1;
 }
 
-void hwrng_read(void *buf, unsigned int num)
-{
+void hwrng_read(void *buf, unsigned int num) {
     uint8_t *b = (uint8_t *)buf;
 
     if (!initialized) {
@@ -84,18 +76,16 @@ void hwrng_read(void *buf, unsigned int num)
     }
 }
 
-/* MARK: - Internal API implementation */
+// MARK: - Internal API implementation
 
-void _native_rng_init_det(void)
-{
+void _native_rng_init_det(void) {
     DEBUG("_native_rng_init_det\n");
     _native_syscall_enter();
     real_srandom(_native_rng_seed);
     _native_syscall_leave();
 }
 
-void _native_rng_init_hq(void)
-{
+void _native_rng_init_hq(void) {
     DEBUG("_native_rng_init_hq\n");
     _native_syscall_enter();
     dev_random = real_open("/dev/urandom", O_RDONLY | O_CLOEXEC);
@@ -108,8 +98,7 @@ void _native_rng_init_hq(void)
     _native_syscall_leave();
 }
 
-unsigned _native_rng_read_det(uint8_t *buf, unsigned num)
-{
+unsigned _native_rng_read_det(uint8_t *buf, unsigned num) {
     DEBUG("_native_rng_read_det\n");
     for (unsigned i = 0; i < num; i++) {
         _native_syscall_enter();
@@ -120,8 +109,7 @@ unsigned _native_rng_read_det(uint8_t *buf, unsigned num)
     return num;
 }
 
-unsigned _native_rng_read_hq(uint8_t *buf, unsigned num)
-{
+unsigned _native_rng_read_hq(uint8_t *buf, unsigned num) {
     DEBUG("_native_rng_read_hq\n");
     unsigned offset = 0;
 

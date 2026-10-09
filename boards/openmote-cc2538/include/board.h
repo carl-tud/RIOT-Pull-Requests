@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_openmote-cc2538
- * @{
- *
- * @file
- * @brief       Board specific definitions for the OpenMote-cc2538 board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_openmote-cc2538
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the OpenMote-cc2538 board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "cpu.h"
 #include "periph/gpio.h"
@@ -23,10 +19,8 @@
  extern "C" {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(2, 4)
 #define LED1_PIN            GPIO_PIN(2, 7)
 #define LED2_PIN            GPIO_PIN(2, 6)
@@ -53,41 +47,35 @@
 #define LED3_ON             (LED_PORT->DATA |=  LED3_MASK)
 #define LED3_OFF            (LED_PORT->DATA &= ~LED3_MASK)
 #define LED3_TOGGLE         (LED_PORT->DATA ^=  LED3_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    xtimer configuration
- * @{
- */
+/// @name    xtimer configuration
+/// @{
 #define XTIMER_WIDTH        (16)
 #define XTIMER_BACKOFF      (50)
 #define XTIMER_ISR_BACKOFF  (40)
-/** @} */
+/// @}
 
-/**
- * @name    Flash Customer Configuration Area (CCA) parameters
- * @{
- */
+/// @name    Flash Customer Configuration Area (CCA) parameters
+/// @{
 #ifndef UPDATE_CCA
 #define UPDATE_CCA                (1)
 #endif
 
 #define CCA_BACKDOOR_ENABLE       (1)
-#define CCA_BACKDOOR_PORT_A_PIN   (6) /**< ON/SLEEP Pin */
-#define CCA_BACKDOOR_ACTIVE_LEVEL (0) /**< Active low */
-/** @} */
+#define CCA_BACKDOOR_PORT_A_PIN   (6) ///< ON/SLEEP Pin
+#define CCA_BACKDOOR_ACTIVE_LEVEL (0) ///< Active low
+/// @}
 
-/**
- * @name    RF CORE observable signals settings
- * @{
- */
-#define CONFIG_CC2538_RF_OBS_SIG_0_PCX  5   /* PC5 */
-#define CONFIG_CC2538_RF_OBS_SIG_1_PCX  6   /* PC6 */
-#define CONFIG_CC2538_RF_OBS_SIG_2_PCX  7   /* PC7 */
-/** @} */
+/// @name    RF CORE observable signals settings
+/// @{
+#define CONFIG_CC2538_RF_OBS_SIG_0_PCX  5   // PC5
+#define CONFIG_CC2538_RF_OBS_SIG_1_PCX  6   // PC6
+#define CONFIG_CC2538_RF_OBS_SIG_2_PCX  7   // PC7
+/// @}
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

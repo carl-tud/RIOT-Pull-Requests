@@ -1,20 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <string.h>
 #include "embUnit.h"
 
 #include "chunked_ringbuffer.h"
 
-static void test_crb_add_and_consume(void)
-{
+static void test_crb_add_and_consume(void) {
     size_t len;
     uint8_t buffer[16];
     char buf_out[6];
@@ -22,13 +17,13 @@ static void test_crb_add_and_consume(void)
 
     crb_init(&cb, buffer, sizeof(buffer));
 
-    /* add a chunk but don't finish it */
+    // add a chunk but don't finish it
     crb_start_chunk(&cb);
     crb_add_byte(&cb, 1);
     crb_add_byte(&cb, 2);
     crb_add_byte(&cb, 3);
 
-    /* unfinished chunk should be silently discarded */
+    // unfinished chunk should be silently discarded
     TEST_ASSERT(crb_add_chunk(&cb, "one", 4));
     TEST_ASSERT(crb_add_chunk(&cb, "two", 4));
     TEST_ASSERT(crb_add_chunk(&cb, "three", 6));
@@ -69,8 +64,7 @@ static void test_crb_add_and_consume(void)
     TEST_ASSERT_EQUAL_STRING("six", buf_out);
 }
 
-static void test_crb_add_while_consume(void)
-{
+static void test_crb_add_while_consume(void) {
     size_t len;
     uint8_t buffer[16];
     char buf_out[12];
@@ -104,8 +98,7 @@ static void test_crb_add_while_consume(void)
     TEST_ASSERT_EQUAL_STRING("HelloWorld", buf_out);
 }
 
-static Test *chunked_ringbuffer_tests(void)
-{
+static Test *chunked_ringbuffer_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_crb_add_and_consume),
         new_TestFixture(test_crb_add_while_consume),
@@ -116,8 +109,7 @@ static Test *chunked_ringbuffer_tests(void)
     return (Test *)&crb_tests;
 }
 
-void tests_chunked_ringbuffer(void)
-{
+void tests_chunked_ringbuffer(void) {
     TESTS_RUN(chunked_ringbuffer_tests());
 }
-/** @} */
+/// @}

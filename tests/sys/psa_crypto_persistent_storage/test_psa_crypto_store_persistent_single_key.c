@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Generate and use a persistently stored key in PSA Crypto
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Generate and use a persistently stored key in PSA Crypto
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include "embUnit.h"
 #include "psa/crypto.h"
@@ -34,8 +30,7 @@ static uint8_t PLAINTEXT[] = {
 static psa_key_id_t key_id_1 = 1;
 static psa_key_id_t key_id_2 = 2;
 
-static void _test_setup(void)
-{
+static void _test_setup(void) {
     psa_key_attributes_t attr = psa_key_attributes_init();
 
     psa_key_usage_t usage = PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT;
@@ -50,37 +45,33 @@ static void _test_setup(void)
                                       (PSA_KEY_LIFETIME_PERSISTENT, PSA_KEY_LOCATION_LOCAL_STORAGE);
     psa_set_key_lifetime(&attr, lifetime);
 
-    /* Import persistent key */
+    // Import persistent key
     TEST_ASSERT_PSA_SUCCESS(psa_import_key(&attr, KEY_128, AES_128_KEY_SIZE, &key_id_1));
 
-    /* Import second key to overwrite the first one */
+    // Import second key to overwrite the first one
     psa_set_key_id(&attr, key_id_2);
     TEST_ASSERT_PSA_SUCCESS(psa_import_key(&attr, OVERWRITE_KEY_128, AES_128_KEY_SIZE,
                                                                             &key_id_2));
 }
 
-static void _test_destroy_keys(void)
-{
-    /* Destroy first key */
+static void _test_destroy_keys(void) {
+    // Destroy first key
     TEST_ASSERT_PSA_SUCCESS(psa_destroy_key(key_id_1));
 
-    /* Destroy second key */
+    // Destroy second key
     TEST_ASSERT_PSA_SUCCESS(psa_destroy_key(key_id_2));
 }
 
-/**
- * @brief   A persistently stored key should still be accessible after
- *          overwriting it in local memory
- */
-static void test_psa_store_single_persistent_key(void)
-{
+/// @brief   A persistently stored key should still be accessible after
+///          overwriting it in local memory
+static void test_psa_store_single_persistent_key(void) {
     uint8_t cipher_out[ENCR_OUTPUT_SIZE];
     uint8_t plain_out[PLAINTEXT_LEN];
     size_t output_len = 0;
 
     _test_setup();
 
-    /* Generate cipher with first key */
+    // Generate cipher with first key
     TEST_ASSERT_PSA_SUCCESS(psa_cipher_encrypt(key_id_1, PSA_ALG_CBC_NO_PADDING, PLAINTEXT,
                                 PLAINTEXT_LEN, cipher_out, ENCR_OUTPUT_SIZE, &output_len));
 
@@ -89,7 +80,7 @@ static void test_psa_store_single_persistent_key(void)
     TEST_ASSERT_MESSAGE(0 == memcmp(plain_out, PLAINTEXT, PLAINTEXT_LEN),
                                                                 "first key, wrong plaintext");
 
-    /* Generate cipher with second key */
+    // Generate cipher with second key
     TEST_ASSERT_PSA_SUCCESS(psa_cipher_encrypt(key_id_2, PSA_ALG_CBC_NO_PADDING, PLAINTEXT,
                                 PLAINTEXT_LEN, cipher_out, ENCR_OUTPUT_SIZE, &output_len));
 
@@ -101,26 +92,23 @@ static void test_psa_store_single_persistent_key(void)
     _test_destroy_keys();
 }
 
-/**
- * @brief   After destroying a persistent key, it should not be available anymore
- */
-static void test_psa_delete_single_persistent_key(void)
-{
+/// @brief   After destroying a persistent key, it should not be available anymore
+static void test_psa_delete_single_persistent_key(void) {
     uint8_t cipher_out[ENCR_OUTPUT_SIZE];
     size_t output_len = 0;
 
     _test_setup();
 
-    /* Generate cipher with first key */
+    // Generate cipher with first key
     TEST_ASSERT_PSA_SUCCESS(psa_cipher_encrypt(key_id_1, PSA_ALG_CBC_NO_PADDING, PLAINTEXT,
                                 PLAINTEXT_LEN, cipher_out, ENCR_OUTPUT_SIZE, &output_len));
-    /* Generate cipher with second key */
+    // Generate cipher with second key
     TEST_ASSERT_PSA_SUCCESS(psa_cipher_encrypt(key_id_2, PSA_ALG_CBC_NO_PADDING, PLAINTEXT,
                                 PLAINTEXT_LEN, cipher_out, ENCR_OUTPUT_SIZE, &output_len));
 
     _test_destroy_keys();
 
-    /* Encryption with deleted keys should fail */
+    // Encryption with deleted keys should fail
     TEST_ASSERT_PSA_DOES_NOT_EXIST(psa_cipher_encrypt(key_id_1, PSA_ALG_CBC_NO_PADDING, PLAINTEXT,
                                 PLAINTEXT_LEN, cipher_out, ENCR_OUTPUT_SIZE, &output_len));
     TEST_ASSERT_PSA_DOES_NOT_EXIST(psa_cipher_encrypt(key_id_2, PSA_ALG_CBC_NO_PADDING,
@@ -128,8 +116,7 @@ static void test_psa_delete_single_persistent_key(void)
                                     &output_len));
 }
 
-Test* tests_psa_persistent_single_key_storage(void)
-{
+Test* tests_psa_persistent_single_key_storage(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_psa_store_single_persistent_key),
         new_TestFixture(test_psa_delete_single_persistent_key),

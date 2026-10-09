@@ -1,23 +1,19 @@
-/*
- * Copyright (C) 2019 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #pragma once
 
-/**
- * @ingroup     boards_particle-xenon
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the Particle Xenon
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- */
+/// @ingroup     boards_particle-xenon
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the Particle Xenon
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
 
 #include "periph_cpu.h"
 #include "periph_conf_common.h"
@@ -26,10 +22,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = NRF_UARTE0,
@@ -57,10 +51,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_uarte1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

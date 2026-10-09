@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the TSL2561 Lux sensor
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the TSL2561 Lux sensor
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -25,8 +21,7 @@
 #include "tsl2561.h"
 #include "tsl2561_params.h"
 
-int main(void)
-{
+int main(void) {
     puts("TSL2561 test application\n");
 
     tsl2561_t dev;
@@ -49,12 +44,12 @@ int main(void)
 
     printf("\n+--------Starting Measurements--------+\n");
     while (1) {
-        /* Get the illuminance in Lux */
+        // Get the illuminance in Lux
         printf("Illuminance [lx]: %i\n"
                "\n+-------------------------------------+\n",
                (int)tsl2561_read_illuminance(&dev));
 
-        ztimer_sleep(ZTIMER_MSEC, MS_PER_SEC); /* 1s delay */
+        ztimer_sleep(ZTIMER_MSEC, MS_PER_SEC); // 1s delay
     }
 
     return 0;

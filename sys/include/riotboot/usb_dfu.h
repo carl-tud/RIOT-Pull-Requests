@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2020 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    sys_riotboot_usb_dfu   Initialization of USB Device Firmware
- *                                     Upgrade for riotboot
- * @ingroup     sys
- * @{
- *
- * @file
- * @brief       USB DFU initialization for riotboot
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @defgroup    sys_riotboot_usb_dfu   Initialization of USB Device Firmware
+///                                     Upgrade for riotboot
+/// @ingroup     sys
+/// @{
+///
+/// @file
+/// @brief       USB DFU initialization for riotboot
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include "riotboot/hdr.h"
 
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name USB DFU Default slots name
- * @{
- */
+/// @name USB DFU Default slots name
+/// @{
 #ifndef USB_DFU_MODE_SLOT0_NAME
 #define USB_DFU_MODE_SLOT0_NAME         "RIOT-OS Slot 0"
 #endif
@@ -39,11 +33,9 @@ extern "C" {
 #define USB_APP_MODE_SLOT_NAME          "RIOT-OS bootloader"
 #endif
 
-/** @} */
+/// @}
 
-/**
- * @brief  Initialize usbus DFU for riotboot bootloader
- */
+/// @brief  Initialize usbus DFU for riotboot bootloader
 void riotboot_usb_dfu_init(unsigned forced);
 
 #ifdef __cplusplus

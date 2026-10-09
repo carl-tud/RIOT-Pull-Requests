@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2017 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2017 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell command for sending raw text on network
- *
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell command for sending raw text on network
+///
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
 
 #include <stdio.h>
 #include <string.h>
@@ -25,8 +21,7 @@
 #include "shell.h"
 #include "container.h"
 
-static int _gnrc_netif_send(int argc, char **argv)
-{
+static int _gnrc_netif_send(int argc, char **argv) {
     netif_t *iface;
     uint8_t addr[GNRC_NETIF_L2ADDR_MAXLEN];
     size_t addr_len;
@@ -46,7 +41,7 @@ static int _gnrc_netif_send(int argc, char **argv)
         return 1;
     }
 
-    /* parse address */
+    // parse address
     addr_len = gnrc_netif_addr_from_str(argv[2], addr);
 
     if (addr_len == 0) {
@@ -59,7 +54,7 @@ static int _gnrc_netif_send(int argc, char **argv)
         }
     }
 
-    /* put packet together */
+    // put packet together
     pkt = gnrc_pktbuf_add(NULL, argv[3], strlen(argv[3]), GNRC_NETTYPE_UNDEF);
     if (pkt == NULL) {
         printf("error: packet buffer full\n");
@@ -74,7 +69,7 @@ static int _gnrc_netif_send(int argc, char **argv)
     pkt = gnrc_pkt_prepend(pkt, hdr);
     nethdr = (gnrc_netif_hdr_t *)hdr->data;
     nethdr->flags = flags;
-    /* and send it */
+    // and send it
     if (gnrc_netif_send(container_of(iface, gnrc_netif_t, netif), pkt) < 1) {
         printf("error: unable to send\n");
         gnrc_pktbuf_release(pkt);

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2015 Philipp Rosenkranz <philipp.rosenkranz@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Philipp Rosenkranz <philipp.rosenkranz@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -14,7 +12,7 @@
 extern "C" {
 #endif
 
-/* Some randomly generated but still deterministic values for testing */
+// Some randomly generated but still deterministic values for testing
 #ifndef TEST_STRING4
 #define TEST_STRING4 "J&(d"
 #endif
@@ -65,4 +63,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

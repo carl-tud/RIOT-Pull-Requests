@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup drivers_mtd_native
- * @brief   MTD flash emulation for native
- * @author  Vincent Dupont <vincent@otakeys.com>
- */
+/// @file
+/// @ingroup drivers_mtd_native
+/// @brief   MTD flash emulation for native
+/// @author  Vincent Dupont <vincent@otakeys.com>
 
 #include <errno.h>
 #include <inttypes.h>
@@ -22,8 +18,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static int _init(mtd_dev_t *dev)
-{
+static int _init(mtd_dev_t *dev) {
     mtd_native_dev_t *_dev = (mtd_native_dev_t*) dev;
 
     DEBUG("mtd_native: init, filename=%s\n", _dev->fname);
@@ -51,8 +46,7 @@ static int _init(mtd_dev_t *dev)
     return 0;
 }
 
-static int _read(mtd_dev_t *dev, void *buff, uint32_t addr, uint32_t size)
-{
+static int _read(mtd_dev_t *dev, void *buff, uint32_t addr, uint32_t size) {
     mtd_native_dev_t *_dev = (mtd_native_dev_t*) dev;
     size_t mtd_size = dev->sector_count * dev->pages_per_sector * dev->page_size;
 
@@ -74,8 +68,7 @@ static int _read(mtd_dev_t *dev, void *buff, uint32_t addr, uint32_t size)
 }
 
 static int _write_page(mtd_dev_t *dev, const void *buff, uint32_t page, uint32_t offset,
-                       uint32_t size)
-{
+                       uint32_t size) {
     mtd_native_dev_t *_dev = (mtd_native_dev_t*) dev;
     uint32_t addr = page * dev->page_size + offset;
 
@@ -108,8 +101,7 @@ static int _write_page(mtd_dev_t *dev, const void *buff, uint32_t page, uint32_t
     return size;
 }
 
-static int _erase(mtd_dev_t *dev, uint32_t addr, uint32_t size)
-{
+static int _erase(mtd_dev_t *dev, uint32_t addr, uint32_t size) {
     mtd_native_dev_t *_dev = (mtd_native_dev_t*) dev;
     size_t mtd_size = dev->sector_count * dev->pages_per_sector * dev->page_size;
     size_t sector_size = dev->pages_per_sector * dev->page_size;
@@ -136,8 +128,7 @@ static int _erase(mtd_dev_t *dev, uint32_t addr, uint32_t size)
     return 0;
 }
 
-static int _power(mtd_dev_t *dev, enum mtd_power_state power)
-{
+static int _power(mtd_dev_t *dev, enum mtd_power_state power) {
     (void) dev;
     (void) power;
 

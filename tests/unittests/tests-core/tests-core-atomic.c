@@ -1,8 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <limits.h>
 #include <stdint.h>
@@ -12,9 +10,8 @@
 
 #include "tests-core.h"
 
-/* Test atomic_flag back and forth */
-static void test_atomic_flag(void)
-{
+// Test atomic_flag back and forth
+static void test_atomic_flag(void) {
     atomic_flag flag = ATOMIC_FLAG_INIT;
 
     TEST_ASSERT_EQUAL_INT(0, atomic_flag_test_and_set(&flag));
@@ -23,9 +20,8 @@ static void test_atomic_flag(void)
     TEST_ASSERT_EQUAL_INT(0, atomic_flag_test_and_set(&flag));
 }
 
-/* Test atomic_fetch_add */
-static void test_atomic_inc_positive(void)
-{
+// Test atomic_fetch_add
+static void test_atomic_inc_positive(void) {
     atomic_int res = ATOMIC_VAR_INIT(0);
 
     TEST_ASSERT_EQUAL_INT(0, atomic_fetch_add(&res, 1));
@@ -39,8 +35,7 @@ static void test_atomic_inc_positive(void)
     }
 }
 
-static void test_atomic_inc_negative(void)
-{
+static void test_atomic_inc_negative(void) {
     atomic_int res = ATOMIC_VAR_INIT(-99);
 
     for (int i = -99; i < 123; ++i) {
@@ -49,8 +44,7 @@ static void test_atomic_inc_negative(void)
     }
 }
 
-static void test_atomic_inc_rollover(void)
-{
+static void test_atomic_inc_rollover(void) {
     atomic_int res = ATOMIC_VAR_INIT(INT_MAX - 30);
 
     for (int i = 0; i < 30; ++i) {
@@ -65,9 +59,8 @@ static void test_atomic_inc_rollover(void)
     TEST_ASSERT_EQUAL_INT(INT_MIN + 2, atomic_load(&res));
 }
 
-/* Test atomic_fetch_sub */
-static void test_atomic_dec_negative(void)
-{
+// Test atomic_fetch_sub
+static void test_atomic_dec_negative(void) {
     atomic_int res = ATOMIC_VAR_INIT(0);
 
     TEST_ASSERT_EQUAL_INT(0, atomic_fetch_sub(&res, 1));
@@ -81,8 +74,7 @@ static void test_atomic_dec_negative(void)
     }
 }
 
-static void test_atomic_dec_positive(void)
-{
+static void test_atomic_dec_positive(void) {
     atomic_int res = ATOMIC_VAR_INIT(99);
 
     for (int i = 99; i > -123; --i) {
@@ -91,8 +83,7 @@ static void test_atomic_dec_positive(void)
     }
 }
 
-static void test_atomic_dec_rollover(void)
-{
+static void test_atomic_dec_rollover(void) {
     atomic_int res = ATOMIC_VAR_INIT(INT_MIN + 30);
 
     for (int i = 0; i < 30; ++i) {
@@ -107,9 +98,8 @@ static void test_atomic_dec_rollover(void)
     TEST_ASSERT_EQUAL_INT(INT_MAX - 2, atomic_load(&res));
 }
 
-/* Test atomic_cas with a correct old value */
-static void test_atomic_cas_same(void)
-{
+// Test atomic_cas with a correct old value
+static void test_atomic_cas_same(void) {
     atomic_int res = ATOMIC_VAR_INIT(0);
     int expected;
 
@@ -130,9 +120,8 @@ static void test_atomic_cas_same(void)
     TEST_ASSERT_EQUAL_INT(0, atomic_load(&res));
 }
 
-/* Test atomic_cas with a non-matching old value */
-static void test_atomic_cas_diff(void)
-{
+// Test atomic_cas with a non-matching old value
+static void test_atomic_cas_diff(void) {
     atomic_int res = ATOMIC_VAR_INIT(32767);
     int expected;
 
@@ -158,9 +147,8 @@ static void test_atomic_cas_diff(void)
     TEST_ASSERT_EQUAL_INT(-12345, atomic_load(&res));
 }
 
-/* Test atomic_load, atomic_store */
-static void test_atomic_value(void)
-{
+// Test atomic_load, atomic_store
+static void test_atomic_value(void) {
     atomic_int res = ATOMIC_VAR_INIT(12345);
 
     TEST_ASSERT_EQUAL_INT(12345, atomic_load(&res));
@@ -168,10 +156,9 @@ static void test_atomic_value(void)
     TEST_ASSERT_EQUAL_INT(24332, atomic_load(&res));
 }
 
-/* ATOMIC_VAR_INIT is implicitly tested by the other tests */
+// ATOMIC_VAR_INIT is implicitly tested by the other tests
 
-Test *tests_core_atomic_tests(void)
-{
+Test *tests_core_atomic_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_atomic_flag),
         new_TestFixture(test_atomic_inc_positive),

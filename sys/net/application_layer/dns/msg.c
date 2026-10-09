@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -26,12 +22,9 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static ssize_t _enc_domain_name(uint8_t *out, const char *domain_name)
-{
-    /*
-     * DNS encodes domain names with "<len><part><len><part>", e.g.,
-     * "example.org" ends up as "\7example\3org" in the packet.
-     */
+static ssize_t _enc_domain_name(uint8_t *out, const char *domain_name) {
+    // DNS encodes domain names with "<len><part><len><part>", e.g.,
+    // "example.org" ends up as "\7example\3org" in the packet.
     uint8_t *part_start = out;
     uint8_t *out_pos = ++out;
 
@@ -39,7 +32,7 @@ static ssize_t _enc_domain_name(uint8_t *out, const char *domain_name)
 
     while ((c = *domain_name)) {
         if (c == '.') {
-            /* replace dot with length of name part as byte */
+            // replace dot with length of name part as byte
             *part_start = (out_pos - part_start - 1);
             part_start = out_pos++;
         }
@@ -55,32 +48,29 @@ static ssize_t _enc_domain_name(uint8_t *out, const char *domain_name)
     return out_pos - out + 1;
 }
 
-static unsigned _put_short(uint8_t *out, uint16_t val)
-{
+static unsigned _put_short(uint8_t *out, uint16_t val) {
     memcpy(out, &val, 2);
     return 2;
 }
 
-static unsigned _get_short(const uint8_t *buf)
-{
+static unsigned _get_short(const uint8_t *buf) {
     uint16_t _tmp;
     memcpy(&_tmp, buf, 2);
     return _tmp;
 }
 
 static ssize_t _skip_hostname(const uint8_t *buf, size_t len,
-                              const uint8_t *bufpos)
-{
+                              const uint8_t *bufpos) {
     const uint8_t *buflim = buf + len;
     unsigned res = 0;
 
     if (bufpos >= buflim) {
-        /* out-of-bound */
+        // out-of-bound
         DEBUG("dns_msg: bufpos is out of bounds\n");
         return -EBADMSG;
     }
 
-    /* handle DNS Message Compression */
+    // handle DNS Message Compression
     if (*bufpos & 0xc0) {
         DEBUG("dns_msg: hostname is compressed\n");
         if ((bufpos + 2) >= buflim) {
@@ -92,7 +82,7 @@ static ssize_t _skip_hostname(const uint8_t *buf, size_t len,
     while (bufpos[res]) {
         res += bufpos[res] + 1;
         if ((&bufpos[res]) >= buflim) {
-            /* out-of-bound */
+            // out-of-bound
             DEBUG("dns_msg: hostname out-of-bounds\n");
             return -EBADMSG;
         }
@@ -101,8 +91,7 @@ static ssize_t _skip_hostname(const uint8_t *buf, size_t len,
 }
 
 size_t dns_msg_compose_query(void *dns_buf, const char *domain_name,
-                             uint16_t id, int family)
-{
+                             uint16_t id, int family) {
     uint8_t *buf = dns_buf;
 
     dns_hdr_t *hdr = (dns_hdr_t*) buf;
@@ -135,20 +124,19 @@ size_t dns_msg_compose_query(void *dns_buf, const char *domain_name,
 }
 
 int dns_msg_parse_reply(const uint8_t *buf, size_t len, int family,
-                        void *addr_out, uint32_t *ttl)
-{
+                        void *addr_out, uint32_t *ttl) {
     const uint8_t *buflim = buf + len;
     const dns_hdr_t *hdr = (dns_hdr_t *)buf;
     const uint8_t *bufpos = buf + sizeof(*hdr);
 
-    /* skip all queries that are part of the reply */
+    // skip all queries that are part of the reply
     for (unsigned n = 0; n < ntohs(hdr->qdcount); n++) {
         ssize_t tmp = _skip_hostname(buf, len, bufpos);
         if (tmp < 0) {
             return tmp;
         }
         bufpos += tmp;
-        /* skip type and class of query */
+        // skip type and class of query
         bufpos += (RR_TYPE_LENGTH + RR_CLASS_LENGTH);
     }
 
@@ -180,19 +168,19 @@ int dns_msg_parse_reply(const uint8_t *buf, size_t len, int family,
 
         DEBUG("dns_msg: type: %u, class: %u, len: %u\n", _type, class, rdlen);
 
-        /* skip unwanted answers */
+        // skip unwanted answers
         if ((class != DNS_CLASS_IN) ||
                 ((_type == DNS_TYPE_A) && (family == AF_INET6)) ||
                 ((_type == DNS_TYPE_AAAA) && (family == AF_INET)) ||
                 ! ((_type == DNS_TYPE_A) || ((_type == DNS_TYPE_AAAA))
                     )) {
             if (rdlen > len) {
-                /* buffer wraps around memory space */
+                // buffer wraps around memory space
                 return -EBADMSG;
             }
             bufpos += rdlen;
-            /* other out-of-bound is checked in `_skip_hostname()` at start of
-             * loop */
+            // other out-of-bound is checked in `_skip_hostname()` at start of
+            // loop
             continue;
         }
         if (((rdlen != INADDRSZ)  && (family == AF_INET))  ||
@@ -209,4 +197,4 @@ int dns_msg_parse_reply(const uint8_t *buf, size_t len, int family,
     return -EBADMSG;
 }
 
-/** @} */
+/// @}

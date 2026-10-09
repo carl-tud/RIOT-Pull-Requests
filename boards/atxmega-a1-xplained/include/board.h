@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gerson Fernando Budke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gerson Fernando Budke
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_atxmega-a1-xplained
- * @{
- *
- * @file
- * @brief       Board specific definitions for the ATxmegaA1 Xplained board.
- *
- * @author      Gerson Fernando Budke <nandojve@gmail.com>
- */
+/// @ingroup     boards_atxmega-a1-xplained
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the ATxmegaA1 Xplained board.
+///
+/// @author      Gerson Fernando Budke <nandojve@gmail.com>
 
 #include "cpu.h"
 #include "macros/units.h"
@@ -22,38 +18,30 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Clock configuration
- */
+/// @brief   Clock configuration
 #define CLOCK_CORECLOCK     MHZ(32)
 
-/**
- * @brief Use the UART-2 for STDIO on this board
- */
+/// @brief Use the UART-2 for STDIO on this board
 #define STDIO_UART_DEV      UART_DEV(2)
 
-/**
- * @name   Baudrate for STDIO terminal
- *
- * The standard configuration for STDIO in cpu/atxmega/periph/uart.c
- * is to use double speed.
- *
- * For 32MHz F_CPU following Baudrate have good error rates
- *  115200
- *
- * Matches this with BAUD in Board/Makefile.include
- *
- * @{
- */
+/// @name   Baudrate for STDIO terminal
+///
+/// The standard configuration for STDIO in cpu/atxmega/periph/uart.c
+/// is to use double speed.
+///
+/// For 32MHz F_CPU following Baudrate have good error rates
+///  115200
+///
+/// Matches this with BAUD in Board/Makefile.include
+///
+/// @{
 #ifndef STDIO_UART_BAUDRATE
 #define STDIO_UART_BAUDRATE (115200U)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name   LED pin definitions and handlers
- * @{
- */
+/// @name   LED pin definitions and handlers
+/// @{
 #define LED_PORT            PORTE
 
 #define LED0_PIN            GPIO_PIN(PORT_E, 0)
@@ -114,12 +102,10 @@ extern "C" {
 
 #define LED_PORT_MASK       (LED0_MASK | LED1_MASK | LED2_MASK | LED3_MASK | \
                              LED4_MASK | LED5_MASK | LED6_MASK | LED7_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    Button pin configuration
- * @{
- */
+/// @name    Button pin configuration
+/// @{
 #define BTN0_PIN            GPIO_PIN(PORT_D, 0)
 #define BTN0_MODE           (GPIO_IN | GPIO_OPC_PU | GPIO_SLEW_RATE)
 #define BTN0_INT_FLANK      (GPIO_ISC_FALLING | GPIO_LVL_LOW)
@@ -151,31 +137,29 @@ extern "C" {
 #define BTN7_PIN            GPIO_PIN(PORT_R, 1)
 #define BTN7_MODE           (GPIO_IN | GPIO_OPC_PU | GPIO_SLEW_RATE)
 #define BTN7_INT_FLANK      (GPIO_ISC_FALLING | GPIO_LVL_LOW)
-/** @} */
+/// @}
 
-/**
- * @name xtimer configuration values
- * if XTIMER_HZ > 1MHz then (XTIMER_HZ != (1000000ul << XTIMER_SHIFT))
- * if XTIMER_HZ < 1MHz then ((XTIMER_HZ << XTIMER_SHIFT) != 1000000ul)
- *
- * 32MHz Core Clock
- * XTIMER_HZ 4000000 (clkdiv 8 )    XTIMER_SHIFT 2
- * XTIMER_HZ 1000000 ()             XTIMER_SHIFT 0
- * XTIMER_HZ  500000 (clkdiv 64)    XTIMER_SHIFT 1
- * XTIMER_HZ  250000 (clkdiv 128)   XTIMER_SHIFT 2
- * XTIMER_HZ   31250 (clkdiv 1024)  XTIMER_SHIFT 5
- *
- * @{
- */
+/// @name xtimer configuration values
+/// if XTIMER_HZ > 1MHz then (XTIMER_HZ != (1000000ul << XTIMER_SHIFT))
+/// if XTIMER_HZ < 1MHz then ((XTIMER_HZ << XTIMER_SHIFT) != 1000000ul)
+///
+/// 32MHz Core Clock
+/// XTIMER_HZ 4000000 (clkdiv 8 )    XTIMER_SHIFT 2
+/// XTIMER_HZ 1000000 ()             XTIMER_SHIFT 0
+/// XTIMER_HZ  500000 (clkdiv 64)    XTIMER_SHIFT 1
+/// XTIMER_HZ  250000 (clkdiv 128)   XTIMER_SHIFT 2
+/// XTIMER_HZ   31250 (clkdiv 1024)  XTIMER_SHIFT 5
+///
+/// @{
 #define XTIMER_DEV          TIMER_DEV(0)
 #define XTIMER_CHAN         (0)
 #define XTIMER_WIDTH        (16)
 #define XTIMER_HZ           KHZ(500)
 #define XTIMER_BACKOFF      (150)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2015 Rakendra Thapa <rakendrathapa@gmail.com
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Rakendra Thapa <rakendrathapa@gmail.com
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_lm4f120
- * @{
- *
- * @file        cpu.c
- * @brief       Implementation of the CPU initialization
- *
- * @author      Rakendra Thapa <rakendrathapa@gmail.com>
- * @}
- */
+/// @ingroup     cpu_lm4f120
+/// @{
+///
+/// @file        cpu.c
+/// @brief       Implementation of the CPU initialization
+///
+/// @author      Rakendra Thapa <rakendrathapa@gmail.com>
+/// @}
 
 #include "cpu.h"
 #include "kernel_init.h"
@@ -24,32 +20,27 @@
 #include "periph_conf.h"
 #include "stdio_base.h"
 
-/**
- * @brief Initialize the CPU, set IRQ priorities
- */
-void cpu_init(void)
-{
-    /* initializes the Cortex-M core */
+/// @brief Initialize the CPU, set IRQ priorities
+void cpu_init(void) {
+    // initializes the Cortex-M core
     cortexm_init();
 
-    /* initialize the clock system */
+    // initialize the clock system
     cpu_clock_init(CLOCK_SOURCE);
 
-    /* initialize stdio prior to periph_init() to allow use of DEBUG() there */
+    // initialize stdio prior to periph_init() to allow use of DEBUG() there
     early_init();
 
-    /* trigger static peripheral initialization */
+    // trigger static peripheral initialization
     periph_init();
 }
 
-void setup_fpu(void)
-{
+void setup_fpu(void) {
     ROM_FPUEnable();
     ROM_FPULazyStackingEnable();
 }
 
-void cpu_clock_init(int clk)
-{
+void cpu_clock_init(int clk) {
     setup_fpu();
     switch(clk){
         case CLK80:

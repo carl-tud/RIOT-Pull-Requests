@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_hm330x
- * @{
- * @file
- * @brief       SAUL adaption of the HM330X particulate matter sensor
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @}
- */
+/// @ingroup     drivers_hm330x
+/// @{
+/// @file
+/// @brief       SAUL adaption of the HM330X particulate matter sensor
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -23,8 +19,7 @@
 #include "hm330x_params.h"
 #include "hm330x_constants.h"
 
-static int read_mc_pm_1(const void *_dev, phydat_t *data)
-{
+static int read_mc_pm_1(const void *_dev, phydat_t *data) {
     hm330x_t *dev = (hm330x_t *)_dev;
 
     hm330x_data_t values;
@@ -44,8 +39,7 @@ static int read_mc_pm_1(const void *_dev, phydat_t *data)
     return 1;
 }
 
-static int read_mc_pm_2p5(const void *_dev, phydat_t *data)
-{
+static int read_mc_pm_2p5(const void *_dev, phydat_t *data) {
     hm330x_t *dev = (hm330x_t *)_dev;
 
     hm330x_data_t values;
@@ -65,8 +59,7 @@ static int read_mc_pm_2p5(const void *_dev, phydat_t *data)
     return 1;
 }
 
-static int read_mc_pm_10(const void *_dev, phydat_t *data)
-{
+static int read_mc_pm_10(const void *_dev, phydat_t *data) {
     hm330x_t *dev = (hm330x_t *)_dev;
 
     hm330x_data_t values;
@@ -87,8 +80,7 @@ static int read_mc_pm_10(const void *_dev, phydat_t *data)
 }
 
 #if IS_USED(MODULE_HM3302)
-static int read_nc_pm_1(const void *_dev, phydat_t *data)
-{
+static int read_nc_pm_1(const void *_dev, phydat_t *data) {
     hm330x_t *dev = (hm330x_t *)_dev;
 
     hm330x_data_t values;
@@ -102,8 +94,7 @@ static int read_nc_pm_1(const void *_dev, phydat_t *data)
     return 1;
 }
 
-static int read_nc_pm_2p5(const void *_dev, phydat_t *data)
-{
+static int read_nc_pm_2p5(const void *_dev, phydat_t *data) {
     hm330x_t *dev = (hm330x_t *)_dev;
 
     hm330x_data_t values;
@@ -117,8 +108,7 @@ static int read_nc_pm_2p5(const void *_dev, phydat_t *data)
     return 1;
 }
 
-static int read_nc_pm_10(const void *_dev, phydat_t *data)
-{
+static int read_nc_pm_10(const void *_dev, phydat_t *data) {
     hm330x_t *dev = (hm330x_t *)_dev;
 
     hm330x_data_t values;

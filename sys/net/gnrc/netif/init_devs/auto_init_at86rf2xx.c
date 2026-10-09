@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief   Auto initialization for at86rf2xx network interfaces
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @ingroup sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief   Auto initialization for at86rf2xx network interfaces
+///
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
 
 #include "log.h"
 #include "board.h"
@@ -25,10 +21,8 @@
 #include "net/netdev/ieee802154_submac.h"
 #include "event/thread.h"
 
-/**
- * @brief   Define stack parameters for the MAC layer thread
- * @{
- */
+/// @brief   Define stack parameters for the MAC layer thread
+/// @{
 #define AT86RF2XX_MAC_STACKSIZE     (IEEE802154_STACKSIZE_DEFAULT)
 #ifndef AT86RF2XX_MAC_PRIO
 #  define AT86RF2XX_MAC_PRIO          (GNRC_NETIF_PRIO)
@@ -41,8 +35,7 @@ static netdev_ieee802154_submac_t at86rf2xx_netdev[AT86RF2XX_NUM];
 static gnrc_netif_t _netif[AT86RF2XX_NUM];
 static char _at86rf2xx_stacks[AT86RF2XX_NUM][AT86RF2XX_MAC_STACKSIZE];
 
-void auto_init_at86rf2xx(void)
-{
+void auto_init_at86rf2xx(void) {
     for (unsigned i = 0; i < AT86RF2XX_NUM; i++) {
         LOG_DEBUG("[auto_init_netif] initializing at86rf2xx #%u\n", i);
 
@@ -72,4 +65,4 @@ void auto_init_at86rf2xx(void)
 #endif
     }
 }
-/** @} */
+/// @}

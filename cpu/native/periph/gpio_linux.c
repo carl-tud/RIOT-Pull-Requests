@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2019 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_gpio
- * @brief   native GPIO implementation
- * @author  Benjamin Valentin <benpicco@googlemail.com>
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_gpio
+/// @brief   native GPIO implementation
+/// @author  Benjamin Valentin <benpicco@googlemail.com>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -43,8 +39,7 @@ static unsigned port_numof;
 #define _port(p)    (p >> GPIO_PORT_SHIFT)
 #define _pin(p)     (p & ((1 << GPIO_PORT_SHIFT) - 1))
 
-int gpio_linux_setup(const char* gpiochip)
-{
+int gpio_linux_setup(const char* gpiochip) {
     struct gpiochip_info info;
     int fd = real_open(gpiochip, O_RDWR);
 
@@ -81,8 +76,7 @@ int gpio_linux_setup(const char* gpiochip)
     return 0;
 }
 
-void gpio_linux_teardown(void)
-{
+void gpio_linux_teardown(void) {
     for (unsigned i = 0; i < port_numof; ++i) {
         for (unsigned j = 0; j < ports[i].num_pins; ++j) {
 
@@ -118,8 +112,7 @@ void gpio_linux_teardown(void)
     port_numof = 0;
 }
 
-int gpio_init(gpio_t pin, gpio_mode_t mode)
-{
+int gpio_init(gpio_t pin, gpio_mode_t mode) {
     int res;
     const unsigned p = _pin(pin);
     struct gpiohandle_request req = {
@@ -143,7 +136,7 @@ int gpio_init(gpio_t pin, gpio_mode_t mode)
         return -EINVAL;
     }
 
-    /* if the pin is already configured, close it first */
+    // if the pin is already configured, close it first
     if (port->pins[p] > 0) {
         real_close(port->pins[p]);
         port->pins[p] = 0;
@@ -159,8 +152,7 @@ int gpio_init(gpio_t pin, gpio_mode_t mode)
     return 0;
 }
 
-bool gpio_read(gpio_t pin)
-{
+bool gpio_read(gpio_t pin) {
     struct gpiohandle_data data;
 
     if (_port(pin) >= port_numof) {
@@ -178,8 +170,7 @@ bool gpio_read(gpio_t pin)
     return data.values[0];
 }
 
-static void _set(gpio_t pin, uint8_t val)
-{
+static void _set(gpio_t pin, uint8_t val) {
     int fd = ports[_port(pin)].pins[_pin(pin)];
 
     if (fd > 0) {
@@ -187,23 +178,19 @@ static void _set(gpio_t pin, uint8_t val)
     }
 }
 
-void gpio_set(gpio_t pin)
-{
+void gpio_set(gpio_t pin) {
     _set(pin, 1);
 }
 
-void gpio_clear(gpio_t pin)
-{
+void gpio_clear(gpio_t pin) {
     _set(pin, 0);
 }
 
-void gpio_toggle(gpio_t pin)
-{
+void gpio_toggle(gpio_t pin) {
     _set(pin, !gpio_read(pin));
 }
 
-void gpio_write(gpio_t pin, bool value)
-{
+void gpio_write(gpio_t pin, bool value) {
     _set(pin, value);
 }
 
@@ -224,8 +211,7 @@ static void _async_read_wrapper(int fd, void *arg) {
 }
 
 int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
-                  gpio_cb_t cb, void *arg)
-{
+                  gpio_cb_t cb, void *arg) {
     int res;
     const unsigned p = _pin(pin);
     struct gpioevent_request req = {
@@ -249,7 +235,7 @@ int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
         return -EINVAL;
     }
 
-    /* if the pin is already configured, close it first */
+    // if the pin is already configured, close it first
     if (port->pins[p] > 0) {
         real_close(port->pins[p]);
         port->pins[p] = 0;
@@ -277,8 +263,7 @@ int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
     return 0;
 }
 
-static void _set_irq_enabled(gpio_t pin, bool enabled)
-{
+static void _set_irq_enabled(gpio_t pin, bool enabled) {
     native_port_t *port;
     const unsigned p = _pin(pin);
 
@@ -295,14 +280,12 @@ static void _set_irq_enabled(gpio_t pin, bool enabled)
     port->cbs[p]->enabled = enabled;
 }
 
-void gpio_irq_enable(gpio_t pin)
-{
+void gpio_irq_enable(gpio_t pin) {
     _set_irq_enabled(pin, true);
 }
 
-void gpio_irq_disable(gpio_t pin)
-{
+void gpio_irq_disable(gpio_t pin) {
     _set_irq_enabled(pin, false);
 }
 
-#endif /* MODULE_PERIPH_GPIO_IRQ */
+#endif // MODULE_PERIPH_GPIO_IRQ

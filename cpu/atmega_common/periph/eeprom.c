@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-FileCopyrightText: 2023 Hugues Larrive
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-FileCopyrightText: 2023 Hugues Larrive
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_atmega_common
- * @ingroup     drivers_periph_eeprom
- * @{
- *
- * @file
- * @brief       Low-level EEPROM driver implementation for ATmega family
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Hugues Larrive <hugues.larrive@pm.me>
- * @}
- */
+/// @ingroup     cpu_atmega_common
+/// @ingroup     drivers_periph_eeprom
+/// @{
+///
+/// @file
+/// @brief       Low-level EEPROM driver implementation for ATmega family
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Hugues Larrive <hugues.larrive@pm.me>
+/// @}
 
 #include <stdint.h>
 #include <assert.h>
@@ -26,8 +22,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-size_t eeprom_read(uint32_t pos, void *data, size_t len)
-{
+size_t eeprom_read(uint32_t pos, void *data, size_t len) {
     assert(pos + len <= EEPROM_SIZE);
 
     uint8_t *p = data;
@@ -40,10 +35,10 @@ size_t eeprom_read(uint32_t pos, void *data, size_t len)
         while (EECR & (1 << EEWE)) {}
 #endif
 
-        /* Set up address register */
+        // Set up address register
         EEAR = pos++;
 
-        /* Start eeprom read by writing EERE */
+        // Start eeprom read by writing EERE
         EECR |= (1 << EERE);
         *p++ = (uint8_t)EEDR;
         DEBUG("0x%02X ", EEDR);
@@ -53,36 +48,35 @@ size_t eeprom_read(uint32_t pos, void *data, size_t len)
     return len;
 }
 
-size_t eeprom_write(uint32_t pos, const void *data, size_t len)
-{
+size_t eeprom_write(uint32_t pos, const void *data, size_t len) {
     assert(pos + len <= EEPROM_SIZE);
 
     uint8_t *p = (uint8_t *)data;
 
     for (size_t i = 0; i < len; i++) {
-        /* Wait for completion of previous operation */
+        // Wait for completion of previous operation
 #ifdef EEPE
         while (EECR & (1 << EEPE)) {}
 #elif defined(EEWE)
         while (EECR & (1 << EEWE)) {}
 #endif
 
-        /* Set up address and Data Registers */
+        // Set up address and Data Registers
         EEAR = pos++;
         EEDR = *p++;
 
 #ifdef EEMPE
-        /* Write logical one to EEMPE */
+        // Write logical one to EEMPE
         EECR |= (1 << EEMPE);
 #elif defined(EEMWE)
-        /* Write logical one to EEMWE */
+        // Write logical one to EEMWE
         EECR |= (1 << EEMWE);
 #endif
 #ifdef EEPE
-        /* Start eeprom write by setting EEPE */
+        // Start eeprom write by setting EEPE
         EECR |= (1 << EEPE);
 #elif defined(EEWE)
-        /* Start eeprom write by setting EEWE */
+        // Start eeprom write by setting EEWE
         EECR |= (1 << EEWE);
 #endif
     }

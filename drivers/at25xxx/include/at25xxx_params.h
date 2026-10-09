@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_at25xxx
- * @{
- *
- * @file
- * @brief       Default configuration for the M95M01 EEPROM
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     drivers_at25xxx
+/// @{
+///
+/// @file
+/// @brief       Default configuration for the M95M01 EEPROM
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include "board.h"
 #include "at25xxx.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the AT25XXX driver
- * @{
- */
+/// @name    Set default configuration parameters for the AT25XXX driver
+/// @{
 #ifndef AT25XXX_PARAM_SPI
 #define AT25XXX_PARAM_SPI       (SPI_DEV(0))
 #endif
@@ -42,13 +36,13 @@ extern "C" {
 #define AT25XXX_PARAM_HOLD      (GPIO_UNDEF)
 #endif
 #ifndef AT25XXX_PARAM_SIZE
-#define AT25XXX_PARAM_SIZE      (128 * 1024UL)  /* EEPROM size, in bytes */
+#define AT25XXX_PARAM_SIZE      (128 * 1024UL)  // EEPROM size, in bytes
 #endif
 #ifndef AT25XXX_PARAM_ADDR_LEN
-#define AT25XXX_PARAM_ADDR_LEN          (24)    /* Address length, in bits */
+#define AT25XXX_PARAM_ADDR_LEN          (24)    // Address length, in bits
 #endif
 #ifndef AT25XXX_PARAM_PAGE_SIZE
-#define AT25XXX_PARAM_PAGE_SIZE        (256)    /* Page size, in bytes */
+#define AT25XXX_PARAM_PAGE_SIZE        (256)    // Page size, in bytes
 #endif
 
 #ifndef AT25XXX_PARAMS
@@ -60,11 +54,9 @@ extern "C" {
                                   .size = AT25XXX_PARAM_SIZE,       \
                                   .page_size = AT25XXX_PARAM_PAGE_SIZE }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   AT25XXX configuration
- */
+/// @brief   AT25XXX configuration
 static const at25xxx_params_t at25xxx_params[] =
 {
     AT25XXX_PARAMS
@@ -74,4 +66,4 @@ static const at25xxx_params_t at25xxx_params[] =
 }
 #endif
 
-/** @} */
+/// @}

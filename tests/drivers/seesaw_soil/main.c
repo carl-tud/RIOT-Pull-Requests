@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Viktor Gal
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Viktor Gal
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the Adafruit Seesaw Soil sensor driver
- *
- * @author      Viktor Gal <viktor.gal@maeth.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the Adafruit Seesaw Soil sensor driver
+///
+/// @author      Viktor Gal <viktor.gal@maeth.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -24,8 +20,7 @@
 
 #define SLEEP_USEC  (1000 * 1000U)
 
-int main(void)
-{
+int main(void) {
     seesaw_soil_t dev;
     int16_t temp;
     uint16_t moist;

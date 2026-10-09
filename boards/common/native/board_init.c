@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2014 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * Native Board board_init implementation
- *
- * @ingroup boards_common_native
- * @{
- * @file
- * @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * @}
- */
+/// Native Board board_init implementation
+///
+/// @ingroup boards_common_native
+/// @{
+/// @file
+/// @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+/// @}
 #include <stdio.h>
 #include <stdlib.h>
 #include "board.h"
@@ -38,47 +34,42 @@ MTD_XFA_ADD(mtd0_dev.base, 0);
 #ifdef MODULE_VFS_DEFAULT
 #include "vfs_default.h"
 
-/*
- * On `native` we define auto-mounts for every file system.
- *
- * A 'real' board would typically always use the same file system to avoid
- * data loss when re-formatting, but since `native` is for testing only we
- * provide all file system definitions here.
- */
+// On `native` we define auto-mounts for every file system.
+//
+// A 'real' board would typically always use the same file system to avoid
+// data loss when re-formatting, but since `native` is for testing only we
+// provide all file system definitions here.
 
-/* littlefs support */
+// littlefs support
 #if defined(MODULE_LITTLEFS)
 VFS_AUTO_MOUNT(littlefs, VFS_MTD(mtd0_dev), VFS_DEFAULT_NVM(0), 0);
 
-/* littlefs2 support */
+// littlefs2 support
 #elif defined(MODULE_LITTLEFS2)
 VFS_AUTO_MOUNT(littlefs2, VFS_MTD(mtd0_dev), VFS_DEFAULT_NVM(0), 0);
 
-/* spiffs support */
+// spiffs support
 #elif defined(MODULE_SPIFFS)
 VFS_AUTO_MOUNT(spiffs, VFS_MTD(mtd0_dev), VFS_DEFAULT_NVM(0), 0);
 
-/* FAT support */
+// FAT support
 #elif defined(MODULE_FATFS_VFS)
 VFS_AUTO_MOUNT(fatfs, VFS_MTD(mtd0_dev), VFS_DEFAULT_NVM(0), 0);
 
-/* ext2/3/4 support */
+// ext2/3/4 support
 #elif defined(MODULE_LWEXT4)
 VFS_AUTO_MOUNT(lwext4, VFS_MTD(mtd0_dev), VFS_DEFAULT_NVM(0), 0);
 
-/* host fs pass-through */
+// host fs pass-through
 #elif defined(MODULE_FS_NATIVE)
 VFS_AUTO_MOUNT(native, { .hostpath = FS_NATIVE_DIR }, VFS_DEFAULT_NVM(0), 0);
 
 #endif
-#endif /* MODULE_VFS_DEFAULT */
+#endif // MODULE_VFS_DEFAULT
 
-/**
- * Nothing to initialize at the moment.
- * Turns the red LED on and the green LED off.
- */
-void board_init(void)
-{
+/// Nothing to initialize at the moment.
+/// Turns the red LED on and the green LED off.
+void board_init(void) {
     if (!getenv("TZ")) {
         puts("TZ not set, setting UTC");
     }

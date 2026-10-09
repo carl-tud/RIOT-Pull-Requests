@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf52_nrfusb
- * @{
- * @file
- * @brief       USB interface functions
- *
- * @file
- * @brief       Low level USB interface functions for the nrf52840 class
- *              devices
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @}
- */
+/// @ingroup     cpu_nrf52_nrfusb
+/// @{
+/// @file
+/// @brief       USB interface functions
+///
+/// @file
+/// @brief       Low level USB interface functions for the nrf52840 class
+///              devices
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @}
 
 #define USB_H_USER_IS_RIOT_INTERNAL
 
@@ -35,7 +31,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* Compatibility wrapper for nRF53 */
+// Compatibility wrapper for nRF53
 #ifdef NRF_USBD_S
 #define NRF_USBD NRF_USBD_S
 #endif
@@ -70,74 +66,65 @@ static const usbdev_driver_t _driver = {
     .xmit = _ep_xmit,
 };
 
-static inline usbdev_ep_t *_get_ep_in(nrfusb_t *usbdev, unsigned num)
-{
+static inline usbdev_ep_t *_get_ep_in(nrfusb_t *usbdev, unsigned num) {
     return &usbdev->ep_ins[num];
 }
 
-static inline usbdev_ep_t *_get_ep_out(nrfusb_t *usbdev, unsigned num)
-{
+static inline usbdev_ep_t *_get_ep_out(nrfusb_t *usbdev, unsigned num) {
     return &usbdev->ep_outs[num];
 }
 
 static inline usbdev_ep_t *_get_ep(nrfusb_t *usbdev,
-                                   unsigned num, usb_ep_dir_t dir)
-{
+                                   unsigned num, usb_ep_dir_t dir) {
     return dir == USB_EP_DIR_IN ? _get_ep_in(usbdev, num)
                                 : _get_ep_out(usbdev, num);
 }
-static inline void _enable_errata_199(void)
-{
-    /* Contains the workaround as described in nRF52840 Errata 199 */
+static inline void _enable_errata_199(void) {
+    // Contains the workaround as described in nRF52840 Errata 199
     *(volatile uint32_t *)0x40027C1C = 0x00000082;
 }
 
-static inline void _disable_errata_199(void)
-{
-    /* Contains the workaround as described in nRF52840 Errata 199 */
+static inline void _disable_errata_199(void) {
+    // Contains the workaround as described in nRF52840 Errata 199
     *(volatile uint32_t *)0x40027C1C = 0x00000000;
 }
 
-/* Contains the sequence as described in nRF52840 Errata 187 */
-static inline void poweron(nrfusb_t *usbdev)
-{
-    /* Apply magic */
+// Contains the sequence as described in nRF52840 Errata 187
+static inline void poweron(nrfusb_t *usbdev) {
+    // Apply magic
     *(volatile uint32_t *)0x4006EC00 = 0x00009375;
     *(volatile uint32_t *)0x4006ED14 = 0x00000003;
     *(volatile uint32_t *)0x4006EC00 = 0x00009375;
 
-    /* Enable the peripheral */
+    // Enable the peripheral
     usbdev->device->ENABLE = USBD_ENABLE_ENABLE_Msk;
-    /* Waiting for peripheral to enable, this should take a few μs */
+    // Waiting for peripheral to enable, this should take a few μs
     while (!(usbdev->device->EVENTCAUSE & USBD_EVENTCAUSE_READY_Msk)) {}
 
     usbdev->device->EVENTCAUSE &= ~USBD_EVENTCAUSE_READY_Msk;
 
-    /* Apply more magic */
+    // Apply more magic
     *(volatile uint32_t *)0x4006EC00 = 0x00009375;
     *(volatile uint32_t *)0x4006ED14 = 0x00000000;
     *(volatile uint32_t *)0x4006EC00 = 0x00009375;
 
-    /* Enable peripheral a second time */
-    /* cppcheck-suppress redundantAssignment
-     * (reason: re-enabled as per nordic instructions for this errata) */
+    // Enable peripheral a second time
+    // cppcheck-suppress redundantAssignment
+    // (reason: re-enabled as per nordic instructions for this errata)
     usbdev->device->ENABLE = USBD_ENABLE_ENABLE_Msk;
 }
 
-static void usb_attach(nrfusb_t *usbdev)
-{
+static void usb_attach(nrfusb_t *usbdev) {
     DEBUG("nrfusb: Enabling pull-up\n");
     usbdev->device->USBPULLUP = 0x01;
 }
 
-static void usb_detach(nrfusb_t *usbdev)
-{
+static void usb_detach(nrfusb_t *usbdev) {
     DEBUG("nrfusb: Disabling pull-up\n");
     usbdev->device->USBPULLUP = 0x00;
 }
 
-static void _copy_setup(usbdev_ep_t *ep)
-{
+static void _copy_setup(usbdev_ep_t *ep) {
     nrfusb_t *usbdev = (nrfusb_t*)ep->dev;
     usb_setup_t *setup = (usb_setup_t*)(intptr_t)usbdev->device->EPOUT[0].PTR;
 
@@ -154,8 +141,7 @@ static void _copy_setup(usbdev_ep_t *ep)
     }
 }
 
-static void _ep_enable(usbdev_ep_t *ep)
-{
+static void _ep_enable(usbdev_ep_t *ep) {
     DEBUG("Enabling endpoint %u dir %s\n", ep->num, ep->dir == USB_EP_DIR_OUT ? "OUT" : "IN");
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
 
@@ -167,9 +153,8 @@ static void _ep_enable(usbdev_ep_t *ep)
     }
 }
 
-static void _ep_disable(usbdev_ep_t *ep)
-{
-    /* TODO: validate size */
+static void _ep_disable(usbdev_ep_t *ep) {
+    // TODO: validate size
     DEBUG("disabling endpoint %u dir %s\n", ep->num, ep->dir == USB_EP_DIR_OUT ? "OUT" : "IN");
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
 
@@ -181,11 +166,10 @@ static void _ep_disable(usbdev_ep_t *ep)
     }
 }
 
-static void _ep_set_stall(usbdev_ep_t *ep, usbopt_enable_t enable)
-{
+static void _ep_set_stall(usbdev_ep_t *ep, usbopt_enable_t enable) {
     assert(ep->num != 0);
 
-    /* TODO: validate size */
+    // TODO: validate size
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
     uint32_t val = (ep->num & USBD_EPSTALL_EP_Msk) |
                    (ep->dir == USB_EP_DIR_IN ? USBD_EPSTALL_IO_Msk : 0) |
@@ -194,15 +178,13 @@ static void _ep_set_stall(usbdev_ep_t *ep, usbopt_enable_t enable)
     usbdev->device->EPSTALL = val;
 }
 
-static void _ep_stall(usbdev_ep_t *ep, bool enable)
-{
-    /* quick wrapper */
+static void _ep_stall(usbdev_ep_t *ep, bool enable) {
+    // quick wrapper
     _ep_set_stall(ep, (usbopt_enable_t)enable);
 }
 
-static usbopt_enable_t _ep_get_stall(usbdev_ep_t *ep)
-{
-    /* TODO: validate size */
+static usbopt_enable_t _ep_get_stall(usbdev_ep_t *ep) {
+    // TODO: validate size
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
 
     if (ep->dir == USB_EP_DIR_OUT) {
@@ -215,9 +197,8 @@ static usbopt_enable_t _ep_get_stall(usbdev_ep_t *ep)
     }
 }
 
-static size_t _ep_get_available(usbdev_ep_t *ep)
-{
-    /* TODO: validate size */
+static size_t _ep_get_available(usbdev_ep_t *ep) {
+    // TODO: validate size
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
 
     if (ep->dir == USB_EP_DIR_OUT) {
@@ -228,68 +209,62 @@ static size_t _ep_get_available(usbdev_ep_t *ep)
     }
 }
 
-static void _ep_dma_out(usbdev_ep_t *ep)
-{
+static void _ep_dma_out(usbdev_ep_t *ep) {
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
 
     assert(ep->dir == USB_EP_DIR_OUT);
     _enable_errata_199();
     usbdev->device->TASKS_STARTEPOUT[ep->num] = 1;
-    /* Block while waiting for dma to finish */
+    // Block while waiting for dma to finish
     while (!(usbdev->device->EVENTS_ENDEPOUT[ep->num])) {}
 
     usbdev->device->EVENTS_ENDEPOUT[ep->num] = 0;
     _disable_errata_199();
 }
 
-static void _ep_dma_in(usbdev_ep_t *ep)
-{
+static void _ep_dma_in(usbdev_ep_t *ep) {
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
 
     assert(ep->dir == USB_EP_DIR_IN);
     _enable_errata_199();
     usbdev->device->TASKS_STARTEPIN[ep->num] = 1;
-    /* Block while waiting for dma to finish */
+    // Block while waiting for dma to finish
     while (!(usbdev->device->EVENTS_ENDEPIN[ep->num])) {}
 
     usbdev->device->EVENTS_ENDEPIN[ep->num] = 0;
     _disable_errata_199();
 }
 
-usbdev_t *usbdev_get_ctx(unsigned num)
-{
+usbdev_t *usbdev_get_ctx(unsigned num) {
     assert(num < NRF_USB_NUM_PERIPH);
     return &_usbdevs[num].usbdev;
 }
 
-void usbdev_init_lowlevel(void)
-{
+void usbdev_init_lowlevel(void) {
     for (size_t i = 0; i < NRF_USB_NUM_PERIPH; i++) {
         _usbdevs[i].usbdev.driver = &_driver;
         _usbdevs[i].device = NRF_USBD;
     }
 }
 
-static void _init(usbdev_t *dev)
-{
+static void _init(usbdev_t *dev) {
     DEBUG("nrfusb: initializing\n");
-    /* Engineering revision version A is affected by errata 94, crash *
-    * instead of pretending to have functional USB                   */
+    // Engineering revision version A is affected by errata 94, crash *
+    // instead of pretending to have functional USB
     assert(NRF_FICR->INFO.VARIANT != 0x41414141);
     nrfusb_t *usbdev = (nrfusb_t *)dev;
 
     poweron(usbdev);
     usbdev->sstate = NRFUSB_SETUP_READY;
 
-    /* Enable a set of interrupts */
+    // Enable a set of interrupts
     usbdev->device->INTEN = USBD_INTEN_USBRESET_Msk |
                             USBD_INTEN_EPDATA_Msk |
                             USBD_INTEN_USBEVENT_Msk;
     NVIC_EnableIRQ(USBD_IRQn);
 }
 
-static int _get(usbdev_t *usbdev, usbopt_t opt, void *value, size_t max_len)
-{
+static int _get(usbdev_t *usbdev, usbopt_t opt, void *value, size_t max_len) {
     (void)usbdev;
     (void)max_len;
     int res = -ENOTSUP;
@@ -313,8 +288,7 @@ static int _get(usbdev_t *usbdev, usbopt_t opt, void *value, size_t max_len)
 }
 
 static int _set(usbdev_t *dev, usbopt_t opt,
-                const void *value, size_t value_len)
-{
+                const void *value, size_t value_len) {
     nrfusb_t *usbdev = (nrfusb_t *)dev;
 
     (void)value_len;
@@ -341,19 +315,18 @@ static int _set(usbdev_t *dev, usbopt_t opt,
 static usbdev_ep_t *_new_ep(usbdev_t *dev,
                             usb_ep_type_t type,
                             usb_ep_dir_t dir,
-                            size_t len)
-{
+                            size_t len) {
     nrfusb_t *usbdev = (nrfusb_t*)dev;
-    /* The IP supports all types for all endpoints */
+    // The IP supports all types for all endpoints
     usbdev_ep_t *res = NULL;
 
-    /* Always return endpoint 0 for control types */
+    // Always return endpoint 0 for control types
     if (type == USB_EP_TYPE_CONTROL) {
         res = _get_ep(usbdev, 0, dir);
         res->num = 0;
     }
     else if (type == USB_EP_TYPE_INTERRUPT || type == USB_EP_TYPE_BULK) {
-        /* Find the first unassigned ep with proper dir */
+        // Find the first unassigned ep with proper dir
         for (unsigned idx = 1; idx < NRF_USB_NUM_EP && !res; idx++) {
             usbdev_ep_t *ep = _get_ep(usbdev, idx, dir);
             if (ep->type == USB_EP_TYPE_NONE) {
@@ -372,8 +345,7 @@ static usbdev_ep_t *_new_ep(usbdev_t *dev,
     return res;
 }
 
-static void _ep_enable_irq(usbdev_ep_t *ep)
-{
+static void _ep_enable_irq(usbdev_ep_t *ep) {
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
 
     if (ep->dir == USB_EP_DIR_IN) {
@@ -388,8 +360,7 @@ static void _ep_enable_irq(usbdev_ep_t *ep)
     }
 }
 
-static void _ep_disable_irq(usbdev_ep_t *ep)
-{
+static void _ep_disable_irq(usbdev_ep_t *ep) {
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
 
     if (ep->dir == USB_EP_DIR_IN) {
@@ -404,15 +375,13 @@ static void _ep_disable_irq(usbdev_ep_t *ep)
     }
 }
 
-static void _ep0_stall(usbdev_t *dev)
-{
+static void _ep0_stall(usbdev_t *dev) {
     nrfusb_t *usbdev = (nrfusb_t*)dev;
-    /* Stalls both OUT and IN */
+    // Stalls both OUT and IN
     usbdev->device->TASKS_EP0STALL = 1;
 }
 
-static void _ep_init(usbdev_ep_t *ep)
-{
+static void _ep_init(usbdev_ep_t *ep) {
     nrfusb_t *usbdev = (nrfusb_t*)ep->dev;
 
     if (ep->num == 0) {
@@ -429,8 +398,7 @@ static void _ep_init(usbdev_ep_t *ep)
 }
 
 static int _ep_get(usbdev_ep_t *ep, usbopt_ep_t opt,
-                   void *value, size_t max_len)
-{
+                   void *value, size_t max_len) {
     (void)max_len;
     int res = -ENOTSUP;
 
@@ -453,8 +421,7 @@ static int _ep_get(usbdev_ep_t *ep, usbopt_ep_t opt,
 }
 
 static int _ep_set(usbdev_ep_t *ep, usbopt_ep_t opt,
-                   const void *value, size_t value_len)
-{
+                   const void *value, size_t value_len) {
     (void)value_len;
     int res = -ENOTSUP;
 
@@ -482,10 +449,9 @@ static int _ep_set(usbdev_ep_t *ep, usbopt_ep_t opt,
     return res;
 }
 
-static int _ep0_xmit(usbdev_ep_t *ep, uint8_t *buf, size_t len)
-{
+static int _ep0_xmit(usbdev_ep_t *ep, uint8_t *buf, size_t len) {
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
-    /* Assert the alignment required for the buffers */
+    // Assert the alignment required for the buffers
     assert(HAS_ALIGNMENT_OF(buf, USBDEV_CPU_DMA_ALIGNMENT));
 
     if (ep->dir == USB_EP_DIR_IN) {
@@ -503,7 +469,7 @@ static int _ep0_xmit(usbdev_ep_t *ep, uint8_t *buf, size_t len)
     else {
         usbdev->device->EPOUT[0].PTR = (uint32_t)(intptr_t)buf;
         usbdev->device->EPOUT[0].MAXCNT = (uint32_t)len;
-        /* USB_EP_DIR_OUT */
+        // USB_EP_DIR_OUT
         if (usbdev->sstate == NRFUSB_SETUP_READ) {
             usbdev->device->TASKS_EP0STATUS = 1;
             usbdev->sstate = NRFUSB_SETUP_ACKOUT;
@@ -516,12 +482,11 @@ static int _ep0_xmit(usbdev_ep_t *ep, uint8_t *buf, size_t len)
     return len;
 }
 
-static int _ep_xmit(usbdev_ep_t *ep, uint8_t *buf, size_t len)
-{
+static int _ep_xmit(usbdev_ep_t *ep, uint8_t *buf, size_t len) {
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
 
     if (ep->num == 0) {
-        /* Endpoint 0 requires special handling as per datasheet sec 6.35.9 */
+        // Endpoint 0 requires special handling as per datasheet sec 6.35.9
         return _ep0_xmit(ep, buf, len);
     }
     if (ep->dir == USB_EP_DIR_IN) {
@@ -530,17 +495,16 @@ static int _ep_xmit(usbdev_ep_t *ep, uint8_t *buf, size_t len)
         _ep_dma_in(ep);
     }
     else {
-        /* Pre-Setup the EasyDMA settings */
+        // Pre-Setup the EasyDMA settings
         usbdev->device->EPOUT[ep->num].PTR = (uint32_t)(intptr_t)buf;
         usbdev->device->EPOUT[ep->num].MAXCNT = (uint32_t)(intptr_t)len;
-        /* Write nonzero value to EPOUT to indicate ready */
+        // Write nonzero value to EPOUT to indicate ready
         usbdev->device->SIZE.EPOUT[ep->num] = 1;
     }
     return len;
 }
 
-static void _esr(usbdev_t *dev)
-{
+static void _esr(usbdev_t *dev) {
     nrfusb_t *usbdev = (nrfusb_t *)dev;
 
     if (usbdev->device->EVENTS_USBRESET) {
@@ -559,14 +523,13 @@ static void _esr(usbdev_t *dev)
             usbdev->usbdev.cb(&usbdev->usbdev, USBDEV_EVENT_RESUME);
         }
         usbdev->device->EVENTS_USBEVENT = 0;
-        /* Clear eventcause register */
+        // Clear eventcause register
         usbdev->device->EVENTCAUSE = 0x0f01;
         usbdev->device->INTENSET = USBD_INTENSET_USBEVENT_Msk;
     }
 }
 
-static signed _ep0_esr(usbdev_ep_t *ep)
-{
+static signed _ep0_esr(usbdev_ep_t *ep) {
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
     signed event = -1;
 
@@ -578,7 +541,7 @@ static signed _ep0_esr(usbdev_ep_t *ep)
         else if (usbdev->device->EVENTS_EP0SETUP) {
             usbdev->device->EVENTS_EP0SETUP = 0;
             event = USBDEV_EVENT_TR_COMPLETE;
-            /* Copy setup request info to buffer */
+            // Copy setup request info to buffer
             _copy_setup(ep);
             if ((uint8_t)usbdev->device->BREQUEST == 0x05) {
                 event = 0;
@@ -603,8 +566,7 @@ static signed _ep0_esr(usbdev_ep_t *ep)
     return event;
 }
 
-static void _ep_esr(usbdev_ep_t *ep)
-{
+static void _ep_esr(usbdev_ep_t *ep) {
     nrfusb_t *usbdev = (nrfusb_t *)ep->dev;
     signed event = -1;
 
@@ -623,7 +585,7 @@ static void _ep_esr(usbdev_ep_t *ep)
         }
         else {
             if (usbdev->device->EPDATASTATUS & 1 << (ep->num + 16)) {
-                /* start dma to transfer payload to memory */
+                // start dma to transfer payload to memory
                 _ep_dma_out(ep);
 
                 usbdev->device->EPDATASTATUS = 1 << (ep->num + 16);
@@ -637,12 +599,11 @@ static void _ep_esr(usbdev_ep_t *ep)
     _ep_enable_irq(ep);
 }
 
-void isr_usbd(void)
-{
-    /* Only one usb peripheral possible at the moment */
+void isr_usbd(void) {
+    // Only one usb peripheral possible at the moment
     nrfusb_t *usbdev = &_usbdevs[0];
 
-    /* Generic USB peripheral events */
+    // Generic USB peripheral events
     if (usbdev->device->EVENTS_USBRESET &&
         (usbdev->device->INTEN & USBD_INTEN_USBRESET_Msk)) {
         usbdev->device->INTENCLR = USBD_INTENCLR_USBRESET_Msk;
@@ -654,8 +615,8 @@ void isr_usbd(void)
         usbdev->usbdev.cb(&usbdev->usbdev, USBDEV_EVENT_ESR);
     }
     else {
-        /* Endpoint specific isr handling*/
-        /* Endpoint 0 SETUP data received requests */
+        // Endpoint specific isr handling
+        // Endpoint 0 SETUP data received requests
         if (usbdev->device->EVENTS_EP0SETUP &&
             (usbdev->device->INTEN & USBD_INTEN_EP0SETUP_Msk)) {
             usbdev->usbdev.epcb(_get_ep_out(usbdev, 0), USBDEV_EVENT_ESR);
@@ -680,7 +641,7 @@ void isr_usbd(void)
                 if (epnum > 16) {
                     usbdev_ep_t *ep = _get_ep_out(usbdev, epnum - 16);
                     if (ep->type != USB_EP_TYPE_NONE) {
-                        /* OUT type endpoint */
+                        // OUT type endpoint
                         usbdev->usbdev.epcb(ep,
                                             USBDEV_EVENT_ESR);
                     }

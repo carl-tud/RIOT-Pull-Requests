@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Simon Brummer
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Simon Brummer
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_gnrc
- * @{
- *
- * @file
- * @brief       Implementation of internal/rcvbuf.h
- *
- * @author      Simon Brummer <simon.brummer@posteo.de>
- */
+/// @ingroup     net_gnrc
+/// @{
+///
+/// @file
+/// @brief       Implementation of internal/rcvbuf.h
+///
+/// @author      Simon Brummer <simon.brummer@posteo.de>
 #include <errno.h>
 #include <mutex.h>
 #include <stdint.h>
@@ -22,35 +18,26 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief Receive buffer entry.
- */
+/// @brief Receive buffer entry.
 typedef struct {
-    uint8_t used;                          /**< Flag: Is buffer in use? */
-    uint8_t buffer[GNRC_TCP_RCV_BUF_SIZE]; /**< Receive buffer storage */
+    uint8_t used;                          ///< Flag: Is buffer in use?
+    uint8_t buffer[GNRC_TCP_RCV_BUF_SIZE]; ///< Receive buffer storage
 } _rcvbuf_entry_t;
 
-/**
- * @brief Struct holding receive buffers.
- */
+/// @brief Struct holding receive buffers.
 typedef struct {
-    mutex_t lock;                                         /**< Access lock */
-    _rcvbuf_entry_t entries[CONFIG_GNRC_TCP_RCV_BUFFERS]; /**< Buffers */
+    mutex_t lock;                                         ///< Access lock
+    _rcvbuf_entry_t entries[CONFIG_GNRC_TCP_RCV_BUFFERS]; ///< Buffers
 } _rcvbuf_t;
 
-/**
- * @brief Internal struct holding receive buffers.
- */
+/// @brief Internal struct holding receive buffers.
 static _rcvbuf_t _static_buf;
 
-/**
- * @brief Allocate receive buffer.
- *
- * @returns   Not NULL if a receive buffer was allocated.
- *            NULL if allocation failed.
- */
-static void* _rcvbuf_alloc(void)
-{
+/// @brief Allocate receive buffer.
+///
+/// @returns   Not NULL if a receive buffer was allocated.
+///            NULL if allocation failed.
+static void* _rcvbuf_alloc(void) {
     TCP_DEBUG_ENTER;
     void *result = NULL;
     mutex_lock(&(_static_buf.lock));
@@ -66,13 +53,10 @@ static void* _rcvbuf_alloc(void)
     return result;
 }
 
-/**
- * @brief Release allocated receive buffer.
- *
- * @param[in] buf   Pointer to buffer that should be released.
- */
-static void _rcvbuf_free(void * const buf)
-{
+/// @brief Release allocated receive buffer.
+///
+/// @param[in] buf   Pointer to buffer that should be released.
+static void _rcvbuf_free(void * const buf) {
     TCP_DEBUG_ENTER;
     mutex_lock(&(_static_buf.lock));
     for (size_t i = 0; i < CONFIG_GNRC_TCP_RCV_BUFFERS; ++i) {
@@ -84,8 +68,7 @@ static void _rcvbuf_free(void * const buf)
     TCP_DEBUG_LEAVE;
 }
 
-void _gnrc_tcp_rcvbuf_init(void)
-{
+void _gnrc_tcp_rcvbuf_init(void) {
     TCP_DEBUG_ENTER;
     mutex_init(&(_static_buf.lock));
     for (size_t i = 0; i < CONFIG_GNRC_TCP_RCV_BUFFERS; ++i) {
@@ -94,8 +77,7 @@ void _gnrc_tcp_rcvbuf_init(void)
     TCP_DEBUG_LEAVE;
 }
 
-int _gnrc_tcp_rcvbuf_get_buffer(gnrc_tcp_tcb_t *tcb)
-{
+int _gnrc_tcp_rcvbuf_get_buffer(gnrc_tcp_tcb_t *tcb) {
     TCP_DEBUG_ENTER;
     if (tcb->rcv_buf_raw == NULL) {
         tcb->rcv_buf_raw = _rcvbuf_alloc();
@@ -112,8 +94,7 @@ int _gnrc_tcp_rcvbuf_get_buffer(gnrc_tcp_tcb_t *tcb)
     return 0;
 }
 
-void _gnrc_tcp_rcvbuf_clear_buffer(gnrc_tcp_tcb_t *tcb)
-{
+void _gnrc_tcp_rcvbuf_clear_buffer(gnrc_tcp_tcb_t *tcb) {
     TCP_DEBUG_ENTER;
     if (tcb->rcv_buf_raw != NULL) {
         ringbuffer_init(&tcb->rcv_buf, (char *) tcb->rcv_buf_raw, GNRC_TCP_RCV_BUF_SIZE);
@@ -121,8 +102,7 @@ void _gnrc_tcp_rcvbuf_clear_buffer(gnrc_tcp_tcb_t *tcb)
     TCP_DEBUG_LEAVE;
 }
 
-void _gnrc_tcp_rcvbuf_release_buffer(gnrc_tcp_tcb_t *tcb)
-{
+void _gnrc_tcp_rcvbuf_release_buffer(gnrc_tcp_tcb_t *tcb) {
     TCP_DEBUG_ENTER;
     if (tcb->rcv_buf_raw != NULL) {
         _rcvbuf_free(tcb->rcv_buf_raw);

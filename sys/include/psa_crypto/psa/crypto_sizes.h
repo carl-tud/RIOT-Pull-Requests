@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2021 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     sys_psa_crypto
- * @{
- *
- * @file        crypto_sizes.h
- * @brief       Size definitions for PSA Crypto
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @note        Some of the macros in this file have already been copied here from
- *              the PSA API specification, but are not implemented, yet.
- *              They are marked by comments that either say "specification-defined"
- *              or "implementation-defined".
- *              These macros will be implemented successively in the future.
- */
+/// @ingroup     sys_psa_crypto
+/// @{
+///
+/// @file        crypto_sizes.h
+/// @brief       Size definitions for PSA Crypto
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @note        Some of the macros in this file have already been copied here from
+///              the PSA API specification, but are not implemented, yet.
+///              They are marked by comments that either say "specification-defined"
+///              or "implementation-defined".
+///              These macros will be implemented successively in the future.
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,4 +40,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

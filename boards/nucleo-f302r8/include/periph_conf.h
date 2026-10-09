@@ -1,30 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f302r8
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-f302r8 board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Katja Kirstein <katja.kirstein@haw-hamburg.de>
- */
+/// @ingroup     boards_nucleo-f302r8
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-f302r8 board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Katja Kirstein <katja.kirstein@haw-hamburg.de>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -37,34 +33,30 @@
 extern "C" {
 #endif
 
-/**
- * @name    ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32F302 order.  Instead, we
- * just define 6 ADC channels, for the Nucleo
- * Arduino header pins A0-A5 and the internal VBAT channel.
- *
- * @{
- */
+/// @name    ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32F302 order.  Instead, we
+/// just define 6 ADC channels, for the Nucleo
+/// Arduino header pins A0-A5 and the internal VBAT channel.
+///
+/// @{
 static const adc_conf_t adc_config[] = {
-    { .pin = GPIO_PIN(PORT_A, 0), .dev = 0, .chan =  1 }, /* ADC_IN1,  fast */
-    { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan =  2 }, /* ADC_IN2,  fast */
-    { .pin = GPIO_PIN(PORT_A, 4), .dev = 0, .chan =  5 }, /* ADC_IN5,  fast */
-    { .pin = GPIO_PIN(PORT_B, 0), .dev = 0, .chan = 11 }, /* ADC_IN11, slow */
-    { .pin = GPIO_PIN(PORT_C, 1), .dev = 0, .chan =  7 }, /* ADC_IN7,  slow */
-    { .pin = GPIO_PIN(PORT_C, 0), .dev = 0, .chan =  6 }, /* ADC_IN6,  slow */
-    { .pin = GPIO_UNDEF, .dev = 0, .chan = 17 }, /* VBAT */
+    { .pin = GPIO_PIN(PORT_A, 0), .dev = 0, .chan =  1 }, // ADC_IN1,  fast
+    { .pin = GPIO_PIN(PORT_A, 1), .dev = 0, .chan =  2 }, // ADC_IN2,  fast
+    { .pin = GPIO_PIN(PORT_A, 4), .dev = 0, .chan =  5 }, // ADC_IN5,  fast
+    { .pin = GPIO_PIN(PORT_B, 0), .dev = 0, .chan = 11 }, // ADC_IN11, slow
+    { .pin = GPIO_PIN(PORT_C, 1), .dev = 0, .chan =  7 }, // ADC_IN7,  slow
+    { .pin = GPIO_PIN(PORT_C, 0), .dev = 0, .chan =  6 }, // ADC_IN6,  slow
+    { .pin = GPIO_UNDEF, .dev = 0, .chan = 17 }, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(6) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(6) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -103,12 +95,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart3)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM16,
@@ -123,12 +113,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI2,
@@ -146,12 +134,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -183,10 +169,10 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c3_er
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

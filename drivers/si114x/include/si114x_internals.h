@@ -1,34 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_si114x
- * @brief       Internal addresses, registers, constants for the Si114x sensors family.
- * @{
- *
- * @file
- * @brief       Internal addresses, registers, constants for the Si114x sensor.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_si114x
+/// @brief       Internal addresses, registers, constants for the Si114x sensors family.
+/// @{
+///
+/// @file
+/// @brief       Internal addresses, registers, constants for the Si114x sensor.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief Si114x I2C address
- */
+/// @brief Si114x I2C address
 #define SI114X_ADDR                            (0x60)
 
-/**
- * @name Si114x commands
- * @{
- */
+/// @name Si114x commands
+/// @{
 #define SI114X_PARAM_QUERY                     (0x80)
 #define SI114X_PARAM_SET                       (0xA0)
 #define SI114X_NOP                             (0x00)
@@ -44,12 +36,10 @@ extern "C" {
 #define SI114X_ALS_AUTO                        (0x0E)
 #define SI114X_PS_ALS_AUTO                     (0x0F)
 #define SI114X_GET_CAL                         (0x12)
-/** @} */
+/// @}
 
-/**
- * @name Si114x registers
- * @{
- */
+/// @name Si114x registers
+/// @{
 #define SI114X_REG_PART_ID                     (0x00)
 #define SI114X_REG_REV_ID                      (0x01)
 #define SI114X_REG_SEQ_ID                      (0x02)
@@ -84,12 +74,10 @@ extern "C" {
 #define SI114X_REG_UV_INDEX1                   (0x2D)
 #define SI114X_REG_PARAM_RD                    (0x2E)
 #define SI114X_REG_CHIP_STAT                   (0x30)
-/** @} */
+/// @}
 
-/**
- * @name Si114x response register error codes
- * @{
- */
+/// @name Si114x response register error codes
+/// @{
 #define SI114X_NO_ERROR                        (0x00)
 #define SI114X_INVALID_SETTING                 (0x80)
 #define SI114X_PS1_ADC_OVERFLOW                (0x88)
@@ -98,15 +86,13 @@ extern "C" {
 #define SI114X_ALS_VIS_ADC_OVERFLOW            (0x8C)
 #define SI114X_ALS_IR_ADC_OVERFLOW             (0x8D)
 #define SI114X_UV_ADC_OVERFLOW                 (0x8E)
-/** @} */
+/// @}
 
-/**
- * @name Si114x parameters RAM
- *
- * @note These parameter can be accessed indirectly using PARAM_QUERY or
- *       PARAM_SET commands.
- * @{
- */
+/// @name Si114x parameters RAM
+///
+/// @note These parameter can be accessed indirectly using PARAM_QUERY or
+///       PARAM_SET commands.
+/// @{
 #define SI114X_I2C_ADDR                        (0x00)
 #define SI114X_PARAM_CHLIST                    (0x01)
 #define SI114X_PARAM_CHLIST_ENUV               (0x80)
@@ -148,29 +134,25 @@ extern "C" {
 #define SI114X_PARAM_ALSIRADCMISC_RANGE        (0x20)
 #define SI114X_PARAM_ADCMUX_SMALLIR            (0x00)
 #define SI114X_PARAM_ADCMUX_LARGEIR            (0x03)
-/** @} */
+/// @}
 
-/**
- * @name Si114x constants
- * @{
- */
+/// @name Si114x constants
+/// @{
 #define SI1145_ID                              (0x45)
 #define SI1146_ID                              (0x46)
 #define SI1147_ID                              (0x47)
-#define SI114X_STARTUP_TIME_MS                 (25UL)   /**< startup time (25ms) */
-#define SI114X_WAIT_10MS                       (10UL)   /* 10ms */
+#define SI114X_STARTUP_TIME_MS                 (25UL)   ///< startup time (25ms)
+#define SI114X_WAIT_10MS                       (10UL)   // 10ms
 #define SI114X_INIT_VALUE                      (0x17)
 #define SI114X_UCOEF0_DEFAULT                  (0x29)
 #define SI114X_UCOEF1_DEFAULT                  (0x89)
 #define SI114X_UCOEF2_DEFAULT                  (0x02)
 #define SI114X_UCOEF3_DEFAULT                  (0x00)
-#define SI114X_ADC_REC_CLK                     (0x70) /* 511 ADC Clock */
-/** @} */
+#define SI114X_ADC_REC_CLK                     (0x70) // 511 ADC Clock
+/// @}
 
-/**
- * @name Si114x register bits
- * @{
- */
+/// @name Si114x register bits
+/// @{
 #define SI114X_EN_UV                           (0x80)
 #define SI114X_EN_AUX                          (0x40)
 #define SI114X_EN_ALS_IR                       (0x20)
@@ -193,10 +175,10 @@ extern "C" {
 #define SI114X_PS_ADC_MODE                     (0x04)
 #define SI114X_VIS_RANGE                       (0x20)
 #define SI114X_IR_RANGE                        (0x20)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

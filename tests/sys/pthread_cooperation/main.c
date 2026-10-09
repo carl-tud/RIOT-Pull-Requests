@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief pthread test application
- *
- * @author Raphael Hiesgen <raphael.hiesgen@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief pthread test application
+///
+/// @author Raphael Hiesgen <raphael.hiesgen@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <pthread.h>
@@ -27,8 +23,7 @@ pthread_t ths[NUM_THREADS];
 pthread_mutex_t mtx;
 volatile uint32_t storage = 1;
 
-void *run(void *parameter)
-{
+void *run(void *parameter) {
     int arg = (intptr_t) parameter;
     printf("My arg: %d\n", arg);
 
@@ -46,8 +41,7 @@ void *run(void *parameter)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("START");
     pthread_attr_t th_attr;
     pthread_attr_init(&th_attr);

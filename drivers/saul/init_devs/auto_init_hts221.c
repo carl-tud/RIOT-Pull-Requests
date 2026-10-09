@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization for HTS221 devices
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization for HTS221 devices
+//
+// @author      Sebastian Meiling <s@mlng.net>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,32 +17,23 @@
 #include "hts221.h"
 #include "hts221_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define HTS221_NUM      ARRAY_SIZE(hts221_params)
 
 #define HTS221_SAUL_NUM ARRAY_SIZE(hts221_saul_info)
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static hts221_t hts221_devs[HTS221_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[HTS221_NUM * 2];
 
-/**
- * @brief   Reference the driver struct
- * @{
- */
+/// @brief   Reference the driver struct
+/// @{
 extern saul_driver_t hts221_saul_temp_driver;
 extern saul_driver_t hts221_saul_hum_driver;
-/** @} */
+/// @}
 
-void auto_init_hts221(void)
-{
+void auto_init_hts221(void) {
     assert(HTS221_NUM == HTS221_SAUL_NUM);
 
     for (unsigned i = 0; i < HTS221_NUM; i++) {

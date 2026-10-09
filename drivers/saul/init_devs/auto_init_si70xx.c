@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of Si70xx driver.
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of Si70xx driver.
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,45 +17,32 @@
 #include "si70xx.h"
 #include "si70xx_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define SI70XX_NUM    ARRAY_SIZE(si70xx_params)
 
-/**
- * @brief   Define the number of SAUL registry entries
- */
+/// @brief   Define the number of SAUL registry entries
 #if SI70XX_HAS_HUMIDITY_SENSOR
 #define SI70XX_SAUL_ENTRIES_NUM 2
 #else
 #define SI70XX_SAUL_ENTRIES_NUM 1
 #endif
 
-/**
- * @brief   Allocation of memory for device descriptors
- */
+/// @brief   Allocation of memory for device descriptors
 static si70xx_t si70xx_devs[SI70XX_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[SI70XX_NUM * SI70XX_SAUL_ENTRIES_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define SI70XX_INFO_NUM    ARRAY_SIZE(si70xx_saul_info)
 
-/**
- * @name    Reference the driver structs.
- * @{
- */
+/// @name    Reference the driver structs.
+/// @{
 extern const saul_driver_t si70xx_temperature_saul_driver;
 extern const saul_driver_t si70xx_relative_humidity_saul_driver;
-/** @} */
+/// @}
 
-void auto_init_si70xx(void)
-{
+void auto_init_si70xx(void) {
     assert(SI70XX_INFO_NUM == SI70XX_NUM);
 
     unsigned entry = 0;
@@ -71,18 +54,18 @@ void auto_init_si70xx(void)
             continue;
         }
 
-        /* temperature */
+        // temperature
         saul_entries[entry].dev = &si70xx_devs[i];
         saul_entries[entry].name = si70xx_saul_info[i].name;
         saul_entries[entry].driver = &si70xx_temperature_saul_driver;
         saul_reg_add(&saul_entries[entry++]);
 
 #if SI70XX_HAS_HUMIDITY_SENSOR
-        /* relative humidity */
+        // relative humidity
         saul_entries[entry].dev = &si70xx_devs[i];
         saul_entries[entry].name = si70xx_saul_info[i].name;
         saul_entries[entry].driver = &si70xx_relative_humidity_saul_driver;
         saul_reg_add(&saul_entries[entry++]);
-#endif /* SI70XX_HAS_HUMIDITY_SENSOR */
+#endif // SI70XX_HAS_HUMIDITY_SENSOR
     }
 }

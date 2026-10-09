@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2016-2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_acd52832
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the ACD52832
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Dimitri Nahm <dimitri.nahm@haw-hamburg.de>
- *
- */
+/// @ingroup     boards_acd52832
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the ACD52832
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Dimitri Nahm <dimitri.nahm@haw-hamburg.de>
+///
 
 #include "periph_cpu.h"
 #include "cfg_clock_32_1.h"
@@ -27,18 +23,14 @@
 extern "C" {
 #endif
 
-/**
- * @name    Clock configuration
- *
- * @{
- */
-#define CLOCK_CORECLOCK     (64000000U)     /* fixed for all nRF52832 */
-/** @} */
+/// @name    Clock configuration
+///
+/// @{
+#define CLOCK_CORECLOCK     (64000000U)     // fixed for all nRF52832
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = NRF_UARTE0,
@@ -54,12 +46,10 @@ static const uart_conf_t uart_config[] = {
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
 #define UART_0_ISR          (isr_uart0)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPIM0,
@@ -71,12 +61,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = NRF_TWIM1,
@@ -87,10 +75,10 @@ static const i2c_conf_t i2c_config[] = {
 };
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

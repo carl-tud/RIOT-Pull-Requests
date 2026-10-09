@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Forward Proxy Thread
- *
- * @author  Mariem Charrada <mariem.charrada@ml-pa.com>
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       Forward Proxy Thread
+///
+/// @author  Mariem Charrada <mariem.charrada@ml-pa.com>
+/// @}
 
 #include "msg.h"
 #include "net/gcoap.h"
@@ -26,8 +22,7 @@
 static char _forward_proxy_thread[GCOAP_PROXY_STACK_SIZE];
 kernel_pid_t forward_proxy_pid = KERNEL_PID_UNDEF;
 
-static void *_forward_proxy_thread_start(void *arg)
-{
+static void *_forward_proxy_thread_start(void *arg) {
     (void)arg;
 
     msg_t _forward_proxy_msg_queue[CONFIG_GCOAP_REQ_WAITING_MAX];
@@ -51,8 +46,7 @@ static void *_forward_proxy_thread_start(void *arg)
     return NULL;
 }
 
-void gcoap_forward_proxy_thread_init(void)
-{
+void gcoap_forward_proxy_thread_init(void) {
     forward_proxy_pid = thread_create(_forward_proxy_thread, sizeof(_forward_proxy_thread),
                                        THREAD_PRIORITY_MAIN - 1, 0,
                                        _forward_proxy_thread_start, NULL, "gcoap proxy");

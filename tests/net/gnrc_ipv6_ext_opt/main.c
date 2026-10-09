@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015-2020 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2020 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests option extension header handling of gnrc stack.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
- * @author      Martine S. Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests option extension header handling of gnrc stack.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
+/// @author      Martine S. Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -29,13 +25,11 @@ static gnrc_netreg_entry_t ip_entry = GNRC_NETREG_ENTRY_INIT_PID(
         0, KERNEL_PID_UNDEF
     );
 
-static inline void _ipreg_usage(char *cmd)
-{
+static inline void _ipreg_usage(char *cmd) {
     printf("Usage: %s {reg|unreg} <protnum>", cmd);
 }
 
-static int _ipreg(int argc, char **argv)
-{
+static int _ipreg(int argc, char **argv) {
     if ((argc > 2) && (strcmp("reg", argv[1]) == 0)) {
         uint32_t protnum;
         if (ip_entry.target.pid != KERNEL_PID_UNDEF) {
@@ -67,8 +61,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
     return 0;
 }

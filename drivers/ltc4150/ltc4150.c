@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ltc4150
- * @{
- *
- * @file
- * @brief       LTC4150 Device Driver
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_ltc4150
+/// @{
+///
+/// @file
+/// @brief       LTC4150 Device Driver
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
@@ -25,8 +21,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static void pulse_cb(void *_dev)
-{
+static void pulse_cb(void *_dev) {
     uint64_t now;
     ltc4150_dir_t dir;
     ltc4150_dev_t *dev = _dev;
@@ -55,8 +50,7 @@ static void pulse_cb(void *_dev)
     dev->last_update_sec = now / US_PER_SEC;
 }
 
-int ltc4150_init(ltc4150_dev_t *dev, const ltc4150_params_t *params)
-{
+int ltc4150_init(ltc4150_dev_t *dev, const ltc4150_params_t *params) {
     if (!dev || !params) {
         return -EINVAL;
     }
@@ -65,7 +59,7 @@ int ltc4150_init(ltc4150_dev_t *dev, const ltc4150_params_t *params)
     dev->params = *params;
 
     if (gpio_is_valid(dev->params.shutdown)) {
-        /* Activate LTC4150 */
+        // Activate LTC4150
         if (gpio_init(dev->params.shutdown, GPIO_OUT)) {
             DEBUG("[ltc4150] Failed to initialize shutdown pin");
             return -EIO;
@@ -97,8 +91,7 @@ int ltc4150_init(ltc4150_dev_t *dev, const ltc4150_params_t *params)
     return 0;
 }
 
-int ltc4150_reset_counters(ltc4150_dev_t *dev)
-{
+int ltc4150_reset_counters(ltc4150_dev_t *dev) {
     uint64_t now = ztimer64_now(ZTIMER64_USEC);
 
     if (!dev) {
@@ -122,8 +115,7 @@ int ltc4150_reset_counters(ltc4150_dev_t *dev)
     return 0;
 }
 
-int ltc4150_shutdown(ltc4150_dev_t *dev)
-{
+int ltc4150_shutdown(ltc4150_dev_t *dev) {
     if (!dev) {
         return -EINVAL;
     }
@@ -140,8 +132,7 @@ int ltc4150_shutdown(ltc4150_dev_t *dev)
 void ltc4150_pulses2c(const ltc4150_dev_t *dev,
                       uint32_t *charged, uint32_t *discharged,
                       uint32_t raw_charged,
-                      uint32_t raw_discharged)
-{
+                      uint32_t raw_discharged) {
     uint64_t tmp;
 
     if (charged) {
@@ -161,8 +152,7 @@ void ltc4150_pulses2c(const ltc4150_dev_t *dev,
     }
 }
 
-int ltc4150_charge(ltc4150_dev_t *dev, uint32_t *charged, uint32_t *discharged)
-{
+int ltc4150_charge(ltc4150_dev_t *dev, uint32_t *charged, uint32_t *discharged) {
     if (!dev) {
         return -EINVAL;
     }
@@ -173,8 +163,7 @@ int ltc4150_charge(ltc4150_dev_t *dev, uint32_t *charged, uint32_t *discharged)
     return 0;
 }
 
-int ltc4150_avg_current(ltc4150_dev_t *dev, int16_t *dest)
-{
+int ltc4150_avg_current(ltc4150_dev_t *dev, int16_t *dest) {
     int32_t duration, charged, discharged;;
     int retval;
 
@@ -185,13 +174,12 @@ int ltc4150_avg_current(ltc4150_dev_t *dev, int16_t *dest)
 
     duration = dev->last_update_sec - dev->start_sec;
     if (!duration) {
-        /* Called before one second of date or one pulse acquired. Prevent
-         * division by zero by returning -EAGAIN.
-         */
+        // Called before one second of date or one pulse acquired. Prevent
+        // division by zero by returning -EAGAIN.
         return -EAGAIN;
     }
 
-    /* From millicoloumb (=mAs) to E-01 mA */
+    // From millicoloumb (=mAs) to E-01 mA
     *dest = ((discharged - charged) * 10) / duration;
 
     return 0;

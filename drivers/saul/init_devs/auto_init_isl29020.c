@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of ISL29020 light sensors
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization of ISL29020 light sensors
+//
+// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,33 +17,22 @@
 #include "isl29020.h"
 #include "isl29020_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define ISL29020_NUM    ARRAY_SIZE(isl29020_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static isl29020_t isl29020_devs[ISL29020_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[ISL29020_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define ISL29020_INFO_NUM    ARRAY_SIZE(isl29020_saul_info)
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern saul_driver_t isl29020_saul_driver;
 
-void auto_init_isl29020(void)
-{
+void auto_init_isl29020(void) {
     assert(ISL29020_NUM == ISL29020_INFO_NUM);
 
     for (unsigned int i = 0; i < ISL29020_NUM; i++) {

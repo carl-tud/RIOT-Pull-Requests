@@ -1,24 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2016 UC Berkeley
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2016 UC Berkeley
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup   boards_hamilton
- * @{
- *
- * @file
- * @brief     Board specific configuration of direct mapped GPIOs
- *
- * @author    Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author    Kaspar Schleiser <kaspar@schleiser.de>
- * @author    Sebastian Meiling <s@mlng.net>
- * @author    Michael Andersen <m.andersen@berkeley.edu>
- */
+/// @ingroup   boards_hamilton
+/// @{
+///
+/// @file
+/// @brief     Board specific configuration of direct mapped GPIOs
+///
+/// @author    Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author    Kaspar Schleiser <kaspar@schleiser.de>
+/// @author    Sebastian Meiling <s@mlng.net>
+/// @author    Michael Andersen <m.andersen@berkeley.edu>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -27,9 +23,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    GPIO pin configuration
- */
+/// @brief    GPIO pin configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -50,4 +44,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

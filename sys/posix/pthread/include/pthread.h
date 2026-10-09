@@ -1,35 +1,27 @@
-/*
- * Copyright (C) 2014 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2014 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 #pragma once
 
-/**
- * @defgroup pthread POSIX threads
- * POSIX conforming multi-threading features.
- * @ingroup posix
- * @{
- * @file
- * @brief   POSIX conforming multi-threading features.
- * @details Please see the transcluded `pthread_*.h` files for further information.
- * @see     [The Open Group Base Specifications Issue 7: pthread.h - threads](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/pthread.h.html)
- */
+/// @defgroup pthread POSIX threads
+/// POSIX conforming multi-threading features.
+/// @ingroup posix
+/// @{
+/// @file
+/// @brief   POSIX conforming multi-threading features.
+/// @details Please see the transcluded `pthread_*.h` files for further information.
+/// @see     [The Open Group Base Specifications Issue 7: pthread.h - threads](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/pthread.h.html)
 
 #include <time.h>
 
-/**
- * @cond INTERNAL
- */
+/// @cond INTERNAL
 #ifndef __WITH_AVRLIBC__
 #define HAVE_MALLOC_H 1
 #endif
-/**
- * @endcond
- */
+/// @endcond
 
 #include "mutex.h"
 #include "sched.h"
@@ -57,6 +49,4 @@ extern "C" {
 }
 #endif
 
-/**
- * @}
- */
+/// @}

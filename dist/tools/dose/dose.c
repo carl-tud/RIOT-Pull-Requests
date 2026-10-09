@@ -1,10 +1,8 @@
-/*
- * Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * Copyright (C) 2022 Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- */
+// Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// Copyright (C) 2022 Benjamin Valentin <benjamin.valentin@ml-pa.com>
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
 
 #include <errno.h>
 #include <stdbool.h>
@@ -35,16 +33,14 @@
 
 #define BAUDRATE_DEFAULT B115200
 
-/* Size of serial write buffer */
+// Size of serial write buffer
 #define SERIAL_BUFFER_SIZE 64
 
-static void usage(void)
-{
+static void usage(void) {
     fprintf(stderr, "Usage: dose [-w][-b baudrate] <tap> <serial>\n");
 }
 
-static uint16_t crc16_update(uint16_t crc, uint8_t octet)
-{
+static uint16_t crc16_update(uint16_t crc, uint8_t octet) {
     crc = (uint8_t)(crc >> 8) | (crc << 8);
     crc ^= octet;
     crc ^= (uint8_t)(crc & 0xff) >> 4;
@@ -53,8 +49,7 @@ static uint16_t crc16_update(uint16_t crc, uint8_t octet)
     return crc;
 }
 
-static void checked_write(int handle, void *buffer, int nbyte)
-{
+static void checked_write(int handle, void *buffer, int nbyte) {
     while (nbyte > 0) {
         ssize_t res = write(handle, buffer, nbyte);
         if (res <= 0) {
@@ -65,8 +60,7 @@ static void checked_write(int handle, void *buffer, int nbyte)
     }
 }
 
-int set_serial_attribs(int fd, int speed, int parity)
-{
+int set_serial_attribs(int fd, int speed, int parity) {
     struct termios tty;
     memset(&tty, 0, sizeof tty);
     if (tcgetattr(fd, &tty) != 0) {
@@ -77,23 +71,23 @@ int set_serial_attribs(int fd, int speed, int parity)
     cfsetospeed(&tty, speed);
     cfsetispeed(&tty, speed);
 
-    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; /* 8-bit chars*/
-                                        /* disable IGNBRK for mismatched speed
-                                         * tests; otherwise receive break*/
-                                        /* as \000 chars*/
-    tty.c_iflag &= ~IGNBRK;             /* disable break processing*/
-    tty.c_lflag = 0;                    /* no signaling chars, no echo,*/
-                                        /* no canonical processing*/
-    tty.c_oflag = 0;                    /* no remapping, no delays*/
-    tty.c_cc[VMIN]  = 0;                /* read doesn't block*/
-    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; /* 0.5 seconds read timeout*/
-                                            /* in tenths of a second*/
+    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; // 8-bit chars
+                                        // disable IGNBRK for mismatched speed
+                                        // tests; otherwise receive break
+                                        // as \000 chars
+    tty.c_iflag &= ~IGNBRK;             // disable break processing
+    tty.c_lflag = 0;                    // no signaling chars, no echo,
+                                        // no canonical processing
+    tty.c_oflag = 0;                    // no remapping, no delays
+    tty.c_cc[VMIN]  = 0;                // read doesn't block
+    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; // 0.5 seconds read timeout
+                                            // in tenths of a second
 
-    tty.c_iflag &= ~(IXON | IXOFF | IXANY); /* shut off xon/xoff ctrl*/
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
 
-    tty.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls,*/
-                                        /* enable reading*/
-    tty.c_cflag &= ~(PARENB | PARODD);  /* shut off parity*/
+    tty.c_cflag |= (CLOCAL | CREAD);    // ignore modem controls,
+                                        // enable reading
+    tty.c_cflag &= ~(PARENB | PARODD);  // shut off parity
     tty.c_cflag |= parity;
     tty.c_cflag &= ~CSTOPB;
     tty.c_cflag &= ~CRTSCTS;
@@ -106,8 +100,7 @@ int set_serial_attribs(int fd, int speed, int parity)
     return 0;
 }
 
-void set_blocking(int fd, int should_block)
-{
+void set_blocking(int fd, int should_block) {
     struct termios tty;
     memset(&tty, 0, sizeof tty);
     if (tcgetattr(fd, &tty) != 0) {
@@ -116,22 +109,20 @@ void set_blocking(int fd, int should_block)
     }
 
     tty.c_cc[VMIN]  = should_block ? 1 : 0;
-    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; /* 0.5 seconds read timeout*/
-                                            /* in tenths of a second*/
+    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; // 0.5 seconds read timeout
+                                            // in tenths of a second
 
     if (tcsetattr(fd, TCSANOW, &tty) != 0) {
         perror("error setting term attributes");
     }
 }
 
-/**
- * @brief Escape char definitions
- * @{
- */
+/// @brief Escape char definitions
+/// @{
 #define LINE_FRAME_DELIMITER        (0xFF)
 #define LINE_ESC_CHAR               (0xFE)
 #define DOSE_FRAME_CRC_LEN          (2)
-/** @} */
+/// @}
 
 typedef enum {
     WAIT_FRAMESTART,
@@ -150,8 +141,7 @@ typedef struct {
  * tun_alloc: allocates or reconnects to a tun/tap device. The caller     *
  *            needs to reserve enough space in *dev.                      *
  **************************************************************************/
-int tun_alloc(char *dev, int flags)
-{
+int tun_alloc(char *dev, int flags) {
     struct ifreq ifr = { 0 };
     int fd, err;
 
@@ -177,8 +167,7 @@ int tun_alloc(char *dev, int flags)
     return fd;
 }
 
-static int _handle_char(serial_t *serial, char c)
-{
+static int _handle_char(serial_t *serial, char c) {
     if (serial->framebytes >= sizeof(serial->frame)) {
         TRACE("rx buffer overflow");
         serial->state = WAIT_FRAMESTART;
@@ -189,15 +178,14 @@ static int _handle_char(serial_t *serial, char c)
     return 0;
 }
 
-static int _serial_handle_byte(serial_t *serial, uint8_t c)
-{
+static int _serial_handle_byte(serial_t *serial, uint8_t c) {
     switch (serial->state) {
     case WAIT_FRAMESTART:
         TRACE("frame start");
         serial->state = IN_FRAME;
         serial->frametype = 0;
         serial->framebytes = 0;
-        /* fall-through */
+        // fall-through
     case IN_FRAME:
         if (c == LINE_ESC_CHAR) {
             TRACE("i esc");
@@ -224,19 +212,16 @@ static int _serial_handle_byte(serial_t *serial, uint8_t c)
     return 0;
 }
 
-static uint16_t _write_escaped(int fd, void* buf, ssize_t n)
-{
-    /*
-     * Certain USB-to-UART adapters/drivers will immediately send a USB packet
-     * with a single byte instead of buffering internally when the application
-     * does writes one byte at a time. Since USB Full Speed can only send 1
-     * packet per 1 ms, this causes huge latencies for the network, because each
-     * byte of data will then add at least 1 ms on the latency.
-     * Observed on NXP OpenSDAv2 (Kinetis FRDM boards), both CMSIS/mbed DAPlink
-     * and Segger Jlink firmware are affected.
-     */
-    /* Our workaround is to prepare the data to send in a local buffer and then
-     * call write() on the buffer instead of one char at a time */
+static uint16_t _write_escaped(int fd, void* buf, ssize_t n) {
+    // Certain USB-to-UART adapters/drivers will immediately send a USB packet
+    // with a single byte instead of buffering internally when the application
+    // does writes one byte at a time. Since USB Full Speed can only send 1
+    // packet per 1 ms, this causes huge latencies for the network, because each
+    // byte of data will then add at least 1 ms on the latency.
+    // Observed on NXP OpenSDAv2 (Kinetis FRDM boards), both CMSIS/mbed DAPlink
+    // and Segger Jlink firmware are affected.
+    // Our workaround is to prepare the data to send in a local buffer and then
+    // call write() on the buffer instead of one char at a time
     uint8_t out[SERIAL_BUFFER_SIZE];
     size_t buffered = 0;
     uint8_t *_buf = buf;
@@ -265,8 +250,7 @@ static uint16_t _write_escaped(int fd, void* buf, ssize_t n)
     return htons(crc);
 }
 
-static int _parse_baudrate(const char *arg, unsigned *baudrate)
-{
+static int _parse_baudrate(const char *arg, unsigned *baudrate) {
     if (arg == NULL) {
         *baudrate = BAUDRATE_DEFAULT;
         return 0;
@@ -288,7 +272,7 @@ static int _parse_baudrate(const char *arg, unsigned *baudrate)
     case 115200:
         *baudrate = B115200;
         break;
-    /* the following baudrates might not be available on all platforms */
+    // the following baudrates might not be available on all platforms
     #ifdef B230400
         case_baudrate(230400);
     #endif
@@ -335,8 +319,7 @@ static int _parse_baudrate(const char *arg, unsigned *baudrate)
     return 0;
 }
 
-int _open_serial_connection(char *name, char *baudrate_arg)
-{
+int _open_serial_connection(char *name, char *baudrate_arg) {
     unsigned baudrate = 0;
     if (_parse_baudrate(baudrate_arg, &baudrate) == -1) {
         fprintf(stderr, "Invalid baudrate specified: %s\n", baudrate_arg);
@@ -356,8 +339,7 @@ int _open_serial_connection(char *name, char *baudrate_arg)
     return serial_fd;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     uint8_t inbuf[MTU];
     char *port;
     char *serial_option = NULL;

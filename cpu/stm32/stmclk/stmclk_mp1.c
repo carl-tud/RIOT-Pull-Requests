@@ -1,32 +1,28 @@
-/*
- * SPDX-FileCopyrightText: 2020 Savoir-faire Linux
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Savoir-faire Linux
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Implementation of STM32 clock configuration for STM32MP1
- *
- * @author      Gilles DOFFE <gilles.doffe@savoirfairelinux.com>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Implementation of STM32 clock configuration for STM32MP1
+///
+/// @author      Gilles DOFFE <gilles.doffe@savoirfairelinux.com>
+///
+/// @}
 
 #include "cpu.h"
 #include "stmclk.h"
 #include "periph_conf.h"
 
-/* PLL configuration */
+// PLL configuration
 #if IS_ACTIVE(CONFIG_BOARD_HAS_HSE)
 #define PLL_SRC                     RCC_RCK3SELR_PLL3SRC_1
 #else
 #define PLL_SRC                     RCC_RCK3SELR_PLL3SRC_0
 #endif
 
-/* Compute the bitfields for the PLL configuration */
+// Compute the bitfields for the PLL configuration
 #define PLL_P                       (((CONFIG_CLOCK_PLL_P / 2)) \
         << RCC_PLL3CFGR2_DIVP_Pos)
 #define PLL_M                       ((CONFIG_CLOCK_PLL_M)       \
@@ -42,7 +38,7 @@
 #define PLL_R                       (0)
 #endif
 
-/* Configure HLCK and PCLK prescalers */
+// Configure HLCK and PCLK prescalers
 #if CONFIG_CLOCK_MCU_DIV == 1
 #define CLOCK_MCU_DIV              (RCC_MCUDIVR_MCUDIV_0)
 #elif CONFIG_CLOCK_MCU_DIV == 2
@@ -110,21 +106,19 @@ and 512 allowed)"
 #error "Invalid APB3 prescaler value (only 1, 2, 4, 8 and 16 allowed)"
 #endif
 
-/* Check whether PLL must be enabled:
-  - When PLL is used as SYSCLK
-  - When PLLQ is required
-*/
+// Check whether PLL must be enabled:
+//   - When PLL is used as SYSCLK
+//   - When PLLQ is required
 #if IS_ACTIVE(CONFIG_USE_CLOCK_PLL) || IS_ACTIVE(CONFIG_CLOCK_ENABLE_PLLQ)
 #define CONFIG_CLOCK_USE_PLL                1
 #else
 #define CONFIG_CLOCK_USE_PLL                0
 #endif
 
-/* Check whether HSE must be enabled:
-  - When HSE is used as SYSCLK
-  - When PLL is used as SYSCLK and the board provides HSE (since HSE will be
-    used as PLL input clock)
-*/
+// Check whether HSE must be enabled:
+//   - When HSE is used as SYSCLK
+//   - When PLL is used as SYSCLK and the board provides HSE (since HSE will be
+//     used as PLL input clock)
 #if IS_ACTIVE(CONFIG_USE_CLOCK_HSE) || \
     (IS_ACTIVE(CONFIG_BOARD_HAS_HSE) && IS_ACTIVE(CONFIG_CLOCK_USE_PLL))
 #define CONFIG_CLOCK_USE_HSE                1
@@ -132,85 +126,82 @@ and 512 allowed)"
 #define CONFIG_CLOCK_USE_HSE                0
 #endif
 
-void stmclk_enable_hsi(void)
-{
+void stmclk_enable_hsi(void) {
     RCC->OCENSETR |= RCC_OCENSETR_HSION;
     while (!(RCC->OCRDYR & RCC_OCRDYR_HSIRDY)) {}
 }
 
-static void stmclk_enable_hse(void)
-{
+static void stmclk_enable_hse(void) {
     RCC->OCENSETR |= RCC_OCENSETR_HSEON;
     while (!(RCC->OCRDYR & RCC_OCRDYR_HSERDY)) {}
 }
 
-void stmclk_init_sysclk(void)
-{
-    /* disable any interrupts. Global interrupts could be enabled if this is
-     * called from some kind of bootloader...  */
+void stmclk_init_sysclk(void) {
+    // disable any interrupts. Global interrupts could be enabled if this is
+    // called from some kind of bootloader...
     unsigned is = irq_disable();
     RCC->MC_CIFR = 0;
 
-    /* enable HSI clock for the duration of initialization */
+    // enable HSI clock for the duration of initialization
     stmclk_enable_hsi();
 
-    /* use HSI as system clock while we do any further configuration and
-     * configure the AHB and APB clock dividers as configured by the board */
-    /* MCUDIV */
+    // use HSI as system clock while we do any further configuration and
+    // configure the AHB and APB clock dividers as configured by the board
+    // MCUDIV
     RCC->MCUDIVR =  CLOCK_MCU_DIV;
     while ((RCC->MCUDIVR & RCC_MCUDIVR_MCUDIVRDY)
             != RCC_MCUDIVR_MCUDIVRDY) {}
-    /* APB1DIV */
+    // APB1DIV
     RCC->APB1DIVR =  CLOCK_APB1_DIV;
     while ((RCC->APB1DIVR & RCC_APB1DIVR_APB1DIVRDY)
             != RCC_APB1DIVR_APB1DIVRDY) {}
-    /* APB2DIV */
+    // APB2DIV
     RCC->APB2DIVR =  CLOCK_APB2_DIV;
     while ((RCC->APB2DIVR & RCC_APB2DIVR_APB2DIVRDY)
             != RCC_APB2DIVR_APB2DIVRDY) {}
-    /* APB3DIV */
+    // APB3DIV
     RCC->APB3DIVR =  CLOCK_APB3_DIV;
     while ((RCC->APB3DIVR & RCC_APB3DIVR_APB3DIVRDY)
             != RCC_APB3DIVR_APB3DIVRDY) {}
 
-    /* MCU clock source */
-    RCC->MSSCKSELR = RCC_MSSCKSELR_MCUSSRC_0; /* HSI */
+    // MCU clock source
+    RCC->MSSCKSELR = RCC_MSSCKSELR_MCUSSRC_0; // HSI
     while ((RCC->MSSCKSELR & RCC_MSSCKSELR_MCUSSRCRDY)
             != RCC_MSSCKSELR_MCUSSRCRDY) {}
 
-    /* disable all active clocks except HSI -> resets the clk configuration */
+    // disable all active clocks except HSI -> resets the clk configuration
     RCC->OCENCLRR = ~(RCC_OCENSETR_HSION);
 
-    /* if configured, we need to enable the HSE clock now */
+    // if configured, we need to enable the HSE clock now
     if (IS_ACTIVE(CONFIG_CLOCK_USE_HSE)) {
         stmclk_enable_hse();
     }
 
     if (IS_ACTIVE(CONFIG_CLOCK_USE_PLL)) {
-        /* now we can safely configure the PLL */
+        // now we can safely configure the PLL
         RCC->PLL3CFGR1 = (PLL_M | PLL_N);
         RCC->PLL3CFGR2 = (PLL_P | PLL_Q | PLL_R);
 
         RCC->RCK3SELR |= PLL_SRC;
         while (!(RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRCRDY)) {}
 
-        /* and start the PLL */
+        // and start the PLL
         RCC->PLL3CR |= (RCC_PLL3CR_DIVPEN | RCC_PLL3CR_DIVQEN
                 | RCC_PLL3CR_DIVREN | RCC_PLL3CR_PLLON);
         while (!(RCC->PLL3CR & RCC_PLL3CR_PLL3RDY)) {}
     }
 
-    /* Configure SYSCLK */
+    // Configure SYSCLK
     if (IS_ACTIVE(CONFIG_CLOCK_USE_PLL)) {
-        RCC->MSSCKSELR = RCC_MSSCKSELR_MCUSSRC_3; /* PLL3 */
+        RCC->MSSCKSELR = RCC_MSSCKSELR_MCUSSRC_3; // PLL3
     }
     else if (IS_ACTIVE(CONFIG_CLOCK_USE_HSE)) {
-        RCC->MSSCKSELR = RCC_MSSCKSELR_MCUSSRC_1; /* HSE */
+        RCC->MSSCKSELR = RCC_MSSCKSELR_MCUSSRC_1; // HSE
     }
     else {
-        RCC->MSSCKSELR = RCC_MSSCKSELR_MCUSSRC_0; /* HSI by default */
+        RCC->MSSCKSELR = RCC_MSSCKSELR_MCUSSRC_0; // HSI by default
     }
-    /* Wait SYSCLK to be ready */
+    // Wait SYSCLK to be ready
     while (!(RCC->MSSCKSELR & RCC_MSSCKSELR_MCUSSRCRDY)) {}
 
     irq_restore(is);

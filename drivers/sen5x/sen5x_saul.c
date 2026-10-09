@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 TU Braunschweig Institut für Betriebssysteme und Rechnerverbund
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 TU Braunschweig Institut für Betriebssysteme und Rechnerverbund
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sen5x
- * @{
- *
- * @file
- * @brief       SAUL adaptation for SEN50/54/55 devices.
- *
- * @author      Daniel Prigoshij <prigoshi@ibr.cs.tu-bs.de>
- *
- * @}
- */
+/// @ingroup     drivers_sen5x
+/// @{
+///
+/// @file
+/// @brief       SAUL adaptation for SEN50/54/55 devices.
+///
+/// @author      Daniel Prigoshij <prigoshi@ibr.cs.tu-bs.de>
+///
+/// @}
 
 #include "saul.h"
 #include "sen5x.h"

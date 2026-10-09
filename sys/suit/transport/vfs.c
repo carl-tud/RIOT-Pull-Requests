@@ -1,21 +1,17 @@
-/*
- * Copyright (C) 2022 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2022 ML!PA Consulting GmbH
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_suit_transport_vfs
- * @{
- *
- * @fil
- * @brief       SUIT VFS
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup     sys_suit_transport_vfs
+/// @{
+///
+/// @fil
+/// @brief       SUIT VFS
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include <fcntl.h>
 #include <string.h>
@@ -24,8 +20,7 @@
 #include "log.h"
 #include "vfs.h"
 
-int suit_transport_vfs_fetch(const suit_manifest_t *manifest, coap_blockwise_cb_t cb, void *ctx)
-{
+int suit_transport_vfs_fetch(const suit_manifest_t *manifest, coap_blockwise_cb_t cb, void *ctx) {
     const char *file = &manifest->urlbuf[7];
     size_t offset = 0;
     int res, fd;

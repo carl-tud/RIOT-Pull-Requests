@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   Application for testing cooperative scheduling of same-priority
- *          threads
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   Application for testing cooperative scheduling of same-priority
+///          threads
+///
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -26,8 +22,7 @@
 static char t2_stack[THREAD_STACKSIZE_MAIN];
 static uint32_t start_time;
 
-static void *second_thread(void *arg)
-{
+static void *second_thread(void *arg) {
     (void)arg;
     if (xtimer_now_usec() < (TEST_TIME + start_time)) {
         puts("TEST FAILED");
@@ -38,15 +33,13 @@ static void *second_thread(void *arg)
     return NULL;
 }
 
-static void _cb(void *arg)
-{
+static void _cb(void *arg) {
     (void)arg;
     puts("timer triggered");
     sched_context_switch_request = 1;
 }
 
-int main(void)
-{
+int main(void) {
     puts("first thread started");
 
     start_time = xtimer_now_usec();

@@ -1,31 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2020 Technische Universität Braunschweig
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Technische Universität Braunschweig
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_scd30
- * @file
- * @brief       SAUL adaption for Sensirion SCD30 sensor
- * @author      Puhang Ding      <czarsir@gmail.com>
- * @author		Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
- * @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
- */
+/// @ingroup     drivers_scd30
+/// @file
+/// @brief       SAUL adaption for Sensirion SCD30 sensor
+/// @author      Puhang Ding      <czarsir@gmail.com>
+/// @author		Nishchay Agrawal <f2016088@pilani.bits-pilani.ac.in>
+/// @author      Jan Schlichter   <schlichter@ibr.cs.tu-bs.de>
 
 #include "saul.h"
 #include "scd30.h"
 #include "scd30_internal.h"
 
-static void _float_fit(float src, phydat_t *data, uint32_t mul)
-{
+static void _float_fit(float src, phydat_t *data, uint32_t mul) {
     int32_t i32;
 
     i32 = src * mul;
     phydat_fit(data, &i32, 1);
 }
 
-static int _co2_read(const void *dev, phydat_t *res)
-{
+static int _co2_read(const void *dev, phydat_t *res) {
     int ret = 0;
     scd30_measurement_t result;
 
@@ -43,8 +37,7 @@ static int _co2_read(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int _temp_read(const void *dev, phydat_t *res)
-{
+static int _temp_read(const void *dev, phydat_t *res) {
     int ret = 0;
     scd30_measurement_t result;
 
@@ -62,8 +55,7 @@ static int _temp_read(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int _hum_read(const void *dev, phydat_t *res)
-{
+static int _hum_read(const void *dev, phydat_t *res) {
     int ret = 0;
     scd30_measurement_t result;
 

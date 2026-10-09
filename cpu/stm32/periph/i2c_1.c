@@ -1,33 +1,29 @@
-/*
- * SPDX-FileCopyrightText: 2015 Jan Pohlmann <jan-pohlmann@gmx.de>
- * SPDX-FileCopyrightText: 2017 we-sens.com
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Jan Pohlmann <jan-pohlmann@gmx.de>
+// SPDX-FileCopyrightText: 2017 we-sens.com
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @ingroup     drivers_periph_i2c
- * @{
- *
- * @file
- * @brief       Low-level I2C driver implementation
- *
- * This driver supports the STM32 F0, F3, F7, L0, L4, L5 & WB families.
- * @note This implementation only implements the 7-bit addressing polling mode
- * (for now interrupt mode is not available)
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
- * @author      Jan Pohlmann <jan-pohlmann@gmx.de>
- * @author      Aurélien Fillau <aurelien.fillau@we-sens.com>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @ingroup     drivers_periph_i2c
+/// @{
+///
+/// @file
+/// @brief       Low-level I2C driver implementation
+///
+/// This driver supports the STM32 F0, F3, F7, L0, L4, L5 & WB families.
+/// @note This implementation only implements the 7-bit addressing polling mode
+/// (for now interrupt mode is not available)
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+/// @author      Jan Pohlmann <jan-pohlmann@gmx.de>
+/// @author      Aurélien Fillau <aurelien.fillau@we-sens.com>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
+///
+/// @}
 
 #include <assert.h>
 #include <stdint.h>
@@ -69,7 +65,7 @@
 
 static uint32_t hsi_state;
 
-/* static function definitions */
+// static function definitions
 static inline void _i2c_init(I2C_TypeDef *i2c, uint32_t timing);
 static int _write(I2C_TypeDef *i2c, uint16_t addr, const void *data,
                   size_t length, uint8_t flags, uint32_t cr2_flags);
@@ -78,13 +74,10 @@ static int _stop(I2C_TypeDef *i2c);
 static int _wait_isr_set(I2C_TypeDef *i2c, uint32_t mask, uint8_t flags);
 static inline int _wait_for_bus(I2C_TypeDef *i2c);
 
-/**
- * @brief Array holding one pre-initialized mutex for each I2C device
- */
+/// @brief Array holding one pre-initialized mutex for each I2C device
 static mutex_t locks[I2C_NUMOF];
 
-void i2c_init(i2c_t dev)
-{
+void i2c_init(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
     DEBUG("[i2c] init: initializing device\n");
@@ -101,19 +94,19 @@ void i2c_init(i2c_t dev)
     defined(CPU_FAM_STM32F7) || defined(CPU_FAM_STM32L4) || \
     defined(CPU_FAM_STM32L5) || defined(CPU_FAM_STM32WB) || \
     defined(CPU_FAM_STM32H7)
-    /* select I2C clock source */
+    // select I2C clock source
     I2C_CLOCK_SRC_REG |= i2c_config[dev].rcc_sw_mask;
 #endif
 
     DEBUG("[i2c] init: configuring pins\n");
-    /* configure pins */
+    // configure pins
     gpio_init(i2c_config[dev].scl_pin, GPIO_OD_PU);
     gpio_init_af(i2c_config[dev].scl_pin, i2c_config[dev].scl_af);
     gpio_init(i2c_config[dev].sda_pin, GPIO_OD_PU);
     gpio_init_af(i2c_config[dev].sda_pin, i2c_config[dev].sda_af);
 
     DEBUG("[i2c] init: configuring device\n");
-    /* set the timing register value from predefined values */
+    // set the timing register value from predefined values
     i2c_timing_param_t tp = timing_params[i2c_config[dev].speed];
     uint32_t timing = (( (uint32_t)tp.presc << I2C_TIMINGR_PRESC_Pos) |
                        ( (uint32_t)tp.scldel << I2C_TIMINGR_SCLDEL_Pos) |
@@ -123,54 +116,51 @@ void i2c_init(i2c_t dev)
     _i2c_init(i2c, timing);
 }
 
-static void _i2c_init(I2C_TypeDef *i2c, uint32_t timing)
-{
+static void _i2c_init(I2C_TypeDef *i2c, uint32_t timing) {
     assert(i2c != NULL);
 
-    /* disable device */
+    // disable device
     i2c->CR1 &= ~(I2C_CR1_PE);
 
-    /* configure analog noise filter */
+    // configure analog noise filter
     i2c->CR1 |= I2C_CR1_ANFOFF;
 
-    /* configure digital noise filter */
+    // configure digital noise filter
     i2c->CR1 |= I2C_CR1_DNF;
 
-    /* set timing registers */
+    // set timing registers
     i2c->TIMINGR = timing;
 
-    /* configure clock stretching */
+    // configure clock stretching
     i2c->CR1 &= ~(I2C_CR1_NOSTRETCH);
 
-    /* Clear interrupt */
+    // Clear interrupt
     i2c->ICR |= CLEAR_FLAG;
 
-    /* enable device */
+    // enable device
     i2c->CR1 |= I2C_CR1_PE;
 }
 
-void i2c_acquire(i2c_t dev)
-{
+void i2c_acquire(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
     mutex_lock(&locks[dev]);
     hsi_state = (RCC->CR & RCC_CR_HSION);
     if (!hsi_state) {
-        /* the internal RC oscillator (HSI) must be enabled */
+        // the internal RC oscillator (HSI) must be enabled
         stmclk_enable_hsi();
     }
 
     periph_clk_en(i2c_config[dev].bus, i2c_config[dev].rcc_mask);
 
-    /* enable device */
+    // enable device
     i2c_config[dev].dev->CR1 |= I2C_CR1_PE;
 }
 
-void i2c_release(i2c_t dev)
-{
+void i2c_release(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
-    /* disable device */
+    // disable device
     i2c_config[dev].dev->CR1 &= ~(I2C_CR1_PE);
 
     _wait_for_bus(i2c_config[dev].dev);
@@ -184,8 +174,7 @@ void i2c_release(i2c_t dev)
 }
 
 int i2c_write_regs(i2c_t dev, uint16_t addr, uint16_t reg,
-                   const void *data, size_t len, uint8_t flags)
-{
+                   const void *data, size_t len, uint8_t flags) {
     assert(dev < I2C_NUMOF);
     if (flags & (I2C_NOSTOP | I2C_NOSTART)) {
         return -EOPNOTSUPP;
@@ -194,39 +183,38 @@ int i2c_write_regs(i2c_t dev, uint16_t addr, uint16_t reg,
     I2C_TypeDef *i2c = i2c_config[dev].dev;
     assert(i2c != NULL);
     DEBUG("[i2c] write_regs: Starting\n");
-    /* As a higher level function we know the bus should be free */
+    // As a higher level function we know the bus should be free
     if (i2c->ISR & I2C_ISR_BUSY) {
         return -EAGAIN;
     }
-    /* Handle endianness of register if 16 bit */
+    // Handle endianness of register if 16 bit
     if (flags & I2C_REG16) {
-        reg = htons(reg); /* Make sure register is in big-endian on I2C bus */
+        reg = htons(reg); // Make sure register is in big-endian on I2C bus
     }
-    /* First set ADDR and register with no stop */
-    /* No RELOAD should be set so repeated start is valid */
+    // First set ADDR and register with no stop
+    // No RELOAD should be set so repeated start is valid
     int ret = _write(i2c, addr, &reg, (flags & I2C_REG16) ? 2 : 1,
                      flags | I2C_NOSTOP, I2C_CR2_RELOAD);
     if (ret < 0) {
         return ret;
     }
-    /* Then get the data from device */
+    // Then get the data from device
     return _write(i2c, addr, data, len, I2C_NOSTART, 0);
 }
 
 int i2c_read_bytes(i2c_t dev, uint16_t address, void *data,
-                   size_t length, uint8_t flags)
-{
+                   size_t length, uint8_t flags) {
     assert(dev < I2C_NUMOF && length < PERIPH_I2C_MAX_BYTES_PER_FRAME);
 
     I2C_TypeDef *i2c = i2c_config[dev].dev;
     assert(i2c != NULL);
 
-    /* If reload was set, cannot send a repeated start */
+    // If reload was set, cannot send a repeated start
     if ((i2c->ISR & I2C_ISR_TCR) && !(flags & I2C_NOSTART)) {
         return -EOPNOTSUPP;
     }
     DEBUG("[i2c] read_bytes: Starting\n");
-    /* RELOAD is needed because we don't know the full frame */
+    // RELOAD is needed because we don't know the full frame
     int ret = _i2c_start(i2c, (address << 1) | (length << I2C_CR2_NBYTES_Pos) |
                      I2C_CR2_RELOAD | I2C_FLAG_READ, flags);
     if (ret < 0) {
@@ -234,22 +222,22 @@ int i2c_read_bytes(i2c_t dev, uint16_t address, void *data,
     }
 
     for (size_t i = 0; i < length; i++) {
-        /* wait for transfer to finish */
+        // wait for transfer to finish
         DEBUG("[i2c] read_bytes: Waiting for DR to be full\n");
         ret = _wait_isr_set(i2c, I2C_ISR_RXNE, flags);
         if (ret < 0) {
             return ret;
         }
-        /* read data from data register */
+        // read data from data register
         ((uint8_t*)data)[i]= i2c->RXDR;
         DEBUG("[i2c] read_bytes: DR full, read 0x%02X\n", ((uint8_t*)data)[i]);
     }
     if (flags & I2C_NOSTOP) {
-        /* With NOSTOP, the TCR indicates that the next command is ready */
-        /* TCR is needed because RELOAD is set preventing a NACK on last byte */
+        // With NOSTOP, the TCR indicates that the next command is ready
+        // TCR is needed because RELOAD is set preventing a NACK on last byte
         return _wait_isr_set(i2c, I2C_ISR_TCR, flags);
     }
-    /* Wait until stop before other commands are sent */
+    // Wait until stop before other commands are sent
     ret = _wait_isr_set(i2c, I2C_ISR_STOPF, flags);
     if (ret < 0) {
         return ret;
@@ -258,13 +246,10 @@ int i2c_read_bytes(i2c_t dev, uint16_t address, void *data,
     return _wait_for_bus(i2c);
 }
 
-/**
- * Cannot support continuous writes or frame splitting at this level.  If an
- * I2C_NOSTOP has been sent it must be followed by a repeated start or stop.
- */
+/// Cannot support continuous writes or frame splitting at this level.  If an
+/// I2C_NOSTOP has been sent it must be followed by a repeated start or stop.
 int i2c_write_bytes(i2c_t dev, uint16_t address, const void *data,
-                    size_t length, uint8_t flags)
-{
+                    size_t length, uint8_t flags) {
     assert(dev < I2C_NUMOF);
     I2C_TypeDef *i2c = i2c_config[dev].dev;
     DEBUG("[i2c] write_bytes: Starting\n");
@@ -272,11 +257,10 @@ int i2c_write_bytes(i2c_t dev, uint16_t address, const void *data,
 }
 
 static int _write(I2C_TypeDef *i2c, uint16_t addr, const void *data,
-                    size_t length, uint8_t flags, uint32_t cr2_flags)
-{
+                    size_t length, uint8_t flags, uint32_t cr2_flags) {
     assert(i2c != NULL && length < PERIPH_I2C_MAX_BYTES_PER_FRAME);
 
-    /* If reload was NOT set, must either stop or start */
+    // If reload was NOT set, must either stop or start
     if ((i2c->ISR & I2C_ISR_TC) && (flags & I2C_NOSTART)) {
         return -EOPNOTSUPP;
     }
@@ -293,26 +277,26 @@ static int _write(I2C_TypeDef *i2c, uint16_t addr, const void *data,
             return ret;
         }
         DEBUG("[i2c] write_bytes: TX is free so send byte\n");
-        /* write data to data register */
+        // write data to data register
         i2c->TXDR = ((uint8_t*)data)[i];
     }
 
     if (flags & I2C_NOSTOP) {
         if (cr2_flags & I2C_CR2_RELOAD) {
             DEBUG("[i2c] write_bytes: Waiting for TCR\n");
-            /* With NOSTOP, the TCR indicates that the next command is ready */
-            /* TCR is needed because RELOAD allows loading more bytes */
+            // With NOSTOP, the TCR indicates that the next command is ready
+            // TCR is needed because RELOAD allows loading more bytes
             return _wait_isr_set(i2c, I2C_ISR_TCR, flags);
         }
         else {
             DEBUG("[i2c] write_bytes: Waiting for TC\n");
-            /* With NOSTOP, the TC indicates that the next command is ready */
-            /* TC is needed because no reload is set for repeated start */
+            // With NOSTOP, the TC indicates that the next command is ready
+            // TC is needed because no reload is set for repeated start
             return _wait_isr_set(i2c, I2C_ISR_TC, flags);
         }
     }
     DEBUG("[i2c] write_bytes: Waiting for stop\n");
-    /* Wait until stop before other commands are sent */
+    // Wait until stop before other commands are sent
     ret = _wait_isr_set(i2c, I2C_ISR_STOPF, flags);
     if (ret < 0) {
         return ret;
@@ -320,8 +304,7 @@ static int _write(I2C_TypeDef *i2c, uint16_t addr, const void *data,
     return _wait_for_bus(i2c);
 }
 
-static int _i2c_start(I2C_TypeDef *i2c, uint32_t cr2, uint8_t flags)
-{
+static int _i2c_start(I2C_TypeDef *i2c, uint32_t cr2, uint8_t flags) {
     assert(i2c != NULL);
     assert((i2c->ISR & I2C_ISR_BUSY) || !(flags & I2C_NOSTART));
 
@@ -332,7 +315,7 @@ static int _i2c_start(I2C_TypeDef *i2c, uint32_t cr2, uint8_t flags)
 
     if (!(flags & I2C_NOSTART)) {
         DEBUG("[i2c] start: Generate start condition\n");
-        /* Generate start condition */
+        // Generate start condition
         cr2 |= I2C_CR2_START;
     }
     if (!(flags & I2C_NOSTOP)) {
@@ -345,13 +328,13 @@ static int _i2c_start(I2C_TypeDef *i2c, uint32_t cr2, uint8_t flags)
         uint16_t tick = TICK_TIMEOUT;
         while ((i2c->CR2 & I2C_CR2_START) && tick--) {
             if (!tick) {
-                /* Try to stop for state error recovery */
+                // Try to stop for state error recovery
                 _stop(i2c);
                 return -ETIMEDOUT;
             }
         }
         DEBUG("[i2c] start: Start condition and address generated\n");
-        /* Check if the device is there */
+        // Check if the device is there
         if ((i2c->ISR & I2C_ISR_NACKF)) {
             i2c->ICR |= I2C_ICR_NACKCF;
             _stop(i2c);
@@ -361,13 +344,12 @@ static int _i2c_start(I2C_TypeDef *i2c, uint32_t cr2, uint8_t flags)
     return 0;
 }
 
-static int _stop(I2C_TypeDef *i2c)
-{
-    /* Send stop condition */
+static int _stop(I2C_TypeDef *i2c) {
+    // Send stop condition
     DEBUG("[i2c] stop: Generate stop condition\n");
     i2c->CR2 |= I2C_CR2_STOP;
 
-    /* Wait for the stop to complete */
+    // Wait for the stop to complete
     uint16_t tick = TICK_TIMEOUT;
     while ((i2c->CR2 & I2C_CR2_STOP) && tick--) {}
     if (!tick) {
@@ -381,8 +363,7 @@ static int _stop(I2C_TypeDef *i2c)
     return 0;
 }
 
-static int _wait_isr_set(I2C_TypeDef *i2c, uint32_t mask, uint8_t flags)
-{
+static int _wait_isr_set(I2C_TypeDef *i2c, uint32_t mask, uint8_t flags) {
     uint16_t tick = TICK_TIMEOUT;
     while (tick--) {
         uint32_t isr = i2c->ISR;
@@ -390,7 +371,7 @@ static int _wait_isr_set(I2C_TypeDef *i2c, uint32_t mask, uint8_t flags)
         if (isr & I2C_ISR_NACKF) {
             DEBUG("[i2c] wait_isr_set: NACK received\n");
 
-            /* Some devices have a valid data nack, if indicated don't stop */
+            // Some devices have a valid data nack, if indicated don't stop
             if (!(flags & I2C_NOSTOP)) {
                 _stop(i2c);
             }
@@ -408,15 +389,12 @@ static int _wait_isr_set(I2C_TypeDef *i2c, uint32_t mask, uint8_t flags)
             return 0;
         }
     }
-    /*
-    * If timeout occurs this means a problem that must be handled on a higher
-    * level.  A SWRST is recommended by the datasheet.
-    */
+    // If timeout occurs this means a problem that must be handled on a higher
+    // level.  A SWRST is recommended by the datasheet.
     return -ETIMEDOUT;
 }
 
-static inline int _wait_for_bus(I2C_TypeDef *i2c)
-{
+static inline int _wait_for_bus(I2C_TypeDef *i2c) {
     uint16_t tick = TICK_TIMEOUT;
     while (tick-- && (i2c->ISR & I2C_ISR_BUSY)) {}
     if (!tick) {
@@ -425,8 +403,7 @@ static inline int _wait_for_bus(I2C_TypeDef *i2c)
     return 0;
 }
 
-static inline void irq_handler(i2c_t dev)
-{
+static inline void irq_handler(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
     I2C_TypeDef *i2c = i2c_config[dev].dev;
@@ -459,15 +436,13 @@ static inline void irq_handler(i2c_t dev)
 }
 
 #ifdef I2C_0_ISR
-void I2C_0_ISR(void)
-{
+void I2C_0_ISR(void) {
     irq_handler(I2C_DEV(0));
 }
-#endif /* I2C_0_ISR */
+#endif // I2C_0_ISR
 
 #ifdef I2C_1_ISR
-void I2C_1_ISR(void)
-{
+void I2C_1_ISR(void) {
     irq_handler(I2C_DEV(1));
 }
-#endif /* I2C_1_ISR */
+#endif // I2C_1_ISR

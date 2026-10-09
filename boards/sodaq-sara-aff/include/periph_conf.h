@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kees Bakker, SODAQ
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kees Bakker, SODAQ
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_sodaq-sara-aff
- * @{
- *
- * @file
- * @brief       Configuration of CPU peripherals for the SODAQ SARA AFF boards
- *
- * @author      Kees Bakker <kees@sodaq.com>
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- */
+/// @ingroup     boards_sodaq-sara-aff
+/// @{
+///
+/// @file
+/// @brief       Configuration of CPU peripherals for the SODAQ SARA AFF boards
+///
+/// @author      Kees Bakker <kees@sodaq.com>
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
 
 #include <stdint.h>
 
@@ -32,16 +28,14 @@
 extern "C" {
 #endif
 
-/**
- * @name UART configuration
- * @{
- * See Table 7-1 of the SAM D21 Datasheet (p. 29)
- */
+/// @name UART configuration
+/// @{
+/// See Table 7-1 of the SAM D21 Datasheet (p. 29)
 static const uart_conf_t uart_config[] = {
     {
         .dev      = &SERCOM5->USART,
-        .rx_pin   = GPIO_PIN(PB, 30),  /* D0, RX Pin */
-        .tx_pin   = GPIO_PIN(PB, 31),  /* D1, TX Pin */
+        .rx_pin   = GPIO_PIN(PB, 30),  // D0, RX Pin
+        .tx_pin   = GPIO_PIN(PB, 31),  // D1, TX Pin
 #ifdef MODULE_PERIPH_UART_HW_FC
         .rts_pin  = GPIO_UNDEF,
         .cts_pin  = GPIO_UNDEF,
@@ -68,19 +62,17 @@ static const uart_conf_t uart_config[] = {
     },
 };
 
-/* interrupt function name mapping */
+// interrupt function name mapping
 #define UART_0_ISR          isr_sercom5
 #define UART_1_ISR          isr_sercom0
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name ADC configuration
- * @{
- */
+/// @name ADC configuration
+/// @{
 
-/* ADC Default values */
+// ADC Default values
 #define ADC_PRESCALER                       ADC_CTRLB_PRESCALER_DIV512
 
 #define ADC_NEG_INPUT                       ADC_INPUTCTRL_MUXNEG_GND
@@ -88,27 +80,25 @@ static const uart_conf_t uart_config[] = {
 #define ADC_REF_DEFAULT                     ADC_REFCTRL_REFSEL_INTVCC1
 
 static const adc_conf_chan_t adc_channels[] = {
-    /* port, pin, muxpos */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB00 },     /* A0 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB01 },     /* A1 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB02 },    /* A2 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB03 },    /* A3 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA08 },    /* A4 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA09 },    /* A5 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA10 },   /* GROVE1/A6 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA11 },   /* GROVE2/A7 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB05 },    /* BAT_VOLT/A8 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA02 },     /* D2/DAC */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA03 },     /* AREF */
+    // port, pin, muxpos
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB00 },     // A0
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB01 },     // A1
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB02 },    // A2
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB03 },    // A3
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA08 },    // A4
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA09 },    // A5
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA10 },   // GROVE1/A6
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA11 },   // GROVE2/A7
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB05 },    // BAT_VOLT/A8
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA02 },     // D2/DAC
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA03 },     // AREF
 };
 
 #define ADC_NUMOF                           ARRAY_SIZE(adc_channels)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev      = &(SERCOM1->I2CM),
@@ -121,10 +111,10 @@ static const i2c_conf_t i2c_config[] = {
     }
 };
 #define I2C_NUMOF          ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

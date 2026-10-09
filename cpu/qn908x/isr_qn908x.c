@@ -1,39 +1,31 @@
-/*
- * SPDX-FileCopyrightText: 2020 iosabi
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 iosabi
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_qn908x
- * @{
- *
- * @file
- * @brief       Default interrupt service routine definitions for NXP QN908x
- *
- * These weak default definitions act as a fallback definition if no driver
- * defines a ISR for the specific interrupt.
- *
- * @author      iosabi <iosabi@protonmail.com>
- *
- * @}
- */
+/// @ingroup     cpu_qn908x
+/// @{
+///
+/// @file
+/// @brief       Default interrupt service routine definitions for NXP QN908x
+///
+/// These weak default definitions act as a fallback definition if no driver
+/// defines a ISR for the specific interrupt.
+///
+/// @author      iosabi <iosabi@protonmail.com>
+///
+/// @}
 
 #include "cpu.h"
 #include "vectors_cortexm.h"
 #include "vectors_qn908x.h"
 
-/* These are defined in vectors_cortexm.c. */
+// These are defined in vectors_cortexm.c.
 extern void reset_handler_default(void);
-extern uint32_t _estack; /* Exception stack pointer. */
+extern uint32_t _estack; // Exception stack pointer.
 
-/**
- * @brief Jump to the reset_handle_default handler with the exception stack.
- */
-__attribute__((noreturn)) static inline void cpu_restart(void)
-{
-    /* Reset the stack pointer to the beginning again and jump to the reset
-     * handler at the expected address.
-     */
+/// @brief Jump to the reset_handle_default handler with the exception stack.
+__attribute__((noreturn)) static inline void cpu_restart(void) {
+    // Reset the stack pointer to the beginning again and jump to the reset
+    // handler at the expected address.
     __asm volatile ("msr msp, %[estack]\n"
                     "mov pc, %[entry]\n"
                     :
@@ -41,33 +33,29 @@ __attribute__((noreturn)) static inline void cpu_restart(void)
                     [ entry ] "r" (reset_handler_default)
                     : "memory");
 
-    /* This function doesn't return anyway. */
+    // This function doesn't return anyway.
     while (1) {}
 }
 
-/**
- * @brief Remap the flash to address 0 on start.
- *
- * The bootloader will jump to the flash at address 0x21000000 which is aliased
- * to the flash on this CPU. However, our program is linked to run as if the
- * flash is mapped at address 0 which is the common case. The range starting at
- * address 0 can be mapped to flash, RAM or ROM via the SYS_MODE_CTRL register,
- * but on reset the default value (0x0) means that it is mapped to ROM.
- * We need to remap the flash and change the program counter to be running from
- * the right address range (0).
- */
-void pre_startup(void)
-{
+/// @brief Remap the flash to address 0 on start.
+///
+/// The bootloader will jump to the flash at address 0x21000000 which is aliased
+/// to the flash on this CPU. However, our program is linked to run as if the
+/// flash is mapped at address 0 which is the common case. The range starting at
+/// address 0 can be mapped to flash, RAM or ROM via the SYS_MODE_CTRL register,
+/// but on reset the default value (0x0) means that it is mapped to ROM.
+/// We need to remap the flash and change the program counter to be running from
+/// the right address range (0).
+void pre_startup(void) {
     register unsigned int pc;
 
-    /* Disable interrupts */
+    // Disable interrupts
     __disable_irq();
 
-    /* Check whether we are running from the 0x21000000 range. If that's the
-     * case we need to remap the flash to the address 0 in SYS_MODE_CTRL and
-     * jump back to the reset_handler_default so everything starts as running
-     * from the address 0x0 instead.
-     */
+    // Check whether we are running from the 0x21000000 range. If that's the
+    // case we need to remap the flash to the address 0 in SYS_MODE_CTRL and
+    // jump back to the reset_handler_default so everything starts as running
+    // from the address 0x0 instead.
     __asm volatile ("mov %0, pc" : "=r" (pc));
 
     if ((pc & 0x21000000) == 0x21000000) {
@@ -76,7 +64,7 @@ void pre_startup(void)
     }
 }
 
-/* QN908x interrupt service routines */
+// QN908x interrupt service routines
 WEAK_DEFAULT void isr_ext_gpio_wakeup(void);
 WEAK_DEFAULT void isr_osc(void);
 WEAK_DEFAULT void isr_acmp0(void);
@@ -120,7 +108,6 @@ WEAK_DEFAULT void isr_ble_rx(void);
 WEAK_DEFAULT void isr_ble_freq_hop(void);
 WEAK_DEFAULT void isr_bod(void);
 
-void dummy_handler(void)
-{
+void dummy_handler(void) {
     dummy_handler_default();
 }

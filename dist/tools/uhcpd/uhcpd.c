@@ -1,9 +1,7 @@
-/*
- * Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- */
+// Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
 
 #define UHCP_MCAST_ADDR "ff15::ABCD"
 
@@ -23,8 +21,7 @@ unsigned _prefix_len;
 static const char *BIND_OPTION = "--bind-to-device";
 static void bind_to_device(int sock, const char *interface);
 
-int ipv6_addr_split(char *addr_str, char separator, int _default)
-{
+int ipv6_addr_split(char *addr_str, char separator, int _default) {
     char *sep = addr_str;
     while(*++sep) {
         if (*sep == separator) {
@@ -39,8 +36,7 @@ int ipv6_addr_split(char *addr_str, char separator, int _default)
     return _default;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     unsigned ifindex;
     unsigned _bind_to_device = 0;
 
@@ -103,7 +99,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    /* join multicast group */
+    // join multicast group
     struct ipv6_mreq mreq;
     memcpy(&mreq.ipv6mr_multiaddr,
            &((struct sockaddr_in6 *)mcast_addr->ai_addr)->sin6_addr,
@@ -137,8 +133,7 @@ int main(int argc, char *argv[])
     exit(0);
 }
 
-int udp_sendto(uint8_t *buf, size_t len, uint8_t *dst, uint16_t dst_port, uhcp_iface_t iface)
-{
+int udp_sendto(uint8_t *buf, size_t len, uint8_t *dst, uint16_t dst_port, uhcp_iface_t iface) {
     struct sockaddr_in6 dst_addr;
     memset(&dst_addr, '\0', sizeof(dst_addr));
     dst_addr.sin6_family = AF_INET6;
@@ -162,9 +157,8 @@ int udp_sendto(uint8_t *buf, size_t len, uint8_t *dst, uint16_t dst_port, uhcp_i
     return res;
 }
 
-/* Requires to be 'root', I didn't find another solution for the moment */
-static void bind_to_device(int sock, const char *interface)
-{
+// Requires to be 'root', I didn't find another solution for the moment
+static void bind_to_device(int sock, const char *interface) {
     if (setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE,
                    interface, IF_NAMESIZE) < 0 ) {
         perror("setsockopt(SO_BINDTODEVICE) failed");

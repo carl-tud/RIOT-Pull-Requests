@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-FileCopyrightText: 2020 Oppila Microsystems - http://www.oppila.in
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-FileCopyrightText: 2020 Oppila Microsystems - http://www.oppila.in
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup   boards_omote
- * @{
- *
- * @file
- * @brief     Board specific configuration of direct mapped ADC in omote
- *
- */
+/// @ingroup   boards_omote
+/// @{
+///
+/// @file
+/// @brief     Board specific configuration of direct mapped ADC in omote
+///
 
 #include "board.h"
 #include "saul/periph.h"
@@ -23,9 +19,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    ADC configuration
- */
+/// @brief    ADC configuration
 static const  saul_adc_params_t saul_adc_params[] =
 {
     {
@@ -49,4 +43,4 @@ static const  saul_adc_params_t saul_adc_params[] =
 }
 #endif
 
-/** @} */
+/// @}

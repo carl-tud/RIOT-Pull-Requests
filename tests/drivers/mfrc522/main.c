@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @brief   Test application for the MFRC522 controller
- * @author  Hendrik van Essen <hendrik.ve@fu-berlin.de>
- * @file
- *
- */
+/// @ingroup tests
+/// @brief   Test application for the MFRC522 controller
+/// @author  Hendrik van Essen <hendrik.ve@fu-berlin.de>
+/// @file
+///
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,16 +19,14 @@
 
 static mfrc522_t mfrc522_dev;
 
-/* Stores scanned ID read from RFID Module */
+// Stores scanned ID read from RFID Module
 static uint8_t read_card[4];
 
-int get_uid(mfrc522_uid_t *uid, bool stop_read)
-{
+int get_uid(mfrc522_uid_t *uid, bool stop_read) {
     int rc = 0;
 
-    /* Getting ready for Reading PICCs
-     * If a new PICC placed to RFID reader continue
-     */
+    // Getting ready for Reading PICCs
+    // If a new PICC placed to RFID reader continue
     if (!(rc = mfrc522_picc_is_new_card_present(&mfrc522_dev))) {
         puts("No card detected ...");
         return 0;
@@ -40,7 +34,7 @@ int get_uid(mfrc522_uid_t *uid, bool stop_read)
 
     puts("Card detected. Read card serial ...");
 
-    /* Since a PICC placed get Serial and continue */
+    // Since a PICC placed get Serial and continue
     rc = mfrc522_picc_read_card_serial(&mfrc522_dev, uid);
     if (rc != 0) {
         return 0;
@@ -53,7 +47,7 @@ int get_uid(mfrc522_uid_t *uid, bool stop_read)
     }
     printf("\n");
 
-    /* Stop reading */
+    // Stop reading
     if (stop_read) {
         mfrc522_picc_halt_a(&mfrc522_dev);
     }
@@ -61,8 +55,7 @@ int get_uid(mfrc522_uid_t *uid, bool stop_read)
     return 1;
 }
 
-int scan_uid(int argc, char **argv)
-{
+int scan_uid(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -82,8 +75,7 @@ int scan_uid(int argc, char **argv)
     return 0;
 }
 
-int self_test(int argc, char **argv)
-{
+int self_test(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -91,7 +83,7 @@ int self_test(int argc, char **argv)
 
     success ? printf("SUCCESS\n") : printf("FAILED\n");
 
-    /* After self-test the device is unusable => repeat the initialization routine */
+    // After self-test the device is unusable => repeat the initialization routine
     int rc = 0;
     if ((rc = mfrc522_pcd_init(&mfrc522_dev, &mfrc522_params[0])) != 0) {
         printf("Initialization failed! rc = %d", rc);
@@ -101,8 +93,7 @@ int self_test(int argc, char **argv)
     return 0;
 }
 
-int reset(int argc, char **argv)
-{
+int reset(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -111,8 +102,7 @@ int reset(int argc, char **argv)
     return 0;
 }
 
-int antenna_on(int argc, char **argv)
-{
+int antenna_on(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -121,8 +111,7 @@ int antenna_on(int argc, char **argv)
     return 0;
 }
 
-int antenna_off(int argc, char **argv)
-{
+int antenna_off(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -131,8 +120,7 @@ int antenna_off(int argc, char **argv)
     return 0;
 }
 
-int set_antenna_gain(int argc, char **argv)
-{
+int set_antenna_gain(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -176,8 +164,7 @@ int set_antenna_gain(int argc, char **argv)
     return 0;
 }
 
-int get_antenna_gain(int argc, char **argv)
-{
+int get_antenna_gain(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -185,12 +172,12 @@ int get_antenna_gain(int argc, char **argv)
 
     switch (gain) {
     case MFRC522_RXGAIN_18_DB:
-    /* fall-through */
+    // fall-through
     case MFRC522_RXGAIN_18_DB_2:
         printf("gain = MFRC522_RXGAIN_18_DB\n");
         break;
     case MFRC522_RXGAIN_23_DB:
-    /* fall-through */
+    // fall-through
     case MFRC522_RXGAIN_23_DB_2:
         printf("gain = MFRC522_RXGAIN_23_DB\n");
         break;
@@ -214,8 +201,7 @@ int get_antenna_gain(int argc, char **argv)
     return 0;
 }
 
-int firmware_version(int argc, char **argv)
-{
+int firmware_version(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -224,8 +210,7 @@ int firmware_version(int argc, char **argv)
     return 0;
 }
 
-int picc_dump(int argc, char **argv)
-{
+int picc_dump(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -239,8 +224,7 @@ int picc_dump(int argc, char **argv)
     return 0;
 }
 
-int set_uid(int argc, char **argv)
-{
+int set_uid(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -283,8 +267,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     int rc = 0;
 
     if ((rc = mfrc522_pcd_init(&mfrc522_dev, &mfrc522_params[0])) != 0) {

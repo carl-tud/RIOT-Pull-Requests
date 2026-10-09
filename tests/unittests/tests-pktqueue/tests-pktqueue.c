@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2014-2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <string.h>
 
 #include "embUnit.h"
@@ -25,13 +21,11 @@
 
 static gnrc_pktqueue_t *root;
 
-static void set_up(void)
-{
+static void set_up(void) {
     root = NULL;
 }
 
-static void test_pktqueue_add_one(void)
-{
+static void test_pktqueue_add_one(void) {
     gnrc_pktsnip_t pkt = PKT_INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktqueue_t elem = PKTQUEUE_INIT_ELEM(&pkt);
 
@@ -45,8 +39,7 @@ static void test_pktqueue_add_one(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_UNDEF, root->pkt->type);
 }
 
-static void test_pktqueue_add_two(void)
-{
+static void test_pktqueue_add_two(void) {
     gnrc_pktsnip_t pkt1 = PKT_INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktsnip_t pkt2 = PKT_INIT_ELEM_STATIC_DATA(TEST_STRING16, NULL);
     gnrc_pktqueue_t elem1 = PKTQUEUE_INIT_ELEM(&pkt1);
@@ -69,8 +62,7 @@ static void test_pktqueue_add_two(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_UNDEF, root->next->pkt->type);
 }
 
-static void test_pktqueue_remove(void)
-{
+static void test_pktqueue_remove(void) {
     gnrc_pktsnip_t pkt1 = PKT_INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktsnip_t pkt2 = PKT_INIT_ELEM_STATIC_DATA(TEST_STRING16, NULL);
     gnrc_pktqueue_t *res;
@@ -107,8 +99,7 @@ static void test_pktqueue_remove(void)
     TEST_ASSERT_NULL(res);
 }
 
-static void test_pktqueue_remove_head_empty(void)
-{
+static void test_pktqueue_remove_head_empty(void) {
     gnrc_pktqueue_t *res;
 
     res = gnrc_pktqueue_remove_head(&root);
@@ -117,8 +108,7 @@ static void test_pktqueue_remove_head_empty(void)
     TEST_ASSERT_NULL(res);
 }
 
-static void test_pktqueue_remove_head(void)
-{
+static void test_pktqueue_remove_head(void) {
     gnrc_pktsnip_t pkt1 = PKT_INIT_ELEM_STATIC_DATA(TEST_STRING8, NULL);
     gnrc_pktsnip_t pkt2 = PKT_INIT_ELEM_STATIC_DATA(TEST_STRING16, NULL);
     gnrc_pktqueue_t *res;
@@ -150,8 +140,7 @@ static void test_pktqueue_remove_head(void)
     TEST_ASSERT_EQUAL_INT(GNRC_NETTYPE_UNDEF, res->pkt->type);
 }
 
-Test *tests_pktqueue_tests(void)
-{
+Test *tests_pktqueue_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_pktqueue_add_one),
         new_TestFixture(test_pktqueue_add_two),
@@ -165,8 +154,7 @@ Test *tests_pktqueue_tests(void)
     return (Test *)&pktqueue_tests;
 }
 
-void tests_pktqueue(void)
-{
+void tests_pktqueue(void) {
     TESTS_RUN(tests_pktqueue_tests());
 }
-/** @} */
+/// @}

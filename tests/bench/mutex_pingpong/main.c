@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Mutex context switch benchmark
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Mutex context switch benchmark
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -31,15 +27,13 @@ volatile unsigned _flag = 0;
 static char _stack[THREAD_STACKSIZE_MAIN];
 static mutex_t _mutex = MUTEX_INIT;
 
-static void _timer_callback(void*arg)
-{
+static void _timer_callback(void*arg) {
     (void)arg;
 
     _flag = 1;
 }
 
-static void *_second_thread(void *arg)
-{
+static void *_second_thread(void *arg) {
     (void)arg;
 
     while (1) {
@@ -49,8 +43,7 @@ static void *_second_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     printf("main starting\n");
 
     thread_create(_stack,
@@ -61,7 +54,7 @@ int main(void)
                   NULL,
                   "second_thread");
 
-    /* lock the mutex, then yield to second_thread */
+    // lock the mutex, then yield to second_thread
     mutex_lock(&_mutex);
     thread_yield_higher();
 

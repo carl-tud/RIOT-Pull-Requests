@@ -1,9 +1,7 @@
-/*
- * Copyright (C) 2020 Benjamin Valentin
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- */
+// Copyright (C) 2020 Benjamin Valentin
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
 
 #ifndef ZEP_DISPATCH_PDU
 #define ZEP_DISPATCH_PDU    256
@@ -37,24 +35,23 @@ typedef struct {
 typedef void (*dispatch_cb_t)(void *ctx, void *buffer, size_t len,
                               int sock, struct sockaddr_in6 *src_addr);
 
-/* all nodes are directly connected */
+// all nodes are directly connected
 static void _send_flat(void *ctx, void *buffer, size_t len,
-                       int sock, struct sockaddr_in6 *src_addr)
-{
+                       int sock, struct sockaddr_in6 *src_addr) {
     list_node_t *head = ctx;
     char addr_str[INET6_ADDRSTRLEN];
 
-    /* send packet to all other clients */
+    // send packet to all other clients
     bool known_node = false;
     list_node_t *prev = head;
 
     for (list_node_t *n = head->next; n; n = n->next) {
         struct sockaddr_in6 *addr = &container_of(n, zep_client_t, node)->addr;
 
-        /* don't echo packet back to sender */
+        // don't echo packet back to sender
         if (memcmp(src_addr, addr, sizeof(*addr)) == 0) {
             known_node = true;
-            /* remove client if sending fails */
+            // remove client if sending fails
         }
         else if (sendto(sock, buffer, len, 0, (struct sockaddr *)addr, sizeof(*addr)) < 0) {
             inet_ntop(src_addr->sin6_family, &addr->sin6_addr, addr_str, INET6_ADDRSTRLEN);
@@ -67,7 +64,7 @@ static void _send_flat(void *ctx, void *buffer, size_t len,
         prev = n;
     }
 
-    /* if the client new, add it to the broadcast list */
+    // if the client new, add it to the broadcast list
     if (!known_node) {
         inet_ntop(src_addr->sin6_family, &src_addr->sin6_addr, addr_str, INET6_ADDRSTRLEN);
         printf("adding [%s]:%d\n", addr_str, ntohs(src_addr->sin6_port));
@@ -77,15 +74,14 @@ static void _send_flat(void *ctx, void *buffer, size_t len,
     }
 }
 
-/* nodes are connected as described by topology */
+// nodes are connected as described by topology
 static void _send_topology(void *ctx, void *buffer, size_t len,
-                           int sock, struct sockaddr_in6 *src_addr)
-{
+                           int sock, struct sockaddr_in6 *src_addr) {
     uint8_t mac_src[8];
     uint8_t mac_src_len;
 
     if (zep_parse_mac(buffer, len, mac_src, &mac_src_len)) {
-        /* a sniffer node has no MAC address and will receive every packet */
+        // a sniffer node has no MAC address and will receive every packet
         if (mac_src_len == 0) {
             topology_set_sniffer(ctx, src_addr);
         } else {
@@ -95,15 +91,14 @@ static void _send_topology(void *ctx, void *buffer, size_t len,
     topology_send(ctx, sock, src_addr, buffer, len);
 }
 
-static void dispatch_loop(int sock, int tap, dispatch_cb_t dispatch, void *ctx)
-{
+static void dispatch_loop(int sock, int tap, dispatch_cb_t dispatch, void *ctx) {
     puts("entering loop…");
     while (1) {
         uint8_t buffer[ZEP_DISPATCH_PDU];
         struct sockaddr_in6 src_addr;
         socklen_t addr_len = sizeof(src_addr);
 
-        /* receive incoming packet */
+        // receive incoming packet
         ssize_t bytes_in = recvfrom(sock, buffer, sizeof(buffer), 0,
                                     (struct sockaddr *)&src_addr, &addr_len);
 
@@ -111,7 +106,7 @@ static void dispatch_loop(int sock, int tap, dispatch_cb_t dispatch, void *ctx)
             continue;
         }
 
-        /* send packet to virtual 802.15.4 interface */
+        // send packet to virtual 802.15.4 interface
         if (tap) {
             size_t len = bytes_in;
             const void *payload = zep_get_payload(buffer, &len);
@@ -124,7 +119,7 @@ static void dispatch_loop(int sock, int tap, dispatch_cb_t dispatch, void *ctx)
             }
         }
 
-        /* send packet to the topology */
+        // send packet to the topology
         dispatch(ctx, buffer, bytes_in, sock, &src_addr);
     }
 }
@@ -132,8 +127,7 @@ static void dispatch_loop(int sock, int tap, dispatch_cb_t dispatch, void *ctx)
 static topology_t topology;
 static const char *graphviz_file = "example.gv";
 static const char *pidfile;
-static void _info_handler(int signal)
-{
+static void _info_handler(int signal) {
     switch (signal) {
     case SIGUSR1:
         if (topology_print(graphviz_file, &topology)) {
@@ -156,13 +150,12 @@ static void _info_handler(int signal)
     }
 }
 
-/* open mac802154_hwsim device to send frames to it */
-static int _open_mac802154_hwsim(const char *iface)
-{
+// open mac802154_hwsim device to send frames to it
+static int _open_mac802154_hwsim(const char *iface) {
     int res;
     int fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_IEEE802154));
 
-    /* get interface index for interface name */
+    // get interface index for interface name
     struct ifreq ifr;
     strncpy(ifr.ifr_name, iface, IFNAMSIZ);
 
@@ -170,7 +163,7 @@ static int _open_mac802154_hwsim(const char *iface)
         goto error;
     }
 
-    /* bind socket to the device */
+    // bind socket to the device
     struct sockaddr_ll sll = {
         .sll_family = AF_PACKET,
         .sll_ifindex = ifr.ifr_ifindex,
@@ -189,8 +182,7 @@ error:
     return res;
 }
 
-static void _print_help(const char *progname)
-{
+static void _print_help(const char *progname) {
     fprintf(stderr, "usage: %s [-t topology] [-s seed] "
                     "[-g graphviz_out] [-w interface] <address> <port>\n",
             progname);
@@ -208,8 +200,7 @@ static void _print_help(const char *progname)
                     "interface (mac802154_hwsim)\n");
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     int c, tap_fd = 0;
     unsigned int seed = time(NULL);
     const char *topo_file = NULL;

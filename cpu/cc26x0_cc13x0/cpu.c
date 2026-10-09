@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Leon George
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Leon George
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_cc26x0_cc13x0
- * @{
- *
- * @file
- * @brief       implementation of the CPU initialization
- *
- * @author      Leon M. George <leon@georgemail.eu>
- * @}
- */
+/// @ingroup     cpu_cc26x0_cc13x0
+/// @{
+///
+/// @file
+/// @brief       implementation of the CPU initialization
+///
+/// @author      Leon M. George <leon@georgemail.eu>
+/// @}
 
 #include "cpu.h"
 #include "kernel_init.h"
@@ -24,28 +20,25 @@
 #endif
 
 #ifndef HF_CLOCK_SOURCE
-#define HF_CLOCK_SOURCE DDI_0_OSC_CTL0_SCLK_HF_SRC_SEL_RCOSC /* set 48MHz RCOSC */
+#define HF_CLOCK_SOURCE DDI_0_OSC_CTL0_SCLK_HF_SRC_SEL_RCOSC // set 48MHz RCOSC
 #endif
 #ifndef LF_CLOCK_SOURCE
-#define LF_CLOCK_SOURCE DDI_0_OSC_CTL0_SCLK_LF_SRC_SEL_HF_RCOSC /* set 31.25kHz derived from 48MHz RCOSC */
+#define LF_CLOCK_SOURCE DDI_0_OSC_CTL0_SCLK_LF_SRC_SEL_HF_RCOSC // set 31.25kHz derived from 48MHz RCOSC
 #endif
 
-/**
- * @brief Initialize the CPU, set IRQ priorities
- */
-void cpu_init(void)
-{
-    /* initialize the Cortex-M core */
+/// @brief Initialize the CPU, set IRQ priorities
+void cpu_init(void) {
+    // initialize the Cortex-M core
     cortexm_init();
 
 #if IS_USED(MODULE_CC26X0_DRIVERLIB)
-    /* Final trim of device */
+    // Final trim of device
     SetupTrimDevice();
 #endif
 
-    /* initialize stdio prior to periph_init() to allow use of DEBUG() there */
+    // initialize stdio prior to periph_init() to allow use of DEBUG() there
     early_init();
 
-    /* trigger static peripheral initialization */
+    // trigger static peripheral initialization
     periph_init();
 }

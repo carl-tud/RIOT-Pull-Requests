@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
 #if !DOXYGEN
 
-/**
- * @ingroup     drivers_atwinc15x0
- * @{
- *
- * @file
- * @brief       Internal compile config for the ATWINC15x0 WiFi netdev driver
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     drivers_atwinc15x0
+/// @{
+///
+/// @file
+/// @brief       Internal compile config for the ATWINC15x0 WiFi netdev driver
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,4 +38,4 @@ extern "C" {
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

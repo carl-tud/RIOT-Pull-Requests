@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2020 Locha Inc
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Locha Inc
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the GP2Y10xx Compact Dust Density Sensors.
- *
- * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the GP2Y10xx Compact Dust Density Sensors.
+///
+/// @author      Jean Pierre Dudey <jeandudey@hotmail.com>
+/// @}
 
 #include <stdio.h>
 
@@ -23,8 +19,7 @@
 
 static gp2y10xx_t dev;
 
-int main(void)
-{
+int main(void) {
     int res;
     uint16_t density;
 

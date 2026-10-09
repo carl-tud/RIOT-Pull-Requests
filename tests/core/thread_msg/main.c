@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2013 Christian Mehlis <mehlis@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Christian Mehlis <mehlis@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Thread test application
- *
- * @author Christian Mehlis <mehlis@inf.fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Thread test application
+///
+/// @author Christian Mehlis <mehlis@inf.fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -27,8 +23,7 @@ char t3_stack[THREAD_STACKSIZE_MAIN];
 
 kernel_pid_t p_main, p1, p2, p3;
 
-void *thread1(void *arg)
-{
+void *thread1(void *arg) {
     (void) arg;
     puts("THREAD 1 start\n");
 
@@ -49,8 +44,7 @@ void *thread1(void *arg)
     return NULL;
 }
 
-void *thread2(void *arg)
-{
+void *thread2(void *arg) {
     (void) arg;
     puts("THREAD 2 start\n");
 
@@ -66,8 +60,7 @@ void *thread2(void *arg)
     return NULL;
 }
 
-void *thread3(void *arg)
-{
+void *thread3(void *arg) {
     (void) arg;
     puts("THREAD 3 start\n");
 
@@ -80,8 +73,7 @@ void *thread3(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     p_main = thread_getpid();
     p1 = thread_create(t1_stack, sizeof(t1_stack), THREAD_PRIORITY_MAIN + 1, 0,
                        thread1, NULL, "nr1");
@@ -92,7 +84,7 @@ int main(void)
     puts("THREADS CREATED\n");
 
     msg_t msg;
-    /* Wait until thread 1 is done */
+    // Wait until thread 1 is done
     msg_receive(&msg);
 
     puts("SUCCESS");

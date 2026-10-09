@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       test a CAN transceiver through can_trx interface
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       test a CAN transceiver through can_trx interface
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,8 +102,7 @@ static const shell_command_t cmds[] = {
         { NULL, NULL, NULL },
 };
 
-int main(void)
-{
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(cmds, line_buf, SHELL_DEFAULT_BUFSIZE);
 

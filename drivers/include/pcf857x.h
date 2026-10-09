@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -252,20 +250,18 @@ extern "C"
 
 #if IS_USED(MODULE_SAUL_GPIO) || DOXYGEN
 #include "saul/periph.h"
-#endif /* MODULE_SAUL_GPIO */
+#endif // MODULE_SAUL_GPIO
 
 #if IS_USED(MODULE_PCF857X_IRQ) || DOXYGEN
 #include "event.h"
-#endif /* MODULE_PCF857X_IRQ */
+#endif // MODULE_PCF857X_IRQ
 
-/**
- * @name    PCF857X I2C slave addresses
- *
- * PCF857X I2C slave addresses are defined as an offset to a base address,
- * which depends on the expander used. The address offset is in the range
- * of 0 to 7.
- * @{
- */
+/// @name    PCF857X I2C slave addresses
+///
+/// PCF857X I2C slave addresses are defined as an offset to a base address,
+/// which depends on the expander used. The address offset is in the range
+/// of 0 to 7.
+/// @{
 #ifndef PCF8575_BASE_ADDR
 #define PCF8575_BASE_ADDR   (0x20)  /**< PCF8575 I2C slave base address.
                                          Addresses are then in range from
@@ -281,77 +277,65 @@ extern "C"
                                          Addresses are then in range from
                                          0x38 to 0x3f */
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    PCF857X I/O expander pin number
- * @{
- */
-#define PCF8575_GPIO_PIN_NUM    (16) /**< PCF8575 has 16 I/O pins */
-#define PCF8574_GPIO_PIN_NUM    (8)  /**< PCF8574 has 8 I/O pins */
-#define PCF8574A_GPIO_PIN_NUM   (8)  /**< PCF8574A has 8 I/O pins */
-/** @} */
+/// @name    PCF857X I/O expander pin number
+/// @{
+#define PCF8575_GPIO_PIN_NUM    (16) ///< PCF8575 has 16 I/O pins
+#define PCF8574_GPIO_PIN_NUM    (8)  ///< PCF8574 has 8 I/O pins
+#define PCF8574A_GPIO_PIN_NUM   (8)  ///< PCF8574A has 8 I/O pins
+/// @}
 
-/** conversion of (port x : pin y) to a pin number */
+/// conversion of (port x : pin y) to a pin number
 #define PCF857X_GPIO_PIN(x,y)  (y)
 
-/**
- * @name   Module dependent definitions and declarations
- * @{
- */
+/// @name   Module dependent definitions and declarations
+/// @{
 #if IS_USED(MODULE_PCF8575) || DOXYGEN
 
-/**
- * @brief   Maximum number of GPIO pins
- *
- * Defines the maximum number of GPIO pins of all PCF857X I/O expanders
- * used. If a PCF8575 is used, the maximum number is 16 I/O pins.
- */
+/// @brief   Maximum number of GPIO pins
+///
+/// Defines the maximum number of GPIO pins of all PCF857X I/O expanders
+/// used. If a PCF8575 is used, the maximum number is 16 I/O pins.
 #define PCF857X_GPIO_PIN_NUM   (16)
 
-/**
- * @brief   Data type that can mask all expander pins
- *
- * If a PCF8575 is used, the 16 I/O pins have to be masked.
- */
+/// @brief   Data type that can mask all expander pins
+///
+/// If a PCF8575 is used, the 16 I/O pins have to be masked.
 typedef uint16_t pcf857x_data_t;
 
-#else /* MODULE_PCF8575 || DOXYGEN */
+#else // MODULE_PCF8575 || DOXYGEN
 
-#define PCF857X_GPIO_PIN_NUM   (8)  /**< PCF8574, PCF8574 provide 8 I/O pins */
-typedef uint8_t pcf857x_data_t;     /**< type that can mask all expander pins */
+#define PCF857X_GPIO_PIN_NUM   (8)  ///< PCF8574, PCF8574 provide 8 I/O pins
+typedef uint8_t pcf857x_data_t;     ///< type that can mask all expander pins
 
-#endif /* MODULE_PCF8575 || DOXYGEN */
-/** @} */
+#endif // MODULE_PCF8575 || DOXYGEN
+/// @}
 
-/**
- * @brief Definition of PCF857X expander variants
- *
- * It is used in configuration parameters to specify the PCF857X expander
- * used by device.
- *
- * @note Expander variants known by the driver depend on enabled pseudomodules
- * `pcf8574`, `pcf8574a` and `pcf8575`.
- */
+/// @brief Definition of PCF857X expander variants
+///
+/// It is used in configuration parameters to specify the PCF857X expander
+/// used by device.
+///
+/// @note Expander variants known by the driver depend on enabled pseudomodules
+/// `pcf8574`, `pcf8574a` and `pcf8575`.
 typedef enum {
 #if IS_USED(MODULE_PCF8574) || DOXYGEN
-    PCF857X_EXP_PCF8574,    /**< PCF8574 8 bit I/O expander used */
+    PCF857X_EXP_PCF8574,    ///< PCF8574 8 bit I/O expander used
 #endif
 #if IS_USED(MODULE_PCF8574A) || DOXYGEN
-    PCF857X_EXP_PCF8574A,   /**< PCF8574A 8 bit I/O expander */
+    PCF857X_EXP_PCF8574A,   ///< PCF8574A 8 bit I/O expander
 #endif
 #if IS_USED(MODULE_PCF8575) || DOXYGEN
-    PCF857X_EXP_PCF8575,    /**< PCF8575 16 bit I/O expander */
+    PCF857X_EXP_PCF8575,    ///< PCF8575 16 bit I/O expander
 #endif
     PCF857X_EXP_MAX,
 } pcf857x_exp_t;
 
-/**
- * @brief   PCF857X device initialization parameters
- */
+/// @brief   PCF857X device initialization parameters
 typedef struct {
 
-    i2c_t    dev;       /**< I2C device (default I2C_DEV(0)) */
+    i2c_t    dev;       ///< I2C device (default I2C_DEV(0))
     uint16_t addr;      /**< I2C slave address offset to the PCF7857X base
                              address (default 0) */
     pcf857x_exp_t exp;  /**< PCF857X expander variant used by the device
@@ -364,223 +348,197 @@ typedef struct {
                              value changes.
                              @note To use interrupts for expander inputs, this
                              pin has to be defined. */
-#endif /* MODULE_PCF857X_IRQ */
+#endif // MODULE_PCF857X_IRQ
 } pcf857x_params_t;
 
 #if IS_USED(MODULE_PCF857X_IRQ) || DOXYGEN
-/**
- * @brief   IRQ event type
- *
- * Handling an interrupt of a PCF857x expander requires the driver to access
- * the device directly via I2C. However, the mutex-based synchronization of
- * I2C accesses does not work in the interrupt context. Therefore the ISR must
- * not access the PCF857x expander device directly. Rather, the ISR must only
- * indicate the occurrence of the interrupt which has to be handled
- * asynchronously in the thread context.
- *
- * The type defines the data structure that is part of each device data
- * structure to indicate that an interrupt of the device occurred. Since there
- * is only one interrupt source, only one interrupt can be pending per device.
- * Thus, only one object of this type per device is required.
- */
+/// @brief   IRQ event type
+///
+/// Handling an interrupt of a PCF857x expander requires the driver to access
+/// the device directly via I2C. However, the mutex-based synchronization of
+/// I2C accesses does not work in the interrupt context. Therefore the ISR must
+/// not access the PCF857x expander device directly. Rather, the ISR must only
+/// indicate the occurrence of the interrupt which has to be handled
+/// asynchronously in the thread context.
+///
+/// The type defines the data structure that is part of each device data
+/// structure to indicate that an interrupt of the device occurred. Since there
+/// is only one interrupt source, only one interrupt can be pending per device.
+/// Thus, only one object of this type per device is required.
 typedef struct {
-    event_t event;      /**< inherited event data structure */
-    void *dev;          /**< PCF857X device reference */
+    event_t event;      ///< inherited event data structure
+    void *dev;          ///< PCF857X device reference
 } pcf857x_irq_event_t;
 
-#endif /* MODULE_PCF857X_IRQ */
+#endif // MODULE_PCF857X_IRQ
 
-/**
- * @brief   PCF857X device data structure type
- */
+/// @brief   PCF857X device data structure type
 typedef struct {
-    pcf857x_params_t params;  /**< device initialization parameters */
+    pcf857x_params_t params;  ///< device initialization parameters
 
     uint8_t pin_num;          /**< number of I/O pins, depends on used expander
                                    variant */
-    pcf857x_data_t modes;     /**< expander pin modes */
-    pcf857x_data_t in;        /**< expander input pin values */
-    pcf857x_data_t out;       /**< expander output pin values */
+    pcf857x_data_t modes;     ///< expander pin modes
+    pcf857x_data_t in;        ///< expander input pin values
+    pcf857x_data_t out;       ///< expander output pin values
 
 #if IS_USED(MODULE_PCF857X_IRQ) || DOXYGEN
-    gpio_isr_ctx_t isr[PCF857X_GPIO_PIN_NUM];  /**< ISR with arg for each expander pin */
-    gpio_flank_t flank[PCF857X_GPIO_PIN_NUM];  /**< interrupt flank for each expander pin */
-    bool enabled[PCF857X_GPIO_PIN_NUM];        /**< enabled flag for each expander pin */
-    pcf857x_irq_event_t irq_event;  /**< IRQ event object used for the device */
-#endif /* MODULE_PCF857X_IRQ */
+    gpio_isr_ctx_t isr[PCF857X_GPIO_PIN_NUM];  ///< ISR with arg for each expander pin
+    gpio_flank_t flank[PCF857X_GPIO_PIN_NUM];  ///< interrupt flank for each expander pin
+    bool enabled[PCF857X_GPIO_PIN_NUM];        ///< enabled flag for each expander pin
+    pcf857x_irq_event_t irq_event;  ///< IRQ event object used for the device
+#endif // MODULE_PCF857X_IRQ
 
 } pcf857x_t;
 
 #if IS_USED(MODULE_SAUL_GPIO) || DOXYGEN
-/**
- * @brief   PCF857X configuration structure for mapping expander pins to SAUL
- *
- * This data structure is an extension of the GPIO configuration structure for
- * mapping GPIOs to SAUL. The only additional information required is a
- * reference to the according PCF857X device.
- *
- * @note To use PCF857X with SAUL, module `saul_gpio` has to be added to the
- * project.
- */
+/// @brief   PCF857X configuration structure for mapping expander pins to SAUL
+///
+/// This data structure is an extension of the GPIO configuration structure for
+/// mapping GPIOs to SAUL. The only additional information required is a
+/// reference to the according PCF857X device.
+///
+/// @note To use PCF857X with SAUL, module `saul_gpio` has to be added to the
+/// project.
 typedef struct {
-    unsigned int dev;           /**< PCF857X device index */
-    saul_gpio_params_t gpio;    /**< GPIO configuration for mapping to SAUL */
+    unsigned int dev;           ///< PCF857X device index
+    saul_gpio_params_t gpio;    ///< GPIO configuration for mapping to SAUL
 } pcf857x_saul_gpio_params_t;
 #endif
 
-/**
- * @brief   Initialize the PCF857X I/O expander
- *
- * All expander pins are set to be input and are pulled up.
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   params  configuration parameters, see #pcf857x_params_t
- *
- * @pre If the interrupt handling is enabled by one of the modules
- *      `pcf857x_irq*`, the MCU GPIO pin for the interrupt signal
- *      has to be defined by the default configuration parameter
- *      #PCF857X_PARAM_INT_PIN (pcf857x_params_t::int_pin).
- *
- * @retval  0                   on success
- * @retval  <0                  a negative errno error code on error
- */
+/// @brief   Initialize the PCF857X I/O expander
+///
+/// All expander pins are set to be input and are pulled up.
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   params  configuration parameters, see #pcf857x_params_t
+///
+/// @pre If the interrupt handling is enabled by one of the modules
+///      `pcf857x_irq*`, the MCU GPIO pin for the interrupt signal
+///      has to be defined by the default configuration parameter
+///      #PCF857X_PARAM_INT_PIN (pcf857x_params_t::int_pin).
+///
+/// @retval  0                   on success
+/// @retval  <0                  a negative errno error code on error
 int pcf857x_init(pcf857x_t *dev, const pcf857x_params_t *params);
 
-/**
- * @brief   Initialize a PCF857X pin
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   pin     pin to initialize, use PCF857X_GPIO_PIN(x,y) to specify
- * @param[in]   mode    mode of the pin, see #gpio_t
- *
- * @note
- * - Since the expander I/O pins are quasi-bidirectional without direction
- *   control, the only actively driven level is the output LOW. Therefore
- *   the driver physically supports only the modes #GPIO_IN_PU and
- *   #GPIO_OD_PU. The other logically identical modes #GPIO_IN, #GPIO_OUT
- *   and #GPIO_OD are emulated. For the #GPIO_IN_PU mode the function returns
- *   with `-EINVAL`.
- * - After initialization in #GPIO_OUT mode the pin is actively driven LOW,
- *   after initialization in all other modes the pin is pulled-up to HIGH.
- *
- * @retval  0                   on success
- * @retval  <0                  a negative errno error code on error
- */
+/// @brief   Initialize a PCF857X pin
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   pin     pin to initialize, use PCF857X_GPIO_PIN(x,y) to specify
+/// @param[in]   mode    mode of the pin, see #gpio_t
+///
+/// @note
+/// - Since the expander I/O pins are quasi-bidirectional without direction
+///   control, the only actively driven level is the output LOW. Therefore
+///   the driver physically supports only the modes #GPIO_IN_PU and
+///   #GPIO_OD_PU. The other logically identical modes #GPIO_IN, #GPIO_OUT
+///   and #GPIO_OD are emulated. For the #GPIO_IN_PU mode the function returns
+///   with `-EINVAL`.
+/// - After initialization in #GPIO_OUT mode the pin is actively driven LOW,
+///   after initialization in all other modes the pin is pulled-up to HIGH.
+///
+/// @retval  0                   on success
+/// @retval  <0                  a negative errno error code on error
 int pcf857x_gpio_init(pcf857x_t *dev, uint8_t pin, gpio_mode_t mode);
 
 #if IS_USED(MODULE_PCF857X_IRQ) || DOXYGEN
-/**
- * @brief   Initialize a PCF857X pin for external interrupt usage
- *
- * The registered callback function will be called in interrupt context every
- * time the defined flank(s) are detected. Therefore, it MUST NOT be blocking
- * or time-consuming.
- *
- * The interrupt is activated automatically after the initialization.
- *
- * @pre The MCU GPIO pin for the interrupt signal has to be defined by the
- *      default configuration parameter #PCF857X_PARAM_INT_PIN
- *      (pcf857x_params_t::int_pin).
- *
- * @note
- * - This function is only available if interrupt handling is enabled by one
- *   of the modules `pcf857x_irq*`
- * - Since the expander I/O pins are quasi-bidirectional without direction
- *   control, the only actively driven level is the output LOW. Therefore
- *   the driver physically supports only the modes #GPIO_IN_PU and
- *   #GPIO_OD_PU. The other logically identical modes #GPIO_IN, #GPIO_OUT
- *   and #GPIO_OD are emulated. For the #GPIO_IN_PU mode the function returns
- *   with `-EINVAL`.
- * - After initialization in #GPIO_OUT mode the pin is actively driven LOW,
- *   after initialization in all other modes the pin is pulled-up to HIGH.
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   pin     pin to initialize, use PCF857X_GPIO_PIN(x,y) to specify
- * @param[in]   mode    mode of the pin, see #gpio_t
- * @param[in]   flank   define the active flanks, see #gpio_flank_t
- * @param[in]   isr     ISR that is called back from interrupt context
- * @param[in]   arg     optional argument passed to the callback
- *
- * @retval  0                   on success
- * @retval  <0                  a negative errno error code on error
- */
+/// @brief   Initialize a PCF857X pin for external interrupt usage
+///
+/// The registered callback function will be called in interrupt context every
+/// time the defined flank(s) are detected. Therefore, it MUST NOT be blocking
+/// or time-consuming.
+///
+/// The interrupt is activated automatically after the initialization.
+///
+/// @pre The MCU GPIO pin for the interrupt signal has to be defined by the
+///      default configuration parameter #PCF857X_PARAM_INT_PIN
+///      (pcf857x_params_t::int_pin).
+///
+/// @note
+/// - This function is only available if interrupt handling is enabled by one
+///   of the modules `pcf857x_irq*`
+/// - Since the expander I/O pins are quasi-bidirectional without direction
+///   control, the only actively driven level is the output LOW. Therefore
+///   the driver physically supports only the modes #GPIO_IN_PU and
+///   #GPIO_OD_PU. The other logically identical modes #GPIO_IN, #GPIO_OUT
+///   and #GPIO_OD are emulated. For the #GPIO_IN_PU mode the function returns
+///   with `-EINVAL`.
+/// - After initialization in #GPIO_OUT mode the pin is actively driven LOW,
+///   after initialization in all other modes the pin is pulled-up to HIGH.
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   pin     pin to initialize, use PCF857X_GPIO_PIN(x,y) to specify
+/// @param[in]   mode    mode of the pin, see #gpio_t
+/// @param[in]   flank   define the active flanks, see #gpio_flank_t
+/// @param[in]   isr     ISR that is called back from interrupt context
+/// @param[in]   arg     optional argument passed to the callback
+///
+/// @retval  0                   on success
+/// @retval  <0                  a negative errno error code on error
 int pcf857x_gpio_init_int(pcf857x_t *dev, uint8_t pin,
                                           gpio_mode_t mode,
                                           gpio_flank_t flank,
                                           gpio_cb_t isr,
                                           void *arg);
-#endif /* MODULE_PCF857X_IRQ || DOXYGEN */
+#endif // MODULE_PCF857X_IRQ || DOXYGEN
 
-/**
- * @brief   Get the value from PCF857X input pin
- *
- * @note If the PCF857X interrupt is used, the read operation does not perform
- * an I2C read operation since the last input pin value is already read.
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   pin     pin to read, use PCF857X_GPIO_PIN(x,y) to specify
- */
+/// @brief   Get the value from PCF857X input pin
+///
+/// @note If the PCF857X interrupt is used, the read operation does not perform
+/// an I2C read operation since the last input pin value is already read.
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   pin     pin to read, use PCF857X_GPIO_PIN(x,y) to specify
 int pcf857x_gpio_read(pcf857x_t *dev, uint8_t pin);
 
-/**
- * @brief   Write the value to PCF857X input pin
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   pin     pin to write, use PCF857X_GPIO_PIN(x,y) to specify
- * @param[in]   value   value to write
- */
+/// @brief   Write the value to PCF857X input pin
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   pin     pin to write, use PCF857X_GPIO_PIN(x,y) to specify
+/// @param[in]   value   value to write
 void pcf857x_gpio_write(pcf857x_t *dev, uint8_t pin, int value);
 
-/**
- * @brief   Clear the PCF857X output pin
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   pin     pin to clear, use PCF857X_GPIO_PIN(x,y) to specify
- */
+/// @brief   Clear the PCF857X output pin
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   pin     pin to clear, use PCF857X_GPIO_PIN(x,y) to specify
 void pcf857x_gpio_clear(pcf857x_t *dev, uint8_t pin);
 
-/**
- * @brief   Set the PCF857X output pin
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   pin     pin to set, use PCF857X_GPIO_PIN(x,y) to specify
- */
+/// @brief   Set the PCF857X output pin
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   pin     pin to set, use PCF857X_GPIO_PIN(x,y) to specify
 void pcf857x_gpio_set(pcf857x_t *dev, uint8_t pin);
 
-/**
- * @brief   Toggle the value of the PCF857X output pin
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   pin     pin to toggle, use PCF857X_GPIO_PIN(x,y) to specify
- */
+/// @brief   Toggle the value of the PCF857X output pin
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   pin     pin to toggle, use PCF857X_GPIO_PIN(x,y) to specify
 void pcf857x_gpio_toggle(pcf857x_t *dev, uint8_t pin);
 
 #if IS_USED(MODULE_PCF857X_IRQ) || DOXYGEN
-/**
- * @brief   Enable pin interrupt
- *
- * @note    This function is only available if interrupt handling is enabled
- *          by one of the modules `pcf857x_irq*`
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   pin     pin to enable the interrupt for
- */
+/// @brief   Enable pin interrupt
+///
+/// @note    This function is only available if interrupt handling is enabled
+///          by one of the modules `pcf857x_irq*`
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   pin     pin to enable the interrupt for
 void pcf857x_gpio_irq_enable(pcf857x_t *dev, uint8_t pin);
 
-/**
- * @brief   Disable pin interrupt
- *
- * @note    This function is only available if interrupt handling is enabled
- *          by one of the modules `pcf857x_irq*`
- *
- * @param[in]   dev     descriptor of PCF857X I/O expander device
- * @param[in]   pin     pin to enable the interrupt for
- */
+/// @brief   Disable pin interrupt
+///
+/// @note    This function is only available if interrupt handling is enabled
+///          by one of the modules `pcf857x_irq*`
+///
+/// @param[in]   dev     descriptor of PCF857X I/O expander device
+/// @param[in]   pin     pin to enable the interrupt for
 void pcf857x_gpio_irq_disable(pcf857x_t *dev, uint8_t pin);
-#endif /* MODULE_PCF857X_IRQ || DOXYGEN */
+#endif // MODULE_PCF857X_IRQ || DOXYGEN
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

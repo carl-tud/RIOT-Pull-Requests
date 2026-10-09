@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test the EXTERNAL_MODULE_DIRS feature
- *
- * @author      Gaëtan Harter <gaetan.harter@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test the EXTERNAL_MODULE_DIRS feature
+///
+/// @author      Gaëtan Harter <gaetan.harter@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -27,8 +23,7 @@
 #error "Dependency not included"
 #endif
 
-int main(void)
-{
+int main(void) {
     printf("Message: %s\n", external_module_message);
     if (!external_module_initialized) {
         puts("External module has not been initialized.");

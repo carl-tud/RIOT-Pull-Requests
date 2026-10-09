@@ -1,32 +1,30 @@
-/*
-
-    Author: Kaspar Schleiser <kaspar@schleiser.de>
-
-This is free and unencumbered software released into the public domain.
-
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
-
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-For more information, please refer to <http://unlicense.org/>
- */
+//
+//     Author: Kaspar Schleiser <kaspar@schleiser.de>
+//
+// This is free and unencumbered software released into the public domain.
+//
+// Anyone is free to copy, modify, publish, use, compile, sell, or
+// distribute this software, either in source code form or as a compiled
+// binary, for any purpose, commercial or non-commercial, and by any
+// means.
+//
+// In jurisdictions that recognize copyright laws, the author or authors
+// of this software dedicate any and all copyright interest in the
+// software to the public domain. We make this dedication for the benefit
+// of the public at large and to the detriment of our heirs and
+// successors. We intend this dedication to be an overt act of
+// relinquishment in perpetuity of all present and future rights to this
+// software under copyright law.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+//
+// For more information, please refer to <http://unlicense.org/>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,8 +47,7 @@ int stopped = 0;
 char *port_name = "/dev/ttyUSB1";
 pthread_t serial_reader;
 
-void *serial_reader_func(void *arg)
-{
+void *serial_reader_func(void *arg) {
     unsigned char buf[255];
 
     while (1) {
@@ -62,8 +59,7 @@ void *serial_reader_func(void *arg)
     }
 }
 
-int init()
-{
+int init() {
     int result = open_serial_port(port_name);
     pthread_create(&serial_reader, NULL, serial_reader_func, NULL);
     hard_reset_to_user_code();
@@ -72,13 +68,11 @@ int init()
 
 struct termios old_term_setting;
 
-void close_tty()
-{
+void close_tty() {
     tcsetattr(tty_fd, TCSANOW, &old_term_setting);
 }
 
-void sig_handler(int signal)
-{
+void sig_handler(int signal) {
     if (signal == SIGUSR1) {
         if (stopped) {
             stopped = 0;
@@ -108,8 +102,7 @@ void sig_handler(int signal)
     }
 }
 
-int open_tty(void)
-{
+int open_tty(void) {
     int r, fd;
     struct termios term_setting;
 
@@ -144,8 +137,7 @@ int open_tty(void)
     return fd;
 }
 
-void install_sighandler()
-{
+void install_sighandler() {
     struct sigaction action;
     sigemptyset(&action.sa_mask);
     sigaddset(&action.sa_mask, SIGINT);
@@ -158,8 +150,7 @@ void install_sighandler()
     sigaction(SIGUSR2, &action, NULL);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     if (argc == 2) {
         port_name = argv[1];
     }
@@ -185,7 +176,7 @@ int main(int argc, char **argv)
         int n = read(tty_fd, ttybuf, sizeof(ttybuf));
         int i;
 
-        /* check for 0x3 (ctrl-c), clean exit */
+        // check for 0x3 (ctrl-c), clean exit
         for (i = 0; i < n; i++) {
             if (ttybuf[i] == 0x3) {
                 if (i > 0) {

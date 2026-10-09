@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_stmpe811
- * @{
- *
- * @file
- * @brief       Driver adaption to touch_dev generic interface
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     drivers_stmpe811
+/// @{
+///
+/// @file
+/// @brief       Driver adaption to touch_dev generic interface
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include <stddef.h>
 #include <stdint.h>
@@ -28,24 +24,21 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-uint16_t _stmpe811_height(const touch_dev_t *touch_dev)
-{
+uint16_t _stmpe811_height(const touch_dev_t *touch_dev) {
     const stmpe811_t *dev = (const stmpe811_t *)touch_dev;
     assert(dev);
 
     return dev->params.ymax;
 }
 
-uint16_t _stmpe811_width(const touch_dev_t *touch_dev)
-{
+uint16_t _stmpe811_width(const touch_dev_t *touch_dev) {
     const stmpe811_t *dev = (const stmpe811_t *)touch_dev;
     assert(dev);
 
     return dev->params.xmax;
 }
 
-uint8_t _stmpe811_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t len)
-{
+uint8_t _stmpe811_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t len) {
     (void)len;
 
     stmpe811_t *dev = (stmpe811_t *)touch_dev;
@@ -67,8 +60,7 @@ uint8_t _stmpe811_touches(const touch_dev_t *touch_dev, touch_t *touches, size_t
     return ret;
 }
 
-void _stmpe811_set_event_callback(const touch_dev_t *touch_dev, touch_event_cb_t cb, void *arg)
-{
+void _stmpe811_set_event_callback(const touch_dev_t *touch_dev, touch_event_cb_t cb, void *arg) {
     stmpe811_t *dev = (stmpe811_t *)touch_dev;
     assert(dev);
 

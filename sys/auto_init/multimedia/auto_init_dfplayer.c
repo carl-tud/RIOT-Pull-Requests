@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_multimedia
- * @{
- *
- * @file
- * @brief       Auto initialization for DFPlayer Mini MP3 player
- *
- * @author      Marian Buschsieweke <marian.buschsiewke@ovgu.de>
- *
- * @}
- */
+// @ingroup     sys_auto_init_multimedia
+// @{
+//
+// @file
+// @brief       Auto initialization for DFPlayer Mini MP3 player
+//
+// @author      Marian Buschsieweke <marian.buschsiewke@ovgu.de>
+//
+// @}
 
 #ifdef MODULE_DFPLAYER
 
@@ -24,13 +20,10 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 dfplayer_t dfplayer_devs[DFPLAYER_NUMOF];
 
-void auto_init_dfplayer(void)
-{
+void auto_init_dfplayer(void) {
     DEBUG("[dfplayer] Auto init\n");
     for (unsigned i = 0; i < DFPLAYER_NUMOF; i++) {
         if (dfplayer_init(&dfplayer_devs[i], &dfplayer_params[i])) {
@@ -42,4 +35,4 @@ void auto_init_dfplayer(void)
 
 #else
 typedef int dont_be_pedantic;
-#endif /* MODULE_DFPLAYER */
+#endif // MODULE_DFPLAYER

@@ -1,19 +1,15 @@
-/*
- * Copyright (C) 2016 TriaGnoSys GmbH
- *               2013-15 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2016 TriaGnoSys GmbH
+//               2013-15 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- *
- * @file
- *
- * @author  Víctor Ariño <victor.arino@zii.aero>
- */
+/// @{
+///
+/// @file
+///
+/// @author  Víctor Ariño <victor.arino@zii.aero>
 
 #include <errno.h>
 #include <limits.h>
@@ -25,8 +21,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-void sema_create(sema_t *sema, unsigned int value)
-{
+void sema_create(sema_t *sema, unsigned int value) {
     assert(sema != NULL);
 
     sema->value = value;
@@ -37,8 +32,7 @@ void sema_create(sema_t *sema, unsigned int value)
     }
 }
 
-void sema_destroy(sema_t *sema)
-{
+void sema_destroy(sema_t *sema) {
     assert(sema != NULL);
 
     sema->state = SEMA_DESTROY;
@@ -46,8 +40,7 @@ void sema_destroy(sema_t *sema)
 }
 
 #if IS_USED(MODULE_SEMA_DEPRECATED)
-int _sema_wait_ztimer64(sema_t *sema, int block, ztimer64_clock_t *clock, uint64_t us)
-{
+int _sema_wait_ztimer64(sema_t *sema, int block, ztimer64_clock_t *clock, uint64_t us) {
     assert(sema != NULL);
 
     if (sema->state != SEMA_OK) {
@@ -90,7 +83,7 @@ int _sema_wait_ztimer64(sema_t *sema, int block, ztimer64_clock_t *clock, uint64
     unsigned int value = --sema->value;
     irq_restore(old);
 
-    /* only unlock mutex if it was a blocking operation */
+    // only unlock mutex if it was a blocking operation
     if (did_block && value > 0) {
         mutex_unlock(&sema->mutex);
     }
@@ -100,8 +93,7 @@ int _sema_wait_ztimer64(sema_t *sema, int block, ztimer64_clock_t *clock, uint64
 #endif
 
 int _sema_wait_ztimer(sema_t *sema, int block,
-                      ztimer_clock_t *clock, uint32_t timeout)
-{
+                      ztimer_clock_t *clock, uint32_t timeout) {
     assert(sema != NULL);
 
     if (sema->state != SEMA_OK) {
@@ -144,7 +136,7 @@ int _sema_wait_ztimer(sema_t *sema, int block,
     unsigned int value = --sema->value;
     irq_restore(old);
 
-    /* only unlock mutex if it was a blocking operation */
+    // only unlock mutex if it was a blocking operation
     if (did_block && value > 0) {
         mutex_unlock(&sema->mutex);
     }
@@ -152,8 +144,7 @@ int _sema_wait_ztimer(sema_t *sema, int block,
     return 0;
 }
 
-int sema_post(sema_t *sema)
-{
+int sema_post(sema_t *sema) {
     assert(sema != NULL);
 
     unsigned old = irq_disable();
@@ -171,4 +162,4 @@ int sema_post(sema_t *sema)
 
     return 0;
 }
-/** @} */
+/// @}

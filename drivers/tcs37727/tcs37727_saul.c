@@ -1,27 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_tcs37727
- * @{
- *
- * @file
- * @brief       TCS37727 adaption to the RIOT actuator/sensor interface
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_tcs37727
+/// @{
+///
+/// @file
+/// @brief       TCS37727 adaption to the RIOT actuator/sensor interface
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
 #include "saul.h"
 #include "tcs37727.h"
 
-static int read(const void *dev, phydat_t *res)
-{
+static int read(const void *dev, phydat_t *res) {
     tcs37727_data_t val;
 
     tcs37727_read((const tcs37727_t *)dev, &val);

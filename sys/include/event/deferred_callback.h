@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     sys_event
- * @brief       Trigger an event callback after a timeout
- *
- * This provides convenience functions to trigger a callback event after
- * some time has passed.
- *
- * @{
- *
- * @file
- * @brief       Event Deferred Callback API
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- */
+/// @ingroup     sys_event
+/// @brief       Trigger an event callback after a timeout
+///
+/// This provides convenience functions to trigger a callback event after
+/// some time has passed.
+///
+/// @{
+///
+/// @file
+/// @brief       Event Deferred Callback API
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
 
 #include <assert.h>
 #include "event/callback.h"
@@ -29,44 +25,36 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Deferred Callback Event structure
- */
+/// @brief   Deferred Callback Event structure
 typedef struct {
-    event_callback_t event;     /**< callback event portion */
-    event_queue_t *queue;       /**< event queue to post event to */
-    ztimer_t timer;             /**< ztimer object used for timeout */
+    event_callback_t event;     ///< callback event portion
+    event_queue_t *queue;       ///< event queue to post event to
+    ztimer_t timer;             ///< ztimer object used for timeout
 } event_deferred_callback_t;
 
-/**
- * @brief     Internal helper function for ztimer callback
- * @param[in] arg   event structure
- */
-static inline void _event_deferred_post(void *arg)
-{
+/// @brief     Internal helper function for ztimer callback
+/// @param[in] arg   event structure
+static inline void _event_deferred_post(void *arg) {
     event_deferred_callback_t *event_timeout = arg;
 
     event_post(event_timeout->queue, arg);
 }
 
-/**
- * @brief   Execute a callback function in the event thread after a timeout
- *
- * @warning @p event must be kept allocated until the callback was executed
- *
- * @param[in]   event           event_deferred_callback object to initialize
- * @param[in]   queue           queue that the timed-out event will be added to
- * @param[in]   clock           the clock to configure this timer on
- * @param[in]   timeout         timer target (relative ticks from now)
- * @param[in]   callback        callback to set up
- * @param[in]   arg             callback argument to set up
- */
+/// @brief   Execute a callback function in the event thread after a timeout
+///
+/// @warning @p event must be kept allocated until the callback was executed
+///
+/// @param[in]   event           event_deferred_callback object to initialize
+/// @param[in]   queue           queue that the timed-out event will be added to
+/// @param[in]   clock           the clock to configure this timer on
+/// @param[in]   timeout         timer target (relative ticks from now)
+/// @param[in]   callback        callback to set up
+/// @param[in]   arg             callback argument to set up
 static inline void event_deferred_callback_post(event_deferred_callback_t *event,
                                                 event_queue_t *queue,
                                                 ztimer_clock_t *clock, uint32_t timeout,
-                                                void (*callback)(void *), void *arg)
-{
-    /* cancel the event if it has already been queued */
+                                                void (*callback)(void *), void *arg) {
+    // cancel the event if it has already been queued
     ztimer_remove(clock, &event->timer);
     event_cancel(queue, &event->event.super);
 
@@ -84,15 +72,12 @@ static inline void event_deferred_callback_post(event_deferred_callback_t *event
     ztimer_set(clock, &event->timer, timeout);
 }
 
-/**
- * @brief   Cancel a callback function if it has not been executed yet
- *
- * @param[in]   event           event_deferred_callback object to cancel
- * @param[in]   clock           the clock this timer runs on
- */
+/// @brief   Cancel a callback function if it has not been executed yet
+///
+/// @param[in]   event           event_deferred_callback object to cancel
+/// @param[in]   clock           the clock this timer runs on
 static inline void event_deferred_callback_cancel(event_deferred_callback_t *event,
-                                                  ztimer_clock_t *clock)
-{
+                                                  ztimer_clock_t *clock) {
     ztimer_remove(clock, &event->timer);
     event_cancel(event->queue, (event_t *)event);
 }
@@ -100,4 +85,4 @@ static inline void event_deferred_callback_cancel(event_deferred_callback_t *eve
 #ifdef __cplusplus
 }
 #endif
-/** @} */
+/// @}

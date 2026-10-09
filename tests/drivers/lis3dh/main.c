@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the LIS3DH accelerometer driver
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the LIS3DH accelerometer driver
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -29,14 +25,12 @@
 
 static volatile int int1_count = 0;
 
-static void test_int1(void *arg)
-{
+static void test_int1(void *arg) {
     volatile int *int1_count_ptr = arg;
     ++(*int1_count_ptr);
 }
 
-int main(void)
-{
+int main(void) {
     lis3dh_t dev;
     lis3dh_data_t acc_data;
 

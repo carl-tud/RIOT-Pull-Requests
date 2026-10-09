@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2015 Ludwig Knüpfer
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Ludwig Knüpfer
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the ISL29125 RGB light sensor
- *
- * @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * @author      Martin Heusmann <martin.heusmann@haw-hamburg.de>
- * @author      Cenk Gündoğan <mail-github@cgundogan.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the ISL29125 RGB light sensor
+///
+/// @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+/// @author      Martin Heusmann <martin.heusmann@haw-hamburg.de>
+/// @author      Cenk Gündoğan <mail-github@cgundogan.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -27,20 +23,18 @@
 
 #define SLEEP_USEC  (250 * 1000U)
 
-void cb(void *arg)
-{
+void cb(void *arg) {
     (void) arg;
     printf("INT: external interrupt\n");
 }
 
-int main(void)
-{
+int main(void) {
     isl29125_t dev;
     isl29125_rgb_t data;
     color_rgb_t data8bit;
     memset(&data, 0x00, sizeof(data));
 
-    /* Parameters for testing, change if needed. */
+    // Parameters for testing, change if needed.
     uint16_t lower_threshold = 0;
     uint16_t higher_threshold = 8000;
 
@@ -63,7 +57,7 @@ int main(void)
         return 1;
     }
 
-    /* try out some modes */
+    // try out some modes
     static const isl29125_mode_t modes[] = {
         ISL29125_MODE_DOWN, ISL29125_MODE_STANDBY, ISL29125_MODE_RGB,
         ISL29125_MODE_R, ISL29125_MODE_G, ISL29125_MODE_B,

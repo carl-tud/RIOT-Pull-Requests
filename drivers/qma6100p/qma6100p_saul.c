@@ -1,29 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2026 Baptiste Le Duc <baptiste.leduc@etik.com>
- * SPDX-FileCopyrightText: 2026 Léandre Le Duc <leandre.leduc38@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Baptiste Le Duc <baptiste.leduc@etik.com>
+// SPDX-FileCopyrightText: 2026 Léandre Le Duc <leandre.leduc38@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_qma6100p
- * @{
- *
- * @file
- * @brief       QMA6100P adaption to the RIOT actuator/sensor interface
- *
- * @author      Baptiste Le Duc <baptiste.leduc@etik.com>
- * @author      Léandre Le Duc <leandre.leduc38@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_qma6100p
+/// @{
+///
+/// @file
+/// @brief       QMA6100P adaption to the RIOT actuator/sensor interface
+///
+/// @author      Baptiste Le Duc <baptiste.leduc@etik.com>
+/// @author      Léandre Le Duc <leandre.leduc38@gmail.com>
+///
+/// @}
 
 #include <string.h>
 
 #include "qma6100p.h"
 #include "saul.h"
 
-static int saul_qma6100p_read(const void *dev, phydat_t *data)
-{
+static int saul_qma6100p_read(const void *dev, phydat_t *data) {
     int res;
     const qma6100p_t *mydev = (const qma6100p_t *)dev;
     qma6100p_data_t qma6100p_data;

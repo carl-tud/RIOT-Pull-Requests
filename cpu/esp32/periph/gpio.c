@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32
- * @ingroup     drivers_periph_gpio
- * @{
- *
- * @file
- * @brief       GPIO driver implementation for ESP32
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @ingroup     drivers_periph_gpio
+/// @{
+///
+/// @file
+/// @brief       GPIO driver implementation for ESP32
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <assert.h>
 #include <stdbool.h>
 
 #include "log.h"
-#include "periph/gpio.h"    /* RIOT gpio.h */
+#include "periph/gpio.h"    // RIOT gpio.h
 #if IS_USED(MODULE_GPIO_LL)
 #include "periph/gpio_ll_arch.h"
 #endif
@@ -62,11 +58,11 @@
 #define ESP_PM_WUP_PINS_ANY_HIGH    ESP_EXT1_WAKEUP_ANY_HIGH
 #define ESP_PM_WUP_PINS_ANY_LOW     -1
 #define ESP_PM_WUP_PINS_ALL_LOW     ESP_EXT1_WAKEUP_ALL_LOW
-#else /* CPU_FAM_ESP32 */
+#else // CPU_FAM_ESP32
 #define ESP_PM_WUP_PINS_ANY_HIGH    ESP_EXT1_WAKEUP_ANY_HIGH
 #define ESP_PM_WUP_PINS_ANY_LOW     ESP_EXT1_WAKEUP_ANY_LOW
 #define ESP_PM_WUP_PINS_ALL_LOW     -1
-#endif /* CPU_FAM_ESP32 */
+#endif // CPU_FAM_ESP32
 #elif SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
 #define ESP_PM_WUP_PINS_ANY_HIGH    ESP_GPIO_WAKEUP_GPIO_HIGH
 #define ESP_PM_WUP_PINS_ANY_LOW     ESP_GPIO_WAKEUP_GPIO_LOW
@@ -97,7 +93,7 @@
 
 #define GPIO_PRO_CPU_INTR_ENA       (BIT(2))
 
-/* architecture specific tables */
+// architecture specific tables
 extern gpio_pin_usage_t _gpio_pin_usage[GPIO_PIN_NUMOF];
 
 _Static_assert(ARRAY_SIZE(_gpio_pin_usage) == SOC_GPIO_PIN_COUNT,
@@ -110,32 +106,29 @@ _Static_assert(ARRAY_SIZE(_gpio_to_iomux_reg) == SOC_GPIO_PIN_COUNT,
                "size of _gpio_to_iomux_reg does not match SOC_GPIO_PIN_COUNT");
 #endif
 
-/* String representation of usage types */
+// String representation of usage types
 const char* _gpio_pin_usage_str[] =
 {
     "GPIO", "ADC", "CAN", "DAC", "EMAC", "I2C", "PWM", "SPI", "SPI Flash", "UART", "N/A"
 };
 
 #ifdef ESP_PM_WUP_PINS
-/* for saving the pullup/pulldown settings of wakeup pins in deep sleep mode */
+// for saving the pullup/pulldown settings of wakeup pins in deep sleep mode
 bool _gpio_pin_pu[GPIO_PIN_NUMOF] = { };
 bool _gpio_pin_pd[GPIO_PIN_NUMOF] = { };
 #endif
 
 #if SOC_GPIO_PIN_COUNT > 32
 
-static inline int _gpio_reg_in_get(gpio_t pin)
-{
+static inline int _gpio_reg_in_get(gpio_t pin) {
     return (pin < 32) ? (GPIO.in >> pin) & 1 : (GPIO.in1.val >> (pin - 32)) & 1;
 }
 
-static inline int _gpio_reg_out_get(gpio_t pin)
-{
+static inline int _gpio_reg_out_get(gpio_t pin) {
     return (pin < 32) ? (GPIO.out >> pin) & 1 : (GPIO.out1.val >> (pin - 32)) & 1;
 }
 
-static inline void _gpio_reg_out_set(gpio_t pin)
-{
+static inline void _gpio_reg_out_set(gpio_t pin) {
     if (pin < 32) {
         GPIO.out_w1ts = BIT(pin);
     }
@@ -144,8 +137,7 @@ static inline void _gpio_reg_out_set(gpio_t pin)
     }
 }
 
-static inline void _gpio_reg_out_clr(gpio_t pin)
-{
+static inline void _gpio_reg_out_clr(gpio_t pin) {
     if (pin < 32) {
         GPIO.out_w1tc = BIT(pin);
     }
@@ -154,8 +146,7 @@ static inline void _gpio_reg_out_clr(gpio_t pin)
     }
 }
 
-static inline void _gpio_reg_out_xor(gpio_t pin)
-{
+static inline void _gpio_reg_out_xor(gpio_t pin) {
     if (pin < 32) {
         GPIO.out ^=  BIT(pin);
     }
@@ -166,28 +157,23 @@ static inline void _gpio_reg_out_xor(gpio_t pin)
 
 #elif SOC_GPIO_PIN_COUNT < 32
 
-static inline int _gpio_reg_in_get(gpio_t pin)
-{
+static inline int _gpio_reg_in_get(gpio_t pin) {
     return (GPIO.in.val >> pin) & 1;
 }
 
-static inline int _gpio_reg_out_get(gpio_t pin)
-{
+static inline int _gpio_reg_out_get(gpio_t pin) {
     return (GPIO.out.val >> pin) & 1;
 }
 
-static inline void _gpio_reg_out_set(gpio_t pin)
-{
+static inline void _gpio_reg_out_set(gpio_t pin) {
     GPIO.out_w1ts.val = BIT(pin);
 }
 
-static inline void _gpio_reg_out_clr(gpio_t pin)
-{
+static inline void _gpio_reg_out_clr(gpio_t pin) {
     GPIO.out_w1tc.val = BIT(pin);
 }
 
-static inline void _gpio_reg_out_xor(gpio_t pin)
-{
+static inline void _gpio_reg_out_xor(gpio_t pin) {
     GPIO.out.val ^=  BIT(pin);
 }
 
@@ -196,11 +182,10 @@ static inline void _gpio_reg_out_xor(gpio_t pin)
 #endif
 
 #ifndef NDEBUG
-int _gpio_init_mode_check(gpio_t pin, gpio_mode_t mode)
-{
+int _gpio_init_mode_check(gpio_t pin, gpio_mode_t mode) {
     assert(pin < GPIO_PIN_NUMOF);
 
-    /* check if the pin can be used as GPIO or if it is used for something else */
+    // check if the pin can be used as GPIO or if it is used for something else
     if (_gpio_pin_usage[pin] != _GPIO) {
         LOG_TAG_ERROR("gpio", "GPIO%d is already used as %s signal\n", pin,
                       _gpio_pin_usage_str[_gpio_pin_usage[pin]]);
@@ -210,8 +195,7 @@ int _gpio_init_mode_check(gpio_t pin, gpio_mode_t mode)
 }
 #endif
 
-int gpio_init(gpio_t pin, gpio_mode_t mode)
-{
+int gpio_init(gpio_t pin, gpio_mode_t mode) {
     DEBUG("%s: gpio=%d mode=%d\n", __func__, pin, mode);
     assert(_gpio_init_mode_check(pin, mode) == 0);
     assert(pin < GPIO_PIN_NUMOF);
@@ -242,7 +226,7 @@ int gpio_init(gpio_t pin, gpio_mode_t mode)
         break;
     }
 
-    /* digital GPIO configuration */
+    // digital GPIO configuration
     cfg.pull_up_en = ((mode == GPIO_IN_PU) ||
                       (mode == GPIO_OD_PU) ||
                       (mode == GPIO_IN_OD_PU)) ? GPIO_PULLUP_ENABLE
@@ -252,20 +236,20 @@ int gpio_init(gpio_t pin, gpio_mode_t mode)
     cfg.intr_type = GPIO_INTR_DISABLE;
 
 #ifdef ESP_PM_WUP_PINS
-    /* for saving the pullup/pulldown settings of wakeup pins in deep sleep mode */
+    // for saving the pullup/pulldown settings of wakeup pins in deep sleep mode
     _gpio_pin_pu[pin] = cfg.pull_up_en;
     _gpio_pin_pd[pin] = cfg.pull_down_en;
 #if SOC_RTCIO_HOLD_SUPPORTED
-    /* disable the RTCIO hold function for the case we come from deep sleep */
+    // disable the RTCIO hold function for the case we come from deep sleep
     if (rtc_gpio_is_valid_gpio(pin)) {
         rtc_gpio_hold_dis(pin);
     }
-#endif /* SOC_RTCIO_HOLD_SUPPORTED */
-#endif /* ESP_PM_WUP_PINS */
+#endif // SOC_RTCIO_HOLD_SUPPORTED
+#endif // ESP_PM_WUP_PINS
 
 #ifdef ESP_PM_GPIO_HOLD
 #if SOC_RTCIO_HOLD_SUPPORTED
-    /* disable the RTCIO hold function for the case we come from deep sleep */
+    // disable the RTCIO hold function for the case we come from deep sleep
     rtc_gpio_force_hold_dis_all();
 #endif
 #endif
@@ -275,13 +259,12 @@ int gpio_init(gpio_t pin, gpio_mode_t mode)
 
 #if MODULE_PERIPH_GPIO_IRQ
 
-/* interrupt enabled state is required for sleep modes */
+// interrupt enabled state is required for sleep modes
 bool gpio_int_enabled_table[GPIO_PIN_NUMOF] = { };
 bool gpio_isr_service_installed = false;
 
 int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
-                  gpio_cb_t cb, void *arg)
-{
+                  gpio_cb_t cb, void *arg) {
     DEBUG("%s: gpio=%d mode=%d flank=%d\n", __func__, pin, mode, flank);
     assert(_gpio_init_mode_check(pin, mode) == 0);
 
@@ -312,19 +295,19 @@ int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
         break;
     }
 
-    /* install GPIO ISR of ESP-IDF if not yet done */
+    // install GPIO ISR of ESP-IDF if not yet done
     if (!gpio_isr_service_installed &&
         gpio_install_isr_service(ESP_INTR_FLAG_LEVEL1) != ESP_OK) {
         return -1;
     }
     gpio_isr_service_installed = true;
 
-    /* set the interrupt type for the pin */
+    // set the interrupt type for the pin
     if (gpio_set_intr_type(pin, type) != ESP_OK) {
         return -1;
     }
 
-    /* unmask and clear pending interrupts for the pin */
+    // unmask and clear pending interrupts for the pin
     if (gpio_isr_handler_add(pin, cb, arg) != ESP_OK) {
         return -1;
     }
@@ -334,8 +317,7 @@ int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
     return (gpio_int_enabled_table[pin]) ? 0 : -1;
 }
 
-void gpio_irq_enable(gpio_t pin)
-{
+void gpio_irq_enable(gpio_t pin) {
     DEBUG("%s: gpio=%d\n", __func__, pin);
     assert(pin < GPIO_PIN_NUMOF);
 
@@ -344,8 +326,7 @@ void gpio_irq_enable(gpio_t pin)
     }
 }
 
-void gpio_irq_disable(gpio_t pin)
-{
+void gpio_irq_disable(gpio_t pin) {
     DEBUG("%s: gpio=%d\n", __func__, pin);
     assert(pin < GPIO_PIN_NUMOF);
 
@@ -354,7 +335,7 @@ void gpio_irq_disable(gpio_t pin)
     }
 }
 
-#endif /* MODULE_PERIPH_GPIO_IRQ */
+#endif // MODULE_PERIPH_GPIO_IRQ
 
 #if IS_USED(MODULE_ESP_IDF_GPIO_HAL)
 
@@ -362,28 +343,24 @@ static gpio_hal_context_t _gpio_hal_ctx = {
     .dev = GPIO_HAL_GET_HW(0)
 };
 
-/*
- * Since `gpio_hal_get_level` returns the current pin level and not the value
- * last written to the output, we have to handle the state of each pin in a
- * separate static variable.
- */
+// Since `gpio_hal_get_level` returns the current pin level and not the value
+// last written to the output, we have to handle the state of each pin in a
+// separate static variable.
 static BITFIELD(_output, GPIO_PIN_NUMOF);
 
-bool gpio_read(gpio_t pin)
-{
+bool gpio_read(gpio_t pin) {
     assert(pin < GPIO_PIN_NUMOF);
 
-    /* if the pin is not an input, it always returns 0 */
-    /* TODO: not really clear whether it should return the last written value
-     *       in this case. */
+    // if the pin is not an input, it always returns 0
+    // TODO: not really clear whether it should return the last written value
+    //       in this case.
     int value = gpio_hal_get_level(&_gpio_hal_ctx, pin);
 
     DEBUG("%s gpio=%u val=%d\n", __func__, pin, value);
     return value;
 }
 
-void gpio_write(gpio_t pin, bool value)
-{
+void gpio_write(gpio_t pin, bool value) {
     DEBUG("%s gpio=%u val=%d\n", __func__, pin, value);
     assert(pin < GPIO_PIN_NUMOF);
 
@@ -396,8 +373,7 @@ void gpio_write(gpio_t pin, bool value)
     gpio_hal_set_level(&_gpio_hal_ctx, pin, value);
 }
 
-void gpio_set(gpio_t pin)
-{
+void gpio_set(gpio_t pin) {
     DEBUG("%s gpio=%u\n", __func__, pin);
     assert(pin < GPIO_PIN_NUMOF);
 
@@ -405,8 +381,7 @@ void gpio_set(gpio_t pin)
     gpio_hal_set_level(&_gpio_hal_ctx, pin, 1);
 }
 
-void gpio_clear(gpio_t pin)
-{
+void gpio_clear(gpio_t pin) {
     DEBUG("%s gpio=%u\n", __func__, pin);
     assert(pin < GPIO_PIN_NUMOF);
 
@@ -414,8 +389,7 @@ void gpio_clear(gpio_t pin)
     gpio_hal_set_level(&_gpio_hal_ctx, pin, 0);
 }
 
-void gpio_toggle(gpio_t pin)
-{
+void gpio_toggle(gpio_t pin) {
     DEBUG("%s gpio=%u\n", __func__, pin);
     assert(pin < GPIO_PIN_NUMOF);
 
@@ -423,28 +397,26 @@ void gpio_toggle(gpio_t pin)
     gpio_hal_set_level(&_gpio_hal_ctx, pin, bf_isset(_output, pin) ? 1 : 0);
 }
 
-#else /* IS_USED(MODULE_ESP_IDF_GPIO_HAL) */
+#else // IS_USED(MODULE_ESP_IDF_GPIO_HAL)
 
-bool gpio_read(gpio_t pin)
-{
+bool gpio_read(gpio_t pin) {
     assert(pin < GPIO_PIN_NUMOF);
 
     int value;
 
     if (REG_GET_BIT(_gpio_to_iomux_reg[pin], FUN_IE)) {
-        /* in case the pin is any kind of input, read from input register */
+        // in case the pin is any kind of input, read from input register
         value = _gpio_reg_in_get(pin);
     }
     else {
-        /* otherwise read the last value written to the output register */
+        // otherwise read the last value written to the output register
         value = _gpio_reg_out_get(pin);
     }
     DEBUG("%s gpio=%u val=%d\n", __func__, pin, value);
     return value;
 }
 
-void gpio_write(gpio_t pin, bool value)
-{
+void gpio_write(gpio_t pin, bool value) {
     DEBUG("%s gpio=%u val=%d\n", __func__, pin, value);
     assert(pin < GPIO_PIN_NUMOF);
     if (value) {
@@ -455,44 +427,38 @@ void gpio_write(gpio_t pin, bool value)
     }
 }
 
-void gpio_set(gpio_t pin)
-{
+void gpio_set(gpio_t pin) {
     DEBUG("%s gpio=%u\n", __func__, pin);
     assert(pin < GPIO_PIN_NUMOF);
     _gpio_reg_out_set(pin);
 }
 
-void gpio_clear(gpio_t pin)
-{
+void gpio_clear(gpio_t pin) {
     DEBUG("%s gpio=%u\n", __func__, pin);
     assert(pin < GPIO_PIN_NUMOF);
     _gpio_reg_out_clr(pin);
 
 }
 
-void gpio_toggle(gpio_t pin)
-{
+void gpio_toggle(gpio_t pin) {
     DEBUG("%s gpio=%u\n", __func__, pin);
     assert(pin < GPIO_PIN_NUMOF);
     _gpio_reg_out_xor(pin);
 }
 
-#endif /* IS_USED(MODULE_ESP_IDF_GPIO_HAL) */
+#endif // IS_USED(MODULE_ESP_IDF_GPIO_HAL)
 
-int gpio_set_pin_usage(gpio_t pin, gpio_pin_usage_t usage)
-{
+int gpio_set_pin_usage(gpio_t pin, gpio_pin_usage_t usage) {
     assert(pin < GPIO_PIN_NUMOF);
     _gpio_pin_usage[pin] = usage;
     return 0;
 }
 
-gpio_pin_usage_t gpio_get_pin_usage (gpio_t pin)
-{
+gpio_pin_usage_t gpio_get_pin_usage (gpio_t pin) {
     return (pin < GPIO_PIN_NUMOF) ? _gpio_pin_usage[pin] : _NOT_EXIST;
 }
 
-const char* gpio_get_pin_usage_str(gpio_t pin)
-{
+const char* gpio_get_pin_usage_str(gpio_t pin) {
     return _gpio_pin_usage_str[_gpio_pin_usage[((pin < GPIO_PIN_NUMOF) ? pin : _NOT_EXIST)]];
 }
 
@@ -500,19 +466,18 @@ const char* gpio_get_pin_usage_str(gpio_t pin)
 static uint32_t gpio_int_saved_type[GPIO_PIN_NUMOF];
 #endif
 
-void gpio_pm_sleep_enter(unsigned mode)
-{
+void gpio_pm_sleep_enter(unsigned mode) {
     if (mode == ESP_PM_DEEP_SLEEP) {
 #ifdef ESP_PM_GPIO_HOLD
 #if SOC_RTCIO_HOLD_SUPPORTED
         rtc_gpio_force_hold_en_all();
 #if CPU_FAM_ESP32
-        /* isolating GPIO12 from external circuits is especially recommended for
-         * ESP32-WROVER that have an external pullup on GPIO12 */
+        // isolating GPIO12 from external circuits is especially recommended for
+        // ESP32-WROVER that have an external pullup on GPIO12
         rtc_gpio_isolate(GPIO_NUM_12);
 #elif CPU_FAM_ESP32H2
-        /* On ESP32H2 rtc_gpio_force_hold_en_all doesn't enable the hold
-         * function for all RTC GPIOs, so we have to do it for each pin. */
+        // On ESP32H2 rtc_gpio_force_hold_en_all doesn't enable the hold
+        // function for all RTC GPIOs, so we have to do it for each pin.
         for (unsigned i = 0; i < SOC_GPIO_PIN_COUNT; i++) {
             if (rtc_gpio_is_valid_gpio(i)) {
                 rtc_gpio_hold_en(i);
@@ -526,15 +491,13 @@ void gpio_pm_sleep_enter(unsigned mode)
 
 #ifdef ESP_PM_WUP_PINS
         static const gpio_t wup_pins[] = { ESP_PM_WUP_PINS };
-        /*
-         * Prepare the wake-up pins if a single pin or a comma-separated list of
-         * pins is defined for wake-up.
-         */
+        // Prepare the wake-up pins if a single pin or a comma-separated list of
+        // pins is defined for wake-up.
         uint64_t wup_pin_mask = 0;
         for (unsigned i = 0; i < ARRAY_SIZE(wup_pins); i++) {
             wup_pin_mask |= 1ULL << wup_pins[i];
 
-            /* ensure that valid GPIOs are used as wake-up source */
+            // ensure that valid GPIOs are used as wake-up source
 #if SOC_PM_SUPPORT_EXT1_WAKEUP
             if (rtc_io_num_map[wup_pins[i]] < 0) {
                 LOG_ERROR("GPIO%u is not a valid wake-up source, valid GPIOs are:",
@@ -566,8 +529,8 @@ void gpio_pm_sleep_enter(unsigned mode)
 #endif
 
 #if SOC_RTCIO_INPUT_OUTPUT_SUPPORTED
-            /* If internal pullups/pulldowns are used, they have to be
-               activated also in deep sleep mode in RTC power domain */
+            // If internal pullups/pulldowns are used, they have to be
+            //    activated also in deep sleep mode in RTC power domain
             bool pu_pd_used = false;
 
             assert(rtc_io_num_map[wup_pins[i]] >= 0);
@@ -583,8 +546,8 @@ void gpio_pm_sleep_enter(unsigned mode)
             }
             if (pu_pd_used) {
 #if SOC_PM_SUPPORT_RTC_PERIPH_PD
-                /* If internal pullups/pulldowns are used, the RTC power domain
-                 * must remain active in deep sleep mode if supported */
+                // If internal pullups/pulldowns are used, the RTC power domain
+                // must remain active in deep sleep mode if supported
                 esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
 #endif
             }
@@ -602,15 +565,15 @@ void gpio_pm_sleep_enter(unsigned mode)
 #endif
         }
 #if SOC_PM_SUPPORT_EXT1_WAKEUP
-        /* ESP_PM_WUP_PINS_ALL_LOW or ESP_PM_WUP_PINS_ANY_HIGH */
+        // ESP_PM_WUP_PINS_ALL_LOW or ESP_PM_WUP_PINS_ANY_HIGH
         esp_sleep_enable_ext1_wakeup_io(wup_pin_mask, ESP_PM_WUP_LEVEL);
 #elif SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP && SOC_DEEP_SLEEP_SUPPORTED
-        /* ESP_PM_WUP_PINS_ANY_LOW or ESP_PM_WUP_PINS_ANY_HIGH */
+        // ESP_PM_WUP_PINS_ANY_LOW or ESP_PM_WUP_PINS_ANY_HIGH
         esp_deep_sleep_enable_gpio_wakeup(wup_pin_mask, ESP_PM_WUP_LEVEL);
 #else
         #error "ESP32x variant doesn't allow to define GPIOs for wake-up from deep sleep"
 #endif
-#endif /* ESP_PM_WUP_PINS */
+#endif // ESP_PM_WUP_PINS
     }
     else {
 #if MODULE_PERIPH_GPIO_IRQ
@@ -642,8 +605,7 @@ void gpio_pm_sleep_enter(unsigned mode)
     }
 }
 
-void gpio_pm_sleep_exit(uint32_t cause)
-{
+void gpio_pm_sleep_exit(uint32_t cause) {
     (void)cause;
 #if MODULE_PERIPH_GPIO_IRQ
     DEBUG("%s\n", __func__);

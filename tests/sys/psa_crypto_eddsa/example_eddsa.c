@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2023 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @brief       Tests the PSA EDDSA configurations
- *              Contents have been copied from `examples/advanced/psa_crypto`
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @brief       Tests the PSA EDDSA configurations
+///              Contents have been copied from `examples/advanced/psa_crypto`
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -27,12 +23,9 @@
 #define ECC_KEY_TYPE (PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_TWISTED_EDWARDS))
 #define ECC_ALG (PSA_ALG_PURE_EDDSA)
 
-/**
- * @brief   Example function to perform an EdDSA operation with the twisted Edwards curve Edwards25519
- *          with the PSA Crypto API.
- */
-psa_status_t example_eddsa(void)
-{
+/// @brief   Example function to perform an EdDSA operation with the twisted Edwards curve Edwards25519
+///          with the PSA Crypto API.
+psa_status_t example_eddsa(void) {
     psa_key_id_t privkey_id;
     psa_key_attributes_t privkey_attr = psa_key_attributes_init();
     psa_key_id_t pubkey_id;

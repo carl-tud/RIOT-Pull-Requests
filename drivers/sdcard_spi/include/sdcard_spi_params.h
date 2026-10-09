@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_sdcard_spi
- * @{
- *
- * @file
- * @brief       Default parameters for sdcard_spi driver
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- */
+/// @ingroup     drivers_sdcard_spi
+/// @{
+///
+/// @file
+/// @brief       Default parameters for sdcard_spi driver
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
 
 #include "board.h"
 
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the sdcard_spi driver
- * @{
- */
+/// @name    Set default configuration parameters for the sdcard_spi driver
+/// @{
 #ifndef SDCARD_SPI_PARAM_SPI
 #define SDCARD_SPI_PARAM_SPI         SPI_DEV(0)
 #endif
@@ -44,7 +38,7 @@ extern "C" {
 #define SDCARD_SPI_PARAM_POWER       (GPIO_UNDEF)
 #endif
 #ifndef SDCARD_SPI_PARAM_POWER_AH
-/** treated as 'don't care' if SDCARD_SPI_PARAM_POWER is GPIO_UNDEF */
+/// treated as 'don't care' if SDCARD_SPI_PARAM_POWER is GPIO_UNDEF
 #define SDCARD_SPI_PARAM_POWER_AH    (true)
 #endif
 
@@ -57,11 +51,9 @@ extern "C" {
                                        .power = SDCARD_SPI_PARAM_POWER,   \
                                        .power_act_high = SDCARD_SPI_PARAM_POWER_AH }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   sdcard_spi configuration
- */
+/// @brief   sdcard_spi configuration
 static const  sdcard_spi_params_t sdcard_spi_params[] = {
     SDCARD_SPI_PARAMS
 };
@@ -70,4 +62,4 @@ static const  sdcard_spi_params_t sdcard_spi_params[] = {
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2016 Ken Bannister
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Ken Bannister
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -20,14 +16,12 @@
 #include "tests-gcoap.h"
 
 #if IS_USED(MODULE_NANOCOAP_CACHE)
-#define ETAG_SLACK 9    /* account for ETag slack implicitly added by gcoap_req_init() */
+#define ETAG_SLACK 9    // account for ETag slack implicitly added by gcoap_req_init()
 #else
 #define ETAG_SLACK 0
 #endif
 
-/*
- * A test set of dummy resources. The resource handlers are set to NULL.
- */
+// A test set of dummy resources. The resource handlers are set to NULL.
 static const coap_resource_t resources[] = {
     { .path = "/act/switch", .methods = (COAP_GET | COAP_POST) },
     { .path = "/sensor/temp", .methods = (COAP_GET) },
@@ -55,19 +49,16 @@ static gcoap_listener_t listener_second = {
 static const char *resource_list_str =
     "</second/part>,</act/switch>,</sensor/temp>,</test/info/all>";
 
-/*
- * Client GET request success case. Test request generation.
- * Request /time resource from libcoap example
- * Includes token of length CONFIG_GCOAP_TOKENLEN.
- */
-static void test_gcoap__client_get_req(void)
-{
+// Client GET request success case. Test request generation.
+// Request /time resource from libcoap example
+// Includes token of length CONFIG_GCOAP_TOKENLEN.
+static void test_gcoap__client_get_req(void) {
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
     size_t len;
     char path[] = "/time";
 
-    /* Create expected pdu_data, with token length from CONFIG_GCOAP_TOKENLEN. */
+    // Create expected pdu_data, with token length from CONFIG_GCOAP_TOKENLEN.
     size_t hdr_fixed_len = 4;
     uint8_t hdr_fixed[]  = { 0x52, 0x01, 0xe6, 0x02 };
     size_t options_len   = 5;
@@ -77,7 +68,7 @@ static void test_gcoap__client_get_req(void)
 
     memcpy(pdu_data, hdr_fixed, hdr_fixed_len);
 #if CONFIG_GCOAP_TOKENLEN
-    /* actual value is random */
+    // actual value is random
     memset(&pdu_data[hdr_fixed_len], 0x9b, CONFIG_GCOAP_TOKENLEN);
 #endif
     memcpy(&pdu_data[hdr_fixed_len + CONFIG_GCOAP_TOKENLEN], options,
@@ -99,13 +90,10 @@ static void test_gcoap__client_get_req(void)
     TEST_ASSERT_EQUAL_INT(sizeof(pdu_data), len);
 }
 
-/*
- * Client GET response success case. Test parsing response.
- * Response for /time resource from libcoap example
- * Includes 2-byte token
- */
-static void test_gcoap__client_get_resp(void)
-{
+// Client GET response success case. Test parsing response.
+// Response for /time resource from libcoap example
+// Includes 2-byte token
+static void test_gcoap__client_get_resp(void) {
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
     ssize_t res;
@@ -135,13 +123,10 @@ static void test_gcoap__client_get_resp(void)
     }
 }
 
-/*
- * Client PUT request success case. Test request generation.
- * Set value of /riot/value resource to 1 from nanocoap server example.
- */
-static void test_gcoap__client_put_req(void)
-{
-    uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE]; /* header 4, token 2, path 11 */
+// Client PUT request success case. Test request generation.
+// Set value of /riot/value resource to 1 from nanocoap server example.
+static void test_gcoap__client_put_req(void) {
+    uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE]; // header 4, token 2, path 11
     coap_pkt_t pdu;
     size_t len;
     char path[] = "/riot/value";
@@ -159,12 +144,9 @@ static void test_gcoap__client_put_req(void)
     TEST_ASSERT_EQUAL_INT('1', (char)*pdu.payload);
 }
 
-/*
- * Builds on client_put_req to test overfill on coap_opt_finish().
- */
-static void test_gcoap__client_put_req_overfill(void)
-{
-    /* header 4, token 2, path 11, format 1, marker 1 = 19 */
+// Builds on client_put_req to test overfill on coap_opt_finish().
+static void test_gcoap__client_put_req_overfill(void) {
+    // header 4, token 2, path 11, format 1, marker 1 = 19
     uint8_t buf[18 + ETAG_SLACK];
     coap_pkt_t pdu;
     ssize_t len;
@@ -180,12 +162,9 @@ static void test_gcoap__client_put_req_overfill(void)
     TEST_ASSERT_EQUAL_INT(-ENOSPC, len);
 }
 
-/*
- * Builds on get_req test, to test use of NULL path with gcoap_req_init().
- * Then separately add Uri-Path option later.
- */
-static void test_gcoap__client_get_path_defer(void)
-{
+// Builds on get_req test, to test use of NULL path with gcoap_req_init().
+// Then separately add Uri-Path option later.
+static void test_gcoap__client_get_path_defer(void) {
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
     size_t len, optlen;
@@ -207,11 +186,8 @@ static void test_gcoap__client_get_path_defer(void)
     TEST_ASSERT_EQUAL_STRING(path, uri);
 }
 
-/*
- * Validate client CoAP ping empty message request.
- */
-static void test_gcoap__client_ping(void)
-{
+// Validate client CoAP ping empty message request.
+static void test_gcoap__client_ping(void) {
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
     int res;
@@ -224,18 +200,15 @@ static void test_gcoap__client_ping(void)
     TEST_ASSERT_EQUAL_INT(COAP_TYPE_CON, coap_get_type(&pdu));
     TEST_ASSERT_EQUAL_INT(0, coap_get_token_len(&pdu));
 
-    /* confirm length */
+    // confirm length
     res = coap_opt_finish(&pdu, COAP_OPT_FINISH_NONE);
     TEST_ASSERT_EQUAL_INT(4 + ETAG_SLACK, res);
 }
 
-/*
- * Helper for server_get tests below.
- * Request from libcoap example for gcoap_cli /cli/stats resource
- * Include 2-byte token and Uri-Host option.
- */
-static ssize_t _read_cli_stats_req(coap_pkt_t *pdu, uint8_t *buf)
-{
+// Helper for server_get tests below.
+// Request from libcoap example for gcoap_cli /cli/stats resource
+// Include 2-byte token and Uri-Host option.
+static ssize_t _read_cli_stats_req(coap_pkt_t *pdu, uint8_t *buf) {
     uint8_t pdu_data[] = {
         0x52, 0x01, 0x20, 0xb6, 0x35, 0x61, 0x3d, 0x10,
         0x66, 0x65, 0x38, 0x30, 0x3a, 0x3a, 0x38, 0x63,
@@ -249,9 +222,8 @@ static ssize_t _read_cli_stats_req(coap_pkt_t *pdu, uint8_t *buf)
     return coap_parse_udp(pdu, buf, sizeof(pdu_data));
 }
 
-/* Server GET request success case. Validate request example. */
-static void test_gcoap__server_get_req(void)
-{
+// Server GET request success case. Validate request example.
+static void test_gcoap__server_get_req(void) {
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
 
@@ -269,19 +241,16 @@ static void test_gcoap__server_get_req(void)
     TEST_ASSERT_EQUAL_STRING("/cli/stats", uri);
 }
 
-/*
- * Server GET response success case. Test writing response.
- * Response for libcoap example for gcoap_cli /cli/stats resource
- */
-static void test_gcoap__server_get_resp(void)
-{
+// Server GET response success case. Test writing response.
+// Response for libcoap example for gcoap_cli /cli/stats resource
+static void test_gcoap__server_get_resp(void) {
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
 
-    /* read request */
+    // read request
     _read_cli_stats_req(&pdu, buf);
 
-    /* generate response */
+    // generate response
     gcoap_resp_init(&pdu, buf, sizeof(buf), COAP_CODE_CONTENT);
     coap_opt_add_format(&pdu, COAP_FORMAT_TEXT);
     ssize_t res = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
@@ -305,13 +274,10 @@ static void test_gcoap__server_get_resp(void)
     }
 }
 
-/*
- * Helper for server_con_* tests below.
- * Confirmable request from libcoap example for gcoap_cli /cli/stats resource.
- * Include 2-byte token.
- */
-static ssize_t _read_cli_stats_req_con(coap_pkt_t *pdu, uint8_t *buf)
-{
+// Helper for server_con_* tests below.
+// Confirmable request from libcoap example for gcoap_cli /cli/stats resource.
+// Include 2-byte token.
+static ssize_t _read_cli_stats_req_con(coap_pkt_t *pdu, uint8_t *buf) {
     uint8_t pdu_data[] = {
         0x42, 0x01, 0x8e, 0x03, 0x35, 0x61, 0xb3, 0x63,
         0x6c, 0x69, 0x05, 0x73, 0x74, 0x61, 0x74, 0x73
@@ -321,9 +287,8 @@ static ssize_t _read_cli_stats_req_con(coap_pkt_t *pdu, uint8_t *buf)
     return coap_parse_udp(pdu, buf, sizeof(pdu_data));
 }
 
-/* Server CON GET request success case. Validate request is confirmable. */
-static void test_gcoap__server_con_req(void)
-{
+// Server CON GET request success case. Validate request is confirmable.
+static void test_gcoap__server_con_req(void) {
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
 
@@ -334,19 +299,16 @@ static void test_gcoap__server_con_req(void)
     TEST_ASSERT_EQUAL_INT(COAP_TYPE_CON, coap_get_type(&pdu));
 }
 
-/*
- * Server CON GET response success case. Test response is ACK.
- * Response for libcoap example for gcoap_cli /cli/stats resource
- */
-static void test_gcoap__server_con_resp(void)
-{
+// Server CON GET response success case. Test response is ACK.
+// Response for libcoap example for gcoap_cli /cli/stats resource
+static void test_gcoap__server_con_resp(void) {
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
 
-    /* read request */
+    // read request
     _read_cli_stats_req_con(&pdu, buf);
 
-    /* generate response */
+    // generate response
     gcoap_resp_init(&pdu, buf, sizeof(buf), COAP_CODE_CONTENT);
     coap_opt_add_format(&pdu, COAP_FORMAT_TEXT);
     ssize_t res = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
@@ -364,11 +326,8 @@ static void test_gcoap__server_con_resp(void)
     TEST_ASSERT_EQUAL_INT(sizeof(resp_data), res + 1);
 }
 
-/*
- * Test the export of configured resources as CoRE link format string
- */
-static void test_gcoap__server_get_resource_list(void)
-{
+// Test the export of configured resources as CoRE link format string
+static void test_gcoap__server_get_resource_list(void) {
     char res[128];
     int size = 0;
 
@@ -389,8 +348,7 @@ static void test_gcoap__server_get_resource_list(void)
     TEST_ASSERT_EQUAL_STRING(resource_list_str, res);
 }
 
-Test *tests_gcoap_tests(void)
-{
+Test *tests_gcoap_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_gcoap__client_get_req),
         new_TestFixture(test_gcoap__client_get_resp),
@@ -410,8 +368,7 @@ Test *tests_gcoap_tests(void)
     return (Test *)&gcoap_tests;
 }
 
-void tests_gcoap(void)
-{
+void tests_gcoap(void) {
     TESTS_RUN(tests_gcoap_tests());
 }
-/** @} */
+/// @}

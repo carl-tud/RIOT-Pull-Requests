@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp_common
- * @{
- *
- * @file
- * @brief       Exception handling for Xtensa-based ESP SoCs
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp_common
+/// @{
+///
+/// @file
+/// @brief       Exception handling for Xtensa-based ESP SoCs
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <malloc.h>
 #include <string.h>
@@ -35,50 +31,49 @@ extern void heap_stats(void);
 
 static const char* exception_names [] =
 {
-    "IllegalInstructionCause",     /* 0 */
-    "SyscallCause",                /* 1 */
-    "InstructionFetchErrorCause",  /* 2 */
-    "LoadStoreErrorCause",         /* 3 */
-    "Level1InterruptCause",        /* 4 */
-    "AllocaCause",                 /* 5 */
-    "IntegerDivideByZeroCause",    /* 6 */
-    "",                            /* 7 - reserved */
-    "PrivilegedCause",             /* 8 */
-    "LoadStoreAlignmentCause",     /* 9 */
-    "",                            /* 10 - reserved */
-    "",                            /* 11 - reserved */
-    "InstrPIFDataErrorCause",      /* 12 */
-    "LoadStorePIFDataErrorCause",  /* 13 */
-    "InstrPIFAddrErrorCause",      /* 14 */
-    "LoadStorePIFAddrErrorCause",  /* 15 */
-    "InstTLBMissCause",            /* 16 */
-    "InstTLBMultiHitCause",        /* 17 */
-    "InstFetchPrivilegeCause",     /* 18 */
-    "",                            /* 19 - reserved */
-    "InstFetchProhibitedCause",    /* 20 */
-    "",                            /* 21 - reserved */
-    "",                            /* 22 - reserved */
-    "",                            /* 23 - reserved */
-    "LoadStoreTLBMissCause",       /* 24 */
-    "LoadStoreTLBMultiHitCause",   /* 25 */
-    "LoadStorePrivilegeCause",     /* 26 */
-    "",                            /* 27 - reserved */
-    "LoadProhibitedCause",         /* 28 */
-    "StoreProhibitedCause",        /* 29 */
-    "",                            /* 30 - reserved */
-    "",                            /* 31 - reserved */
-    "Coprocessor0Disabled",        /* 32 */
-    "Coprocessor1Disabled",        /* 33 */
-    "Coprocessor2Disabled",        /* 34 */
-    "Coprocessor3Disabled",        /* 35 */
-    "Coprocessor4Disabled",        /* 36 */
-    "Coprocessor5Disabled",        /* 37 */
-    "Coprocessor6Disabled",        /* 38 */
-    "Coprocessor7Disabled",        /* 39 */
+    "IllegalInstructionCause",     // 0
+    "SyscallCause",                // 1
+    "InstructionFetchErrorCause",  // 2
+    "LoadStoreErrorCause",         // 3
+    "Level1InterruptCause",        // 4
+    "AllocaCause",                 // 5
+    "IntegerDivideByZeroCause",    // 6
+    "",                            // 7 - reserved
+    "PrivilegedCause",             // 8
+    "LoadStoreAlignmentCause",     // 9
+    "",                            // 10 - reserved
+    "",                            // 11 - reserved
+    "InstrPIFDataErrorCause",      // 12
+    "LoadStorePIFDataErrorCause",  // 13
+    "InstrPIFAddrErrorCause",      // 14
+    "LoadStorePIFAddrErrorCause",  // 15
+    "InstTLBMissCause",            // 16
+    "InstTLBMultiHitCause",        // 17
+    "InstFetchPrivilegeCause",     // 18
+    "",                            // 19 - reserved
+    "InstFetchProhibitedCause",    // 20
+    "",                            // 21 - reserved
+    "",                            // 22 - reserved
+    "",                            // 23 - reserved
+    "LoadStoreTLBMissCause",       // 24
+    "LoadStoreTLBMultiHitCause",   // 25
+    "LoadStorePrivilegeCause",     // 26
+    "",                            // 27 - reserved
+    "LoadProhibitedCause",         // 28
+    "StoreProhibitedCause",        // 29
+    "",                            // 30 - reserved
+    "",                            // 31 - reserved
+    "Coprocessor0Disabled",        // 32
+    "Coprocessor1Disabled",        // 33
+    "Coprocessor2Disabled",        // 34
+    "Coprocessor3Disabled",        // 35
+    "Coprocessor4Disabled",        // 36
+    "Coprocessor5Disabled",        // 37
+    "Coprocessor6Disabled",        // 38
+    "Coprocessor7Disabled",        // 39
 };
 
-void IRAM NORETURN exception_handler (XtExcFrame *frame)
-{
+void IRAM NORETURN exception_handler (XtExcFrame *frame) {
     uint32_t excsave1;
     uint32_t epc1;
     RSR(excsave1, excsave1);
@@ -118,7 +113,7 @@ void IRAM NORETURN exception_handler (XtExcFrame *frame)
     ets_printf("processes:\n");
     ps();
     ets_printf("\n");
-#endif /* MODULE_PS */
+#endif // MODULE_PS
 
     heap_stats();
 
@@ -167,23 +162,22 @@ void IRAM NORETURN exception_handler (XtExcFrame *frame)
     ets_printf("lbeg    : %08x\t", frame->lbeg);
     ets_printf("lend    : %08x\t", frame->lend);
     ets_printf("lcount  : %08x\n", frame->lcount);
-#endif /* XCHAL_HAVE_LOOPS */
-#endif /* DEVELHELP */
+#endif // XCHAL_HAVE_LOOPS
+#endif // DEVELHELP
 
-    /* restart */
-    /* TODO: Improvement
-       Normally, we should try to restart the system. However, this
-       will not work after some exceptions, e.g., the LoadStoreErrorCause.
-       One option is to break the execution and wait for the WDT reset. Maybe
-       there is better way. If debugger is active, 'break 0,0' stops the
-       execution in debugger. */
+    // restart
+    // TODO: Improvement
+    //    Normally, we should try to restart the system. However, this
+    //    will not work after some exceptions, e.g., the LoadStoreErrorCause.
+    //    One option is to break the execution and wait for the WDT reset. Maybe
+    //    there is better way. If debugger is active, 'break 0,0' stops the
+    //    execution in debugger.
     __asm__ volatile ("break 0,0");
 
     UNREACHABLE();
 }
 
-void init_exceptions (void)
-{
+void init_exceptions (void) {
     xt_set_exception_handler(EXCCAUSE_UNALIGNED, exception_handler);
     xt_set_exception_handler(EXCCAUSE_ILLEGAL, exception_handler);
     xt_set_exception_handler(EXCCAUSE_INSTR_ERROR, exception_handler);
@@ -193,22 +187,20 @@ void init_exceptions (void)
     xt_set_exception_handler(EXCCAUSE_PRIVILEGED, exception_handler);
 }
 
-void IRAM NORETURN panic_arch(void)
-{
+void IRAM NORETURN panic_arch(void) {
 #if defined(DEVELHELP)
     heap_stats();
-    /* break in debugger or reboot after WDT */
+    // break in debugger or reboot after WDT
     __asm__ volatile ("break 0,0");
-#else /* DEVELHELP */
-    /* restart */
+#else // DEVELHELP
+    // restart
     pm_reboot();
-#endif /* DEVELHELP */
+#endif // DEVELHELP
 
     UNREACHABLE();
 }
 
-void _panic_handler(uint32_t addr)
-{
+void _panic_handler(uint32_t addr) {
     ets_printf("#! _xt_panic called from 0x%08x: powering off\n", addr);
     pm_off();
     while (1) { };

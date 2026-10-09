@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <inttypes.h>
 
@@ -24,8 +20,7 @@
 
 #define GLOBAL_PREFIX       { 0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0 }
 
-static void set_up(void)
-{
+static void set_up(void) {
     evtimer_event_t *tmp;
 
     for (evtimer_event_t *ptr = _nib_evtimer.events;
@@ -36,13 +31,10 @@ static void set_up(void)
     _nib_init();
 }
 
-/*
- * Creates CONFIG_GNRC_IPV6_NIB_ABR_NUMOF authoritative border router list entries with
- * different addresses and then tries to create another one
- * Expected result: gnrc_ipv6_nib_abr_add() returns -ENOMEM
- */
-static void test_nib_abr_add__ENOMEM(void)
-{
+// Creates CONFIG_GNRC_IPV6_NIB_ABR_NUMOF authoritative border router list entries with
+// different addresses and then tries to create another one
+// Expected result: gnrc_ipv6_nib_abr_add() returns -ENOMEM
+static void test_nib_abr_add__ENOMEM(void) {
     void *iter_state = NULL;
     ipv6_addr_t addr = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                 { .u64 = TEST_UINT64 } } };
@@ -57,13 +49,10 @@ static void test_nib_abr_add__ENOMEM(void)
     TEST_ASSERT(!gnrc_ipv6_nib_abr_iter(&iter_state, &abr));
 }
 
-/*
- * Creates CONFIG_GNRC_IPV6_NIB_ABR_NUMOF authoritative border router list entries with
- * different addresses and then tries to add another equal to the last.
- * Expected result: should return 0.
- */
-static void test_nib_abr_add__success(void)
-{
+// Creates CONFIG_GNRC_IPV6_NIB_ABR_NUMOF authoritative border router list entries with
+// different addresses and then tries to add another equal to the last.
+// Expected result: should return 0.
+static void test_nib_abr_add__success(void) {
     void *iter_state = NULL;
     ipv6_addr_t addr = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                 { .u64 = TEST_UINT64 } } };
@@ -79,12 +68,9 @@ static void test_nib_abr_add__success(void)
     TEST_ASSERT(!gnrc_ipv6_nib_abr_iter(&iter_state, &abr));
 }
 
-/*
- * Creates an authoritative border router list entry and removes it.
- * Expected result: system does not crash ;-)
- */
-static void test_nib_abr_del__success(void)
-{
+// Creates an authoritative border router list entry and removes it.
+// Expected result: system does not crash ;-)
+static void test_nib_abr_del__success(void) {
     void *iter_state = NULL;
     ipv6_addr_t addr = { .u64 = { { .u8 = GLOBAL_PREFIX },
                                   { .u64 = TEST_UINT64 } } };
@@ -97,13 +83,12 @@ static void test_nib_abr_del__success(void)
     TEST_ASSERT(!gnrc_ipv6_nib_abr_iter(&iter_state, &abr));
 }
 
-Test *tests_gnrc_ipv6_nib_abr_tests(void)
-{
+Test *tests_gnrc_ipv6_nib_abr_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_nib_abr_add__ENOMEM),
         new_TestFixture(test_nib_abr_add__success),
         new_TestFixture(test_nib_abr_del__success),
-        /* gnrc_ipv6_nib_abr_iter() is tested during all the tests above */
+        // gnrc_ipv6_nib_abr_iter() is tested during all the tests above
     };
 
     EMB_UNIT_TESTCALLER(tests, set_up, NULL,

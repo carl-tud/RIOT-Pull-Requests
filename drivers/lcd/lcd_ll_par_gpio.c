@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_lcd
- * @{
- *
- * @file
- * @brief       GPIO-driven low-level parallel interface implementation
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     drivers_lcd
+/// @{
+///
+/// @file
+/// @brief       GPIO-driven low-level parallel interface implementation
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <assert.h>
 
@@ -26,11 +22,10 @@
 
 #if IS_USED(MODULE_LCD_PARALLEL)
 
-void lcd_ll_par_gpio_init(lcd_t *dev)
-{
+void lcd_ll_par_gpio_init(lcd_t *dev) {
     DEBUG("[lcd] %s\n", __func__);
 
-    /* MCU 8080 8-/16-bit parallel interface is used */
+    // MCU 8080 8-/16-bit parallel interface is used
     assert(gpio_is_valid(dev->params->dcx_pin));
     gpio_init(dev->params->dcx_pin, GPIO_OUT);
 
@@ -68,14 +63,13 @@ void lcd_ll_par_gpio_init(lcd_t *dev)
         assert(gpio_is_valid(dev->params->d15_pin));
     }
     dev->word_access = false;
-#endif /* IS_USED(MODULE_LCD_PARALLEL_16BIT) */
+#endif // IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
-    /* initialize all data GPIOs as outputs */
+    // initialize all data GPIOs as outputs
     lcd_ll_par_gpio_set_data_dir(dev, true);
 }
 
-void lcd_ll_par_gpio_set_data_dir(lcd_t *dev, bool output)
-{
+void lcd_ll_par_gpio_set_data_dir(lcd_t *dev, bool output) {
     DEBUG("[lcd] %s %u\n", __func__, output);
 
     gpio_init(dev->params->d0_pin, output ? GPIO_OUT : GPIO_IN);
@@ -97,11 +91,10 @@ void lcd_ll_par_gpio_set_data_dir(lcd_t *dev, bool output)
         gpio_init(dev->params->d14_pin, output ? GPIO_OUT : GPIO_IN);
         gpio_init(dev->params->d15_pin, output ? GPIO_OUT : GPIO_IN);
     }
-#endif /* IS_USED(MODULE_LCD_PARALLEL_16BIT) */
+#endif // IS_USED(MODULE_LCD_PARALLEL_16BIT)
 }
 
-void lcd_ll_par_gpio_cmd_start(lcd_t *dev, uint8_t cmd, bool cont)
-{
+void lcd_ll_par_gpio_cmd_start(lcd_t *dev, uint8_t cmd, bool cont) {
     DEBUG("[lcd] %s %02x\n", __func__, cmd);
 
     gpio_clear(dev->params->dcx_pin);
@@ -109,8 +102,7 @@ void lcd_ll_par_gpio_cmd_start(lcd_t *dev, uint8_t cmd, bool cont)
     gpio_set(dev->params->dcx_pin);
 }
 
-void lcd_ll_par_gpio_write_byte(lcd_t *dev, bool cont, uint8_t out)
-{
+void lcd_ll_par_gpio_write_byte(lcd_t *dev, bool cont, uint8_t out) {
     DEBUG("[lcd] %s %02x\n", __func__, out);
 
     if (gpio_is_valid(dev->params->cs_pin)) {
@@ -135,8 +127,7 @@ void lcd_ll_par_gpio_write_byte(lcd_t *dev, bool cont, uint8_t out)
     };
 }
 
-uint8_t lcd_ll_par_gpio_read_byte(lcd_t *dev, bool cont)
-{
+uint8_t lcd_ll_par_gpio_read_byte(lcd_t *dev, bool cont) {
     uint8_t in = 0;
 
     if (gpio_is_valid(dev->params->cs_pin)) {
@@ -167,8 +158,7 @@ uint8_t lcd_ll_par_gpio_read_byte(lcd_t *dev, bool cont)
 
 #if IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
-void lcd_ll_par_gpio_write_word(lcd_t *dev, bool cont, uint16_t out)
-{
+void lcd_ll_par_gpio_write_word(lcd_t *dev, bool cont, uint16_t out) {
     DEBUG("[lcd] %s %04x\n", __func__, out);
 
     if (gpio_is_valid(dev->params->cs_pin)) {
@@ -201,8 +191,7 @@ void lcd_ll_par_gpio_write_word(lcd_t *dev, bool cont, uint16_t out)
     };
 }
 
-uint16_t lcd_ll_par_gpio_read_word(lcd_t *dev, bool cont)
-{
+uint16_t lcd_ll_par_gpio_read_word(lcd_t *dev, bool cont) {
     uint16_t in = 0;
 
     if (gpio_is_valid(dev->params->cs_pin)) {
@@ -238,11 +227,11 @@ uint16_t lcd_ll_par_gpio_read_word(lcd_t *dev, bool cont)
 
     return in;
 }
-#endif /* IS_USED(MODULE_LCD_PARALLEL_16BIT) */
+#endif // IS_USED(MODULE_LCD_PARALLEL_16BIT)
 
 #if !IS_USED(MODULE_LCD_PARALLEL_LL_MCU)
-/* If MCU-driven low-level implementation is not used, the GPIO-driven
- * implementation is used as driver. */
+// If MCU-driven low-level implementation is not used, the GPIO-driven
+// implementation is used as driver.
 const lcd_ll_par_driver_t lcd_ll_par_driver = {
     .init = lcd_ll_par_gpio_init,
     .set_data_dir = lcd_ll_par_gpio_set_data_dir,
@@ -256,4 +245,4 @@ const lcd_ll_par_driver_t lcd_ll_par_driver = {
 };
 #endif
 
-#endif /* IS_USED(MODULE_LCD_PARALLEL) */
+#endif // IS_USED(MODULE_LCD_PARALLEL)

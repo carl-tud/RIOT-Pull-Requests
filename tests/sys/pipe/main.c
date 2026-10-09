@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-or-later
- */
+// SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-/**
- * @ingroup     tests
- * @{
- * @file
- * @brief       Test for module pipe.
- * @author      René Kijewski <rene.kijewski@fu-berlin.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+/// @file
+/// @brief       Test for module pipe.
+/// @author      René Kijewski <rene.kijewski@fu-berlin.de>
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -27,8 +23,7 @@ static ringbuffer_t rbs[2];
 
 static pipe_t pipes[2];
 
-static void *run_middle(void *arg)
-{
+static void *run_middle(void *arg) {
     (void) arg;
 
     unsigned read_total = 0;
@@ -53,8 +48,7 @@ static void *run_middle(void *arg)
     return NULL;
 }
 
-static void *run_end(void *arg)
-{
+static void *run_end(void *arg) {
     (void) arg;
 
     unsigned read_total = 0;
@@ -72,13 +66,11 @@ static void *run_end(void *arg)
     return NULL;
 }
 
-static unsigned min(unsigned a, unsigned b)
-{
+static unsigned min(unsigned a, unsigned b) {
     return a < b ? a : b;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Start.");
 
     for (int i = 0; i < 2; ++i) {

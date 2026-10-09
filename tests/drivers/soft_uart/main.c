@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Manual test application for UART peripheral drivers
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Manual test application for UART peripheral drivers
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -56,8 +52,7 @@ static uart_stop_bits_t stop_bits_lut[] = { UART_STOP_BITS_1, UART_STOP_BITS_2 }
 static int stop_bits_lut_len = ARRAY_SIZE(stop_bits_lut);
 #endif
 
-static int parse_dev(char *arg)
-{
+static int parse_dev(char *arg) {
     unsigned dev = atoi(arg);
     if (dev >= SOFT_UART_NUMOF) {
         printf("Error: Invalid UART_DEV device specified (%u).\n", dev);
@@ -67,8 +62,7 @@ static int parse_dev(char *arg)
     return dev;
 }
 
-static void rx_cb(void *arg, uint8_t data)
-{
+static void rx_cb(void *arg, uint8_t data) {
     uart_t dev = (soft_uart_t)(intptr_t)arg;
 
     ringbuffer_add_one(&(ctx[dev].rx_buf), data);
@@ -79,8 +73,7 @@ static void rx_cb(void *arg, uint8_t data)
     }
 }
 
-static void *printer(void *arg)
-{
+static void *printer(void *arg) {
     (void)arg;
     msg_t msg;
     msg_t msg_queue[8];
@@ -107,20 +100,18 @@ static void *printer(void *arg)
         puts("");
     }
 
-    /* this should never be reached */
+    // this should never be reached
     return NULL;
 }
 
-static void sleep_test(int num, uart_t uart)
-{
+static void sleep_test(int num, uart_t uart) {
     printf("UARD_DEV(%i): test uart_poweron() and uart_poweroff()  ->  ", num);
     soft_uart_poweroff(uart);
     soft_uart_poweron(uart);
     puts("[OK]");
 }
 
-static int cmd_init(int argc, char **argv)
-{
+static int cmd_init(int argc, char **argv) {
     int dev, res;
     uint32_t baud;
 
@@ -128,14 +119,14 @@ static int cmd_init(int argc, char **argv)
         printf("usage: %s <dev> <baudrate>\n", argv[0]);
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     dev = parse_dev(argv[1]);
     if (dev < 0) {
         return 1;
     }
     baud = strtol(argv[2], NULL, 0);
 
-    /* initialize UART */
+    // initialize UART
     res = soft_uart_init(dev, baud, rx_cb, (void *)(intptr_t)dev);
     if (res == UART_NOBAUD) {
         printf("Error: Given baudrate (%u) not possible\n", (unsigned int)baud);
@@ -147,16 +138,15 @@ static int cmd_init(int argc, char **argv)
     }
     printf("Success: Initialized UART_DEV(%i) at BAUD %"PRIu32"\n", dev, baud);
 
-    /* also test if poweron() and poweroff() work (or at least don't break
-     * anything) */
+    // also test if poweron() and poweroff() work (or at least don't break
+    // anything)
     sleep_test(dev, UART_DEV(dev));
 
     return 0;
 }
 
 #ifdef MODULE_SOFT_UART_MODECFG
-static int cmd_mode(int argc, char **argv)
-{
+static int cmd_mode(int argc, char **argv) {
     int dev, data_bits_arg, stop_bits_arg;
     uart_data_bits_t data_bits;
     uart_parity_t  parity;
@@ -220,10 +210,9 @@ static int cmd_mode(int argc, char **argv)
 
     return 0;
 }
-#endif /* MODULE_PERIPH_UART_MODECFG */
+#endif // MODULE_PERIPH_UART_MODECFG
 
-static int cmd_send(int argc, char **argv)
-{
+static int cmd_send(int argc, char **argv) {
     int dev;
     uint8_t endline = (uint8_t)'\n';
 
@@ -231,7 +220,7 @@ static int cmd_send(int argc, char **argv)
         printf("usage: %s <dev> <data (string)>\n", argv[0]);
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     dev = parse_dev(argv[1]);
     if (dev < 0) {
         return 1;
@@ -252,8 +241,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("\nManual UART driver test application");
     puts("===================================");
     puts("When receiving data on one of the software UART interfaces, this\n"
@@ -268,16 +256,16 @@ int main(void)
     puts("\nUART INFO:");
     printf("Available devices:               %u\n", (unsigned)SOFT_UART_NUMOF);
 
-    /* initialize ringbuffers */
+    // initialize ringbuffers
     for (unsigned i = 0; i < SOFT_UART_NUMOF; i++) {
         ringbuffer_init(&(ctx[i].rx_buf), ctx[i].rx_mem, UART_BUFSIZE);
     }
 
-    /* start the printer thread */
+    // start the printer thread
     printer_pid = thread_create(printer_stack, sizeof(printer_stack),
                                 PRINTER_PRIO, 0, printer, NULL, "printer");
 
-    /* run the shell */
+    // run the shell
     char line_buf[SHELL_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_BUFSIZE);
     return 0;

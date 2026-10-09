@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Peripheral timer test application
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Peripheral timer test application
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -26,26 +22,24 @@
 #include "test_utils/expect.h"
 #include "time_units.h"
 
-/**
- * @brief   Make sure, the maximum number of timers is defined
- */
+/// @brief   Make sure, the maximum number of timers is defined
 #ifndef TIMER_NUMOF
 #error "TIMER_NUMOF not defined!"
 #endif
 
-/* backward compatibility with legacy drivers */
+// backward compatibility with legacy drivers
 #if !defined(TIMER_CHANNEL_NUMOF) && !IS_USED(MODULE_PERIPH_TIMER_QUERY_FREQS)
 #define TIMER_CHANNEL_NUMOF 10U
 #endif
 
-#define CHAN_OFFSET_MS      5U          /* fire channels with 5 ms offset */
-/* The minimum timeout to set and still being able to clear the timer
- * before it fires. This should be conservative, as wasting a few milliseconds
- * in the test is less annoying than false test failures */
+#define CHAN_OFFSET_MS      5U          // fire channels with 5 ms offset
+// The minimum timeout to set and still being able to clear the timer
+// before it fires. This should be conservative, as wasting a few milliseconds
+// in the test is less annoying than false test failures
 #define MINIMUM_TIMEOUT_MS  2
-#define COOKIE              (100U)      /* for checking if arg is passed */
-/* Setting a timer for less than two ticks may cause it to fire right away,
- * e.g. when the timer was about to tick anyway */
+#define COOKIE              (100U)      // for checking if arg is passed
+// Setting a timer for less than two ticks may cause it to fire right away,
+// e.g. when the timer was about to tick anyway
 #define MINIMUM_TICKS       2
 
 static uint8_t fired;
@@ -53,23 +47,20 @@ static uint32_t sw_count;
 static uint32_t timeouts[TIMER_CHANNEL_NUMOF];
 static unsigned args[TIMER_CHANNEL_NUMOF];
 
-static void cb(void *arg, int chan)
-{
+static void cb(void *arg, int chan) {
     timeouts[chan] = sw_count;
     args[chan] = (uintptr_t)arg + chan;
     fired++;
 }
 
-static void cb_not_to_be_executed(void *arg, int chan)
-{
+static void cb_not_to_be_executed(void *arg, int chan) {
     (void)arg;
     (void)chan;
 
     fired = 1;
 }
 
-static uword_t query_channel_numof(tim_t dev)
-{
+static uword_t query_channel_numof(tim_t dev) {
     if (IS_USED(MODULE_PERIPH_TIMER_QUERY_FREQS)) {
         return timer_query_channel_numof(dev);
     }
@@ -77,19 +68,17 @@ static uword_t query_channel_numof(tim_t dev)
     return TIMER_CHANNEL_NUMOF;
 }
 
-static unsigned milliseconds_to_ticks(uint32_t timer_freq, unsigned millisecs)
-{
-    /* Use 64 bit arithmetic to avoid overflows for high frequencies. */
+static unsigned milliseconds_to_ticks(uint32_t timer_freq, unsigned millisecs) {
+    // Use 64 bit arithmetic to avoid overflows for high frequencies.
     unsigned result = ((uint64_t)millisecs * US_PER_MS * timer_freq) / US_PER_SEC;
-    /* Never return less than MINIMUM_TICKS ticks */
+    // Never return less than MINIMUM_TICKS ticks
     return (result >= MINIMUM_TICKS) ? result : MINIMUM_TICKS;
 }
 
-static int test_timer(unsigned num, uint32_t timer_freq)
-{
+static int test_timer(unsigned num, uint32_t timer_freq) {
     int set = 0;
 
-    /* reset state */
+    // reset state
     atomic_store_u32(&sw_count, 0);
     atomic_store_u8(&fired, 0);
 
@@ -100,7 +89,7 @@ static int test_timer(unsigned num, uint32_t timer_freq)
 
     printf("  - Calling timer_init(%u, %" PRIu32 ")\n    ",
                num, timer_freq);
-    /* initialize and halt timer */
+    // initialize and halt timer
     if (timer_init(TIMER_DEV(num), timer_freq, cb, (void *)(uintptr_t)(COOKIE * num)) != 0) {
         printf("ERROR: timer_init() failed\n\n");
         return 0;
@@ -113,16 +102,15 @@ static int test_timer(unsigned num, uint32_t timer_freq)
     printf("  - timer_stop(%u): stopped\n", num);
     unsigned chan_offset_ticks = milliseconds_to_ticks(timer_freq, CHAN_OFFSET_MS);
 
-    /* set each available channel */
+    // set each available channel
     for (unsigned i = 0; i < query_channel_numof(TIMER_DEV(num)); i++) {
         unsigned timeout = ((i + 1) * chan_offset_ticks);
         printf("  - timer_set(%u, %u, %u)\n    ", num, i, timeout);
         if (timer_set(TIMER_DEV(num), i, timeout) < 0) {
             printf("ERROR: Couldn't set timeout %u for channel %u\n",
                    timeout, i);
-            /* If the timer supports the periph_timer_query_freqs feature, we
-             * expect it to correctly report the number of supported channels
-             */
+            // If the timer supports the periph_timer_query_freqs feature, we
+            // expect it to correctly report the number of supported channels
             if (IS_USED(MODULE_PERIPH_TIMER_QUERY_FREQS)) {
                 return 0;
             }
@@ -140,16 +128,16 @@ static int test_timer(unsigned num, uint32_t timer_freq)
         return 0;
     }
 
-    /* start the timer */
+    // start the timer
     printf("  - timer_start(%u)\n", num);
     timer_start(TIMER_DEV(num));
 
-    /* wait for all channels to fire */
+    // wait for all channels to fire
     do {
         semi_atomic_fetch_add_u32(&sw_count, 1);
     } while (atomic_load_u8(&fired) != set);
 
-    /* collect results */
+    // collect results
     printf("  - Results:\n");
     for (int i = 0; i < set; i++) {
         if (args[i] != ((COOKIE * num) + i)) {
@@ -168,7 +156,7 @@ static int test_timer(unsigned num, uint32_t timer_freq)
         }
     }
 
-    /* test for spurious timer IRQs */
+    // test for spurious timer IRQs
     printf("  - Validating no spurious IRQs are triggered:\n");
     expect(0 == timer_init(TIMER_DEV(num), timer_freq, cb_not_to_be_executed, NULL));
 
@@ -178,43 +166,43 @@ static int test_timer(unsigned num, uint32_t timer_freq)
     expect(0 == timer_clear(TIMER_DEV(num), 0));
     atomic_store_u8(&fired, 0);
     while ((target - timer_read(TIMER_DEV(num))) <= duration) {
-        /* busy waiting for the timer to reach it timeout. Timer must not fire,
-         * it was cleared */
+        // busy waiting for the timer to reach it timeout. Timer must not fire,
+        // it was cleared
     }
     if (atomic_load_u8(&fired)) {
         printf("    ERROR: Spurious timer fired (1/3)\n");
         return 0;
     }
 
-    /* check again to make sure that an IRQ pending bit that may have just
-     * been masked does not trigger a timer IRQ one period later */
+    // check again to make sure that an IRQ pending bit that may have just
+    // been masked does not trigger a timer IRQ one period later
     target = timer_read(TIMER_DEV(num)) + duration;
 
     while ((target - timer_read(TIMER_DEV(num))) <= duration) {
-        /* busy waiting for the timer to reach it timeout. Timer must not fire,
-         * it was cleared */
+        // busy waiting for the timer to reach it timeout. Timer must not fire,
+        // it was cleared
     }
     if (atomic_load_u8(&fired)) {
         printf("    ERROR: Spurious timer fired (2/3)\n");
         return 0;
     }
 
-    /* some timers can cause a spurious IRQ when the timer is re-armed after it
-     * was just cleared (switched on), which results in an already pending IRQ
-     * right after timer_set_absolute() returns */
+    // some timers can cause a spurious IRQ when the timer is re-armed after it
+    // was just cleared (switched on), which results in an already pending IRQ
+    // right after timer_set_absolute() returns
     atomic_store_u8(&fired, 0);
     target = timer_read(TIMER_DEV(num)) + duration;
     expect(0 == timer_set_absolute(TIMER_DEV(num), 0, target));
 
-    /* the distance to the target is read first, so that a real IRQ is not
-     * mistaken for an early one in the check below. */
+    // the distance to the target is read first, so that a real IRQ is not
+    // mistaken for an early one in the check below.
     unsigned remaining = target - timer_read(TIMER_DEV(num));
     uint8_t fired_early = atomic_load_u8(&fired);
 
     expect(0 == timer_clear(TIMER_DEV(num), 0));
 
-    /* to avoid false positives, we only report an error if the timer fired
-     * early and there are still more than MINIMUM_TICKS ticks left */
+    // to avoid false positives, we only report an error if the timer fired
+    // early and there are still more than MINIMUM_TICKS ticks left
     if (fired_early && (remaining > MINIMUM_TICKS) && (remaining <= duration)) {
         printf("    ERROR: Spurious timer fired on re-arm (3/3), %u of %u "
                "ticks left\n", remaining, duration);
@@ -226,8 +214,7 @@ static int test_timer(unsigned num, uint32_t timer_freq)
     return 1;
 }
 
-static uword_t query_freq_numof(tim_t dev)
-{
+static uword_t query_freq_numof(tim_t dev) {
     if (IS_USED(MODULE_PERIPH_TIMER_QUERY_FREQS)) {
         return timer_query_freqs_numof(dev);
     }
@@ -235,14 +222,13 @@ static uword_t query_freq_numof(tim_t dev)
     return 1;
 }
 
-static uint32_t query_freq(tim_t dev, uword_t index)
-{
+static uint32_t query_freq(tim_t dev, uword_t index) {
     if (IS_USED(MODULE_PERIPH_TIMER_QUERY_FREQS)) {
         return timer_query_freqs(dev, index);
     }
 
-    /* Fallback implementation when periph_timer_query_freqs is not
-     * implemented */
+    // Fallback implementation when periph_timer_query_freqs is not
+    // implemented
     if (index) {
         return 0;
     }
@@ -250,8 +236,7 @@ static uint32_t query_freq(tim_t dev, uword_t index)
     return TIMER_SPEED;
 }
 
-static void print_supported_frequencies(tim_t dev)
-{
+static void print_supported_frequencies(tim_t dev) {
     if (!IS_USED(MODULE_PERIPH_TIMER_QUERY_FREQS)) {
         printf("  - feature periph_timer_query_freqs unsupported\n");
         return;
@@ -270,8 +255,7 @@ static void print_supported_frequencies(tim_t dev)
     }
 }
 
-static void test_querying(tim_t dev)
-{
+static void test_querying(tim_t dev) {
     uword_t last = query_freq_numof(dev) - 1;
 
     puts("Testing timer_get_closest_freq()...");
@@ -279,28 +263,28 @@ static void test_querying(tim_t dev)
         uint32_t closest;
         uint32_t freq = timer_query_freqs(dev, i);
 
-        /* Searching for a supported freq should yield the supported freq: */
+        // Searching for a supported freq should yield the supported freq:
         expect(freq == timer_get_closest_freq(dev, freq));
 
-        /* Assuming that no other frequency close to `freq` are supported,
-         * we would assume that asking for `freq - 1` and for `freq + 1` would
-         * also return `freq`. There are some corner cases, though. Let's look
-         * at asking for `freq - 1` here first:
-         *
-         * - `freq - 1` is actually also supported. In that case
-         *   `timer_get_closest_freq(dev, freq - 1)` should actually return
-         *   `freq - 1`
-         * - `freq - 2` is also supported (but not `freq - 1`). In this case
-         *   returning either `freq - 2` or `freq` would be valid for
-         *   `timer_get_closest_freq(dev, freq - 1)`.
-         *
-         * Therefore, we just except `freq - 2`, `freq - 1`, and `freq` as
-         * results for `timer_get_closest_freq(dev, freq - 1)`. */
+        // Assuming that no other frequency close to `freq` are supported,
+        // we would assume that asking for `freq - 1` and for `freq + 1` would
+        // also return `freq`. There are some corner cases, though. Let's look
+        // at asking for `freq - 1` here first:
+        //
+        // - `freq - 1` is actually also supported. In that case
+        //   `timer_get_closest_freq(dev, freq - 1)` should actually return
+        //   `freq - 1`
+        // - `freq - 2` is also supported (but not `freq - 1`). In this case
+        //   returning either `freq - 2` or `freq` would be valid for
+        //   `timer_get_closest_freq(dev, freq - 1)`.
+        //
+        // Therefore, we just except `freq - 2`, `freq - 1`, and `freq` as
+        // results for `timer_get_closest_freq(dev, freq - 1)`.
         closest = timer_get_closest_freq(dev, freq - 1);
         expect((freq >= closest) && closest >= freq - 2);
 
-        /* Now same with `freq + 1` as target. Due to the same corner cases,
-         * we accept `freq`, `freq + 1`, and `freq + 2` here. */
+        // Now same with `freq + 1` as target. Due to the same corner cases,
+        // we accept `freq`, `freq + 1`, and `freq + 2` here.
         closest = timer_get_closest_freq(dev, freq + 1);
         expect((freq <= closest) && closest <= freq + 2);
     }
@@ -311,30 +295,29 @@ static void test_querying(tim_t dev)
     puts("[OK]");
 }
 
-int main(void)
-{
+int main(void) {
     puts("\nTest for peripheral TIMERs\n");
 
     printf("Available timers: %i\n", TIMER_NUMOF);
 
     int failed = 0;
-    /* test all configured timers */
+    // test all configured timers
     for (unsigned i = 0; i < TIMER_NUMOF; i++) {
         printf("\nTIMER %u\n"
                  "=======\n\n", i);
         print_supported_frequencies(TIMER_DEV(i));
 
-        /* test querying of frequencies, but only if supported by the driver */
+        // test querying of frequencies, but only if supported by the driver
         if (IS_USED(MODULE_PERIPH_TIMER_QUERY_FREQS)) {
             test_querying(TIMER_DEV(i));
         }
 
         uword_t end = query_freq_numof(TIMER_DEV(i));
 
-        /* Test only up to three frequencies and only the fastest once.
-         * (Some timers support really low frequencies and even when limiting
-         * to only three frequencies tested, the test will take ages to
-         * complete */
+        // Test only up to three frequencies and only the fastest once.
+        // (Some timers support really low frequencies and even when limiting
+        // to only three frequencies tested, the test will take ages to
+        // complete
         end = MIN(end, 3);
         for (uword_t j = 0; j < end; j++) {
             if (!test_timer(i, query_freq(TIMER_DEV(i), j))) {
@@ -343,7 +326,7 @@ int main(void)
         }
     }
 
-    /* draw conclusion */
+    // draw conclusion
     if (!failed) {
         puts("\nTEST SUCCEEDED");
     }

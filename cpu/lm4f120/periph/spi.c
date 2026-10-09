@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Marc Poulhiès
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Marc Poulhiès
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_lm4f120
- * @{
- *
- * @file
- * @brief       Low-level SPI driver implementation
- *
- * @author      Marc Poulhiès <dkm@kataplop.net>
- *
- * @}
- */
+/// @ingroup     cpu_lm4f120
+/// @{
+///
+/// @file
+/// @brief       Low-level SPI driver implementation
+///
+/// @author      Marc Poulhiès <dkm@kataplop.net>
+///
+/// @}
 
 #include <assert.h>
 
@@ -27,33 +23,29 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief Array holding one pre-initialized mutex for each SPI device
- */
+/// @brief Array holding one pre-initialized mutex for each SPI device
 static mutex_t locks[SPI_NUMOF];
 
-void spi_init(spi_t bus)
-{
+void spi_init(spi_t bus) {
     assert(bus < SPI_NUMOF);
-    /* initialize device lock */
+    // initialize device lock
     mutex_init(&locks[bus]);
 
-    /* trigger pin initialization */
+    // trigger pin initialization
     spi_init_pins(bus);
 
-    /* enable clock for SSI */
+    // enable clock for SSI
     ROM_SysCtlPeripheralEnable(spi_confs[bus].ssi_sysctl);
 
-    /* configure SSI */
+    // configure SSI
     ROM_SSIDisable(spi_confs[bus].ssi_base);
     ROM_SSIClockSourceSet(spi_confs[bus].ssi_base, SSI_CLOCK_SYSTEM);
 
-    /* disable clock for SSI */
+    // disable clock for SSI
     ROM_SysCtlPeripheralDisable(spi_confs[bus].ssi_sysctl);
 }
 
-void spi_init_pins(spi_t bus)
-{
+void spi_init_pins(spi_t bus) {
     ROM_SysCtlPeripheralEnable(spi_confs[bus].gpio_sysctl);
 
     ROM_GPIOPinConfigure(spi_confs[bus].pins.clk);
@@ -64,16 +56,15 @@ void spi_init_pins(spi_t bus)
     ROM_GPIOPinTypeSSI(spi_confs[bus].gpio_port, spi_confs[bus].pins.mask);
 }
 
-void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
-{
+void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk) {
     (void)cs;
     assert((unsigned)bus < SPI_NUMOF);
-    /* lock bus */
+    // lock bus
     mutex_lock(&locks[bus]);
-    /* enable clock for SSI */
+    // enable clock for SSI
     ROM_SysCtlPeripheralEnable(spi_confs[bus].ssi_sysctl);
 
-    /* configure SSI device */
+    // configure SSI device
     ROM_SSIConfigSetExpClk(spi_confs[bus].ssi_base, ROM_SysCtlClockGet(),
                            mode,
                            SSI_MODE_MASTER,
@@ -83,9 +74,8 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
     ROM_SSIEnable(spi_confs[bus].ssi_base);
 }
 
-void spi_release(spi_t bus)
-{
-    /* disable device and release lock */
+void spi_release(spi_t bus) {
+    // disable device and release lock
     ROM_SSIDisable(spi_confs[bus].ssi_base);
     ROM_SysCtlPeripheralDisable(spi_confs[bus].ssi_sysctl);
 
@@ -93,17 +83,16 @@ void spi_release(spi_t bus)
 }
 
 void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
-                        const void *out, void *in, size_t len)
-{
+                        const void *out, void *in, size_t len) {
     char *inbuf = in;
     unsigned long int tmp_out;
     const unsigned char *outbuf =
         (out != NULL) ? (const unsigned char *)out : (const unsigned char *)&tmp_out;
 
-    /* make sure at least one input or one output buffer is given */
+    // make sure at least one input or one output buffer is given
     assert(in != NULL || out != NULL);
 
-    /* ROM function only works with long int */
+    // ROM function only works with long int
     unsigned long long_in;
 
     if (cs != SPI_CS_UNDEF) {
@@ -111,15 +100,15 @@ void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
     }
 
     for (; len > 0; len--) {
-        /* casting const away is needed because TI interface is not const-aware */
+        // casting const away is needed because TI interface is not const-aware
         ROM_SSIDataPut(spi_confs[bus].ssi_base, (unsigned long int) (*outbuf));
 
-        /* wait until tx over */
+        // wait until tx over
         while (ROM_SSIBusy(spi_confs[bus].ssi_base)) {}
 
         ROM_SSIDataGet(spi_confs[bus].ssi_base, &long_in);
 
-        /* wait until rx over */
+        // wait until rx over
         while (ROM_SSIBusy(spi_confs[bus].ssi_base)) {}
 
         if (inbuf) {

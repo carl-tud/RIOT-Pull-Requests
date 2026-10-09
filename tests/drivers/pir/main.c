@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 UC Berkeley
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 UC Berkeley
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the PIR motion sensor driver
- *
- * @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the PIR motion sensor driver
+///
+/// @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+/// @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -28,8 +24,7 @@
 static char pir_handler_stack[THREAD_STACKSIZE_MAIN];
 static pir_t dev;
 
-void* pir_handler(void *arg)
-{
+void* pir_handler(void *arg) {
     (void)arg;
     msg_t msg_q[1];
     msg_init_queue(msg_q, 1);
@@ -57,8 +52,7 @@ void* pir_handler(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("PIR motion sensor test application\n");
     printf("Initializing PIR sensor at GPIO_%ld... ", (long)PIR_PARAM_GPIO);
     if (pir_init(&dev, &pir_params[0]) == 0) {

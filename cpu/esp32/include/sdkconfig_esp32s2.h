@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       SDK configuration used by the ESP-IDF for ESP32-S2 SoC variant (family)
- *
- * The SDK configuration can be partially overridden by application-specific
- * board configuration.
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       SDK configuration used by the ESP-IDF for ESP32-S2 SoC variant (family)
+///
+/// The SDK configuration can be partially overridden by application-specific
+/// board configuration.
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #ifndef DOXYGEN
 
@@ -24,12 +20,10 @@
 extern "C" {
 #endif
 
-/**
- * @name ESP32-S2 specific clock configuration
- * @{
- */
+/// @name ESP32-S2 specific clock configuration
+/// @{
 
-/* Mapping of Kconfig defines to the respective enumeration values */
+// Mapping of Kconfig defines to the respective enumeration values
 #if CONFIG_ESP32S2_DEFAULT_CPU_FREQ_MHZ_2
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ       2
 #elif CONFIG_ESP32S2_DEFAULT_CPU_FREQ_MHZ_5
@@ -48,47 +42,35 @@ extern "C" {
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ       240
 #endif
 
-/**
- * @brief Defines the CPU frequency [values = 2, 5, 10, 10, 40, 80, 160, 240]
- */
+/// @brief Defines the CPU frequency [values = 2, 5, 10, 10, 40, 80, 160, 240]
 #ifndef CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ       80
 #endif
 
-/** @} */
+/// @}
 
-/**
- * ESP32-S2 specific RTC clock configuration
- */
+/// ESP32-S2 specific RTC clock configuration
 #define CONFIG_RTC_CLK_CAL_CYCLES               576
 
 #ifdef MODULE_ESP_RTC_TIMER_32K
 #  define CONFIG_RTC_XTAL_CAL_RETRY             3
 #endif
 
-/**
- * ESP32-S2 specific EFUSE configuration
- */
+/// ESP32-S2 specific EFUSE configuration
 #define CONFIG_EFUSE_MAX_BLK_LEN                256
 #define CONFIG_ESP_EFUSE_BLOCK_REV_MIN_FULL     0
 #define CONFIG_ESP_EFUSE_BLOCK_REV_MAX_FULL     99
 
-/**
- * ESP32-S2 specific MAC configuration
- */
+/// ESP32-S2 specific MAC configuration
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_WIFI_STA   1
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_WIFI_AP    1
 #define CONFIG_ESP32S2_UNIVERSAL_MAC_ADDRESSES  2
 
-/**
- * ESP32-S2 specific serial flasher config (DO NOT CHANGE)
- */
+/// ESP32-S2 specific serial flasher config (DO NOT CHANGE)
 #define CONFIG_ESPTOOLPY_FLASHFREQ_80M          1
 #define CONFIG_ESPTOOLPY_FLASHFREQ              "80m"
 
-/**
- * ESP32-S2 specific system configuration (DO NOT CHANGE)
- */
+/// ESP32-S2 specific system configuration (DO NOT CHANGE)
 #define CONFIG_ESP32S2_TRACEMEM_RESERVE_DRAM    0x0
 
 #define CONFIG_ESP_BROWNOUT_DET                 1
@@ -99,21 +81,15 @@ extern "C" {
 
 #define CONFIG_ULP_COPROC_RESERVE_MEM           0
 
-/**
- * ESP32-S2 specific sleep configuration (DO NOT CHANGE)
- */
+/// ESP32-S2 specific sleep configuration (DO NOT CHANGE)
 #define CONFIG_ESP_SLEEP_RTC_BUS_ISO_WORKAROUND         1
 #define CONFIG_ESP_SLEEP_WAIT_FLASH_READY_EXTRA_DELAY   0
 
-/**
- * ESP32-S2 specific USB configuration
- */
+/// ESP32-S2 specific USB configuration
 #ifdef MODULE_ESP_IDF_USB
 #  define CONFIG_USB_OTG_SUPPORTED              1
 #endif
-/**
- * ESP32-S2 specific SPI RAM configuration
- */
+/// ESP32-S2 specific SPI RAM configuration
 #ifdef  MODULE_ESP_SPI_RAM
 #  ifdef MODULE_ESP_SPI_OCT
 #    define CONFIG_SPIRAM_MODE_OCT              1
@@ -124,9 +100,7 @@ extern "C" {
 #  define CONFIG_SPIRAM_CS_IO                   26
 #endif
 
-/**
- * ESP32-S2 specific Cache config
- */
+/// ESP32-S2 specific Cache config
 #define CONFIG_ESP32S2_INSTRUCTION_CACHE_8KB        1
 #define CONFIG_ESP32S2_INSTRUCTION_CACHE_SIZE       0x2000
 #define CONFIG_ESP32S2_INSTRUCTION_CACHE_LINE_32B   1
@@ -134,12 +108,10 @@ extern "C" {
 #define CONFIG_ESP32S2_DATA_CACHE_SIZE              0x2000
 #define CONFIG_ESP32S2_DATA_CACHE_LINE_32B          1
 
-/**
- * ESP32-S2 specific system configuration
- */
+/// ESP32-S2 specific system configuration
 #define CONFIG_ESP_SYSTEM_MEMPROT_DEPCHECK              1
-#define CONFIG_ESP_SYSTEM_MEMPROT_FEATURE               0   /* default enabled */
-#define CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK          0   /* default enabled */
+#define CONFIG_ESP_SYSTEM_MEMPROT_FEATURE               0   // default enabled
+#define CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK          0   // default enabled
 #define CONFIG_ESP_SYSTEM_MEMPROT_CPU_PREFETCH_PAD_SIZE 16
 #define CONFIG_ESP_SYSTEM_MEMPROT_MEM_ALIGN_SIZE        4
 
@@ -147,5 +119,5 @@ extern "C" {
 }
 #endif
 
-#endif /* DOXYGEN */
-/** @} */
+#endif // DOXYGEN
+/// @}

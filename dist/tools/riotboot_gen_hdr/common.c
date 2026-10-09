@@ -1,24 +1,19 @@
-/*
- * Copyright (C) 2017 Kaspar Schleiser <kaspar@schleiser.de>
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- */
+// Copyright (C) 2017 Kaspar Schleiser <kaspar@schleiser.de>
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
 
-/**
- * @file
- * @brief       Common tools for RIOT images header generation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @file
+/// @brief       Common tools for RIOT images header generation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
 
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-int to_file(const char *filename, const void *buf, size_t len)
-{
+int to_file(const char *filename, const void *buf, size_t len) {
     int fd;
 
     if (strcmp("-", filename)) {
@@ -38,8 +33,7 @@ int to_file(const char *filename, const void *buf, size_t len)
     }
 }
 
-int from_file(const char *filename, void *buf, size_t len)
-{
+int from_file(const char *filename, void *buf, size_t len) {
     int fd;
 
     if (strcmp("-", filename)) {

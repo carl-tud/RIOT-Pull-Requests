@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Thread flooding test.
- *
- * Spawns sleeping threads till the scheduler's capacity is exhausted.
- *
- * @author  Andreas "Paul" Pauli <andreas.pauli@haw-hamburg.de>
- * @author  Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Thread flooding test.
+///
+/// Spawns sleeping threads till the scheduler's capacity is exhausted.
+///
+/// @author  Andreas "Paul" Pauli <andreas.pauli@haw-hamburg.de>
+/// @author  Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -24,16 +20,14 @@
 #include "thread.h"
 #include "sched.h"
 
-/* One stack for all threads. DON'T TRY THIS AT HOME!! */
+// One stack for all threads. DON'T TRY THIS AT HOME!!
 static char dummy_stack[THREAD_STACKSIZE_IDLE];
 
-static void *thread_func(void *arg)
-{
+static void *thread_func(void *arg) {
     return arg;
 }
 
-int main(void)
-{
+int main(void) {
     kernel_pid_t thr_id = KERNEL_PID_UNDEF;
     unsigned thr_cnt = 0;
     unsigned thr_in_use = sched_num_threads;
@@ -49,7 +43,7 @@ int main(void)
             printf(".");
     } while (-EOVERFLOW != thr_id);
     puts("");
-    /* decrease by 1 because last thread_create failed */
+    // decrease by 1 because last thread_create failed
     --thr_cnt;
 
     if (thr_cnt == (MAXTHREADS - thr_in_use)) {

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 HAW Hamburg
- * SPDX-FileCopyrightText: 2014 Martin Landsmann <Martin.Landsmann@HAW-Hamburg.de>
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 HAW Hamburg
+// SPDX-FileCopyrightText: 2014 Martin Landsmann <Martin.Landsmann@HAW-Hamburg.de>
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_base64
- * @{
- * @file
- * @brief   Functions to encode and decode base64
- *
- * @author  Martin Landsmann <Martin.Landsmann@HAW-Hamburg.de>
- * @author  Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- * @}
- *
- */
+/// @ingroup sys_base64
+/// @{
+/// @file
+/// @brief   Functions to encode and decode base64
+///
+/// @author  Martin Landsmann <Martin.Landsmann@HAW-Hamburg.de>
+/// @author  Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+/// @}
+///
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,21 +19,18 @@
 #include "base64.h"
 #include "kernel_defines.h"
 
-#define BASE64_CAPITAL_UPPER_BOUND     (25)     /**< base64 'Z'           */
-#define BASE64_SMALL_UPPER_BOUND       (51)     /**< base64 'z'           */
-#define BASE64_NUMBER_UPPER_BOUND      (61)     /**< base64 '9'           */
-#define BASE64_PLUS                    (62)     /**< base64 '+'           */
-#define BASE64_MINUS                   (62)     /**< base64 '-'           */
-#define BASE64_SLASH                   (63)     /**< base64 '/'           */
-#define BASE64_UNDERLINE               (63)     /**< base64 '_'           */
-#define BASE64_EQUALS                  (0xFE)   /**< no base64 symbol '=' */
-#define BASE64_NOT_DEFINED             (0xFF)   /**< no base64 symbol     */
+#define BASE64_CAPITAL_UPPER_BOUND     (25)     ///< base64 'Z'
+#define BASE64_SMALL_UPPER_BOUND       (51)     ///< base64 'z'
+#define BASE64_NUMBER_UPPER_BOUND      (61)     ///< base64 '9'
+#define BASE64_PLUS                    (62)     ///< base64 '+'
+#define BASE64_MINUS                   (62)     ///< base64 '-'
+#define BASE64_SLASH                   (63)     ///< base64 '/'
+#define BASE64_UNDERLINE               (63)     ///< base64 '_'
+#define BASE64_EQUALS                  (0xFE)   ///< no base64 symbol '='
+#define BASE64_NOT_DEFINED             (0xFF)   ///< no base64 symbol
 
-/*
- * returns the corresponding ascii symbol value for the given base64 code
- */
-static char getsymbol(uint8_t code, bool urlsafe)
-{
+// returns the corresponding ascii symbol value for the given base64 code
+static char getsymbol(uint8_t code, bool urlsafe) {
     if (!IS_ACTIVE(MODULE_BASE64URL)) {
         urlsafe = false;
     }
@@ -75,8 +68,7 @@ static char getsymbol(uint8_t code, bool urlsafe)
 
 static void encode_three_bytes(uint8_t *dest,
                                uint8_t b1, uint8_t b2, uint8_t b3,
-                               bool urlsafe)
-{
+                               bool urlsafe) {
     dest[0] = getsymbol(b1 >> 2, urlsafe);
     dest[1] = getsymbol(((b1 & 0x03) << 4) | (b2 >> 4), urlsafe);
     dest[2] = getsymbol(((b2 & 0x0f) << 2) | (b3 >> 6), urlsafe);
@@ -85,8 +77,7 @@ static void encode_three_bytes(uint8_t *dest,
 
 static int base64_encode_base(const void *data_in, size_t data_in_size,
                               void *base64_out, size_t *base64_out_size,
-                              bool urlsafe)
-{
+                              bool urlsafe) {
     const uint8_t padding = urlsafe ? 0 : '=';
     const uint8_t *in = data_in;
     uint8_t *out = base64_out;
@@ -126,30 +117,30 @@ static int base64_encode_base(const void *data_in, size_t data_in_size,
     }
 
     if (in == end) {
-        /* data_in_size is multiple of 3, we're done */
+        // data_in_size is multiple of 3, we're done
         return BASE64_SUCCESS;
     }
 
     if (in + 1 == end) {
-        /* One byte still left to decode, set other two input bytes to zero */
+        // One byte still left to decode, set other two input bytes to zero
         encode_three_bytes(out, in[0], 0, 0, urlsafe);
-        /* Replace last two bytes with "=" to signal corresponding input bytes
-         * didn't exist */
+        // Replace last two bytes with "=" to signal corresponding input bytes
+        // didn't exist
         out[2] = out[3] = padding;
 
-        /* padding is not required for urlsafe application */
+        // padding is not required for urlsafe application
         if (urlsafe) {
             *base64_out_size -= 2;
         }
         return BASE64_SUCCESS;
     }
 
-    /* Final case: 2 bytes remain for encoding, use zero as third input */
+    // Final case: 2 bytes remain for encoding, use zero as third input
     encode_three_bytes(out, in[0], in[1], 0, urlsafe);
-    /* Replace last output with "=" to signal corresponding input byte didn't exit */
+    // Replace last output with "=" to signal corresponding input byte didn't exit
     out[3] = padding;
 
-    /* padding is not required for urlsafe application */
+    // padding is not required for urlsafe application
     if (urlsafe) {
         *base64_out_size -= 1;
     }
@@ -158,24 +149,19 @@ static int base64_encode_base(const void *data_in, size_t data_in_size,
 }
 
 int base64_encode(const void *data_in, size_t data_in_size,
-                  void *base64_out, size_t *base64_out_size)
-{
+                  void *base64_out, size_t *base64_out_size) {
     return base64_encode_base(data_in, data_in_size, base64_out, base64_out_size, false);
 }
 
 #if IS_ACTIVE(MODULE_BASE64URL)
 int base64url_encode(const void *data_in, size_t data_in_size,
-                     void *base64_out, size_t *base64_out_size)
-{
+                     void *base64_out, size_t *base64_out_size) {
     return base64_encode_base(data_in, data_in_size, base64_out, base64_out_size, true);
 }
 #endif
 
-/*
- *  returns the corresponding base64 code for the given ascii symbol
- */
-static uint8_t getcode(char symbol)
-{
+//  returns the corresponding base64 code for the given ascii symbol
+static uint8_t getcode(char symbol) {
     if (symbol == '/') {
         return BASE64_SLASH;
     }
@@ -193,12 +179,12 @@ static uint8_t getcode(char symbol)
     }
 
     if (symbol == '=') {
-        /* indicates a padded base64 end */
+        // indicates a padded base64 end
         return BASE64_EQUALS;
     }
 
     if (symbol < '0') {
-        /* indicates that the given symbol is not base64 and should be ignored */
+        // indicates that the given symbol is not base64 and should be ignored
         return BASE64_NOT_DEFINED;
     }
 
@@ -214,20 +200,18 @@ static uint8_t getcode(char symbol)
         return (symbol + (BASE64_SMALL_UPPER_BOUND - 'z'));
     }
 
-    /* indicates that the given symbol is not base64 and should be ignored */
+    // indicates that the given symbol is not base64 and should be ignored
     return BASE64_NOT_DEFINED;
 }
 
-static void decode_four_codes(uint8_t *out, const uint8_t *src)
-{
+static void decode_four_codes(uint8_t *out, const uint8_t *src) {
     out[0] = (src[0] << 2) | (src[1] >> 4);
     out[1] = (src[1] << 4) | (src[2] >> 2);
     out[2] = (src[2] << 6) | src[3];
 }
 
 int base64_decode(const void *base64_in, size_t base64_in_size,
-                  void *data_out, size_t *data_out_size)
-{
+                  void *data_out, size_t *data_out_size) {
     const uint8_t *in = base64_in;
     uint8_t *out = data_out;
 
@@ -256,32 +240,32 @@ int base64_decode(const void *base64_in, size_t base64_in_size,
 
     while (1) {
         size_t decode_buf_fill = 0;
-        /* Try to load 4 codes into the decode buffer, skipping invalid symbols
-         * (such as inserted newlines commonly used to improve readability) */
+        // Try to load 4 codes into the decode buffer, skipping invalid symbols
+        // (such as inserted newlines commonly used to improve readability)
         do {
-            /* Reached end of input before 4 codes were loaded, handle each
-             * possible decode buffer fill level individually: */
+            // Reached end of input before 4 codes were loaded, handle each
+            // possible decode buffer fill level individually:
             if (in == end) {
                 switch (decode_buf_fill) {
                     case 0:
-                        /* no data in decode buffer -->nothing to do */
+                        // no data in decode buffer -->nothing to do
                         break;
                     case 1:
-                        /* an input size of 4 * n + 1 cannot happen, (even when
-                         * dropping the "=" chars) */
+                        // an input size of 4 * n + 1 cannot happen, (even when
+                        // dropping the "=" chars)
                         return BASE64_ERROR_DATA_IN_SIZE;
                     case 2:
-                        /* Got two base64 chars, or one byte of output data.
-                         * The just fill with zero codes and ignore the two
-                         * additionally decoded bytes */
+                        // Got two base64 chars, or one byte of output data.
+                        // The just fill with zero codes and ignore the two
+                        // additionally decoded bytes
                         decode_buf[2] = decode_buf[3] = 0;
                         decode_four_codes(out, decode_buf);
                         out += 1;
                         break;
                     case 3:
-                        /* Got three base64 chars or 2 bytes of output data.
-                         * Again, just fill with zero bytes and ignore the
-                         * additionally decoded byte */
+                        // Got three base64 chars or 2 bytes of output data.
+                        // Again, just fill with zero bytes and ignore the
+                        // additionally decoded byte
                         decode_buf[3] = 0;
                         decode_four_codes(out, decode_buf);
                         out += 2;

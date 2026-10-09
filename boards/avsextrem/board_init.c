@@ -1,35 +1,30 @@
-/*
- * SPDX-FileCopyrightText: 2013 Heiko Will <hwill@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Heiko Will <hwill@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       avsextrem board initialization
- *
- * @author      Heiko Will
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Michael Baar
- * @author      Zakaria Kasmi
- * @author      Marco Ziegert
- * @author      Stefan Pfeiffer
- *
- * @note        $Id: board_init.c 1071 2013-09-19 16:50:56 kasmi $
- */
+/// @file
+/// @brief       avsextrem board initialization
+///
+/// @author      Heiko Will
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Michael Baar
+/// @author      Zakaria Kasmi
+/// @author      Marco Ziegert
+/// @author      Stefan Pfeiffer
+///
+/// @note        $Id: board_init.c 1071 2013-09-19 16:50:56 kasmi $
 #include "cpu.h"
 
-/*---------------------------------------------------------------------------*/
-void board_init(void)
-{
+// ---------------------------------------------------------------------------
+void board_init(void) {
     //PTTU:
 
-    /*Turn Board on*/
+    // Turn Board on
     //  PINMODE0 |= BIT1;
     //  FIO0DIR |= BIT27;
     //  FIO0CLR = BIT27;
     //  0.27
 
-    /* 5V*/
+    // 5V
     //  FIO1DIR |= BIT28; // Synch
     //  FIO1SET = BIT28;  // No Powersave
     //  1.28
@@ -38,11 +33,11 @@ void board_init(void)
     //  FIO1CLR = BIT27;
     //  1.27
 
-    /* Disable Resistors on Buttons */
+    // Disable Resistors on Buttons
     //  PINMODE4 |= BIT9 + BIT11;
     //
 
-    /* Disable Resistors on LED - and Ports to output*/
+    // Disable Resistors on LED - and Ports to output
     PINMODE7 |= BIT19 + BIT21; //3.25 + 3.26
     PINMODE2 |= BIT1;          //1.0
     FIO1DIR |= BIT0;

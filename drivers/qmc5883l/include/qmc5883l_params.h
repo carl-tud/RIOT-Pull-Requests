@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_qmc5883l
- *
- * @{
- * @file
- * @brief       Default configuration for QMC5883L devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_qmc5883l
+///
+/// @{
+/// @file
+/// @brief       Default configuration for QMC5883L devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "saul_reg.h"
 #include "board.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for QMC5883L devices
- * @{
- */
+/// @name    Set default configuration parameters for QMC5883L devices
+/// @{
 #ifndef QMC5883L_PARAM_I2C
 #define QMC5883L_PARAM_I2C          I2C_DEV(0)
 #endif
@@ -54,19 +48,15 @@ extern "C" {
 #ifndef QMC5883L_SAUL_INFO
 #define QMC5883L_SAUL_INFO          { .name = "qmc5883l" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   QMC5883L configuration
- */
+/// @brief   QMC5883L configuration
 static const qmc5883l_params_t qmc5883l_params[] =
 {
     QMC5883L_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t qmc5883l_saul_info[] =
 {
     QMC5883L_SAUL_INFO
@@ -76,4 +66,4 @@ static const saul_reg_info_t qmc5883l_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

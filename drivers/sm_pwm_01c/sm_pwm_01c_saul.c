@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sm_pwm_01c
- * @{
- * @file
- * @brief       SAUL adaption of the SM_PWM_01C dust sensor driver
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @}
- */
+/// @ingroup     drivers_sm_pwm_01c
+/// @{
+/// @file
+/// @brief       SAUL adaption of the SM_PWM_01C dust sensor driver
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -22,8 +18,7 @@
 #include "sm_pwm_01c.h"
 #include "sm_pwm_01c_params.h"
 
-static int read_mc_pm_2p5(const void *_dev, phydat_t *data)
-{
+static int read_mc_pm_2p5(const void *_dev, phydat_t *data) {
     sm_pwm_01c_data_t values;
     sm_pwm_01c_t *dev = (sm_pwm_01c_t *)_dev;
 
@@ -35,8 +30,7 @@ static int read_mc_pm_2p5(const void *_dev, phydat_t *data)
     return 1;
 }
 
-static int read_mc_pm_10(const void *_dev, phydat_t *data)
-{
+static int read_mc_pm_10(const void *_dev, phydat_t *data) {
     sm_pwm_01c_data_t values;
     sm_pwm_01c_t *dev = (sm_pwm_01c_t *)_dev;
 

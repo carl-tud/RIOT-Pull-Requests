@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2014 INRIA
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 INRIA
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_z1
- *
-<h2>Components</h2>
-\li MSP430F2617
-\li CC2420
-
-* @{
-*
- * @file
- * @brief       Zolertia Z1 board configuration
- *
- * @author      Kévin Roussel <Kevin.Roussel@inria.fr>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- */
+/// @ingroup     boards_z1
+///
+/// <h2>Components</h2>
+/// \li MSP430F2617
+/// \li CC2420
+///
+/// @{
+///
+/// @file
+/// @brief       Zolertia Z1 board configuration
+///
+/// @author      Kévin Roussel <Kevin.Roussel@inria.fr>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
 
 #include <stdint.h>
 
@@ -31,33 +27,25 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Define the CPU model for the <msp430.h>
- */
+/// @brief   Define the CPU model for the <msp430.h>
 #ifndef __MSP430F2617__
 #define __MSP430F2617__
 #endif
 
-/**
- * @name    Xtimer configuration
- * @{
- */
+/// @name    Xtimer configuration
+/// @{
 #define XTIMER_WIDTH                (16)
 #define XTIMER_BACKOFF              (40)
-/** @} */
+/// @}
 
-/**
- * @name    ztimer configuration values
- * @{
- */
+/// @name    ztimer configuration values
+/// @{
 #define CONFIG_ZTIMER_USEC_ADJUST_SET     (99)
 #define CONFIG_ZTIMER_USEC_ADJUST_SLEEP   (100)
-/** @} */
+/// @}
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN                    GPIO_PIN(5, 4)
 #define LED1_PIN                    GPIO_PIN(5, 6)
 #define LED2_PIN                    GPIO_PIN(5, 5)
@@ -78,24 +66,20 @@ extern "C" {
 #define LED2_ON                     (LED_OUT_REG &=~LED2_MASK)
 #define LED2_OFF                    (LED_OUT_REG |= LED2_MASK)
 #define LED2_TOGGLE                 (LED_OUT_REG ^= LED2_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    User button configuration
- * @{
- */
+/// @name    User button configuration
+/// @{
 #define BTN0_PIN            GPIO_PIN(2, 5)
 #define BTN0_MASK           (0x20)
 #define BTN0_MODE           GPIO_IN
 
 #define BTN0_PRESSED        ((BTN0_PIN & BTN0_MASK) == 0)
 #define BTN0_RELEASED       ((BTN0_PIN & BTN0_MASK) != 0)
-/** @} */
+/// @}
 
-/**
- * @name    Definition of the interface to the CC2420 radio
- * @{
- */
+/// @name    Definition of the interface to the CC2420 radio
+/// @{
 #define CC2420_PARAM_CS            GPIO_PIN(P3, 0)
 #define CC2420_PARAM_FIFO          GPIO_PIN(P1, 3)
 #define CC2420_PARAM_FIFOP         GPIO_PIN(P1, 2)
@@ -103,10 +87,10 @@ extern "C" {
 #define CC2420_PARAM_SFD           GPIO_PIN(P4, 1)
 #define CC2420_PARAM_VREFEN        GPIO_PIN(P4, 5)
 #define CC2420_PARAM_RESET         GPIO_PIN(P4, 6)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

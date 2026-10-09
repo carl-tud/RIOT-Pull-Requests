@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the ADCXX1C ADC driver
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the ADCXX1C ADC driver
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @}
 
 #include <stdio.h>
 
@@ -25,14 +21,12 @@
 
 static adcxx1c_t dev;
 
-static void alert_cb(void *arg)
-{
+static void alert_cb(void *arg) {
     (void)arg;
     puts("[Alert]\n");
 }
 
-int main(void)
-{
+int main(void) {
     int16_t data;
 
     puts("ADCXX1C analog to digital driver test application\n");

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests extension header handling of gnrc stack.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests extension header handling of gnrc stack.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
+///
+/// @}
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -62,22 +58,19 @@ static gnrc_netreg_entry_t ip_entry = GNRC_NETREG_ENTRY_INIT_PID(
         0, KERNEL_PID_UNDEF
     );
 
-static void set_up_tests(void)
-{
+static void set_up_tests(void) {
     memset(&hdr, 0, sizeof(hdr));
     memset(buf, 0, sizeof(buf));
 }
 
 static inline void _init_hdrs(gnrc_rpl_srh_t **srh, uint8_t **vec,
-                              const ipv6_addr_t *dst)
-{
+                              const ipv6_addr_t *dst) {
     *srh = (gnrc_rpl_srh_t *)buf;
     *vec = (uint8_t *)(*srh + 1);
     memcpy(&hdr.dst, dst, sizeof(hdr.dst));
 }
 
-static void test_rpl_srh_dst_multicast(void)
-{
+static void test_rpl_srh_dst_multicast(void) {
     static const ipv6_addr_t a1 = IPV6_ADDR1, a2 = IPV6_ADDR2;
     static const ipv6_addr_t mcast = IPV6_MCAST_ADDR;
     gnrc_rpl_srh_t *srh;
@@ -96,8 +89,7 @@ static void test_rpl_srh_dst_multicast(void)
     TEST_ASSERT_NULL(err_ptr);
 }
 
-static void test_rpl_srh_route_multicast(void)
-{
+static void test_rpl_srh_route_multicast(void) {
     static const ipv6_addr_t a1 = IPV6_ADDR1;
     static const ipv6_addr_t mcast = IPV6_MCAST_ADDR;
     static const ipv6_addr_t dst = IPV6_DST;
@@ -117,8 +109,7 @@ static void test_rpl_srh_route_multicast(void)
     TEST_ASSERT_NULL(err_ptr);
 }
 
-static void test_rpl_srh_inconsistent_hdr(void)
-{
+static void test_rpl_srh_inconsistent_hdr(void) {
     static const ipv6_addr_t dst = IPV6_DST;
     gnrc_rpl_srh_t srh;
     void *err_ptr;
@@ -138,8 +129,7 @@ static void test_rpl_srh_inconsistent_hdr(void)
     TEST_ASSERT((&srh.len) == err_ptr);
 }
 
-static void test_rpl_srh_too_many_seg_left(void)
-{
+static void test_rpl_srh_too_many_seg_left(void) {
     static const ipv6_addr_t a1 = IPV6_ADDR1;
     static const ipv6_addr_t dst = IPV6_DST;
     gnrc_rpl_srh_t *srh;
@@ -157,8 +147,7 @@ static void test_rpl_srh_too_many_seg_left(void)
     TEST_ASSERT((&srh->seg_left) == err_ptr);
 }
 
-static void test_rpl_srh_nexthop_no_prefix_elided(void)
-{
+static void test_rpl_srh_nexthop_no_prefix_elided(void) {
     static const ipv6_addr_t a1 = IPV6_ADDR1, a2 = IPV6_ADDR2, dst = IPV6_DST;
     static const ipv6_addr_t expected1 = IPV6_ADDR1, expected2 = IPV6_ADDR2;
     gnrc_rpl_srh_t *srh;
@@ -172,21 +161,20 @@ static void test_rpl_srh_nexthop_no_prefix_elided(void)
     memcpy(vec, &a1, sizeof(a1));
     memcpy(vec + sizeof(a1), &a2, sizeof(a2));
 
-    /* first hop */
+    // first hop
     res = gnrc_rpl_srh_process(&hdr, srh, &err_ptr);
     TEST_ASSERT_EQUAL_INT(res, GNRC_IPV6_EXT_RH_FORWARDED);
     TEST_ASSERT_EQUAL_INT(SRH_SEG_LEFT - 1, srh->seg_left);
     TEST_ASSERT(ipv6_addr_equal(&hdr.dst, &expected1));
 
-    /* second hop */
+    // second hop
     res = gnrc_rpl_srh_process(&hdr, srh, &err_ptr);
     TEST_ASSERT_EQUAL_INT(res, GNRC_IPV6_EXT_RH_FORWARDED);
     TEST_ASSERT_EQUAL_INT(SRH_SEG_LEFT - 2, srh->seg_left);
     TEST_ASSERT(ipv6_addr_equal(&hdr.dst, &expected2));
 }
 
-static void test_rpl_srh_nexthop_prefix_elided(void)
-{
+static void test_rpl_srh_nexthop_prefix_elided(void) {
     static const ipv6_addr_t dst = IPV6_DST;
     static const ipv6_addr_t expected1 = IPV6_ADDR1, expected2 = IPV6_ADDR2;
     gnrc_rpl_srh_t *srh;
@@ -204,27 +192,25 @@ static void test_rpl_srh_nexthop_prefix_elided(void)
     memcpy(vec, &a1, sizeof(a1));
     memcpy(vec + sizeof(a1), &a2, sizeof(a2));
 
-    /* first hop */
+    // first hop
     res = gnrc_rpl_srh_process(&hdr, srh, &err_ptr);
     TEST_ASSERT_EQUAL_INT(res, GNRC_IPV6_EXT_RH_FORWARDED);
     TEST_ASSERT_EQUAL_INT(SRH_SEG_LEFT - 1, srh->seg_left);
     TEST_ASSERT(ipv6_addr_equal(&hdr.dst, &expected1));
 
-    /* second hop */
+    // second hop
     res = gnrc_rpl_srh_process(&hdr, srh, &err_ptr);
     TEST_ASSERT_EQUAL_INT(res, GNRC_IPV6_EXT_RH_FORWARDED);
     TEST_ASSERT_EQUAL_INT(SRH_SEG_LEFT - 2, srh->seg_left);
     TEST_ASSERT(ipv6_addr_equal(&hdr.dst, &expected2));
 }
 
-/* tools for external interaction */
-static inline void _ipreg_usage(char *cmd)
-{
+// tools for external interaction
+static inline void _ipreg_usage(char *cmd) {
     printf("Usage: %s {reg|unreg}", cmd);
 }
 
-static int _ipreg(int argc, char **argv)
-{
+static int _ipreg(int argc, char **argv) {
     if (argc < 2) {
         _ipreg_usage(argv[0]);
         return 1;
@@ -252,8 +238,7 @@ static int _ipreg(int argc, char **argv)
     return 0;
 }
 
-static void run_unittests(void)
-{
+static void run_unittests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_rpl_srh_dst_multicast),
         new_TestFixture(test_rpl_srh_route_multicast),
@@ -269,8 +254,7 @@ static void run_unittests(void)
     TESTS_END();
 }
 
-static int _unittests(int argc, char** argv)
-{
+static int _unittests(int argc, char** argv) {
     (void) argc;
     (void) argv;
 
@@ -284,8 +268,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
     return 0;
 }

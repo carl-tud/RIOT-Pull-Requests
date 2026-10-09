@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_TESTSUITE_H
 #define EMBUNIT_TESTSUITE_H
 
@@ -10,7 +8,7 @@ extern "C" {
 #endif
 
 typedef struct __TestSuite  TestSuite;
-typedef struct __TestSuite* TestSuiteRef;/*downward compatible*/
+typedef struct __TestSuite* TestSuiteRef;// downward compatible
 
 struct __TestSuite {
     TestImplement* isa;
@@ -33,4 +31,4 @@ extern const TestImplement TestSuiteImplement;
 }
 #endif
 
-#endif /* EMBUNIT_TESTSUITE_H */
+#endif // EMBUNIT_TESTSUITE_H

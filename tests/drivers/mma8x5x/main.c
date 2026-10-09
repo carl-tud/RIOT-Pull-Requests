@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the MMA8652 accelerometer driver.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Johann Fischer <j.fischer@phytec.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the MMA8652 accelerometer driver.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Johann Fischer <j.fischer@phytec.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -27,8 +23,7 @@
 
 static mma8x5x_t dev;
 
-int main(void)
-{
+int main(void) {
     mma8x5x_data_t data;
 
     puts("MMA8652 accelerometer driver test application\n");

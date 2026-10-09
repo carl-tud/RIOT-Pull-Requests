@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017, 2019 Ken Rabold, JP Bonn
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017, 2019 Ken Rabold, JP Bonn
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_riscv_common
- * @{
- *
- * @file        cpu.c
- * @brief       Implementation of the CPU IRQ management for RISC-V clint/plic
- *              peripheral
- *
- * @author      Ken Rabold
- * @}
- */
+/// @ingroup     cpu_riscv_common
+/// @{
+///
+/// @file        cpu.c
+/// @brief       Implementation of the CPU IRQ management for RISC-V clint/plic
+///              peripheral
+///
+/// @author      Ken Rabold
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -31,36 +27,31 @@
 #include "vendor/riscv_csr.h"
 #include "xh3irq.h"
 
-/* Default state of mstatus register */
+// Default state of mstatus register
 #define MSTATUS_DEFAULT (MSTATUS_MPP | MSTATUS_MPIE)
 
 volatile int riscv_in_isr = 0;
 
-/**
- * @brief   ISR trap vector
- */
+/// @brief   ISR trap vector
 static void trap_entry(void);
 
-/**
- * @brief   Timer ISR
- */
+/// @brief   Timer ISR
 void timer_isr(void);
 
-void riscv_irq_init(void)
-{
-    /* Setup trap handler function */
+void riscv_irq_init(void) {
+    // Setup trap handler function
     if (IS_ACTIVE(MODULE_PERIPH_CLIC)) {
-        /* Signal CLIC usage to the core */
+        // Signal CLIC usage to the core
         write_csr(mtvec, (uintptr_t)&trap_entry | 0x03);
     }
     else {
         write_csr(mtvec, (uintptr_t)&trap_entry);
     }
 
-    /* Clear all interrupt enables */
+    // Clear all interrupt enables
     write_csr(mie, 0);
 
-    /* Initial PLIC external interrupt controller */
+    // Initial PLIC external interrupt controller
     if (IS_ACTIVE(MODULE_PERIPH_PLIC)) {
         plic_init();
     }
@@ -68,27 +59,24 @@ void riscv_irq_init(void)
         clic_init();
     }
 
-    /* Enable external interrupts */
+    // Enable external interrupts
     set_csr(mie, MIP_MEIP);
 
-    /*  Set default state of mstatus */
+    // Set default state of mstatus
     set_csr(mstatus, MSTATUS_DEFAULT);
 
     irq_enable();
 }
 
-/**
- * @brief Global trap and interrupt handler
- */
-__attribute((used)) static void handle_trap(uword_t mcause)
-{
-    /*  Tell RIOT to set sched_context_switch_request instead of
-     *  calling thread_yield(). */
+/// @brief Global trap and interrupt handler
+__attribute((used)) static void handle_trap(uword_t mcause) {
+    // Tell RIOT to set sched_context_switch_request instead of
+    //  calling thread_yield().
     riscv_in_isr = 1;
 
     uword_t trap = mcause & CPU_CSR_MCAUSE_CAUSE_MSK;
 
-    /* Check if this is an interrupt or a trap, indicated by the left most bit */
+    // Check if this is an interrupt or a trap, indicated by the left most bit
     bool is_interrupt = (mcause & MCAUSE_INT) == MCAUSE_INT;
 
 #if CONFIG_PRINT_VERBOSE_TRAP_INFO
@@ -130,16 +118,16 @@ __attribute((used)) static void handle_trap(uword_t mcause)
 #endif
 
     if (is_interrupt) {
-        /* Cause is an interrupt - determine type */
+        // Cause is an interrupt - determine type
         switch (mcause & MCAUSE_CAUSE) {
 #ifdef MODULE_PERIPH_CORETIMER
         case IRQ_M_TIMER:
-            /* Handle timer interrupt */
+            // Handle timer interrupt
             timer_isr();
             break;
 #endif
         case IRQ_M_EXT:
-            /* Handle external interrupt */
+            // Handle external interrupt
             if (IS_ACTIVE(MODULE_PERIPH_PLIC)) {
                 plic_isr_handler();
             }
@@ -153,7 +141,7 @@ __attribute((used)) static void handle_trap(uword_t mcause)
                 clic_isr_handler(trap);
             }
             else {
-                /* Unknown interrupt */
+                // Unknown interrupt
                 core_panic(PANIC_GENERAL_ERROR, "Unhandled interrupt");
             }
             break;
@@ -161,13 +149,13 @@ __attribute((used)) static void handle_trap(uword_t mcause)
     }
     else {
         switch (trap) {
-        case CAUSE_USER_ECALL:      /* ECALL from user mode */
-        case CAUSE_MACHINE_ECALL:   /* ECALL from machine mode */
+        case CAUSE_USER_ECALL:      // ECALL from user mode
+        case CAUSE_MACHINE_ECALL:   // ECALL from machine mode
         {
-            /* TODO: get the ecall arguments */
+            // TODO: get the ecall arguments
             sched_context_switch_request = 1;
-            /* Increment the return program counter past the ecall
-             * instruction */
+            // Increment the return program counter past the ecall
+            // instruction
             uword_t return_pc = read_csr(mepc);
             write_csr(mepc, return_pc + 4);
             break;
@@ -187,24 +175,23 @@ __attribute((used)) static void handle_trap(uword_t mcause)
             printf("  mepc:   0x%" PRIxPTR "\n", (uintptr_t)read_csr(mepc));
             printf("  mtval:  0x%" PRIxPTR "\n", (uintptr_t)read_csr(mtval));
 #endif
-            /* Unknown trap */
+            // Unknown trap
             core_panic(PANIC_GENERAL_ERROR, "Unhandled trap");
         }
     }
-    /* ISR done - no more changes to thread states */
+    // ISR done - no more changes to thread states
     riscv_in_isr = 0;
 }
 
-/* Marking this as interrupt to ensure an mret at the end, provided by the
- * compiler. Aligned to 64-byte boundary as per RISC-V spec and required by some
- * of the supported platforms (gd32)*/
+// Marking this as interrupt to ensure an mret at the end, provided by the
+// compiler. Aligned to 64-byte boundary as per RISC-V spec and required by some
+// of the supported platforms (gd32)
 __attribute((aligned(64)))
-static void __attribute__((interrupt)) trap_entry(void)
-{
+static void __attribute__((interrupt)) trap_entry(void) {
     __asm__ volatile (
         "addi sp, sp, -"XTSTR (CONTEXT_FRAME_SIZE)"          \n"
 
-        /* Save caller-saved registers */
+        // Save caller-saved registers
         XTSTR(REG_S)" ra, "XTSTR (ra_OFFSET)"(sp)                      \n"
         XTSTR(REG_S)" t0, "XTSTR (t0_OFFSET)"(sp)                      \n"
         XTSTR(REG_S)" t1, "XTSTR (t1_OFFSET)"(sp)                      \n"
@@ -222,50 +209,50 @@ static void __attribute__((interrupt)) trap_entry(void)
         XTSTR(REG_S)" a6, "XTSTR (a6_OFFSET)"(sp)                      \n"
         XTSTR(REG_S)" a7, "XTSTR (a7_OFFSET)"(sp)                      \n"
 
-        /* Save s0 and s1 extra for the active thread and the stack ptr */
+        // Save s0 and s1 extra for the active thread and the stack ptr
         XTSTR(REG_S)" s0, "XTSTR (s0_OFFSET)"(sp)                      \n"
         XTSTR(REG_S)" s1, "XTSTR (s1_OFFSET)"(sp)                      \n"
 
-        /* Save the user stack ptr */
+        // Save the user stack ptr
         "mv s0, sp                                          \n"
-        /* Load exception stack ptr */
+        // Load exception stack ptr
         "la sp, _sp                                         \n"
 
-        /* Get the interrupt cause */
+        // Get the interrupt cause
         "csrr a0, mcause                                    \n"
 
-        /* Call trap handler, a0 contains mcause before, and the return value after
-         * the call */
+        // Call trap handler, a0 contains mcause before, and the return value after
+        // the call
         "call handle_trap                                   \n"
 
-        /* Load the sched_context_switch_request. This is a 32-bit int (not a
-         * register-wide value), so it must always be loaded with lw — using
-         * the XLEN-wide REG_L (ld on RV64) would read 4 bytes past the flag. */
+        // Load the sched_context_switch_request. This is a 32-bit int (not a
+        // register-wide value), so it must always be loaded with lw — using
+        // the XLEN-wide REG_L (ld on RV64) would read 4 bytes past the flag.
         "lw a0, sched_context_switch_request                \n"
 
-        /* And skip the context switch if not requested */
+        // And skip the context switch if not requested
         "beqz a0, no_sched                                  \n"
 
-        /*  Get the previous active thread (could be NULL) */
+        // Get the previous active thread (could be NULL)
         XTSTR(REG_L)" s1, sched_active_thread                         \n"
 
-        /* Run the scheduler */
+        // Run the scheduler
         "call sched_run                                     \n"
 
         "no_sched:                                          \n"
-        /* Restore the thread stack pointer and check if a new thread must be
-         * scheduled */
+        // Restore the thread stack pointer and check if a new thread must be
+        // scheduled
         "mv sp, s0                                          \n"
 
-        /* No context switch required, shortcut to restore. a0 contains the return
-         * value of sched_run, or the sched_context_switch_request if the sched_run
-         * was skipped */
+        // No context switch required, shortcut to restore. a0 contains the return
+        // value of sched_run, or the sched_context_switch_request if the sched_run
+        // was skipped
         "beqz a0, no_switch                                 \n"
 
-        /* Skips the rest of the save if no active thread */
+        // Skips the rest of the save if no active thread
         "beqz s1, null_thread                               \n"
 
-        /* Store s2-s11 */
+        // Store s2-s11
         XTSTR(REG_S)" s2, "XTSTR (s2_OFFSET)"(sp)                      \n"
         XTSTR(REG_S)" s3, "XTSTR (s3_OFFSET)"(sp)                      \n"
         XTSTR(REG_S)" s4, "XTSTR (s4_OFFSET)"(sp)                      \n"
@@ -277,29 +264,29 @@ static void __attribute__((interrupt)) trap_entry(void)
         XTSTR(REG_S)" s10, "XTSTR (s10_OFFSET)"(sp)                    \n"
         XTSTR(REG_S)" s11, "XTSTR (s11_OFFSET)"(sp)                    \n"
 
-        /* Grab mepc to save it to the stack */
+        // Grab mepc to save it to the stack
         "csrr s2, mepc                                      \n"
 
-        /* Save return PC in stack frame */
+        // Save return PC in stack frame
         XTSTR(REG_S)" s2, "XTSTR (pc_OFFSET)"(sp)                      \n"
 
-        /* Save stack pointer of current thread */
+        // Save stack pointer of current thread
         XTSTR(REG_S)" sp, "XTSTR (SP_OFFSET_IN_THREAD)"(s1)            \n"
 
-        /* Context saving done, from here on the new thread is scheduled */
+        // Context saving done, from here on the new thread is scheduled
         "null_thread:                                       \n"
 
-        /*  Get the new active thread (guaranteed to be non NULL) */
+        // Get the new active thread (guaranteed to be non NULL)
         XTSTR(REG_L)" s1, sched_active_thread                         \n"
 
-        /*  Load the thread SP of scheduled thread */
+        // Load the thread SP of scheduled thread
         XTSTR(REG_L)" sp, "XTSTR (SP_OFFSET_IN_THREAD)"(s1)            \n"
 
-        /*  Set return PC to mepc */
+        // Set return PC to mepc
         XTSTR(REG_L)" a1, "XTSTR (pc_OFFSET)"(sp)                      \n"
         "csrw mepc, a1                                      \n"
 
-        /* restore s2-s11 */
+        // restore s2-s11
         XTSTR(REG_L)" s2, "XTSTR (s2_OFFSET)"(sp)                      \n"
         XTSTR(REG_L)" s3, "XTSTR (s3_OFFSET)"(sp)                      \n"
         XTSTR(REG_L)" s4, "XTSTR (s4_OFFSET)"(sp)                      \n"
@@ -313,7 +300,7 @@ static void __attribute__((interrupt)) trap_entry(void)
 
         "no_switch:                                         \n"
 
-        /* restore the caller-saved registers */
+        // restore the caller-saved registers
         XTSTR(REG_L)" ra, "XTSTR (ra_OFFSET)"(sp)                      \n"
         XTSTR(REG_L)" t0, "XTSTR (t0_OFFSET)"(sp)                      \n"
         XTSTR(REG_L)" t1, "XTSTR (t1_OFFSET)"(sp)                      \n"

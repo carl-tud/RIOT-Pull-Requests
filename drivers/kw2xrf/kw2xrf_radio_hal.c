@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_kw2xrf
- * @{
- *
- * @file
- * @brief       IEEE 802.15.4 Radio HAL implementation for the KW2x RF driver
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_kw2xrf
+/// @{
+///
+/// @file
+/// @brief       IEEE 802.15.4 Radio HAL implementation for the KW2x RF driver
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+///
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -101,20 +97,18 @@ void _print_irq_state(uint8_t *dregs) {
                                                            dregs[MKW2XDM_PHY_CTRL3] & MKW2XDM_PHY_CTRL3_TMR1CMP_EN ? "compare" : "no-compare");
 }
 
-static void _set_sequence(kw2xrf_t *kw_dev, kw2xrf_physeq_t seq)
-{
+static void _set_sequence(kw2xrf_t *kw_dev, kw2xrf_physeq_t seq) {
     uint8_t ctl1 = kw2xrf_read_dreg(kw_dev, MKW2XDM_PHY_CTRL1);
     ctl1 &= ~(MKW2XDM_PHY_CTRL1_XCVSEQ_MASK);
     ctl1 |= MKW2XDM_PHY_CTRL1_XCVSEQ(seq);
     kw2xrf_write_dreg(kw_dev, MKW2XDM_PHY_CTRL1, ctl1);
 }
 
-/* The first byte returned by the radio is always IRQSTS1. Thus, giving IRQSTS2
-   as the start address (first byte written) reduces communicaiton overhead by
-   one byte and reduces turnaround time for radio handling.
-   (Starting at address IRQSTS1 instead, effectively returns IRQSTS1 twice) */
-void _kw2xrf_read_dregs_from_sts1(kw2xrf_t *dev, uint8_t *buf, uint8_t length)
-{
+// The first byte returned by the radio is always IRQSTS1. Thus, giving IRQSTS2
+//    as the start address (first byte written) reduces communicaiton overhead by
+//    one byte and reduces turnaround time for radio handling.
+//    (Starting at address IRQSTS1 instead, effectively returns IRQSTS1 twice)
+void _kw2xrf_read_dregs_from_sts1(kw2xrf_t *dev, uint8_t *buf, uint8_t length) {
     spi_acquire(dev->params->spi, dev->params->cs_pin, SPI_MODE_0,
                 dev->params->spi_clk);
     uint8_t cmd = (MKW2XDM_IRQSTS2 | MKW2XDRF_REG_READ);
@@ -126,28 +120,26 @@ void _kw2xrf_read_dregs_from_sts1(kw2xrf_t *dev, uint8_t *buf, uint8_t length)
     spi_release(dev->params->spi);
 }
 
-static void _start_tx(kw2xrf_t *kw_dev)
-{
+static void _start_tx(kw2xrf_t *kw_dev) {
     uint8_t pctl1 = kw2xrf_read_dreg(kw_dev, MKW2XDM_PHY_CTRL1);
 
     if (kw_dev->ack_requested) {
-        /* expect an ACK after TX */
+        // expect an ACK after TX
         pctl1 |= MKW2XDM_PHY_CTRL1_RXACKRQD;
     } else {
-        /* don't expect an ACK after TX */
+        // don't expect an ACK after TX
         pctl1 &= ~MKW2XDM_PHY_CTRL1_RXACKRQD;
     }
 
-    /* A (T) sequence performs a simple transmit and returns to idle, a (TR)
-    sequence waits for the requested ACK response after the transmission */
+    // A (T) sequence performs a simple transmit and returns to idle, a (TR)
+    // sequence waits for the requested ACK response after the transmission
     pctl1 &= ~MKW2XDM_PHY_CTRL1_XCVSEQ_MASK;
     pctl1 |= MKW2XDM_PHY_CTRL1_XCVSEQ(kw_dev->ack_requested ? XCVSEQ_TX_RX :
                                                               XCVSEQ_TRANSMIT);
     kw2xrf_write_dreg(kw_dev, MKW2XDM_PHY_CTRL1, pctl1);
 }
 
-void kw2xrf_radio_hal_irq_handler(void *arg)
-{
+void kw2xrf_radio_hal_irq_handler(void *arg) {
     ieee802154_dev_t *dev = arg;
     kw2xrf_t *kw_dev = dev->priv;
     kw2xrf_mask_irq_b(kw_dev);
@@ -166,12 +158,12 @@ void kw2xrf_radio_hal_irq_handler(void *arg)
                 sts1_clr |= MKW2XDM_IRQSTS1_RXWTRMRKIRQ;
                 hal_event = IEEE802154_RADIO_INDICATION_RX_START;
                 indicate_hal_event = true;
-                break; /* don't process further events on RX_START */
+                break; // don't process further events on RX_START
             }
 
-            /* SEQ assertion during this state indicates a reception */
+            // SEQ assertion during this state indicates a reception
             if (dregs[MKW2XDM_IRQSTS1] & MKW2XDM_IRQSTS1_SEQIRQ) {
-                /* clear all pending IRQs asserted during RX sequence */
+                // clear all pending IRQs asserted during RX sequence
                 sts1_clr |= dregs[MKW2XDM_IRQSTS1];
 
                 if (!(dregs[MKW2XDM_IRQSTS2] & MKW2XDM_IRQSTS2_CRCVALID)) {
@@ -199,7 +191,7 @@ void kw2xrf_radio_hal_irq_handler(void *arg)
             }
             break;
         case XCVSEQ_CCA:
-            /* handle after CCA *and* sequence (warmdown) finished */
+            // handle after CCA *and* sequence (warmdown) finished
             if ((dregs[MKW2XDM_IRQSTS1] & MKW2XDM_IRQSTS1_CCAIRQ) &&
                 (dregs[MKW2XDM_IRQSTS1] & MKW2XDM_IRQSTS1_SEQIRQ)) {
                 sts1_clr |= (MKW2XDM_IRQSTS1_CCAIRQ | MKW2XDM_IRQSTS1_SEQIRQ);
@@ -208,19 +200,19 @@ void kw2xrf_radio_hal_irq_handler(void *arg)
                                      MKW2XDM_IRQSTS2_CCA);
                 kw_dev->waiting_for_cca = false;
 
-                /* if this cca was performed as "CCA-before TX" */
+                // if this cca was performed as "CCA-before TX"
                 if (kw_dev->tx_cca_pending) {
                     kw_dev->tx_cca_pending = false;
                     if (kw_dev->ch_clear) {
-                        /* clear pending interrupts before TX */
+                        // clear pending interrupts before TX
                         kw2xrf_write_dreg(kw_dev, MKW2XDM_IRQSTS1, sts1_clr);
                         _start_tx(kw_dev);
                         kw2xrf_enable_irq_b(kw_dev);
                         return;
                     } else {
                         kw_dev->tx_done = true;
-                        /* indicate TX_DONE. The confirm function will return
-                           channel busy */
+                        // indicate TX_DONE. The confirm function will return
+                        //    channel busy
                         hal_event = IEEE802154_RADIO_CONFIRM_TX_DONE;
                         indicate_hal_event = true;
                         break;
@@ -235,9 +227,9 @@ void kw2xrf_radio_hal_irq_handler(void *arg)
             if (dregs[MKW2XDM_IRQSTS1] & MKW2XDM_IRQSTS1_TXIRQ) {
                 sts1_clr |= MKW2XDM_IRQSTS1_TXIRQ;
                 if (dregs[MKW2XDM_PHY_CTRL1] & MKW2XDM_PHY_CTRL1_RXACKRQD) {
-                    /* Allow TMR3IRQ to cancel RX operation */
+                    // Allow TMR3IRQ to cancel RX operation
                     kw2xrf_timer3_seq_abort_on(kw_dev);
-                    /* Enable interrupt for TMR3 and set timer */
+                    // Enable interrupt for TMR3 and set timer
                     kw2xrf_abort_rx_ops_enable(kw_dev, IEEE802154_ACK_TIMEOUT_SYMS);
                 }
             }
@@ -258,9 +250,9 @@ void kw2xrf_radio_hal_irq_handler(void *arg)
                 kw_dev->ack_rcvd = !(dregs[MKW2XDM_IRQSTS3] &
                                      MKW2XDM_IRQSTS3_TMR3IRQ);
 
-                /* Disallow TMR3IRQ to cancel RX operation */
+                // Disallow TMR3IRQ to cancel RX operation
                 kw2xrf_timer3_seq_abort_off(kw_dev);
-                /* Disable interrupt for TMR3 and reset TMR3IRQ */
+                // Disable interrupt for TMR3 and reset TMR3IRQ
                 kw2xrf_abort_rx_ops_disable(kw_dev);
 
                 kw_dev->tx_done = true;
@@ -269,14 +261,14 @@ void kw2xrf_radio_hal_irq_handler(void *arg)
             }
             break;
         case XCVSEQ_IDLE:
-            /* clear SEQ interrupt for explicit transitions to IDLE */
+            // clear SEQ interrupt for explicit transitions to IDLE
             sts1_clr |= MKW2XDM_IRQSTS1_SEQIRQ;
             break;
         default:
             break;
     }
 
-    /* clear handled IRQs */
+    // clear handled IRQs
     kw2xrf_write_dreg(kw_dev, MKW2XDM_IRQSTS1, sts1_clr);
 
     kw2xrf_enable_irq_b(kw_dev);
@@ -287,9 +279,8 @@ void kw2xrf_radio_hal_irq_handler(void *arg)
 }
 
 int kw2xrf_init(kw2xrf_t *dev, const kw2xrf_params_t *params, ieee802154_dev_t *hal,
-                     gpio_cb_t cb, void *ctx)
-{
-    /* initialize device descriptor */
+                     gpio_cb_t cb, void *ctx) {
+    // initialize device descriptor
     dev->params = params;
     dev->idle_state = XCVSEQ_RECEIVE;
     dev->state = 0;
@@ -310,7 +301,7 @@ int kw2xrf_init(kw2xrf_t *dev, const kw2xrf_params_t *params, ieee802154_dev_t *
     kw2xrf_set_out_clk(dev);
     kw2xrf_disable_interrupts(dev);
 
-    /* set up GPIO-pin used for IRQ */
+    // set up GPIO-pin used for IRQ
     gpio_init_int(dev->params->int_pin, GPIO_IN, GPIO_FALLING, cb, ctx);
 
     kw2xrf_abort_sequence(dev);
@@ -319,25 +310,24 @@ int kw2xrf_init(kw2xrf_t *dev, const kw2xrf_params_t *params, ieee802154_dev_t *
 
     kw2xrf_reset_phy(dev);
 
-    /* Disable automatic CCA before TX (for T and TR sequences).
-       Auto CCA was found to cause poor performance (significant packet loss)
-       when performed before the transmission - even on clearchannel.
-       As a workaround we perform manual CCA directly before transmission
-       which doesn't show degraded performance.
-       Note: the poor performance was only visible when transmitting data
-             to other models of radios. I.e., kw2xrf to kw2xrf was fine, while
-             kw2xrf to at862xx and nrf52 performs very bad. */
+    // Disable automatic CCA before TX (for T and TR sequences).
+    //    Auto CCA was found to cause poor performance (significant packet loss)
+    //    when performed before the transmission - even on clearchannel.
+    //    As a workaround we perform manual CCA directly before transmission
+    //    which doesn't show degraded performance.
+    //    Note: the poor performance was only visible when transmitting data
+    //          to other models of radios. I.e., kw2xrf to kw2xrf was fine, while
+    //          kw2xrf to at862xx and nrf52 performs very bad.
     kw2xrf_clear_dreg_bit(dev, MKW2XDM_PHY_CTRL1, MKW2XDM_PHY_CTRL1_CCABFRTX);
 
     LOG_DEBUG("[kw2xrf] init finished\n");
     return 0;
 }
 
-static int _write(ieee802154_dev_t *dev, const iolist_t *iolist)
-{
+static int _write(ieee802154_dev_t *dev, const iolist_t *iolist) {
     kw2xrf_t *kw_dev = dev->priv;
 
-    /* get length */
+    // get length
     uint8_t len = iolist_size(iolist) + IEEE802154_FCS_LEN;
 
     if (len > KW2XRF_MAX_PKT_LENGTH) {
@@ -345,12 +335,12 @@ static int _write(ieee802154_dev_t *dev, const iolist_t *iolist)
         return -EOVERFLOW;
     }
 
-    /* check if ack req bit is set to decide which transmit sequence to use to
-       send the frame */
+    // check if ack req bit is set to decide which transmit sequence to use to
+    //    send the frame
     uint8_t *data = iolist->iol_base;
     kw_dev->ack_requested = *data & IEEE802154_FCF_ACK_REQ;
 
-    /* transfer packet data to radio buffer */
+    // transfer packet data to radio buffer
     spi_acquire(kw_dev->params->spi, kw_dev->params->cs_pin, SPI_MODE_0,
                 kw_dev->params->spi_clk);
     spi_transfer_byte(kw_dev->params->spi, kw_dev->params->cs_pin, true,
@@ -358,7 +348,7 @@ static int _write(ieee802154_dev_t *dev, const iolist_t *iolist)
     spi_transfer_byte(kw_dev->params->spi, kw_dev->params->cs_pin, true, len);
 
     for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
-        /* start after pkt len byte */
+        // start after pkt len byte
         bool cont = iol->iol_next;
         spi_transfer_bytes(kw_dev->params->spi, kw_dev->params->cs_pin, cont,
                            iol->iol_base, NULL, iol->iol_len);
@@ -369,8 +359,7 @@ static int _write(ieee802154_dev_t *dev, const iolist_t *iolist)
     return 0;
 }
 
-static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
-{
+static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx) {
     kw2xrf_t *kw_dev = dev->priv;
     int res = -EINVAL;
     (void) ctx;
@@ -392,7 +381,7 @@ static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
         kw2xrf_write_dreg(kw_dev, MKW2XDM_IRQSTS1, MKW2XDM_IRQSTS1_RXIRQ |
                           MKW2XDM_IRQSTS1_RXWTRMRKIRQ);
 
-        /* enable WTMRK and SEQ as indication for RX_START and RX_DONE */
+        // enable WTMRK and SEQ as indication for RX_START and RX_DONE
         kw2xrf_write_dreg(kw_dev, MKW2XDM_PHY_CTRL2,
                           ~(MKW2XDM_PHY_CTRL2_SEQMSK |
                             MKW2XDM_PHY_CTRL2_RX_WMRK_MSK));
@@ -403,13 +392,13 @@ static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
     case IEEE802154_HAL_OP_SET_IDLE:
         kw2xrf_set_power_mode(kw_dev, KW2XRF_IDLE);
 
-        /* clear any pending Tx interrupts */
+        // clear any pending Tx interrupts
         kw2xrf_write_dreg(kw_dev, MKW2XDM_IRQSTS1, MKW2XDM_IRQSTS1_TXIRQ |
                                   MKW2XDM_IRQSTS1_SEQIRQ);
 
-        /* enable SEQ IRQ as indication for TX_DONE and TX IRQ to
-           indicate when the frame was transmitted to then possibly
-           schedule an ACK timeout */
+        // enable SEQ IRQ as indication for TX_DONE and TX IRQ to
+        //    indicate when the frame was transmitted to then possibly
+        //    schedule an ACK timeout
         kw2xrf_write_dreg(kw_dev, MKW2XDM_PHY_CTRL2,
                           ~(MKW2XDM_PHY_CTRL2_SEQMSK |
                             MKW2XDM_PHY_CTRL2_TXMSK));
@@ -429,8 +418,7 @@ static int _request_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
     return res;
 }
 
-static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
-{
+static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx) {
     kw2xrf_t *kw_dev = dev->priv;
     int res = -EAGAIN;
     switch (op) {
@@ -478,16 +466,14 @@ static int _confirm_op(ieee802154_dev_t *dev, ieee802154_hal_op_t op, void *ctx)
     return res;
 }
 
-static int _len(ieee802154_dev_t *dev)
-{
+static int _len(ieee802154_dev_t *dev) {
     kw2xrf_t *kw_dev = dev->priv;
     size_t pkt_len = kw2xrf_read_dreg(kw_dev, MKW2XDM_RX_FRM_LEN) -
                      IEEE802154_FCS_LEN;
     return pkt_len;
 }
 
-static int _read(ieee802154_dev_t *dev, void *buf, size_t size, ieee802154_rx_info_t *info)
-{
+static int _read(ieee802154_dev_t *dev, void *buf, size_t size, ieee802154_rx_info_t *info) {
     kw2xrf_t *kw_dev = dev->priv;
 
     size_t rxlen =  _len(dev);
@@ -505,10 +491,9 @@ static int _read(ieee802154_dev_t *dev, void *buf, size_t size, ieee802154_rx_in
     return rxlen;
 }
 
-static int _set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold)
-{
+static int _set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold) {
     kw2xrf_t *kw_dev = dev->priv;
-    /* normalize to absolute value */
+    // normalize to absolute value
     if (threshold < 0) {
         threshold = -threshold;
     }
@@ -519,14 +504,13 @@ static int _set_cca_threshold(ieee802154_dev_t *dev, int8_t threshold)
     return 0;
 }
 
-/* PLL integer and fractional lookup tables
- *
- * Fc = 2405 + 5(k - 11) , k = 11,12,...,26
- *
- * Equation for PLL frequency, MKW2xD Reference Manual, p.255 :
- * F = ((PLL_INT0 + 64) + (PLL_FRAC0/65536))32MHz
- *
- */
+// PLL integer and fractional lookup tables
+//
+// Fc = 2405 + 5(k - 11) , k = 11,12,...,26
+//
+// Equation for PLL frequency, MKW2xD Reference Manual, p.255 :
+// F = ((PLL_INT0 + 64) + (PLL_FRAC0/65536))32MHz
+//
 static const uint8_t pll_int_lt[16] = {
     11, 11, 11, 11,
     11, 11, 12, 12,
@@ -541,8 +525,7 @@ static const uint16_t pll_frac_lt[16] = {
     2048, 12288, 22528, 32768
 };
 
-static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf)
-{
+static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf) {
     kw2xrf_t *kw_dev = dev->priv;
     kw2xrf_set_tx_power(kw_dev, conf->pow);
     uint8_t tmp = conf->channel - 11;
@@ -552,16 +535,14 @@ static int _config_phy(ieee802154_dev_t *dev, const ieee802154_phy_conf_t *conf)
     return 0;
 }
 
-static int _off(ieee802154_dev_t *dev)
-{
+static int _off(ieee802154_dev_t *dev) {
     kw2xrf_t *kw_dev = dev->priv;
-    /* TODO: check if power down via RST_B is possible  */
+    // TODO: check if power down via RST_B is possible
     kw2xrf_set_power_mode(kw_dev, KW2XRF_HIBERNATE);
     return 0;
 }
 
-static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value)
-{
+static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, const void *value) {
     const uint16_t *pan_id = value;
     const network_uint16_t *short_addr = value;
     const eui64_t *ext_addr = value;
@@ -583,23 +564,20 @@ static int _config_addr_filter(ieee802154_dev_t *dev, ieee802154_af_cmd_t cmd, c
     return 0;
 }
 
-static int _request_on(ieee802154_dev_t *dev)
-{
+static int _request_on(ieee802154_dev_t *dev) {
     kw2xrf_t *kw_dev = dev->priv;
-    /* enable xtal and put power management controller to high power mode */
+    // enable xtal and put power management controller to high power mode
     kw2xrf_set_power_mode(kw_dev, KW2XRF_IDLE);
     return 0;
 }
 
-static int _confirm_on(ieee802154_dev_t *dev)
-{
+static int _confirm_on(ieee802154_dev_t *dev) {
     kw2xrf_t *kw_dev = dev->priv;
     size_t pwr_modes = kw2xrf_read_dreg(kw_dev, MKW2XDM_PWR_MODES);
     return (pwr_modes & MKW2XDM_PWR_MODES_XTAL_READY) ? 0 : -EAGAIN;
 }
 
-static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
-{
+static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode) {
     kw2xrf_t *kw_dev = dev->priv;
 
     uint8_t cca_ctl_val = 0;
@@ -629,8 +607,7 @@ static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
     return 0;
 }
 
-static int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t cmd, const void *value)
-{
+static int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t cmd, const void *value) {
     kw2xrf_t *kw_dev = dev->priv;
     switch(cmd) {
         case IEEE802154_SRC_MATCH_EN: {
@@ -652,8 +629,7 @@ static int _config_src_addr_match(ieee802154_dev_t *dev, ieee802154_src_match_t 
     return 0;
 }
 
-static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t mode)
-{
+static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_t mode) {
     kw2xrf_t *kw_dev = dev->priv;
 
     bool _promisc = false;
@@ -665,7 +641,7 @@ static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_
             _promisc = true;
             break;
         case IEEE802154_FILTER_ACK_ONLY:
-            /* Not implemented */
+            // Not implemented
             break;
         default:
             return -ENOTSUP;
@@ -683,8 +659,7 @@ static int _set_frame_filter_mode(ieee802154_dev_t *dev, ieee802154_filter_mode_
     return 0;
 }
 
-static int _set_csma_params(ieee802154_dev_t *dev, const ieee802154_csma_be_t *bd, int8_t retries)
-{
+static int _set_csma_params(ieee802154_dev_t *dev, const ieee802154_csma_be_t *bd, int8_t retries) {
     kw2xrf_t *kw_dev = dev->priv;
     (void) bd;
 

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf52840-mdk-dongle
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the nRF52840 MDK USB Dongle
- *
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- *
- */
+/// @ingroup     boards_nrf52840-mdk-dongle
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the nRF52840 MDK USB Dongle
+///
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
+///
 
 #include "periph_cpu.h"
 #include "cfg_clock_32_1.h"
@@ -25,14 +21,12 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- *
- * This board does not have explicit UART pins. These are set as UART 0 to
- * provide an easy serial debug port when not using (or debugging) USB.
- *
- * @{
- */
+/// @name    UART configuration
+///
+/// This board does not have explicit UART pins. These are set as UART 0 to
+/// provide an easy serial debug port when not using (or debugging) USB.
+///
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = NRF_UARTE0,
@@ -49,24 +43,22 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          isr_uart0
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- *
- * For the nRF52840-mdk-dongle board, the PWM0 module is set to drive the RGB LED.
- * Other PWM outputs are not configured.
- *
- * @{
- */
+/// @name   PWM configuration
+///
+/// For the nRF52840-mdk-dongle board, the PWM0 module is set to drive the RGB LED.
+/// Other PWM outputs are not configured.
+///
+/// @{
 static const pwm_conf_t pwm_config[] = {
     { NRF_PWM0, { GPIO_PIN(0, 23), GPIO_PIN(0, 22), GPIO_PIN(0, 24) } }
 };
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

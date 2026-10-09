@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_dsp0401
- *
- * @{
- * @file
- * @brief       Default configuration for DSP0401
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_dsp0401
+///
+/// @{
+/// @file
+/// @brief       Default configuration for DSP0401
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "dsp0401.h"
@@ -24,18 +20,16 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the DSP0401 (for Nucleo-F411RE)
- * @{
- */
+/// @name    Set default configuration parameters for the DSP0401 (for Nucleo-F411RE)
+/// @{
 #ifndef DSP0401_PARAM_SDI_PIN
-#define DSP0401_PARAM_SDI_PIN         GPIO_PIN(0, 10)  /* D2 */
+#define DSP0401_PARAM_SDI_PIN         GPIO_PIN(0, 10)  // D2
 #endif
 #ifndef DSP0401_PARAM_CLK_PIN
-#define DSP0401_PARAM_CLK_PIN         GPIO_PIN(1, 3)   /* D3 */
+#define DSP0401_PARAM_CLK_PIN         GPIO_PIN(1, 3)   // D3
 #endif
 #ifndef DSP0401_PARAM_LAT_PIN
-#define DSP0401_PARAM_LAT_PIN         GPIO_PIN(1, 5)   /* D4 */
+#define DSP0401_PARAM_LAT_PIN         GPIO_PIN(1, 5)   // D4
 #endif
 #ifndef DSP0401_PARAM_PWM_DEV
 #define DSP0401_PARAM_PWM_DEV         PWM_DEV(1)
@@ -59,11 +53,9 @@ extern "C" {
                                         .brightness   = DSP0401_PARAM_BRIGHTNESS, \
                                         .module_count = DSP0401_PARAM_MODULE_COUNT }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure DSP0401
- */
+/// @brief   Configure DSP0401
 static const dsp0401_params_t dsp0401_params[] =
 {
     DSP0401_PARAMS,
@@ -73,4 +65,4 @@ static const dsp0401_params_t dsp0401_params[] =
 }
 #endif
 
-/** @} */
+/// @}

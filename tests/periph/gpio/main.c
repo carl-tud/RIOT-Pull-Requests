@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2014,2017 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
- */
+// Copyright (C) 2014,2017 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for more
+// details.
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for GPIO peripheral drivers
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for GPIO peripheral drivers
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,14 +27,12 @@
 #define IRQ_TIMEOUT_US          (1000UL)
 
 #ifdef MODULE_PERIPH_GPIO_IRQ
-static void cb(void *arg)
-{
+static void cb(void *arg) {
     printf("INT: external interrupt from pin %" PRIiPTR "\n", (intptr_t)arg);
 }
 #endif
 
-static int init_pin(int argc, char **argv, gpio_mode_t mode)
-{
+static int init_pin(int argc, char **argv, gpio_mode_t mode) {
     int po, pi;
 
     if (argc < 3) {
@@ -57,39 +51,32 @@ static int init_pin(int argc, char **argv, gpio_mode_t mode)
     return 0;
 }
 
-static int init_out(int argc, char **argv)
-{
+static int init_out(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_OUT);
 }
 
-static int init_in(int argc, char **argv)
-{
+static int init_in(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_IN);
 }
 
-static int init_in_pu(int argc, char **argv)
-{
+static int init_in_pu(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_IN_PU);
 }
 
-static int init_in_pd(int argc, char **argv)
-{
+static int init_in_pd(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_IN_PD);
 }
 
-static int init_od(int argc, char **argv)
-{
+static int init_od(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_OD);
 }
 
-static int init_od_pu(int argc, char **argv)
-{
+static int init_od_pu(int argc, char **argv) {
     return init_pin(argc, argv, GPIO_OD_PU);
 }
 
 #ifdef MODULE_PERIPH_GPIO_IRQ
-static int init_int(int argc, char **argv)
-{
+static int init_int(int argc, char **argv) {
     int po, pi;
     gpio_mode_t mode = GPIO_IN;
     gpio_flank_t flank;
@@ -154,8 +141,7 @@ static int init_int(int argc, char **argv)
     return 0;
 }
 
-static int enable_int(int argc, char **argv)
-{
+static int enable_int(int argc, char **argv) {
     int po, pi;
     int status;
 
@@ -190,8 +176,7 @@ static int enable_int(int argc, char **argv)
 }
 #endif
 
-static int cmd_read(int argc, char **argv)
-{
+static int cmd_read(int argc, char **argv) {
     int port, pin;
 
     if (argc < 3) {
@@ -212,8 +197,7 @@ static int cmd_read(int argc, char **argv)
     return 0;
 }
 
-static int cmd_set(int argc, char **argv)
-{
+static int cmd_set(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <port> <pin>\n", argv[0]);
         return 1;
@@ -224,8 +208,7 @@ static int cmd_set(int argc, char **argv)
     return 0;
 }
 
-static int cmd_clear(int argc, char **argv)
-{
+static int cmd_clear(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <port> <pin>\n", argv[0]);
         return 1;
@@ -236,8 +219,7 @@ static int cmd_clear(int argc, char **argv)
     return 0;
 }
 
-static int cmd_toggle(int argc, char **argv)
-{
+static int cmd_toggle(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <port> <pin>\n", argv[0]);
         return 1;
@@ -249,14 +231,12 @@ static int cmd_toggle(int argc, char **argv)
 }
 
 #ifdef MODULE_PERIPH_GPIO_IRQ
-static void _test_cb(void *ctx)
-{
+static void _test_cb(void *ctx) {
     mutex_unlock(ctx);
 }
 #endif
 
-static int cmd_auto_test(int argc, char **argv)
-{
+static int cmd_auto_test(int argc, char **argv) {
     if (argc < 5) {
         printf("usage: %s <port> <pin> <port> <pin>\n", argv[0]);
         return 1;
@@ -277,7 +257,7 @@ static int cmd_auto_test(int argc, char **argv)
         return -1;
     }
 
-    /* test set HIGH */
+    // test set HIGH
     gpio_set(pin_out);
 
     if (gpio_read(pin_in) == 0) {
@@ -285,7 +265,7 @@ static int cmd_auto_test(int argc, char **argv)
         return -1;
     }
 
-    /* test set LOW */
+    // test set LOW
     gpio_clear(pin_out);
 
     if (gpio_read(pin_in) != 0) {
@@ -296,7 +276,7 @@ static int cmd_auto_test(int argc, char **argv)
 #ifdef MODULE_PERIPH_GPIO_IRQ
     mutex_t lock = MUTEX_INIT_LOCKED;
 
-    /* test rising interrupt */
+    // test rising interrupt
     if (gpio_init_int(pin_in, GPIO_IN, GPIO_RISING, _test_cb, &lock)) {
         puts("setting rising interrupt failed");
         return -1;
@@ -314,7 +294,7 @@ static int cmd_auto_test(int argc, char **argv)
         return -1;
     }
 
-    /* test falling interrupt */
+    // test falling interrupt
     if (gpio_init_int(pin_in, GPIO_IN, GPIO_FALLING, _test_cb, &lock)) {
         puts("setting falling interrupt failed");
         return -1;
@@ -332,7 +312,7 @@ static int cmd_auto_test(int argc, char **argv)
         return -1;
     }
 
-    /* test IRQ disable */
+    // test IRQ disable
     gpio_irq_disable(pin_in);
 
     gpio_set(pin_out);
@@ -347,7 +327,7 @@ static int cmd_auto_test(int argc, char **argv)
         return -1;
     }
 
-    /* test IRQ enable */
+    // test IRQ enable
 
     gpio_irq_enable(pin_in);
     if (ztimer_mutex_lock_timeout(ZTIMER_USEC, &lock, IRQ_TIMEOUT_US) == 0) {
@@ -367,7 +347,7 @@ static int cmd_auto_test(int argc, char **argv)
         return -1;
     }
 
-    /* disable IRQ to avoid further interrupts */
+    // disable IRQ to avoid further interrupts
     gpio_irq_disable(pin_in);
 
 #endif
@@ -377,8 +357,7 @@ static int cmd_auto_test(int argc, char **argv)
     return 0;
 }
 
-static int bench(int argc, char **argv)
-{
+static int bench(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <port> <pin> [# of runs]\n", argv[0]);
         return 1;
@@ -421,8 +400,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("GPIO peripheral driver test\n");
     puts("In this test, pins are specified by integer port and pin numbers.\n"
          "So if your platform has a pin PA01, it will be port=0 and pin=1,\n"
@@ -437,7 +415,7 @@ int main(void)
     }
 #endif
 
-    /* start the shell */
+    // start the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

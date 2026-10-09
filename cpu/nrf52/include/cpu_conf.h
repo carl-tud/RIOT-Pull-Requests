@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2020 Philipp-Alexander Blum <philipp-blum@jakiku.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2020 Philipp-Alexander Blum <philipp-blum@jakiku.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_nrf52
- * @{
- *
- * @file
- * @brief       nRF52 specific CPU configuration
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Philipp-Alexander Blum <philipp-blum@jakiku.de>
- *
- */
+/// @ingroup     cpu_nrf52
+/// @{
+///
+/// @file
+/// @brief       nRF52 specific CPU configuration
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Philipp-Alexander Blum <philipp-blum@jakiku.de>
+///
 
 #include "cpu_conf_common.h"
 
@@ -56,10 +52,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    ARM Cortex-M specific CPU configuration
- * @{
- */
+/// @name    ARM Cortex-M specific CPU configuration
+/// @{
 #define CPU_DEFAULT_IRQ_PRIO            (2U)
 #define CPU_FLASH_BASE                  (0x00000000)
 
@@ -78,12 +72,10 @@ extern "C" {
 #elif defined(CPU_MODEL_NRF52840XXAA)
 #define CPU_IRQ_NUMOF                   (48U)
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   Flash page configuration
- * @{
- */
+/// @brief   Flash page configuration
+/// @{
 #ifdef BPROT_PRESENT
 #define FLASHPAGE_SIZE              BPROT_REGIONS_SIZE
 #define FLASHPAGE_NUMOF             BPROT_REGIONS_NUM
@@ -98,36 +90,30 @@ extern "C" {
 #define FLASHPAGE_NUMOF             (256U)
 #endif
 
-/* The minimum block size which can be written is 4B. However, the erase
- * block is always FLASHPAGE_SIZE.
- */
+// The minimum block size which can be written is 4B. However, the erase
+// block is always FLASHPAGE_SIZE.
 #define FLASHPAGE_WRITE_BLOCK_SIZE      (4U)
-/* Writing should be always 4 bytes aligned */
+// Writing should be always 4 bytes aligned
 #define FLASHPAGE_WRITE_BLOCK_ALIGNMENT (4U)
-/** @} */
+/// @}
 
 #ifdef CPU_MODEL_NRF52840XXAA
-/**
- * @name    OpenWSN timing constants
- *
- * @{
- */
-/* Taken from OpenWSN @32.768Hz */
+/// @name    OpenWSN timing constants
+///
+/// @{
+// Taken from OpenWSN @32.768Hz
 #define PORT_maxTxDataPrepare   (400/PORT_US_PER_TICK)
 #define PORT_maxRxAckPrepare    (400/PORT_US_PER_TICK)
 #define PORT_maxRxDataPrepare   (400/PORT_US_PER_TICK)
 #define PORT_maxTxAckPrepare    (400/PORT_US_PER_TICK)
-/* Measured 220us */
+// Measured 220us
 #define PORT_delayTx            (300/PORT_US_PER_TICK)
 #define PORT_delayRx            (150/PORT_US_PER_TICK)
-/** @} */
+/// @}
 #endif
 
-/**
- * @brief   Put the CPU in the low-power 'wait for event' state
- */
-static inline void nrf52_sleep(void)
-{
+/// @brief   Put the CPU in the low-power 'wait for event' state
+static inline void nrf52_sleep(void) {
     __SEV();
     __WFE();
     __asm("nop");
@@ -137,4 +123,4 @@ static inline void nrf52_sleep(void)
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of ADCXX1C ADC
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of ADCXX1C ADC
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -22,33 +18,22 @@
 #include "adcxx1c.h"
 #include "adcxx1c_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define ADCXX1C_NUM   ARRAY_SIZE(adcxx1c_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static adcxx1c_t adcxx1c_devs[ADCXX1C_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[ADCXX1C_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define ADCXX1C_INFO_NUM ARRAY_SIZE(adcxx1c_saul_info)
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern saul_driver_t adcxx1c_saul_driver;
 
-void auto_init_adcxx1c(void)
-{
+void auto_init_adcxx1c(void) {
     assert(ADCXX1C_INFO_NUM == ADCXX1C_NUM);
 
     for (unsigned i = 0; i < ADCXX1C_NUM; i++) {

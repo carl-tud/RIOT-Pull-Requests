@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2009 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2009 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -28,10 +26,8 @@ extern "C" {
 
 #define _XTAL       (72000)
 
-/**
- * @name RTC constants
- * @{
- */
+/// @name RTC constants
+/// @{
 #define IMSEC       0x00000001
 #define IMMIN       0x00000002
 #define IMHOUR      0x00000004
@@ -41,14 +37,14 @@ extern "C" {
 #define IMMON       0x00000040
 #define IMYEAR      0x00000080
 
-#define AMRSEC      0x00000001  /* Alarm mask for Seconds */
-#define AMRMIN      0x00000002  /* Alarm mask for Minutes */
-#define AMRHOUR     0x00000004  /* Alarm mask for Hours */
-#define AMRDOM      0x00000008  /* Alarm mask for Day of Month */
-#define AMRDOW      0x00000010  /* Alarm mask for Day of Week */
-#define AMRDOY      0x00000020  /* Alarm mask for Day of Year */
-#define AMRMON      0x00000040  /* Alarm mask for Month */
-#define AMRYEAR     0x00000080  /* Alarm mask for Year */
+#define AMRSEC      0x00000001  // Alarm mask for Seconds
+#define AMRMIN      0x00000002  // Alarm mask for Minutes
+#define AMRHOUR     0x00000004  // Alarm mask for Hours
+#define AMRDOM      0x00000008  // Alarm mask for Day of Month
+#define AMRDOW      0x00000010  // Alarm mask for Day of Week
+#define AMRDOY      0x00000020  // Alarm mask for Day of Year
+#define AMRMON      0x00000040  // Alarm mask for Month
+#define AMRYEAR     0x00000080  // Alarm mask for Year
 
 #define ILR_RTCCIF  BIT0
 #define ILR_RTCALF  BIT1
@@ -57,22 +53,18 @@ extern "C" {
 #define CCR_CLKEN   0x01
 #define CCR_CTCRST  0x02
 #define CCR_CLKSRC  0x10
-/** @} */
+/// @}
 
-/**
- * @name WD constants
- * @{
- */
+/// @name WD constants
+/// @{
 #define WDEN    BIT0
 #define WDRESET BIT1
 #define WDTOF   BIT2
 #define WDINT   BIT3
-/** @} */
+/// @}
 
-/**
- * @name    INTWAKE Constants
- * @{
- */
+/// @name    INTWAKE Constants
+/// @{
 #define EXTWAKE0    BIT0
 #define EXTWAKE1    BIT1
 #define EXTWAKE2    BIT2
@@ -84,12 +76,10 @@ extern "C" {
 #define GPIO2WAKE   BIT8
 #define BODWAKE     BIT14
 #define RTCWAKE     BIT15
-/** @} */
+/// @}
 
-/**
- * @name UART Constants
- * @{
- */
+/// @name UART Constants
+/// @{
 #define ULSR_RDR    BIT0
 #define ULSR_OE     BIT1
 #define ULSR_PE     BIT2
@@ -107,23 +97,19 @@ extern "C" {
 #define UIIR_ID_MASK        (BIT1 | BIT2 | BIT3)
 #define UIIR_ABEO_INT       BIT8
 #define UIIR_ABTO_INT       BIT9
-/** @} */
+/// @}
 
-/**
- * @name    SSP Status Register Constants
- * @{
- */
+/// @name    SSP Status Register Constants
+/// @{
 #define SSPSR_TFE           BIT0                ///< Transmit FIFO Empty. This bit is 1 is the Transmit FIFO is empty, 0 if not.
 #define SSPSR_TNF           BIT1                ///< Transmit FIFO Not Full. This bit is 0 if the Tx FIFO is full, 1 if not.
 #define SSPSR_RNE           BIT2                ///< Receive FIFO Not Empty. This bit is 0 if the Receive FIFO is empty, 1 if not.
 #define SSPSR_RFF           BIT3                ///< Receive FIFO Full. This bit is 1 if the Receive FIFO is full, 0 if not.
 #define SSPSR_BSY           BIT4                ///< Busy. This bit is 0 if the SSPn controller is idle, or 1 if it is currently sending/receiving a frame and/or the Tx FIFO is not empty.
-/** @} */
+/// @}
 
-/**
- * @name Timer register offsets
- * @{
- */
+/// @name Timer register offsets
+/// @{
 #define TXIR           0x00
 #define TXTCR          0x04
 #define TXTC           0x08                     ///< Timer counter
@@ -141,7 +127,7 @@ extern "C" {
 #define TXCR3          0x38
 #define TXEMR          0x3C
 #define TXCTCR         0x70
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }

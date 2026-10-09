@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author  Bennet Hattesen <bennet.hattesen@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author  Bennet Hattesen <bennet.hattesen@haw-hamburg.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -23,8 +19,8 @@
 #include "slipdev_params.h"
 #include "net/eui_provider.h"
 
-/* XXX: BE CAREFUL ABOUT USING OUTPUT WITH MODULE_STDIO_SLIPDEV IN SENDING
- * FUNCTIONALITY! MIGHT CAUSE DEADLOCK!!!1!! */
+// XXX: BE CAREFUL ABOUT USING OUTPUT WITH MODULE_STDIO_SLIPDEV IN SENDING
+// FUNCTIONALITY! MIGHT CAUSE DEADLOCK!!!1!!
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
@@ -33,16 +29,15 @@
 
 #include "stdio_uart.h"
 
-/* forward declarations, implementation is in net/coap */
+// forward declarations, implementation is in net/coap
 void slipdev_setup_net(slipdev_t *dev, uint8_t index);
 void slipdev_setup_coap(slipdev_t *dev);
 void slipdev_coap_dispatch_recv(event_t *event);
 
-/* For synchronization between stdio/config/net threads */
+// For synchronization between stdio/config/net threads
 mutex_t slipdev_mutex = MUTEX_INIT;
 
-static inline void _slipdev_stdio_add_to_frame(slipdev_t *dev, uint8_t byte)
-{
+static inline void _slipdev_stdio_add_to_frame(slipdev_t *dev, uint8_t byte) {
     if (!IS_USED(MODULE_STDIO_SLIPDEV) ||
         dev->config.uart != slipdev_params[0].uart) {
         return;
@@ -50,10 +45,9 @@ static inline void _slipdev_stdio_add_to_frame(slipdev_t *dev, uint8_t byte)
     stdio_rx_write_one(byte);
 }
 
-static inline bool _slipdev_config_start_frame(slipdev_t *dev)
-{
+static inline bool _slipdev_config_start_frame(slipdev_t *dev) {
 #ifdef MODULE_SLIPDEV_CONFIG
-    /* try to create new configuration / CoAP frame */
+    // try to create new configuration / CoAP frame
     return crb_start_chunk(&dev->rb_config);
 #else
     (void)dev;
@@ -62,8 +56,7 @@ static inline bool _slipdev_config_start_frame(slipdev_t *dev)
 #endif
 }
 
-static inline void _slipdev_config_end_frame(slipdev_t *dev)
-{
+static inline void _slipdev_config_end_frame(slipdev_t *dev) {
 #ifdef MODULE_SLIPDEV_CONFIG
     crb_end_chunk(&dev->rb_config, true);
     slipdev_coap_dispatch_recv(&dev->rxevent);
@@ -72,10 +65,9 @@ static inline void _slipdev_config_end_frame(slipdev_t *dev)
 #endif
 }
 
-static inline bool _slipdev_config_add_to_frame(slipdev_t *dev, uint8_t byte)
-{
+static inline bool _slipdev_config_add_to_frame(slipdev_t *dev, uint8_t byte) {
 #ifdef MODULE_SLIPDEV_CONFIG
-    /* discard frame if byte can't be added */
+    // discard frame if byte can't be added
     if (!crb_add_byte(&dev->rb_config, byte)) {
         DEBUG("slipmux: coap rx buffer full, drop frame\n");
         crb_end_chunk(&dev->rb_config, false);
@@ -88,10 +80,9 @@ static inline bool _slipdev_config_add_to_frame(slipdev_t *dev, uint8_t byte)
     return 1;
 }
 
-static inline bool _slipdev_net_start_frame(slipdev_t *dev, uint8_t byte)
-{
+static inline bool _slipdev_net_start_frame(slipdev_t *dev, uint8_t byte) {
 #ifdef MODULE_SLIPDEV_NET
-    /* try to create new ip frame */
+    // try to create new ip frame
     if (!crb_start_chunk(&dev->rb)) {
         DEBUG("slipmux: can't start new net frame, drop frame\n");
         return 0;
@@ -108,8 +99,7 @@ static inline bool _slipdev_net_start_frame(slipdev_t *dev, uint8_t byte)
     return 1;
 }
 
-static inline void _slipdev_net_end_frame(slipdev_t *dev)
-{
+static inline void _slipdev_net_end_frame(slipdev_t *dev) {
 #ifdef MODULE_SLIPDEV_NET
     crb_end_chunk(&dev->rb, true);
     netdev_trigger_event_isr(&dev->netdev);
@@ -118,10 +108,9 @@ static inline void _slipdev_net_end_frame(slipdev_t *dev)
 #endif
 }
 
-static inline bool _slipdev_net_add_to_frame(slipdev_t *dev, uint8_t byte)
-{
+static inline bool _slipdev_net_add_to_frame(slipdev_t *dev, uint8_t byte) {
 #ifdef MODULE_SLIPDEV_NET
-    /* discard frame if byte can't be added */
+    // discard frame if byte can't be added
     if (!crb_add_byte(&dev->rb, byte)) {
         DEBUG("slipmux: net rx buffer full, drop frame\n");
         crb_end_chunk(&dev->rb, false);
@@ -134,16 +123,15 @@ static inline bool _slipdev_net_add_to_frame(slipdev_t *dev, uint8_t byte)
     return 1;
 }
 
-void _slip_rx_cb(void *arg, uint8_t byte)
-{
+void _slip_rx_cb(void *arg, uint8_t byte) {
     slipdev_t *dev = arg;
 
     switch (dev->state) {
     case SLIPDEV_STATE_STANDBY:
-    /* fall through */
+    // fall through
     case SLIPDEV_STATE_SLEEP:
-        /* do nothing if we are supposed to sleep */
-        /* and we should usually not be able to hit this case anyways */
+        // do nothing if we are supposed to sleep
+        // and we should usually not be able to hit this case anyways
         assert(0);
         break;
     case SLIPDEV_STATE_STDIN:
@@ -219,7 +207,7 @@ void _slip_rx_cb(void *arg, uint8_t byte)
             break;
         }
         return;
-    /* escaped byte received */
+    // escaped byte received
     case SLIPDEV_STATE_NET_ESC:
         switch (byte) {
         case SLIPDEV_END_ESC:
@@ -242,7 +230,7 @@ void _slip_rx_cb(void *arg, uint8_t byte)
         }
         return;
     case SLIPDEV_STATE_NONE:
-        /* is diagnostic frame? */
+        // is diagnostic frame?
         if (byte == SLIPDEV_START_STDIO) {
             dev->state = SLIPDEV_STATE_STDIN;
             return;
@@ -268,7 +256,7 @@ void _slip_rx_cb(void *arg, uint8_t byte)
             return;
         }
 
-        /* ignore empty frame */
+        // ignore empty frame
         if (byte == SLIPDEV_END) {
             return;
         }
@@ -278,17 +266,16 @@ void _slip_rx_cb(void *arg, uint8_t byte)
     }
 }
 
-void slipdev_write_bytes(uart_t uart, const uint8_t *data, size_t len)
-{
+void slipdev_write_bytes(uart_t uart, const uint8_t *data, size_t len) {
     for (unsigned j = 0; j < len; j++, data++) {
         switch (*data) {
         case SLIPDEV_END:
-            /* escaping END byte*/
+            // escaping END byte
             slipdev_write_byte(uart, SLIPDEV_ESC);
             slipdev_write_byte(uart, SLIPDEV_END_ESC);
             break;
         case SLIPDEV_ESC:
-            /* escaping ESC byte*/
+            // escaping ESC byte
             slipdev_write_byte(uart, SLIPDEV_ESC);
             slipdev_write_byte(uart, SLIPDEV_ESC_ESC);
             break;
@@ -298,13 +285,12 @@ void slipdev_write_bytes(uart_t uart, const uint8_t *data, size_t len)
     }
 }
 
-void slipdev_setup(slipdev_t *dev, const slipdev_params_t *params, uint8_t index)
-{
-    /* set device descriptor fields */
+void slipdev_setup(slipdev_t *dev, const slipdev_params_t *params, uint8_t index) {
+    // set device descriptor fields
     dev->config = *params;
     dev->state = SLIPDEV_STATE_UNKNOWN;
 
-    /* we only support one coap server at the moment */
+    // we only support one coap server at the moment
     if ((index == 0) && IS_USED(MODULE_SLIPDEV_CONFIG)) {
         slipdev_setup_coap(dev);
     }
@@ -321,4 +307,4 @@ void slipdev_setup(slipdev_t *dev, const slipdev_params_t *params, uint8_t index
     }
 }
 
-/** @} */
+/// @}

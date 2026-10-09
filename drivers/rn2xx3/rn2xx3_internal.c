@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_rn2xx3
- * @{
- *
- * @file
- * @brief       Internal driver implementation for the RN2483/RN2903 devices
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_rn2xx3
+/// @{
+///
+/// @file
+/// @brief       Internal driver implementation for the RN2483/RN2903 devices
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -31,22 +27,19 @@
 
 static const char *closing_seq = "\r\n";
 
-static void _uart_write_str(rn2xx3_t *dev, const char *str)
-{
+static void _uart_write_str(rn2xx3_t *dev, const char *str) {
     size_t len = strlen(str);
     if (len) {
         uart_write(dev->p.uart, (uint8_t *)str, len);
     }
 }
 
-static void isr_resp_timeout(void *arg)
-{
+static void isr_resp_timeout(void *arg) {
     rn2xx3_t *dev = (rn2xx3_t *)arg;
     mutex_unlock(&(dev->resp_lock));
 }
 
-static bool _wait_reply(rn2xx3_t *dev, uint8_t timeout)
-{
+static bool _wait_reply(rn2xx3_t *dev, uint8_t timeout) {
     dev->resp_done = 0;
     dev->resp_size = 0;
     dev->resp_buf[0] = 0;
@@ -59,7 +52,7 @@ static bool _wait_reply(rn2xx3_t *dev, uint8_t timeout)
 
     ztimer_set(ZTIMER_MSEC, &resp_timer, (uint32_t)timeout * MS_PER_SEC);
 
-    /* wait for results */
+    // wait for results
     while ((!dev->resp_done) &&
         ((int32_t)(sent_time + (timeout * MS_PER_SEC) - ztimer_now(ZTIMER_MSEC)) > 0)) {
         mutex_lock(&(dev->resp_lock));
@@ -75,13 +68,12 @@ static bool _wait_reply(rn2xx3_t *dev, uint8_t timeout)
     return false;
 }
 
-void rn2xx3_hex_to_bytes(const char *hex, uint8_t *byte_array)
-{
+void rn2xx3_hex_to_bytes(const char *hex, uint8_t *byte_array) {
     const uint8_t charmap[] = {
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, /* 01234567 */
-        0x08, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 89:;<=>? */
-        0x00, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x00, /* @ABCDEFG */
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HIJKLMNO */
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, // 01234567
+        0x08, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 89:;<=>?
+        0x00, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x00, // @ABCDEFG
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // HIJKLMNO
     };
 
     size_t len = strlen(hex);
@@ -92,8 +84,7 @@ void rn2xx3_hex_to_bytes(const char *hex, uint8_t *byte_array)
     };
 }
 
-void rn2xx3_set_internal_state(rn2xx3_t *dev, uint8_t state)
-{
+void rn2xx3_set_internal_state(rn2xx3_t *dev, uint8_t state) {
     if ((dev->int_state == RN2XX3_INT_STATE_SLEEP) ||
         (dev->int_state == state)) {
         return;
@@ -143,8 +134,7 @@ void rn2xx3_set_internal_state(rn2xx3_t *dev, uint8_t state)
     dev->int_state = state;
 }
 
-int rn2xx3_write_cmd(rn2xx3_t *dev)
-{
+int rn2xx3_write_cmd(rn2xx3_t *dev) {
     int ret;
     DEBUG("[rn2xx3] CMD: %s\n", dev->cmd_buf);
 
@@ -175,8 +165,7 @@ int rn2xx3_write_cmd(rn2xx3_t *dev)
     return ret;
 }
 
-int rn2xx3_write_cmd_no_wait(rn2xx3_t *dev)
-{
+int rn2xx3_write_cmd_no_wait(rn2xx3_t *dev) {
     DEBUG("[rn2xx3] CMD (NO WAIT): %s\n", dev->cmd_buf);
 
     mutex_lock(&(dev->cmd_lock));
@@ -187,8 +176,7 @@ int rn2xx3_write_cmd_no_wait(rn2xx3_t *dev)
     return RN2XX3_OK;
 }
 
-int rn2xx3_wait_response(rn2xx3_t *dev)
-{
+int rn2xx3_wait_response(rn2xx3_t *dev) {
     if (_wait_reply(dev, RESP_TIMEOUT_SEC)) {
         return RN2XX3_TIMEOUT;
     }
@@ -198,8 +186,7 @@ int rn2xx3_wait_response(rn2xx3_t *dev)
     return RN2XX3_OK;
 }
 
-int rn2xx3_wait_reply(rn2xx3_t *dev, uint8_t timeout)
-{
+int rn2xx3_wait_reply(rn2xx3_t *dev, uint8_t timeout) {
     if (_wait_reply(dev, timeout)) {
         return RN2XX3_REPLY_TIMEOUT;
     }
@@ -209,16 +196,14 @@ int rn2xx3_wait_reply(rn2xx3_t *dev, uint8_t timeout)
     return rn2xx3_process_reply(dev);
 }
 
-void rn2xx3_cmd_start(rn2xx3_t *dev)
-{
+void rn2xx3_cmd_start(rn2xx3_t *dev) {
     rn2xx3_set_internal_state(dev, RN2XX3_INT_STATE_CMD);
     DEBUG("[rn2xx3] CMD: %s", dev->cmd_buf);
     mutex_lock(&(dev->cmd_lock));
     _uart_write_str(dev, dev->cmd_buf);
 }
 
-void rn2xx3_cmd_append(rn2xx3_t *dev, const uint8_t *payload, uint8_t payload_len)
-{
+void rn2xx3_cmd_append(rn2xx3_t *dev, const uint8_t *payload, uint8_t payload_len) {
     char payload_str[3] = { 0 };
     for (unsigned i = 0; i < payload_len; i++) {
         fmt_byte_hex(payload_str, payload[i]);
@@ -227,8 +212,7 @@ void rn2xx3_cmd_append(rn2xx3_t *dev, const uint8_t *payload, uint8_t payload_le
     }
 }
 
-int rn2xx3_cmd_finalize(rn2xx3_t *dev)
-{
+int rn2xx3_cmd_finalize(rn2xx3_t *dev) {
     DEBUG("\n");
     _uart_write_str(dev, closing_seq);
     uint8_t ret = rn2xx3_wait_response(dev);
@@ -242,8 +226,7 @@ int rn2xx3_cmd_finalize(rn2xx3_t *dev)
     return ret;
 }
 
-void rn2xx3_mac_tx_start(rn2xx3_t *dev)
-{
+void rn2xx3_mac_tx_start(rn2xx3_t *dev) {
     snprintf(dev->cmd_buf, sizeof(dev->cmd_buf) - 1, "mac tx %s %d ",
              (dev->loramac.tx_mode == LORAMAC_TX_CNF) ? "cnf" : "uncnf",
              dev->loramac.tx_port);
@@ -251,8 +234,7 @@ void rn2xx3_mac_tx_start(rn2xx3_t *dev)
     rn2xx3_cmd_start(dev);
 }
 
-int rn2xx3_mac_tx_finalize(rn2xx3_t *dev)
-{
+int rn2xx3_mac_tx_finalize(rn2xx3_t *dev) {
     rn2xx3_cmd_finalize(dev);
 
     rn2xx3_set_internal_state(dev, RN2XX3_INT_STATE_MAC_TX);
@@ -260,8 +242,7 @@ int rn2xx3_mac_tx_finalize(rn2xx3_t *dev)
     return rn2xx3_process_response(dev);
 }
 
-int rn2xx3_process_response(rn2xx3_t *dev)
-{
+int rn2xx3_process_response(rn2xx3_t *dev) {
     uint8_t ret = RN2XX3_DATA;
     if (strcmp(dev->resp_buf, "ok") == 0) {
         DEBUG("[rn2xx3] command succeeded: '%s'\n", dev->cmd_buf);
@@ -299,8 +280,7 @@ int rn2xx3_process_response(rn2xx3_t *dev)
     return ret;
 }
 
-int rn2xx3_process_reply(rn2xx3_t *dev)
-{
+int rn2xx3_process_reply(rn2xx3_t *dev) {
     uint8_t ret;
     if (strcmp(dev->resp_buf, "accepted") == 0) {
         DEBUG("[rn2xx3] join procedure succeeded.\n");

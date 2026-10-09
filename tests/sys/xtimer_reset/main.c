@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       xtimer re-set test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       xtimer re-set test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <inttypes.h>
@@ -22,8 +18,7 @@
 #include "thread.h"
 #include "xtimer.h"
 extern void xtimer_dump_all(void);
-int main(void)
-{
+int main(void) {
     printf("This test tests re-setting of an already active timer.\n");
     printf("It should print three times \"now=<value>\", with values"
            " approximately 100ms (100000us) apart.\n");

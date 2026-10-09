@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       sock DNS client test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       sock DNS client test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -32,13 +28,11 @@ static const shell_command_t _shell_commands[] = {
 };
 static char _shell_buffer[SHELL_DEFAULT_BUFSIZE];
 
-static void _usage(char *cmd)
-{
+static void _usage(char *cmd) {
     printf("usage: %s server\n", cmd);
 }
 
-static int _dns_server(int argc, char **argv)
-{
+static int _dns_server(int argc, char **argv) {
     int res = (argc < 2);
 
     if (!res) {
@@ -60,8 +54,7 @@ static int _dns_server(int argc, char **argv)
     return res;
 }
 
-static int _dns(int argc, char **argv)
-{
+static int _dns(int argc, char **argv) {
     if ((argc > 1) && (strcmp(argv[1], "server") == 0)) {
         return _dns_server(argc, argv);
     }
@@ -71,9 +64,8 @@ static int _dns(int argc, char **argv)
     }
 }
 
-int main(void)
-{
-    /* start shell */
+int main(void) {
+    // start shell
     shell_run(_shell_commands, _shell_buffer, sizeof(_shell_buffer));
     return 0;
 }

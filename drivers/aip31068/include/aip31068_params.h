@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_aip31068
- * @brief       Default configuration for the AIP31068 I2C LCD controller
- *
- * @{
- *
- * @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
- * @file
- */
+/// @ingroup     drivers_aip31068
+/// @brief       Default configuration for the AIP31068 I2C LCD controller
+///
+/// @{
+///
+/// @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
+/// @file
 
 #include <stdbool.h>
 
@@ -26,17 +22,15 @@ extern "C"
 {
 #endif
 
-/**
-* @name    Set default configuration parameters
-* @{
-*/
+/// @name    Set default configuration parameters
+/// @{
 #ifndef AIP31068_PARAM_I2C_DEV
-/** I2C device is I2C_DEV(0) */
+/// I2C device is I2C_DEV(0)
 #define AIP31068_PARAM_I2C_DEV               I2C_DEV(0)
 #endif
 
 #ifndef AIP31068_PARAM_I2C_ADDR
-/** I2C address of device is (0x7c >> 1) */
+/// I2C address of device is (0x7c >> 1)
 #define AIP31068_PARAM_I2C_ADDR              (0x7c >> 1)
 #endif
 
@@ -50,12 +44,10 @@ extern "C"
         .font_size = FONT_SIZE_5x8,             \
         .bit_mode = BITMODE_8_BIT,              \
     }
-#endif /* AIP31068_PARAMS */
-/**@}*/
+#endif // AIP31068_PARAMS
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const aip31068_params_t aip31068_params[] =
 {
         AIP31068_PARAMS
@@ -65,4 +57,4 @@ static const aip31068_params_t aip31068_params[] =
 }
 #endif
 
-/** @} */
+/// @}

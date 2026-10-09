@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Fundación Inria Chile
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Fundación Inria Chile
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_hashes_aes128_cmac
- * @{
- *
- * @file
- * @brief       AES128_CMAC implementation
- *
- * @author      José Ignacio Alamos <jose.alamos@inria.cl>
- *
- * @}
- */
+/// @ingroup     sys_hashes_aes128_cmac
+/// @{
+///
+/// @file
+/// @brief       AES128_CMAC implementation
+///
+/// @author      José Ignacio Alamos <jose.alamos@inria.cl>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -24,15 +20,13 @@
 #include "hashes/aes128_cmac.h"
 #include "macros/utils.h"
 
-static void _xor128(uint8_t *x, uint8_t *y)
-{
+static void _xor128(uint8_t *x, uint8_t *y) {
     for (unsigned i = 0; i < 16; i++) {
         y[i] = x[i] ^ y[i];
     }
 }
 
-static void _leftshift(uint8_t *x, uint8_t *y)
-{
+static void _leftshift(uint8_t *x, uint8_t *y) {
     for (unsigned i = 0; i < 15; i++) {
         y[i] = (x[i] << 1) | (x[i + 1] >> 7);
     }
@@ -40,8 +34,7 @@ static void _leftshift(uint8_t *x, uint8_t *y)
 }
 
 int aes128_cmac_init(aes128_cmac_context_t *ctx,
-                     const uint8_t *key, uint8_t key_size)
-{
+                     const uint8_t *key, uint8_t key_size) {
     if (key_size != AES128_CMAC_BLOCK_SIZE) {
         return CIPHER_ERR_INVALID_KEY_SIZE;
     }
@@ -51,8 +44,7 @@ int aes128_cmac_init(aes128_cmac_context_t *ctx,
 }
 
 void aes128_cmac_update(aes128_cmac_context_t *ctx,
-                        const void *data, size_t len)
-{
+                        const void *data, size_t len) {
     uint8_t d[16];
 
     while (len) {
@@ -76,9 +68,8 @@ void aes128_cmac_update(aes128_cmac_context_t *ctx,
     }
 }
 
-void aes128_cmac_final(aes128_cmac_context_t *ctx, void *digest)
-{
-    /* Generate subkeys */
+void aes128_cmac_final(aes128_cmac_context_t *ctx, void *digest) {
+    // Generate subkeys
     uint8_t K[AES128_CMAC_BLOCK_SIZE];
     uint8_t L[AES128_CMAC_BLOCK_SIZE];
 
@@ -94,7 +85,7 @@ void aes128_cmac_final(aes128_cmac_context_t *ctx, void *digest)
     }
 
     if (ctx->M_n != 16) {
-        /* Generate K2 */
+        // Generate K2
         if (K[0] & 0x80) {
             _leftshift(K, K);
             K[15] ^= 0x87;
@@ -102,7 +93,7 @@ void aes128_cmac_final(aes128_cmac_context_t *ctx, void *digest)
         else {
             _leftshift(K, K);
         }
-        /* Padding */
+        // Padding
         memset(ctx->M_last + ctx->M_n, 0, AES128_CMAC_BLOCK_SIZE - ctx->M_n);
         ctx->M_last[ctx->M_n] = 0x80;
     }

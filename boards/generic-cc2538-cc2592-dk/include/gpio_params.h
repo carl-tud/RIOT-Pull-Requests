@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_generic_cc2538_cc2592_dk
- * @{
- *
- * @file
- * @brief       Definitions for the Generic CC2538-CC2592-DK Board
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
- */
+/// @ingroup     boards_generic_cc2538_cc2592_dk
+/// @{
+///
+/// @file
+/// @brief       Definitions for the Generic CC2538-CC2592-DK Board
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
 #include "board.h"
 #include "saul/periph.h"
 
@@ -22,9 +18,7 @@ extern "C"
 {
 #endif
 
-/**
- * @brief   Expose LEDs and buttons via SAUL
- */
+/// @brief   Expose LEDs and buttons via SAUL
 static const saul_gpio_params_t saul_gpio_params[] =
     {
         {
@@ -83,4 +77,4 @@ static const saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

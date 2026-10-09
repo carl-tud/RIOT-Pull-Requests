@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the CC110x driver
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the CC110x driver
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -41,8 +37,7 @@ static const shell_command_t shell_commands[] = {
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 static gnrc_netreg_entry_t dump;
 
-static int sc_dump(int argc, char **argv)
-{
+static int sc_dump(int argc, char **argv) {
     static int is_enabled = 0;
     if (argc == 1) {
         if (is_enabled) {
@@ -87,10 +82,9 @@ static int sc_dump(int argc, char **argv)
     return 0;
 }
 
-int main(void)
-{
-    /* we need a message queue for the thread running the shell in order to
-     * receive potentially fast incoming networking packets */
+int main(void) {
+    // we need a message queue for the thread running the shell in order to
+    // receive potentially fast incoming networking packets
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     gnrc_netreg_entry_init_pid(&dump, GNRC_NETREG_DEMUX_CTX_ALL,

@@ -1,31 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_lsm303dlhc
- * @{
- *
- * @file
- * @brief       LSM303DLHC adaption to the RIOT actuator/sensor interface
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_lsm303dlhc
+/// @{
+///
+/// @file
+/// @brief       LSM303DLHC adaption to the RIOT actuator/sensor interface
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 
 #include "saul.h"
 #include "lsm303dlhc.h"
 
-static int read_acc(const void *dev, phydat_t *res)
-{
+static int read_acc(const void *dev, phydat_t *res) {
     const lsm303dlhc_t *d = (const lsm303dlhc_t *)dev;
     lsm303dlhc_read_acc(d, (lsm303dlhc_3d_data_t *)res->val);
 
-    /* normalize result */
+    // normalize result
     int fac = (1 << (d->params.acc_scale >> 4));
     for (int i = 0; i < 3; i++) {
         res->val[i] *= fac;
@@ -36,13 +31,12 @@ static int read_acc(const void *dev, phydat_t *res)
     return 3;
 }
 
-static int read_mag(const void *dev, phydat_t *res)
-{
+static int read_mag(const void *dev, phydat_t *res) {
     const lsm303dlhc_t *d = (const lsm303dlhc_t *)dev;
 
     lsm303dlhc_read_mag(d, (lsm303dlhc_3d_data_t *)res->val);
 
-    /* normalize results */
+    // normalize results
     int gain;
     switch (d->params.mag_gain) {
         case LSM303DLHC_MAG_GAIN_1100_980_GAUSS: gain = 1100; break;

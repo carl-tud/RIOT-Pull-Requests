@@ -1,8 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -14,9 +12,9 @@
 extern "C" {
 #endif
 
-#define STDIN_FILENO    0       /* standard input file descriptor */
-#define STDOUT_FILENO   1       /* standard output file descriptor */
-#define STDERR_FILENO   2       /* standard error file descriptor */
+#define STDIN_FILENO    0       // standard input file descriptor
+#define STDOUT_FILENO   1       // standard output file descriptor
+#define STDERR_FILENO   2       // standard error file descriptor
 
 #define F_OK            0
 #define R_OK            4

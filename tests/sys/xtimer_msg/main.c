@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2013 INRIA
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2013 INRIA
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       xtimer_msg test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @author      Christian Mehlis <mehlis@inf.fu-berlin.de>
- * @author      Sebastian Meiling <s@mlng.net>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       xtimer_msg test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @author      Christian Mehlis <mehlis@inf.fu-berlin.de>
+/// @author      Sebastian Meiling <s@mlng.net>
+/// @}
 
 #include <stdio.h>
 
@@ -42,15 +38,13 @@ struct timer_msg msg_a = { .interval = (2 * US_PER_SEC),
 struct timer_msg msg_b = { .interval = (5 * US_PER_SEC),
                            .text = "This is a Test" };
 
-void *timer_thread(void *arg)
-{
+void *timer_thread(void *arg) {
     (void) arg;
 
     printf("This is thread %" PRIkernel_pid "\n", thread_getpid());
 
-    /* The queue is required to avoid loss of a 2nd message, when the 1st is
-     * still processed. The timing ensures that at most 1 message is queued.
-     */
+    // The queue is required to avoid loss of a 2nd message, when the 1st is
+    // still processed. The timing ensures that at most 1 message is queued.
     msg_t msgq[1];
     msg_init_queue(msgq, 1);
 
@@ -72,8 +66,7 @@ void *timer_thread(void *arg)
     }
 }
 
-void *timer_thread_local(void *arg)
-{
+void *timer_thread_local(void *arg) {
     (void) arg;
 
     printf("This is thread %" PRIkernel_pid "\n", thread_getpid());
@@ -90,8 +83,7 @@ void *timer_thread_local(void *arg)
     }
 }
 
-int main(void)
-{
+int main(void) {
     msg_t m;
     kernel_pid_t pid = thread_create(
                   timer_stack,

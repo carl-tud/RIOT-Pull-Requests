@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Shell command for the cord_lc module
- *
- * @author      Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Shell command for the cord_lc module
+///
+/// @author      Aiman Ismail <muhammadaimanbin.ismail@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,15 +26,14 @@ static sock_udp_ep_t remote;
 static char rdbuf[2 * CONFIG_NANOCOAP_URI_MAX] = {0};
 static unsigned rd_initialized = 0;
 
-static int make_sock_ep(sock_udp_ep_t *ep, const char *addr)
-{
+static int make_sock_ep(sock_udp_ep_t *ep, const char *addr) {
     ep->port = 0;
     if (sock_udp_name2ep(ep, addr) < 0) {
         return -1;
     }
-    /* if netif not specified in addr */
+    // if netif not specified in addr
     if ((ep->netif == SOCK_ADDR_ANY_NETIF) && (gnrc_netif_numof() == 1)) {
-        /* assign the single interface found in gnrc_netif_numof() */
+        // assign the single interface found in gnrc_netif_numof()
         ep->netif = (uint16_t)gnrc_netif_iter(NULL)->pid;
     }
     ep->family  = AF_INET6;
@@ -48,10 +43,8 @@ static int make_sock_ep(sock_udp_ep_t *ep, const char *addr)
     return 0;
 }
 
-/**
- * Parses main arguments for filters.
- * Returns number of parsed filters
- */
+/// Parses main arguments for filters.
+/// Returns number of parsed filters
 static void _parse_filters(clif_attr_t *filters, size_t filter_count,
                            char **argv) {
     for (unsigned i = 0; i < filter_count; i++) {
@@ -114,7 +107,7 @@ static int _cli_cmd(int argc, char **argv) {
         rd_initialized = 1;
     }
 
-    /* parse filters */
+    // parse filters
     unsigned filter_start = raw_mode ? 4 : 3;
     size_t filter_count = argc - filter_start;
     clif_attr_t filter_array[filter_count];

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Otto-von-Guericke Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Otto-von-Guericke Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the PIO peripheral driver
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the PIO peripheral driver
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+///
+/// @}
 
 #include <stddef.h>
 #include "shell.h"
@@ -30,8 +26,7 @@ DEBUG("[Test PIO] %s failed at %d: " msg "\n", __func__, __LINE__, __VA_ARGS__);
 #define DEBUG_TEST_FAILED(msg, ...)
 #endif
 
-static int _test_pio_alloc_and_free(pio_t pio)
-{
+static int _test_pio_alloc_and_free(pio_t pio) {
     int error = 1;
     pio_program_t pro;
     for (int i = 0; i < PIO_INSTR_NUMOF; i++) {
@@ -60,8 +55,7 @@ CLEAN:
     return error;
 }
 
-static int _test_pio_sm_lock_unlock(pio_t pio)
-{
+static int _test_pio_sm_lock_unlock(pio_t pio) {
     int error = 1;
     pio_sm_t sm;
     for (pio_sm_t i = 0; i < PIO_SM_NUMOF; i++) {
@@ -87,8 +81,7 @@ CLEAN:
     return error;
 }
 
-static int _test_pio_sm_program_any(void)
-{
+static int _test_pio_sm_program_any(void) {
     int error = 1;
     pio_t pio;
     pio_sm_t sm;
@@ -104,8 +97,7 @@ CLEAN:
     return error;
 }
 
-int main(void)
-{
+int main(void) {
     int error = 0;
 
     for (pio_t pio = 0; pio < PIO_NUMOF; pio++) {

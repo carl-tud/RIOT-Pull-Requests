@@ -1,31 +1,27 @@
-/*
- * SPDX-FileCopyrightText: 2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_ublox-c030-u201
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the Ublox C030-U201 board
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- */
+/// @ingroup     boards_ublox-c030-u201
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the Ublox C030-U201 board
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
 
-/* The HSE provides a 12MHz clock */
+// The HSE provides a 12MHz clock
 #ifndef CONFIG_CLOCK_HSE
 #define CONFIG_CLOCK_HSE               MHZ(12)
 #endif
@@ -38,25 +34,21 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 9 },   /* DMA2 Stream 1 - SPI4_TX */
-    { .stream = 8 },   /* DMA2 Stream 0 - SPI4_RX */
+    { .stream = 9 },   // DMA2 Stream 1 - SPI4_TX
+    { .stream = 8 },   // DMA2 Stream 0 - SPI4_RX
 };
 
 #define DMA_0_ISR           isr_dma2_stream1
 #define DMA_1_ISR           isr_dma2_stream0
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -78,7 +70,7 @@ static const uart_conf_t uart_config[] = {
         .dma_chan   = UINT8_MAX,
 #endif
     },
-    {   /* Modem UART */
+    {   // Modem UART
         .dev        = USART2,
         .rcc_mask   = RCC_APB1ENR_USART2EN,
         .rx_pin     = GPIO_PIN(PORT_D, 6),
@@ -98,7 +90,7 @@ static const uart_conf_t uart_config[] = {
         .dma_chan   = UINT8_MAX,
 #endif
     },
-    {   /* GPS UART */
+    {   // GPS UART
         .dev        = USART6,
         .rcc_mask   = RCC_APB2ENR_USART6EN,
         .rx_pin     = GPIO_PIN(PORT_C, 7),
@@ -118,7 +110,7 @@ static const uart_conf_t uart_config[] = {
         .dma_chan   = UINT8_MAX,
 #endif
     },
-    {   /* Arduino Port UART */
+    {   // Arduino Port UART
         .dev        = USART3,
         .rcc_mask   = RCC_APB1ENR_USART3EN,
         .rx_pin     = GPIO_PIN(PORT_D, 9),
@@ -146,12 +138,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_3_ISR          (isr_usart3)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev            = SPI4,
@@ -175,12 +165,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -212,18 +200,16 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_1_ISR           isr_i2c3_ev
 
 #define I2C_NUMOF ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32F437 order.  Instead, we
- * just define 6 ADC channels, for the
- * Arduino header pins A0-A5 and the internal VBAT channel.
- *
- * @{
- */
+/// @name   ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32F437 order.  Instead, we
+/// just define 6 ADC channels, for the
+/// Arduino header pins A0-A5 and the internal VBAT channel.
+///
+/// @{
 static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_A, 3), 0, 3},
     {GPIO_PIN(PORT_C, 0), 0, 10},
@@ -231,15 +217,15 @@ static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_A, 4), 0, 14},
     {GPIO_PIN(PORT_B, 7), 0, 7},
     {GPIO_PIN(PORT_B, 6), 0, 6},
-    {GPIO_UNDEF, 0, 18}, /* VBAT */
+    {GPIO_UNDEF, 0, 18}, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(6) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(6) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2023 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup
- * @defgroup       <name> <description>
- * @{
- *
- * @file        tests_psa_cbor_enc_dec.h
- * @brief
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- */
+/// @ingroup
+/// @defgroup       <name> <description>
+/// @{
+///
+/// @file        tests_psa_cbor_enc_dec.h
+/// @brief
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
 
 #include <stdint.h>
 #include "embUnit.h"
@@ -53,4 +49,4 @@ Test* tests_psa_fail_overwrite_existing_key(void);
 }
 #endif
 
-/** @} */
+/// @}

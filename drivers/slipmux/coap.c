@@ -1,59 +1,49 @@
-/*
- * SPDX-FileCopyrightText: 2026 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Bennet Hattesen <bennet.hattesen@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+/// @author  Bennet Hattesen <bennet.hattesen@haw-hamburg.de>
 #include "checksum/crc16_ccitt.h"
 #include "event.h"
 #include "net/unicoap/transport.h"
 #include "slipdev.h"
 #include "slipdev_internal.h"
 
-/* The special init is the result of normal fcs init combined with slipmux config start (0xa9) */
+// The special init is the result of normal fcs init combined with slipmux config start (0xa9)
 #define SPECIAL_INIT_FCS (0x374cU)
 
 static event_queue_t *queue = NULL;
 
-static inline void _slipdev_lock(void)
-{
+static inline void _slipdev_lock(void) {
     if (IS_USED(MODULE_STDIO_SLIPDEV) || IS_USED(MODULE_SLIPDEV_NET)) {
         mutex_lock(&slipdev_mutex);
     }
 }
 
-static inline void _slipdev_unlock(void)
-{
+static inline void _slipdev_unlock(void) {
     if (IS_USED(MODULE_STDIO_SLIPDEV) || IS_USED(MODULE_SLIPDEV_NET)) {
         mutex_unlock(&slipdev_mutex);
     }
 }
 
-/* called in ISR context */
-void slipdev_coap_dispatch_recv(event_t *event)
-{
+// called in ISR context
+void slipdev_coap_dispatch_recv(event_t *event) {
     if (queue) {
         event_post(queue, event);
     }
 }
 
-void slipdev_coap_set_event_queue(event_queue_t *q)
-{
+void slipdev_coap_set_event_queue(event_queue_t *q) {
     queue = q;
 }
 
-void slipdev_coap_unset_event_queue(void)
-{
+void slipdev_coap_unset_event_queue(void) {
     queue = NULL;
 }
 
-int slipdev_coap_recv(uint8_t *buf, size_t buf_size, slipdev_t *dev)
-{
+int slipdev_coap_recv(uint8_t *buf, size_t buf_size, slipdev_t *dev) {
     size_t len;
 
     if (crb_get_chunk_size(&dev->rb_config, &len)) {
@@ -63,11 +53,11 @@ int slipdev_coap_recv(uint8_t *buf, size_t buf_size, slipdev_t *dev)
         }
         crb_consume_chunk(&dev->rb_config, buf, len);
 
-        /* Is the crc correct via residue(=0xF0B8) test */
+        // Is the crc correct via residue(=0xF0B8) test
         if (crc16_ccitt_fcs_update(SPECIAL_INIT_FCS, buf, len) != 0xF0B8) {
             return -2;
         }
-        /* cut off the FCS checksum at the end */
+        // cut off the FCS checksum at the end
         size_t pktlen = len - 2;
 
         return pktlen;
@@ -75,8 +65,7 @@ int slipdev_coap_recv(uint8_t *buf, size_t buf_size, slipdev_t *dev)
     return 0;
 }
 
-void slipdev_coap_send(const iolist_t *iolist, const slipdev_t *dev)
-{
+void slipdev_coap_send(const iolist_t *iolist, const slipdev_t *dev) {
     uint16_t fcs_sum = SPECIAL_INIT_FCS;
     _slipdev_lock();
     slipdev_write_byte(dev->config.uart, SLIPDEV_START_COAP);
@@ -94,10 +83,9 @@ void slipdev_coap_send(const iolist_t *iolist, const slipdev_t *dev)
     _slipdev_unlock();
 }
 
-void slipdev_setup_coap(slipdev_t *dev)
-{
+void slipdev_setup_coap(slipdev_t *dev) {
     crb_init(&dev->rb_config, dev->rxmem_config, sizeof(dev->rxmem_config));
     dev->rxevent.handler = unicoap_slipdev_recv_handler;
 }
 
-/** @} */
+/// @}

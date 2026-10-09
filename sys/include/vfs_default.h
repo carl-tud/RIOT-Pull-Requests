@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup   sys_vfs
- * @brief     VFS default mount points
- *
- * @{
- * @file
- * @brief   VFS layer default definitions & mount points
- *
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup   sys_vfs
+/// @brief     VFS default mount points
+///
+/// @{
+/// @file
+/// @brief   VFS layer default definitions & mount points
+///
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include "board.h"
 #include "modules.h"
 #if IS_USED(MODULE_VFS) || DOXYGEN
 #include "vfs.h"
 #else
-/* don't try to create auto-mounts if there is no VFS module */
+// don't try to create auto-mounts if there is no VFS module
 #define VFS_AUTO_MOUNT(type, mtd, path, idx)
 #endif
 
@@ -51,24 +47,18 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Default mount point for removable storage
- */
+/// @brief   Default mount point for removable storage
 #ifndef VFS_DEFAULT_SD
 #define VFS_DEFAULT_SD(n)   "/sd" # n
 #endif
 
-/**
- * @brief   Default mount point for non-removable storage
- */
+/// @brief   Default mount point for non-removable storage
 #ifndef VFS_DEFAULT_NVM
 #define VFS_DEFAULT_NVM(n)  "/nvm" # n
 #endif
 
-/**
- * @brief   Default data directory
- *          This can be written to by applications
- */
+/// @brief   Default data directory
+///          This can be written to by applications
 #ifndef VFS_DEFAULT_DATA
 #if IS_USED(MODULE_MTD_MCI) || IS_USED(MODULE_MTD_SDCARD) || \
     IS_USED(MODULE_SAM0_SDHC) || IS_USED(MODULE_MTD_SDMMC)
@@ -82,4 +72,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

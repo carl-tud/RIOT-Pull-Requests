@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sx126x
- * @{
- * @file
- * @brief       Netdev adaptation for the SX1261/2/8 and LLCC68 driver
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @}
- */
+/// @ingroup     drivers_sx126x
+/// @{
+/// @file
+/// @brief       Netdev adaptation for the SX1261/2/8 and LLCC68 driver
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @}
 
 #include <assert.h>
 #include <stddef.h>
@@ -38,9 +34,8 @@ const uint8_t sx126x_max_sf = LORA_SF12;
 #if IS_USED(MODULE_SX126X_STM32WL)
 static netdev_t *_dev;
 
-void isr_subghz_radio(void)
-{
-    /* Disable NVIC to avoid ISR conflict in CPU. */
+void isr_subghz_radio(void) {
+    // Disable NVIC to avoid ISR conflict in CPU.
     NVIC_DisableIRQ(SUBGHZ_Radio_IRQn);
     NVIC_ClearPendingIRQ(SUBGHZ_Radio_IRQn);
     netdev_trigger_event_isr(_dev);
@@ -48,8 +43,7 @@ void isr_subghz_radio(void)
 }
 #endif
 
-static int _send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _send(netdev_t *netdev, const iolist_t *iolist) {
     sx126x_t *dev = container_of(netdev, sx126x_t, netdev);
 
     netopt_state_t state;
@@ -62,7 +56,7 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
 
     size_t pos = 0;
 
-    /* Write payload buffer */
+    // Write payload buffer
     for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
         if (iol->iol_len > 0) {
             sx126x_write_buffer(dev, pos, iol->iol_base, iol->iol_len);
@@ -71,7 +65,7 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
         }
     }
 
-    /* Ignore send if packet size is 0 */
+    // Ignore send if packet size is 0
     if (!pos) {
         return 0;
     }
@@ -86,8 +80,7 @@ static int _send(netdev_t *netdev, const iolist_t *iolist)
     return 0;
 }
 
-static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     DEBUG("[sx126x] netdev: read received data.\n");
 
     sx126x_t *dev = container_of(netdev, sx126x_t, netdev);
@@ -121,8 +114,7 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
     return size;
 }
 
-static int _init(netdev_t *netdev)
-{
+static int _init(netdev_t *netdev) {
     sx126x_t *dev = container_of(netdev, sx126x_t, netdev);
 
     if (sx126x_is_stm32wl(dev)) {
@@ -131,7 +123,7 @@ static int _init(netdev_t *netdev)
 #endif
     }
 
-    /* Launch initialization of driver and device */
+    // Launch initialization of driver and device
     DEBUG("[sx126x] netdev: initializing driver...\n");
     if (sx126x_init(dev) != 0) {
         DEBUG("[sx126x] netdev: initialization failed\n");
@@ -140,14 +132,13 @@ static int _init(netdev_t *netdev)
 
     DEBUG("[sx126x] netdev: initialization successful\n");
 
-    /* signal link UP */
+    // signal link UP
     netdev->event_callback(netdev, NETDEV_EVENT_LINK_UP);
 
     return 0;
 }
 
-static void _isr(netdev_t *netdev)
-{
+static void _isr(netdev_t *netdev) {
     sx126x_t *dev = container_of(netdev, sx126x_t, netdev);
 
     sx126x_irq_mask_t irq_mask;
@@ -201,8 +192,7 @@ static void _isr(netdev_t *netdev)
     }
 }
 
-static int _get_state(sx126x_t *dev, void *val)
-{
+static int _get_state(sx126x_t *dev, void *val) {
     netopt_state_t state;
     sx126x_chip_modes_t mode = sx126x_get_state(dev);
     switch (mode) {
@@ -226,9 +216,8 @@ static int _get_state(sx126x_t *dev, void *val)
     return sizeof(netopt_state_t);
 }
 
-static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
-{
-    (void)max_len; /* unused when compiled without debug, assert empty */
+static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len) {
+    (void)max_len; // unused when compiled without debug, assert empty
     sx126x_t *dev = container_of(netdev, sx126x_t, netdev);
 
     if (dev == NULL) {
@@ -297,8 +286,7 @@ static int _get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
     return -ENOTSUP;
 }
 
-static int _set_state(sx126x_t *dev, netopt_state_t state)
-{
+static int _set_state(sx126x_t *dev, netopt_state_t state) {
     switch (state) {
     case NETOPT_STATE_STANDBY:
         DEBUG("[sx126x] netdev: set NETOPT_STATE_STANDBY state\n");
@@ -309,7 +297,7 @@ static int _set_state(sx126x_t *dev, netopt_state_t state)
     case NETOPT_STATE_RX:
         DEBUG("[sx126x] netdev: set NETOPT_STATE_RX state\n");
 #if IS_USED(MODULE_SX126X_RF_SWITCH)
-        /* Refer Section 4.2 RF Switch in Application Note (AN5406) */
+        // Refer Section 4.2 RF Switch in Application Note (AN5406)
         if (dev->params->set_rf_mode) {
             dev->params->set_rf_mode(dev, SX126X_RF_MODE_RX);
         }
@@ -338,9 +326,8 @@ static int _set_state(sx126x_t *dev, netopt_state_t state)
     return sizeof(netopt_state_t);
 }
 
-static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len)
-{
-    (void)len; /* unused when compiled without debug, assert empty */
+static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len) {
+    (void)len; // unused when compiled without debug, assert empty
     sx126x_t *dev = container_of(netdev, sx126x_t, netdev);
     int res = -ENOTSUP;
 
@@ -355,7 +342,7 @@ static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len)
 
     case NETOPT_DEVICE_TYPE:
         assert(len <= sizeof(uint16_t));
-        /* Only LoRa modem is supported for the moment */
+        // Only LoRa modem is supported for the moment
         if (*(const uint16_t *)val == NETDEV_TYPE_LORA) {
             sx126x_set_pkt_type(dev, SX126X_PKT_TYPE_LORA);
             return sizeof(uint16_t);

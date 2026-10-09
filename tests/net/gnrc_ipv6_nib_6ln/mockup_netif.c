@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "common.h"
 #include "msg.h"
@@ -32,40 +28,35 @@ static char _mock_netif_stack[THREAD_STACKSIZE_DEFAULT];
 static gnrc_netreg_entry_t dumper;
 static msg_t _main_msg_queue[_MSG_QUEUE_SIZE];
 
-void _common_set_up(void)
-{
+void _common_set_up(void) {
     expect(_mock_netif != NULL);
     gnrc_ipv6_nib_init();
     gnrc_ipv6_nib_init_iface(_mock_netif);
     gnrc_ipv6_nib_iface_up(_mock_netif);
 }
 
-int _get_device_type(netdev_t *dev, void *value, size_t max_len)
-{
+int _get_device_type(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     expect(max_len == sizeof(uint16_t));
     *((uint16_t *)value) = NETDEV_TYPE_IEEE802154;
     return sizeof(uint16_t);
 }
 
-int _get_max_packet_size(netdev_t *dev, void *value, size_t max_len)
-{
+int _get_max_packet_size(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     expect(max_len == sizeof(uint16_t));
     *((uint16_t *)value) = 102U;
     return sizeof(uint16_t);
 }
 
-int _get_src_len(netdev_t *dev, void *value, size_t max_len)
-{
+int _get_src_len(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     expect(max_len == sizeof(uint16_t));
     *((uint16_t *)value) = IEEE802154_LONG_ADDRESS_LEN;
     return sizeof(uint16_t);
 }
 
-int _get_address_long(netdev_t *dev, void *value, size_t max_len)
-{
+int _get_address_long(netdev_t *dev, void *value, size_t max_len) {
     static const uint8_t addr[] = { _LL0, _LL1, _LL2, _LL3,
                                     _LL4, _LL5, _LL6, _LL7 };
 
@@ -75,16 +66,14 @@ int _get_address_long(netdev_t *dev, void *value, size_t max_len)
     return sizeof(addr);
 }
 
-int _get_proto(netdev_t *dev, void *value, size_t max_len)
-{
+int _get_proto(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     expect(max_len == sizeof(gnrc_nettype_t));
     *((gnrc_nettype_t *)value) = GNRC_NETTYPE_SIXLOWPAN;
     return sizeof(gnrc_nettype_t);
 }
 
-void _tests_init(void)
-{
+void _tests_init(void) {
     msg_init_queue(_main_msg_queue, _MSG_QUEUE_SIZE);
     netdev_test_setup(&_mock_netdev, 0);
     netdev_test_set_get_cb(&_mock_netdev, NETOPT_DEVICE_TYPE,
@@ -108,4 +97,4 @@ void _tests_init(void)
     gnrc_netreg_register(GNRC_NETTYPE_NDP, &dumper);
 }
 
-/** @} */
+/// @}

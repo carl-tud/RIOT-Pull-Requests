@@ -1,24 +1,20 @@
-/*
- * Copyright (C) 2019 Koen Zandberg
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
- */
+// Copyright (C) 2019 Koen Zandberg
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for more
+// details.
 
-/**
- * @defgroup    sys_picolibc PicoLibc system call
- * @ingroup     sys
- * @brief       PicoLibc system call
- * @{
- *
- * @file
- * @brief       PicoLibc system call implementations
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @defgroup    sys_picolibc PicoLibc system call
+/// @ingroup     sys
+/// @brief       PicoLibc system call
+/// @{
+///
+/// @file
+/// @brief       PicoLibc system call implementations
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -34,21 +30,17 @@
 #define NUM_HEAPS 1
 #endif
 
-/**
- * @brief manage the heap
- */
-extern char _sheap;                 /* start of the heap */
-extern char _eheap;                 /* end of the heap */
+/// @brief manage the heap
+extern char _sheap;                 // start of the heap
+extern char _eheap;                 // end of the heap
 #define __eheap &_eheap
 
-/**
- * @brief Additional heap sections that may be defined in the linkerscript.
- *
- *        The compiler should not generate references to those symbols if
- *        they are not used, so only provide them if additional memory sections
- *        that can be used as heap are available.
- * @{
- */
+/// @brief Additional heap sections that may be defined in the linkerscript.
+///
+///        The compiler should not generate references to those symbols if
+///        they are not used, so only provide them if additional memory sections
+///        that can be used as heap are available.
+/// @{
 extern char _sheap1;
 extern char _eheap1;
 
@@ -57,7 +49,7 @@ extern char _eheap2;
 
 extern char _sheap3;
 extern char _eheap3;
-/* @} */
+// @}
 
 struct heap {
     char* start;
@@ -105,17 +97,14 @@ static const struct heap heaps[NUM_HEAPS] = {
 #endif
 };
 
-/**
- * @brief Exit a program without cleaning up files
- *
- * If your system doesn't provide this, it is best to avoid linking with subroutines that
- * require it (exit, system).
- *
- * @param n     the exit code, 0 for all OK, >0 for not OK
- */
+/// @brief Exit a program without cleaning up files
+///
+/// If your system doesn't provide this, it is best to avoid linking with subroutines that
+/// require it (exit, system).
+///
+/// @param n     the exit code, 0 for all OK, >0 for not OK
 void __attribute__((__noreturn__))
-_exit(int n)
-{
+_exit(int n) {
     if (n > 0) {
         LOG_ERROR("ERR: program failed with exit code %i\n", n);
     }
@@ -124,19 +113,16 @@ _exit(int n)
     }
 #ifdef MODULE_PERIPH_PM
     pm_off();
-#endif /* MODULE_PERIPH_PM */
+#endif // MODULE_PERIPH_PM
     for (;;) {
     }
 }
 
-/**
- * @brief Allocate memory from the heap.
- *
- * @return      pointer to the newly allocated memory on success
- * @return      pointer set to address `-1` on failure
- */
-void *sbrk(ptrdiff_t incr)
-{
+/// @brief Allocate memory from the heap.
+///
+/// @return      pointer to the newly allocated memory on success
+/// @return      pointer set to address `-1` on failure
+void *sbrk(ptrdiff_t incr) {
     void *res = (void*)UINTPTR_MAX;
     unsigned int state = irq_disable();
 
@@ -155,20 +141,17 @@ void *sbrk(ptrdiff_t incr)
     return res;
 }
 
-/**
- * @brief Send a signal to a thread
- *
- * @param[in] pid the pid to send to
- * @param[in] sig the signal to send
- *
- * @return    always returns -1 to signal error
- */
+/// @brief Send a signal to a thread
+///
+/// @param[in] pid the pid to send to
+/// @param[in] sig the signal to send
+///
+/// @return    always returns -1 to signal error
 __attribute__ ((weak))
-int kill(pid_t pid, int sig)
-{
+int kill(pid_t pid, int sig) {
     (void)pid;
     (void)sig;
-    errno = ESRCH;                         /* not implemented yet */
+    errno = ESRCH;                         // not implemented yet
     return -1;
 }
 
@@ -183,16 +166,14 @@ static mutex_t picolibc_put_mutex = MUTEX_INIT;
 static char picolibc_stdout[PICOLIBC_STDOUT_BUFSIZE];
 static int picolibc_stdout_queued;
 
-static void _picolibc_flush(void)
-{
+static void _picolibc_flush(void) {
     if (picolibc_stdout_queued) {
         stdio_write(picolibc_stdout, picolibc_stdout_queued);
         picolibc_stdout_queued = 0;
     }
 }
 
-static int picolibc_put(char c, FILE *file)
-{
+static int picolibc_put(char c, FILE *file) {
     (void)file;
 
     mutex_lock(&picolibc_put_mutex);
@@ -206,8 +187,7 @@ static int picolibc_put(char c, FILE *file)
     return 1;
 }
 
-static int picolibc_flush(FILE *file)
-{
+static int picolibc_flush(FILE *file) {
     (void)file;
     mutex_lock(&picolibc_put_mutex);
     _picolibc_flush();
@@ -216,23 +196,20 @@ static int picolibc_flush(FILE *file)
 }
 
 #else
-int picolibc_put(char c, FILE *file)
-{
+int picolibc_put(char c, FILE *file) {
     (void)file;
     stdio_write(&c, 1);
     return 1;
 }
 
-static int picolibc_flush(FILE *file)
-{
+static int picolibc_flush(FILE *file) {
     (void)file;
     return 0;
 }
 
 #endif
 
-static int picolibc_get(FILE *file)
-{
+static int picolibc_get(FILE *file) {
     (void)file;
     picolibc_flush(NULL);
     char c = 0;
@@ -243,13 +220,12 @@ static int picolibc_get(FILE *file)
 FILE picolibc_stdio =
     FDEV_SETUP_STREAM(picolibc_put, picolibc_get, picolibc_flush, _FDEV_SETUP_RW);
 
-/* Since picolibc 1.8.10, PICOLIBC_STDIO_GLOBALS is prefixed with two leading
- * underscores. We just test for both to remain backwards compatible */
+// Since picolibc 1.8.10, PICOLIBC_STDIO_GLOBALS is prefixed with two leading
+// underscores. We just test for both to remain backwards compatible
 #if defined(PICOLIBC_STDIO_GLOBALS) || defined(__PICOLIBC_STDIO_GLOBALS)
 #ifdef __strong_reference
-/* This saves two const pointers.
- * See https://github.com/RIOT-OS/RIOT/pull/17001#issuecomment-945936918
- */
+// This saves two const pointers.
+// See https://github.com/RIOT-OS/RIOT/pull/17001#issuecomment-945936918
 #define STDIO_ALIAS(x) __strong_reference(stdin, x);
 #else
 #define STDIO_ALIAS(x) FILE *const x = &__picolibc_stdio;
@@ -260,20 +236,17 @@ STDIO_ALIAS(stdout);
 STDIO_ALIAS(stderr);
 #else
 FILE *const __iob[] = {
-    &picolibc_stdio,        /* stdin  */
-    &picolibc_stdio,        /* stdout */
-    &picolibc_stdio,        /* stderr */
+    &picolibc_stdio,        // stdin
+    &picolibc_stdio,        // stdout
+    &picolibc_stdio,        // stderr
 };
 #endif
 
 #include <thread.h>
-/**
- * @brief Get the process-ID of the current thread
- *
- * @return      the process ID of the current thread
- */
-pid_t getpid(void)
-{
+/// @brief Get the process-ID of the current thread
+///
+/// @return      the process ID of the current thread
+pid_t getpid(void) {
     return thread_getpid();
 }
 
@@ -283,24 +256,21 @@ pid_t getpid(void)
 #include <sys/stat.h>
 #endif
 
-/**
- * @brief Open a file
- *
- * This is a wrapper around @c vfs_open
- *
- * @param name  file name to open
- * @param flags flags, see man 3p open
- * @param mode  mode, file creation mode if the file is created when opening
- *
- * @return      fd number (>= 0) on success
- * @return      -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-int open(const char *name, int flags, int mode)
-{
+/// @brief Open a file
+///
+/// This is a wrapper around @c vfs_open
+///
+/// @param name  file name to open
+/// @param flags flags, see man 3p open
+/// @param mode  mode, file creation mode if the file is created when opening
+///
+/// @return      fd number (>= 0) on success
+/// @return      -1 on error, @c errno set to a constant from errno.h to indicate the error
+int open(const char *name, int flags, int mode) {
 #ifdef MODULE_VFS
     int fd = vfs_open(name, flags, mode);
     if (fd < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -fd;
         return -1;
     }
@@ -314,31 +284,26 @@ int open(const char *name, int flags, int mode)
 #endif
 }
 
-/*
- * Picolibc newer than 1.8 uses standard posix types for read/write
- * return values
- */
+// Picolibc newer than 1.8 uses standard posix types for read/write
+// return values
 #if __PICOLIBC_MAJOR__ > 1 || __PICOLIBC_MINOR__ >= 8
 #define _READ_WRITE_RETURN_TYPE ssize_t
 #endif
-/**
- * @brief Read bytes from an open file
- *
- * This is a wrapper around @c vfs_read
- *
- * @param[in]  fd     open file descriptor obtained from @c open()
- * @param[out] dest   destination buffer
- * @param[in]  count  maximum number of bytes to read
- *
- * @return       number of bytes read on success
- * @return       -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-_READ_WRITE_RETURN_TYPE read(int fd, void *dest, size_t count)
-{
+/// @brief Read bytes from an open file
+///
+/// This is a wrapper around @c vfs_read
+///
+/// @param[in]  fd     open file descriptor obtained from @c open()
+/// @param[out] dest   destination buffer
+/// @param[in]  count  maximum number of bytes to read
+///
+/// @return       number of bytes read on success
+/// @return       -1 on error, @c errno set to a constant from errno.h to indicate the error
+_READ_WRITE_RETURN_TYPE read(int fd, void *dest, size_t count) {
 #ifdef MODULE_VFS
     int res = vfs_read(fd, dest, count);
     if (res < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -res;
         return -1;
     }
@@ -353,24 +318,21 @@ _READ_WRITE_RETURN_TYPE read(int fd, void *dest, size_t count)
 #endif
 }
 
-/**
- * @brief Write bytes to an open file
- *
- * This is a wrapper around @c vfs_write
- *
- * @param[in]  fd     open file descriptor obtained from @c open()
- * @param[in]  src    source data buffer
- * @param[in]  count  maximum number of bytes to write
- *
- * @return       number of bytes written on success
- * @return       -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-_READ_WRITE_RETURN_TYPE write(int fd, const void *src, size_t count)
-{
+/// @brief Write bytes to an open file
+///
+/// This is a wrapper around @c vfs_write
+///
+/// @param[in]  fd     open file descriptor obtained from @c open()
+/// @param[in]  src    source data buffer
+/// @param[in]  count  maximum number of bytes to write
+///
+/// @return       number of bytes written on success
+/// @return       -1 on error, @c errno set to a constant from errno.h to indicate the error
+_READ_WRITE_RETURN_TYPE write(int fd, const void *src, size_t count) {
 #ifdef MODULE_VFS
     int res = vfs_write(fd, src, count);
     if (res < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -res;
         return -1;
     }
@@ -385,25 +347,22 @@ _READ_WRITE_RETURN_TYPE write(int fd, const void *src, size_t count)
 #endif
 }
 
-/**
- * @brief Close an open file
- *
- * This is a wrapper around @c vfs_close
- *
- * If this call returns an error, the fd should still be considered invalid and
- * no further attempt to use it shall be made, not even to retry @c close()
- *
- * @param[in]  fd     open file descriptor obtained from @c open()
- *
- * @return       0 on success
- * @return       -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-int close(int fd)
-{
+/// @brief Close an open file
+///
+/// This is a wrapper around @c vfs_close
+///
+/// If this call returns an error, the fd should still be considered invalid and
+/// no further attempt to use it shall be made, not even to retry @c close()
+///
+/// @param[in]  fd     open file descriptor obtained from @c open()
+///
+/// @return       0 on success
+/// @return       -1 on error, @c errno set to a constant from errno.h to indicate the error
+int close(int fd) {
 #ifdef MODULE_VFS
     int res = vfs_close(fd);
     if (res < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -res;
         return -1;
     }
@@ -415,39 +374,33 @@ int close(int fd)
 #endif
 }
 
-/**
- * Current process times (not implemented).
- *
- * @param[out]  ptms    Not modified.
- *
- * @return  -1, this function always fails. errno is set to ENOSYS.
- */
-clock_t times(struct tms *ptms)
-{
+/// Current process times (not implemented).
+///
+/// @param[out]  ptms    Not modified.
+///
+/// @return  -1, this function always fails. errno is set to ENOSYS.
+clock_t times(struct tms *ptms) {
     (void)ptms;
     errno = ENOSYS;
 
     return (-1);
 }
 
-/**
- * @brief Query or set options on an open file
- *
- * This is a wrapper around @c vfs_fcntl
- *
- * @param[in]  fd     open file descriptor obtained from @c open()
- * @param[in]  cmd    fcntl command, see man 3p fcntl
- * @param[in]  arg    argument to fcntl command, see man 3p fcntl
- *
- * @return       0 on success
- * @return       -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-int fcntl(int fd, int cmd, int arg)
-{
+/// @brief Query or set options on an open file
+///
+/// This is a wrapper around @c vfs_fcntl
+///
+/// @param[in]  fd     open file descriptor obtained from @c open()
+/// @param[in]  cmd    fcntl command, see man 3p fcntl
+/// @param[in]  arg    argument to fcntl command, see man 3p fcntl
+///
+/// @return       0 on success
+/// @return       -1 on error, @c errno set to a constant from errno.h to indicate the error
+int fcntl(int fd, int cmd, int arg) {
 #ifdef MODULE_VFS
     int res = vfs_fcntl(fd, cmd, arg);
     if (res < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -res;
         return -1;
     }
@@ -461,31 +414,28 @@ int fcntl(int fd, int cmd, int arg)
 #endif
 }
 
-/**
- * @brief Seek to position in file
- *
- * This is a wrapper around @c vfs_lseek
- *
- * @p whence determines the function of the seek and should be set to one of
- * the following values:
- *
- *  - @c SEEK_SET: Seek to absolute offset @p off
- *  - @c SEEK_CUR: Seek to current location + @p off
- *  - @c SEEK_END: Seek to end of file + @p off
- *
- * @param[in]  fd       open file descriptor obtained from @c open()
- * @param[in]  off      seek offset
- * @param[in]  whence   determines the seek method, see detailed description
- *
- * @return the new seek location in the file on success
- * @return -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-off_t lseek(int fd, _off_t off, int whence)
-{
+/// @brief Seek to position in file
+///
+/// This is a wrapper around @c vfs_lseek
+///
+/// @p whence determines the function of the seek and should be set to one of
+/// the following values:
+///
+///  - @c SEEK_SET: Seek to absolute offset @p off
+///  - @c SEEK_CUR: Seek to current location + @p off
+///  - @c SEEK_END: Seek to end of file + @p off
+///
+/// @param[in]  fd       open file descriptor obtained from @c open()
+/// @param[in]  off      seek offset
+/// @param[in]  whence   determines the seek method, see detailed description
+///
+/// @return the new seek location in the file on success
+/// @return -1 on error, @c errno set to a constant from errno.h to indicate the error
+off_t lseek(int fd, _off_t off, int whence) {
 #ifdef MODULE_VFS
     int res = vfs_lseek(fd, off, whence);
     if (res < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -res;
         return -1;
     }
@@ -499,33 +449,27 @@ off_t lseek(int fd, _off_t off, int whence)
 #endif
 }
 
-/**
- * @brief Sets the file position indicator to the beginning of the file.
- *
- * @param[in]  stream   open file descriptor obtained from @c fopen()
- */
-void rewind(FILE *stream)
-{
+/// @brief Sets the file position indicator to the beginning of the file.
+///
+/// @param[in]  stream   open file descriptor obtained from @c fopen()
+void rewind(FILE *stream) {
     fseek(stream, 0L, SEEK_SET);
 }
 
-/**
- * @brief Get status of an open file
- *
- * This is a wrapper around @c vfs_fstat
- *
- * @param[in]  fd       open file descriptor obtained from @c open()
- * @param[out] buf      pointer to stat struct to fill
- *
- * @return 0 on success
- * @return -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-int fstat(int fd, struct stat *buf)
-{
+/// @brief Get status of an open file
+///
+/// This is a wrapper around @c vfs_fstat
+///
+/// @param[in]  fd       open file descriptor obtained from @c open()
+/// @param[out] buf      pointer to stat struct to fill
+///
+/// @return 0 on success
+/// @return -1 on error, @c errno set to a constant from errno.h to indicate the error
+int fstat(int fd, struct stat *buf) {
 #ifdef MODULE_VFS
     int res = vfs_fstat(fd, buf);
     if (res < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -res;
         return -1;
     }
@@ -538,23 +482,20 @@ int fstat(int fd, struct stat *buf)
 #endif
 }
 
-/**
- * @brief Status of a file (by name)
- *
- * This is a wrapper around @c vfs_stat
- *
- * @param[in]  name     path to file
- * @param[out] st       pointer to stat struct to fill
- *
- * @return 0 on success
- * @return -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-int stat(const char *name, struct stat *st)
-{
+/// @brief Status of a file (by name)
+///
+/// This is a wrapper around @c vfs_stat
+///
+/// @param[in]  name     path to file
+/// @param[out] st       pointer to stat struct to fill
+///
+/// @return 0 on success
+/// @return -1 on error, @c errno set to a constant from errno.h to indicate the error
+int stat(const char *name, struct stat *st) {
 #ifdef MODULE_VFS
     int res = vfs_stat(name, st);
     if (res < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -res;
         return -1;
     }
@@ -567,20 +508,17 @@ int stat(const char *name, struct stat *st)
 #endif
 }
 
-/**
- * @brief  Unlink (delete) a file
- *
- * @param[in]  path     path to file to be deleted
- *
- * @return 0 on success
- * @return -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-int unlink(const char *path)
-{
+/// @brief  Unlink (delete) a file
+///
+/// @param[in]  path     path to file to be deleted
+///
+/// @return 0 on success
+/// @return -1 on error, @c errno set to a constant from errno.h to indicate the error
+int unlink(const char *path) {
 #ifdef MODULE_VFS
     int res = vfs_unlink(path);
     if (res < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -res;
         return -1;
     }
@@ -592,20 +530,17 @@ int unlink(const char *path)
 #endif
 }
 
-/**
- * @brief  Deletes a directory, which must be empty
- *
- * @param[in]  path     path to directory to be deleted
- *
- * @return 0 on success
- * @return -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-int rmdir(const char *path)
-{
+/// @brief  Deletes a directory, which must be empty
+///
+/// @param[in]  path     path to directory to be deleted
+///
+/// @return 0 on success
+/// @return -1 on error, @c errno set to a constant from errno.h to indicate the error
+int rmdir(const char *path) {
 #ifdef MODULE_VFS
     int res = vfs_rmdir(path);
     if (res < 0) {
-        /* vfs returns negative error codes */
+        // vfs returns negative error codes
         errno = -res;
         return -1;
     }
@@ -617,19 +552,16 @@ int rmdir(const char *path)
 #endif
 }
 
-/**
- * @brief  Remove (delete) a file or directory
- *
- * remove()  deletes  a name from the filesystem.
- * It calls unlink(2) for files, and rmdir(2) for directories.
- *
- * @param[in]  path     path to file or directory to be deleted
- *
- * @return 0 on success
- * @return -1 on error, @c errno set to a constant from errno.h to indicate the error
- */
-int remove(const char *path)
-{
+/// @brief  Remove (delete) a file or directory
+///
+/// remove()  deletes  a name from the filesystem.
+/// It calls unlink(2) for files, and rmdir(2) for directories.
+///
+/// @param[in]  path     path to file or directory to be deleted
+///
+/// @return 0 on success
+/// @return -1 on error, @c errno set to a constant from errno.h to indicate the error
+int remove(const char *path) {
     if (unlink(path) == 0) {
         return 0;
     }

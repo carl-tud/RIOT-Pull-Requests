@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2026 Baptiste Le Duc <baptiste.leduc@etik.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Baptiste Le Duc <baptiste.leduc@etik.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_seeedstudio-sensecap-t1000e
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the SeeedStudio SenseCAP T1000-E
- *
- * @author      Baptiste Le Duc <baptiste.leduc@etik.com>
- */
+/// @ingroup     boards_seeedstudio-sensecap-t1000e
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the SeeedStudio SenseCAP T1000-E
+///
+/// @author      Baptiste Le Duc <baptiste.leduc@etik.com>
 
 #include "periph_cpu.h"
 #include "cfg_clock_32_1.h"
@@ -24,13 +20,11 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- *
- * UART_DEV(0): GNSS module (AG3335)
- * UART_DEV(1): spare / debug
- * @{
- */
+/// @name    UART configuration
+///
+/// UART_DEV(0): GNSS module (AG3335)
+/// UART_DEV(1): spare / debug
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = NRF_UARTE0,
@@ -58,14 +52,12 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_uarte1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- *
- * SPI_DEV(0): LR1110 LoRa transceiver
- * @{
- */
+/// @name    SPI configuration
+///
+/// SPI_DEV(0): LR1110 LoRa transceiver
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev  = NRF_SPIM2,
@@ -76,14 +68,12 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- *
- * I2C_DEV(0): QMA6100P accelerometer
- * @{
- */
+/// @name    I2C configuration
+///
+/// I2C_DEV(0): QMA6100P accelerometer
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev   = NRF_TWIM0,
@@ -94,16 +84,14 @@ static const i2c_conf_t i2c_config[] = {
 };
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- *
- * PWM_DEV(0) CH0: buzzer (P0.25)
- *
- * @note    Unused channels must be set to GPIO_UNDEF.
- * @{
- */
+/// @name    PWM configuration
+///
+/// PWM_DEV(0) CH0: buzzer (P0.25)
+///
+/// @note    Unused channels must be set to GPIO_UNDEF.
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev = NRF_PWM0,
@@ -117,23 +105,21 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- *
- * ADC_NUMOF is fixed by the nRF52 CPU (9 or 10 channels).
- * Relevant lines for this board:
- *   NRF52_AIN0 (P0.02): battery voltage
- *   NRF52_AIN5 (P0.29): light sensor
- *   NRF52_AIN7 (P0.31): NTC temperature sensor
- * @{
- */
-/* ADC_NUMOF defined in cpu/nrf52/include/periph_cpu.h */
-/** @} */
+/// @name    ADC configuration
+///
+/// ADC_NUMOF is fixed by the nRF52 CPU (9 or 10 channels).
+/// Relevant lines for this board:
+///   NRF52_AIN0 (P0.02): battery voltage
+///   NRF52_AIN5 (P0.29): light sensor
+///   NRF52_AIN7 (P0.31): NTC temperature sensor
+/// @{
+// ADC_NUMOF defined in cpu/nrf52/include/periph_cpu.h
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

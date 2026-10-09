@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_saml1x
- * @{
- *
- * @file        cpu.c
- * @brief       Implementation of the CPU initialization for Microchip
- *              SAML10/SAML11 MCUs
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- * @}
- */
+/// @ingroup     cpu_saml1x
+/// @{
+///
+/// @file        cpu.c
+/// @brief       Implementation of the CPU initialization for Microchip
+///              SAML10/SAML11 MCUs
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+/// @}
 
 #include "cpu.h"
 #include "kernel_init.h"
@@ -28,65 +24,59 @@
 #define _NVMCTRL NVMCTRL
 #endif
 
-/* As long as FDPLL is not used, we can default to
- * always using the buck converter.
- *
- * An external inductor needs to be present on the board,
- * so the feature can only be enabled by the board configuration.
- */
+// As long as FDPLL is not used, we can default to
+// always using the buck converter.
+//
+// An external inductor needs to be present on the board,
+// so the feature can only be enabled by the board configuration.
 #ifndef USE_VREG_BUCK
 #define USE_VREG_BUCK (0)
 #endif
 
-static void _gclk_setup(int gclk, uint32_t reg)
-{
+static void _gclk_setup(int gclk, uint32_t reg) {
     GCLK->GENCTRL[gclk].reg = reg;
     while (GCLK->SYNCBUSY.reg & GCLK_SYNCBUSY_GENCTRL(gclk)) {}
 }
 
-static void _osc32k_setup(void)
-{
+static void _osc32k_setup(void) {
 #if INTERNAL_OSC32_SOURCE
     uint32_t * pCalibrationArea;
     uint32_t osc32kcal;
 
-    /* Read OSC32KCAL, calibration data for OSC32 !!! */
+    // Read OSC32KCAL, calibration data for OSC32 !!!
     pCalibrationArea = (uint32_t*) NVMCTRL_OTP5;
     osc32kcal = ( (*pCalibrationArea) & 0x1FC0 ) >> 6;
 
-    /* RTC use Low Power Internal Oscillator at 32kHz */
+    // RTC use Low Power Internal Oscillator at 32kHz
     OSC32KCTRL->OSC32K.reg = OSC32KCTRL_OSC32K_RUNSTDBY
                            | OSC32KCTRL_OSC32K_EN32K
                            | OSC32KCTRL_OSC32K_CALIB(osc32kcal)
                            | OSC32KCTRL_OSC32K_ENABLE;
 
-    /* Wait OSC32K Ready */
+    // Wait OSC32K Ready
     while (!(OSC32KCTRL->STATUS.reg & OSC32KCTRL_STATUS_OSC32KRDY)) {}
-#endif /* INTERNAL_OSC32_SOURCE */
+#endif // INTERNAL_OSC32_SOURCE
 }
 
-static void _xosc32k_setup(void)
-{
+static void _xosc32k_setup(void) {
 #if EXTERNAL_OSC32_SOURCE
-    /* RTC uses External 32,768KHz Oscillator */
+    // RTC uses External 32,768KHz Oscillator
     OSC32KCTRL->XOSC32K.reg = OSC32KCTRL_XOSC32K_XTALEN
                             | OSC32KCTRL_XOSC32K_RUNSTDBY
                             | OSC32KCTRL_XOSC32K_EN32K
                             | OSC32KCTRL_XOSC32K_ENABLE;
 
-    /* Wait XOSC32K Ready */
+    // Wait XOSC32K Ready
     while (!(OSC32KCTRL->STATUS.reg & OSC32KCTRL_STATUS_XOSC32KRDY)) {}
 #endif
 }
 
-void sam0_gclk_enable(uint8_t id)
-{
+void sam0_gclk_enable(uint8_t id) {
     (void) id;
-    /* clocks are always running */
+    // clocks are always running
 }
 
-uint32_t sam0_gclk_freq(uint8_t id)
-{
+uint32_t sam0_gclk_freq(uint8_t id) {
     switch (id) {
     case SAM0_GCLK_MAIN:
         return CLOCK_CORECLOCK;
@@ -97,32 +87,27 @@ uint32_t sam0_gclk_freq(uint8_t id)
     }
 }
 
-void cpu_pm_cb_enter(int deep)
-{
+void cpu_pm_cb_enter(int deep) {
     (void) deep;
-    /* will be called before entering sleep */
+    // will be called before entering sleep
 }
 
-void cpu_pm_cb_leave(int deep)
-{
+void cpu_pm_cb_leave(int deep) {
     (void) deep;
-    /* will be called after wake-up */
+    // will be called after wake-up
 }
 
-/**
- * @brief Initialize the CPU, set IRQ priorities, clocks
- */
-void cpu_init(void)
-{
-    /* initialize the Cortex-M core */
+/// @brief Initialize the CPU, set IRQ priorities, clocks
+void cpu_init(void) {
+    // initialize the Cortex-M core
     cortexm_init();
 
-    /* not compatible with 96 MHz FDPLL */
+    // not compatible with 96 MHz FDPLL
     if (USE_VREG_BUCK) {
         sam0_set_voltage_regulator(SAM0_VREG_BUCK);
     }
 
-    /* turn on only needed APB peripherals */
+    // turn on only needed APB peripherals
     MCLK->APBAMASK.reg = MCLK_APBAMASK_MCLK
                          | MCLK_APBAMASK_OSCCTRL
                          | MCLK_APBAMASK_OSC32KCTRL
@@ -139,16 +124,16 @@ void cpu_init(void)
 #endif
                          ;
 
-    /* Disable the RTC module to prevent synchronization issues during CPU init
-       if the RTC was running from a previous boot (e.g wakeup from backup)
-       as the module will be re-init during the boot process */
+    // Disable the RTC module to prevent synchronization issues during CPU init
+    //    if the RTC was running from a previous boot (e.g wakeup from backup)
+    //    as the module will be re-init during the boot process
     if ((RTC->MODE2.CTRLA.reg & RTC_MODE2_CTRLA_ENABLE) &&
         IS_ACTIVE(MODULE_PERIPH_RTC_RTT)) {
         while (RTC->MODE2.SYNCBUSY.reg) {}
         RTC->MODE2.CTRLA.reg &= ~ RTC_MODE2_CTRLA_ENABLE;
         while (RTC->MODE2.SYNCBUSY.reg) {}
     }
-    /* Software reset the GCLK module to ensure it is re-initialized correctly */
+    // Software reset the GCLK module to ensure it is re-initialized correctly
     GCLK->CTRLA.reg = GCLK_CTRLA_SWRST;
     while (GCLK->CTRLA.reg & GCLK_CTRLA_SWRST) {}
     while (GCLK->SYNCBUSY.reg & GCLK_SYNCBUSY_SWRST) {}
@@ -160,13 +145,13 @@ void cpu_init(void)
     _NVMCTRL->CTRLB.reg |= NVMCTRL_CTRLB_RWS(1);
     MCLK->APBBMASK.reg &= ~MCLK_APBBMASK_NVMCTRL;
 
-    /* set OSC16M to 16MHz */
+    // set OSC16M to 16MHz
     OSCCTRL->OSC16MCTRL.reg = (OSCCTRL_OSC16MCTRL_FSEL_16 | OSCCTRL_OSC16MCTRL_ENABLE);
 
     _osc32k_setup();
     _xosc32k_setup();
 
-    /* Setup GCLK generators */
+    // Setup GCLK generators
     _gclk_setup(SAM0_GCLK_MAIN, GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSC16M);
 #if EXTERNAL_OSC32_SOURCE
     _gclk_setup(SAM0_GCLK_32KHZ, GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_XOSC32K);
@@ -175,13 +160,13 @@ void cpu_init(void)
 #endif
 
 #ifdef MODULE_PERIPH_DMA
-    /*  initialize DMA streams */
+    // initialize DMA streams
     dma_init();
 #endif
 
-    /* initialize stdio prior to periph_init() to allow use of DEBUG() there */
+    // initialize stdio prior to periph_init() to allow use of DEBUG() there
     early_init();
 
-    /* trigger static peripheral initialization */
+    // trigger static peripheral initialization
     periph_init();
 }

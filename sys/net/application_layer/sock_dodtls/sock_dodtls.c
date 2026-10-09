@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup net_sock_dodtls
- * @{
- * @file
- * @brief   sock DNS client implementation
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- * @author  Martine S. Lenders <m.lenders@fu-berlin.de>
- * @}
- */
+/// @ingroup net_sock_dodtls
+/// @{
+/// @file
+/// @brief   sock DNS client implementation
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
+/// @author  Martine S. Lenders <m.lenders@fu-berlin.de>
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -34,22 +30,22 @@
 #define ENABLE_DEBUG    0
 #include "debug.h"
 
-/* min domain name length is 1, so minimum record length is 7 */
+// min domain name length is 1, so minimum record length is 7
 #define SOCK_DODTLS_MIN_REPLY_LEN           (unsigned)(sizeof(dns_hdr_t) + 7)
-/* see https://datatracker.ietf.org/doc/html/rfc8094#section-3.1 */
+// see https://datatracker.ietf.org/doc/html/rfc8094#section-3.1
 #define SOCK_DODTLS_SESSION_TIMEOUT_MS      (15U * MS_PER_SEC)
 #define SOCK_DODTLS_SESSION_RECV_TIMEOUT_MS (1U * MS_PER_SEC)
 
-/* Socks to the DNS over DTLS server */
+// Socks to the DNS over DTLS server
 static uint8_t _dns_buf[CONFIG_DNS_MSG_LEN];
 static sock_udp_t _udp_sock;
 static sock_dtls_t _dtls_sock;
 static sock_dtls_session_t _server_session;
-/* Mutex to access server sock */
+// Mutex to access server sock
 static mutex_t _server_mutex = MUTEX_INIT;
-/* Type of the server credentials, stored for eventual credential deletion */
+// Type of the server credentials, stored for eventual credential deletion
 static credman_type_t _cred_type = CREDMAN_TYPE_EMPTY;
-/* Tag of the server credentials, stored for eventual credential deletion */
+// Tag of the server credentials, stored for eventual credential deletion
 static credman_tag_t _cred_tag = CREDMAN_TAG_EMPTY;
 static uint16_t _id = 0;
 
@@ -60,8 +56,7 @@ static int _disconnect_server(void);
 static uint32_t _now_ms(void);
 static void _sleep_ms(uint32_t delay);
 
-int sock_dodtls_query(const char *domain_name, void *addr_out, int family)
-{
+int sock_dodtls_query(const char *domain_name, void *addr_out, int family) {
     int res;
     uint16_t id;
 
@@ -115,13 +110,12 @@ int sock_dodtls_query(const char *domain_name, void *addr_out, int family)
     }
 
 out:
-    memset(_dns_buf, 0, sizeof(_dns_buf));  /* flush-out unencrypted data */
+    memset(_dns_buf, 0, sizeof(_dns_buf));  // flush-out unencrypted data
     mutex_unlock(&_server_mutex);
     return res;
 }
 
-int sock_dodtls_get_server(sock_udp_ep_t *server)
-{
+int sock_dodtls_get_server(sock_udp_ep_t *server) {
     int res = -ENOTCONN;
 
     assert(server != NULL);
@@ -134,31 +128,26 @@ int sock_dodtls_get_server(sock_udp_ep_t *server)
     return res;
 }
 
-sock_dtls_t *sock_dodtls_get_dtls_sock(void)
-{
+sock_dtls_t *sock_dodtls_get_dtls_sock(void) {
     return &_dtls_sock;
 }
 
-sock_dtls_session_t *sock_dodtls_get_server_session(void)
-{
+sock_dtls_session_t *sock_dodtls_get_server_session(void) {
     return &_server_session;
 }
 
 int sock_dodtls_set_server(const sock_udp_ep_t *server,
-                           const credman_credential_t *creds)
-{
+                           const credman_credential_t *creds) {
     return (server == NULL)
          ? _disconnect_server()
          : _connect_server(server, creds);
 }
 
-static inline bool _server_set(void)
-{
+static inline bool _server_set(void) {
     return _cred_type != CREDMAN_TYPE_EMPTY;
 }
 
-static void _close_session(credman_tag_t creds_tag, credman_type_t creds_type)
-{
+static void _close_session(credman_tag_t creds_tag, credman_type_t creds_type) {
     sock_dtls_session_destroy(&_dtls_sock, &_server_session);
     sock_dtls_close(&_dtls_sock);
     credman_delete(creds_tag, creds_type);
@@ -166,12 +155,11 @@ static void _close_session(credman_tag_t creds_tag, credman_type_t creds_type)
 }
 
 static int _connect_server(const sock_udp_ep_t *server,
-                           const credman_credential_t *creds)
-{
+                           const credman_credential_t *creds) {
     int res;
     sock_udp_ep_t local = SOCK_IPV6_EP_ANY;
 
-    /* server != NULL is checked in sock_dodtls_set_server() */
+    // server != NULL is checked in sock_dodtls_set_server()
     assert(creds != NULL);
     mutex_lock(&_server_mutex);
 
@@ -203,8 +191,7 @@ exit:
     return (res > 0) ? 0 : res;
 }
 
-static int _disconnect_server(void)
-{
+static int _disconnect_server(void) {
     int res = 0;
 
     mutex_lock(&_server_mutex);
@@ -219,12 +206,10 @@ exit:
     return res;
 }
 
-static uint32_t _now_ms(void)
-{
+static uint32_t _now_ms(void) {
     return ztimer_now(ZTIMER_MSEC);
 }
 
-static void _sleep_ms(uint32_t delay)
-{
+static void _sleep_ms(uint32_t delay) {
     ztimer_sleep(ZTIMER_MSEC, delay);
 }

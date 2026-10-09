@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2024 Krzysztof Cabaj <kcabaj@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Krzysztof Cabaj <kcabaj@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       leds_shell - sample application for demonstrating internal
- *              board LEDs on/off and basic GPIO using interactive RIOT shell
- *
- * @author      Krzysztof Cabaj <kcabaj@gmail.com>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       leds_shell - sample application for demonstrating internal
+///              board LEDs on/off and basic GPIO using interactive RIOT shell
+///
+/// @author      Krzysztof Cabaj <kcabaj@gmail.com>
+///
+/// @}
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -22,8 +18,7 @@
 #include "led.h"
 #include <periph/gpio.h>
 
-static int _gpio_cmd(int argc, char **argv)
-{
+static int _gpio_cmd(int argc, char **argv) {
     if (argc < 4) {
         printf("usage: %s <init/set/clear> <port no.> <pin no.>\n", argv[0]);
         return -1;
@@ -63,8 +58,7 @@ static int _gpio_cmd(int argc, char **argv)
 
 SHELL_COMMAND(gpio, "GPIO pin initialization and set port state HIGH/LOW", _gpio_cmd);
 
-static int _led_cmd(int argc, char **argv)
-{
+static int _led_cmd(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <id> <on|off|toggle>\n", argv[0]);
         return -1;
@@ -95,8 +89,7 @@ static int _led_cmd(int argc, char **argv)
 
 SHELL_COMMAND(led, "Switch on/off or toggle on-board LEDs", _led_cmd);
 
-int main(void)
-{
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     printf("This board has %d LEDs\n", LED_NUMOF);
 

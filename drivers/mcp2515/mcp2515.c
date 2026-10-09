@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mcp2515
- * @{
- *
- * @file
- * @brief       mcp2515 can spi driver
- *
- * @author      Toon Stegen <toon.stegen@altran.com>
- * @author      Wouter Symons <wosym@airsantelmo.com>
- * @}
- */
+/// @ingroup     drivers_mcp2515
+/// @{
+///
+/// @file
+/// @brief       mcp2515 can spi driver
+///
+/// @author      Toon Stegen <toon.stegen@altran.com>
+/// @author      Wouter Symons <wosym@airsantelmo.com>
+/// @}
 
 #include <string.h>
 
@@ -27,67 +23,59 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* reset delay should be at least 2 microseconds */
+// reset delay should be at least 2 microseconds
 #define RESET_DELAY_US 2
 
-/* size of transmission and reception buffers in mcp2515 */
+// size of transmission and reception buffers in mcp2515
 #define BUFFER_SIZE 13
 
-/* macros for getting the TX and RX control registers */
+// macros for getting the TX and RX control registers
 #define MCP2515_TX_CTRL(mailbox) ((MCP2515_TXB0CTRL) + ((mailbox) << 4))
 #define MCP2515_RX_CTRL(mailbox) ((MCP2515_RXB0CTRL) + ((mailbox) << 4))
 
-/* length of the fixed part of a can message: 4 bytes can_id + 1 byte len */
+// length of the fixed part of a can message: 4 bytes can_id + 1 byte len
 #define CAN_FIXED_LEN 5
 
-/* oscillator startup time
- * 128 cycles @ clock freq + some extra */
-static inline uint32_t _osc_startup(candev_mcp2515_t *dev)
-{
+// oscillator startup time
+// 128 cycles @ clock freq + some extra
+static inline uint32_t _osc_startup(candev_mcp2515_t *dev) {
     return (128 / (dev->conf->clk / 1000000) + 2);
 }
 
-/**
- * @brief enable MCP2515 interrupt @p irq
- *
- * @param[in]  dev          device descriptor
- * @param[in]  irq          interrupt to enable
- *
- * @return                  0 on success
- * @return                  <0 on error
- */
+/// @brief enable MCP2515 interrupt @p irq
+///
+/// @param[in]  dev          device descriptor
+/// @param[in]  irq          interrupt to enable
+///
+/// @return                  0 on success
+/// @return                  <0 on error
 static int _mcp2515_enable_irq(candev_mcp2515_t *dev, uint8_t irq);
 
-/**
- * @brief Fill tx/rx standard buffer instruction from filter identifier @p id
- *
- * The Read RX Buffer instruction provides a means to quickly address a receive
- * buffer for reading. This instruction reduces the SPI overhead by one byte,
- * the address byte. The command byte actually has four possible values that
- * determine the address pointer location.
- *
- * The Load TX Buffer instruction eliminates the eight-bit address required by
- * a normal write command. The eight-bit instruction sets the address pointer
- * to one of six addresses to quickly write to a transmit buffer that points to
- * the “ID” or “data” address of any of the three transmit buffers.
- *
- * @param[in]  id           filter identifier in the MCP2515 mailbox
- * @param[out] bytebuf      buffer instruction
- */
+/// @brief Fill tx/rx standard buffer instruction from filter identifier @p id
+///
+/// The Read RX Buffer instruction provides a means to quickly address a receive
+/// buffer for reading. This instruction reduces the SPI overhead by one byte,
+/// the address byte. The command byte actually has four possible values that
+/// determine the address pointer location.
+///
+/// The Load TX Buffer instruction eliminates the eight-bit address required by
+/// a normal write command. The eight-bit instruction sets the address pointer
+/// to one of six addresses to quickly write to a transmit buffer that points to
+/// the “ID” or “data” address of any of the three transmit buffers.
+///
+/// @param[in]  id           filter identifier in the MCP2515 mailbox
+/// @param[out] bytebuf      buffer instruction
 static void _fill_standard_id(uint32_t id, uint8_t *bytebuf);
 
-/**
- * @brief Fill tx/rx extended buffer instruction from filter identifier @p id
- *
- * for more details see _fill_standard_id.
- *
- * @param[in]  id           filter identifier in the MCP2515 mailbox
- * @param[out] bytebuf      buffer instruction
- */
+/// @brief Fill tx/rx extended buffer instruction from filter identifier @p id
+///
+/// for more details see _fill_standard_id.
+///
+/// @param[in]  id           filter identifier in the MCP2515 mailbox
+/// @param[out] bytebuf      buffer instruction
 static void _fill_extended_id(uint32_t id, uint8_t *bytebuf);
 
-int mcp2515_init(candev_mcp2515_t *dev, void (*irq_handler_cb)(void *))
-{
+int mcp2515_init(candev_mcp2515_t *dev, void (*irq_handler_cb)(void *)) {
     int res;
 
     res = gpio_init_int(dev->conf->int_pin, GPIO_IN_PU, GPIO_FALLING,
@@ -123,8 +111,7 @@ int mcp2515_init(candev_mcp2515_t *dev, void (*irq_handler_cb)(void *))
     return 0;
 }
 
-void mcp2515_reset(candev_mcp2515_t *dev)
-{
+void mcp2515_reset(candev_mcp2515_t *dev) {
     if (gpio_is_valid(dev->conf->rst_pin)) {
         gpio_clear(dev->conf->rst_pin);
         ztimer_sleep(ZTIMER_USEC, RESET_DELAY_US);
@@ -136,26 +123,23 @@ void mcp2515_reset(candev_mcp2515_t *dev)
     ztimer_sleep(ZTIMER_USEC, _osc_startup(dev));
 }
 
-static void _fill_standard_id(uint32_t id, uint8_t *bytebuf)
-{
-    bytebuf[0] = (uint8_t)((id & 0x000007F8UL) >> 3);   /* T/RXBnSIDH */
-    bytebuf[1] = (uint8_t)((id & 0x00000007UL) << 5);   /* T/RXBnSIDL */
-    bytebuf[2] = (uint8_t)((id & 0xFF000000UL) >> 24);  /* T/RXBnEID8 */
-    bytebuf[3] = (uint8_t)((id & 0x00FF0000UL) >> 16);  /* T/RXBnEID0 */
+static void _fill_standard_id(uint32_t id, uint8_t *bytebuf) {
+    bytebuf[0] = (uint8_t)((id & 0x000007F8UL) >> 3);   // T/RXBnSIDH
+    bytebuf[1] = (uint8_t)((id & 0x00000007UL) << 5);   // T/RXBnSIDL
+    bytebuf[2] = (uint8_t)((id & 0xFF000000UL) >> 24);  // T/RXBnEID8
+    bytebuf[3] = (uint8_t)((id & 0x00FF0000UL) >> 16);  // T/RXBnEID0
 }
 
-static void _fill_extended_id(uint32_t id, uint8_t *bytebuf)
-{
-    bytebuf[0] = (uint8_t)((id & 0x1FE00000UL) >> 21);          /* T/RXBnSIDH */
+static void _fill_extended_id(uint32_t id, uint8_t *bytebuf) {
+    bytebuf[0] = (uint8_t)((id & 0x1FE00000UL) >> 21);          // T/RXBnSIDH
     bytebuf[1] = (uint8_t)((id & 0x001C0000UL) >> 13)
-                 | (uint8_t)((id & 0x00030000UL) >> 16) | 0x08; /* T/RXBnSIDL */
-    bytebuf[2] = (uint8_t)((id & 0x0000FF00UL) >> 8);           /* T/RXBnEID8 */
-    bytebuf[3] = (uint8_t)(id & 0x000000FFUL);                  /* T/RXBnEID0 */
+                 | (uint8_t)((id & 0x00030000UL) >> 16) | 0x08; // T/RXBnSIDL
+    bytebuf[2] = (uint8_t)((id & 0x0000FF00UL) >> 8);           // T/RXBnEID8
+    bytebuf[3] = (uint8_t)(id & 0x000000FFUL);                  // T/RXBnEID0
 }
 
 int mcp2515_send(candev_mcp2515_t *dev, const struct can_frame *frame,
-                 int mailbox)
-{
+                 int mailbox) {
     uint8_t prio = 1;
     uint8_t outbuf[BUFFER_SIZE];
     uint8_t ctrl;
@@ -192,7 +176,7 @@ int mcp2515_send(candev_mcp2515_t *dev, const struct can_frame *frame,
     outbuf[4] = framebuf.len;
     memcpy(&outbuf[CAN_FIXED_LEN], framebuf.data, framebuf.len);
 
-    /* set mailbox priority */
+    // set mailbox priority
     mcp2515_spi_write(dev, MCP2515_TX_CTRL(mailbox), &prio, 1);
 
     mcp2515_spi_write_txbuf(dev, mailbox, outbuf,
@@ -203,13 +187,12 @@ int mcp2515_send(candev_mcp2515_t *dev, const struct can_frame *frame,
     return mailbox;
 }
 
-int mcp2515_receive(candev_mcp2515_t *dev, struct can_frame *frame, int mailbox)
-{
+int mcp2515_receive(candev_mcp2515_t *dev, struct can_frame *frame, int mailbox) {
     uint8_t inbuf[BUFFER_SIZE];
 
     mcp2515_spi_read_rxbuf(dev, mailbox, inbuf, BUFFER_SIZE);
 
-    /* extended id */
+    // extended id
     if (inbuf[1] & MCP2515_RX_IDE) {
         frame->can_id = ((uint32_t)inbuf[0] << 21) +
                         (((uint32_t)inbuf[1] & 0xE0) << 13) +
@@ -219,7 +202,7 @@ int mcp2515_receive(candev_mcp2515_t *dev, struct can_frame *frame, int mailbox)
         frame->can_id |= CAN_EFF_FLAG;
     }
 
-    /* standard id */
+    // standard id
     else {
         frame->can_id = ((uint32_t)inbuf[0] << 3) +
                         (((uint32_t)inbuf[1] & 0xE0) >> 5);
@@ -230,13 +213,11 @@ int mcp2515_receive(candev_mcp2515_t *dev, struct can_frame *frame, int mailbox)
     return mailbox;
 }
 
-int mcp2515_abort(candev_mcp2515_t *dev, int mailbox)
-{
+int mcp2515_abort(candev_mcp2515_t *dev, int mailbox) {
     return mcp2515_spi_bitmod(dev, MCP2515_TX_CTRL(mailbox), MCP2515_TXBCTRL_TXREQ, 0);
 }
 
-enum mcp2515_mode mcp2515_get_mode(candev_mcp2515_t *dev)
-{
+enum mcp2515_mode mcp2515_get_mode(candev_mcp2515_t *dev) {
     enum mcp2515_mode result = MODE_UNKNOWN;
     uint8_t mode;
 
@@ -252,8 +233,7 @@ enum mcp2515_mode mcp2515_get_mode(candev_mcp2515_t *dev)
 }
 
 enum mcp2515_mode mcp2515_set_mode(candev_mcp2515_t *dev,
-                                   enum mcp2515_mode mode)
-{
+                                   enum mcp2515_mode mode) {
     DEBUG("mcp2515_set_mode: mode=%x\n", mode);
 
     if (mode == MODE_UNKNOWN) {
@@ -273,15 +253,14 @@ enum mcp2515_mode mcp2515_set_mode(candev_mcp2515_t *dev,
                        (uint8_t)mode);
     int cnt = 0;
 
-    /* allow for two retries to set the mode */
+    // allow for two retries to set the mode
     while (cur_mode != mode && cnt++ < 2) {
         cur_mode = mcp2515_get_mode(dev);
     }
     return cur_mode;
 }
 
-void mcp2515_wake_up(candev_mcp2515_t *dev)
-{
+void mcp2515_wake_up(candev_mcp2515_t *dev) {
     dev->wakeup_src = MCP2515_WKUP_SRC_INTERNAL;
     mcp2515_spi_bitmod(dev, MCP2515_CANINTF, MCP2515_CANINTF_WAKIF,
                        MCP2515_CANINTF_WAKIF);
@@ -296,13 +275,11 @@ void mcp2515_wake_up(candev_mcp2515_t *dev)
     }
 }
 
-static int _mcp2515_enable_irq(candev_mcp2515_t *dev, uint8_t irq)
-{
+static int _mcp2515_enable_irq(candev_mcp2515_t *dev, uint8_t irq) {
     return mcp2515_spi_bitmod(dev, MCP2515_CANINTE, irq, irq);
 }
 
-int mcp2515_configure_bittiming(candev_mcp2515_t *dev)
-{
+int mcp2515_configure_bittiming(candev_mcp2515_t *dev) {
     struct can_bittiming *tim = &(dev->candev.bittiming);
     int res = 0;
     uint8_t c;
@@ -320,7 +297,7 @@ int mcp2515_configure_bittiming(candev_mcp2515_t *dev)
         }
     }
 
-    /* set Synchronization Jump Width Length */
+    // set Synchronization Jump Width Length
     c = ((tim->brp - 1) & 0x3F) | ((tim->sjw - 1) << 6);
     mcp2515_spi_write(dev, MCP2515_CNF1, &c, 1);
 
@@ -339,8 +316,7 @@ int mcp2515_configure_bittiming(candev_mcp2515_t *dev)
     return res;
 }
 
-int mcp2515_init_irqs(candev_mcp2515_t *dev)
-{
+int mcp2515_init_irqs(candev_mcp2515_t *dev) {
     return _mcp2515_enable_irq(dev,
                               MCP2515_CANINTE_RX0IE |
                               MCP2515_CANINTE_RX1IE |
@@ -348,17 +324,15 @@ int mcp2515_init_irqs(candev_mcp2515_t *dev)
                               MCP2515_CANINTE_WAKIE);
 }
 
-enum mcp2515_interrupt mcp2515_get_irq(candev_mcp2515_t *dev)
-{
+enum mcp2515_interrupt mcp2515_get_irq(candev_mcp2515_t *dev) {
     uint8_t flag;
 
     mcp2515_spi_read(dev, MCP2515_CANINTF, &flag, 1);
     return (enum mcp2515_interrupt)flag;
 }
 
-int mcp2515_clear_irq(candev_mcp2515_t *dev, enum mcp2515_interrupt irq)
-{
-    if (!irq) { /* no irq's to be cleared */
+int mcp2515_clear_irq(candev_mcp2515_t *dev, enum mcp2515_interrupt irq) {
+    if (!irq) { // no irq's to be cleared
         return 0;
     }
     else {
@@ -366,8 +340,7 @@ int mcp2515_clear_irq(candev_mcp2515_t *dev, enum mcp2515_interrupt irq)
     }
 }
 
-int mcp2515_tx_err_occurred(candev_mcp2515_t *dev, int mailbox)
-{
+int mcp2515_tx_err_occurred(candev_mcp2515_t *dev, int mailbox) {
     uint8_t ctrl_reg;
 
     mcp2515_spi_read(dev, MCP2515_TX_CTRL(mailbox), &ctrl_reg, 1);
@@ -379,16 +352,14 @@ int mcp2515_tx_err_occurred(candev_mcp2515_t *dev, int mailbox)
     }
 }
 
-uint8_t mcp2515_get_errors(candev_mcp2515_t *dev)
-{
+uint8_t mcp2515_get_errors(candev_mcp2515_t *dev) {
     uint8_t eflg;
 
     mcp2515_spi_read(dev, MCP2515_EFLG, &eflg, 1);
     return eflg;
 }
 
-int mcp2515_set_filter(candev_mcp2515_t *dev, int filter_id, uint32_t filter)
-{
+int mcp2515_set_filter(candev_mcp2515_t *dev, int filter_id, uint32_t filter) {
     uint8_t buf[4];
     uint8_t reg;
 
@@ -407,8 +378,7 @@ int mcp2515_set_filter(candev_mcp2515_t *dev, int filter_id, uint32_t filter)
     return mcp2515_spi_write(dev, reg, buf, sizeof(buf));
 }
 
-int mcp2515_set_mask(candev_mcp2515_t *dev, int mailbox, uint32_t mask)
-{
+int mcp2515_set_mask(candev_mcp2515_t *dev, int mailbox, uint32_t mask) {
     uint8_t buf[4];
 
     if ((mask & CAN_EFF_FLAG) == CAN_EFF_FLAG) {

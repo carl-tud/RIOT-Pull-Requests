@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test waking up a thread using thread flags from xtimer callback
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test waking up a thread using thread flags from xtimer callback
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -25,13 +21,11 @@
 #define REPEAT          (5U)
 #define RUNTIME         (TIMEOUT * REPEAT)
 
-static void time_evt(void *arg)
-{
+static void time_evt(void *arg) {
     thread_flags_set(arg, 0x1);
 }
 
-int main(void)
-{
+int main(void) {
     puts("START");
     xtimer_t timer;
     timer.callback = time_evt;
@@ -49,7 +43,7 @@ int main(void)
         printf("+++ timeout %2u +++\n", i);
     }
 
-    /* we consider the test successful, if the runtime was above 500ms */
+    // we consider the test successful, if the runtime was above 500ms
     uint32_t runtime = xtimer_now_usec() - last;
     if (runtime > RUNTIME) {
         puts("SUCCESS");

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_adc
- * @{
- *
- * @file
- * @brief       Low-level ADC driver implementation
- *
- * @author      Juergen Fitschen <me@jue.yt>
- *
- * @}
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_adc
+/// @{
+///
+/// @file
+/// @brief       Low-level ADC driver implementation
+///
+/// @author      Juergen Fitschen <me@jue.yt>
+///
+/// @}
 
 #include <assert.h>
 
@@ -31,22 +27,21 @@
 
 static mutex_t adc_lock[ADC_DEV_NUMOF];
 
-int adc_init(adc_t line)
-{
+int adc_init(adc_t line) {
     assert(line < ADC_NUMOF);
     uint8_t dev = adc_channel_config[line].dev;
     assert(dev < ADC_DEV_NUMOF);
 
-    /* initialize lock */
+    // initialize lock
     mutex_init(&adc_lock[dev]);
 
-    /* enable clock */
+    // enable clock
     CMU_ClockEnable(adc_config[dev].cmu, true);
 
-    /* make sure we're in a known state */
+    // make sure we're in a known state
     IADC_reset(adc_config[dev].dev);
 
-    /* init IADC periph */
+    // init IADC periph
     const IADC_Init_t init = IADC_INIT_DEFAULT;
     IADC_AllConfigs_t configs = { 0 };
     for (size_t i = 0; i < IADC0_CONFIGNUM; i++) {
@@ -63,13 +58,11 @@ int adc_init(adc_t line)
     return 0;
 }
 
-static inline GPIO_Port_TypeDef _port_num(gpio_t pin)
-{
+static inline GPIO_Port_TypeDef _port_num(gpio_t pin) {
     return ((pin & 0xf0) >> 4);
 }
 
-static inline uint8_t _pin_num(gpio_t pin)
-{
+static inline uint8_t _pin_num(gpio_t pin) {
     return (pin & 0x0f);
 }
 
@@ -90,28 +83,27 @@ static void _setup_abus(gpio_t pin) {
     }
 }
 
-int32_t adc_sample(adc_t line, adc_res_t res)
-{
+int32_t adc_sample(adc_t line, adc_res_t res) {
     assert(line < ADC_NUMOF);
     uint8_t dev = adc_channel_config[line].dev;
 
-    /* find config to given resolution */
+    // find config to given resolution
     uint8_t config;
     for (config = 0; config < IADC0_CONFIGNUM; config++) {
         if (adc_config[dev].available_res[config] == res) {
-            /* we found the corresponding config */
+            // we found the corresponding config
             break;
         }
     }
-    /* unsopported resolution */
+    // unsopported resolution
     if (config >= IADC0_CONFIGNUM) {
         return -1;
     }
 
-    /* lock device */
+    // lock device
     mutex_lock(&adc_lock[dev]);
 
-    /* setup channel and start sampling */
+    // setup channel and start sampling
     static const IADC_InitSingle_t init = {
         .alignment = iadcAlignRight20,
         .showId = false,
@@ -134,11 +126,11 @@ int32_t adc_sample(adc_t line, adc_res_t res)
 
     IADC_initSingle(adc_config[dev].dev, &init, &input);
 
-    /* wait for the conservation to provide the result in the fifo */
+    // wait for the conservation to provide the result in the fifo
     while ((IADC_getStatus(adc_config[dev].dev) & IADC_STATUS_SINGLEFIFODV) == 0) {}
     uint32_t result = IADC_pullSingleFifoData(adc_config[dev].dev);
 
-    /* unlock device */
+    // unlock device
     mutex_unlock(&adc_lock[dev]);
 
     return result >> (20 - ADC_MODE_RES(res));

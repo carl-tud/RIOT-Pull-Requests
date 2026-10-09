@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2016 MUTEX NZ Ltd
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 MUTEX NZ Ltd
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief   Auto initialization for the cc2538 network interface
- *
- * @author  Aaron Sowry <aaron@mutex.nz>
- */
+/// @ingroup sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief   Auto initialization for the cc2538 network interface
+///
+/// @author  Aaron Sowry <aaron@mutex.nz>
 
 #include "log.h"
 #include "net/gnrc/netif/ieee802154.h"
@@ -20,10 +16,8 @@
 #include "cc2538_rf.h"
 #include "net/netdev/ieee802154_submac.h"
 
-/**
- * @brief   Define stack parameters for the MAC layer thread
- * @{
- */
+/// @brief   Define stack parameters for the MAC layer thread
+/// @{
 #define CC2538_MAC_STACKSIZE       (IEEE802154_STACKSIZE_DEFAULT)
 #ifndef CC2538_MAC_PRIO
 #define CC2538_MAC_PRIO            (GNRC_NETIF_PRIO)
@@ -33,8 +27,7 @@ static netdev_ieee802154_submac_t cc2538_rf_netdev;
 static char _cc2538_rf_stack[CC2538_MAC_STACKSIZE];
 static gnrc_netif_t _netif;
 
-void auto_init_cc2538_rf(void)
-{
+void auto_init_cc2538_rf(void) {
     LOG_DEBUG("[auto_init_netif] initializing cc2538 radio\n");
 
     netdev_register(&cc2538_rf_netdev.dev.netdev, NETDEV_CC2538, 0);
@@ -47,4 +40,4 @@ void auto_init_cc2538_rf(void)
                                  CC2538_MAC_PRIO, "cc2538_rf",
                                  &cc2538_rf_netdev.dev.netdev);
 }
-/** @} */
+/// @}

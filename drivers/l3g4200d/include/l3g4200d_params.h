@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_l3g4200d
- *
- * @{
- * @file
- * @brief       Default configuration for L3G4200D devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_l3g4200d
+///
+/// @{
+/// @file
+/// @brief       Default configuration for L3G4200D devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "l3g4200d.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef L3G4200D_PARAM_I2C
 #define L3G4200D_PARAM_I2C          I2C_DEV(0)
 #endif
@@ -57,19 +51,15 @@ extern "C" {
 #ifndef L3G4200D_SAUL_INFO
 #define L3G4200D_SAUL_INFO          { .name = "l3g4200d" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const l3g4200d_params_t l3g4200d_params[] =
 {
     L3G4200D_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t l3g4200d_saul_info[] =
 {
     L3G4200D_SAUL_INFO
@@ -79,4 +69,4 @@ static const saul_reg_info_t l3g4200d_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

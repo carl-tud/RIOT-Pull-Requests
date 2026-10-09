@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the pointer tagging helpers
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the pointer tagging helpers
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <assert.h>
 #include <stdio.h>
@@ -26,17 +22,15 @@ typedef struct PTRTAG {
     uint8_t a;
 } custom_type_t;
 
-/* To rule out that custom type gets aligned by 4 bytes only by chance, we
- * allocate two subsequently. At least one would be unaligned, if the
- * alignment requirement is not increased to at least 4
- */
+// To rule out that custom type gets aligned by 4 bytes only by chance, we
+// allocate two subsequently. At least one would be unaligned, if the
+// alignment requirement is not increased to at least 4
 static custom_type_t a;
 static custom_type_t b;
 uint8_t PTRTAG c;
 uint8_t PTRTAG d;
 
-int main(void)
-{
+int main(void) {
     puts(
         "Test Application for sys/ptrtag\n"
         "=====================================\n"

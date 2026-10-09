@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Generic display device test application
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Generic display device test application
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -35,9 +31,8 @@
 #endif
 static uint16_t display_buffer[DISPLAY_BUFFER_MAX_SIZE] = { 0 };
 
-int main(void)
-{
-    /* Use the first screen */
+int main(void) {
+    // Use the first screen
     disp_dev_reg_t *disp_dev = disp_dev_reg_find_screen(0);
     if (!disp_dev) {
         puts("No screen found!");

@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_netdev_ieee802154
- * @{
- *
- * @file
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @ingroup     drivers_netdev_ieee802154
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -26,20 +22,19 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-void netdev_ieee802154_reset(netdev_ieee802154_t *dev)
-{
-    /* Only the least significant byte of the random value is used */
+void netdev_ieee802154_reset(netdev_ieee802154_t *dev) {
+    // Only the least significant byte of the random value is used
     dev->seq = random_uint32();
     dev->flags = 0;
 
-    /* set default protocol */
+    // set default protocol
 #ifdef MODULE_GNRC_SIXLOWPAN
     dev->proto = GNRC_NETTYPE_SIXLOWPAN;
 #elif MODULE_GNRC
     dev->proto = GNRC_NETTYPE_UNDEF;
 #endif
 
-    /* Initialize PAN ID and call netdev::set to propagate it */
+    // Initialize PAN ID and call netdev::set to propagate it
     dev->pan = CONFIG_IEEE802154_DEFAULT_PANID;
     dev->netdev.driver->set(&dev->netdev, NETOPT_NID, &dev->pan, sizeof(dev->pan));
 
@@ -50,8 +45,7 @@ void netdev_ieee802154_reset(netdev_ieee802154_t *dev)
 #endif
 }
 
-static inline uint16_t _get_ieee802154_pdu(netdev_ieee802154_t *dev)
-{
+static inline uint16_t _get_ieee802154_pdu(netdev_ieee802154_t *dev) {
 #if defined(MODULE_NETDEV_IEEE802154_MR_OQPSK) || \
     defined(MODULE_NETDEV_IEEE802154_MR_OFDM)  || \
     defined(MODULE_NETDEV_IEEE802154_MR_FSK)
@@ -81,11 +75,10 @@ static inline uint16_t _get_ieee802154_pdu(netdev_ieee802154_t *dev)
 }
 
 int netdev_ieee802154_get(netdev_ieee802154_t *dev, netopt_t opt, void *value,
-                           size_t max_len)
-{
+                           size_t max_len) {
     int res = -ENOTSUP;
 
-    (void)max_len;  /* only used in assert() */
+    (void)max_len;  // only used in assert()
     switch (opt) {
         case NETOPT_ADDRESS:
             assert(max_len >= sizeof(dev->short_addr));
@@ -129,7 +122,7 @@ int netdev_ieee802154_get(netdev_ieee802154_t *dev, netopt_t opt, void *value,
             }
             res = sizeof(netopt_enable_t);
             break;
-#endif /* IS_USED(MODULE_IEEE802154_SECURITY) */
+#endif // IS_USED(MODULE_IEEE802154_SECURITY)
         case NETOPT_ACK_REQ:
             assert(max_len == sizeof(netopt_enable_t));
             if (dev->flags & NETDEV_IEEE802154_ACK_REQ) {
@@ -176,7 +169,7 @@ int netdev_ieee802154_get(netdev_ieee802154_t *dev, netopt_t opt, void *value,
                                     - IEEE802154_MAX_HDR_LEN)
 #if IS_USED(MODULE_IEEE802154_SECURITY)
                                     -IEEE802154_SEC_MAX_AUX_HDR_LEN
-#endif /* IS_USED(MODULE_IEEE802154_SECURITY) */
+#endif // IS_USED(MODULE_IEEE802154_SECURITY)
                                     - IEEE802154_FCS_LEN;
             res = sizeof(uint16_t);
             break;
@@ -187,8 +180,7 @@ int netdev_ieee802154_get(netdev_ieee802154_t *dev, netopt_t opt, void *value,
 }
 
 int netdev_ieee802154_set(netdev_ieee802154_t *dev, netopt_t opt, const void *value,
-                           size_t len)
-{
+                           size_t len) {
     int res = -ENOTSUP;
 
     switch (opt) {
@@ -196,9 +188,9 @@ int netdev_ieee802154_set(netdev_ieee802154_t *dev, netopt_t opt, const void *va
         {
             assert(len == sizeof(uint16_t));
             uint16_t chan = *((uint16_t *)value);
-            /* real validity needs to be checked by device, since sub-GHz and
-             * 2.4 GHz band radios have different legal values. Here we only
-             * check that it fits in an 8-bit variable */
+            // real validity needs to be checked by device, since sub-GHz and
+            // 2.4 GHz band radios have different legal values. Here we only
+            // check that it fits in an 8-bit variable
             assert(chan <= UINT8_MAX);
             dev->chan = chan;
             res = sizeof(uint16_t);
@@ -251,14 +243,14 @@ int netdev_ieee802154_set(netdev_ieee802154_t *dev, netopt_t opt, const void *va
         case NETOPT_ENCRYPTION_KEY:
             assert(len >= IEEE802154_SEC_KEY_LENGTH);
             if (memcmp(dev->sec_ctx.cipher.context.context, value, len)) {
-                /* If the key changes, the frame counter can be reset to 0*/
+                // If the key changes, the frame counter can be reset to 0
                 dev->sec_ctx.frame_counter = 0;
             }
             memcpy(dev->sec_ctx.cipher.context.context, value,
                    IEEE802154_SEC_KEY_LENGTH);
             res = IEEE802154_SEC_KEY_LENGTH;
             break;
-#endif /* IS_USED(MODULE_IEEE802154_SECURITY) */
+#endif // IS_USED(MODULE_IEEE802154_SECURITY)
         case NETOPT_ACK_REQ:
             if ((*(bool *)value)) {
                 dev->flags |= NETDEV_IEEE802154_ACK_REQ;
@@ -297,4 +289,4 @@ int netdev_ieee802154_set(netdev_ieee802154_t *dev, netopt_t opt, const void *va
     }
     return res;
 }
-/** @} */
+/// @}

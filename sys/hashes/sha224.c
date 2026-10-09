@@ -1,31 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_hashes
- *
- * @{
- * @file
- * @brief       SHA224 hash function implementation
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     sys_hashes
+///
+/// @{
+/// @file
+/// @brief       SHA224 hash function implementation
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+///
+/// @}
 
 #include <assert.h>
 
 #include "hashes/sha224.h"
 
-/* SHA-224 initialization.  Begins a SHA-224 operation. */
-void sha224_init(sha224_context_t *ctx)
-{
-    /* Zero bits processed so far */
+// SHA-224 initialization.  Begins a SHA-224 operation.
+void sha224_init(sha224_context_t *ctx) {
+    // Zero bits processed so far
     ctx->count[0] = ctx->count[1] = 0;
 
-    /* Magic initialization constants */
+    // Magic initialization constants
     ctx->state[0] = 0xC1059ED8;
     ctx->state[1] = 0x367CD507;
     ctx->state[2] = 0x3070DD17;
@@ -36,8 +31,7 @@ void sha224_init(sha224_context_t *ctx)
     ctx->state[7] = 0xBEFA4FA4;
 }
 
-void sha224(const void *data, size_t len, void *digest)
-{
+void sha224(const void *data, size_t len, void *digest) {
     sha224_context_t c;
     assert(digest);
 

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   Test application for the WS281x RGB LED driver
- *
- * @author  Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   Test application for the WS281x RGB LED driver
+///
+/// @author  Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -33,8 +29,7 @@ static const ws281x_pixel_t rainbow[] = {
 
 #define RAINBOW_LEN     ARRAY_SIZE(rainbow)
 
-int main(void)
-{
+int main(void) {
     ws281x_t dev;
     int retval;
 
@@ -102,7 +97,7 @@ int main(void)
         }
         ws281x_end_transmission(&dev);
 
-        /* wait some time to allow testers to verify the result */
+        // wait some time to allow testers to verify the result
         xtimer_sleep(5);
     }
 

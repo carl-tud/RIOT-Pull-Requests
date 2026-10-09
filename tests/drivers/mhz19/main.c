@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
- * SPDX-FileCopyrightText: 2018 Beduino Master Projekt - University of Bremen
- * SPDX-FileCopyrightText: 2020 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Koen Zandberg <koen@bergzand.net>
+// SPDX-FileCopyrightText: 2018 Beduino Master Projekt - University of Bremen
+// SPDX-FileCopyrightText: 2020 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the MH-Z19 sensor driver
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- * @author      Christian Manal <manal@uni-bremen.de>
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the MH-Z19 sensor driver
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+/// @author      Christian Manal <manal@uni-bremen.de>
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #define TEST_MODE_UART 1
 #define TEST_MODE_PWM 2
@@ -31,8 +27,7 @@
 #include "mhz19.h"
 #include "mhz19_params.h"
 
-int main(void)
-{
+int main(void) {
     mhz19_t dev;
 
 #if TEST_MODE == TEST_MODE_UART
@@ -44,7 +39,7 @@ int main(void)
 
     puts("MH-Z19 CO2 sensor test application\n");
 
-    /* initialize the sensor */
+    // initialize the sensor
 #if TEST_MODE == TEST_MODE_UART
     printf("Initializing sensor in UART mode...");
 #endif
@@ -60,7 +55,7 @@ int main(void)
         return 1;
     }
 
-    /* read CO2 level every 1 seconds */
+    // read CO2 level every 1 seconds
     int16_t ppm;
     while (1) {
         printf("Testing sensor communication...");
@@ -72,10 +67,10 @@ int main(void)
             printf("[Failed]: %d\n", res);
         }
 
-        /* display results */
+        // display results
         printf("CO2: %d ppm\n", ppm);
 
-        /* sleep between measurements */
+        // sleep between measurements
         ztimer_sleep(ZTIMER_MSEC, 1000);
     }
 

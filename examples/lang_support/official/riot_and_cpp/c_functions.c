@@ -1,39 +1,33 @@
-/*
- * SPDX-FileCopyrightText: 2014 Ho Chi Minh city University of Technology (HCMUT)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Ho Chi Minh city University of Technology (HCMUT)
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Some functions implementation in C.
- *
- * @author      DangNhat Pham-Huu <51002279@hcmut.edu.vn>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Some functions implementation in C.
+///
+/// @author      DangNhat Pham-Huu <51002279@hcmut.edu.vn>
+///
+/// @}
 
 #include "c_functions.h"
 
 #define IS_LEAP_YEAR(year) ((year%4 == 0) ? ((year%100 == 0) ? ((year%400 == 0) ? 1 : 0) : 1): 0)
 
-int hello(void)
-{
+int hello(void) {
     puts("Hello world in a C function");
 
     return 0;
 }
 
-int day_of_week(int day, int month, int year)
-{
+int day_of_week(int day, int month, int year) {
     int count, sum_of_days;
 
-    /* 1/1/2000 is Saturday */
+    // 1/1/2000 is Saturday
     int first_day = 6;
 
-    /* check input date */
+    // check input date
     if (year < 2000) {
         printf("Sorry buddy, your date should be >= 1/1/2000!\n");
         return -1;
@@ -67,7 +61,7 @@ int day_of_week(int day, int month, int year)
         }
     }
 
-    /* date is okay, convert... */
+    // date is okay, convert...
     sum_of_days = 0;
 
     for (count = 2000; count < year; count++) {

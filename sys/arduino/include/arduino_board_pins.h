@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     sys_arduino
- * @{
- *
- * @file
- * @brief       Arduino digital pin map
- *
- * @note        The contents of this file are mostly generated using the
- *              python snippets documented. Do not edit these parts by hand,
- *              but rather adjust the python snippets and regenerate.
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- */
+/// @ingroup     sys_arduino
+/// @{
+///
+/// @file
+/// @brief       Arduino digital pin map
+///
+/// @note        The contents of this file are mostly generated using the
+///              python snippets documented. Do not edit these parts by hand,
+///              but rather adjust the python snippets and regenerate.
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
 
 #include "arduino_iomap.h"
 #include "periph/gpio.h"
@@ -27,20 +23,16 @@ extern "C" {
 #endif
 
 #ifdef DOXYGEN
-/**
- * @brief   The digital pin connected to the LED
- *
- * E.g. 13 when LED is connected to D13.
- */
-#define ARDUINO_LED             /* board specific number */
+/// @brief   The digital pin connected to the LED
+///
+/// E.g. 13 when LED is connected to D13.
+#define ARDUINO_LED             // board specific number
 
-/**
- * @brief   Number of the last digital pin
- *
- * E.g. 42 if D42 is the digital pin with the highest number.
- */
-#define ARDUINO_PIN_LAST        /* board specific number */
-#endif /* DOXYGEN */
+/// @brief   Number of the last digital pin
+///
+/// E.g. 42 if D42 is the digital pin with the highest number.
+#define ARDUINO_PIN_LAST        // board specific number
+#endif // DOXYGEN
 
 #if !defined(ARDUINO_LED) && !defined(DOXYGEN)
 #define ARDUINO_LED         (13)
@@ -50,25 +42,23 @@ extern "C" {
 #  error "ARDUINO_PIN_LAST undefined"
 #endif
 
-/**
- * @brief   Look-up table for the Arduino's digital pins:
- *
- * Generate using
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.py}
- * format = """#ifdef ARDUINO_PIN_{0:}
- *     ARDUINO_PIN_{0:},
- * #elif ARDUINO_PIN_LAST > {0:}
- *     GPIO_UNDEF,
- * #endif"""
- * for i in range(70):
- *     print(format.format(i))
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- * The Arduino MEGA2560 has D0 to D69, so 70 digital pins is the largest
- * Arduino form factor there is.
- */
+/// @brief   Look-up table for the Arduino's digital pins:
+///
+/// Generate using
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.py}
+/// format = """#ifdef ARDUINO_PIN_{0:}
+///     ARDUINO_PIN_{0:},
+/// #elif ARDUINO_PIN_LAST > {0:}
+///     GPIO_UNDEF,
+/// #endif"""
+/// for i in range(70):
+///     print(format.format(i))
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// The Arduino MEGA2560 has D0 to D69, so 70 digital pins is the largest
+/// Arduino form factor there is.
 static const gpio_t arduino_pinmap[] = {
 #ifndef DOXYGEN
 #ifdef ARDUINO_PIN_0
@@ -421,11 +411,11 @@ static const gpio_t arduino_pinmap[] = {
 #elif ARDUINO_PIN_LAST > 69
     GPIO_UNDEF,
 #endif
-#endif /* DOXYGEN */
+#endif // DOXYGEN
 };
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

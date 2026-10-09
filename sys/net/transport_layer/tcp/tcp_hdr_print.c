@@ -1,24 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_tcp
- * @{
- *
- * @file
- *
- * @author smlng <s@mlng.net>
- */
+/// @ingroup     net_tcp
+/// @{
+///
+/// @file
+///
+/// @author smlng <s@mlng.net>
 
 #include <stdio.h>
 #include <inttypes.h>
 
 #include "net/tcp.h"
 
-void tcp_hdr_print(tcp_hdr_t *hdr)
-{
+void tcp_hdr_print(tcp_hdr_t *hdr) {
     printf("   src-port: %5" PRIu16 "  dst-port: %5" PRIu16 "\n",
            byteorder_ntohs(hdr->src_port), byteorder_ntohs(hdr->dst_port));
     printf("   seq-num: %10" PRIu32 "  ack-num: %10" PRIu32 "\n",
@@ -28,4 +23,4 @@ void tcp_hdr_print(tcp_hdr_t *hdr)
     printf("   cksum: 0x%04" PRIx16 "  urgent_ptr: %5" PRIu16 "\n",
            byteorder_ntohs(hdr->checksum), byteorder_ntohs(hdr->urgent_ptr));
 }
-/** @} */
+/// @}

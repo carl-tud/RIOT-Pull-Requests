@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_common_silabs
- * @{
- *
- * @file
- * @brief       Implementations of the common board features.
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     boards_common_silabs
+/// @{
+///
+/// @file
+/// @brief       Implementations of the common board features.
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include "board_common.h"
 
@@ -27,25 +23,24 @@
 #include "pic.h"
 #endif
 
-void board_common_init(void)
-{
-    /* initialize the advanced energy monitor */
+void board_common_init(void) {
+    // initialize the advanced energy monitor
 #ifdef MODULE_SILABS_AEM
     aem_init();
 #endif
 
-    /* initialize the board controller (to enable serial output) */
+    // initialize the board controller (to enable serial output)
 #ifdef MODULE_SILABS_BC
     bc_init();
 #endif
 
-    /* initialize the push buttons */
+    // initialize the push buttons
     gpio_init(PB0_PIN, GPIO_IN);
 #ifdef PB1_PIN
     gpio_init(PB1_PIN, GPIO_IN);
 #endif
 
-    /* enable power and interrupt controller (for sensors) */
+    // enable power and interrupt controller (for sensors)
 #ifdef MODULE_SILABS_PIC
     pic_init();
 #endif

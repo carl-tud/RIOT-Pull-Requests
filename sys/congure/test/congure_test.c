@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine S. Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine S. Lenders <m.lenders@fu-berlin.de>
 
 #include <limits.h>
 #include <stdbool.h>
@@ -24,8 +20,7 @@ static congure_snd_msg_t _msgs_pool[CONFIG_CONGURE_TEST_LOST_MSG_POOL_SIZE];
 static unsigned _msgs_pool_idx;
 static clist_node_t _msgs;
 
-static bool _scn_u32_dec_with_zero(const char *str, size_t n, uint32_t *res)
-{
+static bool _scn_u32_dec_with_zero(const char *str, size_t n, uint32_t *res) {
     if ((n == 1) && str[0] == '0') {
         *res = 0;
     }
@@ -35,8 +30,7 @@ static bool _scn_u32_dec_with_zero(const char *str, size_t n, uint32_t *res)
     return true;
 }
 
-int congure_test_clear_state(int argc, char **argv)
-{
+int congure_test_clear_state(int argc, char **argv) {
     memset(congure_test_get_state(), 0, sizeof(congure_test_snd_t));
     congure_test_msgs_reset(argc, argv);
     return 0;
@@ -45,8 +39,7 @@ int congure_test_clear_state(int argc, char **argv)
 SHELL_COMMAND(cong_clear, "Clears CongURE state object",
         congure_test_clear_state);
 
-int congure_test_call_setup(int argc, char **argv)
-{
+int congure_test_call_setup(int argc, char **argv) {
     congure_test_snd_t *c = congure_test_get_state();
     uint32_t id = 0;
 
@@ -74,8 +67,7 @@ SHELL_COMMAND(cong_setup,
         "Calls the setup function for the CongURE state object",
         congure_test_call_setup);
 
-static inline bool _check_driver(congure_test_snd_t *c)
-{
+static inline bool _check_driver(congure_test_snd_t *c) {
     if (c->super.driver == NULL) {
         print_str("{\"error\":\"State object not set up\"}\n");
         return false;
@@ -83,8 +75,7 @@ static inline bool _check_driver(congure_test_snd_t *c)
     return true;
 }
 
-int congure_test_call_init(int argc, char **argv)
-{
+int congure_test_call_init(int argc, char **argv) {
     congure_test_snd_t *c = congure_test_get_state();
     uint32_t ctx;
     size_t arglen;
@@ -110,8 +101,7 @@ int congure_test_call_init(int argc, char **argv)
 SHELL_COMMAND(cong_init, "Calls init method of the CongURE state object",
         congure_test_call_init);
 
-int congure_test_call_inter_msg_interval(int argc, char **argv)
-{
+int congure_test_call_inter_msg_interval(int argc, char **argv) {
     congure_test_snd_t *c = congure_test_get_state();
     uint32_t msg_size;
     int32_t res;
@@ -140,8 +130,7 @@ SHELL_COMMAND(cong_imi,
         "Calls inter_message_interval method of the CongURE state object",
         congure_test_call_inter_msg_interval);
 
-int congure_test_add_msg(int argc, char **argv)
-{
+int congure_test_add_msg(int argc, char **argv) {
     uint32_t tmp;
 
     if (argc < 4) {
@@ -185,8 +174,7 @@ SHELL_COMMAND(cong_add_msg,
         "report_msgs_lost or report_msgs_timeout",
         congure_test_add_msg);
 
-int congure_test_msgs_reset(int argc, char **argv)
-{
+int congure_test_msgs_reset(int argc, char **argv) {
     (void)argc;
     (void)argv;
     _msgs.next = NULL;
@@ -200,8 +188,7 @@ SHELL_COMMAND(cong_msgs_reset,
         "report_msgs_timeout",
         congure_test_msgs_reset);
 
-static int _call_report_msg_sent(int argc, char **argv)
-{
+static int _call_report_msg_sent(int argc, char **argv) {
     congure_test_snd_t *c = congure_test_get_state();
     uint32_t msg_size;
 
@@ -218,8 +205,7 @@ static int _call_report_msg_sent(int argc, char **argv)
     return 0;
 }
 
-static int _call_report_msg_discarded(int argc, char **argv)
-{
+static int _call_report_msg_discarded(int argc, char **argv) {
     congure_test_snd_t *c = congure_test_get_state();
     uint32_t msg_size;
 
@@ -237,8 +223,7 @@ static int _call_report_msg_discarded(int argc, char **argv)
 }
 
 static int _call_report_msgs_timeout_lost(void (*method)(congure_snd_t *,
-                                                         congure_snd_msg_t *))
-{
+                                                         congure_snd_msg_t *)) {
     congure_test_snd_t *c = congure_test_get_state();
 
     if (_msgs.next == NULL) {
@@ -250,8 +235,7 @@ static int _call_report_msgs_timeout_lost(void (*method)(congure_snd_t *,
     return 0;
 }
 
-static int _call_report_msgs_timeout(int argc, char **argv)
-{
+static int _call_report_msgs_timeout(int argc, char **argv) {
     congure_test_snd_t *c = congure_test_get_state();
 
     (void)argc;
@@ -259,8 +243,7 @@ static int _call_report_msgs_timeout(int argc, char **argv)
     return _call_report_msgs_timeout_lost(c->super.driver->report_msgs_timeout);
 }
 
-static int _call_report_msgs_lost(int argc, char **argv)
-{
+static int _call_report_msgs_lost(int argc, char **argv) {
     congure_test_snd_t *c = congure_test_get_state();
 
     (void)argc;
@@ -268,8 +251,7 @@ static int _call_report_msgs_lost(int argc, char **argv)
     return _call_report_msgs_timeout_lost(c->super.driver->report_msgs_lost);
 }
 
-static int _call_report_msg_acked(int argc, char **argv)
-{
+static int _call_report_msg_acked(int argc, char **argv) {
     static congure_snd_ack_t ack = { .size = 0 };
     congure_test_snd_t *c = congure_test_get_state();
     uint32_t tmp;
@@ -334,8 +316,7 @@ static int _call_report_msg_acked(int argc, char **argv)
     return 0;
 }
 
-static int _call_report_ecn_ce(int argc, char **argv)
-{
+static int _call_report_ecn_ce(int argc, char **argv) {
     congure_test_snd_t *c = congure_test_get_state();
     uint32_t time;
 
@@ -352,8 +333,7 @@ static int _call_report_ecn_ce(int argc, char **argv)
     return 0;
 }
 
-int congure_test_call_report(int argc, char **argv)
-{
+int congure_test_call_report(int argc, char **argv) {
     if (!_check_driver(congure_test_get_state())) {
         return 1;
     }
@@ -389,4 +369,4 @@ SHELL_COMMAND(cong_report,
         "Calls a report_* method of the CongURE state object",
         congure_test_call_report);
 
-/** @} */
+/// @}

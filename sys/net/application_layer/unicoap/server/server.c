@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2026 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2026 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2026 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup net_unicoap_server
- * @brief   Server implementation
- * @author  Carl <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @ingroup net_unicoap_server
+/// @brief   Server implementation
+/// @author  Carl <carl.seifert@tu-dresden.de>
 
 #include <string.h>
 
@@ -25,8 +21,7 @@
 int unicoap_resource_match_request_default(const unicoap_listener_t* listener,
                                            const unicoap_resource_t** resource,
                                            const unicoap_message_t* request,
-                                           const unicoap_endpoint_t* endpoint)
-{
+                                           const unicoap_endpoint_t* endpoint) {
     assert(listener);
     assert(resource);
     assert(request);
@@ -46,16 +41,16 @@ int unicoap_resource_match_request_default(const unicoap_listener_t* listener,
 
         if (!unicoap_resource_match_path_options(*resource,
                                                  (const unicoap_options_t*)request->options)) {
-            /* URI mismatch */
+            // URI mismatch
             continue;
         }
 
-        /* potential match, check for method */
+        // potential match, check for method
         if (!unicoap_resource_match_method((*resource)->methods,
                                            unicoap_request_get_method(request))) {
-            /* record wrong method error for next iteration, in case
-             * another resource with the same URI and correct method
-             * exists */
+            // record wrong method error for next iteration, in case
+            // another resource with the same URI and correct method
+            // exists
             res = UNICOAP_STATUS_METHOD_NOT_ALLOWED;
             continue;
         }
@@ -67,10 +62,9 @@ int unicoap_resource_match_request_default(const unicoap_listener_t* listener,
 }
 
 ssize_t unicoap_resource_encode_link(const unicoap_resource_t* resource, char* buffer,
-                                     size_t capacity, unicoap_link_encoder_ctx_t* context)
-{
+                                     size_t capacity, unicoap_link_encoder_ctx_t* context) {
     assert(buffer);
-    /* count target separators and any link separator, path is at least one character (`/`) */
+    // count target separators and any link separator, path is at least one character (`/`)
     size_t exp_size = 2 + (context->uninitialized ? 0 : 1);
 
     unsigned int pos = 0;
@@ -92,13 +86,10 @@ ssize_t unicoap_resource_encode_link(const unicoap_resource_t* resource, char* b
     return exp_size + res;
 }
 
-/**
- * @brief Handler for `/.well-known/core`. Lists registered handlers, except for
- * `/.well-known/core` itself.
- */
+/// @brief Handler for `/.well-known/core`. Lists registered handlers, except for
+/// `/.well-known/core` itself.
 int unicoap_resource_handle_well_known_core(unicoap_message_t* message, const unicoap_aux_t* aux,
-                                            unicoap_request_context_t* ctx, void* arg)
-{
+                                            unicoap_request_context_t* ctx, void* arg) {
     (void)arg;
     UNICOAP_OPTIONS_ALLOC(options, 2);
     if (unicoap_options_set_content_format(&options, UNICOAP_FORMAT_LINK) < 0) {
@@ -113,8 +104,7 @@ int unicoap_resource_handle_well_known_core(unicoap_message_t* message, const un
     return unicoap_send_response(message, ctx);
 }
 
-int unicoap_server_process_request(unicoap_packet_t* packet, const unicoap_resource_t* resource)
-{
+int unicoap_server_process_request(unicoap_packet_t* packet, const unicoap_resource_t* resource) {
     assert(packet);
     assert(packet->remote);
     int res = 0;
@@ -151,14 +141,14 @@ int unicoap_server_process_request(unicoap_packet_t* packet, const unicoap_resou
         return unicoap_server_send_response_body(packet, resource);
     }
     else if (context._packet) {
-        /* application didn't send a response or deferred response,
-         * otherwise, _packet would be NULL here */
+        // application didn't send a response or deferred response,
+        // otherwise, _packet would be NULL here
         if (res != UNICOAP_IGNORING_REQUEST) {
-            /* handler does not want to send response (provided No-Response is set at all) */
-            /* the decision whether to honour No-Response must be made by the handler */
+            // handler does not want to send response (provided No-Response is set at all)
+            // the decision whether to honour No-Response must be made by the handler
 
             if (res >= 0) {
-                /* Handler did not fail but did not send response. */
+                // Handler did not fail but did not send response.
                 unicoap_assist(API_MISUSE("handler did not respond")
                                FIXIT("set USEMODULE += unicoap_deferred_response and"
                                      "call unicoap_defer_response")
@@ -169,7 +159,7 @@ int unicoap_server_process_request(unicoap_packet_t* packet, const unicoap_resou
             goto error;
         }
 
-        /* TODO: Advanced server features: Free exchange-layer state */
+        // TODO: Advanced server features: Free exchange-layer state
         return 0;
     }
     return 0;
@@ -179,16 +169,13 @@ error:
         return res;
     }
 
-    /* TODO: Advanced server features: Free exchange-layer state */
+    // TODO: Advanced server features: Free exchange-layer state
     return 0;
 }
 
-/**
- * @brief Common function for @ref unicoap_send_response and @ref unicoap_send_response_deferred
- */
+/// @brief Common function for @ref unicoap_send_response and @ref unicoap_send_response_deferred
 int unicoap_server_send_response_body(unicoap_packet_t* packet,
-                                      const unicoap_resource_t* resource)
-{
+                                      const unicoap_resource_t* resource) {
     int res = 0;
     if ((res = unicoap_messaging_send(packet, _messaging_flags_resource(resource->flags))) < 0) {
         _SERVER_DEBUG("error: could not send response\n");
@@ -197,12 +184,11 @@ int unicoap_server_send_response_body(unicoap_packet_t* packet,
     return 0;
 
 error:
-    /* TODO: Client and advanced server features: free allocated state */
+    // TODO: Client and advanced server features: free allocated state
     return res;
 }
 
-int unicoap_send_response(unicoap_message_t* response, unicoap_request_context_t* context)
-{
+int unicoap_send_response(unicoap_message_t* response, unicoap_request_context_t* context) {
     assert(response);
     assert(context);
     assert(context->resource);
@@ -217,14 +203,14 @@ int unicoap_send_response(unicoap_message_t* response, unicoap_request_context_t
     assert(context->_packet);
     _SERVER_DEBUG("sending immediate response\n");
 
-    /* reuse the packet, stack-allocated, we're still inside resource handler */
+    // reuse the packet, stack-allocated, we're still inside resource handler
     ((unicoap_packet_t*)context->_packet)->message = response;
     int res = unicoap_server_send_response_body((unicoap_packet_t*)context->_packet,
                                                 context->resource);
 
-    /* prevent context from being used for sending a response again.
-     * If sending response on lower layer fails, then res < 0,
-     * and allow calling send_response again to retry. Otherwise prevent calling again. */
+    // prevent context from being used for sending a response again.
+    // If sending response on lower layer fails, then res < 0,
+    // and allow calling send_response again to retry. Otherwise prevent calling again.
     if (res >= 0) {
         context->_packet = NULL;
     }

@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2017 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_kinetis
- * @brief           CPU specific implementations for the NXP Kinetis K series of
- *                  Cortex-M MCUs
- * @{
- *
- * @file
- * @brief           Implementation specific CPU configuration options
- *
- * @author          Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @ingroup         cpu_kinetis
+/// @brief           CPU specific implementations for the NXP Kinetis K series of
+///                  Cortex-M MCUs
+/// @{
+///
+/// @file
+/// @brief           Implementation specific CPU configuration options
+///
+/// @author          Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #if (KINETIS_FAMILY == 2)
 #if (KINETIS_SUBFAMILY == 2)
-/* Kinetis K22 */
+// Kinetis K22
 #if defined(CPU_MODEL_MK22FX512VLH12) || \
     defined(CPU_MODEL_MK22FN1M0VLH12) || \
     defined(CPU_MODEL_MK22FX512VLK12) || \
@@ -82,7 +78,7 @@
     defined(CPU_MODEL_MK20DX256VML7)
 #include "vendor/MK20D7.h"
 #endif
-#endif /* (KINETIS_SUBFAMILY == y) */
+#endif // (KINETIS_SUBFAMILY == y)
 #elif (KINETIS_FAMILY == 6)
 #if (KINETIS_SUBFAMILY == 0)
 #if defined(CPU_MODEL_MK60DN256VLL10) || \
@@ -99,9 +95,7 @@
     defined(CPU_MODEL_MK60DX256VMD10)
 #include "vendor/MK60D10.h"
 #endif
-/**
- * @brief This CPU provides an additional ADC clock divider as CFG1[ADICLK]=1
- */
+/// @brief This CPU provides an additional ADC clock divider as CFG1[ADICLK]=1
 #define KINETIS_HAVE_ADICLK_BUS_DIV_2 1
 
 #elif (KINETIS_SUBFAMILY == 4)
@@ -116,39 +110,34 @@
     defined(CPU_MODEL_MK64FX512VMD12)
 #include "vendor/MK64F12.h"
 
-/**
- * @name Hardware random number generator module configuration
- *
- *       For K64F SCG3 or SCG6 can be used depending on if the
- *       peripheral is accessed through AIPS-lite0 or AIPS-lite1.
- *       For K64F RNGA is only mapped to SCG6.
- * @{
- */
+/// @name Hardware random number generator module configuration
+///
+///       For K64F SCG3 or SCG6 can be used depending on if the
+///       peripheral is accessed through AIPS-lite0 or AIPS-lite1.
+///       For K64F RNGA is only mapped to SCG6.
+/// @{
 #define HWRNG_CLK_REG           (SIM->SCGC6)
 #define HWRNG_CLK_REG_SHIFT     (SIM_SCGC6_RNGA_SHIFT)
-/** @} */
+/// @}
 
 #endif
-#endif /* (KINETIS_SUBFAMILY == y) */
-#endif /* (KINETIS_FAMILY == x) */
+#endif // (KINETIS_SUBFAMILY == y)
+#endif // (KINETIS_FAMILY == x)
 
-/**
- * @name   Flashpage configuration
- * @{
- */
+/// @name   Flashpage configuration
+/// @{
 #define FLASHPAGE_SIZE      (4096U)
 #define FLASHPAGE_NUMOF     ((KINETIS_ROMSIZE * 1024) / FLASHPAGE_SIZE)
 
-/* The minimum block size which can be written is 8B (Phrase). However, the
- * erase block is always FLASHPAGE_SIZE.
- */
+// The minimum block size which can be written is 8B (Phrase). However, the
+// erase block is always FLASHPAGE_SIZE.
 #define FLASHPAGE_BLOCK_PHRASE              (8U)
 #define FLASHPAGE_WRITE_BLOCK_SIZE          FLASHPAGE_BLOCK_PHRASE
-/* Writing should be always 8 bytes aligned */
+// Writing should be always 8 bytes aligned
 #define FLASHPAGE_WRITE_BLOCK_ALIGNMENT     FLASHPAGE_BLOCK_PHRASE
-/* Section erase and programming must be 16 bytes aligned */
+// Section erase and programming must be 16 bytes aligned
 #define FLASHPAGE_BLOCK_SECTION_ALIGNMENT   (16U)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 extern "C"
@@ -159,4 +148,4 @@ extern "C"
 }
 #endif
 
-/** @} */
+/// @}

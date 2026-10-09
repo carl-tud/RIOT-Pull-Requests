@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_EMBUNIT_CONFIG_H
 #define EMBUNIT_EMBUNIT_CONFIG_H
 
@@ -9,7 +7,7 @@
 extern "C" {
 #endif
 
-/*  #define NO_STDIO_PRINTF*/
+// #define NO_STDIO_PRINTF
     #ifdef  NO_STDIO_PRINTF
         extern void stdimpl_print(const char *string);
     #else
@@ -23,4 +21,4 @@ extern "C" {
 }
 #endif
 
-#endif /* EMBUNIT_EMBUNIT_CONFIG_H */
+#endif // EMBUNIT_EMBUNIT_CONFIG_H

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for peripheral ADC drivers
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for peripheral ADC drivers
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -23,15 +19,14 @@
 #define RES             ADC_RES_10BIT
 #define DELAY_MS        100U
 
-int main(void)
-{
+int main(void) {
     int sample = 0;
 
     puts("\nRIOT ADC peripheral driver test\n");
     puts("This test will sample all available ADC lines once every 100ms with\n"
          "a 10-bit resolution and print the sampled results to STDIO\n\n");
 
-    /* initialize all available ADC lines */
+    // initialize all available ADC lines
     for (unsigned i = 0; i < ADC_NUMOF; i++) {
         if (adc_init(ADC_LINE(i)) < 0) {
             printf("Initialization of ADC_LINE(%u) failed\n", i);

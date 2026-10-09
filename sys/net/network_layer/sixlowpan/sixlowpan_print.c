@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include <stdio.h>
 
@@ -15,12 +11,11 @@
 #include "net/ipv6/hdr.h"
 #include "net/sixlowpan.h"
 
-void sixlowpan_print(uint8_t *data, size_t size)
-{
+void sixlowpan_print(uint8_t *data, size_t size) {
     if (data[0] == SIXLOWPAN_UNCOMP) {
         printf("Uncompressed IPv6 packet\n");
 
-        /* might just be the dispatch (or fragmented) so better check */
+        // might just be the dispatch (or fragmented) so better check
         if (size > sizeof(ipv6_hdr_t)) {
             ipv6_hdr_print((ipv6_hdr_t *)(data + 1));
             od_hex_dump(data + sizeof(ipv6_hdr_t) + 1,
@@ -40,7 +35,7 @@ void sixlowpan_print(uint8_t *data, size_t size)
                (byteorder_ntohs(hdr->disp_size) & SIXLOWPAN_FRAG_SIZE_MASK));
         printf("tag: 0x%04x\n", byteorder_ntohs(hdr->tag));
 
-        /* Print next dispatch */
+        // Print next dispatch
         sixlowpan_print(data + sizeof(sixlowpan_frag_t),
                            size - sizeof(sixlowpan_frag_t));
     }
@@ -243,4 +238,4 @@ void sixlowpan_print(uint8_t *data, size_t size)
     }
 }
 
-/** @} */
+/// @}

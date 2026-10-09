@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_native
- *
- * The native boards use call level hardware simulation
- *
- * @{
- *
- * @file
- * @brief       Basic definitions for the native boards
- *
- * @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- */
+/// @ingroup     boards_common_native
+///
+/// The native boards use call level hardware simulation
+///
+/// @{
+///
+/// @file
+/// @brief       Basic definitions for the native boards
+///
+/// @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
 
 #include <stdint.h>
 
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED handlers
- * @{
- */
+/// @name    LED handlers
+/// @{
 void _native_LED_GREEN_OFF(void);
 void _native_LED_GREEN_ON(void);
 void _native_LED_GREEN_TOGGLE(void);
@@ -41,13 +35,11 @@ void _native_LED_RED_TOGGLE(void);
 #define LED1_ON             (_native_LED_GREEN_ON())
 #define LED1_OFF            (_native_LED_GREEN_OFF())
 #define LED1_TOGGLE         (_native_LED_GREEN_TOGGLE())
-/** @} */
+/// @}
 
 #if defined(MODULE_MTD) || DOXYGEN
-/**
- * @name    MTD emulation configuration
- * @{
- */
+/// @name    MTD emulation configuration
+/// @{
 #ifndef MTD_PAGE_SIZE
 #if defined(MODULE_FATFS) || defined(MODULE_LWEXT4)
 #define MTD_PAGE_SIZE           (512)
@@ -69,35 +61,31 @@ void _native_LED_RED_TOGGLE(void);
 #define MTD_SECTOR_NUM          (2048)
 #endif
 #endif
-/** Advertised write size. While the file system backend supports single byte
- * granularity, this can be increased to mimic other media. */
+/// Advertised write size. While the file system backend supports single byte
+/// granularity, this can be increased to mimic other media.
 #ifndef MTD_WRITE_SIZE
 #define MTD_WRITE_SIZE          (1)
 #endif
 #ifndef MTD_NATIVE_FILENAME
 #define MTD_NATIVE_FILENAME     "MEMORY.bin"
 #endif
-/** @} */
+/// @}
 
-/** Default MTD device (mtd flash emulation device) */
+/// Default MTD device (mtd flash emulation device)
 #define MTD_0 mtd_dev_get(0)
 #endif
 
-/**
- * @name    Host FS access configuration
- * @{
- */
+/// @name    Host FS access configuration
+/// @{
 #ifndef FS_NATIVE_DIR
-#define FS_NATIVE_DIR           "nvm0"  /**< Folder on the host fs exported to RIOT */
+#define FS_NATIVE_DIR           "nvm0"  ///< Folder on the host fs exported to RIOT
 #endif
-/** @} */
+/// @}
 
 #if defined(MODULE_SPIFFS) || DOXYGEN
-/**
- * @name    SPIFFS default configuration
- * @{
- */
-/* SPIFFS config flags */
+/// @name    SPIFFS default configuration
+/// @{
+// SPIFFS config flags
 #ifndef SPIFFS_READ_ONLY
 #define SPIFFS_READ_ONLY                    (0)
 #endif
@@ -112,7 +100,7 @@ void _native_LED_RED_TOGGLE(void);
 #endif
 
 #if SPIFFS_SINGLETON == 1
-/* MTD config if singleton is used */
+// MTD config if singleton is used
 #ifndef SPIFFS_CFG_PHYS_SZ
 #define SPIFFS_CFG_PHYS_SZ(ignore)          (MTD_SECTOR_SIZE * MTD_SECTOR_NUM)
 #endif
@@ -131,24 +119,22 @@ void _native_LED_RED_TOGGLE(void);
 #endif
 
 #if SPIFFS_HAL_CALLBACK_EXTRA == 0
-/* Default MTD device if no callback parameter */
+// Default MTD device if no callback parameter
 #ifndef SPIFFS_MTD_DEV
 #define SPIFFS_MTD_DEV                      (MTD_0)
 #endif
 #endif
-/** @} */
+/// @}
 #endif
 
-/**
- * @name    ztimer configuration
- * @{
- */
-/* on native, anything can happen... */
+/// @name    ztimer configuration
+/// @{
+// on native, anything can happen...
 #define CONFIG_ZTIMER_USEC_MIN     (64)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

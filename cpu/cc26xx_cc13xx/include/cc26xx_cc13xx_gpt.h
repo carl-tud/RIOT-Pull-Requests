@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Leon George
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Leon George
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_cc26xx_cc13xx_definitions
- * @{
- *
- * @file
- * @brief           definitions for the CC26xx/CC13XX GPT modules
- *
- * @author          Leon George <leon@georgemail.eu>
- */
+/// @ingroup         cpu_cc26xx_cc13xx_definitions
+/// @{
+///
+/// @file
+/// @brief           definitions for the CC26xx/CC13XX GPT modules
+///
+/// @author          Leon George <leon@georgemail.eu>
 
 #include "cc26xx_cc13xx.h"
 
@@ -21,67 +17,59 @@
 extern "C" {
 #endif
 
-/**
- * @brief   GPT registers
- */
+/// @brief   GPT registers
 typedef struct {
-    reg32_t CFG; /**< config */
-    reg32_t TAMR; /**< timer A mode */
-    reg32_t TBMR; /**< timer B mode */
-    reg32_t CTL; /**< control */
-    reg32_t SYNC; /**< sync timers */
-    reg32_t __reserved1; /**< unused */
-    reg32_t IMR; /**< interrupt mask register */
-    reg32_t RIS; /**< raw interrupt status */
-    reg32_t MIS; /**< masked interrupt status */
-    reg32_t ICLR; /**< interrupt clear */
-    reg32_t TAILR; /**< timer A interval load register */
-    reg32_t TBILR; /**< timer B interval load register */
-    reg32_t TAMATCHR; /**< timer A match register */
-    reg32_t TBMATCHR; /**< timer B match register */
-    reg32_t TAPR; /**< timer A pre-scale */
-    reg32_t TBPR; /**< timer B pre-scale */
-    reg32_t TAPMR; /**< timer A pre-scale match register */
-    reg32_t TBPMR; /**< timer B pre-scale match register */
-    reg32_t TAR; /**< timer A register */
-    reg32_t TBR; /**< timer B register */
-    reg32_t TAV; /**< timer A value */
-    reg32_t TBV; /**< timer B value */
-    reg32_t RTCPD; /**< config */
-    reg32_t TAPS; /**< config */
-    reg32_t TBPS; /**< config */
-    reg32_t TAPV; /**< config */
-    reg32_t TBPV; /**< config */
-    reg32_t DMAEV; /**< config */
-    reg32_t __reserved2[976]; /**< config */
-    reg32_t VERSION; /**< config */
-    reg32_t ANDCCP; /**< config */
+    reg32_t CFG; ///< config
+    reg32_t TAMR; ///< timer A mode
+    reg32_t TBMR; ///< timer B mode
+    reg32_t CTL; ///< control
+    reg32_t SYNC; ///< sync timers
+    reg32_t __reserved1; ///< unused
+    reg32_t IMR; ///< interrupt mask register
+    reg32_t RIS; ///< raw interrupt status
+    reg32_t MIS; ///< masked interrupt status
+    reg32_t ICLR; ///< interrupt clear
+    reg32_t TAILR; ///< timer A interval load register
+    reg32_t TBILR; ///< timer B interval load register
+    reg32_t TAMATCHR; ///< timer A match register
+    reg32_t TBMATCHR; ///< timer B match register
+    reg32_t TAPR; ///< timer A pre-scale
+    reg32_t TBPR; ///< timer B pre-scale
+    reg32_t TAPMR; ///< timer A pre-scale match register
+    reg32_t TBPMR; ///< timer B pre-scale match register
+    reg32_t TAR; ///< timer A register
+    reg32_t TBR; ///< timer B register
+    reg32_t TAV; ///< timer A value
+    reg32_t TBV; ///< timer B value
+    reg32_t RTCPD; ///< config
+    reg32_t TAPS; ///< config
+    reg32_t TBPS; ///< config
+    reg32_t TAPV; ///< config
+    reg32_t TBPV; ///< config
+    reg32_t DMAEV; ///< config
+    reg32_t __reserved2[976]; ///< config
+    reg32_t VERSION; ///< config
+    reg32_t ANDCCP; ///< config
 } gpt_reg_t;
 
-/**
- * @brief   GPT base register addresses
- * @{
- */
-#define GPT0_BASE               (0x40010000) /**< GTP0 base address */
-#define GPT1_BASE               (0x40011000) /**< GTP1 base address */
-#define GPT2_BASE               (0x40012000) /**< GTP2 base address */
-#define GPT3_BASE               (0x40013000) /**< GTP3 base address */
-/** @} */
+/// @brief   GPT base register addresses
+/// @{
+#define GPT0_BASE               (0x40010000) ///< GTP0 base address
+#define GPT1_BASE               (0x40011000) ///< GTP1 base address
+#define GPT2_BASE               (0x40012000) ///< GTP2 base address
+#define GPT3_BASE               (0x40013000) ///< GTP3 base address
+/// @}
 
-/**
- * @brief   GPT instances
- * @{
- */
+/// @brief   GPT instances
+/// @{
 #define GPT0 ((gpt_reg_t *) (GPT0_BASE))
 #define GPT1 ((gpt_reg_t *) (GPT1_BASE))
 #define GPT2 ((gpt_reg_t *) (GPT2_BASE))
 #define GPT3 ((gpt_reg_t *) (GPT3_BASE))
-/** @} */
+/// @}
 
-/**
- * @brief   GPT register values
- * @{
- */
+/// @brief   GPT register values
+/// @{
 #define GPT_CFG_32T         0
 #define GPT_CFG_32RTC       1
 #define GPT_CFG_16T         4
@@ -94,11 +82,11 @@ typedef struct {
 #define GPT_TXMR_TXAMS_CAPTCOMP         0x00000000
 #define GPT_TXMR_TXAMS_PWM              0x00000008
 #define GPT_TXMR_TXCDIR_DOWN            0x00000000
-#define GPT_TXMR_TXCDIR_UP              0x00000010 /* starts from 0 */
-#define GPT_TXMR_TXMIE                  0x00000020 /* match interrupt */
-#define GPT_TXMR_TXWOT                  0x00000040 /* wait on trigger from daisy */
+#define GPT_TXMR_TXCDIR_UP              0x00000010 // starts from 0
+#define GPT_TXMR_TXMIE                  0x00000020 // match interrupt
+#define GPT_TXMR_TXWOT                  0x00000040 // wait on trigger from daisy
 #define GPT_TXMR_TXSNAPS                0x00000080
-#define GPT_TXMR_TXILD_CLOCK            0x00000000 /* interrupt loac: update TXPR or TXR */
+#define GPT_TXMR_TXILD_CLOCK            0x00000000 // interrupt loac: update TXPR or TXR
 #define GPT_TXMR_TXILD_TIMEOUT          0x00000100
 #define GPT_TXMR_TXPWMIE                0x00000200
 #define GPT_TXMR_TXMRSU                 0x00000400
@@ -120,7 +108,7 @@ typedef struct {
 #define GPT_CTL_TAEVENT_BOTH        0x0000000c
 #define GPT_CTL_RTCEN               0x00000010
 #define GPT_CTL_TAPWML_INV          0x00000040
-#define GPT_CTL_TBEN                0x00000100 /* still need capture CFG */
+#define GPT_CTL_TBEN                0x00000100 // still need capture CFG
 #define GPT_CTL_TBSTALL             0x00000200
 #define GPT_CTL_TBEVENT_POS         0x00000000
 #define GPT_CTL_TBEVENT_NEG         0x00000400
@@ -194,13 +182,13 @@ typedef struct {
 #define GPT_DMAEV_CBMDMAEN          0x00000200
 #define GPT_DMAEV_CBEDMAEN          0x00000400
 #define GPT_DMAEV_TBMDMAEN          0x00000800
-/** @} */
+/// @}
 
-#define GPT_NUMOF               4 /**< GPT count */
-#define NUM_CHANNELS_PER_GPT    1 /**< GPT channel count */
+#define GPT_NUMOF               4 ///< GPT count
+#define NUM_CHANNELS_PER_GPT    1 ///< GPT channel count
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

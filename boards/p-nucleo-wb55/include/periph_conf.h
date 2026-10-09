@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_p-nucleo-wb55
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the p-nucleo-wb55 board
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- */
+/// @ingroup     boards_p-nucleo-wb55
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the p-nucleo-wb55 board
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -28,7 +24,7 @@
 #define CONFIG_CLOCK_HSE                       MHZ(32)
 #endif
 
-/* EXTAHB (HCLK2) max freq 32 Mhz*/
+// EXTAHB (HCLK2) max freq 32 Mhz
 #define CLOCK_EXTAHB_DIV    RCC_EXTCFGR_C2HPRE_3
 #define CLOCK_EXTAHB        (CLOCK_CORECLOCK / 2)
 
@@ -42,10 +38,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -57,7 +51,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
     {
         .dev        = LPUART1,
@@ -69,7 +63,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB12,
         .irqn       = LPUART1_IRQn,
         .type       = STM32_LPUART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
 };
 
@@ -77,12 +71,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_lpuart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -100,23 +92,21 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- *
- * To find appriopate device and channel find in the MCU datasheet table
- * concerning "Alternate function AF0 to AF7" a text similar to TIM[X]_CH[Y],
- * where:
- * TIM[X] - is device,
- * [Y] - describes used channel (indexed from 0), for example TIM2_CH1 is
- * channel 0 in configuration structure (cc_chan - field),
- * Port column in the table describes connected port.
- *
- * For Nucleo-WB55 this information is in the datasheet, Table 18, page 72.
- *
- * @{
- */
+/// @name    PWM configuration
+///
+/// To find appriopate device and channel find in the MCU datasheet table
+/// concerning "Alternate function AF0 to AF7" a text similar to TIM[X]_CH[Y],
+/// where:
+/// TIM[X] - is device,
+/// [Y] - describes used channel (indexed from 0), for example TIM2_CH1 is
+/// channel 0 in configuration structure (cc_chan - field),
+/// Port column in the table describes connected port.
+///
+/// For Nucleo-WB55 this information is in the datasheet, Table 18, page 72.
+///
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM1,
@@ -132,11 +122,9 @@ static const pwm_conf_t pwm_config[] = {
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
 
-/** @} */
+/// @}
 
-/**
- * @brief USB device FS configuration
- */
+/// @brief USB device FS configuration
 static const stm32_usbdev_fs_config_t stm32_usbdev_fs_config[] = {
     {
         .base_addr  = (uintptr_t)USB,
@@ -150,60 +138,54 @@ static const stm32_usbdev_fs_config_t stm32_usbdev_fs_config[] = {
     },
 };
 
-/**
- * @brief Interrupt function name mapping
- */
+/// @brief Interrupt function name mapping
 #define USBDEV_ISR              isr_usb_lp
 
-/**
- * @brief Number of available USB device FS peripherals
- */
+/// @brief Number of available USB device FS peripherals
 #define USBDEV_NUMOF           ARRAY_SIZE(stm32_usbdev_fs_config)
 
-/**
- * @brief    ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32WB55RG order. Instead, we
- * just define 6 ADC channels, for the Nucleo
- * Arduino header pins A0-A5 and the internal VBAT channel.
- *
- * To find appropriate device and channel find in the
- * board manual, table showing pin assignments and
- * information about ADC - a text similar to ADC[X]_IN[Y],
- * where:
- * [X] - describes used device - indexed from 0,
- * for example ADC1_IN10 is device 0,
- * [Y] - describes used channel - indexed from 1,
- * for example ADC1_IN10 is channel 10
- *
- * For P-NUCLEO-WB55 this information is in board manual,
- * Table 10, page 39.
- *
- * VBAT is connected ADC1_IN18 or ADC3_IN18 and a voltage divider
- * is used, so that only 1/3 of the actual VBAT is measured. This
- * allows for a supply voltage higher than the reference voltage.
- *
- * For P-NUCLEO-WB55 more information is provided in the Reference Manual,
- * in section 16.4.31 - Vbat supply monitoring, page 475.
- * @{
- */
+/// @brief    ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32WB55RG order. Instead, we
+/// just define 6 ADC channels, for the Nucleo
+/// Arduino header pins A0-A5 and the internal VBAT channel.
+///
+/// To find appropriate device and channel find in the
+/// board manual, table showing pin assignments and
+/// information about ADC - a text similar to ADC[X]_IN[Y],
+/// where:
+/// [X] - describes used device - indexed from 0,
+/// for example ADC1_IN10 is device 0,
+/// [Y] - describes used channel - indexed from 1,
+/// for example ADC1_IN10 is channel 10
+///
+/// For P-NUCLEO-WB55 this information is in board manual,
+/// Table 10, page 39.
+///
+/// VBAT is connected ADC1_IN18 or ADC3_IN18 and a voltage divider
+/// is used, so that only 1/3 of the actual VBAT is measured. This
+/// allows for a supply voltage higher than the reference voltage.
+///
+/// For P-NUCLEO-WB55 more information is provided in the Reference Manual,
+/// in section 16.4.31 - Vbat supply monitoring, page 475.
+/// @{
 static const adc_conf_t adc_config[] = {
-    {GPIO_PIN(PORT_C, 0), 0, 1},  /* ADC1_IN1 */
-    {GPIO_PIN(PORT_C, 1), 0, 2},  /* ADC1_IN2 */
-    {GPIO_PIN(PORT_A, 1), 0, 6},  /* ADC1_IN6 */
-    {GPIO_PIN(PORT_A, 0), 0, 5},  /* ADC1_IN5 */
-    {GPIO_PIN(PORT_C, 3), 0, 4},  /* ADC1_IN4 */
-    {GPIO_PIN(PORT_C, 2), 0, 3},  /* ADC1_IN3 */
-    {GPIO_UNDEF, 0, 18}, /* VBAT */
+    {GPIO_PIN(PORT_C, 0), 0, 1},  // ADC1_IN1
+    {GPIO_PIN(PORT_C, 1), 0, 2},  // ADC1_IN2
+    {GPIO_PIN(PORT_A, 1), 0, 6},  // ADC1_IN6
+    {GPIO_PIN(PORT_A, 0), 0, 5},  // ADC1_IN5
+    {GPIO_PIN(PORT_C, 3), 0, 4},  // ADC1_IN4
+    {GPIO_PIN(PORT_C, 2), 0, 3},  // ADC1_IN3
+    {GPIO_UNDEF, 0, 18}, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(6) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(6) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

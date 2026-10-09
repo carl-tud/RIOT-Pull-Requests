@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_bmp180
- *
- * @{
- * @file
- * @brief       Default configuration for BMP180
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_bmp180
+///
+/// @{
+/// @file
+/// @brief       Default configuration for BMP180
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "bmp180.h"
@@ -26,10 +22,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the BMP180
- * @{
- */
+/// @name    Set default configuration parameters for the BMP180
+/// @{
 #ifndef BMP180_PARAM_I2C_DEV
 #define BMP180_PARAM_I2C_DEV         I2C_DEV(0)
 #endif
@@ -48,19 +42,15 @@ extern "C" {
 #ifndef BMP180_SAUL_INFO
 #define BMP180_SAUL_INFO             { .name = "bmp180" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure BMP180
- */
+/// @brief   Configure BMP180
 static const bmp180_params_t bmp180_params[] =
 {
     BMP180_PARAMS
 };
 
-/**
- * @brief   Configure SAUL registry entries
- */
+/// @brief   Configure SAUL registry entries
 static const saul_reg_info_t bmp180_saul_info[] =
 {
     BMP180_SAUL_INFO
@@ -70,4 +60,4 @@ static const saul_reg_info_t bmp180_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

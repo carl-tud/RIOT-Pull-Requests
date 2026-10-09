@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       Test for the walltime module with time change notifications
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- */
+/// @file
+/// @brief       Test for the walltime module with time change notifications
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
 
 #include <errno.h>
 #include "shell.h"
@@ -19,22 +15,19 @@
 #include "walltime.h"
 #include "ztimer.h"
 
-static void _time_change_cb(void *ctx, int32_t diff_sec, int16_t diff_ms)
-{
+static void _time_change_cb(void *ctx, int32_t diff_sec, int16_t diff_ms) {
     (void)ctx;
     printf("time changed by %d sec, %d ms\n", (int)diff_sec, (int)diff_ms);
 }
 
-static void _echo_cb(void *ctx, int32_t diff_sec, int16_t diff_ms)
-{
+static void _echo_cb(void *ctx, int32_t diff_sec, int16_t diff_ms) {
     (void)diff_sec;
     (void)diff_ms;
 
     puts(ctx);
 }
 
-static void _add_and_remove_dummy_cb(void)
-{
+static void _add_and_remove_dummy_cb(void) {
     walltime_change_sub_t sub_a = {
         .cb = _echo_cb,
         .ctx = "Dummy callback A",
@@ -57,13 +50,11 @@ static void _add_and_remove_dummy_cb(void)
         goto fail;                                                  \
     }
 
-static void _unlock(void *ctx)
-{
+static void _unlock(void *ctx) {
     mutex_unlock(ctx);
 }
 
-static int _cmd_test(int argc, char **argv)
-{
+static int _cmd_test(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -124,8 +115,7 @@ fail:
 }
 SHELL_COMMAND(test, "test the walltime backend", _cmd_test);
 
-int main(void)
-{
+int main(void) {
     _add_and_remove_dummy_cb();
 
     static walltime_change_sub_t sub = {

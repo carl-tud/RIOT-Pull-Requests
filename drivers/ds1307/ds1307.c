@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup drivers_ds1307
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @ingroup drivers_ds1307
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <errno.h>
 #include <string.h>
@@ -27,8 +23,7 @@ static int _nvram_read(struct nvram *dev, uint8_t *dst, uint32_t src,
 static int _nvram_write(struct nvram *dev, const uint8_t *src, uint32_t dst,
                         size_t size);
 
-static uint8_t _convert_12_to_24(uint8_t hour)
-{
+static uint8_t _convert_12_to_24(uint8_t hour) {
     if (hour & DS1307_REG_HOUR_12H) {
         uint8_t tmp = bcd_to_byte(hour & DS1307_REG_HOUR_12H_MASK);
         if (hour & DS1307_REG_HOUR_PM) {
@@ -46,17 +41,16 @@ static uint8_t _convert_12_to_24(uint8_t hour)
     return hour;
 }
 
-int ds1307_init(ds1307_t *dev, const ds1307_params_t *params)
-{
+int ds1307_init(ds1307_t *dev, const ds1307_params_t *params) {
     int res;
     uint8_t hour;
 
     dev->i2c = params->i2c;
 
     i2c_acquire(dev->i2c);
-    /* normalize hour format */
+    // normalize hour format
     res = i2c_read_reg(dev->i2c, DS1307_I2C_ADDRESS, DS1307_REG_HOUR, &hour, 0);
-    if (res != 0) { /* should be 0 if device is connected */
+    if (res != 0) { // should be 0 if device is connected
         i2c_release(dev->i2c);
         DEBUG("ds1307: Error reading HOUR register on init: %i\n", res);
         return -1;
@@ -76,8 +70,7 @@ int ds1307_init(ds1307_t *dev, const ds1307_params_t *params)
     return 0;
 }
 
-int ds1307_set_time(const ds1307_t *dev, const struct tm *time)
-{
+int ds1307_set_time(const ds1307_t *dev, const struct tm *time) {
     uint8_t regs[DS1307_REG_YEAR - DS1307_REG_SEC + 1];
     int res;
 
@@ -102,8 +95,7 @@ int ds1307_set_time(const ds1307_t *dev, const struct tm *time)
     return (res != 0) ? -1 : 0;
 }
 
-int ds1307_get_time(const ds1307_t *dev, struct tm *time)
-{
+int ds1307_get_time(const ds1307_t *dev, struct tm *time) {
     uint8_t regs[DS1307_REG_YEAR - DS1307_REG_SEC + 1];
     int res;
 
@@ -131,8 +123,7 @@ int ds1307_get_time(const ds1307_t *dev, struct tm *time)
     return 0;
 }
 
-int ds1307_halt(const ds1307_t *dev)
-{
+int ds1307_halt(const ds1307_t *dev) {
     int res;
     uint8_t sec;
 
@@ -149,8 +140,7 @@ int ds1307_halt(const ds1307_t *dev)
     return (res != 0) ? -1 : 0;
 }
 
-int ds1307_set_sqw_mode(const ds1307_t *dev, ds1307_sqw_mode_t mode)
-{
+int ds1307_set_sqw_mode(const ds1307_t *dev, ds1307_sqw_mode_t mode) {
     int res;
 
     i2c_acquire(dev->i2c);
@@ -160,8 +150,7 @@ int ds1307_set_sqw_mode(const ds1307_t *dev, ds1307_sqw_mode_t mode)
     return res;
 }
 
-int ds1307_get_sqw_mode(const ds1307_t *dev)
-{
+int ds1307_get_sqw_mode(const ds1307_t *dev) {
     uint8_t mode;
     int res;
 
@@ -173,8 +162,7 @@ int ds1307_get_sqw_mode(const ds1307_t *dev)
 }
 
 static int _nvram_read(struct nvram *nvram, uint8_t *dst, uint32_t src,
-                       size_t size)
-{
+                       size_t size) {
     const ds1307_t *dev = nvram->extra;
     int res;
 
@@ -189,8 +177,7 @@ static int _nvram_read(struct nvram *nvram, uint8_t *dst, uint32_t src,
 }
 
 static int _nvram_write(struct nvram *nvram, const uint8_t *src, uint32_t dst,
-                        size_t size)
-{
+                        size_t size) {
     const ds1307_t *dev = nvram->extra;
     int res;
 
@@ -210,13 +197,11 @@ static int _nvram_write(struct nvram *nvram, const uint8_t *src, uint32_t dst,
 static ds1307_t walltime_dev;
 static bool _init_done;
 
-void walltime_impl_init(void)
-{
+void walltime_impl_init(void) {
     _init_done = !ds1307_init(&walltime_dev, &ds1307_params[0]);
 }
 
-int walltime_impl_get(struct tm *time, uint16_t *ms)
-{
+int walltime_impl_get(struct tm *time, uint16_t *ms) {
     if (!_init_done) {
         return -ENODEV;
     }
@@ -225,8 +210,7 @@ int walltime_impl_get(struct tm *time, uint16_t *ms)
     return ds1307_get_time(&walltime_dev, time);
 }
 
-int walltime_impl_set(struct tm *time)
-{
+int walltime_impl_set(struct tm *time) {
     if (!_init_done) {
         return -ENODEV;
     }
@@ -234,4 +218,4 @@ int walltime_impl_set(struct tm *time)
 }
 #endif
 
-/** @} */
+/// @}

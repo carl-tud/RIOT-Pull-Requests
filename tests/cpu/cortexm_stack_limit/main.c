@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief Test application for the cortexm_stack_limit pseudo-module
- *
- * @author Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief Test application for the cortexm_stack_limit pseudo-module
+///
+/// @author Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -28,18 +24,16 @@ static struct {
     char stack[THREAD_STACKSIZE_MAIN];
 } buf;
 
-/* Tell modern GCC (12.x) to not complain that this infinite recursion is
- * bound to overflow the stack - this is exactly what this test wants to do :)
- *
- * Also, tell older versions of GCC that do not know about -Winfinit-recursion
- * that it is safe to ignore `GCC diagnostics ignored "-Winfinit-recursion"`.
- * They behave as intended in this case :)
- */
+// Tell modern GCC (12.x) to not complain that this infinite recursion is
+// bound to overflow the stack - this is exactly what this test wants to do :)
+//
+// Also, tell older versions of GCC that do not know about -Winfinit-recursion
+// that it is safe to ignore `GCC diagnostics ignored "-Winfinit-recursion"`.
+// They behave as intended in this case :)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Winfinite-recursion"
-static int recurse(int counter)
-{
+static int recurse(int counter) {
     if (buf.canary != CANARY_VALUE) {
 #ifdef LED0_ON
         LED0_ON;
@@ -60,13 +54,12 @@ static int recurse(int counter)
     }
 
     counter++;
-    /* Recursing twice here prevents the compiler from optimizing-out the recursion. */
+    // Recursing twice here prevents the compiler from optimizing-out the recursion.
     return recurse(counter) + recurse(counter);
 }
 #pragma GCC diagnostic pop
 
-static void *thread(void *arg)
-{
+static void *thread(void *arg) {
     (void) arg;
 
     recurse(0);
@@ -74,8 +67,7 @@ static void *thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     puts("\nCortex-M Stack limit test\n");
 
     puts("If the test fails, all onboard LEDs will be on");

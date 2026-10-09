@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_paa5100je
- * @{
- *
- * @file
- * @brief       Device driver implementation for the PAA5100JE/PMW3901 optical flow sensor
- *
- * @author      Leonard Herbst <leonard.herbst@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     drivers_paa5100je
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the PAA5100JE/PMW3901 optical flow sensor
+///
+/// @author      Leonard Herbst <leonard.herbst@tu-dresden.de>
+///
+/// @}
 
 #include "paa5100je.h"
 #include "paa5100je_constants.h"
@@ -23,10 +19,10 @@
 #include "log.h"
 #include <stdio.h>
 
-#define PAA5100JE_CMD_READ   (0b00000000) /**< Mask applied to a register address when reading */
-#define PAA5100JE_CMD_WRITE  (0b10000000) /**< Mask applied to a register address when writing */
+#define PAA5100JE_CMD_READ   (0b00000000) ///< Mask applied to a register address when reading
+#define PAA5100JE_CMD_WRITE  (0b10000000) ///< Mask applied to a register address when writing
 
-/* Prototypes of private functions */
+// Prototypes of private functions
 static uint8_t _read_reg(const paa5100je_t *dev, uint8_t reg);
 static void _read_reg_burst(const paa5100je_t *dev, uint8_t reg, size_t num, uint8_t *buf);
 static void _write_reg(const paa5100je_t *dev, uint8_t reg, uint8_t value);
@@ -34,10 +30,9 @@ static void _prop_init(const paa5100je_t *dev);
 static void _init_paa5100je(const paa5100je_t *dev);
 static void _init_pmw3901(const paa5100je_t *dev);
 
-/* Public API */
+// Public API
 
-int paa5100je_init(paa5100je_t *dev, const paa5100je_params_t *params)
-{
+int paa5100je_init(paa5100je_t *dev, const paa5100je_params_t *params) {
     assert(dev && params);
     dev->params = params;
 
@@ -63,15 +58,14 @@ int paa5100je_init(paa5100je_t *dev, const paa5100je_params_t *params)
     return 0;
 }
 
-int paa5100je_get_motion_burst(const paa5100je_t *dev, int16_t *x, int16_t *y)
-{
+int paa5100je_get_motion_burst(const paa5100je_t *dev, int16_t *x, int16_t *y) {
     uint8_t data[12];
     ztimer_now_t start = ztimer_now(ZTIMER_MSEC);
 
     do {
         _read_reg_burst(dev, REG_MOTION_BURST, 12, data);
-        /* PixArt who designed the sensor is pretty secretive. The default threshold for the quality
-         * and for the shutter are taken from a reference implementation. */
+        // PixArt who designed the sensor is pretty secretive. The default threshold for the quality
+        // and for the shutter are taken from a reference implementation.
         uint8_t data_ready = data[0];
         uint8_t quality = data[6];
         uint8_t shutter_upper = data[10];
@@ -80,7 +74,7 @@ int paa5100je_get_motion_burst(const paa5100je_t *dev, int16_t *x, int16_t *y)
             && shutter_upper != 0x1F) {
             *x = (int16_t)(data[3] << 8 | data[2]);
             *y = (int16_t)(data[5] << 8 | data[4]);
-            /* Apply scaling factor */
+            // Apply scaling factor
             *x *= 100;
             *x /= CONFIG_PAA5100JE_SCALE_DENOMINATOR;
             *y *= 100;
@@ -93,8 +87,7 @@ int paa5100je_get_motion_burst(const paa5100je_t *dev, int16_t *x, int16_t *y)
     return -ETIME;
 }
 
-int paa5100je_set_led_brightness(const paa5100je_t *dev, const paa5100je_led_brightness_t level)
-{
+int paa5100je_set_led_brightness(const paa5100je_t *dev, const paa5100je_led_brightness_t level) {
     assert(dev);
     uint8_t reg_val;
 
@@ -119,10 +112,9 @@ int paa5100je_set_led_brightness(const paa5100je_t *dev, const paa5100je_led_bri
     return 0;
 }
 
-/* Private API */
+// Private API
 
-static uint8_t _read_reg(const paa5100je_t *dev, uint8_t reg)
-{
+static uint8_t _read_reg(const paa5100je_t *dev, uint8_t reg) {
     assert(dev);
     assert(!(reg & 0x10000000));
 
@@ -137,8 +129,7 @@ static uint8_t _read_reg(const paa5100je_t *dev, uint8_t reg)
     return value;
 }
 
-static void _read_reg_burst(const paa5100je_t *dev, uint8_t reg, size_t num, uint8_t *buf)
-{
+static void _read_reg_burst(const paa5100je_t *dev, uint8_t reg, size_t num, uint8_t *buf) {
     assert(dev);
     assert(!(reg & 0x10000000));
     spi_acquire(dev->params->spi, dev->params->cs, SPI_MODE_3, dev->params->clk);
@@ -146,8 +137,7 @@ static void _read_reg_burst(const paa5100je_t *dev, uint8_t reg, size_t num, uin
     spi_release(dev->params->spi);
 }
 
-static void _write_reg(const paa5100je_t *dev, uint8_t reg, uint8_t value)
-{
+static void _write_reg(const paa5100je_t *dev, uint8_t reg, uint8_t value) {
     assert(dev);
     assert(!(reg & 0x10000000));
 
@@ -158,16 +148,13 @@ static void _write_reg(const paa5100je_t *dev, uint8_t reg, uint8_t value)
     spi_release(dev->params->spi);
 }
 
-/**
- * @brief Writes a set of magic values to the sensors registers.
- *
- * The datasheet does not explain this.
- * These values and registers are taken from a reference implementation.
- *
- * @param[in]   dev    device descriptor
- */
-static void _prop_init(const paa5100je_t *dev)
-{
+/// @brief Writes a set of magic values to the sensors registers.
+///
+/// The datasheet does not explain this.
+/// These values and registers are taken from a reference implementation.
+///
+/// @param[in]   dev    device descriptor
+static void _prop_init(const paa5100je_t *dev) {
     _write_reg(dev, 0x7F, 0x00);
     _write_reg(dev, 0x55, 0x01);
     _write_reg(dev, 0x50, 0x07);
@@ -216,13 +203,10 @@ static void _prop_init(const paa5100je_t *dev)
     }
 }
 
-/**
- * @brief Writes a set of PAA5100JE specific magic values to the sensors registers.
- *
- * @param[in]   dev    device descriptor
- */
-static void _init_paa5100je(const paa5100je_t *dev)
-{
+/// @brief Writes a set of PAA5100JE specific magic values to the sensors registers.
+///
+/// @param[in]   dev    device descriptor
+static void _init_paa5100je(const paa5100je_t *dev) {
     _write_reg(dev, 0x7F, 0x00);
     _write_reg(dev, 0x61, 0xAD);
 
@@ -333,13 +317,10 @@ static void _init_paa5100je(const paa5100je_t *dev)
     _write_reg(dev, 0x73, 0x00);
 }
 
-/**
- * @brief Writes a set of PMW301 specific magic values to the sensors registers.
- *
- * @param[in]   dev    device descriptor
- */
-static void _init_pmw3901(const paa5100je_t *dev)
-{
+/// @brief Writes a set of PMW301 specific magic values to the sensors registers.
+///
+/// @param[in]   dev    device descriptor
+static void _init_pmw3901(const paa5100je_t *dev) {
     _write_reg(dev, 0x7F, 0x00);
     _write_reg(dev, 0x61, 0xAD);
     _write_reg(dev, 0x7F, 0x03);

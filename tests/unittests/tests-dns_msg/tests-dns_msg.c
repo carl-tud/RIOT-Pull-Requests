@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdint.h>
 #include <string.h>
@@ -13,16 +11,15 @@
 
 #include "tests-dns_msg.h"
 
-static void test_dns_msg_valid_AAAA(void)
-{
+static void test_dns_msg_valid_AAAA(void) {
     const uint8_t dns_msg[] = {
-        /* in scapy notation:
-         * <DNS  id=0 qr=1 opcode=QUERY aa=0 tc=0 rd=1 ra=1 z=0 ad=0 cd=0 rcode=ok
-         *       qdcount=1 ancount=1 nscount=0 arcount=0
-         *       qd=<DNSQR  qname='example.org.' qtype=AAAA qclass=IN |>
-         *       an=<DNSRR  rrname='\\xc0\x0c' type=AAAA rclass=IN ttl=300
-         *                  rdata=2001:db8:4005:80b::200e |>
-         *       ns=None ar=None |> */
+        // in scapy notation:
+        // <DNS  id=0 qr=1 opcode=QUERY aa=0 tc=0 rd=1 ra=1 z=0 ad=0 cd=0 rcode=ok
+        //       qdcount=1 ancount=1 nscount=0 arcount=0
+        //       qd=<DNSQR  qname='example.org.' qtype=AAAA qclass=IN |>
+        //       an=<DNSRR  rrname='\\xc0\x0c' type=AAAA rclass=IN ttl=300
+        //                  rdata=2001:db8:4005:80b::200e |>
+        //       ns=None ar=None |>
         0x00, 0x00, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01,
         0x00, 0x00, 0x00, 0x00, 0x07, 0x65, 0x78, 0x61,
         0x6d, 0x70, 0x6c, 0x65, 0x03, 0x6f, 0x72, 0x67,
@@ -33,7 +30,7 @@ static void test_dns_msg_valid_AAAA(void)
         0x0e
     };
     const uint8_t addr[] = {
-        /* 2001:db8:4005:80b::200e */
+        // 2001:db8:4005:80b::200e
         0x20, 0x01, 0x0d, 0xb8, 0x40, 0x05, 0x08, 0x0b,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x0e,
     };
@@ -47,16 +44,15 @@ static void test_dns_msg_valid_AAAA(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(addr, addr_out, sizeof(addr)));
 }
 
-static void test_dns_msg_valid_dns64(void)
-{
+static void test_dns_msg_valid_dns64(void) {
     const uint8_t dns_msg[] = {
-        /* in scapy notation:
-         * <DNS  id=0 qr=1 opcode=QUERY aa=0 tc=0 rd=1 ra=1 z=0 ad=0 cd=0 rcode=ok
-                  qdcount=1 ancount=1 nscount=0 arcount=0
-                  qd=<DNSQR  qname='example.org.' qtype=AAAA qclass=IN |>
-                  an=<DNSRR  rrname='\\xc0\x0c' type=AAAA rclass=IN ttl=60
-                             rdata=2001:db8:2b0:db32:0:1:8c52:7903 |>
-                  ns=None ar=None |> */
+        // in scapy notation:
+        // <DNS  id=0 qr=1 opcode=QUERY aa=0 tc=0 rd=1 ra=1 z=0 ad=0 cd=0 rcode=ok
+        //           qdcount=1 ancount=1 nscount=0 arcount=0
+        //           qd=<DNSQR  qname='example.org.' qtype=AAAA qclass=IN |>
+        //           an=<DNSRR  rrname='\\xc0\x0c' type=AAAA rclass=IN ttl=60
+        //                      rdata=2001:db8:2b0:db32:0:1:8c52:7903 |>
+        //           ns=None ar=None |>
         0x00, 0x00, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01,
         0x00, 0x00, 0x00, 0x00, 0x07, 0x65, 0x78, 0x61,
         0x6d, 0x70, 0x6c, 0x65, 0x03, 0x6f, 0x72, 0x67,
@@ -67,7 +63,7 @@ static void test_dns_msg_valid_dns64(void)
         0x03
     };
     const uint8_t addr[] = {
-        /* 2001:db8:2b0:db32:0:1:8c52:7903 */
+        // 2001:db8:2b0:db32:0:1:8c52:7903
         0x20, 0x01, 0x0d, 0xb8, 0x02, 0xb0, 0xdb, 0x32,
         0x00, 0x00, 0x00, 0x01, 0x8c, 0x52, 0x79, 0x03,
     };
@@ -81,21 +77,19 @@ static void test_dns_msg_valid_dns64(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(addr, addr_out, sizeof(addr)));
 }
 
-static void test_dns_msg_valid_dns64_w_long_cnames(void)
-{
+static void test_dns_msg_valid_dns64_w_long_cnames(void) {
     const uint8_t dns_msg[] = {
-        /* in scapy notation:
-         * <DNS  id=0 qr=1 opcode=QUERY aa=0 tc=0 rd=1 ra=1 z=0 ad=0 cd=0 rcode=ok
-         *       qdcount=1 ancount=3 nscount=0 arcount=0
-         *       qd=<DNSQR  qname='the.too.long.name.for.the.example.net.' qtype=AAAA qclass=IN |>
-         *       an=<DNSRR  rrname='\\xc0\x0c' type=CNAME rclass=IN ttl=600
-         *                  rdata='the.too.long.name.for.the.example.net.' |
-         *          <DNSRR  rrname='\\xc0C' type=CNAME rclass=IN ttl=90
-         *                  rdata='this-is-becoming-ridic.ulous.naming.cloud.example.com.' |
-         *          <DNSRR  rrname='\\xc0p' type=AAAA rclass=IN ttl=10
-         *                  rdata=2001:db8:2b0:db32:0:1:1432:418d |>>>
-         *       ns=None ar=None |>
-         */
+        // in scapy notation:
+        // <DNS  id=0 qr=1 opcode=QUERY aa=0 tc=0 rd=1 ra=1 z=0 ad=0 cd=0 rcode=ok
+        //       qdcount=1 ancount=3 nscount=0 arcount=0
+        //       qd=<DNSQR  qname='the.too.long.name.for.the.example.net.' qtype=AAAA qclass=IN |>
+        //       an=<DNSRR  rrname='\\xc0\x0c' type=CNAME rclass=IN ttl=600
+        //                  rdata='the.too.long.name.for.the.example.net.' |
+        //          <DNSRR  rrname='\\xc0C' type=CNAME rclass=IN ttl=90
+        //                  rdata='this-is-becoming-ridic.ulous.naming.cloud.example.com.' |
+        //          <DNSRR  rrname='\\xc0p' type=AAAA rclass=IN ttl=10
+        //                  rdata=2001:db8:2b0:db32:0:1:1432:418d |>>>
+        //       ns=None ar=None |>
         0x00, 0x00, 0x81, 0x80, 0x00, 0x01, 0x00, 0x03,
         0x00, 0x00, 0x00, 0x00, 0x03, 0x74, 0x68, 0x65,
         0x03, 0x74, 0x6f, 0x6f, 0x04, 0x6c, 0x6f, 0x6e,
@@ -123,7 +117,7 @@ static void test_dns_msg_valid_dns64_w_long_cnames(void)
         0x32, 0x41, 0x8d
     };
     const uint8_t addr[] = {
-        /* 2001:db8:2b0:db32:0:1:1432:418d */
+        // 2001:db8:2b0:db32:0:1:1432:418d
         0x20, 0x01, 0x0d, 0xb8, 0x02, 0xb0, 0xdb, 0x32,
         0x00, 0x00, 0x00, 0x01, 0x14, 0x32, 0x41, 0x8d,
     };
@@ -137,8 +131,7 @@ static void test_dns_msg_valid_dns64_w_long_cnames(void)
     TEST_ASSERT_EQUAL_INT(0, memcmp(addr, addr_out, sizeof(addr)));
 }
 
-Test *tests_dns_msg_tests(void)
-{
+Test *tests_dns_msg_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_dns_msg_valid_AAAA),
         new_TestFixture(test_dns_msg_valid_dns64),
@@ -150,7 +143,6 @@ Test *tests_dns_msg_tests(void)
     return (Test *)&dns_msg_tests;
 }
 
-void tests_dns_msg(void)
-{
+void tests_dns_msg(void) {
     TESTS_RUN(tests_dns_msg_tests());
 }

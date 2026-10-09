@@ -1,11 +1,9 @@
-/*
- * Copyright (C) 2020 Benjamin Valentin
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+// Copyright (C) 2020 Benjamin Valentin
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
+//
+// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -29,15 +27,12 @@ enum {
 };
 
 static uint8_t crc8(const uint8_t *data, size_t len,
-                    uint8_t g_polynom, uint8_t crc)
-{
-    /* iterate over all bytes */
-    for (size_t i=0; i < len; i++)
-    {
+                    uint8_t g_polynom, uint8_t crc) {
+    // iterate over all bytes
+    for (size_t i=0; i < len; i++) {
         crc ^= data[i];
 
-        for (int i = 0; i < 8; i++)
-        {
+        for (int i = 0; i < 8; i++) {
             bool xor = crc & 0x80;
             crc = crc << 1;
             crc = xor ? crc ^ g_polynom : crc;
@@ -47,8 +42,7 @@ static uint8_t crc8(const uint8_t *data, size_t len,
     return crc;
 }
 
-static char _get_char(int fd)
-{
+static char _get_char(int fd) {
     char in;
     if (read(fd, &in, 1) == 1) {
         return in;
@@ -57,24 +51,20 @@ static char _get_char(int fd)
     return 0;
 }
 
-static int _put_char(int fd, char c)
-{
+static int _put_char(int fd, char c) {
     return write(fd, &c, 1);
 }
 
-static int _write_crc(int fd, const void *buf, size_t count, uint8_t *crc)
-{
+static int _write_crc(int fd, const void *buf, size_t count, uint8_t *crc) {
     *crc = crc8(buf, count, RIOTBOOT_CRC8_POLY, *crc);
     return write(fd, buf, count);
 }
 
-static int _write_crc_byte(int fd, uint8_t byte, uint8_t *crc)
-{
+static int _write_crc_byte(int fd, uint8_t byte, uint8_t *crc) {
     return _write_crc(fd, &byte, 1, crc);
 }
 
-static int _get_result(int fd)
-{
+static int _get_result(int fd) {
     while (1) {
         char c = _get_char(fd);
 
@@ -96,8 +86,7 @@ static int _get_result(int fd)
     };
 }
 
-static int cmd_erase(int fd, uint32_t sector)
-{
+static int cmd_erase(int fd, uint32_t sector) {
     uint8_t crc = 0xFF;
     _write_crc_byte(fd, RIOTBOOT_CMD_ERASE, &crc);
     _write_crc_byte(fd, sizeof(sector), &crc);
@@ -108,8 +97,7 @@ static int cmd_erase(int fd, uint32_t sector)
 }
 
 __attribute__((unused))
-static int cmd_write(int fd, uint32_t addr, const void *data, size_t len)
-{
+static int cmd_write(int fd, uint32_t addr, const void *data, size_t len) {
     uint8_t crc = 0xFF;
     _write_crc_byte(fd, RIOTBOOT_CMD_WRITE, &crc);
     _write_crc_byte(fd, sizeof(addr) + len, &crc);
@@ -120,15 +108,13 @@ static int cmd_write(int fd, uint32_t addr, const void *data, size_t len)
     return _get_result(fd);
 }
 
-static int cmd_boot(int fd)
-{
+static int cmd_boot(int fd) {
     _put_char(fd, RIOTBOOT_CMD_BOOT);
     _put_char(fd, '\n');
     return _get_result(fd);
 }
 
-static uint32_t _get_page(int fd, uint32_t addr)
-{
+static uint32_t _get_page(int fd, uint32_t addr) {
     do {
         uint8_t crc = 0xFF;
         _write_crc_byte(fd, RIOTBOOT_CMD_GET_PAGE, &crc);
@@ -143,8 +129,7 @@ static uint32_t _get_page(int fd, uint32_t addr)
     return page;
 }
 
-static uint32_t cmd_get_page(int fd, uint32_t addr)
-{
+static uint32_t cmd_get_page(int fd, uint32_t addr) {
     uint32_t page[2];
 
     do {
@@ -155,8 +140,7 @@ static uint32_t cmd_get_page(int fd, uint32_t addr)
     return page[0];
 }
 
-static uint8_t _int(char c)
-{
+static uint8_t _int(char c) {
     if (c >= '0' && c <= '9') {
         return c - '0';
     }
@@ -168,8 +152,7 @@ static uint8_t _int(char c)
     return 0;
 }
 
-static unsigned _hex_to_int(const char *s, size_t len)
-{
+static unsigned _hex_to_int(const char *s, size_t len) {
     unsigned ret = 0;
     while (len--) {
         ret <<= 4;
@@ -179,8 +162,7 @@ static unsigned _hex_to_int(const char *s, size_t len)
     return ret;
 }
 
-static int _write_out(void *ctx, uint32_t addr, uint8_t len, const char *s)
-{
+static int _write_out(void *ctx, uint32_t addr, uint8_t len, const char *s) {
     int fd = *(int*)ctx;
 
     printf("0x%x: %u bytes ", addr, len);
@@ -201,8 +183,7 @@ static int _write_out(void *ctx, uint32_t addr, uint8_t len, const char *s)
     return _get_result(fd);
 }
 
-static void _parse_ihex(FILE *hex, line_cb_t cb, void *ctx)
-{
+static void _parse_ihex(FILE *hex, line_cb_t cb, void *ctx) {
     char line[48];
     char* pos;
     uint32_t offset = 0;
@@ -243,8 +224,7 @@ static void _parse_ihex(FILE *hex, line_cb_t cb, void *ctx)
     }
 }
 
-static int _min_max(void *ctx, uint32_t addr, uint8_t len, const char *s)
-{
+static int _min_max(void *ctx, uint32_t addr, uint8_t len, const char *s) {
     (void)s;
 
     uint32_t *min_max = ctx;
@@ -260,8 +240,7 @@ static int _min_max(void *ctx, uint32_t addr, uint8_t len, const char *s)
     return 0;
 }
 
-static void _connect_bootloader(int fd)
-{
+static void _connect_bootloader(int fd) {
     const char spinner[] = "|/-\\";
     unsigned tries = 0;
     while (_get_char(fd) != RIOTBOOT_STAT_WAITING) {
@@ -286,8 +265,7 @@ static void _connect_bootloader(int fd)
     puts("\rconnected.");
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     if (argc < 2) {
         fprintf(stderr, "usage: %s <file> <tty> [baudrate]\n", argv[0]);
         return -1;
@@ -301,7 +279,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    /* parse hex file to get firmware address range */
+    // parse hex file to get firmware address range
     uint32_t min_max[2] = {UINT32_MAX, 0};
     _parse_ihex(hex, _min_max, min_max);
 
@@ -315,10 +293,10 @@ int main(int argc, char** argv)
         goto error;
     }
 
-    /* sync with the boorloader */
+    // sync with the boorloader
     _connect_bootloader(fd);
 
-    /* find out how many pages we have to erase */
+    // find out how many pages we have to erase
     uint32_t first_page = cmd_get_page(fd, min_max[0]);
     uint32_t last_page  = cmd_get_page(fd, min_max[1]);
 
@@ -329,7 +307,7 @@ int main(int argc, char** argv)
         cmd_erase(fd, i);
     }
 
-    /* flash the firmware */
+    // flash the firmware
     _parse_ihex(hex, _write_out, &fd);
 
     cmd_boot(fd);

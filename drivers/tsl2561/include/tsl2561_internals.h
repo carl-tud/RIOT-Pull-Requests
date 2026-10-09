@@ -1,36 +1,28 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_tsl2561
- * @brief       Internal addresses, registers, constants for the TSL2561 sensor.
- * @{
- *
- * @file
- * @brief       Internal addresses, registers, constants for the TSL2561 sensor.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_tsl2561
+/// @brief       Internal addresses, registers, constants for the TSL2561 sensor.
+/// @{
+///
+/// @file
+/// @brief       Internal addresses, registers, constants for the TSL2561 sensor.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name TSL2561 identifier
- * @{
- */
+/// @name TSL2561 identifier
+/// @{
 #define TSL2561_ID                        (0x50)
-/** @} */
+/// @}
 
-/**
- * @name TSL2561 internals registers
- * @{
- */
+/// @name TSL2561 internals registers
+/// @{
 #define TSL2561_REGISTER_CONTROL          (0x00)
 #define TSL2561_REGISTER_TIMING           (0x01)
 #define TSL2561_REGISTER_THRESHOLDLOW     (0x02)
@@ -39,32 +31,26 @@ extern "C" {
 #define TSL2561_REGISTER_ID               (0x0A)
 #define TSL2561_REGISTER_CHAN0            (0x0C)
 #define TSL2561_REGISTER_CHAN1            (0x0E)
-/** @} */
+/// @}
 
-/**
- * @name TSL2561 commands
- * @{
- */
+/// @name TSL2561 commands
+/// @{
 #define TSL2561_COMMAND_MODE              (0x80)
 #define TSL2561_COMMAND_CLEAR             (0x40)
 #define TSL2561_COMMAND_WORD              (0x20)
 #define TSL2561_COMMAND_BLOCK             (0x10)
-/** @} */
+/// @}
 
-/**
- * @name TSL2561 controls
- * @{
- */
+/// @name TSL2561 controls
+/// @{
 #define TSL2561_CONTROL_POWERON           (0x03)
 #define TSL2561_CONTROL_POWEROFF          (0x00)
-/** @} */
+/// @}
 
-/**
- * @name Internals constants
- * @{
- */
-#define TSL2561_LUXSCALE                  (14)      /* use 2e14 scaling */
-#define TSL2561_RATIOSCALE                (9)       /* use 2e9 scaling */
+/// @name Internals constants
+/// @{
+#define TSL2561_LUXSCALE                  (14)      // use 2e14 scaling
+#define TSL2561_RATIOSCALE                (9)       // use 2e9 scaling
 #define TSL2561_CHSCALE                   (10)      /* use 2e10 scaling on
                                                      * channel values by */
 #define TSL2561_CHSCALE_TINT0             (0x7517)
@@ -94,10 +80,10 @@ extern "C" {
 #define TSL2561_K8T                       (0x029a)
 #define TSL2561_B8T                       (0x0000)
 #define TSL2561_M8T                       (0x0000)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

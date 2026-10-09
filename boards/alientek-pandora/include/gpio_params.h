@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Luo Jia (HUST IoT Security Lab)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Luo Jia (HUST IoT Security Lab)
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_alientek-pandora
- * @{
- *
- * @file
- * @brief       Board specific configuration of direct mapped GPIOs
- *
- * @author      Luo Jia <luojia@hust.edu.cn>
- */
+/// @ingroup     boards_alientek-pandora
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration of direct mapped GPIOs
+///
+/// @author      Luo Jia <luojia@hust.edu.cn>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    GPIO pin configuration
- */
+/// @brief    GPIO pin configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
 #ifndef MODULE_SAUL_PWM
@@ -76,4 +70,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

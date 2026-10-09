@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief pthread test application
- *
- * Spawns pthreads till the scheduler's capacity is exhausted.
- *
- * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief pthread test application
+///
+/// Spawns pthreads till the scheduler's capacity is exhausted.
+///
+/// @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -27,16 +23,14 @@ static char dummy_stack[MAXTHREADS][THREAD_STACKSIZE_IDLE];
 static pthread_t pthread_ids[MAXTHREADS];
 static mutex_t testing_mutex;
 
-static void *thread_func(void *arg)
-{
+static void *thread_func(void *arg) {
     (void)arg;
     mutex_lock(&testing_mutex);
     mutex_unlock(&testing_mutex);
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     mutex_init(&testing_mutex);
     mutex_lock(&testing_mutex);
 

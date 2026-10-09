@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_netdev_eth
- * @{
- *
- * @file
- * @brief       Common code for netdev ethernet drivers
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     drivers_netdev_eth
+/// @{
+///
+/// @file
+/// @brief       Common code for netdev ethernet drivers
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -26,14 +22,13 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-int netdev_eth_get(netdev_t *dev, netopt_t opt, void *value, size_t max_len)
-{
+int netdev_eth_get(netdev_t *dev, netopt_t opt, void *value, size_t max_len) {
     int res = 0;
 
 #ifndef MODULE_L2FILTER
     (void)dev;
 #endif
-    (void)max_len;  /* only used in assert() */
+    (void)max_len;  // only used in assert()
     switch (opt) {
         case NETOPT_DEVICE_TYPE:
             {
@@ -83,8 +78,7 @@ int netdev_eth_get(netdev_t *dev, netopt_t opt, void *value, size_t max_len)
     return res;
 }
 
-int netdev_eth_set(netdev_t *dev, netopt_t opt, const void *value, size_t value_len)
-{
+int netdev_eth_set(netdev_t *dev, netopt_t opt, const void *value, size_t value_len) {
 #ifndef MODULE_L2FILTER
     (void)dev;
 #endif

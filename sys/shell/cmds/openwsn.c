@@ -1,22 +1,18 @@
-/*
- * Copyright 2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright 2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell command implementation for OpenWSN
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell command implementation for OpenWSN
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -84,8 +80,7 @@ static const struct {
     { "uinject", COMPONENT_UINJECT },
 };
 
-static char *_get_component(int id)
-{
+static char *_get_component(int id) {
     for (unsigned i = 0; i < ARRAY_SIZE(components); i++) {
         if (id == components[i].id) {
             return components[i].name;
@@ -94,14 +89,13 @@ static char *_get_component(int id)
     return NULL;
 }
 
-static int _openwsn_ifconfig(int argc, char **argv)
-{
+static int _openwsn_ifconfig(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
     open_addr_t *addr;
-    /* Use shared buffer for IEEE802154_LONG_ADDRES and IPV6_ADDR str
-       conversion */
+    // Use shared buffer for IEEE802154_LONG_ADDRES and IPV6_ADDR str
+    //    conversion
 #if IS_USED(MODULE_OPENWSN_IPV6)
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
 #else
@@ -126,8 +120,8 @@ static int _openwsn_ifconfig(int argc, char **argv)
                              addr_str));
 
     if (IS_USED(MODULE_OPENWSN_IPV6)) {
-        /* Can't recover ADDR_128B directly, recover ADDR_64B
-           and ADDR_PREFIX to construct ADDR_128B */
+        // Can't recover ADDR_128B directly, recover ADDR_64B
+        //    and ADDR_PREFIX to construct ADDR_128B
         open_addr_t addr_ipv6;
         addr = idmanager_getMyID(ADDR_64B);
         memcpy(&addr_ipv6.addr_128b[8], addr->addr_64b,
@@ -190,8 +184,7 @@ static int _openwsn_ifconfig(int argc, char **argv)
 
 SHELL_COMMAND(ifconfig, "Shows assigned IPv6 addresses", _openwsn_ifconfig);
 
-static int _neighbors_cmd(char *arg)
-{
+static int _neighbors_cmd(char *arg) {
     (void)arg;
 
     char hwaddr_str[IEEE802154_LONG_ADDRESS_LEN_STR_MAX];
@@ -210,8 +203,7 @@ static int _neighbors_cmd(char *arg)
     return 0;
 }
 
-static void _print_cell_usage(void)
-{
+static void _print_cell_usage(void) {
     puts("Usage:");
     puts("\tcell list: show all active cell");
     puts("\tcell add <slot_offset> <channel_offset> <adv|tx|rx>"
@@ -220,8 +212,7 @@ static void _print_cell_usage(void)
          " [<address>]: remove cell directly in schedule ");
 }
 
-static int _cell_list_cmd(char *arg)
-{
+static int _cell_list_cmd(char *arg) {
     (void)arg;
 
     extern schedule_vars_t schedule_vars;
@@ -258,8 +249,7 @@ static int _cell_list_cmd(char *arg)
     return 0;
 }
 
-static int _cell_manage_cmd(int argc, char **argv)
-{
+static int _cell_manage_cmd(int argc, char **argv) {
     open_addr_t addr;
     cellType_t type;
     int res;
@@ -316,8 +306,7 @@ static int _cell_manage_cmd(int argc, char **argv)
     }
 }
 
-static int _cell_cmd(int argc, char **argv)
-{
+static int _cell_cmd(int argc, char **argv) {
     if (argc < 2) {
         _print_cell_usage();
         return -1;
@@ -335,8 +324,7 @@ static int _cell_cmd(int argc, char **argv)
     return -1;
 }
 
-static void _print_6top_usage(void)
-{
+static void _print_6top_usage(void) {
     puts("Usage:");
     puts("\t6top clear [<neighbor>]:"
          " request neighbor to clear all cells");
@@ -348,8 +336,7 @@ static void _print_6top_usage(void)
          " request parent to relocate num cells");
 }
 
-static int _6top_manage_cmd(int argc, char **argv)
-{
+static int _6top_manage_cmd(int argc, char **argv) {
     cellInfo_ht cells_add[CELLLIST_MAX_LEN];
     cellInfo_ht cells_rmv[CELLLIST_MAX_LEN];
     open_addr_t neigh;
@@ -439,8 +426,7 @@ static int _6top_manage_cmd(int argc, char **argv)
     return 0;
 }
 
-static int _6top_cmd(int argc, char **argv)
-{
+static int _6top_cmd(int argc, char **argv) {
     if (argc < 2) {
         _print_6top_usage();
         return -1;
@@ -487,16 +473,14 @@ static int _6top_cmd(int argc, char **argv)
     return -1;
 }
 
-static void _print_queue_usage(void)
-{
+static void _print_queue_usage(void) {
     puts("Usage:");
     puts("\tqueue list: show all Openqueue entries");
     puts("\tqueue rmv <creator>: remove all entries"
          " from <creator> in queue");
 }
 
-static int _queue_cmd(int argc, char **argv)
-{
+static int _queue_cmd(int argc, char **argv) {
     if (argc < 2) {
         _print_queue_usage();
         return -1;
@@ -549,8 +533,7 @@ static int _queue_cmd(int argc, char **argv)
 }
 
 #if SCHEDULER_DEBUG_ENABLE
-static int _scheduler_cmd(char *arg)
-{
+static int _scheduler_cmd(char *arg) {
     (void)arg;
     extern scheduler_dbg_t scheduler_dbg;
 
@@ -561,8 +544,7 @@ static int _scheduler_cmd(char *arg)
 }
 #endif
 
-static void _print_usage(void)
-{
+static void _print_usage(void) {
     puts("Usage:");
     puts("\topenwsn neigh: show neighbor table");
     puts("\topenwsn queue: Openqueue management commands");
@@ -573,8 +555,7 @@ static void _print_usage(void)
 #endif
 }
 
-static int _openwsn_handler(int argc, char **argv)
-{
+static int _openwsn_handler(int argc, char **argv) {
     if (argc < 2) {
         _print_usage();
         return -1;

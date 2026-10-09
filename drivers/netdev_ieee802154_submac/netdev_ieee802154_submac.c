@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author José I. Alamos <jose.alamos@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+/// @author José I. Alamos <jose.alamos@haw-hamburg.de>
 
 #include <assert.h>
 #include <stdint.h>
@@ -26,23 +22,19 @@ static const ieee802154_submac_cb_t _cb;
 
 static const netdev_driver_t netdev_submac_driver;
 
-static uint32_t _isr_flags_get(netdev_ieee802154_submac_t *netdev_submac)
-{
+static uint32_t _isr_flags_get(netdev_ieee802154_submac_t *netdev_submac) {
     return atomic_load_u32(&netdev_submac->isr_flags);
 }
 
-static uint32_t _isr_flags_get_clear(netdev_ieee802154_submac_t *netdev_submac, uint32_t clear)
-{
+static uint32_t _isr_flags_get_clear(netdev_ieee802154_submac_t *netdev_submac, uint32_t clear) {
     return atomic_fetch_and_u32(&netdev_submac->isr_flags, ~clear);
 }
 
-static void _isr_flags_set(netdev_ieee802154_submac_t *netdev_submac, uint32_t set)
-{
+static void _isr_flags_set(netdev_ieee802154_submac_t *netdev_submac, uint32_t set) {
     atomic_fetch_or_u32(&netdev_submac->isr_flags, set);
 }
 
-static void _ack_timeout(void *arg)
-{
+static void _ack_timeout(void *arg) {
     netdev_ieee802154_submac_t *netdev_submac = arg;
     netdev_t *netdev = arg;
 
@@ -51,8 +43,7 @@ static void _ack_timeout(void *arg)
     netdev->event_callback(netdev, NETDEV_EVENT_ISR);
 }
 
-static netopt_state_t _get_submac_state(ieee802154_submac_t *submac)
-{
+static netopt_state_t _get_submac_state(ieee802154_submac_t *submac) {
     if (ieee802154_submac_state_is_idle(submac)) {
         return NETOPT_STATE_SLEEP;
     }
@@ -61,8 +52,7 @@ static netopt_state_t _get_submac_state(ieee802154_submac_t *submac)
     }
 }
 
-static int _get(netdev_t *netdev, netopt_t opt, void *value, size_t max_len)
-{
+static int _get(netdev_t *netdev, netopt_t opt, void *value, size_t max_len) {
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     netdev_ieee802154_submac_t *netdev_submac = container_of(netdev_ieee802154, netdev_ieee802154_submac_t, dev);
     ieee802154_submac_t *submac = &netdev_submac->submac;
@@ -91,8 +81,7 @@ static int _get(netdev_t *netdev, netopt_t opt, void *value, size_t max_len)
                                  value, max_len);
 }
 
-static int _set_submac_state(ieee802154_submac_t *submac, netopt_state_t state)
-{
+static int _set_submac_state(ieee802154_submac_t *submac, netopt_state_t state) {
     switch (state) {
         case NETOPT_STATE_SLEEP:
             return ieee802154_set_idle(submac);
@@ -106,8 +95,7 @@ static int _set_submac_state(ieee802154_submac_t *submac, netopt_state_t state)
 }
 
 static int _set(netdev_t *netdev, netopt_t opt, const void *value,
-                size_t value_len)
-{
+                size_t value_len) {
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     netdev_ieee802154_submac_t *netdev_submac = container_of(netdev_ieee802154,
                                                              netdev_ieee802154_submac_t,
@@ -151,8 +139,7 @@ static int _set(netdev_t *netdev, netopt_t opt, const void *value,
                                  opt, value, value_len);
 }
 
-void ieee802154_submac_bh_request(ieee802154_submac_t *submac)
-{
+void ieee802154_submac_bh_request(ieee802154_submac_t *submac) {
     netdev_ieee802154_submac_t *netdev_submac = container_of(submac,
                                                              netdev_ieee802154_submac_t,
                                                              submac);
@@ -163,8 +150,7 @@ void ieee802154_submac_bh_request(ieee802154_submac_t *submac)
     netdev->event_callback(netdev, NETDEV_EVENT_ISR);
 }
 
-void ieee802154_submac_ack_timer_set(ieee802154_submac_t *submac)
-{
+void ieee802154_submac_ack_timer_set(ieee802154_submac_t *submac) {
     netdev_ieee802154_submac_t *netdev_submac = container_of(submac,
                                                              netdev_ieee802154_submac_t,
                                                              submac);
@@ -173,19 +159,17 @@ void ieee802154_submac_ack_timer_set(ieee802154_submac_t *submac)
     ztimer_set(ZTIMER_USEC, &netdev_submac->ack_timer, submac->ack_timeout_us);
 }
 
-void ieee802154_submac_ack_timer_cancel(ieee802154_submac_t *submac)
-{
+void ieee802154_submac_ack_timer_cancel(ieee802154_submac_t *submac) {
     netdev_ieee802154_submac_t *netdev_submac = container_of(submac,
                                                              netdev_ieee802154_submac_t,
                                                              submac);
     DEBUG("IEEE802154 submac: Removing ACK timeout\n");
     ztimer_remove(ZTIMER_USEC, &netdev_submac->ack_timer);
-    /* Prevent a race condition between the RX_DONE event and the ACK timeout */
+    // Prevent a race condition between the RX_DONE event and the ACK timeout
     _isr_flags_get_clear(netdev_submac, NETDEV_SUBMAC_FLAGS_ACK_TIMEOUT);
 }
 
-static int _send(netdev_t *netdev, const iolist_t *pkt)
-{
+static int _send(netdev_t *netdev, const iolist_t *pkt) {
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     netdev_ieee802154_submac_t *netdev_submac = container_of(netdev_ieee802154,
                                                              netdev_ieee802154_submac_t,
@@ -194,8 +178,8 @@ static int _send(netdev_t *netdev, const iolist_t *pkt)
 
     int res = ieee802154_send(submac, pkt);
     if (res >= 0) {
-        /* HACK: Used to mark a transmission when called
-         * inside the TX Done callback */
+        // HACK: Used to mark a transmission when called
+        // inside the TX Done callback
         netdev_submac->ev = NETDEV_EVENT_TX_STARTED;
     }
     if (res == 0) {
@@ -209,8 +193,7 @@ static int _send(netdev_t *netdev, const iolist_t *pkt)
     return res;
 }
 
-static void _isr(netdev_t *netdev)
-{
+static void _isr(netdev_t *netdev) {
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     netdev_ieee802154_submac_t *netdev_submac = container_of(netdev_ieee802154,
                                                              netdev_ieee802154_submac_t,
@@ -262,14 +245,14 @@ static void _isr(netdev_t *netdev)
     } while (_isr_flags_get(netdev_submac));
 
     if (netdev_submac->dispatch) {
-        /* The SubMAC will not generate further events after calling TX Done or RX Done. */
+        // The SubMAC will not generate further events after calling TX Done or RX Done.
         netdev_submac->dispatch = false;
-        /* TODO: Prevent race condition when state goes to PREPARE */
+        // TODO: Prevent race condition when state goes to PREPARE
         DEBUG("IEEE802154 submac: _isr(): dispatching %d\n", netdev_submac->ev);
         netdev->event_callback(netdev, netdev_submac->ev);
-        /* HACK: the TX_STARTED event is used to indicate a frame was
-         * sent during the event callback.
-         * If no frame was sent go back to RX */
+        // HACK: the TX_STARTED event is used to indicate a frame was
+        // sent during the event callback.
+        // If no frame was sent go back to RX
         ieee802154_set_rx(submac);
     }
     else {
@@ -277,8 +260,7 @@ static void _isr(netdev_t *netdev)
     }
 }
 
-static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     netdev_ieee802154_submac_t *netdev_submac = container_of(netdev_ieee802154,
                                                              netdev_ieee802154_submac_t,
@@ -295,8 +277,8 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
     if (info) {
         netdev_ieee802154_rx_info_t *netdev_rx_info = info;
 
-        /* The Radio HAL uses the IEEE 802.15.4 definition for RSSI.
-         * Netdev uses dBm. Therefore we need a translation here */
+        // The Radio HAL uses the IEEE 802.15.4 definition for RSSI.
+        // Netdev uses dBm. Therefore we need a translation here
         netdev_rx_info->rssi = ieee802154_rssi_to_dbm(rx_info.rssi);
         netdev_rx_info->lqi = rx_info.lqi;
 
@@ -317,7 +299,7 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
         if (!ieee802154_radio_has_capability(&submac->dev, IEEE802154_CAP_AUTO_ACK) &&
             (ieee802154_radio_get_frame_filter_mode(&submac->dev, &mode) < 0
                 || mode == IEEE802154_FILTER_ACCEPT)) {
-            /* send ACK if not handled by the driver and not in promiscuous mode */
+            // send ACK if not handled by the driver and not in promiscuous mode
             uint8_t ack[IEEE802154_ACK_FRAME_LEN - IEEE802154_FCS_LEN]
                 = { IEEE802154_FCF_TYPE_ACK, 0x00, ieee802154_get_seq(mhr) };
             iolist_t io = {
@@ -337,8 +319,7 @@ static int _recv(netdev_t *netdev, void *buf, size_t len, void *info)
 }
 
 static void submac_tx_done(ieee802154_submac_t *submac, int status,
-                           ieee802154_tx_info_t *info)
-{
+                           ieee802154_tx_info_t *info) {
     (void)status;
     netdev_ieee802154_submac_t *netdev_submac = container_of(submac,
                                                              netdev_ieee802154_submac_t,
@@ -365,8 +346,7 @@ static void submac_tx_done(ieee802154_submac_t *submac, int status,
     }
 }
 
-static void submac_rx_done(ieee802154_submac_t *submac)
-{
+static void submac_rx_done(ieee802154_submac_t *submac) {
     netdev_ieee802154_submac_t *netdev_submac = container_of(submac,
                                                              netdev_ieee802154_submac_t,
                                                              submac);
@@ -381,9 +361,8 @@ static const ieee802154_submac_cb_t _cb = {
     .tx_done = submac_tx_done,
 };
 
-/* Event Notification callback */
-static void _hal_radio_cb(ieee802154_dev_t *dev, ieee802154_trx_ev_t status)
-{
+// Event Notification callback
+static void _hal_radio_cb(ieee802154_dev_t *dev, ieee802154_trx_ev_t status) {
     ieee802154_submac_t *submac = container_of(dev, ieee802154_submac_t, dev);
     netdev_ieee802154_submac_t *netdev_submac = container_of(submac,
                                                              netdev_ieee802154_submac_t,
@@ -411,8 +390,7 @@ static void _hal_radio_cb(ieee802154_dev_t *dev, ieee802154_trx_ev_t status)
     netdev->event_callback(netdev, NETDEV_EVENT_ISR);
 }
 
-static int _init(netdev_t *netdev)
-{
+static int _init(netdev_t *netdev) {
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     netdev_ieee802154_submac_t *netdev_submac = container_of(netdev_ieee802154,
                                                              netdev_ieee802154_submac_t,
@@ -428,7 +406,7 @@ static int _init(netdev_t *netdev)
         return res;
     }
 
-    /* This function already sets the PAN ID to the default one */
+    // This function already sets the PAN ID to the default one
     netdev_ieee802154_reset(netdev_ieee802154);
 
     uint16_t chan = submac->channel_num;
@@ -436,7 +414,7 @@ static int _init(netdev_t *netdev)
     static const netopt_enable_t ack_req =
         IS_ACTIVE(CONFIG_IEEE802154_DEFAULT_ACK_REQ) ? NETOPT_ENABLE : NETOPT_DISABLE;
 
-    /* Initialise netdev_ieee802154_t struct */
+    // Initialise netdev_ieee802154_t struct
     netdev_ieee802154_set(netdev_ieee802154, NETOPT_CHANNEL,
                           &chan, sizeof(chan));
     netdev_ieee802154_set(netdev_ieee802154, NETOPT_ACK_REQ,
@@ -444,14 +422,13 @@ static int _init(netdev_t *netdev)
 
     netdev_submac->dev.txpower = tx_power;
 
-    /* signal link UP */
+    // signal link UP
     netdev->event_callback(netdev, NETDEV_EVENT_LINK_UP);
 
     return 0;
 }
 
-static int _confirm_send(netdev_t *netdev, void *info)
-{
+static int _confirm_send(netdev_t *netdev, void *info) {
     (void)info;
     netdev_ieee802154_t *netdev_ieee802154 = container_of(netdev, netdev_ieee802154_t, netdev);
     netdev_ieee802154_submac_t *netdev_submac = container_of(netdev_ieee802154,
@@ -460,8 +437,7 @@ static int _confirm_send(netdev_t *netdev, void *info)
     return netdev_submac->bytes_tx;
 }
 
-int netdev_ieee802154_submac_init(netdev_ieee802154_submac_t *netdev_submac)
-{
+int netdev_ieee802154_submac_init(netdev_ieee802154_submac_t *netdev_submac) {
     netdev_t *netdev = &netdev_submac->dev.netdev;
 
     netdev->driver = &netdev_submac_driver;
@@ -469,7 +445,7 @@ int netdev_ieee802154_submac_init(netdev_ieee802154_submac_t *netdev_submac)
 
     submac->cb = &_cb;
 
-    /* Set the Event Notification */
+    // Set the Event Notification
     submac->dev.cb = _hal_radio_cb;
 
     netdev_submac->ack_timer.callback = _ack_timeout;
@@ -488,4 +464,4 @@ static const netdev_driver_t netdev_submac_driver = {
     .confirm_send = _confirm_send,
 };
 
-/** @} */
+/// @}

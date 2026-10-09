@@ -1,34 +1,30 @@
-/*
- * Copyright (C) 2008  D. J. Bernstein  (dedicated to the public domain)
- * Copyright (C) 2015  René Kijewski  <rene.kijewski@fu-berlin.de>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// Copyright (C) 2008  D. J. Bernstein  (dedicated to the public domain)
+// Copyright (C) 2015  René Kijewski  <rene.kijewski@fu-berlin.de>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
 
-/*
- * Please notice:
- *  - This implementation of the ChaCha stream cipher is very stripped down.
- *  - It assumes a little-endian system.
- *  - It is implemented for little code and data size, but will likely be
- *    slower than the reference implementation. Optimized implementation will
- *    out-perform the code even more.
- */
+// Please notice:
+//  - This implementation of the ChaCha stream cipher is very stripped down.
+//  - It assumes a little-endian system.
+//  - It is implemented for little code and data size, but will likely be
+//    slower than the reference implementation. Optimized implementation will
+//    out-perform the code even more.
 
 #include "crypto/chacha.h"
 #include "byteorder.h"
@@ -40,24 +36,22 @@
 
 #include <string.h>
 
-static void _r(uint32_t *d, uint32_t *a, const uint32_t *b, unsigned c)
-{
+static void _r(uint32_t *d, uint32_t *a, const uint32_t *b, unsigned c) {
     *a += *b;
     uint32_t tmp = *a ^ *d;
     *d = (tmp << c) | (tmp >> (32 - c));
 }
 
 static void _doubleround(void *output_, const uint32_t input[16],
-                         uint8_t rounds)
-{
+                         uint8_t rounds) {
     uint32_t *output = (uint32_t *)output_;
 
     memcpy(output, input, 64);
 
     rounds *= 4;
     for (unsigned i = 0; i < rounds; ++i) {
-        /* cppcheck-suppress duplicateExpressionTernary
-         * (reason: Externally imported code beautification) */
+        // cppcheck-suppress duplicateExpressionTernary
+        // (reason: Externally imported code beautification)
         uint32_t *a = &output[((i + ((i & 4) ? 0 : 0)) & 3) + (4 * 0)];
         uint32_t *b = &output[((i + ((i & 4) ? 1 : 0)) & 3) + (4 * 1)];
         uint32_t *c = &output[((i + ((i & 4) ? 2 : 0)) & 3) + (4 * 2)];
@@ -77,8 +71,7 @@ static void _doubleround(void *output_, const uint32_t input[16],
 int chacha_init(chacha_ctx *ctx,
                 unsigned rounds,
                 const uint8_t *key, uint32_t keylen,
-                const uint8_t nonce[8])
-{
+                const uint8_t nonce[8]) {
     if (keylen == 32) {
         memcpy(ctx->state + 0, "expand 32-byte k", 16);
         memcpy(ctx->state + 4, key, 32);
@@ -105,8 +98,7 @@ int chacha_init(chacha_ctx *ctx,
     return 0;
 }
 
-void chacha_keystream_bytes(chacha_ctx *ctx, void *x)
-{
+void chacha_keystream_bytes(chacha_ctx *ctx, void *x) {
     _doubleround(x, ctx->state, ctx->rounds);
 
     ++ctx->state[12];
@@ -115,8 +107,7 @@ void chacha_keystream_bytes(chacha_ctx *ctx, void *x)
     }
 }
 
-void chacha_encrypt_bytes(chacha_ctx *ctx, const uint8_t *m, uint8_t *c)
-{
+void chacha_encrypt_bytes(chacha_ctx *ctx, const uint8_t *m, uint8_t *c) {
     uint8_t x[64];
 
     chacha_keystream_bytes(ctx, x);

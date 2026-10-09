@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2013-2014 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013-2014 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_rtc
- * @brief   Native CPU periph/rtc.h implementation
- * @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * @{
- *
- * The implementation uses POSIX system calls to emulate a real-time
- * clock based on the system clock.
- *
- * @}
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_rtc
+/// @brief   Native CPU periph/rtc.h implementation
+/// @author  Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+/// @{
+///
+/// The implementation uses POSIX system calls to emulate a real-time
+/// clock based on the system clock.
+///
+/// @}
 
 #include <err.h>
 #include <errno.h>
@@ -33,9 +29,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief   Time source of the native RTC
- */
+/// @brief   Time source of the native RTC
 #ifndef NATIVE_RTC_SOURCE
 #  define NATIVE_RTC_SOURCE CLOCK_REALTIME
 #endif
@@ -57,7 +51,7 @@ static void _native_rtc_cb(void *arg) {
     _native_rtc_alarm_callback = NULL;
 }
 
-/* RIOT does not expect DST or TZ information */
+// RIOT does not expect DST or TZ information
 static void _remove_struct_tm_extra( struct tm * t ){
     struct tm tmp = {.tm_year = t->tm_year,
                      .tm_mon = t->tm_mon,
@@ -70,8 +64,7 @@ static void _remove_struct_tm_extra( struct tm * t ){
     *t = tmp;
 }
 
-void rtc_init(void)
-{
+void rtc_init(void) {
     DEBUG("rtc_init\n");
 
     ztimer_remove(ZTIMER_MSEC, &_native_rtc_timer);
@@ -88,8 +81,7 @@ void rtc_init(void)
     rtc_poweron();
 }
 
-void rtc_poweron(void)
-{
+void rtc_poweron(void) {
     DEBUG("rtc_poweron\n");
 
     if (!_native_rtc_initialized) {
@@ -100,8 +92,7 @@ void rtc_poweron(void)
     _native_rtc_powered = 1;
 }
 
-void rtc_poweroff(void)
-{
+void rtc_poweroff(void) {
     DEBUG("rtc_poweroff()\n");
 
     if (!_native_rtc_initialized) {
@@ -120,8 +111,7 @@ void rtc_poweroff(void)
     _native_rtc_powered = 0;
 }
 
-int rtc_set_time(struct tm *ttime)
-{
+int rtc_set_time(struct tm *ttime) {
     DEBUG_PUTS("rtc_set_time()");
 
     if (!_native_rtc_initialized) {
@@ -132,11 +122,11 @@ int rtc_set_time(struct tm *ttime)
         warnx("rtc_set_time: not powered on");
         return -1;
     }
-    /* ensure there is no accidental extra information */
+    // ensure there is no accidental extra information
     struct tm itime = *ttime;
     _remove_struct_tm_extra(&itime);
 
-    /* mktime() and localtime are only inverse functions if tm_isdst == -1 */
+    // mktime() and localtime are only inverse functions if tm_isdst == -1
     itime.tm_isdst = -1;
     time_t tnew = mktime(&itime);
 
@@ -161,8 +151,7 @@ int rtc_set_time(struct tm *ttime)
     return 0;
 }
 
-int rtc_get_time_ms(struct tm *ttime, uint16_t *ms)
-{
+int rtc_get_time_ms(struct tm *ttime, uint16_t *ms) {
     struct timespec tv;
 
     if (!_native_rtc_initialized) {
@@ -187,19 +176,17 @@ int rtc_get_time_ms(struct tm *ttime, uint16_t *ms)
     }
     _native_syscall_leave();
 
-    /* RIOT does not handle DST or TZ information */
+    // RIOT does not handle DST or TZ information
     _remove_struct_tm_extra(ttime);
 
     return 0;
 }
 
-int rtc_get_time(struct tm *ttime)
-{
+int rtc_get_time(struct tm *ttime) {
     return rtc_get_time_ms(ttime, NULL);
 }
 
-int rtc_set_alarm(struct tm *time, rtc_alarm_cb_t cb, void *arg)
-{
+int rtc_set_alarm(struct tm *time, rtc_alarm_cb_t cb, void *arg) {
     if (!_native_rtc_initialized) {
         warnx("rtc_set_alarm: not initialized");
         return -EIO;
@@ -212,12 +199,12 @@ int rtc_set_alarm(struct tm *time, rtc_alarm_cb_t cb, void *arg)
     struct tm now;
     rtc_get_time(&now);
 
-    /* ensure there is no accidental extra information */
+    // ensure there is no accidental extra information
     struct tm intime = *time;
     _remove_struct_tm_extra(&intime);
 
-    /* tm_idst are ignored for these mktime calls since
-     * both times carry the same (00) timezone information */
+    // tm_idst are ignored for these mktime calls since
+    // both times carry the same (00) timezone information
     time_t tdiff_secs = mktime(&intime) - mktime(&now);
 
     if (_native_rtc_alarm_callback) {
@@ -235,8 +222,7 @@ int rtc_set_alarm(struct tm *time, rtc_alarm_cb_t cb, void *arg)
     return 0;
 }
 
-int rtc_get_alarm(struct tm *time)
-{
+int rtc_get_alarm(struct tm *time) {
     if (!_native_rtc_initialized) {
         warnx("rtc_get_alarm: not initialized");
         return -1;
@@ -251,8 +237,7 @@ int rtc_get_alarm(struct tm *time)
     return 0;
 }
 
-void rtc_clear_alarm(void)
-{
+void rtc_clear_alarm(void) {
     DEBUG("rtc_clear_alarm()\n");
 
     if (!_native_rtc_initialized) {

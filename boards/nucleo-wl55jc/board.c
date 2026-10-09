@@ -1,45 +1,37 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_nucleo-wl55jc
- * @{
- *
- * @file        board.c
- * @brief       Board specific implementations for the Nucleo-wl55jc board
- *
- *
- * @author      Akshai M <akshai.m@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     boards_nucleo-wl55jc
+/// @{
+///
+/// @file        board.c
+/// @brief       Board specific implementations for the Nucleo-wl55jc board
+///
+///
+/// @author      Akshai M <akshai.m@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
 #include "board.h"
 #include "periph/gpio.h"
 
-void board_init(void)
-{
+void board_init(void) {
     if (IS_USED(MODULE_SX126X_STM32WL)) {
-        /* Initialize the GPIO control for RF 3-port switch (SP3T) */
+        // Initialize the GPIO control for RF 3-port switch (SP3T)
         gpio_init(FE_CTRL1, GPIO_OUT);
         gpio_init(FE_CTRL2, GPIO_OUT);
         gpio_init(FE_CTRL3, GPIO_OUT);
     }
 }
 
-/**
- * @brief Callback to set RF switch mode
- *
- * This function sets the GPIO's wired to the SP3T RF Switch. Nucleo-WL55JC
- * supports three modes of operation.
- */
+/// @brief Callback to set RF switch mode
+///
+/// This function sets the GPIO's wired to the SP3T RF Switch. Nucleo-WL55JC
+/// supports three modes of operation.
 #if IS_USED(MODULE_SX126X_STM32WL)
-void nucleo_wl55jc_sx126x_set_rf_mode(sx126x_t *dev, sx126x_rf_mode_t rf_mode)
-{
+void nucleo_wl55jc_sx126x_set_rf_mode(sx126x_t *dev, sx126x_rf_mode_t rf_mode) {
     (void)dev;
     switch (rf_mode) {
     case SX126X_RF_MODE_RX:

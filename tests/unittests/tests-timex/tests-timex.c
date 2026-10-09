@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2014 Philipp Rosenkranz, Daniel Jentsch
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Philipp Rosenkranz, Daniel Jentsch
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tests-timex.h"
 
 #include "timex.h"
 
-static void test_timex_set(void)
-{
+static void test_timex_set(void) {
     timex_t time;
     time = timex_set(1, 0);
     TEST_ASSERT_EQUAL_INT(1, time.seconds);
     TEST_ASSERT_EQUAL_INT(0, time.microseconds);
 }
 
-static void test_timex_add(void)
-{
+static void test_timex_add(void) {
     timex_t time;
     time = timex_add(timex_set(100, 100), timex_set(40, 10));
     TEST_ASSERT_EQUAL_INT(0, timex_cmp(time, timex_set(140, 110)));
@@ -25,8 +21,7 @@ static void test_timex_add(void)
     TEST_ASSERT_EQUAL_INT(0, timex_cmp(time, timex_set(141, 500000)));
 }
 
-static void test_timex_sub(void)
-{
+static void test_timex_sub(void) {
     timex_t time;
     time = timex_sub(timex_set(100, 100), timex_set(40, 10));
     TEST_ASSERT_EQUAL_INT(0, timex_cmp(time, timex_set(60, 90)));
@@ -34,16 +29,14 @@ static void test_timex_sub(void)
     TEST_ASSERT_EQUAL_INT(0, timex_cmp(time, timex_set(59, 999900)));
 }
 
-static void test_timex_from_uint64(void)
-{
+static void test_timex_from_uint64(void) {
     timex_t time;
     time = timex_from_uint64(1001000);
     TEST_ASSERT(time.seconds == 1);
     TEST_ASSERT(time.microseconds == 1000);
 }
 
-static void test_timex_to_str(void)
-{
+static void test_timex_to_str(void) {
     timex_t t = { 0, 0 };
     char t_str[TIMEX_MAX_STR_LEN];
 
@@ -60,12 +53,11 @@ static void test_timex_to_str(void)
     t.microseconds = 101010;
     TEST_ASSERT_EQUAL_STRING("100.101010 s", timex_to_str(t, t_str));
     t.seconds = UINT32_MAX;
-    t.microseconds = 999999;        /* should be .999999 */
+    t.microseconds = 999999;        // should be .999999
     TEST_ASSERT_EQUAL_STRING("4294967295.999999 s", timex_to_str(t, t_str));
 }
 
-Test *tests_timex_tests(void)
-{
+Test *tests_timex_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_timex_set),
         new_TestFixture(test_timex_add),
@@ -79,7 +71,6 @@ Test *tests_timex_tests(void)
     return (Test *)&timex_tests;
 }
 
-void tests_timex(void)
-{
+void tests_timex(void) {
     TESTS_RUN(tests_timex_tests());
 }

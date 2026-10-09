@@ -1,28 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2015 Jan Wagner <mail@jwagner.eu>
- * SPDX-FileCopyrightText: 2015-2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Jan Wagner <mail@jwagner.eu>
+// SPDX-FileCopyrightText: 2015-2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf5x_common
- * @ingroup     drivers_periph_gpio_ll
- * @{
- *
- * @file
- * @brief       Peripheral GPIO Low-Level API implementation for the nRF5x MCU family
- *
- * @author      Christian Kühling <kuehling@zedat.fu-berlin.de>
- * @author      Timo Ziegler <timo.ziegler@fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Jan Wagner <mail@jwagner.eu>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     cpu_nrf5x_common
+/// @ingroup     drivers_periph_gpio_ll
+/// @{
+///
+/// @file
+/// @brief       Peripheral GPIO Low-Level API implementation for the nRF5x MCU family
+///
+/// @author      Christian Kühling <kuehling@zedat.fu-berlin.de>
+/// @author      Timo Ziegler <timo.ziegler@fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Jan Wagner <mail@jwagner.eu>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <assert.h>
 #include <errno.h>
@@ -37,14 +33,12 @@
 #  include "fmt.h"
 #else
 #  include <stdio.h>
-static inline void print_str(const char *str)
-{
+static inline void print_str(const char *str) {
     fputs(str, stdout);
 }
 #endif
 
-int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
-{
+int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf) {
     if (conf.pull == GPIO_PULL_KEEP) {
         return -ENOTSUP;
     }
@@ -52,7 +46,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
     uint32_t pin_cnf = (unsigned)conf.pull << GPIO_PIN_CNF_PULL_Pos;
     switch (conf.state) {
     case GPIO_OUTPUT_PUSH_PULL:
-        /* INPUT bit needs to be *CLEARED* in input mode, so set to disconnect input buffer */
+        // INPUT bit needs to be *CLEARED* in input mode, so set to disconnect input buffer
         pin_cnf |= GPIO_PIN_CNF_DIR_Msk | GPIO_PIN_CNF_INPUT_Msk;
         if (conf.drive_strength) {
             pin_cnf |= GPIO_PIN_CNF_DRIVE_H0H1 << GPIO_PIN_CNF_DRIVE_Pos;
@@ -80,7 +74,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
         break;
     case GPIO_DISCONNECT:
     default:
-        /* INPUT bit needs to be *CLEARED* in input mode, so set to disconnect input buffer */
+        // INPUT bit needs to be *CLEARED* in input mode, so set to disconnect input buffer
         pin_cnf |= GPIO_PIN_CNF_INPUT_Msk;
         break;
     }
@@ -111,8 +105,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
     return 0;
 }
 
-gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
-{
+gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin) {
     gpio_conf_t result = { 0 };
     assert((NULL == gpio_port_unpack_addr(port)) && (pin < 32));
     result.state = GPIO_INPUT;
@@ -121,48 +114,47 @@ gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
     uint32_t cnf = p->PIN_CNF[pin];
 
     if (cnf & GPIO_PIN_CNF_DIR_Msk) {
-        /* some kind of output, determine which: */
+        // some kind of output, determine which:
         switch ((cnf >> GPIO_PIN_CNF_DRIVE_Pos) & 0xf) {
         default:
-            /* push-pull with mix of high drive and standard drive (e.g. high
-             * drive for 0, standard drive for 1) is also possible
-             * hardware-wise, but not supported via the API. Anyways, if someone
-             * bypassed the API to set this, get at least the closest match to
-             * the configuration.
-             */
+            // push-pull with mix of high drive and standard drive (e.g. high
+            // drive for 0, standard drive for 1) is also possible
+            // hardware-wise, but not supported via the API. Anyways, if someone
+            // bypassed the API to set this, get at least the closest match to
+            // the configuration.
         case GPIO_PIN_CNF_DRIVE_S0S1:
-            /* standard drive 0, standard drive 1
-             * --> push pull with weak drive */
+            // standard drive 0, standard drive 1
+            // --> push pull with weak drive
             result.state = GPIO_OUTPUT_PUSH_PULL;
             result.drive_strength = GPIO_DRIVE_WEAK;
             break;
         case GPIO_PIN_CNF_DRIVE_H0H1:
-            /* high drive 0, high drive 1
-             * --> push pull with high drive */
+            // high drive 0, high drive 1
+            // --> push pull with high drive
             result.state = GPIO_OUTPUT_PUSH_PULL;
             result.drive_strength = GPIO_DRIVE_STRONG;
             break;
         case GPIO_PIN_CNF_DRIVE_S0D1:
-            /* standard drive 0, disconnect at 1
-             * --> open drain with weak drive */
+            // standard drive 0, disconnect at 1
+            // --> open drain with weak drive
             result.state = GPIO_OUTPUT_OPEN_DRAIN;
             result.drive_strength = GPIO_DRIVE_WEAK;
             break;
         case GPIO_PIN_CNF_DRIVE_H0D1:
-            /* high drive 0, disconnect at 1
-             * --> open drain with strong drive */
+            // high drive 0, disconnect at 1
+            // --> open drain with strong drive
             result.state = GPIO_OUTPUT_OPEN_DRAIN;
             result.drive_strength = GPIO_DRIVE_STRONG;
             break;
         case GPIO_PIN_CNF_DRIVE_D0S1:
-            /* disconnect at 0, standard drive 1
-             * --> open emitter with weak drive */
+            // disconnect at 0, standard drive 1
+            // --> open emitter with weak drive
             result.state = GPIO_OUTPUT_OPEN_SOURCE;
             result.drive_strength = GPIO_DRIVE_WEAK;
             break;
         case GPIO_PIN_CNF_DRIVE_D0H1:
-            /* disconnect at 0, high drive 1
-             * --> open emitter with strong drive */
+            // disconnect at 0, high drive 1
+            // --> open emitter with strong drive
             result.state = GPIO_OUTPUT_OPEN_SOURCE;
             result.drive_strength = GPIO_DRIVE_STRONG;
             break;
@@ -170,9 +162,8 @@ gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
     }
     else {
         if (cnf & GPIO_PIN_CNF_INPUT_Msk) {
-            /* input buffer is disconnected and pin is not in output mode
-             * --> GPIO pin is off
-             */
+            // input buffer is disconnected and pin is not in output mode
+            // --> GPIO pin is off
             result.state = GPIO_DISCONNECT;
         }
     }
@@ -199,8 +190,7 @@ gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
     return result;
 }
 
-void gpio_ll_print_conf(gpio_conf_t conf)
-{
+void gpio_ll_print_conf(gpio_conf_t conf) {
     static const char *drive_strs[] = {
         [GPIO_DRIVE_WEAK] = "weak",
         [GPIO_DRIVE_STRONG] = "strong",

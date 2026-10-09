@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_itg320x
- * @brief       Device driver for the InvenSense ITG320X 3-axis gyroscope
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_itg320x
+/// @brief       Device driver for the InvenSense ITG320X 3-axis gyroscope
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include <assert.h>
 #include <string.h>
@@ -44,7 +40,7 @@
         } \
     } while (0)
 
-/** Forward declaration of functions for internal use */
+/// Forward declaration of functions for internal use
 
 static int _is_available(const itg320x_t *dev);
 static int _reset(itg320x_t *dev);
@@ -53,30 +49,29 @@ static int _reg_read(const itg320x_t *dev, uint8_t reg, uint8_t *data, uint16_t 
 static int _reg_write(const itg320x_t *dev, uint8_t reg, uint8_t data);
 static int _update_reg(const itg320x_t *dev, uint8_t reg, uint8_t mask, uint8_t val);
 
-int itg320x_init(itg320x_t *dev, const itg320x_params_t *params)
-{
+int itg320x_init(itg320x_t *dev, const itg320x_params_t *params) {
     assert(dev != NULL);
     assert(params != NULL);
 
     DEBUG_DEV("params=%p", dev, params);
 
-    /* init sensor data structure */
+    // init sensor data structure
     dev->params = *params;
 
-    /* check availability of the sensor */
+    // check availability of the sensor
     EXEC_RET(_is_available(dev));
 
-    /* reset the sensor */
+    // reset the sensor
     EXEC_RET(_reset(dev));
 
-    /* set internal sample rate divider (ISR) from parameters */
+    // set internal sample rate divider (ISR) from parameters
     EXEC_RET(_reg_write(dev, ITG320X_REG_SMPLRT_DIV, params->isr_div));
 
-    /* set full scale always to +-2000 and LPF bandwidth from parameters */
+    // set full scale always to +-2000 and LPF bandwidth from parameters
     EXEC_RET(_reg_write(dev, ITG320X_REG_DLPFS,
                         params->lpf_bw | ITG320X_REG_DLPFS_FS_SEL_VAL));
 
-    /* set clock source selection from parameters */
+    // set clock source selection from parameters
     EXEC_RET(_reg_write(dev, ITG320X_REG_PWR_MGM, params->clk_sel));
 
     return ITG320X_OK;
@@ -84,29 +79,26 @@ int itg320x_init(itg320x_t *dev, const itg320x_params_t *params)
 
 #ifdef MODULE_ITG320X_INT
 
-int itg320x_init_int(const itg320x_t *dev, itg320x_drdy_int_cb_t cb, void *arg)
-{
+int itg320x_init_int(const itg320x_t *dev, itg320x_drdy_int_cb_t cb, void *arg) {
     assert(dev != NULL);
     assert(gpio_is_valid(dev->params.int_pin));
 
     DEBUG_DEV("cb=%p, arg=%p", dev, cb, arg);
 
     if (dev->params.int_level == ITG320X_INT_HIGH) {
-        /* for high active interrupt signal (default) */
+        // for high active interrupt signal (default)
         gpio_init_int(dev->params.int_pin, GPIO_IN, GPIO_RISING, cb, arg);
     }
     else {
-        /* for low active interrupt signal (default) */
+        // for low active interrupt signal (default)
         gpio_init_int(dev->params.int_pin, GPIO_IN, GPIO_FALLING, cb, arg);
     }
 
-    /*
-     * Set interrupt configuration as following
-     * - Logic level and drive type used from parameters
-     * - Latching interrupt is enabled
-     * - Latch clear method is reading the status register
-     * - RAW data ready interrupt is enabled
-     */
+    // Set interrupt configuration as following
+    // - Logic level and drive type used from parameters
+    // - Latching interrupt is enabled
+    // - Latch clear method is reading the status register
+    // - RAW data ready interrupt is enabled
     EXEC_RET(_reg_write(dev, ITG320X_REG_INT_CFG,
                         dev->params.int_level | dev->params.int_drive |
                         ITG320X_REG_INT_CFG_LATCH_INT |
@@ -116,10 +108,9 @@ int itg320x_init_int(const itg320x_t *dev, itg320x_drdy_int_cb_t cb, void *arg)
     return ITG320X_OK;
 }
 
-#endif /* MODULE_ITG320X_INT */
+#endif // MODULE_ITG320X_INT
 
-int itg320x_data_ready(const itg320x_t *dev)
-{
+int itg320x_data_ready(const itg320x_t *dev) {
     assert(dev != NULL);
 
     DEBUG_DEV("", dev);
@@ -131,8 +122,7 @@ int itg320x_data_ready(const itg320x_t *dev)
                                                   : ITG320X_ERROR_NO_DATA;
 }
 
-int itg320x_read(const itg320x_t *dev, itg320x_data_t *data)
-{
+int itg320x_read(const itg320x_t *dev, itg320x_data_t *data) {
     assert(dev != NULL);
     assert(data != NULL);
 
@@ -142,12 +132,10 @@ int itg320x_read(const itg320x_t *dev, itg320x_data_t *data)
 
     EXEC_RET(itg320x_read_raw(dev, &raw));
 
-    /*
-     * The sensitivity of the sensor is 1/14.375 degree/seconds per LSB
-     * with a tolerance of the scale factor of +-6 %. Scale raw values to
-     * tenths of a degree/seconds according to sensors sensitivity
-     * which corresponds to 8/115 degrees/seconds per LSB.
-     */
+    // The sensitivity of the sensor is 1/14.375 degree/seconds per LSB
+    // with a tolerance of the scale factor of +-6 %. Scale raw values to
+    // tenths of a degree/seconds according to sensors sensitivity
+    // which corresponds to 8/115 degrees/seconds per LSB.
     data->x = (uint32_t)(raw.x * 80 / 115);
     data->y = (uint32_t)(raw.y * 80 / 115);
     data->z = (uint32_t)(raw.z * 80 / 115);
@@ -155,8 +143,7 @@ int itg320x_read(const itg320x_t *dev, itg320x_data_t *data)
     return ITG320X_OK;
 }
 
-int itg320x_read_raw(const itg320x_t *dev, itg320x_raw_data_t *raw)
-{
+int itg320x_read_raw(const itg320x_t *dev, itg320x_raw_data_t *raw) {
     assert(dev != NULL);
     assert(raw != NULL);
 
@@ -164,24 +151,23 @@ int itg320x_read_raw(const itg320x_t *dev, itg320x_raw_data_t *raw)
 
     uint8_t data[6];
 
-    /* read raw data sample */
+    // read raw data sample
     EXEC_RET(_reg_read(dev, ITG320X_REG_GYRO_XOUT_H, data, 6));
 
-    /* data MSB @ lower address */
+    // data MSB @ lower address
     raw->x = (data[0] << 8) | data[1];
     raw->y = (data[2] << 8) | data[3];
     raw->z = (data[4] << 8) | data[5];
 
 #ifdef MODULE_ITG320X_INT
-    /* read status register to clear the interrupt */
+    // read status register to clear the interrupt
     EXEC_RET(_reg_read(dev, ITG320X_REG_INT_STATUS, data, 1));
 #endif
 
     return ITG320X_OK;
 }
 
-int itg320x_read_temp(const itg320x_t *dev, int16_t *temp)
-{
+int itg320x_read_temp(const itg320x_t *dev, int16_t *temp) {
     assert(dev != NULL);
     assert(temp != NULL);
 
@@ -189,19 +175,18 @@ int itg320x_read_temp(const itg320x_t *dev, int16_t *temp)
 
     uint8_t data[2];
 
-    /* read raw temperature */
+    // read raw temperature
     EXEC_RET(_reg_read(dev, ITG320X_REG_TEMP_OUT_H, data, 2));
 
-    /* data MSB @ lower address */
+    // data MSB @ lower address
     *temp = (data[0] << 8) | data[1];
-    /* convert raw temperature data to tenths of a degree Celsius */
+    // convert raw temperature data to tenths of a degree Celsius
     *temp =  (*temp + 13200) / 28 + 350;
 
     return ITG320X_OK;
 }
 
-int itg320x_power_down(itg320x_t *dev)
-{
+int itg320x_power_down(itg320x_t *dev) {
     assert(dev != NULL);
 
     DEBUG_DEV("", dev);
@@ -209,49 +194,44 @@ int itg320x_power_down(itg320x_t *dev)
     return _update_reg(dev, ITG320X_REG_PWR_MGM, ITG320X_REG_PWR_MGM_SLEEP, 1);
 }
 
-int itg320x_power_up(itg320x_t *dev)
-{
+int itg320x_power_up(itg320x_t *dev) {
     assert(dev != NULL);
 
     DEBUG_DEV("", dev);
 
     EXEC_RET(_update_reg(dev, ITG320X_REG_PWR_MGM, ITG320X_REG_PWR_MGM_SLEEP, 0));
 
-    /* wait 20 ms after power-up */
+    // wait 20 ms after power-up
     xtimer_msleep(20);
 
     return ITG320X_OK;
 }
 
-/** Functions for internal use only */
+/// Functions for internal use only
 
-static int _reset(itg320x_t *dev)
-{
+static int _reset(itg320x_t *dev) {
     assert(dev != NULL);
 
     DEBUG_DEV("", dev);
 
-    /* set the reset flag, it automatically reset by the device */
+    // set the reset flag, it automatically reset by the device
     EXEC_RET(_update_reg(dev, ITG320X_REG_PWR_MGM, ITG320X_REG_PWR_MGM_H_RESET, 1));
 
-    /* wait 20 ms after reset */
+    // wait 20 ms after reset
     xtimer_msleep(20);
 
     return ITG320X_OK;
 }
 
-/**
- * @brief   Check the chip ID to test whether sensor is available
- */
-static int _is_available(const itg320x_t *dev)
-{
+/// @brief   Check the chip ID to test whether sensor is available
+static int _is_available(const itg320x_t *dev) {
     assert(dev != NULL);
 
     DEBUG_DEV("", dev);
 
     uint8_t reg;
 
-    /* read the chip id from ITG320X_REG_ID_X */
+    // read the chip id from ITG320X_REG_ID_X
     EXEC_RET(_reg_read(dev, ITG320X_REG_WHO_AM_I, &reg, 1));
 
     if (reg != ITG320X_ID) {
@@ -263,8 +243,7 @@ static int _is_available(const itg320x_t *dev)
     return ITG320X_OK;
 }
 
-static int _update_reg(const itg320x_t *dev, uint8_t reg, uint8_t mask, uint8_t val)
-{
+static int _update_reg(const itg320x_t *dev, uint8_t reg, uint8_t mask, uint8_t val) {
     assert(dev != NULL);
 
     DEBUG_DEV("reg=%02x mask=%02x val=%02x", dev, reg, mask, val);
@@ -276,20 +255,19 @@ static int _update_reg(const itg320x_t *dev, uint8_t reg, uint8_t mask, uint8_t 
         shift++;
     }
 
-    /* read current register value */
+    // read current register value
     EXEC_RET(_reg_read(dev, reg, &reg_val, 1));
 
-    /* set masked bits to the given value  */
+    // set masked bits to the given value
     reg_val = (reg_val & ~mask) | ((val << shift) & mask);
 
-    /* write back new register value */
+    // write back new register value
     EXEC_RET(_reg_write(dev, reg, reg_val));
 
     return ITG320X_OK;
 }
 
-static int _reg_read(const itg320x_t *dev, uint8_t reg, uint8_t *data, uint16_t len)
-{
+static int _reg_read(const itg320x_t *dev, uint8_t reg, uint8_t *data, uint16_t len) {
     assert(dev != NULL);
     assert(data != NULL);
     assert(len != 0);
@@ -319,8 +297,7 @@ static int _reg_read(const itg320x_t *dev, uint8_t reg, uint8_t *data, uint16_t 
     return ITG320X_OK;
 }
 
-static int _reg_write(const itg320x_t *dev, uint8_t reg, uint8_t data)
-{
+static int _reg_write(const itg320x_t *dev, uint8_t reg, uint8_t data) {
     assert(dev != NULL);
 
     DEBUG_DEV("write 1 byte to reg 0x%02x: 0x%02x", dev, reg, data);

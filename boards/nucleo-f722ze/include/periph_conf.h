@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f722ze
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-f722ze board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nucleo-f722ze
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-f722ze board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -36,10 +32,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART3,
@@ -93,21 +87,21 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_DMA_ISR      (isr_dma1_stream4)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 static const adc_conf_t adc_config[] = {
-    {GPIO_PIN(PORT_A, 3),  .dev = 2, .chan = 3},  /* ADC123_IN3 */
-    {GPIO_PIN(PORT_C, 0),  .dev = 2, .chan = 10}, /* ADC123_IN10 */
-    {GPIO_PIN(PORT_C, 3),  .dev = 2, .chan = 13}, /* ADC123_IN13 */
-    {GPIO_PIN(PORT_F, 3),  .dev = 2, .chan = 9},  /* ADC3_IN9    */
-    {GPIO_PIN(PORT_F, 5),  .dev = 2, .chan = 15}, /* ADC3_IN15   */
-    {GPIO_PIN(PORT_F, 10), .dev = 2, .chan = 8},  /* ADC3_IN8    */
-    {GPIO_UNDEF,           .dev = 0, .chan = 18}, /* VBAT */
+    {GPIO_PIN(PORT_A, 3),  .dev = 2, .chan = 3},  // ADC123_IN3
+    {GPIO_PIN(PORT_C, 0),  .dev = 2, .chan = 10}, // ADC123_IN10
+    {GPIO_PIN(PORT_C, 3),  .dev = 2, .chan = 13}, // ADC123_IN13
+    {GPIO_PIN(PORT_F, 3),  .dev = 2, .chan = 9},  // ADC3_IN9
+    {GPIO_PIN(PORT_F, 5),  .dev = 2, .chan = 15}, // ADC3_IN15
+    {GPIO_PIN(PORT_F, 10), .dev = 2, .chan = 8},  // ADC3_IN8
+    {GPIO_UNDEF,           .dev = 0, .chan = 18}, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(6) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(6) ///< VBAT ADC line
 
-#define ADC_CLK_MAX         MHZ(36)     /**< Use a faster than default ADC clock */
+#define ADC_CLK_MAX         MHZ(36)     ///< Use a faster than default ADC clock
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
 
@@ -115,4 +109,4 @@ static const adc_conf_t adc_config[] = {
 }
 #endif
 
-/** @} */
+/// @}

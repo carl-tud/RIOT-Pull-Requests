@@ -1,21 +1,17 @@
-/*
- * POSIX compatible implementation of barriers.
- *
- * Copyright (C) 2014 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// POSIX compatible implementation of barriers.
+//
+// Copyright (C) 2014 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup pthread
- * @{
- * @file
- * @brief Synchronization barriers.
- * @author René Kijewski <kijewski@inf.fu-berlin.de>
- * @}
- */
+/// @ingroup pthread
+/// @{
+/// @file
+/// @brief Synchronization barriers.
+/// @author René Kijewski <kijewski@inf.fu-berlin.de>
+/// @}
 
 #include "sched.h"
 #include "pthread.h"
@@ -25,8 +21,7 @@
 
 int pthread_barrier_init(pthread_barrier_t *barrier,
                          const pthread_barrierattr_t *attr,
-                         unsigned int count)
-{
+                         unsigned int count) {
     (void) attr;
     barrier->next = NULL;
     mutex_init(&barrier->mutex);
@@ -34,25 +29,22 @@ int pthread_barrier_init(pthread_barrier_t *barrier,
     return 0;
 }
 
-int pthread_barrier_destroy(pthread_barrier_t *barrier)
-{
+int pthread_barrier_destroy(pthread_barrier_t *barrier) {
     barrier->count = -1;
     return 0;
 }
 
-static inline int priority_min(int a, int b)
-{
+static inline int priority_min(int a, int b) {
     if (a == -1) {
         return b;
     }
     return a < b ? a : b;
 }
 
-int pthread_barrier_wait(pthread_barrier_t *barrier)
-{
-    /* Idea: the count is decreased by every thread that waits on the barrier.
-     * If the value is bigger than zero afterwards, then the thread has to wait
-     * to be woken up. Once the value reaches zero, everyone gets woken up. */
+int pthread_barrier_wait(pthread_barrier_t *barrier) {
+    // Idea: the count is decreased by every thread that waits on the barrier.
+    // If the value is bigger than zero afterwards, then the thread has to wait
+    // to be woken up. Once the value reaches zero, everyone gets woken up.
 
     mutex_lock(&barrier->mutex);
     DEBUG("%s: hit a synchronization barrier. pid=%" PRIkernel_pid"\n",
@@ -61,7 +53,7 @@ int pthread_barrier_wait(pthread_barrier_t *barrier)
     int switch_prio = -1;
 
     if (--barrier->count > 0) {
-        /* need to wait for further threads */
+        // need to wait for further threads
 
         DEBUG("%s: waiting for %u threads. pid=%" PRIkernel_pid "\n",
               thread_getname(thread_getpid()), barrier->count, thread_getpid());
@@ -75,10 +67,10 @@ int pthread_barrier_wait(pthread_barrier_t *barrier)
         mutex_unlock(&barrier->mutex);
 
         while (1) {
-            /* The mutex is reacquired before checking if we should continue,
-             * so that the waiting thread don't accidentally run before the
-             * wake up loop has ended. Otherwise the thread could run into the
-             * the barrier again before `barrier->count` was reset. */
+            // The mutex is reacquired before checking if we should continue,
+            // so that the waiting thread don't accidentally run before the
+            // wake up loop has ended. Otherwise the thread could run into the
+            // the barrier again before `barrier->count` was reset.
             mutex_lock(&barrier->mutex);
             if (node.cont) {
                 break;
@@ -87,7 +79,7 @@ int pthread_barrier_wait(pthread_barrier_t *barrier)
         }
     }
     else {
-        /* all threads have arrived, wake everybody up */
+        // all threads have arrived, wake everybody up
 
         DEBUG("%s: waking every other thread up. pid=%" PRIkernel_pid "\n",
               thread_getname(thread_getpid()), thread_getpid());

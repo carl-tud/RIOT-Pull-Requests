@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Jose I. Alamos <jose.alamos@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+/// @author  Jose I. Alamos <jose.alamos@haw-hamburg.de>
 
 #include <assert.h>
 #include <errno.h>
@@ -22,8 +18,7 @@
 
 static list_node_t netif_list;
 
-int netif_register(netif_t *netif)
-{
+int netif_register(netif_t *netif) {
     if (netif == NULL) {
         return -EINVAL;
     }
@@ -35,8 +30,7 @@ int netif_register(netif_t *netif)
     return 0;
 }
 
-netif_t *netif_iter(const netif_t *last)
-{
+netif_t *netif_iter(const netif_t *last) {
     if (last == NULL) {
         return (netif_t *)netif_list.next;
     }
@@ -44,8 +38,7 @@ netif_t *netif_iter(const netif_t *last)
     return (netif_t *)last->node.next;
 }
 
-__attribute__((weak)) int16_t netif_get_id(const netif_t *netif)
-{
+__attribute__((weak)) int16_t netif_get_id(const netif_t *netif) {
     list_node_t *node = netif_list.next;
     for (int16_t i = 0; node; i++, node = node->next) {
         if (netif == (netif_t *)node) {
@@ -55,8 +48,7 @@ __attribute__((weak)) int16_t netif_get_id(const netif_t *netif)
     return -1;
 }
 
-netif_t *netif_get_by_name_buffer(const char *name, size_t name_len)
-{
+netif_t *netif_get_by_name_buffer(const char *name, size_t name_len) {
     assert(name);
 
     if (name_len > CONFIG_NETIF_NAMELENMAX) {
@@ -79,8 +71,7 @@ netif_t *netif_get_by_name_buffer(const char *name, size_t name_len)
     return NULL;
 }
 
-__attribute__((weak)) netif_t *netif_get_by_id(int16_t id)
-{
+__attribute__((weak)) netif_t *netif_get_by_id(int16_t id) {
     list_node_t *node = netif_list.next;
     for (int16_t i = 0; node; i++, node = node->next) {
         if (i == id) {
@@ -90,8 +81,7 @@ __attribute__((weak)) netif_t *netif_get_by_id(int16_t id)
     return NULL;
 }
 
-ssize_t netifs_get_ipv6(ipv6_addr_t *dest, size_t numof)
-{
+ssize_t netifs_get_ipv6(ipv6_addr_t *dest, size_t numof) {
     ssize_t result = 0;
     netif_t *netif = NULL;
     while (((netif = netif_iter(netif)) != NULL) && (numof > 0)) {
@@ -111,8 +101,7 @@ ssize_t netifs_get_ipv6(ipv6_addr_t *dest, size_t numof)
 #define NETIF_PRINT_IPV6_NUMOF 4
 #endif
 
-void netif_print_ipv6(netif_t *netif, const char *separator)
-{
+void netif_print_ipv6(netif_t *netif, const char *separator) {
     ipv6_addr_t addrs[NETIF_PRINT_IPV6_NUMOF];
     ssize_t num = netif_get_ipv6(netif, addrs, ARRAY_SIZE(addrs));
     if (num > 0) {
@@ -120,8 +109,7 @@ void netif_print_ipv6(netif_t *netif, const char *separator)
     }
 }
 
-void netifs_print_ipv6(const char *separator)
-{
+void netifs_print_ipv6(const char *separator) {
     netif_t *netif = 0;
     bool first = true;
     while ((netif = netif_iter(netif)) != NULL) {
@@ -138,4 +126,4 @@ void netifs_print_ipv6(const char *separator)
         }
     }
 }
-/** @} */
+/// @}

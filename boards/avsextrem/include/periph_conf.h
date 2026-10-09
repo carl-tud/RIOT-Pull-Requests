@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_avsextrem
- * @{
- *
- * @file
- * @brief       Peripheral configuration for the avsextrem
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_avsextrem
+/// @{
+///
+/// @file
+/// @brief       Peripheral configuration for the avsextrem
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "periph_cpu.h"
 
@@ -21,28 +17,22 @@
 extern "C" {
 #endif
 
-/**
- * @name    Clock configuration
- * @{
- */
-#define XTAL_HZ             (16000000U)         /* the board provides a 16 MHz XTAL */
+/// @name    Clock configuration
+/// @{
+#define XTAL_HZ             (16000000U)         // the board provides a 16 MHz XTAL
 
-#define CLOCK_CORECLOCK     (72000000U)         /* this board runs with 72MHz */
+#define CLOCK_CORECLOCK     (72000000U)         // this board runs with 72MHz
 
 #define CLOCK_PCLK          (CLOCK_CORECLOCK)
-/** @} */
+/// @}
 
-/**
- * @name    Timer configuration, select a number from 1 to 4
- * @{
- */
+/// @name    Timer configuration, select a number from 1 to 4
+/// @{
 #define TIMER_NUMOF         (1U)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev = UART0,
@@ -55,12 +45,10 @@ static const uart_conf_t uart_config[] = {
 };
 
 #define UART_NUMOF          (1)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev = SPI0,
@@ -74,10 +62,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           (1)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Mock implementation of a Real-Time Timer
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @{
+///
+/// @file
+/// @brief       Mock implementation of a Real-Time Timer
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 #include <stddef.h>
 #include "periph/rtt.h"
 
@@ -21,20 +17,17 @@ static uint32_t counter, alarm;
 static rtt_cb_t alarm_cb, overflow_cb;
 static void *alarm_arg, *overflow_arg;
 
-uint32_t rtt_get_counter(void)
-{
+uint32_t rtt_get_counter(void) {
     DEBUG("%s() = %"PRIu32"\n", __func__, counter);
     return counter;
 }
 
-void rtt_set_counter(uint32_t _counter)
-{
+void rtt_set_counter(uint32_t _counter) {
     DEBUG("%s(%"PRIu32")\n", __func__, _counter);
     counter = _counter & RTT_MAX_VALUE;
 }
 
-void rtt_set_alarm(uint32_t _alarm, rtt_cb_t cb, void *arg)
-{
+void rtt_set_alarm(uint32_t _alarm, rtt_cb_t cb, void *arg) {
     DEBUG("%s(%"PRIu32")\n", __func__, _alarm);
 
     alarm     = _alarm & RTT_MAX_VALUE;
@@ -42,35 +35,29 @@ void rtt_set_alarm(uint32_t _alarm, rtt_cb_t cb, void *arg)
     alarm_arg = arg;
 }
 
-uint32_t rtt_get_alarm(void)
-{
+uint32_t rtt_get_alarm(void) {
     return alarm;
 }
 
-void rtt_clear_alarm(void)
-{
+void rtt_clear_alarm(void) {
     alarm_cb = NULL;
 }
 
-void rtt_set_overflow_cb(rtt_cb_t cb, void *arg)
-{
+void rtt_set_overflow_cb(rtt_cb_t cb, void *arg) {
     DEBUG("%s()\n", __func__);
     overflow_cb  = cb;
     overflow_arg = arg;
 }
 
-void rtt_clear_overflow_cb(void)
-{
+void rtt_clear_overflow_cb(void) {
     overflow_cb = NULL;
 }
 
-void rtt_init(void)
-{
+void rtt_init(void) {
     counter = 0;
 }
 
-static void _tick(void)
-{
+static void _tick(void) {
     counter = (counter + 1) & RTT_MAX_VALUE;
 
     if (overflow_cb && (counter == 0)) {
@@ -84,10 +71,9 @@ static void _tick(void)
     }
 }
 
-void rtt_add_ticks(uint64_t ticks)
-{
+void rtt_add_ticks(uint64_t ticks) {
     while (ticks--) {
         _tick();
     }
 }
-/** @} */
+/// @}

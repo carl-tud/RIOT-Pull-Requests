@@ -1,24 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <errno.h>
 #include "embUnit.h"
 
 #include "bit.h"
 
-static void test_bit8(void)
-{
+static void test_bit8(void) {
     uint8_t tmp, word = UINT8_MAX;
 
     for (unsigned i = 0; i < sizeof(word) * 8; ++i) {
@@ -41,8 +36,7 @@ static void test_bit8(void)
     }
 }
 
-static void test_bit16(void)
-{
+static void test_bit16(void) {
     uint16_t tmp, word = UINT16_MAX;
 
     for (unsigned i = 0; i < sizeof(word) * 8; ++i) {
@@ -65,8 +59,7 @@ static void test_bit16(void)
     }
 }
 
-static void test_bit32(void)
-{
+static void test_bit32(void) {
     uint32_t tmp, word = UINT32_MAX;
 
     for (unsigned i = 0; i < sizeof(word) * 8; ++i) {
@@ -89,8 +82,7 @@ static void test_bit32(void)
     }
 }
 
-Test *tests_bit_tests(void)
-{
+Test *tests_bit_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_bit8),
         new_TestFixture(test_bit16),
@@ -102,7 +94,6 @@ Test *tests_bit_tests(void)
     return (Test *)&bit_tests;
 }
 
-void tests_bit(void)
-{
+void tests_bit(void) {
     TESTS_RUN(tests_bit_tests());
 }

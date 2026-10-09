@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_uart
- * @{
- *
- * @file
- * @brief       Low-level UART driver implementation.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Ryan Kurte <ryankurte@gmail.com>
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- * @}
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_uart
+/// @{
+///
+/// @file
+/// @brief       Low-level UART driver implementation.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Ryan Kurte <ryankurte@gmail.com>
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+/// @}
 
 #include "cpu.h"
 
@@ -25,9 +21,7 @@
 #include "em_usart.h"
 #include "em_usart_utils.h"
 
-/**
- * @brief   Defines whether LEUART is enabled and supported
- */
+/// @brief   Defines whether LEUART is enabled and supported
 #if EFM32_LEUART_ENABLED && defined(LEUART_COUNT) && LEUART_COUNT > 0
 #define USE_LEUART
 #endif
@@ -37,47 +31,41 @@
 #include "em_leuart_utils.h"
 #endif
 
-/**
- * @brief   Allocate memory to store the callback functions
- */
+/// @brief   Allocate memory to store the callback functions
 static uart_isr_ctx_t isr_ctx[UART_NUMOF];
 
 #ifdef USE_LEUART
-/**
- * @brief   Check if device is a U(S)ART device.
- */
-static inline bool _is_usart(uart_t dev)
-{
+/// @brief   Check if device is a U(S)ART device.
+static inline bool _is_usart(uart_t dev) {
     return ((uint32_t) uart_config[dev].dev) < LEUART0_BASE;
 }
 #endif
 
-int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
-{
-    /* check if device is valid */
+int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg) {
+    // check if device is valid
     if (dev >= UART_NUMOF) {
         return -1;
     }
 
-    /* save interrupt callback context */
+    // save interrupt callback context
     isr_ctx[dev].rx_cb = rx_cb;
     isr_ctx[dev].arg = arg;
 
-    /* initialize the pins */
+    // initialize the pins
     gpio_init(uart_config[dev].rx_pin, GPIO_IN_PU);
-    gpio_init(uart_config[dev].tx_pin, GPIO_OUT | 1); /* 1 for high */
+    gpio_init(uart_config[dev].tx_pin, GPIO_OUT | 1); // 1 for high
 
-    /* initialize the UART/USART/LEUART device */
+    // initialize the UART/USART/LEUART device
 #ifdef USE_LEUART
     if (_is_usart(dev)) {
 #endif
         USART_TypeDef *uart = (USART_TypeDef *) uart_config[dev].dev;
 
-        /* enable clocks */
+        // enable clocks
         CMU_ClockEnable(cmuClock_HFPER, true);
         CMU_ClockEnable(uart_config[dev].cmu, true);
 
-        /* reset and initialize peripheral */
+        // reset and initialize peripheral
         USART_InitAsync_TypeDef init = USART_INITASYNC_DEFAULT;
 
         init.enable = usartDisable;
@@ -85,7 +73,7 @@ int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
 
         USART_InitAsync(uart, &init);
 
-        /* configure pin functions */
+        // configure pin functions
 #if defined(_SILICON_LABS_32B_SERIES_0)
         uart->ROUTE = (uart_config[dev].loc |
                        USART_ROUTE_RXPEN |
@@ -95,18 +83,18 @@ int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
         uart->ROUTEPEN = USART_ROUTEPEN_RXPEN | USART_ROUTEPEN_TXPEN;
 #endif
 
-        /* enable receive interrupt */
+        // enable receive interrupt
         USART_IntEnable(uart, USART_IEN_RXDATAV);
 
 #ifdef USE_LEUART
     } else {
         LEUART_TypeDef *leuart = (LEUART_TypeDef *) uart_config[dev].dev;
 
-        /* enable clocks */
+        // enable clocks
         CMU_ClockEnable(cmuClock_CORELE, true);
         CMU_ClockEnable(uart_config[dev].cmu, true);
 
-        /* reset and initialize peripheral */
+        // reset and initialize peripheral
         LEUART_Init_TypeDef init = LEUART_INIT_DEFAULT;
 
         init.enable = leuartDisable;
@@ -114,7 +102,7 @@ int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
 
         LEUART_Init(leuart, &init);
 
-        /* configure pin functions */
+        // configure pin functions
 #if defined(_SILICON_LABS_32B_SERIES_0)
         leuart->ROUTE = (uart_config[dev].loc |
                          LEUART_ROUTE_RXPEN |
@@ -124,12 +112,12 @@ int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
         leuart->ROUTEPEN = LEUART_ROUTEPEN_RXPEN | LEUART_ROUTEPEN_TXPEN;
 #endif
 
-        /* enable receive interrupt */
+        // enable receive interrupt
         LEUART_IntEnable(leuart, LEUART_IEN_RXDATAV);
     }
 #endif
 
-    /* enable the interrupt */
+    // enable the interrupt
     if (rx_cb) {
         NVIC_ClearPendingIRQ(uart_config[dev].irq);
         NVIC_EnableIRQ(uart_config[dev].irq);
@@ -142,8 +130,7 @@ int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
 
 #ifdef MODULE_PERIPH_UART_MODECFG
 int uart_mode(uart_t dev, uart_data_bits_t data_bits, uart_parity_t parity,
-              uart_stop_bits_t stop_bits)
-{
+              uart_stop_bits_t stop_bits) {
     if (parity == UART_PARITY_MARK || parity == UART_PARITY_SPACE) {
         return UART_NOMODE;
     }
@@ -176,8 +163,7 @@ int uart_mode(uart_t dev, uart_data_bits_t data_bits, uart_parity_t parity,
 }
 #endif
 
-void uart_write(uart_t dev, const uint8_t *data, size_t len)
-{
+void uart_write(uart_t dev, const uint8_t *data, size_t len) {
 #ifdef USE_LEUART
     if (_is_usart(dev)) {
 #endif
@@ -187,7 +173,7 @@ void uart_write(uart_t dev, const uint8_t *data, size_t len)
             USART_Tx(usart, *(data++));
         }
 
-        /* spin until transmission is complete */
+        // spin until transmission is complete
         while (!(usart->STATUS & USART_STATUS_TXC)) {}
 
 #ifdef USE_LEUART
@@ -198,14 +184,13 @@ void uart_write(uart_t dev, const uint8_t *data, size_t len)
             LEUART_Tx(leuart, *(data++));
         }
 
-        /* spin until transmission is complete */
+        // spin until transmission is complete
         while (!(leuart->STATUS & LEUART_STATUS_TXC)) {}
     }
 #endif
 }
 
-void uart_poweron(uart_t dev)
-{
+void uart_poweron(uart_t dev) {
     CMU_ClockEnable(uart_config[dev].cmu, true);
 
 #ifdef USE_LEUART
@@ -213,10 +198,10 @@ void uart_poweron(uart_t dev)
 #endif
         USART_TypeDef *usart = uart_config[dev].dev;
 
-        /* enable tx */
+        // enable tx
         USART_Enable_TypeDef enable = usartEnableTx;
 
-        /* enable rx if needed */
+        // enable rx if needed
         if (isr_ctx[dev].rx_cb) {
             enable |= usartEnableRx;
         }
@@ -227,10 +212,10 @@ void uart_poweron(uart_t dev)
     else {
         LEUART_TypeDef *leuart = uart_config[dev].dev;
 
-        /* enable tx */
+        // enable tx
         LEUART_Enable_TypeDef enable = leuartEnableTx;
 
-        /* enable rx if needed */
+        // enable rx if needed
         if (isr_ctx[dev].rx_cb) {
             enable |= leuartEnableRx;
         }
@@ -240,21 +225,20 @@ void uart_poweron(uart_t dev)
 #endif
 }
 
-void uart_poweroff(uart_t dev)
-{
+void uart_poweroff(uart_t dev) {
 #ifdef USE_LEUART
     if (_is_usart(dev)) {
 #endif
         USART_TypeDef *usart = uart_config[dev].dev;
 
-        /* disable tx and rx */
+        // disable tx and rx
         USART_Enable(usart, usartDisable);
 #ifdef USE_LEUART
     }
     else {
         LEUART_TypeDef *leuart = uart_config[dev].dev;
 
-        /* disable tx and rx */
+        // disable tx and rx
         LEUART_Enable(leuart, leuartDisable);
     }
 #endif
@@ -262,8 +246,7 @@ void uart_poweroff(uart_t dev)
     CMU_ClockEnable(uart_config[dev].cmu, false);
 }
 
-static void rx_irq(uart_t dev)
-{
+static void rx_irq(uart_t dev) {
 #ifdef USE_LEUART
     if (_is_usart(dev)) {
 #endif
@@ -287,36 +270,31 @@ static void rx_irq(uart_t dev)
 }
 
 #ifdef UART_0_ISR_RX
-void UART_0_ISR_RX(void)
-{
+void UART_0_ISR_RX(void) {
     rx_irq(0);
 }
 #endif
 
 #ifdef UART_1_ISR_RX
-void UART_1_ISR_RX(void)
-{
+void UART_1_ISR_RX(void) {
     rx_irq(1);
 }
 #endif
 
 #ifdef UART_2_ISR_RX
-void UART_2_ISR_RX(void)
-{
+void UART_2_ISR_RX(void) {
     rx_irq(2);
 }
 #endif
 
 #ifdef UART_3_ISR_RX
-void UART_3_ISR_RX(void)
-{
+void UART_3_ISR_RX(void) {
     rx_irq(3);
 }
 #endif
 
 #ifdef UART_4_ISR_RX
-void UART_4_ISR_RX(void)
-{
+void UART_4_ISR_RX(void) {
     rx_irq(4);
 }
 #endif

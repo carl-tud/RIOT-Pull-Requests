@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_REPEATEDTEST_H
 #define EMBUNIT_REPEATEDTEST_H
 
@@ -10,7 +8,7 @@ extern "C" {
 #endif
 
 typedef struct __RepeatedTest   RepeatedTest;
-typedef struct __RepeatedTest*  RepeatedTestRef;    /*downward compatible*/
+typedef struct __RepeatedTest*  RepeatedTestRef;    // downward compatible
 
 struct __RepeatedTest {
     TestImplement* isa;
@@ -31,4 +29,4 @@ extern const TestImplement RepeatedTestImplement;
 }
 #endif
 
-#endif /* EMBUNIT_REPEATEDTEST_H */
+#endif // EMBUNIT_REPEATEDTEST_H

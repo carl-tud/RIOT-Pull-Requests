@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 Méwen Berthelot
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Méwen Berthelot
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_arduino-nano-33-ble-sense
- * @{
- *
- * @file
- * @brief       Board specific configuration for the Arduino Nano 33 BLE sense
- *
- * @author      Méwen Berthelot <berthelotmewen@gmail.com>
- */
+/// @ingroup     boards_arduino-nano-33-ble-sense
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration for the Arduino Nano 33 BLE sense
+///
+/// @author      Méwen Berthelot <berthelotmewen@gmail.com>
 
 #include "cpu.h"
 #include "board_common.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LEDs pin configuration
- * @{
- */
+/// @name    LEDs pin configuration
+/// @{
 #define LED0_PIN                GPIO_PIN(0, 13)
 #define LED0_MASK               (1 << 13)
 #define LED0_ON                 (NRF_P0->OUTCLR = LED0_MASK)
@@ -55,48 +49,38 @@ extern "C" {
 #define LED4_ON                 (NRF_P1->OUTCLR = LED4_MASK)
 #define LED4_OFF                (NRF_P1->OUTSET = LED4_MASK)
 #define LED4_TOGGLE             (NRF_P1->OUT   ^= LED4_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    Internal powering pin definition
- * @{
- */
-#define VDD                     GPIO_PIN(0, 22) /**< Internal VDD pin */
-/** @} */
+/// @name    Internal powering pin definition
+/// @{
+#define VDD                     GPIO_PIN(0, 22) ///< Internal VDD pin
+/// @}
 
-/**
- * @name    Internal I2C pins definition
- * @{
- */
-#define SCL1                     GPIO_PIN(0, 15) /**< Internal SCL I2C pin */
-#define SDA1                     GPIO_PIN(0, 14) /**< Internal SDA I2C pin */
-/** @} */
+/// @name    Internal I2C pins definition
+/// @{
+#define SCL1                     GPIO_PIN(0, 15) ///< Internal SCL I2C pin
+#define SDA1                     GPIO_PIN(0, 14) ///< Internal SDA I2C pin
+/// @}
 
-/**
- * @name    HTS221 sensor configuration
- * @{
- */
-#define HTS221_PARAM_I2C        I2C_DEV(1) /**< I2C device */
-/** @} */
+/// @name    HTS221 sensor configuration
+/// @{
+#define HTS221_PARAM_I2C        I2C_DEV(1) ///< I2C device
+/// @}
 
-/**
- * @name    LPS22HB sensor configuration
- * @{
- */
-#define LPSXXX_PARAM_ADDR       (0x5c) /**< I2C address */
-#define LPSXXX_PARAM_I2C        I2C_DEV(1) /**< I2C device */
-/** @} */
+/// @name    LPS22HB sensor configuration
+/// @{
+#define LPSXXX_PARAM_ADDR       (0x5c) ///< I2C address
+#define LPSXXX_PARAM_I2C        I2C_DEV(1) ///< I2C device
+/// @}
 
-/**
- * @name    APDS9960 sensor configuration
- * @{
- */
-#define APDS99XX_PARAM_DEV      I2C_DEV(1) /**< I2C device */
-#define APDS99XX_PARAM_INT_PIN  GPIO_PIN(0, 19) /**< Interrupt pin */
-/** @} */
+/// @name    APDS9960 sensor configuration
+/// @{
+#define APDS99XX_PARAM_DEV      I2C_DEV(1) ///< I2C device
+#define APDS99XX_PARAM_INT_PIN  GPIO_PIN(0, 19) ///< Interrupt pin
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

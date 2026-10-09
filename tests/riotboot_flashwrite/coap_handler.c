@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,8 +9,7 @@
 
 static riotboot_flashwrite_t _writer;
 
-ssize_t _flashwrite_handler(coap_pkt_t* pkt, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
-{
+ssize_t _flashwrite_handler(coap_pkt_t* pkt, uint8_t *buf, size_t len, coap_request_ctx_t *ctx) {
     riotboot_flashwrite_t *writer = coap_request_ctx_get_context(ctx);
 
     uint8_t result = COAP_CODE_204;
@@ -32,9 +29,8 @@ ssize_t _flashwrite_handler(coap_pkt_t* pkt, uint8_t *buf, size_t len, coap_requ
         riotboot_flashwrite_init(writer, riotboot_slot_other());
     }
 
-    /* skip first RIOTBOOT_FLASHWRITE_SKIPLEN bytes, but handle the case where
-     * payload_len is smaller than RIOTBOOT_FLASHWRITE_SKIPLEN
-     */
+    // skip first RIOTBOOT_FLASHWRITE_SKIPLEN bytes, but handle the case where
+    // payload_len is smaller than RIOTBOOT_FLASHWRITE_SKIPLEN
     if (block1.offset <= RIOTBOOT_FLASHWRITE_SKIPLEN) {
         size_t skip = RIOTBOOT_FLASHWRITE_SKIPLEN - block1.offset;
         skip = (payload_len > skip) ? skip : payload_len;

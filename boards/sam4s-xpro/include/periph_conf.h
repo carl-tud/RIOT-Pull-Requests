@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_sam4s-xpro
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for SAM4S Xplained pro
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- */
+/// @ingroup     boards_sam4s-xpro
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for SAM4S Xplained pro
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
 
 #include "periph_cpu.h"
 
@@ -21,35 +17,28 @@
 extern "C" {
 #endif
 
-/**
- * @name    Clock configuration
- * @{
- */
-/* targeted system core clock */
+/// @name    Clock configuration
+/// @{
+// targeted system core clock
 #define CLOCK_CORECLOCK     MHZ(120)
-/* external oscillator clock */
+// external oscillator clock
 #define CLOCK_EXT_OSC       MHZ(12)
-/* define PLL configuration
- *
- * The values must fulfill this equation:
- * CORECLOCK = (EXT_OCS / PLL_DIV) * (PLL_MUL + 1)
- */
+// define PLL configuration
+//
+// The values must fulfill this equation:
+// CORECLOCK = (EXT_OCS / PLL_DIV) * (PLL_MUL + 1)
 #define CLOCK_PLL_MUL       (9)
 #define CLOCK_PLL_DIV       (1)
 
-/* number of wait states before flash read and write operations */
-#define CLOCK_FWS           (5)         /* 5 is safe for 120 MHz */
-/** @} */
+// number of wait states before flash read and write operations
+#define CLOCK_FWS           (5)         // 5 is safe for 120 MHz
+/// @}
 
-/**
- * @brief    Enable external oscillator for driving the slow clock
- */
+/// @brief    Enable external oscillator for driving the slow clock
 #define CLOCK_SCLK_XTAL     (1)
 
-/**
- * @name    Timer peripheral configuration
- * @{
- */
+/// @name    Timer peripheral configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     { .dev = TC0, .id_ch0 = ID_TC0 },
     { .dev = TC1, .id_ch0 = ID_TC3 }
@@ -59,12 +48,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tc3
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev    = (Uart *)UART1,
@@ -76,14 +63,14 @@ static const uart_conf_t uart_config[] = {
     }
 };
 
-/* define interrupt vectors */
+// define interrupt vectors
 #define UART_0_ISR          isr_uart1
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

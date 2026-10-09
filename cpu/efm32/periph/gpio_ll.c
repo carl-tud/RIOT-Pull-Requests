@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 Christian Amsüss
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Christian Amsüss
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_gpio_ll
- * @{
- *
- * @file
- * @brief       Peripheral GPIO Low-Level API implementation for the EFM32 family
- *
- * @author      Christian Amsüss <chrysn@fsfe.org>
- *
- * @}
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_gpio_ll
+/// @{
+///
+/// @file
+/// @brief       Peripheral GPIO Low-Level API implementation for the EFM32 family
+///
+/// @author      Christian Amsüss <chrysn@fsfe.org>
+///
+/// @}
 
 #include <errno.h>
 
@@ -23,8 +19,7 @@
 #include "periph_cpu.h"
 #include "periph_conf.h"
 
-int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
-{
+int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf) {
     GPIO_Mode_TypeDef mode;
 
     bool initial = conf.initial_value;
@@ -52,7 +47,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
         }
         break;
     case GPIO_OUTPUT_PUSH_PULL:
-        /* ignoring pull */
+        // ignoring pull
         mode = gpioModePushPull;
         break;
     case GPIO_OUTPUT_OPEN_DRAIN:
@@ -63,7 +58,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
         case GPIO_PULL_UP:
             mode = gpioModeWiredAndPullUp;
             break;
-        default: /* including PULL_DOWN, which makes no sense here*/
+        default: // including PULL_DOWN, which makes no sense here
             return -ENOTSUP;
         }
         break;
@@ -75,17 +70,17 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
         case GPIO_PULL_DOWN:
             mode = gpioModeWiredOrPullDown;
             break;
-        default: /* including PULL_UP, which makes no sense here*/
+        default: // including PULL_UP, which makes no sense here
             return -ENOTSUP;
         }
         break;
     case GPIO_USED_BY_PERIPHERAL:
-        /* Needs to be configured to what the peripheral actually needs
-         * instead (eg. DISABLED for analog input, some output for timers and
-         * UARTs etc); fall-through */
+        // Needs to be configured to what the peripheral actually needs
+        // instead (eg. DISABLED for analog input, some output for timers and
+        // UARTs etc); fall-through
     default:
-        /* Some probably are by the hardware, but not yet by this
-         * implementation */
+        // Some probably are by the hardware, but not yet by this
+        // implementation
         return -ENOTSUP;
     }
 
@@ -94,8 +89,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
     return 0;
 }
 
-gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
-{
+gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin) {
     gpio_conf_t result = { 0 };
     GPIO_Mode_TypeDef mode = GPIO_PinModeGet(port, pin);
 
@@ -129,7 +123,7 @@ gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
             GPIO_PULL_DOWN;
         break;
     case gpioModeDisabled:
-        /* Fall-through: There is no error reporting here */
+        // Fall-through: There is no error reporting here
     default:
         result.state = GPIO_DISCONNECT;
         if (GPIO_PinOutGet(port, pin)) {

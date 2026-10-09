@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015-2020 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2020 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_stk3200
- * @{
- *
- * @file
- * @brief       Configuration of CPU peripherals for the STK3200 starter kit
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- */
+/// @ingroup     boards_stk3200
+/// @{
+///
+/// @file
+/// @brief       Configuration of CPU peripherals for the STK3200 starter kit
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
 
 #include "cpu.h"
 #include "periph_cpu.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Clock configuration
- * @{
- */
+/// @name    Clock configuration
+/// @{
 #ifndef CLOCK_HF
 #define CLOCK_HF            cmuSelect_HFXO
 #endif
@@ -40,12 +34,10 @@ extern "C" {
 #ifndef CLOCK_LFB
 #define CLOCK_LFB           cmuSelect_CORELEDIV2
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     {
         .dev = ADC0,
@@ -70,12 +62,10 @@ static const adc_chan_conf_t adc_channel_config[] = {
 
 #define ADC_DEV_NUMOF       ARRAY_SIZE(adc_config)
 #define ADC_NUMOF           ARRAY_SIZE(adc_channel_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev = I2C0,
@@ -91,29 +81,25 @@ static const i2c_conf_t i2c_config[] = {
 
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
 #define I2C_0_ISR           isr_i2c0
-/** @} */
+/// @}
 
-/**
- * @name    RTT configuration
- * @{
- */
+/// @name    RTT configuration
+/// @{
 #ifndef RTT_FREQUENCY
-#define RTT_FREQUENCY       (1U)              /* in Hz */
+#define RTT_FREQUENCY       (1U)              // in Hz
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- *
- * @{
- */
+/// @name    SPI configuration
+///
+/// @{
 static const spi_dev_t spi_config[] = {
     {
         .dev = USART1,
         .mosi_pin = GPIO_PIN(PD, 7),
         .miso_pin = GPIO_PIN(PD, 6),
         .clk_pin = GPIO_PIN(PC, 15),
-/* page 81 https://www.silabs.com/documents/public/data-sheets/efm32zg-datasheet.pdf */
+// page 81 https://www.silabs.com/documents/public/data-sheets/efm32zg-datasheet.pdf
         .loc = USART_ROUTE_LOCATION_LOC3,
         .cmu = cmuClock_USART1,
         .irq = USART1_RX_IRQn
@@ -121,14 +107,12 @@ static const spi_dev_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    Timer configuration
- *
- * The implementation uses two timers in cascade mode.
- * @{
- */
+/// @name    Timer configuration
+///
+/// The implementation uses two timers in cascade mode.
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .prescaler = {
@@ -146,12 +130,10 @@ static const timer_conf_t timer_config[] = {
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
 #define TIMER_0_ISR         isr_timer1
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev = LEUART0,
@@ -165,10 +147,10 @@ static const uart_conf_t uart_config[] = {
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
 #define UART_0_ISR_RX       isr_leuart0
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

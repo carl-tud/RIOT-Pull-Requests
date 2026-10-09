@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #ifndef DOXYGEN
 
@@ -19,27 +17,24 @@
 
 #include "freertos/FreeRTOS.h"
 
-/*
- * In FreeRTOS different types of semaphores, mutexes and queues are all
- * mapped to a single generic queue type. With all these different types,
- * single functions for send, receive, give and take are then used. To be
- * able to dsitinguish between these different types in RIOT, we need typed
- * objects.
- */
+// In FreeRTOS different types of semaphores, mutexes and queues are all
+// mapped to a single generic queue type. With all these different types,
+// single functions for send, receive, give and take are then used. To be
+// able to dsitinguish between these different types in RIOT, we need typed
+// objects.
 typedef struct {
-    uint8_t      type;   /* type of the mutex, MUST be the first element */
-    kernel_pid_t pid;    /* PID of the holder if the mutex is locked */
-    mutex_t      mutex;  /* the RIOT mutex */
+    uint8_t      type;   // type of the mutex, MUST be the first element
+    kernel_pid_t pid;    // PID of the holder if the mutex is locked
+    mutex_t      mutex;  // the RIOT mutex
 } _sem_t;
 
 typedef struct {
-    uint8_t      type;   /* type of the mutex, MUST be the first element */
-    kernel_pid_t pid;    /* PID of the holder if the mutex is locked */
-    rmutex_t     rmutex; /* the RIOT mutex */
+    uint8_t      type;   // type of the mutex, MUST be the first element
+    kernel_pid_t pid;    // PID of the holder if the mutex is locked
+    rmutex_t     rmutex; // the RIOT mutex
 } _rsem_t;
 
-SemaphoreHandle_t xSemaphoreCreateMutex(void)
-{
+SemaphoreHandle_t xSemaphoreCreateMutex(void) {
     _sem_t* _tmp = (_sem_t*)malloc (sizeof(_sem_t));
     _tmp->type = queueQUEUE_TYPE_MUTEX;
     _tmp->pid = KERNEL_PID_UNDEF;
@@ -49,19 +44,17 @@ SemaphoreHandle_t xSemaphoreCreateMutex(void)
     return _tmp;
 }
 
-void vSemaphoreDelete(SemaphoreHandle_t xSemaphore)
-{
+void vSemaphoreDelete(SemaphoreHandle_t xSemaphore) {
     DEBUG("%s mutex=%p\n", __func__, xSemaphore);
 
     assert(xSemaphore != NULL);
     free(xSemaphore);
 }
 
-BaseType_t xSemaphoreGive(SemaphoreHandle_t xSemaphore)
-{
+BaseType_t xSemaphoreGive(SemaphoreHandle_t xSemaphore) {
     DEBUG("%s mutex=%p\n", __func__, xSemaphore);
 
-    /* if scheduler is not running, we must not lock the mutex */
+    // if scheduler is not running, we must not lock the mutex
     if (thread_getpid() == KERNEL_PID_UNDEF) {
         return pdPASS;
     }
@@ -87,11 +80,10 @@ BaseType_t xSemaphoreGive(SemaphoreHandle_t xSemaphore)
 }
 
 BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
-                          TickType_t xTicksToWait)
-{
+                          TickType_t xTicksToWait) {
     DEBUG("%s mutex=%p wait=%"PRIu32"\n", __func__, xSemaphore, xTicksToWait);
 
-    /* if scheduler is not running, we must not lock the mutex */
+    // if scheduler is not running, we must not lock the mutex
     if (thread_getpid() == KERNEL_PID_UNDEF) {
         return pdPASS;
     }
@@ -115,7 +107,7 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
             else {
                 mutex_lock(&sem->mutex);
                 sem->pid = thread_getpid();
-                /* TODO timeout handling */
+                // TODO timeout handling
                 return pdTRUE;
             }
             break;
@@ -128,8 +120,7 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore,
     }
 }
 
-SemaphoreHandle_t xSemaphoreCreateRecursiveMutex(void)
-{
+SemaphoreHandle_t xSemaphoreCreateRecursiveMutex(void) {
     _rsem_t* _tmp = (_rsem_t*)malloc (sizeof(_rsem_t));
     _tmp->type = queueQUEUE_TYPE_RECURSIVE_MUTEX;
     _tmp->pid = KERNEL_PID_UNDEF;
@@ -140,11 +131,10 @@ SemaphoreHandle_t xSemaphoreCreateRecursiveMutex(void)
     return _tmp;
 }
 
-BaseType_t xSemaphoreGiveRecursive(SemaphoreHandle_t xSemaphore)
-{
+BaseType_t xSemaphoreGiveRecursive(SemaphoreHandle_t xSemaphore) {
     DEBUG("%s rmutex=%p\n", __func__, xSemaphore);
 
-    /* if scheduler is not running, we must not lock the mutex */
+    // if scheduler is not running, we must not lock the mutex
     if (thread_getpid() == KERNEL_PID_UNDEF) {
         return pdPASS;
     }
@@ -165,11 +155,10 @@ BaseType_t xSemaphoreGiveRecursive(SemaphoreHandle_t xSemaphore)
 }
 
 BaseType_t xSemaphoreTakeRecursive(SemaphoreHandle_t xSemaphore,
-                                   TickType_t xTicksToWait)
-{
+                                   TickType_t xTicksToWait) {
     DEBUG("%s rmutex=%p wait=%"PRIu32"\n", __func__, xSemaphore, xTicksToWait);
 
-    /* if scheduler is not running, we must not lock the rmutex */
+    // if scheduler is not running, we must not lock the rmutex
     if (thread_getpid() == KERNEL_PID_UNDEF) {
         return pdPASS;
     }
@@ -193,36 +182,33 @@ BaseType_t xSemaphoreTakeRecursive(SemaphoreHandle_t xSemaphore,
     else {
         rmutex_lock(&rsem->rmutex);
         rsem->pid = thread_getpid();
-        /* TODO timeout handling */
+        // TODO timeout handling
     }
 
     return ret;
 }
 
-TaskHandle_t xSemaphoreGetMutexHolder(SemaphoreHandle_t xMutex)
-{
+TaskHandle_t xSemaphoreGetMutexHolder(SemaphoreHandle_t xMutex) {
     DEBUG("%s mutex=%p\n", __func__, xMutex);
 
     assert(xMutex != NULL);
     return (TaskHandle_t)(0L + ((_sem_t*)xMutex)->pid);
 }
 
-void vPortCPUAcquireMutex(portMUX_TYPE *mux)
-{
+void vPortCPUAcquireMutex(portMUX_TYPE *mux) {
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
           thread_getpid(), sched_threads[thread_getpid()]->priority, mux);
     critical_enter();
-    mutex_lock(mux); /* lock the mutex with interrupts disabled */
+    mutex_lock(mux); // lock the mutex with interrupts disabled
     critical_exit();
 }
 
-void vPortCPUReleaseMutex(portMUX_TYPE *mux)
-{
+void vPortCPUReleaseMutex(portMUX_TYPE *mux) {
     DEBUG("%s pid=%d prio=%d mux=%p\n", __func__,
           thread_getpid(), sched_threads[thread_getpid()]->priority, mux);
     critical_enter();
-    mutex_unlock(mux); /* unlock the mutex with interrupts disabled */
+    mutex_unlock(mux); // unlock the mutex with interrupts disabled
     critical_exit();
 }
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

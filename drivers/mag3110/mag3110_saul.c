@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mag3110
- * @{
- *
- * @file
- * @brief       MAG3110 adaption to the RIOT actuator/sensor interface
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     drivers_mag3110
+/// @{
+///
+/// @file
+/// @brief       MAG3110 adaption to the RIOT actuator/sensor interface
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -21,8 +17,7 @@
 #include "saul.h"
 #include "mag3110.h"
 
-static int read_mag(const void *dev, phydat_t *res)
-{
+static int read_mag(const void *dev, phydat_t *res) {
     mag3110_read((const mag3110_t *)dev, (mag3110_data_t *)res->val);
 
     res->unit = UNIT_GAUSS;

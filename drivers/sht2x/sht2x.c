@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 Kees Bakker, SODAQ
- * SPDX-FileCopyrightText: 2017 George Psimenos
- * SPDX-FileCopyrightText: 2018 Steffen Robertz
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 Kees Bakker, SODAQ
+// SPDX-FileCopyrightText: 2017 George Psimenos
+// SPDX-FileCopyrightText: 2018 Steffen Robertz
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sht2x
- * @{
- *
- * @file
- * @brief       Device driver implementation for the SHT2x humidity and
- *              temperature humidity sensor.
- *
- * @author      Kees Bakker <kees@sodaq.com>
- * @author      George Psimenos <gp7g14@soton.ac.uk>
- * @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
- *
- * @}
- */
+/// @ingroup     drivers_sht2x
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the SHT2x humidity and
+///              temperature humidity sensor.
+///
+/// @author      Kees Bakker <kees@sodaq.com>
+/// @author      George Psimenos <gp7g14@soton.ac.uk>
+/// @author      Steffen Robertz <steffen.robertz@rwth-aachen.de>
+///
+/// @}
 
 #include <math.h>
 
@@ -34,25 +30,21 @@
 #define ENABLE_DEBUG        0
 #include "debug.h"
 
-/**
- * @brief       The number of retries when doing a polled measurement
- */
+/// @brief       The number of retries when doing a polled measurement
 #define MAX_RETRIES         20
 
-/**
- * @brief       A few helper macros
- */
+/// @brief       A few helper macros
 #define _BUS                (dev->params.i2c_dev)
 #define _ADDR               (dev->params.i2c_addr)
 
 typedef enum {
-    temp_hold_cmd       = 0xE3,     /**< trigger temp measurement, hold master */
-    hum_hold_cmd        = 0xE5,     /**< trigger humidity measurement, hold master */
-    write_user_cmd      = 0xE6,     /**< write user register */
-    read_user_cmd       = 0xE7,     /**< read user register */
-    temp_no_hold_cmd    = 0xF3,     /**< trigger temp measurement, no hold master (poll) */
-    hum_no_hold_cmd     = 0xF5,     /**< trigger humidity measurement, no hold master (poll) */
-    soft_reset_cmd      = 0xFE,     /**< soft reset */
+    temp_hold_cmd       = 0xE3,     ///< trigger temp measurement, hold master
+    hum_hold_cmd        = 0xE5,     ///< trigger humidity measurement, hold master
+    write_user_cmd      = 0xE6,     ///< write user register
+    read_user_cmd       = 0xE7,     ///< read user register
+    temp_no_hold_cmd    = 0xF3,     ///< trigger temp measurement, no hold master (poll)
+    hum_no_hold_cmd     = 0xF5,     ///< trigger humidity measurement, no hold master (poll)
+    soft_reset_cmd      = 0xFE,     ///< soft reset
 } cmd_t;
 
 typedef enum {
@@ -60,9 +52,7 @@ typedef enum {
     SHT2X_MEASURE_RH,
 } measure_type_t;
 
-/**
- * @brief   Register addresses to read SHT2x Identification Code.
- */
+/// @brief   Register addresses to read SHT2x Identification Code.
 static const uint16_t first_mem_addr = 0x0FFA;
 static const uint16_t second_mem_addr = 0xC9FC;
 
@@ -72,12 +62,11 @@ static uint8_t sht2x_checkcrc(uint8_t data[], uint8_t nbrOfBytes, uint8_t checks
 static void sleep_during_temp_measurement(sht2x_res_t res);
 static void sleep_during_hum_measurement(sht2x_res_t resolution);
 
-/*---------------------------------------------------------------------------*
- *                          SHT2x Core API                                   *
- *---------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------*
+//                          SHT2x Core API                                   *
+// ---------------------------------------------------------------------------
 
-int sht2x_init(sht2x_t* dev, const sht2x_params_t* params)
-{
+int sht2x_init(sht2x_t* dev, const sht2x_params_t* params) {
     int i2c_result;
 
     dev->params = *params;
@@ -92,7 +81,7 @@ int sht2x_init(sht2x_t* dev, const sht2x_params_t* params)
     if (i2c_result != SHT2X_OK) {
         return SHT2X_ERR_I2C;
     }
-    /* wait 15 ms for device to reset */
+    // wait 15 ms for device to reset
     ztimer_sleep(ZTIMER_MSEC, 15);
 
     uint8_t userreg;
@@ -123,12 +112,11 @@ int sht2x_init(sht2x_t* dev, const sht2x_params_t* params)
     return SHT2X_OK;
 }
 
-int sht2x_reset(sht2x_t* dev)
-{
+int sht2x_reset(sht2x_t* dev) {
     int i2c_result;
     cmd_t command = soft_reset_cmd;
 
-    /* Acquire exclusive access */
+    // Acquire exclusive access
     i2c_acquire(_BUS);
 
     DEBUG("[SHT2x] write command: addr=%02x cmd=%02x\n", _ADDR, (uint8_t)command);
@@ -143,11 +131,8 @@ int sht2x_reset(sht2x_t* dev)
     return SHT2X_OK;
 }
 
-/*
- * Returns temperature in centi DegC.
- */
-int16_t sht2x_read_temperature(const sht2x_t* dev)
-{
+// Returns temperature in centi DegC.
+int16_t sht2x_read_temperature(const sht2x_t* dev) {
     uint16_t raw_value;
     int i2c_result;
     if (dev->params.measure_mode == SHT2X_MEASURE_MODE_NO_HOLD) {
@@ -161,11 +146,8 @@ int16_t sht2x_read_temperature(const sht2x_t* dev)
     return ((17572 * raw_value) / 65536) - 4685;
 }
 
-/*
- * Returns humidity in centi %RH (i.e. the percentage times 100).
- */
-uint16_t sht2x_read_humidity(const sht2x_t *dev)
-{
+// Returns humidity in centi %RH (i.e. the percentage times 100).
+uint16_t sht2x_read_humidity(const sht2x_t *dev) {
     uint16_t raw_value;
     int i2c_result;
     if (dev->params.measure_mode == SHT2X_MEASURE_MODE_NO_HOLD) {
@@ -179,18 +161,16 @@ uint16_t sht2x_read_humidity(const sht2x_t *dev)
     return ((12500 * raw_value) / 65536) - 600;
 }
 
-static size_t _sht2x_add_ident_byte(uint8_t * buffer, size_t buflen, uint8_t b, size_t ix)
-{
+static size_t _sht2x_add_ident_byte(uint8_t * buffer, size_t buflen, uint8_t b, size_t ix) {
     if (ix < buflen) {
         buffer[ix++] = b;
     }
     return ix;
 }
 
-int sht2x_read_ident(const sht2x_t *dev, uint8_t * buffer, size_t buflen)
-{
-    uint8_t data1[8];        /* SNB_3, CRC, SNB_2, CRC, SNB_1, CRC, SNB_0, CRC */
-    uint8_t data2[6];        /* SNC_1, SNC_0, CRC, SNA_1, SNA_0, CRC */
+int sht2x_read_ident(const sht2x_t *dev, uint8_t * buffer, size_t buflen) {
+    uint8_t data1[8];        // SNB_3, CRC, SNB_2, CRC, SNB_1, CRC, SNB_0, CRC
+    uint8_t data2[6];        // SNC_1, SNC_0, CRC, SNA_1, SNA_0, CRC
     size_t ix;
     int res;
 
@@ -227,17 +207,15 @@ int sht2x_read_ident(const sht2x_t *dev, uint8_t * buffer, size_t buflen)
         }
     }
 
-    /*
-     * See Sensirion document Electronic_Identification_Code_SHT2x_V1-1_C2
-     *
-     * first memory address:
-     *  SNB_3, CRC, SNB_2, CRC, SNB_1, CRC, SNB_0, CRC,
-     * Second memory address:
-     *  SNC_1, SNC_0, CRC, SNA_1, SNA_0, CRC
-     *
-     * To assemble the Identification code:
-     *  SNA_1, SNA_0, SNB_3, SNB_2, SNB_1, SNB_0, SNC_1, SNC_0
-     */
+    // See Sensirion document Electronic_Identification_Code_SHT2x_V1-1_C2
+    //
+    // first memory address:
+    //  SNB_3, CRC, SNB_2, CRC, SNB_1, CRC, SNB_0, CRC,
+    // Second memory address:
+    //  SNC_1, SNC_0, CRC, SNA_1, SNA_0, CRC
+    //
+    // To assemble the Identification code:
+    //  SNA_1, SNA_0, SNB_3, SNB_2, SNB_1, SNB_0, SNC_1, SNC_0
     if (buffer == NULL) {
         return 0;
     }
@@ -253,8 +231,7 @@ int sht2x_read_ident(const sht2x_t *dev, uint8_t * buffer, size_t buflen)
     return ix;
 }
 
-int sht2x_read_userreg(const sht2x_t *dev, uint8_t * userreg)
-{
+int sht2x_read_userreg(const sht2x_t *dev, uint8_t * userreg) {
     cmd_t command = read_user_cmd;
 
     if (userreg) {
@@ -273,8 +250,7 @@ int sht2x_read_userreg(const sht2x_t *dev, uint8_t * userreg)
     return SHT2X_OK;
 }
 
-int sht2x_write_userreg(const sht2x_t *dev, uint8_t userreg)
-{
+int sht2x_write_userreg(const sht2x_t *dev, uint8_t userreg) {
     cmd_t command = write_user_cmd;
     int i2c_result;
     DEBUG("[SHT2x] write command: addr=%02x cmd=%02x\n", _ADDR, (uint8_t)command);
@@ -293,25 +269,22 @@ int sht2x_write_userreg(const sht2x_t *dev, uint8_t userreg)
  * Local Functions
  ******************************************************************************/
 
-/**
- * @brief       Read a sensor value from the given SHT2X device
- *
- * @param[in]  dev          Device descriptor of SHT2X device to read from
- * @param[in]  command      The SHT2x command (hold mode only)
- * @param[out] val          The raw sensor value (only valid if no error)
- *
- * @return                  SHT2X_OK value is returned in @p val
- * @return                  SHT2X_NODEV if sensor communication failed
- * @return                  SHT2X_ERR_OTHER if parameters are invalid
- * @return                  SHT2X_ERR_TIMEDOUT if sensor times out
- * @return                  SHT2X_ERR_CRC if the checksum is wrong
- */
-static int read_sensor(const sht2x_t* dev, cmd_t command, uint16_t *val)
-{
+/// @brief       Read a sensor value from the given SHT2X device
+///
+/// @param[in]  dev          Device descriptor of SHT2X device to read from
+/// @param[in]  command      The SHT2x command (hold mode only)
+/// @param[out] val          The raw sensor value (only valid if no error)
+///
+/// @return                  SHT2X_OK value is returned in @p val
+/// @return                  SHT2X_NODEV if sensor communication failed
+/// @return                  SHT2X_ERR_OTHER if parameters are invalid
+/// @return                  SHT2X_ERR_TIMEDOUT if sensor times out
+/// @return                  SHT2X_ERR_CRC if the checksum is wrong
+static int read_sensor(const sht2x_t* dev, cmd_t command, uint16_t *val) {
     uint8_t buffer[3];
     int i2c_result;
 
-    /* Acquire exclusive access */
+    // Acquire exclusive access
     i2c_acquire(_BUS);
 
     DEBUG("[SHT2x] write command: addr=%02x cmd=%02x\n", _ADDR, (uint8_t)command);
@@ -326,11 +299,11 @@ static int read_sensor(const sht2x_t* dev, cmd_t command, uint16_t *val)
     DEBUG("[SHT2x] read: %02x %02x %02x\n", buffer[0], buffer[1], buffer[2]);
     if (val) {
         *val = (buffer[0] << 8) | buffer[1];
-        *val &= ~0x0003;            /* clear two low bits (status bits) */
+        *val &= ~0x0003;            // clear two low bits (status bits)
     }
 
     if (dev->params.is_crc_enabled) {
-        /* byte #3 is the checksum */
+        // byte #3 is the checksum
         if (sht2x_checkcrc(buffer, 2, buffer[2]) != 0) {
             return SHT2X_ERR_CRC;
         }
@@ -339,40 +312,37 @@ static int read_sensor(const sht2x_t* dev, cmd_t command, uint16_t *val)
     return SHT2X_OK;
 }
 
-/**
- * @brief       Read a sensor value from the given SHT2X device, polling mode
- *
- * @param[in]  dev          Device descriptor of SHT2X device to read from
- * @param[in]  command      The SHT2x command (hold mode only)
- * @param[out] val          The raw sensor value (only valid if no error)
- *
- * @return                  SHT2X_OK value is returned in @p val
- * @return                  SHT2X_NODEV if sensor communication failed
- * @return                  SHT2X_ERR_OTHER if parameters are invalid
- * @return                  SHT2X_ERR_TIMEDOUT if sensor times out
- * @return                  SHT2X_ERR_CRC if the checksum is wrong
- */
-static int read_sensor_poll(const sht2x_t* dev, cmd_t command, uint16_t *val)
-{
+/// @brief       Read a sensor value from the given SHT2X device, polling mode
+///
+/// @param[in]  dev          Device descriptor of SHT2X device to read from
+/// @param[in]  command      The SHT2x command (hold mode only)
+/// @param[out] val          The raw sensor value (only valid if no error)
+///
+/// @return                  SHT2X_OK value is returned in @p val
+/// @return                  SHT2X_NODEV if sensor communication failed
+/// @return                  SHT2X_ERR_OTHER if parameters are invalid
+/// @return                  SHT2X_ERR_TIMEDOUT if sensor times out
+/// @return                  SHT2X_ERR_CRC if the checksum is wrong
+static int read_sensor_poll(const sht2x_t* dev, cmd_t command, uint16_t *val) {
     uint8_t buffer[3];
     int i2c_result;
 
-    /* acquire the bus for exclusive access */
+    // acquire the bus for exclusive access
     i2c_acquire(_BUS);
 
     DEBUG("[SHT2x] write command: addr=%02x cmd=%02x\n", _ADDR, (uint8_t)command);
     (void)i2c_write_byte(_BUS, _ADDR, (uint8_t)command, 0);
-    /* release the bus for measurement duration */
+    // release the bus for measurement duration
     i2c_release(_BUS);
 
-    /* sleep for measurement duration */
+    // sleep for measurement duration
     if (command == temp_no_hold_cmd) {
         sleep_during_temp_measurement(dev->params.resolution);
     } else {
         sleep_during_hum_measurement(dev->params.resolution);
     }
 
-    /* reacquire the bus for exclusive access */
+    // reacquire the bus for exclusive access
     i2c_acquire(_BUS);
 
     uint8_t ix = 0;
@@ -392,10 +362,10 @@ static int read_sensor_poll(const sht2x_t* dev, cmd_t command, uint16_t *val)
     DEBUG("[SHT2x] read: %02x %02x %02x\n", buffer[0], buffer[1], buffer[2]);
     if (val) {
         *val = (buffer[0] << 8) | buffer[1];
-        *val &= ~0x0003;            /* clear two low bits (status bits) */
+        *val &= ~0x0003;            // clear two low bits (status bits)
     }
 
-    /* byte #3 is the checksum */
+    // byte #3 is the checksum
     if (dev->params.is_crc_enabled) {
         if (sht2x_checkcrc(buffer, 2, buffer[2]) != 0) {
             return SHT2X_ERR_CRC;
@@ -405,30 +375,24 @@ static int read_sensor_poll(const sht2x_t* dev, cmd_t command, uint16_t *val)
     return SHT2X_OK;
 }
 
-static const uint8_t POLYNOMIAL = 0x31;       /* P(x)=x^8+x^5+x^4+1 = 100110001 */
-/**
- * @brief       Calculate 8-Bit checksum with given polynomial
- */
-static uint8_t sht2x_checkcrc(uint8_t data[], uint8_t nbrOfBytes, uint8_t checksum)
-{
+static const uint8_t POLYNOMIAL = 0x31;       // P(x)=x^8+x^5+x^4+1 = 100110001
+/// @brief       Calculate 8-Bit checksum with given polynomial
+static uint8_t sht2x_checkcrc(uint8_t data[], uint8_t nbrOfBytes, uint8_t checksum) {
     return crc8(data, nbrOfBytes, POLYNOMIAL, 0) != checksum;
 }
 
-/**
- * @brief       Sleep during measurement
- *
- * @param[in]   res     The resolution bits in the User Register
- *
- * @details     Sleep for the maximum time it takes to complete the measurement
- *              this depends on the resolution and is taken from the datasheet.
- *              Measurement time differs for temperature and humidity.
- *
- * @note        According to the data sheet, typical times are recommended for
- *              calculating energy consumption, while maximum values should be
- *              used for calculating waiting times in communication.
- */
-static void sleep_during_temp_measurement(sht2x_res_t res)
-{
+/// @brief       Sleep during measurement
+///
+/// @param[in]   res     The resolution bits in the User Register
+///
+/// @details     Sleep for the maximum time it takes to complete the measurement
+///              this depends on the resolution and is taken from the datasheet.
+///              Measurement time differs for temperature and humidity.
+///
+/// @note        According to the data sheet, typical times are recommended for
+///              calculating energy consumption, while maximum values should be
+///              used for calculating waiting times in communication.
+static void sleep_during_temp_measurement(sht2x_res_t res) {
     uint32_t amount_ms = 0;
 
     switch (res) {
@@ -448,8 +412,7 @@ static void sleep_during_temp_measurement(sht2x_res_t res)
     ztimer_sleep(ZTIMER_MSEC, amount_ms);
 }
 
-static void sleep_during_hum_measurement(sht2x_res_t resolution)
-{
+static void sleep_during_hum_measurement(sht2x_res_t resolution) {
     uint32_t amount_ms = 0;
 
     switch (resolution) {

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for SAM0 ethernet peripheral
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for SAM0 ethernet peripheral
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -28,21 +24,20 @@ static netdev_t sam0_eth;
 
 int netdev_eth_minimal_init_devs(netdev_event_cb_t cb) {
 
-    /* setup the specific driver */
+    // setup the specific driver
     sam0_eth_setup(&sam0_eth);
 
-    /* set the application-provided callback */
+    // set the application-provided callback
     sam0_eth.event_callback = cb;
 
-    /* initialize the device driver */
+    // initialize the device driver
     int res = sam0_eth.driver->init(&sam0_eth);
     expect(!res);
 
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Test application for SAM0 ethernet peripheral");
 
     int res = netdev_eth_minimal_init();
@@ -51,7 +46,7 @@ int main(void)
         return 1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization successful - starting the shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

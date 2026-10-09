@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_l3gxxxx
- * @brief       Device Driver for ST L3Gxxxx 3-axis gyroscope family
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_l3gxxxx
+/// @brief       Device Driver for ST L3Gxxxx 3-axis gyroscope family
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -38,21 +34,21 @@
         DEBUG("[l3gxxxx] %s dev=%" PRIxPTR ": " m "\n", \
               __func__, (uintptr_t)d, ## __VA_ARGS__)
 
-#else /* ENABLE_DEBUG */
+#else // ENABLE_DEBUG
 
 #define ASSERT_PARAM(cond) assert(cond);
 #define DEBUG_DEV(m, d, ...)
 
-#endif /* ENABLE_DEBUG */
+#endif // ENABLE_DEBUG
 
-/* set a single bit defined by mask `m` in 8-bit register value `r` to value `v` */
+// set a single bit defined by mask `m` in 8-bit register value `r` to value `v`
 #define _SET_REG_BIT(r, m, v) r = ((v) & ~m) ? r | m : r & ~m
-/* get the value of a single bit defined by mask `m` from 8-bit register value `r` */
+// get the value of a single bit defined by mask `m` from 8-bit register value `r`
 #define _GET_REG_BIT(r, m) (r & m) ? 1 : 0
 
-/* set the bits defined by mask `m` in 8-bit register value `r` to value `v` */
+// set the bits defined by mask `m` in 8-bit register value `r` to value `v`
 #define _SET_REG_VALUE(r, m, v) r = (r & ~m) | (((v) << m ## _S) & m)
-/* get the value the bits defined by mask `m` from 8-bit register value `r` */
+// get the value the bits defined by mask `m` from 8-bit register value `r`
 #define _GET_REG_VALUE(r, m) ((r & ~m) >> m ## _S)
 
 #if IS_USED(MODULE_L3GXXXX_SPI)
@@ -74,7 +70,7 @@
 int l3gxxxx_reg_update(const l3gxxxx_t *dev,
                        uint8_t reg, uint8_t mask, uint8_t val);
 
-/** Forward declaration of functions for internal use */
+/// Forward declaration of functions for internal use
 
 static int _is_available(l3gxxxx_t *dev);
 static void _acquire(const l3gxxxx_t *dev);
@@ -92,29 +88,28 @@ static int _get_int_data_src(const l3gxxxx_t *dev, l3gxxxx_int_data_src_t *src);
 
 #define msb_lsb_to_type(t, b, o) (t)(((t)b[o] << 8) | b[o + 1])
 
-int l3gxxxx_init(l3gxxxx_t *dev, const l3gxxxx_params_t *params)
-{
+int l3gxxxx_init(l3gxxxx_t *dev, const l3gxxxx_params_t *params) {
     int res = L3GXXXX_OK;
 
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(params != NULL);
     DEBUG_DEV("params=%p", dev, params);
 
-    /* init sensor data structure */
+    // init sensor data structure
     dev->params = *params;
     mutex_init(&dev->int_lock);
 
 #if IS_USED(MODULE_L3GXXXX_SPI)
     ASSERT_PARAM(gpio_is_valid(_SPI_CS));
-    /* for SPI, we only need to initialize the chip select pin */
+    // for SPI, we only need to initialize the chip select pin
     if (spi_init_cs(_SPI_DEV, _SPI_CS) != SPI_OK) {
         return -L3GXXXX_ERROR_SPI;
     }
-#endif /* IS_USED(MODULE_L3GXXXX_SPI) */
+#endif // IS_USED(MODULE_L3GXXXX_SPI)
 
     _acquire(dev);
 
-    /* check availability of the sensor */
+    // check availability of the sensor
     if ((res = _is_available(dev)) != L3GXXXX_OK) {
         _release(dev);
         return res;
@@ -139,14 +134,14 @@ int l3gxxxx_init(l3gxxxx_t *dev, const l3gxxxx_params_t *params)
     reg[3] = (dev->params.scale << L3GXXXX_FULL_SCALE_S) | L3GXXXX_BLOCK_DATA_UPDATE;
     reg[4] = (dev->params.filter_sel & L3GXXXX_OUT_SEL);
 
-    /* HPF has to be enabled by a separate bit if filter mode is 1 or 3 */
+    // HPF has to be enabled by a separate bit if filter mode is 1 or 3
     reg[4] |= (dev->params.filter_sel & 1) ? L3GXXXX_HP_ENABLED : 0;
 
-    /* initialize sensor completely including setting in power down mode */
+    // initialize sensor completely including setting in power down mode
     res |= _write(dev, L3GXXXX_REG_CTRL1, reg, 6);
 
 #if IS_USED(MODULE_L3GD20H) && IS_USED(MODULE_L3GXXXX_LOW_ODR)
-    /* in case of low ODR, low data rate flag has to be set */
+    // in case of low ODR, low data rate flag has to be set
     if (dev->params.odr >= L3GXXXX_ODR_12) {
         ASSERT_PARAM(dev->sensor == L3GD20H);
         res |= _update(dev, L3GXXXX_REG_LOW_ODR, L3GXXXX_LOW_ODR, 1);
@@ -159,7 +154,7 @@ int l3gxxxx_init(l3gxxxx_t *dev, const l3gxxxx_params_t *params)
     res |= _write(dev, L3GXXXX_REG_FIFO_CTRL, &fifo_ctrl, 1);
 
     reg[4] |= L3GXXXX_FIFO_EN;
-#endif /* IS_USED(MODULE_L3GXXXX_FIFO) */
+#endif // IS_USED(MODULE_L3GXXXX_FIFO)
 
     res |= _write(dev, L3GXXXX_REG_CTRL1, reg, 5);
     _release(dev);
@@ -169,40 +164,39 @@ int l3gxxxx_init(l3gxxxx_t *dev, const l3gxxxx_params_t *params)
     }
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_DATA)
-    /* enable FIFO interrupts if FIFO is used, DRDY interrupt otherwise */
+    // enable FIFO interrupts if FIFO is used, DRDY interrupt otherwise
     if ((res = l3gxxxx_enable_int(dev, IS_USED(MODULE_L3GXXXX_FIFO)
                                              ? L3GXXXX_INT_FIFO
                                              : L3GXXXX_INT_DATA_READY, true))) {
         return res;
     }
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ_DATA) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ_DATA)
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
     if ((res = l3gxxxx_set_int_event_cfg(dev, &dev->params.int1_cfg)) ||
         (res = l3gxxxx_enable_int(dev, L3GXXXX_INT_EVENT, true), res)) {
         return res;
     }
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ_EVENT) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
 
 #if IS_USED(MODULE_L3GXXXX_I2C)
     if (_IS_DEV_I2C) {
         DEBUG_DEV("I2C device initialized: bus %d, addr=%02x",
                   dev, _I2C_DEV, _I2C_ADDR);
     }
-#endif /* IS_USED(MODULE_L3GXXXX_I2C) */
+#endif // IS_USED(MODULE_L3GXXXX_I2C)
 
 #if IS_USED(MODULE_L3GXXXX_SPI)
     if (_IS_DEV_SPI) {
         DEBUG_DEV("SPI device initialized: bus %d, cs=%u",
                   dev, _SPI_DEV, (unsigned)_SPI_CS);
     }
-#endif /* IS_USED(MODULE_L3GXXXX_SPI) */
+#endif // IS_USED(MODULE_L3GXXXX_SPI)
 
     return res;
 }
 
-int l3gxxxx_data_ready(const l3gxxxx_t *dev)
-{
+int l3gxxxx_data_ready(const l3gxxxx_t *dev) {
     ASSERT_PARAM(dev != NULL);
     DEBUG_DEV("", dev);
 
@@ -225,11 +219,9 @@ int l3gxxxx_data_ready(const l3gxxxx_t *dev)
 #endif
 }
 
-/*
- * scale factors for conversion of raw sensor data to degree for possible
- * sensitivities according to mechanical characteristics in datasheet
- * multiplied by 4,000
- */
+// scale factors for conversion of raw sensor data to degree for possible
+// sensitivities according to mechanical characteristics in datasheet
+// multiplied by 4,000
 static const uint16_t L3GXXXX_SCALES[3] = { 35, 70, 280 };
 
 int l3gxxxx_read(const l3gxxxx_t *dev, l3gxxxx_data_t *data)
@@ -254,8 +246,7 @@ int l3gxxxx_read(const l3gxxxx_t *dev, l3gxxxx_data_t *data)
     return res;
 }
 
-int l3gxxxx_read_raw(const l3gxxxx_t *dev, l3gxxxx_raw_data_t *raw)
-{
+int l3gxxxx_read_raw(const l3gxxxx_t *dev, l3gxxxx_raw_data_t *raw) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(raw != NULL);
     DEBUG_DEV("raw=%p", dev, raw);
@@ -263,12 +254,12 @@ int l3gxxxx_read_raw(const l3gxxxx_t *dev, l3gxxxx_raw_data_t *raw)
     int res = L3GXXXX_OK;
 
 #if IS_USED(MODULE_L3GXXXX_FIFO)
-    /* if not in bypass mode we read out the FIFO and return newest data sample */
+    // if not in bypass mode we read out the FIFO and return newest data sample
     if (dev->params.fifo_mode != L3GXXXX_BYPASS) {
         l3gxxxx_raw_data_fifo_t raw_fifo = {};
         int num;
 
-        /* read raw data samples from FIFO */
+        // read raw data samples from FIFO
         if ((num = l3gxxxx_read_raw_fifo(dev, raw_fifo)) < 0) {
             DEBUG_DEV("reading raw data samples from FIFO failed", dev);
             return num;
@@ -283,17 +274,17 @@ int l3gxxxx_read_raw(const l3gxxxx_t *dev, l3gxxxx_raw_data_t *raw)
 
         return res;
     }
-#endif /* IS_USED(MODULE_L3GXXXX_FIFO) */
+#endif // IS_USED(MODULE_L3GXXXX_FIFO)
 
     uint8_t data[6];
 
-    /* read raw data sample and clear interrupt signal INT2/DRDY if used */
+    // read raw data sample and clear interrupt signal INT2/DRDY if used
     if (l3gxxxx_reg_read(dev, L3GXXXX_REG_OUT_X_L, data, 6)) {
         DEBUG_DEV("could not get raw data", dev);
         return -L3GXXXX_ERROR_RAW_DATA;
     }
 
-    /* L3GXXXX_REG_CTRL4.BLE = 0, Data LSB @ lower address */
+    // L3GXXXX_REG_CTRL4.BLE = 0, Data LSB @ lower address
     raw->x = byteorder_lebuftohs(&data[0]);
     raw->y = byteorder_lebuftohs(&data[2]);
     raw->z = byteorder_lebuftohs(&data[4]);
@@ -303,8 +294,7 @@ int l3gxxxx_read_raw(const l3gxxxx_t *dev, l3gxxxx_raw_data_t *raw)
 
 #if IS_USED(MODULE_L3GXXXX_FIFO)
 
-int l3gxxxx_read_fifo(const l3gxxxx_t *dev, l3gxxxx_data_fifo_t data)
-{
+int l3gxxxx_read_fifo(const l3gxxxx_t *dev, l3gxxxx_data_fifo_t data) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(data != NULL);
     DEBUG_DEV("", dev);
@@ -326,15 +316,14 @@ int l3gxxxx_read_fifo(const l3gxxxx_t *dev, l3gxxxx_data_fifo_t data)
     return num;
 }
 
-int l3gxxxx_read_raw_fifo(const l3gxxxx_t *dev, l3gxxxx_raw_data_fifo_t raw)
-{
+int l3gxxxx_read_raw_fifo(const l3gxxxx_t *dev, l3gxxxx_raw_data_fifo_t raw) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(raw != NULL);
     DEBUG_DEV("", dev);
 
     int res = L3GXXXX_OK;
 
-    /* in bypass mode, we use l3gxxxx_read_raw to return one sample */
+    // in bypass mode, we use l3gxxxx_read_raw to return one sample
     if (dev->params.fifo_mode == L3GXXXX_BYPASS) {
         res = l3gxxxx_read_raw(dev, raw);
         return (res == L3GXXXX_OK) ? 1 : res;
@@ -344,30 +333,30 @@ int l3gxxxx_read_raw_fifo(const l3gxxxx_t *dev, l3gxxxx_raw_data_fifo_t raw)
 
     _acquire(dev);
 
-    /* read FIFO state */
+    // read FIFO state
     if (_read(dev, L3GXXXX_REG_FIFO_SRC, &reg, 1) != L3GXXXX_OK) {
         _release(dev);
         return res;
     }
 
-    /* if nothing is in the FIFO, just return with 0 */
+    // if nothing is in the FIFO, just return with 0
     if (reg & L3GXXXX_FIFO_EMPTY) {
         _release(dev);
         return 0;
     }
 
-    /* read samples from FIFO */
+    // read samples from FIFO
     int samples = (reg & L3GXXXX_FIFO_FFS) + ((reg & L3GXXXX_FIFO_OVR) ? 1 : 0);
 
-    /* read samples from FIFO */
+    // read samples from FIFO
     for (int i = 0; i < samples; i++) {
 
         uint8_t data[6];
 
-        /* read raw data sample */
+        // read raw data sample
         res |= _read(dev, L3GXXXX_REG_OUT_X_L, data, 6);
 
-        /* L3GXXXX_REG_CTRL4.BLE = 0, Data LSB @ lower address */
+        // L3GXXXX_REG_CTRL4.BLE = 0, Data LSB @ lower address
         raw[i].x = byteorder_lebuftohs(&data[0]);
         raw[i].y = byteorder_lebuftohs(&data[2]);
         raw[i].z = byteorder_lebuftohs(&data[4]);
@@ -381,7 +370,7 @@ int l3gxxxx_read_raw_fifo(const l3gxxxx_t *dev, l3gxxxx_raw_data_fifo_t raw)
     }
 
     if (dev->params.fifo_mode == L3GXXXX_FIFO && samples == 32) {
-        /* clean FIFO (see app note) */
+        // clean FIFO (see app note)
         res |= _update(dev, L3GXXXX_REG_FIFO_CTRL, L3GXXXX_FIFO_MODE, L3GXXXX_BYPASS);
         res |= _update(dev, L3GXXXX_REG_FIFO_CTRL, L3GXXXX_FIFO_MODE, L3GXXXX_FIFO);
     }
@@ -390,18 +379,16 @@ int l3gxxxx_read_raw_fifo(const l3gxxxx_t *dev, l3gxxxx_raw_data_fifo_t raw)
 
     return (res == L3GXXXX_OK) ? samples : res;
 }
-#endif /* IS_USED(MODULE_L3GXXXX_FIFO) */
+#endif // IS_USED(MODULE_L3GXXXX_FIFO)
 
-int l3gxxxx_power_down(l3gxxxx_t *dev)
-{
+int l3gxxxx_power_down(l3gxxxx_t *dev) {
     ASSERT_PARAM(dev != NULL);
     DEBUG_DEV("", dev);
 
     return l3gxxxx_reg_update(dev, L3GXXXX_REG_CTRL1, L3GXXXX_POWER_MODE, 0);
 }
 
-int l3gxxxx_power_up(l3gxxxx_t *dev)
-{
+int l3gxxxx_power_up(l3gxxxx_t *dev) {
     ASSERT_PARAM(dev != NULL);
     DEBUG_DEV("", dev);
 
@@ -412,16 +399,14 @@ int l3gxxxx_power_up(l3gxxxx_t *dev)
 
 #if IS_USED(MODULE_L3GXXXX_SLEEP)
 
-int l3gxxxx_sleep(l3gxxxx_t *dev)
-{
+int l3gxxxx_sleep(l3gxxxx_t *dev) {
     ASSERT_PARAM(dev != NULL);
     DEBUG_DEV("", dev);
 
     return l3gxxxx_reg_update(dev, L3GXXXX_REG_CTRL1, L3GXXXX_XYZ_ENABLED, 0);
 }
 
-int l3gxxxx_wake_up(l3gxxxx_t *dev)
-{
+int l3gxxxx_wake_up(l3gxxxx_t *dev) {
     ASSERT_PARAM(dev != NULL);
     DEBUG_DEV("", dev);
 
@@ -429,13 +414,12 @@ int l3gxxxx_wake_up(l3gxxxx_t *dev)
                                                   L3GXXXX_XYZ_ENABLED);
     return res;
 }
-#endif /* IS_USED(MODULE_L3GXXXX_SLEEP) */
+#endif // IS_USED(MODULE_L3GXXXX_SLEEP)
 
 #if IS_USED(MODULE_L3GXXXX_IRQ)
 
 int l3gxxxx_enable_int(const l3gxxxx_t *dev,
-                       l3gxxxx_int_types_t mask, bool enable)
-{
+                       l3gxxxx_int_types_t mask, bool enable) {
     ASSERT_PARAM(dev != NULL);
     DEBUG_DEV("mask=%02x enable=%d", dev, mask, enable);
 
@@ -455,25 +439,22 @@ int l3gxxxx_enable_int(const l3gxxxx_t *dev,
 }
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
-static void _cb_int1(void *arg)
-{
+static void _cb_int1(void *arg) {
     l3gxxxx_t *dev = (l3gxxxx_t *)arg;
     dev->int_type |= L3GXXXX_INT_EVENT;
     mutex_unlock(&dev->int_lock);
 }
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ_EVENT) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_DATA)
-static void _cb_int2(void *arg)
-{
+static void _cb_int2(void *arg) {
     l3gxxxx_t *dev = (l3gxxxx_t *)arg;
     dev->int_type |= L3GXXXX_INT_DATA;
     mutex_unlock(&dev->int_lock);
 }
-#endif /* IS_USED(L3GXXXX_IRQ_DRDY) */
+#endif // IS_USED(L3GXXXX_IRQ_DRDY)
 
-l3gxxxx_int_src_t l3gxxxx_wait_int(l3gxxxx_t *dev)
-{
+l3gxxxx_int_src_t l3gxxxx_wait_int(l3gxxxx_t *dev) {
     ASSERT_PARAM(dev != NULL);
     DEBUG_DEV("", dev);
 
@@ -481,26 +462,26 @@ l3gxxxx_int_src_t l3gxxxx_wait_int(l3gxxxx_t *dev)
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
     ASSERT_PARAM(gpio_is_valid(dev->params.int1_pin));
-    /* init INT1 signal pin and enable the interrupt */
+    // init INT1 signal pin and enable the interrupt
     gpio_init_int(dev->params.int1_pin, GPIO_IN, GPIO_RISING, _cb_int1, dev);
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ_EVENT) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_DATA)
     ASSERT_PARAM(gpio_is_valid(dev->params.int2_pin));
-    /* init INT2/DRDY signal pin and enable the interrupt */
+    // init INT2/DRDY signal pin and enable the interrupt
     gpio_init_int(dev->params.int2_pin, GPIO_IN, GPIO_RISING, _cb_int2, dev);
-#endif /* IS_USED(L3GXXXX_IRQ_DRDY) */
+#endif // IS_USED(L3GXXXX_IRQ_DRDY)
 
-    /* wait for an interrupt */
+    // wait for an interrupt
     mutex_lock(&dev->int_lock);
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
     gpio_irq_disable(dev->params.int1_pin);
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ_EVENT) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_DATA)
     gpio_irq_disable(dev->params.int2_pin);
-#endif /* IS_USED(L3GXXXX_IRQ_DRDY) */
+#endif // IS_USED(L3GXXXX_IRQ_DRDY)
 
     l3gxxxx_int_src_t int_src = { };
 
@@ -508,24 +489,23 @@ l3gxxxx_int_src_t l3gxxxx_wait_int(l3gxxxx_t *dev)
     if (dev->int_type & L3GXXXX_INT_EVENT) {
         _get_int_event_src(dev, &int_src.event);
     }
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ_EVENT) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_DATA)
     if (dev->int_type & L3GXXXX_INT_DATA) {
         _get_int_data_src(dev, &int_src.data);
     }
-#endif /* IS_USED(L3GXXXX_IRQ_DRDY) */
+#endif // IS_USED(L3GXXXX_IRQ_DRDY)
 
     return int_src;
 }
 
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ)
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
 
 int l3gxxxx_set_int_event_cfg(const l3gxxxx_t *dev,
-                              const l3gxxxx_int_event_cfg_t *cfg)
-{
+                              const l3gxxxx_int_event_cfg_t *cfg) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(cfg != NULL);
     DEBUG_DEV("config=%p", dev, cfg);
@@ -560,19 +540,19 @@ int l3gxxxx_set_int_event_cfg(const l3gxxxx_t *dev,
 
     _acquire(dev);
 
-    /* write the thresholds to registers IG_THS_* */
+    // write the thresholds to registers IG_THS_*
     res |= _write(dev, L3GXXXX_REG_IG_THS_XH, ig_ths, 6);
 
-    /* write duration configuration to IG_DURATION  */
+    // write duration configuration to IG_DURATION
     res |= _write(dev, L3GXXXX_REG_IG_DURATION, &ig_dur, 1);
 
-    /* write INT1 configuration  to IG_CFG */
+    // write INT1 configuration  to IG_CFG
     res |= _write(dev, L3GXXXX_REG_IG_CFG, &ig_cfg, 1);
 
-    /* filter selection used for threshold comparison for INT1 generation */
+    // filter selection used for threshold comparison for INT1 generation
     res |= _update(dev, L3GXXXX_REG_CTRL5, L3GXXXX_IG_SEL, cfg->filter);
 
-    /* try to set HPen in case LPF2 and HPF is used */
+    // try to set HPen in case LPF2 and HPF is used
     if (cfg->filter == L3GXXXX_HPF_AND_LPF2) {
         res |= _update(dev, L3GXXXX_REG_CTRL5, L3GXXXX_HP_ENABLED, 1);
     }
@@ -583,8 +563,7 @@ int l3gxxxx_set_int_event_cfg(const l3gxxxx_t *dev,
 }
 
 static int _get_int_event_src(const l3gxxxx_t *dev,
-                              l3gxxxx_int_event_src_t *src)
-{
+                              l3gxxxx_int_event_src_t *src) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(src != NULL);
     DEBUG_DEV("src=%p", dev, src);
@@ -606,13 +585,12 @@ static int _get_int_event_src(const l3gxxxx_t *dev,
 
     return res;
 }
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ_EVENT) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ_EVENT)
 
 #if IS_USED(MODULE_L3GXXXX_IRQ_DATA)
 
 static int _get_int_data_src(const l3gxxxx_t *dev,
-                             l3gxxxx_int_data_src_t *src)
-{
+                             l3gxxxx_int_data_src_t *src) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(src != NULL);
     DEBUG_DEV("src=%p", dev, src);
@@ -634,13 +612,12 @@ static int _get_int_data_src(const l3gxxxx_t *dev,
 
     return res;
 }
-#endif /* IS_USED(MODULE_L3GXXXX_IRQ_DATA) */
+#endif // IS_USED(MODULE_L3GXXXX_IRQ_DATA)
 
 #if IS_USED(MODULE_L3GXXXX_CONFIG)
 
 int l3gxxxx_set_mode(l3gxxxx_t *dev, l3gxxxx_odr_t odr,
-                     bool x, bool y, bool z)
-{
+                     bool x, bool y, bool z) {
     ASSERT_PARAM(dev != NULL);
 
     DEBUG_DEV("odr=%02x x=%d y=%d z=%d", dev, odr, x, y, z);
@@ -661,7 +638,7 @@ int l3gxxxx_set_mode(l3gxxxx_t *dev, l3gxxxx_odr_t odr,
     res |= _write(dev, L3GXXXX_REG_CTRL1, &ctrl1, 1);
 
 #if IS_USED(MODULE_L3GD20H) && IS_USED(MODULE_L3GXXXX_LOW_ODR)
-    /* in case of low ODR, low data rate flag has to be set */
+    // in case of low ODR, low data rate flag has to be set
     if (dev->params.odr >= L3GXXXX_ODR_12) {
         ASSERT_PARAM(dev->sensor == L3GD20H);
         res |= _update(dev, L3GXXXX_REG_LOW_ODR, L3GXXXX_LOW_ODR, 1);
@@ -672,8 +649,7 @@ int l3gxxxx_set_mode(l3gxxxx_t *dev, l3gxxxx_odr_t odr,
     return res;
 }
 
-int l3gxxxx_set_scale(l3gxxxx_t *dev, l3gxxxx_scale_t scale)
-{
+int l3gxxxx_set_scale(l3gxxxx_t *dev, l3gxxxx_scale_t scale) {
     ASSERT_PARAM(dev != NULL);
 #if IS_USED(MODULE_A3G4250)
     ASSERT_PARAM((scale == L3GXXXX_SCALE_245_DPS) || (dev->sensor != X3G42XXD));
@@ -682,13 +658,12 @@ int l3gxxxx_set_scale(l3gxxxx_t *dev, l3gxxxx_scale_t scale)
 
     dev->params.scale = scale;
 
-    /* read CTRL4 register and write scale */
+    // read CTRL4 register and write scale
     return l3gxxxx_reg_update(dev, L3GXXXX_REG_CTRL4, L3GXXXX_FULL_SCALE, scale);
 }
 
 int l3gxxxx_select_output_filter(l3gxxxx_t *dev,
-                                 l3gxxxx_filter_sel_t filter)
-{
+                                 l3gxxxx_filter_sel_t filter) {
     ASSERT_PARAM(dev != NULL);
     DEBUG_DEV("filter=%02x", dev, filter);
 
@@ -698,9 +673,9 @@ int l3gxxxx_select_output_filter(l3gxxxx_t *dev,
 
     _acquire(dev);
 
-    /* set the register OUT_SEL in any case */
+    // set the register OUT_SEL in any case
     res |= _update(dev, L3GXXXX_REG_CTRL5, L3GXXXX_OUT_SEL, filter);
-    /* HPF has to be enabled by a separate bit if filter mode is 1 or 3 */
+    // HPF has to be enabled by a separate bit if filter mode is 1 or 3
     res |= _update(dev, L3GXXXX_REG_CTRL5, L3GXXXX_HP_ENABLED, filter & 1);
 
     _release(dev);
@@ -709,8 +684,7 @@ int l3gxxxx_select_output_filter(l3gxxxx_t *dev,
 }
 
 int l3gxxxx_config_hpf(const l3gxxxx_t *dev,
-                       l3gxxxx_hpf_mode_t mode, uint8_t cutoff)
-{
+                       l3gxxxx_hpf_mode_t mode, uint8_t cutoff) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(cutoff <= 9);
     DEBUG_DEV("mode=%02x cutoff=%d", dev, mode, cutoff);
@@ -725,16 +699,14 @@ int l3gxxxx_config_hpf(const l3gxxxx_t *dev,
     return res;
 }
 
-int l3gxxxx_set_hpf_ref(const l3gxxxx_t *dev, int8_t ref)
-{
+int l3gxxxx_set_hpf_ref(const l3gxxxx_t *dev, int8_t ref) {
     ASSERT_PARAM(dev != NULL);
     DEBUG_DEV("ref=%d", dev, ref);
 
     return l3gxxxx_reg_write(dev, L3GXXXX_REG_REFERENCE, (uint8_t *)&ref, 1);
 }
 
-int l3gxxxx_get_hpf_ref(const l3gxxxx_t *dev, int8_t *ref)
-{
+int l3gxxxx_get_hpf_ref(const l3gxxxx_t *dev, int8_t *ref) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(ref != NULL);
     DEBUG_DEV("ref=%p", dev, ref);
@@ -745,8 +717,7 @@ int l3gxxxx_get_hpf_ref(const l3gxxxx_t *dev, int8_t *ref)
 #if IS_USED(MODULE_L3GXXXX_FIFO)
 
 int l3gxxxx_set_fifo_mode(l3gxxxx_t *dev, l3gxxxx_fifo_mode_t mode,
-                          uint8_t watermark)
-{
+                          uint8_t watermark) {
     ASSERT_PARAM(dev != NULL);
 #if !IS_USED(L3GD20H) && !IS_USED(L3GD20)
     ASSERT_PARAM(mode <= L3GXXXX_STREAM);
@@ -762,10 +733,10 @@ int l3gxxxx_set_fifo_mode(l3gxxxx_t *dev, l3gxxxx_fifo_mode_t mode,
 
     _acquire(dev);
 
-    /* read CTRL5 register and write FIFO_EN flag */
+    // read CTRL5 register and write FIFO_EN flag
     res |= _update(dev, L3GXXXX_REG_CTRL5, L3GXXXX_FIFO_EN, (mode != L3GXXXX_BYPASS));
 
-    /* read FIFO_CTRL register and write FIFO mode */
+    // read FIFO_CTRL register and write FIFO mode
     res |= _update(dev, L3GXXXX_REG_FIFO_CTRL, L3GXXXX_FIFO_WATERMARK, watermark);
     res |= _update(dev, L3GXXXX_REG_FIFO_CTRL, L3GXXXX_FIFO_MODE, mode);
 
@@ -773,11 +744,10 @@ int l3gxxxx_set_fifo_mode(l3gxxxx_t *dev, l3gxxxx_fifo_mode_t mode,
 
     return res;
 }
-#endif /* IS_USED(MODULE_L3GXXXX_FIFO) */
+#endif // IS_USED(MODULE_L3GXXXX_FIFO)
 
 int l3gxxxx_get_int_event_cfg(const l3gxxxx_t *dev,
-                                 l3gxxxx_int_event_cfg_t *cfg)
-{
+                                 l3gxxxx_int_event_cfg_t *cfg) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(cfg != NULL);
     DEBUG_DEV("config=%p", dev, cfg);
@@ -824,11 +794,10 @@ int l3gxxxx_get_int_event_cfg(const l3gxxxx_t *dev,
     return res;
 }
 
-#endif /* IS_USED(MODULE_L3GXXXX_CONFIG) */
+#endif // IS_USED(MODULE_L3GXXXX_CONFIG)
 
 int l3gxxxx_reg_read(const l3gxxxx_t *dev,
-                     uint8_t reg, uint8_t *data, uint8_t len)
-{
+                     uint8_t reg, uint8_t *data, uint8_t len) {
     int res;
 
     _acquire(dev);
@@ -839,8 +808,7 @@ int l3gxxxx_reg_read(const l3gxxxx_t *dev,
 }
 
 int l3gxxxx_reg_write(const l3gxxxx_t *dev,
-                      uint8_t reg, const uint8_t *data, uint8_t len)
-{
+                      uint8_t reg, const uint8_t *data, uint8_t len) {
    int res;
 
     _acquire(dev);
@@ -851,8 +819,7 @@ int l3gxxxx_reg_write(const l3gxxxx_t *dev,
 }
 
 int l3gxxxx_reg_update(const l3gxxxx_t *dev,
-                       uint8_t reg, uint8_t mask, uint8_t val)
-{
+                       uint8_t reg, uint8_t mask, uint8_t val) {
    int res;
 
     _acquire(dev);
@@ -862,34 +829,31 @@ int l3gxxxx_reg_update(const l3gxxxx_t *dev,
     return res;
 }
 
-/** Functions for internal use only */
+/// Functions for internal use only
 
-#define L3GXXXX_I2C_L3GD20X_ADDR_1  (0x6a)      /* L3GD20x I2C address 1 */
-#define L3GXXXX_I2C_L3GD20X_ADDR_2  (0x6b)      /* L3GD20x I2C address 2 */
-#define L3GXXXX_I2C_X3G42XXD_ADDR_1 (0x68)      /* x3G42xxD I2C address 1 */
-#define L3GXXXX_I2C_X3G42XXD_ADDR_2 (0x69)      /* x3G42xxD I2C address 2 */
+#define L3GXXXX_I2C_L3GD20X_ADDR_1  (0x6a)      // L3GD20x I2C address 1
+#define L3GXXXX_I2C_L3GD20X_ADDR_2  (0x6b)      // L3GD20x I2C address 2
+#define L3GXXXX_I2C_X3G42XXD_ADDR_1 (0x68)      // x3G42xxD I2C address 1
+#define L3GXXXX_I2C_X3G42XXD_ADDR_2 (0x69)      // x3G42xxD I2C address 2
 
-/**
- * @brief   Check the chip ID to test whether sensor is available
- * @note    Communication bus has to be acquired when enter.
- */
-static int _is_available(l3gxxxx_t *dev)
-{
+/// @brief   Check the chip ID to test whether sensor is available
+/// @note    Communication bus has to be acquired when enter.
+static int _is_available(l3gxxxx_t *dev) {
     DEBUG_DEV("", dev);
 
     int res;
 
     uint8_t chip_id, tries = 16;
 
-    /* try to read the chip id from L3GXXXX_REG_WHO_AM_I */
+    // try to read the chip id from L3GXXXX_REG_WHO_AM_I
     do {
         res = _read(dev, L3GXXXX_REG_WHO_AM_I, &chip_id, 1);
     } while ((chip_id == 0xFF || chip_id == 0x0) && --tries);
 
 #if IS_USED(MODULE_L3GXXXX_I2C)
     if ((dev->params.if_params.type == L3GXXXX_I2C) && (res != L3GXXXX_OK)) {
-        /* if the interface type is I2C but the chip ID couldn't be read
-           from configured address, we probe possible I2C addresses */
+        // if the interface type is I2C but the chip ID couldn't be read
+        //    from configured address, we probe possible I2C addresses
 
 #if IS_USED(MODULE_L3GD20H) || IS_USED(MODULE_L3GD20)
         if (res != L3GXXXX_OK) {
@@ -900,7 +864,7 @@ static int _is_available(l3gxxxx_t *dev)
             dev->params.if_params.i2c.addr = L3GXXXX_I2C_L3GD20X_ADDR_2;
             res = _read(dev, L3GXXXX_REG_WHO_AM_I, &chip_id, 1);
         }
-#endif /* IS_USED(MODULE_L3GD20H) || IS_USED(MODULE_L3GD20) */
+#endif // IS_USED(MODULE_L3GD20H) || IS_USED(MODULE_L3GD20)
 
 #if IS_USED(MODULE_L3G4200D_NG) || IS_USED(MODULE_I3G4250D) || IS_USED(MODULE_A3G4250D)
         if (res != L3GXXXX_OK) {
@@ -911,16 +875,16 @@ static int _is_available(l3gxxxx_t *dev)
             dev->params.if_params.i2c.addr = L3GXXXX_I2C_X3G42XXD_ADDR_2;
             res = _read(dev, L3GXXXX_REG_WHO_AM_I, &chip_id, 1);
         }
-#endif /* IS_USED(MODULE_L3G4200D_NG) || IS_USED(MODULE_I3G4250D) || IS_USED(MODULE_A3G4250D) */
+#endif // IS_USED(MODULE_L3G4200D_NG) || IS_USED(MODULE_I3G4250D) || IS_USED(MODULE_A3G4250D)
 
     }
-#endif /* #if IS_USED(MODULE_L3GXXXX_I2C) */
+#endif // #if IS_USED(MODULE_L3GXXXX_I2C)
 
     if (res != L3GXXXX_OK) {
         return res;
     }
 
-    /* determine the sensor type */
+    // determine the sensor type
     switch (chip_id) {
 #if IS_USED(MODULE_L3GD20H)
         case L3GXXXX_CHIP_ID_L3GD20H:  dev->sensor = L3GD20H;
@@ -943,8 +907,7 @@ static int _is_available(l3gxxxx_t *dev)
 }
 
 static int _update(const l3gxxxx_t *dev,
-                   uint8_t reg, uint8_t mask, uint8_t val)
-{
+                   uint8_t reg, uint8_t mask, uint8_t val) {
     DEBUG_DEV("reg=%02x mask=%02x val=%02x", dev, reg, mask, val);
 
     int res = L3GXXXX_OK;
@@ -956,13 +919,13 @@ static int _update(const l3gxxxx_t *dev,
         shift++;
     }
 
-    /* read current register value */
+    // read current register value
     res |= _read(dev, reg, &reg_val, 1);
 
-    /* set masked bits to the given value  */
+    // set masked bits to the given value
     reg_val = (reg_val & ~mask) | ((val << shift) & mask);
 
-    /* write back new register value */
+    // write back new register value
     res |= _write(dev, reg, &reg_val, 1);
 
     return res;
@@ -974,8 +937,7 @@ static int _update(const l3gxxxx_t *dev,
 
 #define L3GXXXX_I2C_AUTO_INC_FLAG  0x80
 
-static void _acquire(const l3gxxxx_t *dev)
-{
+static void _acquire(const l3gxxxx_t *dev) {
     ASSERT_PARAM(dev != NULL);
 #if IS_USED(MODULE_L3GXXXX_SPI)
     if (dev->params.if_params.type == L3GXXXX_SPI) {
@@ -992,8 +954,7 @@ static void _acquire(const l3gxxxx_t *dev)
     return;
 }
 
-static void _release(const l3gxxxx_t *dev)
-{
+static void _release(const l3gxxxx_t *dev) {
     ASSERT_PARAM(dev != NULL);
 #if IS_USED(MODULE_L3GXXXX_SPI)
     if (dev->params.if_params.type == L3GXXXX_SPI) {
@@ -1010,8 +971,7 @@ static void _release(const l3gxxxx_t *dev)
     return;
 }
 
-static int _read(const l3gxxxx_t *dev, uint8_t reg, uint8_t *data, uint8_t len)
-{
+static int _read(const l3gxxxx_t *dev, uint8_t reg, uint8_t *data, uint8_t len) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(data != NULL);
     ASSERT_PARAM(len != 0);
@@ -1025,7 +985,7 @@ static int _read(const l3gxxxx_t *dev, uint8_t reg, uint8_t *data, uint8_t len)
         reg |= L3GXXXX_SPI_READ_FLAG;
         reg |= L3GXXXX_SPI_AUTO_INC_FLAG;
 
-        /* the first byte sent is the register address */
+        // the first byte sent is the register address
         spi_transfer_byte(_SPI_DEV, _SPI_CS, true, reg);
         spi_transfer_bytes(_SPI_DEV, _SPI_CS, false, 0, data, len);
 
@@ -1039,7 +999,7 @@ static int _read(const l3gxxxx_t *dev, uint8_t reg, uint8_t *data, uint8_t len)
         }
         return L3GXXXX_OK;
     }
-#endif /* IS_USED(MODULE_L3GXXXX_SPI) */
+#endif // IS_USED(MODULE_L3GXXXX_SPI)
 
 #if IS_USED(MODULE_L3GXXXX_I2C)
     if (dev->params.if_params.type == L3GXXXX_I2C) {
@@ -1066,14 +1026,13 @@ static int _read(const l3gxxxx_t *dev, uint8_t reg, uint8_t *data, uint8_t len)
         }
         return L3GXXXX_OK;
     }
-#endif /* IS_USED(MODULE_L3GXXXX_I2C) */
+#endif // IS_USED(MODULE_L3GXXXX_I2C)
 
     return -L3GXXXX_ERROR_INV_DEV;
 }
 
 static int _write(const l3gxxxx_t *dev,
-                  uint8_t reg, const uint8_t *data, uint8_t len)
-{
+                  uint8_t reg, const uint8_t *data, uint8_t len) {
     ASSERT_PARAM(dev != NULL);
     ASSERT_PARAM(data != NULL);
     ASSERT_PARAM(len != 0);
@@ -1101,7 +1060,7 @@ static int _write(const l3gxxxx_t *dev,
 
         return L3GXXXX_OK;
     }
-#endif /* IS_USED(MODULE_L3GXXXX_SPI) */
+#endif // IS_USED(MODULE_L3GXXXX_SPI)
 
 #if IS_USED(MODULE_L3GXXXX_I2C)
     if (dev->params.if_params.type == L3GXXXX_I2C) {
@@ -1136,7 +1095,7 @@ static int _write(const l3gxxxx_t *dev,
 
         return res;
     }
-#endif /* IS_USED(MODULE_L3GXXXX_I2C) */
+#endif // IS_USED(MODULE_L3GXXXX_I2C)
 
     return -L3GXXXX_ERROR_INV_DEV;
 }

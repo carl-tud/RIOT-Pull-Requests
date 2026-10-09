@@ -1,30 +1,26 @@
-/*
- * SPDX-FileCopyrightText: 2018 Mathias Tausig
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Mathias Tausig
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "crypto/ciphers.h"
 #include "crypto/modes/ocb.h"
 #include "tests-crypto.h"
 
-/* Test vectors from RFC 7253, Appendix A */
-/* The key (K) has a fixed value, the tag length is
-   128 bits, and the nonce (N) increments.
-
-     K : 000102030405060708090A0B0C0D0E0F
- */
+// Test vectors from RFC 7253, Appendix A
+// The key (K) has a fixed value, the tag length is
+//    128 bits, and the nonce (N) increments.
+//
+//      K : 000102030405060708090A0B0C0D0E0F
 static uint8_t TEST_KEY[] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
 };
 static uint8_t TEST_KEY_LEN = 16;
 
-/* Test 1:
-    N: BBAA99887766554433221100
-    A:
-    P:
-    C: 785407BFFFC8AD9EDCC5520AC9111EE6
- */
+// Test 1:
+//     N: BBAA99887766554433221100
+//     A:
+//     P:
+//     C: 785407BFFFC8AD9EDCC5520AC9111EE6
 static uint8_t *TEST_1_KEY = TEST_KEY;
 
 static uint8_t TEST_1_NONCE[] = {
@@ -47,12 +43,11 @@ static size_t TEST_1_EXPECTED_LEN = 16;
 
 static uint8_t TEST_1_TAG_LEN = 16;
 
-/* Test 2:
-    N: BBAA99887766554433221101
-    A: 0001020304050607
-    P: 0001020304050607
-    C: 6820B3657B6F615A5725BDA0D3B4EB3A257C9AF1F8F03009
- */
+// Test 2:
+//     N: BBAA99887766554433221101
+//     A: 0001020304050607
+//     P: 0001020304050607
+//     C: 6820B3657B6F615A5725BDA0D3B4EB3A257C9AF1F8F03009
 
 static uint8_t *TEST_2_KEY = TEST_KEY;
 
@@ -81,12 +76,11 @@ static size_t TEST_2_EXPECTED_LEN = sizeof(TEST_2_EXPECTED);
 
 static uint8_t TEST_2_TAG_LEN = 16;
 
-/* Test 3:
-    N: BBAA99887766554433221102
-    A: 0001020304050607
-    P:
-    C: 81017F8203F081277152FADE694A0A00
- */
+// Test 3:
+//     N: BBAA99887766554433221102
+//     A: 0001020304050607
+//     P:
+//     C: 81017F8203F081277152FADE694A0A00
 
 static uint8_t *TEST_3_KEY = TEST_KEY;
 
@@ -113,12 +107,11 @@ static size_t TEST_3_EXPECTED_LEN = sizeof(TEST_3_EXPECTED);
 
 static uint8_t TEST_3_TAG_LEN = 16;
 
-/* Test 4:
-    N: BBAA99887766554433221103
-    A:
-    P: 0001020304050607
-    C: 45DD69F8F5AAE72414054CD1F35D82760B2CD00D2F99BFA9
- */
+// Test 4:
+//     N: BBAA99887766554433221103
+//     A:
+//     P: 0001020304050607
+//     C: 45DD69F8F5AAE72414054CD1F35D82760B2CD00D2F99BFA9
 
 static uint8_t *TEST_4_KEY = TEST_KEY;
 
@@ -146,24 +139,23 @@ static size_t TEST_4_EXPECTED_LEN = sizeof(TEST_4_EXPECTED);
 
 static uint8_t TEST_4_TAG_LEN = 16;
 
-/* Test 4A:
-
-    Variation of Test 4 to uncover a RIOT specific bug.
-
-    N: BBAA9988776655443322FFFF
-    A:
-    P: 0001020304050607
-    C: 8E4547845BBA5203750B97FC5C97E839B8C346EEA2F6508E
-
-    Test vector generated using PyCryptodome:
-    >>> from Crypto.Cipher import AES
-    >>> key = bytearray.fromhex('000102030405060708090A0B0C0D0E0F')
-    >>> nonce = bytearray.fromhex('BBAA9988776655443322FFFF')
-    >>> plaintext = bytearray.fromhex('0001020304050607')
-    >>> cipher = AES.new(key, AES.MODE_OCB, nonce=nonce)
-    >>> ciphertext,tag = cipher.encrypt_and_digest(plaintext)
-    >>> print((ciphertext+tag).hex())
-*/
+// Test 4A:
+//
+//     Variation of Test 4 to uncover a RIOT specific bug.
+//
+//     N: BBAA9988776655443322FFFF
+//     A:
+//     P: 0001020304050607
+//     C: 8E4547845BBA5203750B97FC5C97E839B8C346EEA2F6508E
+//
+//     Test vector generated using PyCryptodome:
+//     >>> from Crypto.Cipher import AES
+//     >>> key = bytearray.fromhex('000102030405060708090A0B0C0D0E0F')
+//     >>> nonce = bytearray.fromhex('BBAA9988776655443322FFFF')
+//     >>> plaintext = bytearray.fromhex('0001020304050607')
+//     >>> cipher = AES.new(key, AES.MODE_OCB, nonce=nonce)
+//     >>> ciphertext,tag = cipher.encrypt_and_digest(plaintext)
+//     >>> print((ciphertext+tag).hex())
 static uint8_t *TEST_4A_KEY = TEST_KEY;
 
 static uint8_t TEST_4A_NONCE[] = {
@@ -190,15 +182,14 @@ static size_t TEST_4A_EXPECTED_LEN = sizeof(TEST_4A_EXPECTED);
 
 static uint8_t TEST_4A_TAG_LEN = 16;
 
-/* Test 16:
-    N: BBAA9988776655443322110F
-    A:
-    P: 000102030405060708090A0B0C0D0E0F1011121314151617
-       18191A1B1C1D1E1F2021222324252627
-    C: 4412923493C57D5DE0D700F753CCE0D1D2D95060122E9F15
-       A5DDBFC5787E50B5CC55EE507BCB084E479AD363AC366B95
-       A98CA5F3000B1479
- */
+// Test 16:
+//     N: BBAA9988776655443322110F
+//     A:
+//     P: 000102030405060708090A0B0C0D0E0F1011121314151617
+//        18191A1B1C1D1E1F2021222324252627
+//     C: 4412923493C57D5DE0D700F753CCE0D1D2D95060122E9F15
+//        A5DDBFC5787E50B5CC55EE507BCB084E479AD363AC366B95
+//        A98CA5F3000B1479
 
 static uint8_t *TEST_16_KEY = TEST_KEY;
 
@@ -233,23 +224,22 @@ static size_t TEST_16_EXPECTED_LEN = sizeof(TEST_16_EXPECTED);
 
 static uint8_t TEST_16_TAG_LEN = 16;
 
-/* Test 17:
-
-    The next tuple shows a result with a tag length of 96 bits and a
-    different key.
-
-    K: 0F0E0D0C0B0A09080706050403020100
-
-    N: BBAA9988776655443322110D
-    A: 000102030405060708090A0B0C0D0E0F1011121314151617
-        18191A1B1C1D1E1F2021222324252627
-    P: 000102030405060708090A0B0C0D0E0F1011121314151617
-        18191A1B1C1D1E1F2021222324252627
-    C: 1792A4E31E0755FB03E31B22116E6C2DDF9EFD6E33D536F1
-        A0124B0A55BAE884ED93481529C76B6AD0C515F4D1CDD4FD
-        AC4F02AA
-
- */
+// Test 17:
+//
+//     The next tuple shows a result with a tag length of 96 bits and a
+//     different key.
+//
+//     K: 0F0E0D0C0B0A09080706050403020100
+//
+//     N: BBAA9988776655443322110D
+//     A: 000102030405060708090A0B0C0D0E0F1011121314151617
+//         18191A1B1C1D1E1F2021222324252627
+//     P: 000102030405060708090A0B0C0D0E0F1011121314151617
+//         18191A1B1C1D1E1F2021222324252627
+//     C: 1792A4E31E0755FB03E31B22116E6C2DDF9EFD6E33D536F1
+//         A0124B0A55BAE884ED93481529C76B6AD0C515F4D1CDD4FD
+//         AC4F02AA
+//
 
 static uint8_t TEST_17_KEY[] = {
     0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08,
@@ -293,7 +283,7 @@ static size_t TEST_17_EXPECTED_LEN = sizeof(TEST_17_EXPECTED);
 
 static uint8_t TEST_17_TAG_LEN = 12;
 
-/* Share test buffer output */
+// Share test buffer output
 static uint8_t data[60];
 
 static void test_encrypt_op(uint8_t *key, uint8_t key_len,
@@ -302,8 +292,7 @@ static void test_encrypt_op(uint8_t *key, uint8_t key_len,
                             uint8_t *plain, size_t plain_len,
                             uint8_t *output_expected,
                             size_t output_expected_len,
-                            uint8_t tag_length)
-{
+                            uint8_t tag_length) {
     cipher_t cipher;
     int len, err, cmp;
 
@@ -336,8 +325,7 @@ static void test_encrypt_op(uint8_t *key, uint8_t key_len,
                         ); \
 } while (0)
 
-static void test_crypto_modes_ocb_encrypt(void)
-{
+static void test_crypto_modes_ocb_encrypt(void) {
     do_test_encrypt_op(1);
     do_test_encrypt_op(2);
     do_test_encrypt_op(3);
@@ -353,8 +341,7 @@ static void test_decrypt_op(uint8_t *key, uint8_t key_len,
                             uint8_t *encrypted, size_t encrypted_len,
                             uint8_t *output_expected,
                             size_t output_expected_len,
-                            uint8_t tag_length)
-{
+                            uint8_t tag_length) {
     cipher_t cipher;
     int len, err, cmp;
 
@@ -373,14 +360,14 @@ static void test_decrypt_op(uint8_t *key, uint8_t key_len,
     cmp = compare(output_expected, data, len);
     TEST_ASSERT_MESSAGE(1 == cmp, "wrong ciphertext");
 
-    /* do some negative tests for the tag verification */
+    // do some negative tests for the tag verification
     if (adata_len > 0) {
-        /* Drop one byte of auth data */
+        // Drop one byte of auth data
         len = cipher_decrypt_ocb(&cipher, adata, adata_len - 1,
                                  tag_length, nonce, nonce_len,
                                  encrypted, encrypted_len, data);
         TEST_ASSERT_EQUAL_INT(OCB_ERR_INVALID_TAG, len);
-        /* Alter one byte of auth data */
+        // Alter one byte of auth data
         adata[0] = adata[0] ^ 0x01;
         len = cipher_decrypt_ocb(&cipher, adata, adata_len,
                                  tag_length, nonce, nonce_len,
@@ -388,26 +375,26 @@ static void test_decrypt_op(uint8_t *key, uint8_t key_len,
         TEST_ASSERT_EQUAL_INT(OCB_ERR_INVALID_TAG, len);
         adata[0] = adata[0] ^ 0x01;
     }
-    /* Drop one byte of the nonce */
+    // Drop one byte of the nonce
     len = cipher_decrypt_ocb(&cipher, adata, adata_len,
                              tag_length, nonce, nonce_len - 1,
                              encrypted, encrypted_len, data);
     TEST_ASSERT_EQUAL_INT(OCB_ERR_INVALID_TAG, len);
-    /* Alter one byte of the nonce */
+    // Alter one byte of the nonce
     nonce[0] = nonce[0] ^ 0x01;
     len = cipher_decrypt_ocb(&cipher, adata, adata_len,
                              tag_length, nonce, nonce_len,
                              encrypted, encrypted_len, data);
     TEST_ASSERT_EQUAL_INT(OCB_ERR_INVALID_TAG, len);
     nonce[0] = nonce[0] ^ 0x01;
-    /* Alter one byte of the ciphertext */
+    // Alter one byte of the ciphertext
     encrypted[0] = encrypted[0] ^ 0x01;
     len = cipher_decrypt_ocb(&cipher, adata, adata_len,
                              tag_length, nonce, nonce_len,
                              encrypted, encrypted_len, data);
     TEST_ASSERT_EQUAL_INT(OCB_ERR_INVALID_TAG, len);
     encrypted[0] = encrypted[0] ^ 0x01;
-    /* Alter one byte of the tag */
+    // Alter one byte of the tag
     encrypted[encrypted_len - 1] = encrypted[encrypted_len - 1] ^ 0x01;
     len = cipher_decrypt_ocb(&cipher, adata, adata_len,
                              tag_length, nonce, nonce_len,
@@ -431,8 +418,7 @@ static void test_decrypt_op(uint8_t *key, uint8_t key_len,
                         ); \
 } while (0)
 
-static void test_crypto_modes_ocb_decrypt(void)
-{
+static void test_crypto_modes_ocb_decrypt(void) {
     do_test_decrypt_op(1);
     do_test_decrypt_op(2);
     do_test_decrypt_op(3);
@@ -442,8 +428,7 @@ static void test_crypto_modes_ocb_decrypt(void)
     do_test_decrypt_op(17);
 }
 
-static void test_crypto_modes_ocb_bad_parameter_values(void)
-{
+static void test_crypto_modes_ocb_bad_parameter_values(void) {
     uint8_t key[16] = {0};
     uint8_t auth_data[1] = {0};
     uint8_t nonce[16] = {0};
@@ -452,26 +437,25 @@ static void test_crypto_modes_ocb_bad_parameter_values(void)
     cipher_t cipher;
 
     cipher_init(&cipher, CIPHER_AES, key, 16);
-    /* tag length must be positive */
+    // tag length must be positive
     int rv = cipher_encrypt_ocb(&cipher, auth_data, sizeof(auth_data), 0, nonce,
                                 15, input, sizeof(input), output);
     TEST_ASSERT_EQUAL_INT(OCB_ERR_INVALID_TAG_LENGTH, rv);
-    /* tag length must be <= 16 */
+    // tag length must be <= 16
     rv = cipher_encrypt_ocb(&cipher, auth_data, sizeof(auth_data), 17, nonce,
                             15, input, sizeof(input), output);
     TEST_ASSERT_EQUAL_INT(OCB_ERR_INVALID_TAG_LENGTH, rv);
-    /* nonce must not be empty */
+    // nonce must not be empty
     rv = cipher_encrypt_ocb(&cipher, auth_data, sizeof(auth_data), 16, nonce, 0,
                             input, sizeof(input), output);
     TEST_ASSERT_EQUAL_INT(OCB_ERR_INVALID_NONCE_LENGTH, rv);
-    /* nonce must be <=15 */
+    // nonce must be <=15
     rv = cipher_encrypt_ocb(&cipher, auth_data, sizeof(auth_data), 16, nonce,
                             16, input, sizeof(input), output);
     TEST_ASSERT_EQUAL_INT(OCB_ERR_INVALID_NONCE_LENGTH, rv);
 }
 
-Test *tests_crypto_modes_ocb_tests(void)
-{
+Test *tests_crypto_modes_ocb_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_crypto_modes_ocb_encrypt),
         new_TestFixture(test_crypto_modes_ocb_decrypt),

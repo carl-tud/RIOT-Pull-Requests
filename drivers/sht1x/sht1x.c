@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2009 Freie Universität Berlin (FUB)
- * SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2009 Freie Universität Berlin (FUB)
+// SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sht1x
- * @brief       Driver for the Sensirion SHT10/SHT11/SHT15 humidity and
- *              temperature sensor
- * @{
- *
- * @file
- * @brief       SHT10/SHT11/SHT15 Device Driver
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_sht1x
+/// @brief       Driver for the Sensirion SHT10/SHT11/SHT15 humidity and
+///              temperature sensor
+/// @{
+///
+/// @file
+/// @brief       SHT10/SHT11/SHT15 Device Driver
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 #include <errno.h>
 #include <stdint.h>
 
@@ -28,95 +24,77 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief             Perform measurement
- *
- * @param dev         SHT1X device to use
- * @param value       Measured value
- * @param mode        The requested measurement mode: temperature or humidity
- *
- * @retval  0         Success
- * @retval -EIO       I/O failure (`gpio_init()` failed)
- * @retval -EBADMSG   CRC-8 checksum didn't match
- * @retval -EPROTO    SHT1x did not acknowledge command
- * @retval -ECANCELED Measurement timed out
- */
+/// @brief             Perform measurement
+///
+/// @param dev         SHT1X device to use
+/// @param value       Measured value
+/// @param mode        The requested measurement mode: temperature or humidity
+///
+/// @retval  0         Success
+/// @retval -EIO       I/O failure (`gpio_init()` failed)
+/// @retval -EBADMSG   CRC-8 checksum didn't match
+/// @retval -EPROTO    SHT1x did not acknowledge command
+/// @retval -ECANCELED Measurement timed out
 static int measure(const sht1x_dev_t *dev, uint16_t *value, uint8_t mode);
 
-/**
- * @brief             Write one byte
- *
- * @param  dev        SHT1X device to send the byte to
- * @param  value      The value to write
- *
- * @retval  1         Write was acknowledged
- * @retval  0         Write was *NOT* acknowledged (communication failure)
- * @retval -EIO       I/O failure (`gpio_init()` failed)
- */
+/// @brief             Write one byte
+///
+/// @param  dev        SHT1X device to send the byte to
+/// @param  value      The value to write
+///
+/// @retval  1         Write was acknowledged
+/// @retval  0         Write was *NOT* acknowledged (communication failure)
+/// @retval -EIO       I/O failure (`gpio_init()` failed)
 static int write_byte(const sht1x_dev_t *dev, uint8_t value);
 
-/**
- * @brief             Read one byte
- *
- * @param  dev        SHT1X device to receive the byte from
- * @param  dest       Store the received byte here
- * @param  ack        `SHT1X_ACK` to acknowledge byte, `SHT1X_NO_ACK` otherwise
- *
- * @retval  0         Success
- * @retval -EIO       I/O failure (`gpio_init()` failed)
- */
+/// @brief             Read one byte
+///
+/// @param  dev        SHT1X device to receive the byte from
+/// @param  dest       Store the received byte here
+/// @param  ack        `SHT1X_ACK` to acknowledge byte, `SHT1X_NO_ACK` otherwise
+///
+/// @retval  0         Success
+/// @retval -EIO       I/O failure (`gpio_init()` failed)
 static int read_byte(const sht1x_dev_t *dev, uint8_t *dest, int ack);
 
-/**
- * @brief             Communication reset
- *
- * @param  dev        SHT1X device to reset the connection to
- *
- * @retval  0         Success
- * @retval -EIO       I/O failure (`gpio_init()` failed)
- */
+/// @brief             Communication reset
+///
+/// @param  dev        SHT1X device to reset the connection to
+///
+/// @retval  0         Success
+/// @retval -EIO       I/O failure (`gpio_init()` failed)
 static int connection_reset(const sht1x_dev_t *dev);
 
-/**
- * @brief             Send start of transmission sequence
- *
- * @param  dev        SHT1X device to send the transmission start sequence to
- *
- * @retval  0         Success
- * @retval -EIO       I/O failure (`gpio_init()` failed)
- */
+/// @brief             Send start of transmission sequence
+///
+/// @param  dev        SHT1X device to send the transmission start sequence to
+///
+/// @retval  0         Success
+/// @retval -EIO       I/O failure (`gpio_init()` failed)
 static int transmission_start(const sht1x_dev_t *dev);
 
-/**
- * @brief             Toggle the clock line
- *
- * @param  dev        SHT1X device to send one clock signal to
- */
+/// @brief             Toggle the clock line
+///
+/// @param  dev        SHT1X device to send one clock signal to
 static inline void clk_signal(const sht1x_dev_t *dev);
 
-/**
- * @brief             Calculate the initial value of the CRC-8 checksum
- *
- * @param status      The current sensor status
- *
- * @return            The initial value of the CRC-8 checksum
- */
+/// @brief             Calculate the initial value of the CRC-8 checksum
+///
+/// @param status      The current sensor status
+///
+/// @return            The initial value of the CRC-8 checksum
 static inline uint8_t crc_initial_value(uint8_t status);
 
-/**
- * @brief             Reverse the order of bits in a byte (needed for CRC)
- *
- * @param value       The byte to reverse the bits of
- *
- * @return            The reversed input
- */
+/// @brief             Reverse the order of bits in a byte (needed for CRC)
+///
+/// @param value       The byte to reverse the bits of
+///
+/// @return            The reversed input
 static inline uint8_t reverse_byte(uint8_t value);
 
-/**
- * @brief             Look up table required for CRC-8 calculation
- *
- * Values taken from the Application Note PDF of Sensirion (December 2011)
- */
+/// @brief             Look up table required for CRC-8 calculation
+///
+/// Values taken from the Application Note PDF of Sensirion (December 2011)
 static const uint8_t crc_lookup_table[] = {
     0x00, 0x31, 0x62, 0x53,  0xc4, 0xf5, 0xa6, 0x97,
     0xb9, 0x88, 0xdb, 0xea,  0x7d, 0x4c, 0x1f, 0x2e,
@@ -152,26 +130,24 @@ static const uint8_t crc_lookup_table[] = {
     0x3b, 0x0a, 0x59, 0x68,  0xff, 0xce, 0x9d, 0xac,
 };
 
-/** @brief Lookuptable for d1 parameter depending on supply voltage */
+/// @brief Lookuptable for d1 parameter depending on supply voltage
 static const int16_t sht1x_d1[] = { -4010, -3980, -3970, -3960, -3940 };
 
-static inline void clk_signal(const sht1x_dev_t *dev)
-{
+static inline void clk_signal(const sht1x_dev_t *dev) {
     gpio_set(dev->clk);
     xtimer_usleep(SHT1X_HALF_CLOCK);
     gpio_clear(dev->clk);
     xtimer_usleep(SHT1X_HALF_CLOCK);
 }
 
-static int write_byte(const sht1x_dev_t *dev, uint8_t value)
-{
+static int write_byte(const sht1x_dev_t *dev, uint8_t value) {
     int ack;
 
     if (gpio_init(dev->data, GPIO_OUT) == -1) {
         return -EIO;
     }
 
-    /* send value bit by bit to sht1x */
+    // send value bit by bit to sht1x
     for (int i = 0; i < 8; i++) {
         if (value & BIT7) {
             gpio_set(dev->data);
@@ -181,14 +157,14 @@ static int write_byte(const sht1x_dev_t *dev, uint8_t value)
         }
         xtimer_usleep(SHT1X_HALF_CLOCK);
 
-        /* trigger clock signal */
+        // trigger clock signal
         clk_signal(dev);
 
-        /* shift value to write next bit */
+        // shift value to write next bit
         value <<= 1;
     }
 
-    /* wait for ack */
+    // wait for ack
     if (gpio_init(dev->data, GPIO_IN) == -1) {
         return -EIO;
     }
@@ -200,20 +176,19 @@ static int write_byte(const sht1x_dev_t *dev, uint8_t value)
     return ack;
 }
 
-static int read_byte(const sht1x_dev_t *dev, uint8_t *dest, int ack)
-{
+static int read_byte(const sht1x_dev_t *dev, uint8_t *dest, int ack) {
     uint8_t value = 0;
 
     xtimer_usleep(SHT1X_HALF_CLOCK);
 
-    /* read value bit by bit */
+    // read value bit by bit
     for (int i = 0; i < 8; i++) {
         value <<= 1;
         gpio_set(dev->clk);
         xtimer_usleep(SHT1X_HALF_CLOCK);
 
         if (gpio_read(dev->data)) {
-            /* set bit when DATA is high */
+            // set bit when DATA is high
             value |= 0x01;
         }
 
@@ -221,7 +196,7 @@ static int read_byte(const sht1x_dev_t *dev, uint8_t *dest, int ack)
         xtimer_usleep(SHT1X_HALF_CLOCK);
     }
 
-    /* send ack if necessary */
+    // send ack if necessary
     if (gpio_init(dev->data, GPIO_OUT) == -1) {
         return -EIO;
     }
@@ -231,7 +206,7 @@ static int read_byte(const sht1x_dev_t *dev, uint8_t *dest, int ack)
 
     clk_signal(dev);
 
-    /* release data line */
+    // release data line
     if (gpio_init(dev->data, GPIO_IN) == -1) {
         return -EIO;
     }
@@ -241,18 +216,16 @@ static int read_byte(const sht1x_dev_t *dev, uint8_t *dest, int ack)
     return 0;
 }
 
-static int transmission_start(const sht1x_dev_t *dev)
-{
-    /*       _____         ________
-       DATA:      |_______|
-                 ___     ___
-       SCK : ___|   |___|   |______
-     */
+static int transmission_start(const sht1x_dev_t *dev) {
+    // _____         ________
+    //    DATA:      |_______|
+    //              ___     ___
+    //    SCK : ___|   |___|   |______
     if (gpio_init(dev->data, GPIO_OUT) == -1) {
         return -EIO;
     }
 
-    /* set initial state */
+    // set initial state
     gpio_set(dev->data);
     xtimer_usleep(SHT1X_HALF_CLOCK);
     gpio_clear(dev->clk);
@@ -283,13 +256,11 @@ static int transmission_start(const sht1x_dev_t *dev)
     return 0;
 }
 
-static int connection_reset(const sht1x_dev_t *dev)
-{
-    /*       _____________________________________________________         ____
-       DATA:                                                      |_______|
-                _    _    _    _    _    _    _    _    _        ___     ___
-       SCK : __| |__| |__| |__| |__| |__| |__| |__| |__| |______|   |___|   |__
-     */
+static int connection_reset(const sht1x_dev_t *dev) {
+    // _____________________________________________________         ____
+    //    DATA:                                                      |_______|
+    //             _    _    _    _    _    _    _    _    _        ___     ___
+    //    SCK : __| |__| |__| |__| |__| |__| |__| |__| |__| |______|   |___|   |__
     if (gpio_init(dev->data, GPIO_OUT) == -1) {
         return -EIO;
     }
@@ -306,15 +277,13 @@ static int connection_reset(const sht1x_dev_t *dev)
     return transmission_start(dev);
 }
 
-static inline uint8_t crc_initial_value(uint8_t status)
-{
+static inline uint8_t crc_initial_value(uint8_t status) {
     status &= 0x07;
 
     return (((0x01 & status) << 7) | ((0x02 & status) << 5) | ((0x04 & status) << 3));
 }
 
-static inline uint8_t reverse_byte(uint8_t value)
-{
+static inline uint8_t reverse_byte(uint8_t value) {
     uint8_t result = (value & 0x01) << 7;
 
     result |= (value & 0x02) << 5;
@@ -328,8 +297,7 @@ static inline uint8_t reverse_byte(uint8_t value)
     return result;
 }
 
-static int measure(const sht1x_dev_t *dev, uint16_t *value, uint8_t mode)
-{
+static int measure(const sht1x_dev_t *dev, uint16_t *value, uint8_t mode) {
     uint8_t data[2] = { 0, 0 };
     int retval;
 
@@ -348,7 +316,7 @@ static int measure(const sht1x_dev_t *dev, uint16_t *value, uint8_t mode)
             return -EPROTO;
     }
 
-    /* wait until sensor has finished measurement or timeout */
+    // wait until sensor has finished measurement or timeout
     {
         int ack = 1;
         for (int i = 0; ack != 0; i++) {
@@ -361,13 +329,13 @@ static int measure(const sht1x_dev_t *dev, uint16_t *value, uint8_t mode)
         }
     }
 
-    /* read MSB */
+    // read MSB
     retval = read_byte(dev, &data[0], SHT1X_ACK);
     if (retval != 0) {
         return retval;
     }
 
-    /* read LSB, send ACK only if CRC checking is enabled */
+    // read LSB, send ACK only if CRC checking is enabled
     retval = (dev->conf & SHT1X_CONF_SKIP_CRC) ? SHT1X_NO_ACK : SHT1X_ACK;
     retval = read_byte(dev, &data[1], retval);
     if (retval != 0) {
@@ -402,8 +370,7 @@ static int measure(const sht1x_dev_t *dev, uint16_t *value, uint8_t mode)
     return 0;
 }
 
-int sht1x_init(sht1x_dev_t *dev, const sht1x_params_t *params)
-{
+int sht1x_init(sht1x_dev_t *dev, const sht1x_params_t *params) {
     if (!dev || !params || (((uint8_t)params->vdd) >= ARRAY_SIZE(sht1x_d1))) {
         return -EINVAL;
     }
@@ -421,8 +388,7 @@ int sht1x_init(sht1x_dev_t *dev, const sht1x_params_t *params)
     return sht1x_reset(dev);
 }
 
-int16_t sht1x_temperature(const sht1x_dev_t *dev, uint16_t raw)
-{
+int16_t sht1x_temperature(const sht1x_dev_t *dev, uint16_t raw) {
     if (!dev || (dev->vdd >= ARRAY_SIZE(sht1x_d1))) {
         return INT16_MIN;
     }
@@ -432,8 +398,7 @@ int16_t sht1x_temperature(const sht1x_dev_t *dev, uint16_t raw)
     return d1 + d2 * ((int16_t)raw);
 }
 
-int16_t sht1x_humidity(const sht1x_dev_t *dev, uint16_t raw, int16_t temp)
-{
+int16_t sht1x_humidity(const sht1x_dev_t *dev, uint16_t raw, int16_t temp) {
     if (!dev) {
         return -1;
     }
@@ -454,42 +419,37 @@ int16_t sht1x_humidity(const sht1x_dev_t *dev, uint16_t raw, int16_t temp)
         t2 = 12500;
     }
 
-    /*
-     * Calculate linear humidity, but slightly different. Original formula:
-     *
-     * hum_lin = c1 + c2 * raw + c3 * (raw * raw)
-     *
-     * But we use:
-     *
-     * hum_lin = c1 + c2 * raw - (c4 * raw / c3') * (c4 * raw / c3')
-     *
-     * where: c3' = 1 / (sqrt(-c3) / c4)
-     *
-     * (This better fits for integer calculation)
-     */
+    // Calculate linear humidity, but slightly different. Original formula:
+    //
+    // hum_lin = c1 + c2 * raw + c3 * (raw * raw)
+    //
+    // But we use:
+    //
+    // hum_lin = c1 + c2 * raw - (c4 * raw / c3') * (c4 * raw / c3')
+    //
+    // where: c3' = 1 / (sqrt(-c3) / c4)
+    //
+    // (This better fits for integer calculation)
 
     int32_t res = ((int32_t)raw * c4) / c3;
     res = c1 + c2 * (int32_t)raw - (res * res);
 
-    /*
-     * Perform temperature compensation, again slightly different.
-     * Original formula:
-     *
-     * hum_true = (temp - 25) * (t1 + t2 * raw) + hum_lin
-     *
-     * But we use:
-     *
-     * hum_true = (temp - 25) * t1 + (temp - 25) * raw / t2') + hum_lin
-     *
-     * where t2' = 1/t2
-     */
+    // Perform temperature compensation, again slightly different.
+    // Original formula:
+    //
+    // hum_true = (temp - 25) * (t1 + t2 * raw) + hum_lin
+    //
+    // But we use:
+    //
+    // hum_true = (temp - 25) * t1 + (temp - 25) * raw / t2') + hum_lin
+    //
+    // where t2' = 1/t2
     int32_t temp_diff = temp - 2500;
     res = temp_diff * t1 + (temp_diff * (int32_t)raw * 100) / t2 + res;
     return (int16_t)(res / 100);
 }
 
-int sht1x_read(const sht1x_dev_t *dev, int16_t *temp, int16_t *rel_hum)
-{
+int sht1x_read(const sht1x_dev_t *dev, int16_t *temp, int16_t *rel_hum) {
     uint16_t temp_raw;
     int16_t t;
     uint16_t hum_raw;
@@ -524,17 +484,16 @@ int sht1x_read(const sht1x_dev_t *dev, int16_t *temp, int16_t *rel_hum)
     return 0;
 }
 
-int sht1x_configure(sht1x_dev_t *dev, sht1x_conf_t conf)
-{
+int sht1x_configure(sht1x_dev_t *dev, sht1x_conf_t conf) {
     if (!dev) {
         return -EINVAL;
     }
 
-    /* Apply config that is not stored on the sensor */
+    // Apply config that is not stored on the sensor
     dev->conf &= SHT1X_CONF_MASK;
     dev->conf |= conf & (~(SHT1X_CONF_MASK));
 
-    /* Send new status byte to sensor, if on-device config was changed */
+    // Send new status byte to sensor, if on-device config was changed
     if ((conf & SHT1X_CONF_MASK) != (dev->conf & SHT1X_CONF_MASK)) {
         int retval = transmission_start(dev);
         if (retval != 0) {
@@ -561,14 +520,14 @@ int sht1x_configure(sht1x_dev_t *dev, sht1x_conf_t conf)
             return -EPROTO;
         }
 
-        /* Read back uploaded configuration to verify that sensor applied it */
+        // Read back uploaded configuration to verify that sensor applied it
         uint8_t status;
         retval = sht1x_read_status(dev, &status);
         if (retval != 0) {
             return retval;
         }
         if (dev->conf != conf) {
-            /* Configuration was not applied by sensor */
+            // Configuration was not applied by sensor
             return -ECANCELED;
         }
     }
@@ -576,8 +535,7 @@ int sht1x_configure(sht1x_dev_t *dev, sht1x_conf_t conf)
     return 0;
 }
 
-int sht1x_read_status(sht1x_dev_t *dev, uint8_t *status)
-{
+int sht1x_read_status(sht1x_dev_t *dev, uint8_t *status) {
     int retval;
 
     if (!dev || !status) {
@@ -606,7 +564,7 @@ int sht1x_read_status(sht1x_dev_t *dev, uint8_t *status)
 
     uint8_t crc;
     uint8_t expected;
-    /* read checksum */
+    // read checksum
     retval = read_byte(dev, &crc, SHT1X_NO_ACK);
     if (retval != 0) {
         return retval;
@@ -625,15 +583,14 @@ int sht1x_read_status(sht1x_dev_t *dev, uint8_t *status)
         return -EBADMSG;
     }
 
-    /* Extract config from status and store it after CRC check passed */
+    // Extract config from status and store it after CRC check passed
     dev->conf &= ~(SHT1X_CONF_MASK);
     dev->conf |= *status & SHT1X_CONF_MASK;
 
     return 0;
 }
 
-int sht1x_reset(sht1x_dev_t *dev)
-{
+int sht1x_reset(sht1x_dev_t *dev) {
     int retval;
 
     if (!dev) {

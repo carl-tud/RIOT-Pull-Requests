@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       testing sema
- *
- *
- * @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
- *
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       testing sema
+///
+///
+/// @author      Julian Holzwarth <julian.holzwarth@fu-berlin.de>
+///
 
 #include <errno.h>
 #include <stdio.h>
@@ -30,8 +26,7 @@ static char stack[THREAD_STACKSIZE_SMALL];
 static sema_t test_sema;
 static sema_t test_sema2;
 
-static void *second_thread(void *arg)
-{
+static void *second_thread(void *arg) {
     int *thread_success = arg;
 
     sema_post(&test_sema);
@@ -59,8 +54,7 @@ static void *second_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     int thread_success = 0;
 
     sema_create(&test_sema, 0);
@@ -109,7 +103,7 @@ int main(void)
         printf("MAIN ERROR: sema_wait()");
         return 1;
     }
-    /* UINT_MAX test */
+    // UINT_MAX test
     test_sema.value = UINT_MAX;
     if (sema_post(&test_sema) != -EOVERFLOW) {
         printf("MAIN ERROR: sema_post()");

@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
- * SPDX-FileCopyrightText: 2017-2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
+// SPDX-FileCopyrightText: 2017-2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the TMP00X (TMP006 and TMP007) sensor driver.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Johann Fischer <j.fischer@phytec.de>
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the TMP00X (TMP006 and TMP007) sensor driver.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Johann Fischer <j.fischer@phytec.de>
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -25,8 +21,7 @@
 #include "tmp00x.h"
 #include "tmp00x_params.h"
 
-int main(void)
-{
+int main(void) {
     tmp00x_t dev;
     int16_t rawtemp, rawvolt;
     float tamb, tobj;

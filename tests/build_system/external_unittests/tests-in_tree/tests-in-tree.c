@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdio.h>
 
@@ -9,14 +7,12 @@
 
 const unsigned internal_test_was_linked_in = 1;
 
-static void test_external_test_was_linked_in(void)
-{
+static void test_external_test_was_linked_in(void) {
     extern const unsigned external_test_was_linked_in;
     TEST_ASSERT_EQUAL_INT(1, external_test_was_linked_in);
 }
 
-static Test *in_tree_tests(void)
-{
+static Test *in_tree_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_external_test_was_linked_in),
     };
@@ -26,7 +22,6 @@ static Test *in_tree_tests(void)
     return (Test *)&_in_tree_tests;
 }
 
-void tests_in_tree(void)
-{
+void tests_in_tree(void) {
     TESTS_RUN(in_tree_tests());
 }

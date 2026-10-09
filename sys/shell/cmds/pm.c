@@ -1,24 +1,20 @@
-/*
- * Copyright (C) 2019 Thomas Stilwell <stilwellt@openlabs.co>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Thomas Stilwell <stilwellt@openlabs.co>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell command to interact with the PM subsystem
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Thomas Stilwell <stilwellt@openlabs.co>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell command to interact with the PM subsystem
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Thomas Stilwell <stilwellt@openlabs.co>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +26,7 @@
 #ifdef MODULE_PM_LAYERED
 #include "pm_layered.h"
 
-#endif /* MODULE_PM_LAYERED */
+#endif // MODULE_PM_LAYERED
 
 static void _print_usage(void) {
     puts("Usage:");
@@ -39,13 +35,12 @@ static void _print_usage(void) {
     puts("\tpm set <mode>: manually set power mode (lasts until WFI returns)");
     puts("\tpm block <mode>: manually block power mode");
     puts("\tpm unblock <mode>: manually unblock power mode");
-#endif /* MODULE_PM_LAYERED */
+#endif // MODULE_PM_LAYERED
     puts("\tpm off: call pm_off()");
 }
 
 #ifdef MODULE_PM_LAYERED
-static int check_mode(int argc, char **argv)
-{
+static int check_mode(int argc, char **argv) {
     if (argc != 3) {
         printf("Usage: %s %s <power mode>\n", argv[0], argv[1]);
         return -1;
@@ -54,8 +49,7 @@ static int check_mode(int argc, char **argv)
     return 0;
 }
 
-static int parse_mode(char *argv)
-{
+static int parse_mode(char *argv) {
     uint8_t mode = atoi(argv);
 
     if (mode >= PM_NUM_MODES) {
@@ -66,8 +60,7 @@ static int parse_mode(char *argv)
     return mode;
 }
 
-static int cmd_block(char *arg)
-{
+static int cmd_block(char *arg) {
     int mode = parse_mode(arg);
     if (mode < 0) {
         return 1;
@@ -81,8 +74,7 @@ static int cmd_block(char *arg)
     return 0;
 }
 
-static int cmd_set(char *arg)
-{
+static int cmd_set(char *arg) {
     int mode = parse_mode(arg);
     if (mode < 0) {
         return 1;
@@ -93,15 +85,14 @@ static int cmd_set(char *arg)
     fflush(stdout);
 
     pm_set(mode);
-    /* execution stops here until anything (like shell input) wakes the CPU */
+    // execution stops here until anything (like shell input) wakes the CPU
 
     printf("CPU has returned from power mode %d.\n", mode);
 
     return 0;
 }
 
-static int cmd_unblock(char *arg)
-{
+static int cmd_unblock(char *arg) {
     int mode = parse_mode(arg);
 
     if (mode < 0) {
@@ -122,8 +113,7 @@ static int cmd_unblock(char *arg)
     return 0;
 }
 
-static int cmd_show(char *arg)
-{
+static int cmd_show(char *arg) {
     (void)arg;
     uint8_t lowest_allowed_mode = 0;
 
@@ -138,10 +128,9 @@ static int cmd_show(char *arg)
     printf("Lowest allowed mode: %u\n", lowest_allowed_mode);
     return 0;
 }
-#endif /* MODULE_PM_LAYERED */
+#endif // MODULE_PM_LAYERED
 
-static int cmd_off(char *arg)
-{
+static int cmd_off(char *arg) {
     (void)arg;
 
     pm_off();
@@ -149,8 +138,7 @@ static int cmd_off(char *arg)
     return 0;
 }
 
-static int _pm_handler(int argc, char **argv)
-{
+static int _pm_handler(int argc, char **argv) {
     if (argc < 2) {
         _print_usage();
         return 1;
@@ -189,7 +177,7 @@ static int _pm_handler(int argc, char **argv)
 
         return cmd_set(argv[2]);
     }
-#endif /* MODULE_PM_LAYERED */
+#endif // MODULE_PM_LAYERED
 
     if (!strcmp(argv[1], "off")) {
         return cmd_off(NULL);

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_fmt
- * @{
- *
- * @file
- * @brief       String formatting library implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     sys_fmt
+/// @{
+///
+/// @file
+/// @brief       String formatting library implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <assert.h>
 #include <stdbool.h>
@@ -46,13 +42,11 @@ static const uint32_t _tenmap[] = {
 
 #define TENMAP_SIZE  ARRAY_SIZE(_tenmap)
 
-static inline char _to_lower(char c)
-{
+static inline char _to_lower(char c) {
     return 'a' + (c - 'A');
 }
 
-int fmt_is_number(const char *str)
-{
+int fmt_is_number(const char *str) {
     if (!str || !*str) {
         return 0;
     }
@@ -65,8 +59,7 @@ int fmt_is_number(const char *str)
     return 1;
 }
 
-size_t fmt_byte_hex(char *out, uint8_t byte)
-{
+size_t fmt_byte_hex(char *out, uint8_t byte) {
     if (out) {
         *out++ = _hex_chars[byte >> 4];
         *out = _hex_chars[byte & 0x0F];
@@ -74,8 +67,7 @@ size_t fmt_byte_hex(char *out, uint8_t byte)
     return 2;
 }
 
-size_t fmt_bytes_hex(char *out, const uint8_t *ptr, size_t n)
-{
+size_t fmt_bytes_hex(char *out, const uint8_t *ptr, size_t n) {
     size_t len = n * 2;
 
     if (out) {
@@ -87,8 +79,7 @@ size_t fmt_bytes_hex(char *out, const uint8_t *ptr, size_t n)
     return len;
 }
 
-size_t fmt_bytes_hex_reverse(char *out, const uint8_t *ptr, size_t n)
-{
+size_t fmt_bytes_hex_reverse(char *out, const uint8_t *ptr, size_t n) {
     size_t len = n * 2;
 
     if (out) {
@@ -100,8 +91,7 @@ size_t fmt_bytes_hex_reverse(char *out, const uint8_t *ptr, size_t n)
     return len;
 }
 
-size_t fmt_strlen(const char *str)
-{
+size_t fmt_strlen(const char *str) {
     const char *tmp = str;
 
     while (*tmp) {
@@ -110,8 +100,7 @@ size_t fmt_strlen(const char *str)
     return (tmp - str);
 }
 
-size_t fmt_strnlen(const char *str, size_t maxlen)
-{
+size_t fmt_strnlen(const char *str, size_t maxlen) {
     const char *tmp = str;
 
     while (*tmp && maxlen--) {
@@ -120,8 +109,7 @@ size_t fmt_strnlen(const char *str, size_t maxlen)
     return (tmp - str);
 }
 
-size_t fmt_str(char *out, const char *str)
-{
+size_t fmt_str(char *out, const char *str) {
     int len = 0;
 
     if (!out) {
@@ -137,8 +125,7 @@ size_t fmt_str(char *out, const char *str)
     return len;
 }
 
-static uint8_t _byte_mod25(uint8_t x)
-{
+static uint8_t _byte_mod25(uint8_t x) {
     for (unsigned divisor = 200; divisor >= 25; divisor >>= 1) {
         if (x >= divisor) {
             x -= divisor;
@@ -148,18 +135,15 @@ static uint8_t _byte_mod25(uint8_t x)
     return x;
 }
 
-static uint8_t _hex_nib(uint8_t nib)
-{
+static uint8_t _hex_nib(uint8_t nib) {
     return _byte_mod25((nib & 0x1f) + 9);
 }
 
-uint8_t fmt_hex_byte(const char *hex)
-{
+uint8_t fmt_hex_byte(const char *hex) {
     return (_hex_nib(hex[0]) << 4) | _hex_nib(hex[1]);
 }
 
-size_t fmt_hex_bytes(uint8_t *out, const char *hex)
-{
+size_t fmt_hex_bytes(uint8_t *out, const char *hex) {
     size_t len = fmt_strlen(hex);
 
     if (len & 1) {
@@ -179,23 +163,19 @@ size_t fmt_hex_bytes(uint8_t *out, const char *hex)
     return final_len;
 }
 
-size_t fmt_u16_hex(char *out, uint16_t val)
-{
+size_t fmt_u16_hex(char *out, uint16_t val) {
     return fmt_bytes_hex_reverse(out, (uint8_t *)&val, 2);
 }
 
-size_t fmt_u32_hex(char *out, uint32_t val)
-{
+size_t fmt_u32_hex(char *out, uint32_t val) {
     return fmt_bytes_hex_reverse(out, (uint8_t *)&val, 4);
 }
 
-size_t fmt_u64_hex(char *out, uint64_t val)
-{
+size_t fmt_u64_hex(char *out, uint64_t val) {
     return fmt_bytes_hex_reverse(out, (uint8_t *)&val, 8);
 }
 
-size_t fmt_u64_dec(char *out, uint64_t val)
-{
+size_t fmt_u64_dec(char *out, uint64_t val) {
     uint32_t d[5];
     uint32_t q;
     size_t len = 0;
@@ -248,12 +228,11 @@ size_t fmt_u64_dec(char *out, uint64_t val)
     return total_len;
 }
 
-size_t fmt_u32_dec(char *out, uint32_t val)
-{
+size_t fmt_u32_dec(char *out, uint32_t val) {
     size_t len = 1;
 
-    /* count needed characters */
-    /* avoid multiply overflow: uint32_t max len = 10 digits */
+    // count needed characters
+    // avoid multiply overflow: uint32_t max len = 10 digits
     if (val >= 1000000000ul) {
         len = 10;
     }
@@ -273,13 +252,11 @@ size_t fmt_u32_dec(char *out, uint32_t val)
     return len;
 }
 
-size_t fmt_u16_dec(char *out, uint16_t val)
-{
+size_t fmt_u16_dec(char *out, uint16_t val) {
     return fmt_u32_dec(out, val);
 }
 
-size_t fmt_s64_dec(char *out, int64_t val)
-{
+size_t fmt_s64_dec(char *out, int64_t val) {
     unsigned negative = (val < 0);
     uint64_t sval;
 
@@ -295,8 +272,7 @@ size_t fmt_s64_dec(char *out, int64_t val)
     return fmt_u64_dec(out, sval) + negative;
 }
 
-size_t fmt_s32_dec(char *out, int32_t val)
-{
+size_t fmt_s32_dec(char *out, int32_t val) {
     unsigned negative = (val < 0);
     uint32_t sval;
 
@@ -312,18 +288,15 @@ size_t fmt_s32_dec(char *out, int32_t val)
     return fmt_u32_dec(out, sval) + negative;
 }
 
-size_t fmt_s16_dec(char *out, int16_t val)
-{
+size_t fmt_s16_dec(char *out, int16_t val) {
     return fmt_s32_dec(out, val);
 }
 
-size_t fmt_s16_dfp(char *out, int16_t val, int scale)
-{
+size_t fmt_s16_dfp(char *out, int16_t val, int scale) {
     return fmt_s32_dfp(out, val, scale);
 }
 
-size_t fmt_s32_dfp(char *out, int32_t val, int scale)
-{
+size_t fmt_s32_dfp(char *out, int32_t val, int scale) {
     unsigned pos = 0;
 
     if (scale == 0) {
@@ -338,7 +311,7 @@ size_t fmt_s32_dfp(char *out, int32_t val, int scale)
     }
     else {
         scale = -scale;
-        char buf[10]; /* "2147483648" */
+        char buf[10]; // "2147483648"
         int negative = val < 0;
         uint32_t uval = negative ? -val : val;
         int len = fmt_u32_dec(buf, uval);
@@ -373,12 +346,10 @@ size_t fmt_s32_dfp(char *out, int32_t val, int scale)
 
     return pos;
 }
-/* this is very probably not the most efficient implementation, as it at least
- * pulls in floating point math.  But it works, and it's always nice to have
- * low hanging fruits when optimizing. (Kaspar)
- */
-size_t fmt_float(char *out, float f, unsigned precision)
-{
+// this is very probably not the most efficient implementation, as it at least
+// pulls in floating point math.  But it works, and it's always nice to have
+// low hanging fruits when optimizing. (Kaspar)
+size_t fmt_float(char *out, float f, unsigned precision) {
     assert(precision < TENMAP_SIZE);
 
     unsigned negative = (f < 0);
@@ -412,8 +383,7 @@ size_t fmt_float(char *out, float f, unsigned precision)
     return res;
 }
 
-size_t fmt_lpad(char *out, size_t in_len, size_t pad_len, char pad_char)
-{
+size_t fmt_lpad(char *out, size_t in_len, size_t pad_len, char pad_char) {
     if (in_len >= pad_len) {
         return in_len;
     }
@@ -442,8 +412,7 @@ size_t fmt_lpad(char *out, size_t in_len, size_t pad_len, char pad_char)
     return pad_len;
 }
 
-size_t fmt_char(char *out, char c)
-{
+size_t fmt_char(char *out, char c) {
     if (out) {
         *out = c;
     }
@@ -451,8 +420,7 @@ size_t fmt_char(char *out, char c)
     return 1;
 }
 
-size_t fmt_to_lower(char *out, const char *str)
-{
+size_t fmt_to_lower(char *out, const char *str) {
     size_t len = 0;
 
     while (str && *str) {
@@ -471,11 +439,10 @@ size_t fmt_to_lower(char *out, const char *str)
     return len;
 }
 
-int fmt_time_tm_iso8601(char out[20], const struct tm *tm, char separator)
-{
+int fmt_time_tm_iso8601(char out[20], const struct tm *tm, char separator) {
     assert(out);
     assert(tm);
-    /* The lowest year allowed in ISO 8601 is 0000 (year zero), which represents 1 BCE */
+    // The lowest year allowed in ISO 8601 is 0000 (year zero), which represents 1 BCE
     if ((tm->tm_year < -1900 || tm->tm_year > 9999 - 1900) ||
         (tm->tm_mon < -1 || tm->tm_mon > 99 - 1) ||
         (tm->tm_mday < 0 || tm->tm_mday > 99) ||
@@ -520,13 +487,12 @@ int fmt_time_tm_iso8601(char out[20], const struct tm *tm, char separator)
     return pos - out;
 }
 
-static int _check_array(const char *str, size_t str_len, const char **vals, size_t num_vals, bool ret)
-{
+static int _check_array(const char *str, size_t str_len, const char **vals, size_t num_vals, bool ret) {
     for (unsigned i = 0; i < num_vals; ++i) {
         const char *val = vals[i];
         size_t val_len = strlen(val);
         if (str_len >= val_len && !memcmp(str, val, val_len)) {
-            /* check that there are no trailing characters, e.g. "yesterday" should not parse as 'true' */
+            // check that there are no trailing characters, e.g. "yesterday" should not parse as 'true'
             unsigned char next_char = str[val_len];
             return (str_len > val_len && next_char != '\0') ? -EINVAL : ret;
         }
@@ -535,8 +501,7 @@ static int _check_array(const char *str, size_t str_len, const char **vals, size
     return -EINVAL;
 }
 
-int scn_bool(const char *str, size_t n)
-{
+int scn_bool(const char *str, size_t n) {
     if (n < 1 || !str) {
         return -EINVAL;
     }
@@ -554,8 +519,7 @@ int scn_bool(const char *str, size_t n)
                 : res;
 }
 
-uint32_t scn_u32_dec(const char *str, size_t n)
-{
+uint32_t scn_u32_dec(const char *str, size_t n) {
     uint32_t res = 0;
 
     while (n--) {
@@ -570,8 +534,7 @@ uint32_t scn_u32_dec(const char *str, size_t n)
     return res;
 }
 
-uint32_t scn_u32_hex(const char *str, size_t n)
-{
+uint32_t scn_u32_hex(const char *str, size_t n) {
     uint32_t res = 0;
 
     while (n--) {
@@ -596,8 +559,7 @@ uint32_t scn_u32_hex(const char *str, size_t n)
     return res;
 }
 
-static bool _get_nibble(uint8_t *dest, char _c)
-{
+static bool _get_nibble(uint8_t *dest, char _c) {
     uint8_t c = _c;
     if (((uint8_t)'0' <= c) && (c <= (uint8_t)'9')) {
         *dest = c - (uint8_t)'0';
@@ -617,14 +579,13 @@ static bool _get_nibble(uint8_t *dest, char _c)
     return false;
 }
 
-ssize_t scn_buf_hex(void *_dest, size_t dest_len, const char *hex, size_t hex_len)
-{
+ssize_t scn_buf_hex(void *_dest, size_t dest_len, const char *hex, size_t hex_len) {
     uint8_t *dest = _dest;
     assert((dest != NULL) || (dest_len == 0));
     assert((hex != NULL) || (hex_len == 0));
 
     if (hex_len & 1) {
-        /* we need to chars per every byte, so odd inputs don't work */
+        // we need to chars per every byte, so odd inputs don't work
         return -EINVAL;
     }
 
@@ -649,8 +610,7 @@ ssize_t scn_buf_hex(void *_dest, size_t dest_len, const char *hex, size_t hex_le
     return len;
 }
 
-int scn_time_tm_iso8601_date(struct tm *tm, const char *str)
-{
+int scn_time_tm_iso8601_date(struct tm *tm, const char *str) {
     uint32_t num;
 
     if (!fmt_is_digit(str[0]) || !fmt_is_digit(str[1]) ||
@@ -672,8 +632,7 @@ int scn_time_tm_iso8601_date(struct tm *tm, const char *str)
     return 10;
 }
 
-int scn_time_tm_iso8601_time(struct tm *tm, const char *str)
-{
+int scn_time_tm_iso8601_time(struct tm *tm, const char *str) {
     uint32_t num;
 
     if (!fmt_is_digit(str[0]) || !fmt_is_digit(str[1]) ||
@@ -691,13 +650,12 @@ int scn_time_tm_iso8601_time(struct tm *tm, const char *str)
     num = scn_u32_dec(&str[6], 2);
     tm->tm_sec = num;
 
-    tm->tm_isdst = -1; /* undefined */
+    tm->tm_isdst = -1; // undefined
 
     return 8;
 }
 
-int scn_time_tm_iso8601(struct tm *tm, const char *str, char separator)
-{
+int scn_time_tm_iso8601(struct tm *tm, const char *str, char separator) {
     assert(tm);
     assert(str);
     memset(tm, 0, sizeof(*tm));
@@ -708,7 +666,7 @@ int scn_time_tm_iso8601(struct tm *tm, const char *str, char separator)
     }
 
     if (str[10] == '\0') {
-        /* no time, just date */
+        // no time, just date
         return res;
     }
     if (str[10] != separator) {
@@ -723,51 +681,44 @@ int scn_time_tm_iso8601(struct tm *tm, const char *str, char separator)
     return 19;
 }
 
-/* native gets special treatment as native's stdio code is ... special.
- * And when not building for RIOT, there's no `stdio_write()`.
- * In those cases, just defer to `printf()`.
- */
+// native gets special treatment as native's stdio code is ... special.
+// And when not building for RIOT, there's no `stdio_write()`.
+// In those cases, just defer to `printf()`.
 #if IS_USED(MODULE_STDIO_NATIVE) || !defined(RIOT_VERSION)
-void print(const char *s, size_t n)
-{
+void print(const char *s, size_t n) {
     printf("%.*s", (int)n, s);
 }
 #else
-void print(const char *s, size_t n)
-{
-    /* flush the libc's output buffer so output is not intermingled. */
+void print(const char *s, size_t n) {
+    // flush the libc's output buffer so output is not intermingled.
     fflush(stdout);
 
     stdio_write(s, n);
 }
 #endif
 
-void print_u32_dec(uint32_t val)
-{
-    char buf[10]; /* "4294967295" */
+void print_u32_dec(uint32_t val) {
+    char buf[10]; // "4294967295"
     size_t len = fmt_u32_dec(buf, val);
 
     print(buf, len);
 }
 
-void print_s32_dec(int32_t val)
-{
-    char buf[11]; /* "-2147483648" */
+void print_s32_dec(int32_t val) {
+    char buf[11]; // "-2147483648"
     size_t len = fmt_s32_dec(buf, val);
 
     print(buf, len);
 }
 
-void print_byte_hex(uint8_t byte)
-{
+void print_byte_hex(uint8_t byte) {
     char buf[2];
 
     fmt_byte_hex(buf, byte);
     print(buf, sizeof(buf));
 }
 
-void print_bytes_hex(const void *bytes, size_t num)
-{
+void print_bytes_hex(const void *bytes, size_t num) {
     const uint8_t *b = bytes;
 
     while (num--) {
@@ -775,45 +726,39 @@ void print_bytes_hex(const void *bytes, size_t num)
     }
 }
 
-void print_u32_hex(uint32_t val)
-{
+void print_u32_hex(uint32_t val) {
     char buf[8];
 
     fmt_u32_hex(buf, val);
     print(buf, sizeof(buf));
 }
 
-void print_u64_hex(uint64_t val)
-{
+void print_u64_hex(uint64_t val) {
     print_u32_hex(val >> 32);
     print_u32_hex(val);
 }
 
-void print_u64_dec(uint64_t val)
-{
-    char buf[20]; /* "18446744073709551615" */
+void print_u64_dec(uint64_t val) {
+    char buf[20]; // "18446744073709551615"
     size_t len = fmt_u64_dec(buf, val);
 
     print(buf, len);
 }
 
-void print_s64_dec(uint64_t val)
-{
-    char buf[20]; /* "-9223372036854775808" */
+void print_s64_dec(uint64_t val) {
+    char buf[20]; // "-9223372036854775808"
     size_t len = fmt_s64_dec(buf, val);
 
     print(buf, len);
 }
 
-void print_float(float f, unsigned precision)
-{
+void print_float(float f, unsigned precision) {
     char buf[19];
     size_t len = fmt_float(buf, f, precision);
 
     print(buf, len);
 }
 
-void print_str(const char *str)
-{
+void print_str(const char *str) {
     print(str, fmt_strlen(str));
 }

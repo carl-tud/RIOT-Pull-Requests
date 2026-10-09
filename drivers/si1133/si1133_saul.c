@@ -1,25 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2020 iosabi
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 iosabi
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_si1133
- * @{
- *
- * @file
- * @brief       SAUL adaption for SI1133 devices
- *
- * @author      iosabi <iosabi@protonmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_si1133
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption for SI1133 devices
+///
+/// @author      iosabi <iosabi@protonmail.com>
+///
+/// @}
 
 #include "saul.h"
 #include "si1133.h"
 
-static int read_uv(const void *dev, phydat_t *res)
-{
+static int read_uv(const void *dev, phydat_t *res) {
     if (si1133_easy_configure((si1133_t *)dev,
                               SI1133_SENS_UV | SI1133_SENS_DEEP_UV,
                               /*sample_time_log=*/ 1,
@@ -35,13 +30,12 @@ static int read_uv(const void *dev, phydat_t *res)
     for (uint8_t i = 0; i < ARRAY_SIZE(values); i++) {
         res->val[i] = values[i];
     }
-    res->unit = UNIT_NONE;  /* UV index */
+    res->unit = UNIT_NONE;  // UV index
     res->scale = 0;
     return ARRAY_SIZE(values);
 }
 
-static int read_ir(const void *dev, phydat_t *res)
-{
+static int read_ir(const void *dev, phydat_t *res) {
     if (si1133_easy_configure((si1133_t *)dev,
                               SI1133_SENS_SMALL_IR | SI1133_SENS_MEDIUM_IR |
                               SI1133_SENS_LARGE_IR,
@@ -63,8 +57,7 @@ static int read_ir(const void *dev, phydat_t *res)
     return ARRAY_SIZE(values);
 }
 
-static int read_white(const void *dev, phydat_t *res)
-{
+static int read_white(const void *dev, phydat_t *res) {
     if (si1133_easy_configure((si1133_t *)dev,
                               SI1133_SENS_WHITE | SI1133_SENS_LARGE_WHITE,
                               /*sample_time_log=*/ 1,

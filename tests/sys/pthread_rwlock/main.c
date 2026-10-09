@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-or-later
- */
+// SPDX-FileCopyrightText: 2014 René Kijewski <rene.kijewski@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test rwlock implementation.
- *
- * @author      René Kijewski <rene.kijewski@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test rwlock implementation.
+///
+/// @author      René Kijewski <rene.kijewski@fu-berlin.de>
+///
+/// @}
 
 #include <pthread.h>
 #include <stdio.h>
@@ -42,8 +38,8 @@ static volatile unsigned counter;
 
 static kernel_pid_t main_thread_pid;
 
-/* The test assumes that 'printf/puts' are non interruptible operations
- * use a mutex to guarantee it */
+// The test assumes that 'printf/puts' are non interruptible operations
+// use a mutex to guarantee it
 static mutex_t stdout_mutex = MUTEX_INIT;
 
 #define PRINTF(FMT, ...)                                    \
@@ -63,27 +59,24 @@ static mutex_t stdout_mutex = MUTEX_INIT;
         mutex_unlock(&stdout_mutex);                        \
     } while (0)
 
-static void _notify_main_thread(void)
-{
+static void _notify_main_thread(void) {
     msg_t msg;
     msg_send(&msg, main_thread_pid);
 }
 
-static void do_sleep(int factor)
-{
+static void do_sleep(int factor) {
     uint32_t timeout_us = (random_uint32() % 100000) * factor;
     PRINTF("sleep for % 8i µs.", timeout_us);
     xtimer_usleep(timeout_us);
 }
 
-static void *writer(void *arg)
-{
+static void *writer(void *arg) {
     (void) arg;
     PUTS("start");
     for (unsigned i = 0; i < NUM_ITERATIONS; ++i) {
         pthread_rwlock_wrlock(&rwlock);
         unsigned cur = ++counter;
-        do_sleep(3); /* simulate time that it takes to write the value */
+        do_sleep(3); // simulate time that it takes to write the value
         PRINTF("%i: write -> %2u (correct = %u)", i, cur, cur == counter);
         pthread_rwlock_unlock(&rwlock);
         do_sleep(2);
@@ -93,14 +86,13 @@ static void *writer(void *arg)
     return NULL;
 }
 
-static void *reader(void *arg)
-{
+static void *reader(void *arg) {
     (void) arg;
     PUTS("start");
     for (unsigned i = 0; i < NUM_ITERATIONS; ++i) {
         pthread_rwlock_rdlock(&rwlock);
         unsigned cur = counter;
-        do_sleep(1); /* simulate time that it takes to read the value */
+        do_sleep(1); // simulate time that it takes to read the value
         PRINTF("%i: read  <- %2u (correct = %u)", i, cur, cur == counter);
         pthread_rwlock_unlock(&rwlock);
         do_sleep(1);
@@ -111,12 +103,11 @@ static void *reader(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     static char stacks[NUM_CHILDREN][THREAD_STACKSIZE_MAIN];
 
     PUTS("START");
-    /* Get main thread pid */
+    // Get main thread pid
     main_thread_pid = thread_getpid();
 
     for (unsigned i = 0; i < NUM_CHILDREN; ++i) {
@@ -150,7 +141,7 @@ int main(void)
                       fun, NULL, name);
     }
 
-    /* Block until all children threads are done */
+    // Block until all children threads are done
     for (unsigned i = 0; i < NUM_CHILDREN; ++i) {
         msg_t msg;
         msg_receive(&msg);

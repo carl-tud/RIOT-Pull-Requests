@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       Implementation of the CPU initialization
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @author      Jens Alfke <jens@mooseyard.com>
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       Implementation of the CPU initialization
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @author      Jens Alfke <jens@mooseyard.com>
+/// @}
 
 #include "esp_common.h"
 
@@ -21,7 +17,7 @@
 #include <string.h>
 #include <sys/reent.h>
 
-/* RIOT headers have to be included before ESP-IDF headers! */
+// RIOT headers have to be included before ESP-IDF headers!
 #include "board.h"
 #include "esp/common_macros.h"
 #include "exceptions.h"
@@ -39,7 +35,7 @@
 #include "periph/init.h"
 #include "periph/rtc.h"
 
-/* ESP-IDF headers */
+// ESP-IDF headers
 #include "esp_attr.h"
 #include "esp_clk_internal.h"
 #include "esp_heap_caps_init.h"
@@ -97,7 +93,7 @@
 #define LOG_STARTUP(format, ...)
 #endif
 
-/* following variables are defined in linker script */
+// following variables are defined in linker script
 extern uint8_t _bss_start;
 extern uint8_t _bss_end;
 extern uint8_t _sheap;
@@ -109,10 +105,10 @@ extern uint8_t _rtc_bss_rtc_start;
 extern uint8_t _rtc_bss_rtc_end;
 extern uint8_t _iram_start;
 
-/* external esp function declarations */
+// external esp function declarations
 extern uint32_t hwrand (void);
 
-/* forward declarations */
+// forward declarations
 static void IRAM system_startup_cpu0(void);
 static void IRAM system_init(void);
 extern void IRAM_ATTR thread_yield_isr(void* arg);
@@ -121,22 +117,18 @@ uint64_t g_startup_time = 0;
 const sys_startup_fn_t g_startup_fn[1] = { system_startup_cpu0 };
 
 #if CONFIG_ESP_TIMER_IMPL_FRC2
-/* dummy function required if FRC2 (legacy) timer of the ESP32 is used */
-esp_err_t esp_timer_impl_early_init(void)
-{
+// dummy function required if FRC2 (legacy) timer of the ESP32 is used
+esp_err_t esp_timer_impl_early_init(void) {
     return ESP_OK;
 }
 #endif
 
-/**
- * @brief   System startup function
- *
- * This function is the entry point in the user application. It is called
- * after a CPU initialization to startup the system.
- */
+/// @brief   System startup function
+///
+/// This function is the entry point in the user application. It is called
+/// after a CPU initialization to startup the system.
 
-static NORETURN void IRAM system_startup_cpu0(void)
-{
+static NORETURN void IRAM system_startup_cpu0(void) {
 #if __xtensa__
     register uint32_t *sp __asm__ ("a1"); (void)sp;
 #endif
@@ -149,7 +141,7 @@ static NORETURN void IRAM system_startup_cpu0(void)
 #endif
 
 #if IS_USED(MODULE_ESP_IDF_HEAP)
-    /* init heap */
+    // init heap
     heap_caps_init();
     heap_caps_enable_nonos_stack_heaps();
     if (IS_ACTIVE(ENABLE_DEBUG)) {
@@ -157,22 +149,22 @@ static NORETURN void IRAM system_startup_cpu0(void)
     }
 #endif
 
-    /* initialize system call tables of ESP32x rom and newlib */
+    // initialize system call tables of ESP32x rom and newlib
     syscalls_init();
 
-    /* systemwide UART initialization */
+    // systemwide UART initialization
     extern void uart_system_init (void);
     uart_system_init();
 
-    /* initialize stdio */
+    // initialize stdio
     esp_rom_output_tx_wait_idle(CONFIG_ESP_CONSOLE_UART_NUM);
     early_init();
 
     RESET_REASON reset_reason = rtc_get_reset_reason(PRO_CPU_NUM);
 
-    /* initialize RTC data after power on or RTC WDT reset */
+    // initialize RTC data after power on or RTC WDT reset
     if (reset_reason == POWERON_RESET || reset_reason == RTCWDT_RTC_RESET) {
-        /* cppcheck-suppress comparePointers */
+        // cppcheck-suppress comparePointers
         memset(&_rtc_bss_rtc_start, 0, (&_rtc_bss_rtc_end - &_rtc_bss_rtc_start));
     }
 
@@ -191,7 +183,7 @@ static NORETURN void IRAM system_startup_cpu0(void)
 #endif
 
     if (reset_reason == DEEPSLEEP_RESET) {
-        /* the cause has to be read to clear it */
+        // the cause has to be read to clear it
         esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
         (void)cause;
         LOG_STARTUP("Restart after deep sleep, wake-up cause: %d\n", cause);
@@ -216,7 +208,7 @@ static NORETURN void IRAM system_startup_cpu0(void)
 
     LOG_STARTUP("PRO cpu is up (single core mode, only PRO cpu is used)\n");
 
-    /* init esp_timer implementation */
+    // init esp_timer implementation
     esp_timer_early_init();
 
     LOG_STARTUP("PRO cpu starts user code\n");
@@ -225,33 +217,32 @@ static NORETURN void IRAM system_startup_cpu0(void)
     UNREACHABLE();
 }
 
-static NORETURN void IRAM system_init (void)
-{
+static NORETURN void IRAM system_init (void) {
     static_assert(MAXTHREADS >= 3,
             "ESP32x SoCs require at least 3 threads, esp_timer, idle, and main");
 #if defined(CPU_FAM_ESP32)
-    /* enable cached read from flash */
+    // enable cached read from flash
     Cache_Read_Enable(PRO_CPU_NUM);
 #endif
 
-    /* initialize the ISR stack for usage measurements */
+    // initialize the ISR stack for usage measurements
     thread_isr_stack_init();
 
-    /* install exception handlers */
+    // install exception handlers
     init_exceptions();
 
-    /* set log levels for SDK library outputs */
+    // set log levels for SDK library outputs
     extern void esp_log_level_set(const char* tag, esp_log_level_t level);
     esp_log_level_set("wifi", (esp_log_level_t)LOG_DEBUG);
     esp_log_level_set("gpio", (esp_log_level_t)LOG_DEBUG);
 
-    /* init watchdogs */
+    // init watchdogs
     system_wdt_init();
 
-    /* init random number generator */
+    // init random number generator
     srand(hwrand());
 
-    /* add SPI RAM to heap if enabled */
+    // add SPI RAM to heap if enabled
 #if CONFIG_SPIRAM && CONFIG_SPIRAM_BOOT_INIT
     esp_psram_extram_add_to_heap_allocator();
 #if CONFIG_SPIRAM_USE_MALLOC
@@ -259,7 +250,7 @@ static NORETURN void IRAM system_init (void)
 #endif
 #endif
 
-    /* print some infos */
+    // print some infos
     LOG_STARTUP("Used clocks in Hz: CPU=%d APB=%d XTAL=%d FAST=%d SLOW=%d\n",
                 esp_clk_cpu_freq(),
                 esp_clk_apb_freq(), esp_clk_xtal_freq(),
@@ -269,17 +260,17 @@ static NORETURN void IRAM system_init (void)
     LOG_STARTUP("RTC Slow Clock calibration value: %d\n", esp_clk_slowclk_cal_get());
     LOG_STARTUP("Heap free: %u bytes\n", get_free_heap_size());
 
-    /* initialize architecture specific interrupt handling */
+    // initialize architecture specific interrupt handling
     esp_irq_init();
 
-    /* disable buffering in stdio */
+    // disable buffering in stdio
     setvbuf(_stdout_r(_REENT), NULL, _IONBF, 0);
     setvbuf(_stderr_r(_REENT), NULL, _IONBF, 0);
 
-    /* trigger static peripheral initialization */
+    // trigger static peripheral initialization
     periph_init();
 
-    /* print system time */
+    // print system time
 #if IS_USED(MODULE_PERIPH_RTC)
     struct tm _sys_time;
     rtc_get_time(&_sys_time);
@@ -288,7 +279,7 @@ static NORETURN void IRAM system_init (void)
                 _sys_time.tm_hour, _sys_time.tm_min, _sys_time.tm_sec);
 #endif
 
-    /* print the board config */
+    // print the board config
 #if IS_USED(MODULE_ESP_LOG_STARTUP)
     print_board_config();
 #endif
@@ -299,29 +290,29 @@ static NORETURN void IRAM system_init (void)
 #endif
 
 #if IS_USED(MODULE_MTD)
-    /* init flash drive */
+    // init flash drive
     extern void spi_flash_drive_init (void);
     spi_flash_drive_init();
 #endif
 
-    /* initialize the board */
+    // initialize the board
     extern void board_init(void);
     board_init();
 
 #ifndef __XTENSA__
-    /* route a software interrupt source to CPU as trigger for thread yields,
-     * we use an internal software interrupt on Xtensa-based ESP32x SoCs */
+    // route a software interrupt source to CPU as trigger for thread yields,
+    // we use an internal software interrupt on Xtensa-based ESP32x SoCs
     intr_matrix_set(PRO_CPU_NUM, ETS_FROM_CPU_INTR0_SOURCE, CPU_INUM_SOFTWARE);
 #endif
-    /* set thread yield handler and enable the software interrupt */
+    // set thread yield handler and enable the software interrupt
     esp_cpu_intr_set_handler(CPU_INUM_SOFTWARE, thread_yield_isr, NULL);
     esp_cpu_intr_enable(BIT(CPU_INUM_SOFTWARE));
 
-    /* initialize ESP system event loop */
+    // initialize ESP system event loop
     extern void esp_event_handler_init(void);
     esp_event_handler_init();
 
-    /* initialize ESP-IDF timer task */
+    // initialize ESP-IDF timer task
     esp_timer_init();
 
 #if IS_USED(MODULE_ESP_IDF_SPI_FLASH)
@@ -337,9 +328,9 @@ static NORETURN void IRAM system_init (void)
     esp_err_t flash_ret = esp_flash_init_default_chip();
     (void)flash_ret;
     assert(flash_ret == ESP_OK);
-#endif /* MODULE_ESP_IDF_SPI_FLASH */
+#endif // MODULE_ESP_IDF_SPI_FLASH
 
-    /* starting RIOT */
+    // starting RIOT
 #if IS_USED(MODULE_ESP_LOG_STARTUP)
     LOG_STARTUP("Starting RIOT kernel on PRO cpu\n");
     esp_rom_output_tx_wait_idle(CONFIG_ESP_CONSOLE_UART_NUM);

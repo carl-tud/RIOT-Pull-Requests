@@ -1,28 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_saml21
- * @ingroup     drivers_periph_pm
- * @{
- *
- * @file
- * @brief       Implementation of the kernels power management interface
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     cpu_saml21
+/// @ingroup     drivers_periph_pm
+/// @{
+///
+/// @file
+/// @brief       Implementation of the kernels power management interface
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include "periph/pm.h"
 
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-void pm_set(unsigned mode)
-{
+void pm_set(unsigned mode) {
     int deep = 0;
     uint32_t _mode;
 
@@ -46,13 +41,13 @@ void pm_set(unsigned mode)
 #endif
             break;
         default:
-            /* don't sleep at all */
+            // don't sleep at all
             return;
     }
 
-    /* write sleep configuration */
+    // write sleep configuration
     PM->SLEEPCFG.reg = _mode;
-    /* make sure value has been set */
+    // make sure value has been set
     while ((PM->SLEEPCFG.reg & PM_SLEEPCFG_SLEEPMODE_Msk) != _mode) {}
 
     sam0_cortexm_sleep(deep);

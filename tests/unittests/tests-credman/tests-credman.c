@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <string.h>
 #include "embUnit.h"
@@ -12,7 +10,7 @@
 
 #define CREDMAN_TEST_TAG (1)
 
-/* $ openssl ecparam -name secp256r1 -genkey -outform der -out key.der */
+// $ openssl ecparam -name secp256r1 -genkey -outform der -out key.der
 static const uint8_t key_pair_der[] = {
     0x30, 0x77, 0x02, 0x01, 0x01, 0x04, 0x20, 0x04,
     0x43, 0x81, 0x68, 0xa8, 0x63, 0x9e, 0xf7, 0xe3,
@@ -32,7 +30,7 @@ static const uint8_t key_pair_der[] = {
     0x9c
 };
 
-/* $ openssl pkcs8 -topk8 -inform DER -outform DER -in key.der -out key_pkcs8.der -nocrypt */
+// $ openssl pkcs8 -topk8 -inform DER -outform DER -in key.der -out key_pkcs8.der -nocrypt
 static const uint8_t key_pair_pkcs8_der[] = {
     0x30, 0x81, 0x87, 0x02, 0x01, 0x00, 0x30, 0x13,
     0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02,
@@ -54,7 +52,7 @@ static const uint8_t key_pair_pkcs8_der[] = {
     0xd4, 0x9c
 };
 
-/* $ openssl ec -in key.der -inform DER -pubout -outform DER -out pub.der */
+// $ openssl ec -in key.der -inform DER -pubout -outform DER -out pub.der
 static const uint8_t public_key_der[] = {
     0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86,
     0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
@@ -70,7 +68,7 @@ static const uint8_t public_key_der[] = {
     0xf9, 0xd4, 0x9c
 };
 
-/* $ openssl ec -in key.der -inform DER -text */
+// $ openssl ec -in key.der -inform DER -text
 static const uint8_t private_key[] = {
     0x04, 0x43, 0x81, 0x68, 0xa8, 0x63, 0x9e, 0xf7,
     0xe3, 0x0d, 0x40, 0x5c, 0xf1, 0xea, 0xc9, 0x90,
@@ -93,22 +91,19 @@ static const uint8_t public_key_y[] = {
 };
 
 static int _compare_credentials(const credman_credential_t *a,
-                                const credman_credential_t *b)
-{
+                                const credman_credential_t *b) {
     if ((a->tag == b->tag) && (a->type == b->type)) {
         return 0;
     }
     return -1;
 }
 
-static void set_up(void)
-{
-    /* reset credential pool before every test */
+static void set_up(void) {
+    // reset credential pool before every test
     credman_reset();
 }
 
-static void test_credman_add(void)
-{
+static void test_credman_add(void) {
     int ret;
     unsigned exp_count = 0;
 
@@ -133,39 +128,38 @@ static void test_credman_add(void)
 
     TEST_ASSERT_EQUAL_INT(exp_count, credman_get_used_count());
 
-    /* add one credential */
+    // add one credential
     TEST_ASSERT_EQUAL_INT(CREDMAN_OK, credman_add(&credential));
     TEST_ASSERT_EQUAL_INT(++exp_count, credman_get_used_count());
 
-    /* add duplicate credential */
+    // add duplicate credential
     ret = credman_add(&credential);
     TEST_ASSERT_EQUAL_INT(CREDMAN_EXIST, ret);
     TEST_ASSERT_EQUAL_INT(exp_count, credman_get_used_count());
 
-    /* add invalid credential params */
+    // add invalid credential params
     memset(&credential.params.psk, 0, sizeof(psk_params_t));
     ret = credman_add(&credential);
     TEST_ASSERT_EQUAL_INT(CREDMAN_INVALID, ret);
     TEST_ASSERT_EQUAL_INT(exp_count, credman_get_used_count());
 
-    /* fill the pool */
+    // fill the pool
     memcpy(&credential.params.psk, &exp_psk_params, sizeof(psk_params_t));
     while (credman_get_used_count() < CONFIG_CREDMAN_MAX_CREDENTIALS) {
-        /* increase tag number so that it is not recognized as duplicate */
+        // increase tag number so that it is not recognized as duplicate
         credential.tag++;
         TEST_ASSERT_EQUAL_INT(CREDMAN_OK, credman_add(&credential));
         TEST_ASSERT_EQUAL_INT(++exp_count, credman_get_used_count());
     }
 
-    /* add to full pool */
+    // add to full pool
     credential.tag++;
     ret = credman_add(&credential);
     TEST_ASSERT_EQUAL_INT(CREDMAN_NO_SPACE, ret);
     TEST_ASSERT_EQUAL_INT(exp_count, credman_get_used_count());
 }
 
-static void test_credman_get(void)
-{
+static void test_credman_get(void) {
     int ret;
     credman_credential_t out_credential;
     credman_credential_t in_credential = {
@@ -181,7 +175,7 @@ static void test_credman_get(void)
         },
     };
 
-    /* get non-existing credential */
+    // get non-existing credential
     ret = credman_get(&out_credential, in_credential.tag, in_credential.type);
     TEST_ASSERT_EQUAL_INT(CREDMAN_NOT_FOUND, ret);
 
@@ -193,8 +187,7 @@ static void test_credman_get(void)
     TEST_ASSERT(!_compare_credentials(&in_credential, &out_credential));
 }
 
-static void test_credman_delete(void)
-{
+static void test_credman_delete(void) {
     int ret;
     unsigned exp_count = 0;
     credman_credential_t out_credential;
@@ -211,30 +204,29 @@ static void test_credman_delete(void)
         },
     };
 
-    /* delete non-existing credential */
+    // delete non-existing credential
     credman_delete(in_credential.tag, in_credential.type);
     TEST_ASSERT_EQUAL_INT(exp_count, credman_get_used_count());
 
-    /* add a credential */
+    // add a credential
     ret = credman_add(&in_credential);
     TEST_ASSERT_EQUAL_INT(CREDMAN_OK, ret);
     TEST_ASSERT_EQUAL_INT(++exp_count, credman_get_used_count());
 
-    /* delete a credential from credential pool */
+    // delete a credential from credential pool
     credman_delete(in_credential.tag, in_credential.type);
     TEST_ASSERT_EQUAL_INT(--exp_count, credman_get_used_count());
 
-    /* get the deleted credential */
+    // get the deleted credential
     ret = credman_get(&out_credential, in_credential.tag, in_credential.type);
     TEST_ASSERT_EQUAL_INT(CREDMAN_NOT_FOUND, ret);
 
-    /* delete a deleted credential */
+    // delete a deleted credential
     credman_delete(in_credential.tag, in_credential.type);
     TEST_ASSERT_EQUAL_INT(exp_count, credman_get_used_count());
 }
 
-static void test_credman_delete_random_order(void)
-{
+static void test_credman_delete_random_order(void) {
     credman_tag_t tag1 = CREDMAN_TEST_TAG;
     credman_tag_t tag2 = CREDMAN_TEST_TAG + 1;
 
@@ -253,23 +245,22 @@ static void test_credman_delete_random_order(void)
     };
     TEST_ASSERT_EQUAL_INT(0, credman_get_used_count());
 
-    /* fill the credential pool, assume CONFIG_CREDMAN_MAX_CREDENTIALS is 2 */
+    // fill the credential pool, assume CONFIG_CREDMAN_MAX_CREDENTIALS is 2
     TEST_ASSERT_EQUAL_INT(CREDMAN_OK, credman_add(&in_credential));
     in_credential.tag = tag2;
     TEST_ASSERT_EQUAL_INT(CREDMAN_OK, credman_add(&in_credential));
     TEST_ASSERT_EQUAL_INT(2, credman_get_used_count());
 
-    /* delete the first credential */
+    // delete the first credential
     credman_delete(tag1, in_credential.type);
     TEST_ASSERT_EQUAL_INT(1, credman_get_used_count());
 
-    /* get the second credential */
+    // get the second credential
     TEST_ASSERT_EQUAL_INT(CREDMAN_OK, credman_get(&out_credential, tag2, in_credential.type));
     TEST_ASSERT(!_compare_credentials(&in_credential, &out_credential));
 }
 
-static void test_credman_add_delete_all(void)
-{
+static void test_credman_add_delete_all(void) {
     credman_tag_t tag1 = CREDMAN_TEST_TAG;
     credman_tag_t tag2 = CREDMAN_TEST_TAG + 1;
 
@@ -286,18 +277,18 @@ static void test_credman_add_delete_all(void)
         },
     };
 
-    /* add credentials */
+    // add credentials
     TEST_ASSERT_EQUAL_INT(CREDMAN_OK, credman_add(&in_credential));
     in_credential.tag = tag2;
     TEST_ASSERT_EQUAL_INT(CREDMAN_OK, credman_add(&in_credential));
     TEST_ASSERT_EQUAL_INT(2, credman_get_used_count());
 
-    /* delete starting from first added credential */
+    // delete starting from first added credential
     credman_delete(tag1, in_credential.type);
     credman_delete(tag2, in_credential.type);
     TEST_ASSERT_EQUAL_INT(0, credman_get_used_count());
 
-    /* re-add the credentials after deletion */
+    // re-add the credentials after deletion
     in_credential.tag = tag1;
     TEST_ASSERT_EQUAL_INT(CREDMAN_OK, credman_add(&in_credential));
     in_credential.tag = tag2;
@@ -305,8 +296,7 @@ static void test_credman_add_delete_all(void)
     TEST_ASSERT_EQUAL_INT(2, credman_get_used_count());
 }
 
-static void test_credman_load_public_key_from_buffer(void)
-{
+static void test_credman_load_public_key_from_buffer(void) {
     ecdsa_public_key_t pub;
 
     int res = credman_load_public_key(public_key_der, sizeof(public_key_der), &pub);
@@ -315,8 +305,7 @@ static void test_credman_load_public_key_from_buffer(void)
     TEST_ASSERT_EQUAL_INT(memcmp(public_key_y, pub.y, sizeof(public_key_y)), 0);
 }
 
-static void test_credman_load_private_key_from_buffer(void)
-{
+static void test_credman_load_private_key_from_buffer(void) {
     credman_credential_t cred;
 
     int res = credman_load_private_key(key_pair_pkcs8_der, sizeof(key_pair_pkcs8_der), &cred);
@@ -330,8 +319,7 @@ static void test_credman_load_private_key_from_buffer(void)
     TEST_ASSERT_EQUAL_INT(cred.type, CREDMAN_TYPE_ECDSA);
 }
 
-static void test_credman_load_private_ecc_key_from_buffer(void)
-{
+static void test_credman_load_private_ecc_key_from_buffer(void) {
     credman_credential_t cred;
 
     int res = credman_load_private_ecc_key(key_pair_der, sizeof(key_pair_der), &cred);
@@ -345,8 +333,7 @@ static void test_credman_load_private_ecc_key_from_buffer(void)
     TEST_ASSERT_EQUAL_INT(cred.type, CREDMAN_TYPE_ECDSA);
 }
 
-Test *tests_credman_tests(void)
-{
+Test *tests_credman_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_credman_add),
         new_TestFixture(test_credman_get),
@@ -365,7 +352,6 @@ Test *tests_credman_tests(void)
     return (Test *)&credman_tests;
 }
 
-void tests_credman(void)
-{
+void tests_credman(void) {
     TESTS_RUN(tests_credman_tests());
 }

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_periph_flashpage
- * @{
- *
- * @file
- * @brief       Common flash page functions
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     drivers_periph_flashpage
+/// @{
+///
+/// @file
+/// @brief       Common flash page functions
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 #include "cpu.h"
@@ -21,8 +17,7 @@
 
 #include "periph/flashpage.h"
 
-void flashpage_read(unsigned page, void *data)
-{
+void flashpage_read(unsigned page, void *data) {
     assert(page < FLASHPAGE_NUMOF);
 
 #if defined(CPU_FAM_STM32WB) || (defined(CPU_FAM_STM32WL) && \
@@ -33,8 +28,7 @@ void flashpage_read(unsigned page, void *data)
     memcpy(data, flashpage_addr(page), flashpage_size(page));
 }
 
-int flashpage_verify(unsigned page, const void *data)
-{
+int flashpage_verify(unsigned page, const void *data) {
     assert(page < (int)FLASHPAGE_NUMOF);
 
 #if defined(CPU_FAM_STM32WB) || (defined(CPU_FAM_STM32WL) && \
@@ -50,35 +44,31 @@ int flashpage_verify(unsigned page, const void *data)
     }
 }
 
-int flashpage_write_and_verify(unsigned page, const void *data)
-{
+int flashpage_write_and_verify(unsigned page, const void *data) {
     flashpage_write_page(page, data);
     return flashpage_verify(page, data);
 }
 
 #ifdef FLASHPAGE_SIZE
-void flashpage_write_page(unsigned page, const void *data)
-{
+void flashpage_write_page(unsigned page, const void *data) {
     assert((unsigned) page < FLASHPAGE_NUMOF);
     assert(data != NULL);
 
     flashpage_erase(page);
 
-    /* write page */
+    // write page
     flashpage_write(flashpage_addr(page), data, FLASHPAGE_SIZE);
 }
 #endif
 
 #if defined(FLASHPAGE_RWWEE_NUMOF)
-void flashpage_rwwee_read(unsigned page, void *data)
-{
+void flashpage_rwwee_read(unsigned page, void *data) {
     assert(page < (int)FLASHPAGE_RWWEE_NUMOF);
 
     memcpy(data, flashpage_rwwee_addr(page), FLASHPAGE_SIZE);
 }
 
-int flashpage_rwwee_verify(unsigned page, const void *data)
-{
+int flashpage_rwwee_verify(unsigned page, const void *data) {
     assert(page < (int)FLASHPAGE_RWWEE_NUMOF);
 
     if (memcmp(flashpage_rwwee_addr(page), data, FLASHPAGE_SIZE) == 0) {
@@ -89,16 +79,14 @@ int flashpage_rwwee_verify(unsigned page, const void *data)
     }
 }
 
-int flashpage_rwwee_write_and_verify(unsigned page, const void *data)
-{
+int flashpage_rwwee_write_and_verify(unsigned page, const void *data) {
     flashpage_rwwee_write_page(page, data);
     return flashpage_rwwee_verify(page, data);
 }
-#endif /* FLASHPAGE_RWWEE_NUMOF */
+#endif // FLASHPAGE_RWWEE_NUMOF
 
 #ifdef PERIPH_FLASHPAGE_NEEDS_FLASHPAGE_ADDR
-void *flashpage_addr(unsigned page)
-{
+void *flashpage_addr(unsigned page) {
     uintptr_t addr = CPU_FLASH_BASE;
 
     while (page) {
@@ -107,11 +95,10 @@ void *flashpage_addr(unsigned page)
 
     return (void*)addr;
 }
-#endif /* PERIPH_FLASHPAGE_NEEDS_FLASHPAGE_ADDR */
+#endif // PERIPH_FLASHPAGE_NEEDS_FLASHPAGE_ADDR
 
 #ifdef PERIPH_FLASHPAGE_NEEDS_FLASHPAGE_PAGE
-unsigned flashpage_page(const void *addr)
-{
+unsigned flashpage_page(const void *addr) {
     unsigned page = 0;
 
     for (uintptr_t pos = CPU_FLASH_BASE; (uintptr_t)addr >= pos; ++page) {
@@ -120,4 +107,4 @@ unsigned flashpage_page(const void *addr)
 
     return page - 1;
 }
-#endif /* PERIPH_FLASHPAGE_NEEDS_FLASHPAGE_PAGE */
+#endif // PERIPH_FLASHPAGE_NEEDS_FLASHPAGE_PAGE

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup   boards_frdm-k22f
- * @{
- *
- * @file
- * @brief     Board specific configuration of direct mapped ADC
- *
- * @author    Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @ingroup   boards_frdm-k22f
+/// @{
+///
+/// @file
+/// @brief     Board specific configuration of direct mapped ADC
+///
+/// @author    Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    ADC configuration
- */
+/// @brief    ADC configuration
 static const  saul_adc_params_t saul_adc_params[] =
 {
     {
@@ -73,4 +67,4 @@ static const  saul_adc_params_t saul_adc_params[] =
 }
 #endif
 
-/** @} */
+/// @}

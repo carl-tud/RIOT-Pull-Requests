@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     net_nanosock
- * @brief       nanoCoAP virtual file system
- *
- * @{
- *
- * @file
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     net_nanosock
+/// @brief       nanoCoAP virtual file system
+///
+/// @{
+///
+/// @file
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include "mutex.h"
 #include "net/nanocoap_sock.h"
@@ -24,40 +20,32 @@
 extern "C" {
 #endif
 
-/**
- * @brief nanoCoAP file system configuration
- */
+/// @brief nanoCoAP file system configuration
 typedef struct {
-    const char *url;                         /**< base URL of the remote fs */
-    nanocoap_sock_t sock;                    /**< connection to the remote server */
-    mutex_t lock;                            /**< lock for common urlbuf */
-    char urlbuf[CONFIG_SOCK_URLPATH_MAXLEN]; /**< shared url buffer */
+    const char *url;                         ///< base URL of the remote fs
+    nanocoap_sock_t sock;                    ///< connection to the remote server
+    mutex_t lock;                            ///< lock for common urlbuf
+    char urlbuf[CONFIG_SOCK_URLPATH_MAXLEN]; ///< shared url buffer
 } nanocoap_fs_t;
 
-/**
- * @brief nanoCoAP remote file struct
- */
+/// @brief nanoCoAP remote file struct
 typedef struct {
-    uint32_t offset;                         /**< offset into the file  */
-    char urlbuf[CONFIG_SOCK_URLPATH_MAXLEN]; /**< full path to the file */
+    uint32_t offset;                         ///< offset into the file
+    char urlbuf[CONFIG_SOCK_URLPATH_MAXLEN]; ///< full path to the file
 } nanocoap_fs_file_t;
 
-/**
- * @brief nanoCoAP remote dir struct
- */
+/// @brief nanoCoAP remote dir struct
 typedef struct {
-    uint32_t offset;                         /**< current directory element  */
-    char urlbuf[CONFIG_SOCK_URLPATH_MAXLEN]; /**< full path of the directory */
+    uint32_t offset;                         ///< current directory element
+    char urlbuf[CONFIG_SOCK_URLPATH_MAXLEN]; ///< full path of the directory
 } nanocoap_fs_dir_t;
 
-/**
- * @brief nanoCoAP file system driver
- *
- * For use with vfs_mount
- */
+/// @brief nanoCoAP file system driver
+///
+/// For use with vfs_mount
 extern const vfs_file_system_t nanocoap_fs_file_system;
 
 #ifdef __cplusplus
 }
 #endif
-/** @} */
+/// @}

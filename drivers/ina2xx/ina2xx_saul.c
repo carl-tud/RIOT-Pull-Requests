@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ina2xx
- * @{
- *
- * @file
- * @brief       SAUL adaption of the INA2XX driver
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_ina2xx
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption of the INA2XX driver
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -23,8 +19,7 @@
 #include "saul.h"
 #include "ina2xx.h"
 
-static int read_current(const void *_dev, phydat_t *res)
-{
+static int read_current(const void *_dev, phydat_t *res) {
     ina2xx_t *dev = (ina2xx_t *)_dev;
     int32_t current;
 
@@ -38,8 +33,7 @@ static int read_current(const void *_dev, phydat_t *res)
     return -ECANCELED;
 }
 
-static int read_power(const void *_dev, phydat_t *res)
-{
+static int read_power(const void *_dev, phydat_t *res) {
     ina2xx_t *dev = (ina2xx_t *)_dev;
     uint32_t power;
     if (ina2xx_read_power(dev, &power) == 0) {
@@ -52,8 +46,7 @@ static int read_power(const void *_dev, phydat_t *res)
     return -ECANCELED;
 }
 
-static int read_voltage(const void *_dev, phydat_t *res)
-{
+static int read_voltage(const void *_dev, phydat_t *res) {
     ina2xx_t *dev = (ina2xx_t *)_dev;
     if (ina2xx_read_bus(dev, (uint16_t *)&res->val[0]) >= 0) {
         res->unit = UNIT_V;

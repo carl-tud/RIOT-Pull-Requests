@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -403,84 +401,74 @@ extern "C"
 
 #include "vl6180x_regs.h"
 
-#define VL6180X_I2C_ADDR    (0x29)  /**< VNCL6180 default I2C slave address */
+#define VL6180X_I2C_ADDR    (0x29)  ///< VNCL6180 default I2C slave address
 
-/**
- * @brief   Error codes
- */
+/// @brief   Error codes
 typedef enum {
-    VL6180X_OK              = 0,    /**< Success */
-    VL6180X_ERROR_I2C       = 1,    /**< I2C communication error */
-    VL6180X_ERROR_WRONG_ID  = 2,    /**< Wrong id read */
-    VL6180X_ERROR_NO_PIN    = 3,    /**< Pin not defined */
-    VL6180X_ERROR_NO_DATA   = 4,    /**< No data available */
-    VL6180X_ERROR_RNG       = 5,    /**< Ranging error */
-    VL6180X_ERROR_ALS       = 6,    /**< Ambient light sensing (ALS) error */
-    VL6180X_ERROR_NOT_READY = 7,    /**< Device not ready */
+    VL6180X_OK              = 0,    ///< Success
+    VL6180X_ERROR_I2C       = 1,    ///< I2C communication error
+    VL6180X_ERROR_WRONG_ID  = 2,    ///< Wrong id read
+    VL6180X_ERROR_NO_PIN    = 3,    ///< Pin not defined
+    VL6180X_ERROR_NO_DATA   = 4,    ///< No data available
+    VL6180X_ERROR_RNG       = 5,    ///< Ranging error
+    VL6180X_ERROR_ALS       = 6,    ///< Ambient light sensing (ALS) error
+    VL6180X_ERROR_NOT_READY = 7,    ///< Device not ready
 } vl6180x_error_t;
 
-/**
- * @brief   Analogue gain for ALS measurements
- */
+/// @brief   Analogue gain for ALS measurements
 typedef enum {
-    VL6180X_ALS_GAIN_20   = 0,  /**<   20 x gain (actual analogue gain of 20) */
-    VL6180X_ALS_GAIN_10   = 1,  /**<   10 x gain (actual analogue gain of 10.32) */
-    VL6180X_ALS_GAIN_5    = 2,  /**<    5 x gain (actual analogue gain of 5.21) */
-    VL6180X_ALS_GAIN_2_5  = 3,  /**<  2.5 x gain (actual analogue gain of 2.6) */
-    VL6180X_ALS_GAIN_1_67 = 4,  /**< 1.67 x gain (actual analogue gain of 1.72) */
-    VL6180X_ALS_GAIN_1_25 = 5,  /**< 1.25 x gain (actual analogue gain of 1.28) */
-    VL6180X_ALS_GAIN_1    = 6,  /**<    1 x gain (actual analogue gain of 1.01), default */
-    VL6180X_ALS_GAIN_40   = 7,  /**<   40 x gain (actual analogue gain of 40) */
+    VL6180X_ALS_GAIN_20   = 0,  ///< 20 x gain (actual analogue gain of 20)
+    VL6180X_ALS_GAIN_10   = 1,  ///< 10 x gain (actual analogue gain of 10.32)
+    VL6180X_ALS_GAIN_5    = 2,  ///< 5 x gain (actual analogue gain of 5.21)
+    VL6180X_ALS_GAIN_2_5  = 3,  ///< 2.5 x gain (actual analogue gain of 2.6)
+    VL6180X_ALS_GAIN_1_67 = 4,  ///< 1.67 x gain (actual analogue gain of 1.72)
+    VL6180X_ALS_GAIN_1_25 = 5,  ///< 1.25 x gain (actual analogue gain of 1.28)
+    VL6180X_ALS_GAIN_1    = 6,  ///< 1 x gain (actual analogue gain of 1.01), default
+    VL6180X_ALS_GAIN_40   = 7,  ///< 40 x gain (actual analogue gain of 40)
 } vl6180x_als_gain_t;
 
-/**
- * @brief   Range measurement status
- */
+/// @brief   Range measurement status
 typedef enum {
-    VL6180X_RNG_OK = 0,                     /**< No error */
-    VL6180X_RNG_VCSEL_CONT_TEST = 1,        /**< VCSEL continuity Test */
-    VL6180X_RNG_VCSEL_WD_TEST = 2,          /**< VCSEL watchdog test */
-    VL6180X_RNG_VCSEL_WD = 3,               /**< VCSEL watchdog */
-    VL6180X_RNG_PLL1_LOCK = 4,              /**< PLL1 lock */
-    VL6180X_RNG_PLL2_LOCK = 5,              /**< PLL2 lock */
-    VL6180X_RNG_EARLY_CONV_EST = 6,         /**< Early convergence estimate */
-    VL6180X_RNG_MAX_CONV = 7,               /**< Maximum convergence time reached */
-    VL6180X_RNG_NO_TARGET = 8,              /**< No target, ignore */
-    VL6180X_RNG_MAX_SNR = 11,               /**< Maximum SNR reached */
-    VL6180X_RNG_RAW_ALGO_UNDERFLOW = 12,    /**< Raw ranging algorithm underflow */
-    VL6180X_RNG_RAW_ALGO_OVERFLOW = 13,     /**< Raw ranging algorithn overflow */
-    VL6180X_RNG_ALGO_UNDERFLOW = 14,        /**< Ranging algorithm underflow */
-    VL6180X_RNG_ALGO_OVERFLOW = 15,         /**< Ranging algorithm overflow */
+    VL6180X_RNG_OK = 0,                     ///< No error
+    VL6180X_RNG_VCSEL_CONT_TEST = 1,        ///< VCSEL continuity Test
+    VL6180X_RNG_VCSEL_WD_TEST = 2,          ///< VCSEL watchdog test
+    VL6180X_RNG_VCSEL_WD = 3,               ///< VCSEL watchdog
+    VL6180X_RNG_PLL1_LOCK = 4,              ///< PLL1 lock
+    VL6180X_RNG_PLL2_LOCK = 5,              ///< PLL2 lock
+    VL6180X_RNG_EARLY_CONV_EST = 6,         ///< Early convergence estimate
+    VL6180X_RNG_MAX_CONV = 7,               ///< Maximum convergence time reached
+    VL6180X_RNG_NO_TARGET = 8,              ///< No target, ignore
+    VL6180X_RNG_MAX_SNR = 11,               ///< Maximum SNR reached
+    VL6180X_RNG_RAW_ALGO_UNDERFLOW = 12,    ///< Raw ranging algorithm underflow
+    VL6180X_RNG_RAW_ALGO_OVERFLOW = 13,     ///< Raw ranging algorithn overflow
+    VL6180X_RNG_ALGO_UNDERFLOW = 14,        ///< Ranging algorithm underflow
+    VL6180X_RNG_ALGO_OVERFLOW = 15,         ///< Ranging algorithm overflow
 } vl6180x_rng_status_t;
 
-/**
- * @brief   Ambient light sensing (ALS) status
- */
+/// @brief   Ambient light sensing (ALS) status
 typedef enum {
-    VL6180X_ALS_OK = 0,                    /**< No error */
-    VL6180X_ALS_OVERFLOW = 1,              /**< ALS measurement overflow */
-    VL6180X_ALS_UNDERFLOW = 2,             /**< ALS measurement underflow */
+    VL6180X_ALS_OK = 0,                    ///< No error
+    VL6180X_ALS_OVERFLOW = 1,              ///< ALS measurement overflow
+    VL6180X_ALS_UNDERFLOW = 2,             ///< ALS measurement underflow
 } vl6180x_als_status_t;
 
-/**
- * @brief   Interrupt mode
- *
- * The interrupt mode defines the different sources that can trigger an
- * interrupt on the GPIO1 pin of the sensor. The interrupt mode is defined for
- * range and ALS measurements separately. Interrupts can be triggered either
- *
- * - in each measurement cycle when new data become available (data ready interrupts) or
- * - only when values exceed a threshold configured (event interrupts).
- *
- * For threshold interrupts, upper and lower thresholds have to be defined,
- * with the upper and lower thresholds defining a threshold window, see
- * also #vl6180x_int_thresh_t.
- *
- * @note Interrupts are only supported when module `vl6180x_irq` is used.
- * @warning Only one of the interrupt modes must be enabled at the same time.
- */
+/// @brief   Interrupt mode
+///
+/// The interrupt mode defines the different sources that can trigger an
+/// interrupt on the GPIO1 pin of the sensor. The interrupt mode is defined for
+/// range and ALS measurements separately. Interrupts can be triggered either
+///
+/// - in each measurement cycle when new data become available (data ready interrupts) or
+/// - only when values exceed a threshold configured (event interrupts).
+///
+/// For threshold interrupts, upper and lower thresholds have to be defined,
+/// with the upper and lower thresholds defining a threshold window, see
+/// also #vl6180x_int_thresh_t.
+///
+/// @note Interrupts are only supported when module `vl6180x_irq` is used.
+/// @warning Only one of the interrupt modes must be enabled at the same time.
 typedef enum {
-    VL6180X_INT_NONE = 0, /**< Interrupt is disabled */
+    VL6180X_INT_NONE = 0, ///< Interrupt is disabled
 
     VL6180X_INT_LOW  = 1, /**< Interrupt is triggered when values are below
                                the lower threshold */
@@ -493,113 +481,99 @@ typedef enum {
                                to be read */
 } vl6180x_int_mode_t;
 
-/**
- * @brief   Interrupt config
- *
- * This type defines the interrupt mode for both range measurements and
- * ALS measurements. It is used on the one hand as parameter \p mode in the
- * function #vl6180x_int_enable to enable the interrupt for the respective
- * measurement and on the other hand to return the source of an interrupt
- * in function #vl6180x_int_wait when an interrupt was triggered.
- *
- * The interrupt mode is defined for range and ALS measurements separately.
- *
- * @note Interrupts are only supported when module `vl6180x_irq` is used.
- */
+/// @brief   Interrupt config
+///
+/// This type defines the interrupt mode for both range measurements and
+/// ALS measurements. It is used on the one hand as parameter \p mode in the
+/// function #vl6180x_int_enable to enable the interrupt for the respective
+/// measurement and on the other hand to return the source of an interrupt
+/// in function #vl6180x_int_wait when an interrupt was triggered.
+///
+/// The interrupt mode is defined for range and ALS measurements separately.
+///
+/// @note Interrupts are only supported when module `vl6180x_irq` is used.
 typedef struct {
 #if IS_USED(MODULE_VL6180X_RNG) || DOXYGEN
-    vl6180x_int_mode_t rng_int; /**< Interrupt mode for range measurements */
+    vl6180x_int_mode_t rng_int; ///< Interrupt mode for range measurements
 #endif
 #if IS_USED(MODULE_VL6180X_ALS) || DOXYGEN
-    vl6180x_int_mode_t als_int; /**< Interrupt mode for ALS measurements */
+    vl6180x_int_mode_t als_int; ///< Interrupt mode for ALS measurements
 #endif
 } vl6180x_int_config_t;
 
-/**
- * @brief   Interrupt threshold configuration
- *
- * Threshold configurations are used for event interrupts only.
- * If event interrupts are enabled by the corresponding interrupt
- * mode for range and/or ALS measurements, the lower and/or upper threshold
- * values are used to generate an interrupt if the values of the respective
- * measurement exceed these threshold values.
- *
- * The unit of threshold values for range measurements is millimeters.
- * The unit of threshold values for ALS measurements is counts.
- *
- * @note Interrupts are only supported when module `vl6180x_irq` is used.
- */
+/// @brief   Interrupt threshold configuration
+///
+/// Threshold configurations are used for event interrupts only.
+/// If event interrupts are enabled by the corresponding interrupt
+/// mode for range and/or ALS measurements, the lower and/or upper threshold
+/// values are used to generate an interrupt if the values of the respective
+/// measurement exceed these threshold values.
+///
+/// The unit of threshold values for range measurements is millimeters.
+/// The unit of threshold values for ALS measurements is counts.
+///
+/// @note Interrupts are only supported when module `vl6180x_irq` is used.
 typedef struct {
 #if IS_USED(MODULE_VL6180X_RNG) || DOXYGEN
-    uint8_t rng_high;   /**< upper threshold for range values */
-    uint8_t rng_low;    /**< lower threshold for range values */
+    uint8_t rng_high;   ///< upper threshold for range values
+    uint8_t rng_low;    ///< lower threshold for range values
 #endif
 #if IS_USED(MODULE_VL6180X_ALS) || DOXYGEN
-    uint16_t als_high;  /**< upper threshold for ALS values */
-    uint16_t als_low;   /**< lower threshold for ALS values */
+    uint16_t als_high;  ///< upper threshold for ALS values
+    uint16_t als_low;   ///< lower threshold for ALS values
 #endif
 } vl6180x_int_thresh_t;
 
-/**
- * @brief   VL6180X device configuration
- */
+/// @brief   VL6180X device configuration
 typedef struct {
-    /**
-     * @name Hardware configuration
-     * @{
-     */
-    unsigned i2c_dev;        /**< I2C device, default I2C_DEV(0) */
-    uint8_t  i2c_addr;       /**< I2C slave address */
+    /// @name Hardware configuration
+    /// @{
+    unsigned i2c_dev;        ///< I2C device, default I2C_DEV(0)
+    uint8_t  i2c_addr;       ///< I2C slave address
 
 #if IS_USED(MODULE_VL6180X_SHUTDOWN) || DOXYGEN
-    gpio_t   shutdown_pin;  /**< Shutdown pin, LOW active */
-#endif /* IS_USED(MODULE_VL6180X_SHUTDOWN) || DOXYGEN */
+    gpio_t   shutdown_pin;  ///< Shutdown pin, LOW active
+#endif // IS_USED(MODULE_VL6180X_SHUTDOWN) || DOXYGEN
 
 #if IS_USED(MODULE_VL6180X_IRQ) || DOXYGEN
-    gpio_t               int_pin;     /**< Interrupt pin, LOW active */
-    vl6180x_int_config_t int_cfg;     /**< Interrupt mode configuration */
-    vl6180x_int_thresh_t int_thresh;  /**< Interrupt threshold configuration */
-#endif /* IS_USED(MODULE_VL6180X_IRQ) || DOXYGEN */
+    gpio_t               int_pin;     ///< Interrupt pin, LOW active
+    vl6180x_int_config_t int_cfg;     ///< Interrupt mode configuration
+    vl6180x_int_thresh_t int_thresh;  ///< Interrupt threshold configuration
+#endif // IS_USED(MODULE_VL6180X_IRQ) || DOXYGEN
 
-    /** @} */
+    /// @}
 
-    /**
-     * @brief   Measurement period in continuous mode in
-     *          steps of 10 ms (default 20 = 200 ms).
-     *
-     * The measurement period also controls the measurement mode used after
-     * sensor initialization. If the configured measurement period is 0,
-     * the single-shot mode is enabled for both the range and ALS
-     * measurements. The functions vl6180x_rng_start_single and
-     * vl6180x_als_start_single must then be used to start a single measurement.
-     * Otherwise, the continuous mode is activated for both measurements,
-     * which are started immediately after sensor initialization with the
-     * configured measurement period. This also applies to the initialization
-     * after a power-down and power-up cycle.
-     *
-     * @note When ALS and range measurements are used in continuous mode,
-     * the so-called interleaved mode is used automatically, where an ALS
-     * measurement is immediately followed by a range measurement and
-     * repeated with the defined period.
-     */
+    /// @brief   Measurement period in continuous mode in
+    ///          steps of 10 ms (default 20 = 200 ms).
+    ///
+    /// The measurement period also controls the measurement mode used after
+    /// sensor initialization. If the configured measurement period is 0,
+    /// the single-shot mode is enabled for both the range and ALS
+    /// measurements. The functions vl6180x_rng_start_single and
+    /// vl6180x_als_start_single must then be used to start a single measurement.
+    /// Otherwise, the continuous mode is activated for both measurements,
+    /// which are started immediately after sensor initialization with the
+    /// configured measurement period. This also applies to the initialization
+    /// after a power-down and power-up cycle.
+    ///
+    /// @note When ALS and range measurements are used in continuous mode,
+    /// the so-called interleaved mode is used automatically, where an ALS
+    /// measurement is immediately followed by a range measurement and
+    /// repeated with the defined period.
     uint8_t period;
 
 #if IS_USED(MODULE_VL6180X_RNG) || DOXYGEN
-    /**
-     * @name Range measurement configuration
-     * @{
-     */
+    /// @name Range measurement configuration
+    /// @{
     uint8_t rng_max_time;  /**< Maximum convergence time in ms [1...63] given
                                 to the sensor to perform a range measurement
                                 (default 50 = 50 ms) */
-    /** @} */
-#endif /* IS_USED(MODULE_VL6180X_RNG) || DOXYGEN */
+    /// @}
+#endif // IS_USED(MODULE_VL6180X_RNG) || DOXYGEN
 
 #if IS_USED(MODULE_VL6180X_ALS) || DOXYGEN
-    /**
-     * @name ALS measurement configuration
-     * @{
-     */
+    /// @name ALS measurement configuration
+    /// @{
     uint16_t als_int_time; /**< ALS integration time in ms [1...512]
                                 (default 100 = 100 ms, **recommended**) */
     uint16_t als_lux_res;  /**< ALS lux resolution multiplied by factor 1000
@@ -607,466 +581,422 @@ typedef struct {
                                 calibrated lux resolution without cover glas) */
     vl6180x_als_gain_t als_gain; /**< ALS analogue gain for light channel
                                       (default VL6180X_ALS_GAIN_1_0) */
-    /** @} */
-#endif /* IS_USED(MODULE_VL6180X_ALS) || DOXYGEN */
+    /// @}
+#endif // IS_USED(MODULE_VL6180X_ALS) || DOXYGEN
 
 } vl6180x_params_t;
 
-/**
- * @brief   VL6180X sensor device data structure type
- */
+/// @brief   VL6180X sensor device data structure type
 typedef struct {
 
-    vl6180x_params_t params;  /**< Device initialization parameters */
-    bool cont_meas;           /**< Continuous mode running */
+    vl6180x_params_t params;  ///< Device initialization parameters
+    bool cont_meas;           ///< Continuous mode running
 #if IS_USED(MODULE_VL6180X_RNG) || DOXYGEN
-    vl6180x_rng_status_t rng_status; /**< Status of last range measurement */
-#endif /* IS_USED(MODULE_VL6180X_RNG) || DOXYGEN */
+    vl6180x_rng_status_t rng_status; ///< Status of last range measurement
+#endif // IS_USED(MODULE_VL6180X_RNG) || DOXYGEN
 #if IS_USED(MODULE_VL6180X_ALS) || DOXYGEN
-    vl6180x_als_status_t als_status; /**< Status of last ALS measurement */
-#endif /* IS_USED(MODULE_VL6180X_ALS) || DOXYGEN */
+    vl6180x_als_status_t als_status; ///< Status of last ALS measurement
+#endif // IS_USED(MODULE_VL6180X_ALS) || DOXYGEN
 } vl6180x_t;
 
-/**
- * @brief   Initialize the VL6180X sensor device
- *
- * After initialization, the sensor is configured according to the standard
- * configuration parameters and is fully functional.
- *
- * If the configured measurement period is 0, the single-shot mode
- * is enabled for both the range and ALS measurements. The functions
- * vl6180x_rng_start_single and vl6180x_als_start_single must then be used
- * to start a single measurement. Otherwise, the continuous mode is activated
- * for both measurements, which are started immediately after sensor
- * initialization with the configured measurement period.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor to be initialized
- * @param[in]   params  Configuration parameters, see #vl6180x_params_t
- *
- * @retval  VL6180X_OK      on success
- * @retval  VL6180X_ERROR_* a negative error code on error, see
- *                          #vl6180x_error_t
- */
+/// @brief   Initialize the VL6180X sensor device
+///
+/// After initialization, the sensor is configured according to the standard
+/// configuration parameters and is fully functional.
+///
+/// If the configured measurement period is 0, the single-shot mode
+/// is enabled for both the range and ALS measurements. The functions
+/// vl6180x_rng_start_single and vl6180x_als_start_single must then be used
+/// to start a single measurement. Otherwise, the continuous mode is activated
+/// for both measurements, which are started immediately after sensor
+/// initialization with the configured measurement period.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor to be initialized
+/// @param[in]   params  Configuration parameters, see #vl6180x_params_t
+///
+/// @retval  VL6180X_OK      on success
+/// @retval  VL6180X_ERROR_* a negative error code on error, see
+///                          #vl6180x_error_t
 int vl6180x_init(vl6180x_t *dev, const vl6180x_params_t *params);
 
-/**
- * @brief   Start measurements in continuous mode
- *
- * Range and/or ALS measurements are started in continuous mode with same
- * measurement period as defined in configuration parameter
- * vl6180x_params_t::period.
- *
- * @note Continuous mode cannot be started separately for range and ALS
- * measurements.
- *
- * @pre
- * - Measurement period vl6180x_params_t::period must not be zero.
- * - Measurements must not yet be started in continuous mode when called.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor to be initialized
- *
- * @retval  VL6180X_OK      on success
- * @retval  VL6180X_ERROR_* a negative error code on error, see
- *                          #vl6180x_error_t
- */
+/// @brief   Start measurements in continuous mode
+///
+/// Range and/or ALS measurements are started in continuous mode with same
+/// measurement period as defined in configuration parameter
+/// vl6180x_params_t::period.
+///
+/// @note Continuous mode cannot be started separately for range and ALS
+/// measurements.
+///
+/// @pre
+/// - Measurement period vl6180x_params_t::period must not be zero.
+/// - Measurements must not yet be started in continuous mode when called.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor to be initialized
+///
+/// @retval  VL6180X_OK      on success
+/// @retval  VL6180X_ERROR_* a negative error code on error, see
+///                          #vl6180x_error_t
 int vl6180x_start_cont(vl6180x_t *dev);
 
-/**
- * @brief   Stop measurements in continuous mode
- *
- * Continuous range and ALS measurements are stopped. Once continuous
- * measurements are stopped, vl6180x_rng_start_single or
- * vl6180x_als_start_single can be used to start single-shot measurements
- * separately.
- *
- * @pre
- * - Measurement period vl6180x_params_t::period must not be zero.
- * - Measurements must be started in continuous mode when called.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor to be initialized
- *
- * @retval  VL6180X_OK      on success
- * @retval  VL6180X_ERROR_* a negative error code on error, see
- *                          #vl6180x_error_t
- */
+/// @brief   Stop measurements in continuous mode
+///
+/// Continuous range and ALS measurements are stopped. Once continuous
+/// measurements are stopped, vl6180x_rng_start_single or
+/// vl6180x_als_start_single can be used to start single-shot measurements
+/// separately.
+///
+/// @pre
+/// - Measurement period vl6180x_params_t::period must not be zero.
+/// - Measurements must be started in continuous mode when called.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor to be initialized
+///
+/// @retval  VL6180X_OK      on success
+/// @retval  VL6180X_ERROR_* a negative error code on error, see
+///                          #vl6180x_error_t
 int vl6180x_stop_cont(vl6180x_t *dev);
 
 #if IS_USED(MODULE_VL6180X_RNG) || DOXYGEN
-/**
- * @brief   Range data ready status function
- *
- * The function can be used for polling to know when new ranging data are ready.
- *
- * @note This function is only available when module `vl6180x_rng` is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- *
- * @retval  VL6180X_OK             new ranging data are ready
- * @retval  VL6180X_ERROR_NO_DATA  no new ranging data available
- * @retval  VL6180X_ERROR_*        a negative error code on any other error, see
- *                                 #vl6180x_error_t
- */
+/// @brief   Range data ready status function
+///
+/// The function can be used for polling to know when new ranging data are ready.
+///
+/// @note This function is only available when module `vl6180x_rng` is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+///
+/// @retval  VL6180X_OK             new ranging data are ready
+/// @retval  VL6180X_ERROR_NO_DATA  no new ranging data available
+/// @retval  VL6180X_ERROR_*        a negative error code on any other error, see
+///                                 #vl6180x_error_t
 int vl6180x_rng_data_ready(const vl6180x_t *dev);
 
-/**
- * @brief   Read one ranging data sample in mm
- *
- * This function returns the ranging data in millimeters. If ranging value
- * is invalid because of a measurement error, #VL6180X_ERROR_RNG is returned.
- * The #vl6180x_rng_status function can then be used to get an error code of
- * type #vl6180x_rng_status_t.
- *
- * @note
- * - This function is only available when module `vl6180x_rng` is used.
- * - The function clears the interrupt if ambient light sensing interrupts
- *   are used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- * @param[out]  mm      Ranging data in mm [0...100]
- *
- * @retval  VL6180X_OK         on success
- * @retval  VL6180X_ERROR_RNG  on error during range measurement
- * @retval  VL6180X_ERROR_*    a negative error code on any other error
- *                             see #vl6180x_error_t
- */
+/// @brief   Read one ranging data sample in mm
+///
+/// This function returns the ranging data in millimeters. If ranging value
+/// is invalid because of a measurement error, #VL6180X_ERROR_RNG is returned.
+/// The #vl6180x_rng_status function can then be used to get an error code of
+/// type #vl6180x_rng_status_t.
+///
+/// @note
+/// - This function is only available when module `vl6180x_rng` is used.
+/// - The function clears the interrupt if ambient light sensing interrupts
+///   are used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+/// @param[out]  mm      Ranging data in mm [0...100]
+///
+/// @retval  VL6180X_OK         on success
+/// @retval  VL6180X_ERROR_RNG  on error during range measurement
+/// @retval  VL6180X_ERROR_*    a negative error code on any other error
+///                             see #vl6180x_error_t
 int vl6180x_rng_read(vl6180x_t *dev, uint8_t *mm);
 
-/**
- * @brief   Get status of last range measurement
- *
- * @note This function is only available when module `vl6180x_rng` is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- * @retval      status of type vl6180x_rng_status_t
- */
+/// @brief   Get status of last range measurement
+///
+/// @note This function is only available when module `vl6180x_rng` is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+/// @retval      status of type vl6180x_rng_status_t
 vl6180x_rng_status_t vl6180x_rng_status(const vl6180x_t *dev);
 
-/**
- * @brief   Start a single-shot range measurement
- *
- * @pre Measurements must not be started in continuous mode when called.
- *
- * @note This function is only available when module `vl6180x_rng` is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Start a single-shot range measurement
+///
+/// @pre Measurements must not be started in continuous mode when called.
+///
+/// @note This function is only available when module `vl6180x_rng` is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_rng_start_single(const vl6180x_t *dev);
 
 #if IS_USED(MODULE_VL6180X_CONFIG) || DOXYGEN
-/**
- * @brief   Reconfigure range measurements at runtime
- *
- * This function can be used to overwrite the default configuration of range
- * measurements defined by #vl6180x_params_t at runtime.
- *
- * For this purpose, the running range measurement is stopped and restarted
- * after the reconfiguration if continuous mode is used (\p period is not 0).
- *
- * @note
- * - This function is only available when modules `vl6180x_rng` and
- *   `vl6180x_config` are used.
- * - Since parameter \p period is used for continuous mode, in which
- *   measurements are performed in interleaved mode, setting the period
- *   with this function also affects the ALS measurements in continuous mode.
- *
- * @param[in]   dev         Device descriptor of VL6180X sensor
- * @param[in]   period      Period in continuous measurement mode in steps
- *                          of 10 ms. It controls also the measurement mode
- *                          enabled after the initialization. If 0, single-shot
- *                          mode is enabled, otherwise the continuous
- *                          mode is enabled and measurement are started
- *                          automatically.
- * @param[in]   max_time    Maximum convergence time in ms [1...63] given
- *                          to the sensor to perform range measurements
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Reconfigure range measurements at runtime
+///
+/// This function can be used to overwrite the default configuration of range
+/// measurements defined by #vl6180x_params_t at runtime.
+///
+/// For this purpose, the running range measurement is stopped and restarted
+/// after the reconfiguration if continuous mode is used (\p period is not 0).
+///
+/// @note
+/// - This function is only available when modules `vl6180x_rng` and
+///   `vl6180x_config` are used.
+/// - Since parameter \p period is used for continuous mode, in which
+///   measurements are performed in interleaved mode, setting the period
+///   with this function also affects the ALS measurements in continuous mode.
+///
+/// @param[in]   dev         Device descriptor of VL6180X sensor
+/// @param[in]   period      Period in continuous measurement mode in steps
+///                          of 10 ms. It controls also the measurement mode
+///                          enabled after the initialization. If 0, single-shot
+///                          mode is enabled, otherwise the continuous
+///                          mode is enabled and measurement are started
+///                          automatically.
+/// @param[in]   max_time    Maximum convergence time in ms [1...63] given
+///                          to the sensor to perform range measurements
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_rng_config(vl6180x_t *dev, uint8_t period, uint8_t max_time);
 
-#endif /* IS_USED(MODULE_VL6180X_CONFIG) || DOXYGEN */
-#endif /* IS_USED(MODULE_VL6180X_RNG) || DOXYGEN */
+#endif // IS_USED(MODULE_VL6180X_CONFIG) || DOXYGEN
+#endif // IS_USED(MODULE_VL6180X_RNG) || DOXYGEN
 
 #if IS_USED(MODULE_VL6180X_ALS) || DOXYGEN
-/**
- * @brief   ALS data ready status function
- *
- * @note This function is only available when module `vl6180x_als` is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- *
- * @retval  VL6180X_OK             new ALS data are ready
- * @retval  VL6180X_ERROR_NO_DATA  no new ALS data available
- * @retval  VL6180X_ERROR_*        a negative error code on any other error,
- *                                 see #vl6180x_error_t
- */
+/// @brief   ALS data ready status function
+///
+/// @note This function is only available when module `vl6180x_als` is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+///
+/// @retval  VL6180X_OK             new ALS data are ready
+/// @retval  VL6180X_ERROR_NO_DATA  no new ALS data available
+/// @retval  VL6180X_ERROR_*        a negative error code on any other error,
+///                                 see #vl6180x_error_t
 int vl6180x_als_data_ready(const vl6180x_t *dev);
 
-/**
- * @brief   Read one ambient light sensing (ALS) data sample
- *
- * This function returns one ALS data sample as raw count value and, if
- * required, as illuminance in Lux. The range of the count value
- * depends on
- *
- * - the ALS analog gain defined by vl6180x_params_t::als_gain,
- * - the integration time defined by vl6180x_params_t::als_int_time, and
- * - the lux resolution defined by vl6180x_params_t::als_res.
- *
- * The count value is returned in parameter \p raw while the illuminance
- * is returned in parameter \p lux.  For either \p raw or \p lux also `NULL`
- * can be passed, if only one value is of interest.
- *
- * If ALS value is invalid because of a measurement error, #VL6180X_ERROR_ALS
- * is returned. The #vl6180x_als_status function can then be used to get an
- * error code of type #vl6180x_als_status_t.
- *
- * @note
- * - This function is only available when module `vl6180x_als` is used.
- * - The function clears the interrupt if ambient light sensing interrupts
- *   are used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- * @param[out]  raw     Ambient light raw data as count value
- * @param[out]  lux     Ambient light in Lux
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Read one ambient light sensing (ALS) data sample
+///
+/// This function returns one ALS data sample as raw count value and, if
+/// required, as illuminance in Lux. The range of the count value
+/// depends on
+///
+/// - the ALS analog gain defined by vl6180x_params_t::als_gain,
+/// - the integration time defined by vl6180x_params_t::als_int_time, and
+/// - the lux resolution defined by vl6180x_params_t::als_res.
+///
+/// The count value is returned in parameter \p raw while the illuminance
+/// is returned in parameter \p lux.  For either \p raw or \p lux also `NULL`
+/// can be passed, if only one value is of interest.
+///
+/// If ALS value is invalid because of a measurement error, #VL6180X_ERROR_ALS
+/// is returned. The #vl6180x_als_status function can then be used to get an
+/// error code of type #vl6180x_als_status_t.
+///
+/// @note
+/// - This function is only available when module `vl6180x_als` is used.
+/// - The function clears the interrupt if ambient light sensing interrupts
+///   are used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+/// @param[out]  raw     Ambient light raw data as count value
+/// @param[out]  lux     Ambient light in Lux
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_als_read(vl6180x_t *dev, uint16_t *raw, uint16_t *lux);
 
-/**
- * @brief   Get status of last ALS measurement
- *
- * @note This function is only available when module `vl6180x_als` is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- * @retval      status of type vl6180x_als_status_t
- */
+/// @brief   Get status of last ALS measurement
+///
+/// @note This function is only available when module `vl6180x_als` is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+/// @retval      status of type vl6180x_als_status_t
 vl6180x_als_status_t vl6180x_als_status(const vl6180x_t *dev);
 
-/**
- * @brief   Start a single-shot ALS measurement
- *
- * @pre Measurements must not be started in continuous mode when called.
- *
- * @note This function is only available when module `vl6180x_als` is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Start a single-shot ALS measurement
+///
+/// @pre Measurements must not be started in continuous mode when called.
+///
+/// @note This function is only available when module `vl6180x_als` is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_als_start_single(const vl6180x_t *dev);
 
 #if IS_USED(MODULE_VL6180X_CONFIG) || DOXYGEN
-/**
- * @brief   Reconfigure ambient light sensing (ALS) during runtime
- *
- * This function can be used to overwrite the default configuration of ambient
- * light sensing defined by #vl6180x_params_t during runtime.
- *
- * For this purpose, the running ambient light sensing (ALS) is stopped and
- * restarted after the reconfiguration if continuous mode is used
- * (\p period is not 0).
- *
- * @note
- * - This function is only available when modules `vl6180x_als` and
- *   `vl6180x_config` are used.
- * - Since parameter \p period is used for continuous mode, in which
- *   measurements are performed in interleaved mode, setting the period
- *   with this function also affects the range measurements in continuous mode.
- *
- * @param[in]   dev         Device descriptor of VL6180X sensor
- * @param[in]   period      Period in continuous measurement mode in steps
- *                          of 10 ms. It controls also the measurement mode
- *                          enabled after the initialization. If 0, single-shot
- *                          mode is enabled, otherwise the continuous
- *                          mode is enabled and measurement are started
- *                          automatically.
- * @param[in]   int_time    ALS integration time in ms [0...511]
- * @param[in]   gain        ALS analogue gain for light channel
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Reconfigure ambient light sensing (ALS) during runtime
+///
+/// This function can be used to overwrite the default configuration of ambient
+/// light sensing defined by #vl6180x_params_t during runtime.
+///
+/// For this purpose, the running ambient light sensing (ALS) is stopped and
+/// restarted after the reconfiguration if continuous mode is used
+/// (\p period is not 0).
+///
+/// @note
+/// - This function is only available when modules `vl6180x_als` and
+///   `vl6180x_config` are used.
+/// - Since parameter \p period is used for continuous mode, in which
+///   measurements are performed in interleaved mode, setting the period
+///   with this function also affects the range measurements in continuous mode.
+///
+/// @param[in]   dev         Device descriptor of VL6180X sensor
+/// @param[in]   period      Period in continuous measurement mode in steps
+///                          of 10 ms. It controls also the measurement mode
+///                          enabled after the initialization. If 0, single-shot
+///                          mode is enabled, otherwise the continuous
+///                          mode is enabled and measurement are started
+///                          automatically.
+/// @param[in]   int_time    ALS integration time in ms [0...511]
+/// @param[in]   gain        ALS analogue gain for light channel
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_als_config(vl6180x_t *dev, uint8_t period, uint8_t int_time,
                                        vl6180x_als_gain_t gain);
 
-#endif /* IS_USED(MODULE_VL6180X_CONFIG) || DOXYGEN */
-#endif /* IS_USED(MODULE_VL6180X_ALS) || DOXYGEN */
+#endif // IS_USED(MODULE_VL6180X_CONFIG) || DOXYGEN
+#endif // IS_USED(MODULE_VL6180X_ALS) || DOXYGEN
 
 #if IS_USED(MODULE_VL6180X_SHUTDOWN) || DOXYGEN
-/**
- * @brief   Power down the sensor
- *
- * @pre This function requires that a GPIO connected to sensor's GPIO0/CE pin is
- * defined by parameter vl6180x_params_t::pin_shutdown.
- *
- * @note This function is only available if the `vl6180x_shutdown` module
- * is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Power down the sensor
+///
+/// @pre This function requires that a GPIO connected to sensor's GPIO0/CE pin is
+/// defined by parameter vl6180x_params_t::pin_shutdown.
+///
+/// @note This function is only available if the `vl6180x_shutdown` module
+/// is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_power_down(const vl6180x_t *dev);
 
-/**
- * @brief   Power down the sensor
- *
- * @pre This function requires that a GPIO connected to sensor's GPIO0/CE pin is
- * defined by parameter vl6180x_params_t::pin_shutdown.
- *
- * @note This function is only available if the `vl6180x_shutdown` module
- * is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Power down the sensor
+///
+/// @pre This function requires that a GPIO connected to sensor's GPIO0/CE pin is
+/// defined by parameter vl6180x_params_t::pin_shutdown.
+///
+/// @note This function is only available if the `vl6180x_shutdown` module
+/// is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_power_up(vl6180x_t *dev);
 
-#endif /* IS_USED(MODULE_VL6180X_SHUTDOWN) || DOXYGEN  */
+#endif // IS_USED(MODULE_VL6180X_SHUTDOWN) || DOXYGEN
 
 #if IS_USED(MODULE_VL6180X_IRQ) || DOXYGEN
 
-/**
- * @brief   Wait for configured interrupts and return the interrupt sources
- *
- * To avoid I2C bus access in interrupt context, the driver prevents the
- * direct use of interrupts and application specific ISRs. Rather, this
- * function has to be used to wait for an interrupt. It enables the interrupt
- * signal for the configured MCU GPIO and then blocks the calling thread
- * until an interrupt is triggered.
- *
- * Once an interrupt is triggered, the driver handles the interrupt with an
- * internal ISR and then returns. When the function returns, the data structure
- * of type vl6180x_int_config_t to which the \p src parameter points contains
- * the source of the triggered interrupt. It contains a flag for each possible
- * interrupt source which can be tested for true.
- *
- * @pre
- * - Configuration parameter vl6180x_params_t::int_pin has to be defined.
- * - vl6180x_int_config_t::rng_int and vl6180x_int_config_t::als_int
- *   must only define one interrupt mode each.
- * - If threshold interrupts are enabled, thresholds have to be valid.
- *
- * @note This function is only available when module `vl6180x_irq` is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- * @param[out]  src     Interrupt sources, see #vl6180x_int_config_t
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Wait for configured interrupts and return the interrupt sources
+///
+/// To avoid I2C bus access in interrupt context, the driver prevents the
+/// direct use of interrupts and application specific ISRs. Rather, this
+/// function has to be used to wait for an interrupt. It enables the interrupt
+/// signal for the configured MCU GPIO and then blocks the calling thread
+/// until an interrupt is triggered.
+///
+/// Once an interrupt is triggered, the driver handles the interrupt with an
+/// internal ISR and then returns. When the function returns, the data structure
+/// of type vl6180x_int_config_t to which the \p src parameter points contains
+/// the source of the triggered interrupt. It contains a flag for each possible
+/// interrupt source which can be tested for true.
+///
+/// @pre
+/// - Configuration parameter vl6180x_params_t::int_pin has to be defined.
+/// - vl6180x_int_config_t::rng_int and vl6180x_int_config_t::als_int
+///   must only define one interrupt mode each.
+/// - If threshold interrupts are enabled, thresholds have to be valid.
+///
+/// @note This function is only available when module `vl6180x_irq` is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+/// @param[out]  src     Interrupt sources, see #vl6180x_int_config_t
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_int_wait(const vl6180x_t *dev, vl6180x_int_config_t *src);
 
-/**
- * @brief   Enable and disable interrupts
- *
- * Configured interrupts can be enabled or disabled with this function.
- *
- * @pre
- * - Configuration parameter vl6180x_params_t::int_pin has to be defined
- * - vl6180x_int_config_t::rng_int and vl6180x_int_config_t::als_int
- *   must only define one interrupt mode each.
- *
- * @note
- * - To disable intertupts, set vl6180x_int_config_t::rng_int and
- *   vl6180x_int_config_t::als_int to #VL6180X_INT_NONE.
- * - This function is only available when module `vl6180x_irq` is used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- * @param[in]   mode    Interrupts to be enabled, must be only one for each
- *                      measurement type (range and ALS)
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Enable and disable interrupts
+///
+/// Configured interrupts can be enabled or disabled with this function.
+///
+/// @pre
+/// - Configuration parameter vl6180x_params_t::int_pin has to be defined
+/// - vl6180x_int_config_t::rng_int and vl6180x_int_config_t::als_int
+///   must only define one interrupt mode each.
+///
+/// @note
+/// - To disable intertupts, set vl6180x_int_config_t::rng_int and
+///   vl6180x_int_config_t::als_int to #VL6180X_INT_NONE.
+/// - This function is only available when module `vl6180x_irq` is used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+/// @param[in]   mode    Interrupts to be enabled, must be only one for each
+///                      measurement type (range and ALS)
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_int_enable(vl6180x_t *dev, vl6180x_int_config_t mode);
 
 #if IS_USED(MODULE_VL6180X_CONFIG) || DOXYGEN
-/**
- * @brief   Configure thresholds for event interrupts at runtime
- *
- * @note This function is only available when modules `vl6180x_irq` and
- * `vl6180x_config` are used.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- * @param[in]   thresh  Threshold configuration for event interrupts,
- *                      see #vl6180x_int_thresh_t
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Configure thresholds for event interrupts at runtime
+///
+/// @note This function is only available when modules `vl6180x_irq` and
+/// `vl6180x_config` are used.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+/// @param[in]   thresh  Threshold configuration for event interrupts,
+///                      see #vl6180x_int_thresh_t
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_int_config(vl6180x_t *dev, vl6180x_int_thresh_t thresh);
 
-#endif /* IS_USED(MODULE_VL6180X_CONFIG) || DOXYGEN  */
-#endif /* IS_USED(MODULE_VL6180X_IRQ) || DOXYGEN */
+#endif // IS_USED(MODULE_VL6180X_CONFIG) || DOXYGEN
+#endif // IS_USED(MODULE_VL6180X_IRQ) || DOXYGEN
 
-/**
- * @name   Low level interface functions
- * @{
- */
+/// @name   Low level interface functions
+/// @{
 
-/**
- * @brief   Direct write to register
- *
- * @note This function should only be used to do something special that
- * is not covered by the high level interface AND if you exactly know what you
- * do and what effects it might have. Please be aware that it might affect the
- * high level interface.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- * @param[in]   reg     Address of the first register to be changed
- * @param[in]   data    Pointer to the data to be written to the register
- * @param[in]   len     Number of bytes to be written to the register
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Direct write to register
+///
+/// @note This function should only be used to do something special that
+/// is not covered by the high level interface AND if you exactly know what you
+/// do and what effects it might have. Please be aware that it might affect the
+/// high level interface.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+/// @param[in]   reg     Address of the first register to be changed
+/// @param[in]   data    Pointer to the data to be written to the register
+/// @param[in]   len     Number of bytes to be written to the register
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_reg_write(const vl6180x_t *dev,
                       uint16_t reg, const uint8_t *data, uint8_t len);
 
-/**
- * @brief   Direct read from register
- *
- * @note This function should only be used to do something special that
- * is not covered by the high level interface AND if you exactly know what you
- * do and what effects it might have. Please be aware that it might affect the
- * high level interface.
- *
- * @param[in]   dev     Device descriptor of VL6180X sensor
- * @param[in]   reg     address of the first register to be read
- * @param[out]  data    pointer to the data to be read from the register
- * @param[in]   len     number of bytes to be read from the register
- *
- * @retval  VL6180X_OK          on success
- * @retval  VL6180X_ERROR_*     a negative error code on error, see
- *                              #vl6180x_error_t
- */
+/// @brief   Direct read from register
+///
+/// @note This function should only be used to do something special that
+/// is not covered by the high level interface AND if you exactly know what you
+/// do and what effects it might have. Please be aware that it might affect the
+/// high level interface.
+///
+/// @param[in]   dev     Device descriptor of VL6180X sensor
+/// @param[in]   reg     address of the first register to be read
+/// @param[out]  data    pointer to the data to be read from the register
+/// @param[in]   len     number of bytes to be read from the register
+///
+/// @retval  VL6180X_OK          on success
+/// @retval  VL6180X_ERROR_*     a negative error code on error, see
+///                              #vl6180x_error_t
 int vl6180x_reg_read(const vl6180x_t *dev,
                      uint16_t reg, uint8_t *data, uint8_t len);
-/** @} */
+/// @}
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

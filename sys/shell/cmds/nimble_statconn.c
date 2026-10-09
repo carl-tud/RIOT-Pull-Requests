@@ -1,23 +1,19 @@
-/*
- * Copyright (C) 2020 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands to control the NimBLE netif statconn connection
- *              manager
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands to control the NimBLE netif statconn connection
+///              manager
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -25,8 +21,7 @@
 #include "nimble_statconn.h"
 #include "shell.h"
 
-static uint8_t _parsephy(const char *phy_str)
-{
+static uint8_t _parsephy(const char *phy_str) {
     if (memcmp(phy_str, "1M", 2) == 0) {
         return NIMBLE_PHY_1M;
     }
@@ -45,8 +40,7 @@ static uint8_t _parsephy(const char *phy_str)
     }
 }
 
-static int _nimble_statconn_handler(int argc, char **argv)
-{
+static int _nimble_statconn_handler(int argc, char **argv) {
     nimble_statconn_cfg_t cfg;
 
     if ((argc < 3)) {
@@ -66,7 +60,7 @@ static int _nimble_statconn_handler(int argc, char **argv)
         cfg.phy_mode = NIMBLE_STATCONN_PHY_MODE;
     }
 
-    /* parse address */
+    // parse address
     uint8_t addr[BLE_ADDR_LEN];
     if (bluetil_addr_from_str(addr, argv[2]) == NULL) {
         puts("err: unable to parse BLE address");

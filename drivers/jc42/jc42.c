@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Koen Zandberg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Koen Zandberg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_jc42
- * @{
- *
- * @file
- * @brief       Device driver implementation for the JEDEC jc42.4 compliant temperature sensors
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     drivers_jc42
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the JEDEC jc42.4 compliant temperature sensors
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include "periph/i2c.h"
 #include "byteorder.h"
@@ -24,8 +20,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static int jc42_get_register(const jc42_t* dev, uint8_t reg, uint16_t* data)
-{
+static int jc42_get_register(const jc42_t* dev, uint8_t reg, uint16_t* data) {
     i2c_acquire(dev->i2c);
     if (i2c_read_regs(dev->i2c, dev->addr, reg, data, 2, 0) != 0) {
         DEBUG("[jc42] Problem reading register 0x%x\n", reg);
@@ -36,8 +31,7 @@ static int jc42_get_register(const jc42_t* dev, uint8_t reg, uint16_t* data)
     return JC42_OK;
 }
 
-static int jc42_set_register(const jc42_t* dev, uint8_t reg, uint16_t* data)
-{
+static int jc42_set_register(const jc42_t* dev, uint8_t reg, uint16_t* data) {
     i2c_acquire(dev->i2c);
     if (i2c_write_regs(dev->i2c, dev->addr, reg, data, 2, 0) != 0) {
         DEBUG("[jc42] Problem writing to register 0x%x\n", reg);
@@ -49,38 +43,34 @@ static int jc42_set_register(const jc42_t* dev, uint8_t reg, uint16_t* data)
     return JC42_OK;
 }
 
-int jc42_get_config(const jc42_t* dev, uint16_t* data)
-{
+int jc42_get_config(const jc42_t* dev, uint16_t* data) {
     return jc42_get_register(dev, JC42_REG_CONFIG, data);
 }
 
-int jc42_set_config(const jc42_t* dev, uint16_t data)
-{
+int jc42_set_config(const jc42_t* dev, uint16_t data) {
     return jc42_set_register(dev, JC42_REG_CONFIG, &data);
 }
 
-int jc42_get_temperature(const jc42_t* dev, int16_t* temperature)
-{
+int jc42_get_temperature(const jc42_t* dev, int16_t* temperature) {
     struct { signed int x:12;} s;
     uint16_t tmp;
 
-    /* Read temperature */
+    // Read temperature
     if (jc42_get_register(dev, JC42_REG_TEMP, &tmp) != 0) {
         return JC42_NODEV;
     }
     tmp = ntohs(tmp);
-    /* Convert fixed point to uint16_t */
+    // Convert fixed point to uint16_t
     *temperature = ((s.x = tmp)*100)>>4;
     return JC42_OK;
 }
 
-int jc42_init(jc42_t* dev, const jc42_params_t* params)
-{
+int jc42_init(jc42_t* dev, const jc42_params_t* params) {
     uint16_t config;
     dev->i2c = params->i2c;
     dev->addr = params->addr;
 
-    /* Poll the device, fail if unavailable */
+    // Poll the device, fail if unavailable
     if (jc42_get_config(dev, &config) != 0) {
         return JC42_NODEV;
     }

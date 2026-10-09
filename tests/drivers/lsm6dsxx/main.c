@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2024 HAW Hamburg.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2024 HAW Hamburg.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the LSM6DSXX accelerometer/gyroscope driver.
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Sebastian Meiling <s@mlng.net>
- * @author      Miquel Borrell <miquel.borrell@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the LSM6DSXX accelerometer/gyroscope driver.
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Sebastian Meiling <s@mlng.net>
+/// @author      Miquel Borrell <miquel.borrell@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -26,8 +22,7 @@
 
 #define SLEEP_MSEC  (500UL)
 
-int main(void)
-{
+int main(void) {
     lsm6dsxx_t dev;
     int16_t temp_value;
     lsm6dsxx_3d_data_t mag_value;

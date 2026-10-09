@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2021 TUBA Freiberg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 TUBA Freiberg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief    high level ztimer test application
- *
- * @author   Karl Fessel <karl.fessel@ovgu.de>
- *
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief    high level ztimer test application
+///
+/// @author   Karl Fessel <karl.fessel@ovgu.de>
+///
+///
+/// @}
 
 #include <stdio.h>
 
 #include "ztimer.h"
 #include "mutex.h"
 
-/* only header information is used we do not need to use MODULE_TIMEX */
+// only header information is used we do not need to use MODULE_TIMEX
 #include "timex.h"
 
 typedef struct named_lock {
@@ -40,8 +36,7 @@ static ztimer_t sec_tim = { .callback = release, .arg = &sec_lock };
 static ztimer_t msec_tim = { .callback = release, .arg = &msec_lock };
 static ztimer_t usec_tim = { .callback = release, .arg = &usec_lock };
 
-void release(void *arg)
-{
+void release(void *arg) {
     named_lock_t *e = arg;
 
     e->release_time = (uint32_t)ztimer_now(ZTIMER_USEC);
@@ -49,10 +44,9 @@ void release(void *arg)
     mutex_unlock(&e->mut);
 }
 
-int main(void)
-{
+int main(void) {
     puts("starting ztimers");
-    /* start a timer on each high level ztimer*/
+    // start a timer on each high level ztimer
     ztimer_set(ZTIMER_SEC, &sec_tim, 1);
     ztimer_set(ZTIMER_MSEC, &msec_tim, 200);
     ztimer_set(ZTIMER_USEC, &usec_tim, 100 * US_PER_MS);
@@ -60,7 +54,7 @@ int main(void)
     printf("time %s:\t%" PRIu32 "\n", "Wait", (uint32_t)ztimer_now(ZTIMER_USEC));
 
     puts("waiting for locks");
-    /* wait for mutexes */
+    // wait for mutexes
     mutex_lock(&sec_lock.mut);
     mutex_lock(&msec_lock.mut);
     mutex_lock(&usec_lock.mut);

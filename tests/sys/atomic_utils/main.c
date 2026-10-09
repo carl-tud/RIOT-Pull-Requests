@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Atomic util benchmark
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Atomic util benchmark
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdatomic.h>
@@ -106,7 +102,7 @@ typedef struct {
 } test_state_t;
 
 static const fetch_op_test_u8_t fetch_op_tests_u8[] = {
-    /* atomic_*() */
+    // atomic_*()
     {
         .name = "atomic_fetch_add_u8",
         .op = atomic_fetch_add_u8,
@@ -162,7 +158,7 @@ static const fetch_op_test_u8_t fetch_op_tests_u8[] = {
         .init = 0xff,
         .reinit_every = 1,
     },
-    /* semi_atomic_*() */
+    // semi_atomic_*()
     {
         .name = "semi_atomic_fetch_add_u8",
         .op = semi_atomic_fetch_add_u8,
@@ -218,7 +214,7 @@ static const fetch_op_test_u8_t fetch_op_tests_u8[] = {
         .init = 0xff,
         .reinit_every = 1,
     },
-    /* volatile_*() */
+    // volatile_*()
     {
         .name = "volatile_fetch_add_u8",
         .op = volatile_fetch_add_u8,
@@ -277,7 +273,7 @@ static const fetch_op_test_u8_t fetch_op_tests_u8[] = {
 };
 
 static const fetch_op_test_u16_t fetch_op_tests_u16[] = {
-    /* atomic_*() */
+    // atomic_*()
     {
         .name = "atomic_fetch_add_u16",
         .op = atomic_fetch_add_u16,
@@ -333,7 +329,7 @@ static const fetch_op_test_u16_t fetch_op_tests_u16[] = {
         .init = 0xffff,
         .reinit_every = 1,
     },
-    /* semi_atomic_*() */
+    // semi_atomic_*()
     {
         .name = "semi_atomic_fetch_add_u16",
         .op = semi_atomic_fetch_add_u16,
@@ -389,7 +385,7 @@ static const fetch_op_test_u16_t fetch_op_tests_u16[] = {
         .init = 0xffff,
         .reinit_every = 1,
     },
-    /* volatile_*() */
+    // volatile_*()
     {
         .name = "volatile_fetch_add_u16",
         .op = volatile_fetch_add_u16,
@@ -448,7 +444,7 @@ static const fetch_op_test_u16_t fetch_op_tests_u16[] = {
 };
 
 static const fetch_op_test_u32_t fetch_op_tests_u32[] = {
-    /* atomic_*() */
+    // atomic_*()
     {
         .name = "atomic_fetch_add_u32",
         .op = atomic_fetch_add_u32,
@@ -504,7 +500,7 @@ static const fetch_op_test_u32_t fetch_op_tests_u32[] = {
         .init = 0xffffffff,
         .reinit_every = 1,
     },
-    /* semi_atomic_*() */
+    // semi_atomic_*()
     {
         .name = "semi_atomic_fetch_add_u32",
         .op = semi_atomic_fetch_add_u32,
@@ -560,7 +556,7 @@ static const fetch_op_test_u32_t fetch_op_tests_u32[] = {
         .init = 0xffffffff,
         .reinit_every = 1,
     },
-    /* volatile_*() */
+    // volatile_*()
     {
         .name = "volatile_fetch_add_u32",
         .op = volatile_fetch_add_u32,
@@ -619,7 +615,7 @@ static const fetch_op_test_u32_t fetch_op_tests_u32[] = {
 };
 
 static const fetch_op_test_u64_t fetch_op_tests_u64[] = {
-    /* atomic_*() */
+    // atomic_*()
     {
         .name = "atomic_fetch_add_u64",
         .op = atomic_fetch_add_u64,
@@ -675,7 +671,7 @@ static const fetch_op_test_u64_t fetch_op_tests_u64[] = {
         .init = 0xffffffffffffffff,
         .reinit_every = 1,
     },
-    /* semi_atomic_*() */
+    // semi_atomic_*()
     {
         .name = "semi_atomic_fetch_add_u64",
         .op = semi_atomic_fetch_add_u64,
@@ -731,7 +727,7 @@ static const fetch_op_test_u64_t fetch_op_tests_u64[] = {
         .init = 0xffffffffffffffff,
         .reinit_every = 1,
     },
-    /* volatile_*() */
+    // volatile_*()
     {
         .name = "volatile_fetch_add_u64",
         .op = volatile_fetch_add_u64,
@@ -799,7 +795,7 @@ static mutex_t stop_mutex = MUTEX_INIT_LOCKED;
 
 static int testing_active = 0;
 
-/* Testing values to operate on */
+// Testing values to operate on
 static uint8_t val_u8;
 static uint16_t val_u16;
 static uint32_t val_u32;
@@ -809,8 +805,7 @@ static uint64_t stats_ops;
 static uint64_t stats_tests;
 static uint64_t stats_failures;
 
-static void tearing_test_worker(test_state_t *state)
-{
+static void tearing_test_worker(test_state_t *state) {
     switch (state->conf.width) {
         default:
             break;
@@ -861,8 +856,7 @@ static void tearing_test_worker(test_state_t *state)
     }
 }
 
-static void tearing_test_checker(test_state_t *state)
-{
+static void tearing_test_checker(test_state_t *state) {
     switch (state->conf.width) {
         default:
             break;
@@ -933,8 +927,7 @@ static void tearing_test_checker(test_state_t *state)
     }
 }
 
-static void lost_update_test_worker(test_state_t *state)
-{
+static void lost_update_test_worker(test_state_t *state) {
     switch (state->conf.width) {
         default:
             break;
@@ -965,8 +958,7 @@ static void lost_update_test_worker(test_state_t *state)
     }
 }
 
-static void lost_update_test_checker(test_state_t *state)
-{
+static void lost_update_test_checker(test_state_t *state) {
     switch (state->conf.width) {
         default:
             break;
@@ -1021,8 +1013,7 @@ static void lost_update_test_checker(test_state_t *state)
     }
 }
 
-static void *thread_worker_func(void *arg)
-{
+static void *thread_worker_func(void *arg) {
     (void)arg;
     static test_state_t state = { .conf = { .idx = UINT8_MAX } };
 
@@ -1051,8 +1042,7 @@ static void *thread_worker_func(void *arg)
     return NULL;
 }
 
-static void *thread_checker_func(void *arg)
-{
+static void *thread_checker_func(void *arg) {
     (void)arg;
     static test_state_t state = { .conf = { .idx = 0 } };
 
@@ -1085,8 +1075,7 @@ static void *thread_checker_func(void *arg)
 
 static int sc_stop(int argc, char **argv);
 
-static void *thread_timeout_func(void *arg)
-{
+static void *thread_timeout_func(void *arg) {
     (void)arg;
     while (1) {
         mutex_lock(&stop_mutex);
@@ -1095,14 +1084,12 @@ static void *thread_timeout_func(void *arg)
     return NULL;
 }
 
-static void test_timeout_callback(void *arg)
-{
+static void test_timeout_callback(void *arg) {
     (void)arg;
     mutex_unlock(&stop_mutex);
 }
 
-static int start_test(test_width_t width, size_t fn_index, int timeout)
-{
+static int start_test(test_width_t width, size_t fn_index, int timeout) {
     conf.width = width;
     conf.idx = fn_index;
     testing_active = 1;
@@ -1110,8 +1097,8 @@ static int start_test(test_width_t width, size_t fn_index, int timeout)
     stats_tests = 0;
     stats_failures = 0;
 
-    /* Initialize values. Doing so for every width safes ROM and lines of code
-     * but wastes a few CPU cycles */
+    // Initialize values. Doing so for every width safes ROM and lines of code
+    // but wastes a few CPU cycles
     if (conf.type == TEST_TYPE_LOST_UPDATE) {
         atomic_store_u8(&val_u8, 0);
         atomic_store_u16(&val_u16, 0);
@@ -1137,15 +1124,13 @@ static int start_test(test_width_t width, size_t fn_index, int timeout)
     return 0;
 }
 
-static int select_func_and_start_test(const char *funcname, int timeout)
-{
+static int select_func_and_start_test(const char *funcname, int timeout) {
     size_t fn_len = strlen(funcname);
 
-    /* Valid function names end with *_u8, *_u16, *_u32, or *_u64. Thus, the
-     * last char is already sufficient to determine the width. We do not need
-     * to search all test specs for the given name, but only those of
-     * matching width
-     */
+    // Valid function names end with *_u8, *_u16, *_u32, or *_u64. Thus, the
+    // last char is already sufficient to determine the width. We do not need
+    // to search all test specs for the given name, but only those of
+    // matching width
     switch (funcname[fn_len - 1]) {
         case '8':
             for (size_t i = 0; i < ARRAY_SIZE(fetch_op_tests_u8); i++) {
@@ -1184,8 +1169,7 @@ static int select_func_and_start_test(const char *funcname, int timeout)
 
 }
 
-static int sc_tearing_test(int argc, char **argv)
-{
+static int sc_tearing_test(int argc, char **argv) {
     if ((argc != 2) && (argc != 3)) {
         print_str("Usage: ");
         print_str(argv[0]);
@@ -1213,8 +1197,7 @@ static int sc_tearing_test(int argc, char **argv)
 
 SHELL_COMMAND(tearing_test, "Run a store/load tearing test", sc_tearing_test );
 
-static int sc_lost_update_test(int argc, char **argv)
-{
+static int sc_lost_update_test(int argc, char **argv) {
     if ((argc != 2) && (argc != 3)) {
         print_str("Usage: ");
         print_str(argv[0]);
@@ -1242,8 +1225,7 @@ static int sc_lost_update_test(int argc, char **argv)
 
 SHELL_COMMAND(lost_update_test, "Run a lost update test", sc_lost_update_test );
 
-static int sc_stats(int argc, char **argv)
-{
+static int sc_stats(int argc, char **argv) {
     (void)argc;
     (void)argv;
     if (!testing_active) {
@@ -1263,8 +1245,7 @@ static int sc_stats(int argc, char **argv)
 
 SHELL_COMMAND(stats, "Show stats of current test", sc_stats );
 
-static int sc_stop(int argc, char **argv)
-{
+static int sc_stop(int argc, char **argv) {
     (void)argc;
     (void)argv;
     if (testing_active) {
@@ -1284,8 +1265,7 @@ static int sc_stop(int argc, char **argv)
 
 SHELL_COMMAND(stop, "Stop running test", sc_stop );
 
-static int sc_list(int argc, char **argv)
-{
+static int sc_list(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -1314,8 +1294,7 @@ static int sc_list(int argc, char **argv)
 
 SHELL_COMMAND(list, "List functions that can be tested", sc_list );
 
-int main(void)
-{
+int main(void) {
     thread_create(thread_worker_stack, sizeof(thread_worker_stack),
                   THREAD_PRIORITY_MAIN + 2, 0,
                   thread_worker_func, NULL, "worker");

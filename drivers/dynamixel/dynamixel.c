@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_dynamixel
- * @{
- *
- * @file
- * @brief       Driver implementation for Dynamixel devices
- *
- * @author      Loïc Dauphin <loic.dauphin@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_dynamixel
+/// @{
+///
+/// @file
+/// @brief       Driver implementation for Dynamixel devices
+///
+/// @author      Loïc Dauphin <loic.dauphin@inria.fr>
+///
+/// @}
 
 #include "dynamixel.h"
 
@@ -23,14 +19,12 @@
 
 #include <string.h>
 
-void dynamixel_init(dynamixel_t *device, uart_half_duplex_t *stream, dynamixel_id_t id)
-{
+void dynamixel_init(dynamixel_t *device, uart_half_duplex_t *stream, dynamixel_id_t id) {
     device->stream = stream;
     device->id = id;
 }
 
-int dynamixel_ping(uart_half_duplex_t *stream, dynamixel_id_t id)
-{
+int dynamixel_ping(uart_half_duplex_t *stream, dynamixel_id_t id) {
     dynamixel_writer_t pw;
 
     uart_half_duplex_set_tx(stream);
@@ -46,8 +40,7 @@ int dynamixel_ping(uart_half_duplex_t *stream, dynamixel_id_t id)
     return DYNAMIXEL_OK;
 }
 
-int dynamixel_write(const dynamixel_t *device, dynamixel_addr_t reg, const uint8_t *data, size_t length)
-{
+int dynamixel_write(const dynamixel_t *device, dynamixel_addr_t reg, const uint8_t *data, size_t length) {
     uart_half_duplex_set_tx(device->stream);
     if (device->stream->size < length) {
         return DYNAMIXEL_BUFFER_TOO_SMALL;
@@ -67,18 +60,15 @@ int dynamixel_write(const dynamixel_t *device, dynamixel_addr_t reg, const uint8
     return DYNAMIXEL_OK;
 }
 
-int dynamixel_write8(const dynamixel_t *device, dynamixel_addr_t reg, uint8_t value)
-{
+int dynamixel_write8(const dynamixel_t *device, dynamixel_addr_t reg, uint8_t value) {
     return dynamixel_write(device, reg, &value, 1);
 }
 
-int dynamixel_write16(const dynamixel_t *device, dynamixel_addr_t reg, uint16_t value)
-{
+int dynamixel_write16(const dynamixel_t *device, dynamixel_addr_t reg, uint16_t value) {
     return dynamixel_write(device, reg, (uint8_t*)&value, 2);
 }
 
-int dynamixel_read(const dynamixel_t *device, dynamixel_addr_t reg, uint8_t *data, size_t length)
-{
+int dynamixel_read(const dynamixel_t *device, dynamixel_addr_t reg, uint8_t *data, size_t length) {
     uart_half_duplex_set_tx(device->stream);
     if (device->stream->size < length) {
         return DYNAMIXEL_BUFFER_TOO_SMALL;
@@ -110,12 +100,10 @@ int dynamixel_read(const dynamixel_t *device, dynamixel_addr_t reg, uint8_t *dat
     return DYNAMIXEL_OK;
 }
 
-int dynamixel_read8(const dynamixel_t *device, dynamixel_addr_t reg, uint8_t *value)
-{
+int dynamixel_read8(const dynamixel_t *device, dynamixel_addr_t reg, uint8_t *value) {
     return dynamixel_read(device, reg, value, 1);
 }
 
-int dynamixel_read16(const dynamixel_t *device, dynamixel_addr_t reg, uint16_t *value)
-{
+int dynamixel_read16(const dynamixel_t *device, dynamixel_addr_t reg, uint16_t *value) {
     return dynamixel_read(device, reg, (uint8_t*)value, 2);
 }

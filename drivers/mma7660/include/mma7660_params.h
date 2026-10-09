@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 University of California, Berkeley
- * SPDX-FileCopyrightText: 2016 Michael Andersen <m.andersen@cs.berkeley.edu>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 University of California, Berkeley
+// SPDX-FileCopyrightText: 2016 Michael Andersen <m.andersen@cs.berkeley.edu>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_mma7660
- * @{
- *
- * @file
- * @brief       Default configuration for MMA7660 accelerometer.
- *
- * @author      Michael Andersen <m.andersen@cs.berkeley.edu>
- *
- */
+/// @ingroup     drivers_mma7660
+/// @{
+///
+/// @file
+/// @brief       Default configuration for MMA7660 accelerometer.
+///
+/// @author      Michael Andersen <m.andersen@cs.berkeley.edu>
+///
 
 #include "board.h"
 #include "saul_reg.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for MMA7660 devices
- * @{
- */
+/// @name    Set default configuration parameters for MMA7660 devices
+/// @{
 #ifndef MMA7660_PARAM_I2C
 #define MMA7660_PARAM_I2C         I2C_DEV(0)
 #endif
@@ -55,19 +49,15 @@ extern "C" {
 #ifndef MMA7660_SAUL_INFO
 #define MMA7660_SAUL_INFO         { .name = "mma7660" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   MMA7660 configuration
- */
+/// @brief   MMA7660 configuration
 static const mma7660_params_t mma7660_params[] =
 {
     MMA7660_PARAMS,
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t mma7660_saul_info[] =
 {
     MMA7660_SAUL_INFO
@@ -77,4 +67,4 @@ static const saul_reg_info_t mma7660_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests 6LoWPAN fragmentation handling of gnrc stack.
- *
- * @author      Martine S. Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests 6LoWPAN fragmentation handling of gnrc stack.
+///
+/// @author      Martine S. Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include "embUnit.h"
 #include "net/gnrc/pktbuf.h"
@@ -32,14 +28,14 @@
 #define TEST_RECEIVE_TIMEOUT    (100U)
 #define TEST_GC_TIMEOUT         (CONFIG_GNRC_SIXLOWPAN_FRAG_RBUF_TIMEOUT_US + TEST_RECEIVE_TIMEOUT)
 
-/* test date taken from an experimental run (uncompressed ICMPv6 echo reply with
- * 300 byte payload)*/
+// test date taken from an experimental run (uncompressed ICMPv6 echo reply with
+// 300 byte payload)
 #define TEST_DATAGRAM_SIZE      (348U)
 #ifdef MODULE_GNRC_IPV6
 #define TEST_DATAGRAM_NETTYPE   (GNRC_NETTYPE_IPV6)
-#else  /* MODULE_GNRC_IPV6 */
+#else  // MODULE_GNRC_IPV6
 #define TEST_DATAGRAM_NETTYPE   (GNRC_NETTYPE_UNDEF)
-#endif /* MODULE_GNRC_IPV6 */
+#endif // MODULE_GNRC_IPV6
 #define TEST_FRAGMENT1_OFFSET   (0U)
 #define TEST_FRAGMENT2_OFFSET   (96U)
 #define TEST_FRAGMENT3_OFFSET   (192U)
@@ -162,15 +158,13 @@ static uint8_t _fragment4[] = TEST_FRAGMENT4;
 static const uint8_t _datagram[] = TEST_DATAGRAM;
 static msg_t _msg_queue;
 
-static inline void _set_fragment_tag(void *frag, uint16_t tag)
-{
+static inline void _set_fragment_tag(void *frag, uint16_t tag) {
     sixlowpan_frag_t *f = frag;
 
     f->tag = byteorder_htons(tag);
 }
 
-static inline void _set_fragment_offset(void *frag, uint16_t offset)
-{
+static inline void _set_fragment_offset(void *frag, uint16_t offset) {
     sixlowpan_frag_n_t *f = frag;
 
     TEST_ASSERT_EQUAL_INT(SIXLOWPAN_FRAG_N_DISP,
@@ -178,8 +172,7 @@ static inline void _set_fragment_offset(void *frag, uint16_t offset)
     f->offset = offset / 8;
 }
 
-static void _set_up(void)
-{
+static void _set_up(void) {
     gnrc_sixlowpan_frag_rb_reset();
     gnrc_pktbuf_init();
     gnrc_netif_hdr_init(&_test_netif_hdr.hdr,
@@ -201,8 +194,7 @@ static void _set_up(void)
     _set_fragment_offset(_fragment4, TEST_FRAGMENT4_OFFSET);
 }
 
-static const gnrc_sixlowpan_frag_rb_t *_first_non_empty_rbuf(void)
-{
+static const gnrc_sixlowpan_frag_rb_t *_first_non_empty_rbuf(void) {
     const gnrc_sixlowpan_frag_rb_t *rbuf = gnrc_sixlowpan_frag_rb_array();
 
     for (unsigned i = 0; i < CONFIG_GNRC_SIXLOWPAN_FRAG_RBUF_SIZE; i++) {
@@ -215,8 +207,7 @@ static const gnrc_sixlowpan_frag_rb_t *_first_non_empty_rbuf(void)
 
 static void _test_entry(const gnrc_sixlowpan_frag_rb_t *entry,
                         unsigned exp_current_size,
-                        unsigned exp_int_start, unsigned exp_int_end)
-{
+                        unsigned exp_int_start, unsigned exp_int_end) {
     TEST_ASSERT_NOT_NULL(entry);
     TEST_ASSERT_NOT_NULL(entry->pkt);
     TEST_ASSERT_EQUAL_INT(TEST_DATAGRAM_SIZE, entry->pkt->size);
@@ -238,16 +229,14 @@ static void _test_entry(const gnrc_sixlowpan_frag_rb_t *entry,
     TEST_ASSERT_EQUAL_INT(exp_int_end, entry->super.ints->end);
 }
 
-static void _check_pktbuf(const gnrc_sixlowpan_frag_rb_t *entry)
-{
+static void _check_pktbuf(const gnrc_sixlowpan_frag_rb_t *entry) {
     if (entry != NULL) {
         gnrc_pktbuf_release(entry->pkt);
     }
     TEST_ASSERT_MESSAGE(gnrc_pktbuf_is_empty(), "Packet buffer is not empty");
 }
 
-static void _rbuf_create_first_fragment(void)
-{
+static void _rbuf_create_first_fragment(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, _fragment1, sizeof(_fragment1),
                                           GNRC_NETTYPE_SIXLOWPAN);
     const gnrc_sixlowpan_frag_rb_t *entry;
@@ -256,24 +245,22 @@ static void _rbuf_create_first_fragment(void)
     TEST_ASSERT_NOT_NULL((entry = gnrc_sixlowpan_frag_rb_add(
             &_test_netif_hdr.hdr, pkt, TEST_FRAGMENT1_OFFSET, TEST_PAGE
         )));
-    /* current_size must be the offset of fragment 2, not the size of
-     * fragment 1 (fragment dispatch was removed, IPHC was applied etc.). */
+    // current_size must be the offset of fragment 2, not the size of
+    // fragment 1 (fragment dispatch was removed, IPHC was applied etc.).
     _test_entry(entry, TEST_FRAGMENT2_OFFSET,
                 TEST_FRAGMENT1_OFFSET, TEST_FRAGMENT2_OFFSET - 1);
 }
 
-static void test_rbuf_add__success_first_fragment(void)
-{
+static void test_rbuf_add__success_first_fragment(void) {
     const gnrc_sixlowpan_frag_rb_t *entry;
 
     _rbuf_create_first_fragment();
-    /* get entry to release entry->pkt it in `_check_pktbuf()` */
+    // get entry to release entry->pkt it in `_check_pktbuf()`
     TEST_ASSERT_NOT_NULL((entry = _first_non_empty_rbuf()));
     _check_pktbuf(entry);
 }
 
-static void test_rbuf_add__success_subsequent_fragment(void)
-{
+static void test_rbuf_add__success_subsequent_fragment(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, _fragment2, sizeof(_fragment2),
                                           GNRC_NETTYPE_SIXLOWPAN);
     const gnrc_sixlowpan_frag_rb_t *entry;
@@ -282,15 +269,14 @@ static void test_rbuf_add__success_subsequent_fragment(void)
     TEST_ASSERT_NOT_NULL((entry = gnrc_sixlowpan_frag_rb_add(
             &_test_netif_hdr.hdr, pkt, TEST_FRAGMENT2_OFFSET, TEST_PAGE
         )));
-    /* current_size must be the offset of fragment 3, not the size of
-     * fragment 2 (fragment dispatch was removed, IPHC was applied etc.). */
+    // current_size must be the offset of fragment 3, not the size of
+    // fragment 2 (fragment dispatch was removed, IPHC was applied etc.).
     _test_entry(entry, TEST_FRAGMENT3_OFFSET - TEST_FRAGMENT2_OFFSET,
                 TEST_FRAGMENT2_OFFSET, TEST_FRAGMENT3_OFFSET - 1);
     _check_pktbuf(entry);
 }
 
-static void test_rbuf_add__success_duplicate_fragments(void)
-{
+static void test_rbuf_add__success_duplicate_fragments(void) {
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, _fragment3, sizeof(_fragment3),
                                            GNRC_NETTYPE_SIXLOWPAN);
     gnrc_pktsnip_t *pkt2 = gnrc_pktbuf_add(NULL, _fragment3, sizeof(_fragment3),
@@ -305,15 +291,14 @@ static void test_rbuf_add__success_duplicate_fragments(void)
     TEST_ASSERT_NOT_NULL((entry = gnrc_sixlowpan_frag_rb_add(
             &_test_netif_hdr.hdr, pkt2, TEST_FRAGMENT3_OFFSET, TEST_PAGE
         )));
-    /* current_size must be the offset of fragment 4, not the size of
-     * fragment 3 (fragment dispatch was removed, IPHC was applied etc.). */
+    // current_size must be the offset of fragment 4, not the size of
+    // fragment 3 (fragment dispatch was removed, IPHC was applied etc.).
     _test_entry(entry, TEST_FRAGMENT4_OFFSET - TEST_FRAGMENT3_OFFSET,
                 TEST_FRAGMENT3_OFFSET, TEST_FRAGMENT4_OFFSET - 1);
     _check_pktbuf(entry);
 }
 
-static void test_rbuf_add__success_complete(void)
-{
+static void test_rbuf_add__success_complete(void) {
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, _fragment1, sizeof(_fragment1),
                                            GNRC_NETTYPE_SIXLOWPAN);
     gnrc_pktsnip_t *pkt2 = gnrc_pktbuf_add(NULL, _fragment2, sizeof(_fragment2),
@@ -331,7 +316,7 @@ static void test_rbuf_add__success_complete(void)
         );
 
     gnrc_netreg_register(TEST_DATAGRAM_NETTYPE, &reg);
-    /* Mixing up things. Order decided by fair dice-rolls ;-) */
+    // Mixing up things. Order decided by fair dice-rolls ;-)
     TEST_ASSERT_NOT_NULL(pkt2);
     TEST_ASSERT_NOT_NULL((entry1 = gnrc_sixlowpan_frag_rb_add(
             &_test_netif_hdr.hdr, pkt2, TEST_FRAGMENT2_OFFSET, TEST_PAGE
@@ -380,8 +365,7 @@ static void test_rbuf_add__success_complete(void)
     _check_pktbuf(NULL);
 }
 
-static void test_rbuf_add__full_rbuf(void)
-{
+static void test_rbuf_add__full_rbuf(void) {
     gnrc_pktsnip_t *pkt;
     const gnrc_sixlowpan_frag_rb_t *rbuf;
 
@@ -393,7 +377,7 @@ static void test_rbuf_add__full_rbuf(void)
             &_test_netif_hdr.hdr, pkt, TEST_FRAGMENT1_OFFSET, TEST_PAGE
         ));
         _set_fragment_tag(_fragment1, TEST_TAG + i + 1);
-        /* pkt is released in gnrc_sixlowpan_frag_rb_add() */
+        // pkt is released in gnrc_sixlowpan_frag_rb_add()
     }
     pkt = gnrc_pktbuf_add(NULL, _fragment1, sizeof(_fragment1),
                           GNRC_NETTYPE_SIXLOWPAN);
@@ -414,21 +398,20 @@ static void test_rbuf_add__full_rbuf(void)
                        sizeof(_fragment1) - sizeof(sixlowpan_frag_t)) != 0,
                 "Reassembly buffer contains fragment that was not supposed "
                 "to fit");
-        /* releasing pkt to check if packet buffer is empty in the end */
+        // releasing pkt to check if packet buffer is empty in the end
         gnrc_pktbuf_release(entry->pkt);
     }
     _check_pktbuf(NULL);
 }
 
-static void test_rbuf_add__too_big_fragment(void)
-{
+static void test_rbuf_add__too_big_fragment(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, _fragment1,
-                                          /* something definitely bigger than
-                                           * the datagram size noted in
-                                           * _fragment1, can't just be + 1,
-                                           * since fragment dispatch and other
-                                           * dispatches are supposed to be
-                                           * subtracted */
+                                          // something definitely bigger than
+                                          // the datagram size noted in
+                                          // _fragment1, can't just be + 1,
+                                          // since fragment dispatch and other
+                                          // dispatches are supposed to be
+                                          // subtracted
                                           2 * TEST_DATAGRAM_SIZE,
                                           GNRC_NETTYPE_SIXLOWPAN);
 
@@ -436,13 +419,12 @@ static void test_rbuf_add__too_big_fragment(void)
     TEST_ASSERT_NULL(gnrc_sixlowpan_frag_rb_add(
             &_test_netif_hdr.hdr, pkt, TEST_FRAGMENT1_OFFSET, TEST_PAGE
         ));
-    /* packet buffer is empty*/
+    // packet buffer is empty
     TEST_ASSERT_NULL(_first_non_empty_rbuf());
     _check_pktbuf(NULL);
 }
 
-static void test_rbuf_add__overlap_lhs(void)
-{
+static void test_rbuf_add__overlap_lhs(void) {
     static const size_t pkt2_offset = TEST_FRAGMENT2_OFFSET - 8U;
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, _fragment1, sizeof(_fragment1),
                                            GNRC_NETTYPE_SIXLOWPAN);
@@ -468,15 +450,15 @@ static void test_rbuf_add__overlap_lhs(void)
             static const size_t pkt3_offset = TEST_FRAGMENT3_OFFSET - 8U - 1;
 
             rbuf_entries++;
-            /* only _fragment2 should now in the reassembly buffer according to
-             * https://tools.ietf.org/html/rfc4944#section-5.3 */
+            // only _fragment2 should now in the reassembly buffer according to
+            // https://tools.ietf.org/html/rfc4944#section-5.3
             _test_entry(entry,
-                        /* current_size must be the offset of fragment 3, not
-                         * the size of fragment 2 (fragment dispatch was
-                         * removed, IPHC was applied etc.). */
+                        // current_size must be the offset of fragment 3, not
+                        // the size of fragment 2 (fragment dispatch was
+                        // removed, IPHC was applied etc.).
                         TEST_FRAGMENT3_OFFSET - TEST_FRAGMENT2_OFFSET,
                         (unsigned)pkt2_offset, (unsigned)pkt3_offset);
-            /* releasing pkt to check if packet buffer is empty in the end */
+            // releasing pkt to check if packet buffer is empty in the end
             gnrc_pktbuf_release(entry->pkt);
         }
     }
@@ -484,8 +466,7 @@ static void test_rbuf_add__overlap_lhs(void)
     _check_pktbuf(NULL);
 }
 
-static void test_rbuf_add__overlap_rhs(void)
-{
+static void test_rbuf_add__overlap_rhs(void) {
     static const size_t pkt2_offset = TEST_FRAGMENT2_OFFSET + 8U;
     gnrc_pktsnip_t *pkt1 = gnrc_pktbuf_add(NULL, _fragment1, sizeof(_fragment1),
                                            GNRC_NETTYPE_SIXLOWPAN);
@@ -517,15 +498,15 @@ static void test_rbuf_add__overlap_rhs(void)
             static const size_t pkt3_offset = TEST_FRAGMENT3_OFFSET + 8U - 1U;
 
             rbuf_entries++;
-            /* only _fragment2 should now in the reassembly buffer according to
-             * https://tools.ietf.org/html/rfc4944#section-5.3 */
+            // only _fragment2 should now in the reassembly buffer according to
+            // https://tools.ietf.org/html/rfc4944#section-5.3
             _test_entry(entry,
-                        /* current_size must be the offset of fragment 3, not
-                         * the size of fragment 2 (fragment dispatch was
-                         * removed, IPHC was applied etc.). */
+                        // current_size must be the offset of fragment 3, not
+                        // the size of fragment 2 (fragment dispatch was
+                        // removed, IPHC was applied etc.).
                         TEST_FRAGMENT3_OFFSET - TEST_FRAGMENT2_OFFSET,
                         (unsigned)pkt2_offset, (unsigned)pkt3_offset);
-            /* releasing pkt to check if packet buffer is empty in the end */
+            // releasing pkt to check if packet buffer is empty in the end
             gnrc_pktbuf_release(entry->pkt);
         }
     }
@@ -533,69 +514,64 @@ static void test_rbuf_add__overlap_rhs(void)
     _check_pktbuf(NULL);
 }
 
-static void test_rbuf_get_by_dg(void)
-{
+static void test_rbuf_get_by_dg(void) {
     const gnrc_sixlowpan_frag_rb_t *entry;
 
     TEST_ASSERT_NULL(
         gnrc_sixlowpan_frag_rb_get_by_datagram(&_test_netif_hdr.hdr, TEST_TAG)
     );
-    /* add a fragment */
+    // add a fragment
     _rbuf_create_first_fragment();
     TEST_ASSERT_NOT_NULL(
         gnrc_sixlowpan_frag_rb_get_by_datagram(&_test_netif_hdr.hdr, TEST_TAG)
     );
-    /* get entry to release entry->pkt it in `_check_pktbuf()` */
+    // get entry to release entry->pkt it in `_check_pktbuf()`
     entry = _first_non_empty_rbuf();
-    /* entry is however not properly removed yet */
+    // entry is however not properly removed yet
     TEST_ASSERT_NOT_NULL(entry);
     _check_pktbuf(entry);
 }
 
-static void test_rbuf_exists(void)
-{
+static void test_rbuf_exists(void) {
     const gnrc_sixlowpan_frag_rb_t *entry;
 
     TEST_ASSERT(!gnrc_sixlowpan_frag_rb_exists(&_test_netif_hdr.hdr, TEST_TAG));
-    /* add a fragment */
+    // add a fragment
     _rbuf_create_first_fragment();
     TEST_ASSERT(gnrc_sixlowpan_frag_rb_exists(&_test_netif_hdr.hdr, TEST_TAG));
-    /* get entry to release entry->pkt it in `_check_pktbuf()` */
+    // get entry to release entry->pkt it in `_check_pktbuf()`
     entry = _first_non_empty_rbuf();
-    /* entry is however not properly removed yet */
+    // entry is however not properly removed yet
     TEST_ASSERT_NOT_NULL(entry);
     _check_pktbuf(entry);
 }
 
-static void test_rbuf_rm_by_dg(void)
-{
-    /* add a fragment */
+static void test_rbuf_rm_by_dg(void) {
+    // add a fragment
     _rbuf_create_first_fragment();
     gnrc_sixlowpan_frag_rb_rm_by_datagram(&_test_netif_hdr.hdr, TEST_TAG);
     TEST_ASSERT(!gnrc_sixlowpan_frag_rb_exists(&_test_netif_hdr.hdr, TEST_TAG));
     _check_pktbuf(NULL);
 }
 
-static void test_rbuf_rm(void)
-{
+static void test_rbuf_rm(void) {
     const gnrc_sixlowpan_frag_rb_t *entry;
 
     _rbuf_create_first_fragment();
     entry = _first_non_empty_rbuf();
-    /* entry is however not properly removed yet */
+    // entry is however not properly removed yet
     TEST_ASSERT_NOT_NULL(entry);
-    /* release packet as `gnrc_sixlowpan_frag_rb_remove()` does not do this */
+    // release packet as `gnrc_sixlowpan_frag_rb_remove()` does not do this
     gnrc_pktbuf_release(entry->pkt);
-    /* intentionally discarding const qualifier since we enter rbuf's internal
-     * context again */
+    // intentionally discarding const qualifier since we enter rbuf's internal
+    // context again
     gnrc_sixlowpan_frag_rb_remove((gnrc_sixlowpan_frag_rb_t *)entry);
-    /* reassembly buffer is now empty */
+    // reassembly buffer is now empty
     TEST_ASSERT_NULL(_first_non_empty_rbuf());
     _check_pktbuf(NULL);
 }
 
-static void test_rbuf_gc__manually(void)
-{
+static void test_rbuf_gc__manually(void) {
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, _fragment1, sizeof(_fragment1),
                                           GNRC_NETTYPE_SIXLOWPAN);
     gnrc_sixlowpan_frag_rb_t *entry;
@@ -605,16 +581,15 @@ static void test_rbuf_gc__manually(void)
             &_test_netif_hdr.hdr, pkt, TEST_FRAGMENT1_OFFSET, TEST_PAGE
         )));
     TEST_ASSERT_NOT_NULL(entry);
-    /* set arrival CONFIG_GNRC_SIXLOWPAN_FRAG_RBUF_TIMEOUT_US into the past */
+    // set arrival CONFIG_GNRC_SIXLOWPAN_FRAG_RBUF_TIMEOUT_US into the past
     entry->super.arrival -= CONFIG_GNRC_SIXLOWPAN_FRAG_RBUF_TIMEOUT_US;
     gnrc_sixlowpan_frag_rb_gc();
-    /* reassembly buffer is now empty */
+    // reassembly buffer is now empty
     TEST_ASSERT_NULL(_first_non_empty_rbuf());
     _check_pktbuf(NULL);
 }
 
-static void test_rbuf_gc__timed(void)
-{
+static void test_rbuf_gc__timed(void) {
     msg_t msg;
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, _fragment1, sizeof(_fragment1),
                                           GNRC_NETTYPE_SIXLOWPAN);
@@ -631,13 +606,12 @@ static void test_rbuf_gc__timed(void)
         );
     TEST_ASSERT_EQUAL_INT(GNRC_SIXLOWPAN_FRAG_RB_GC_MSG, msg.type);
     gnrc_sixlowpan_frag_rb_gc();
-    /* reassembly buffer is now empty */
+    // reassembly buffer is now empty
     TEST_ASSERT_NULL(_first_non_empty_rbuf());
     _check_pktbuf(NULL);
 }
 
-static void run_unittests(void)
-{
+static void run_unittests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_rbuf_add__success_first_fragment),
         new_TestFixture(test_rbuf_add__success_subsequent_fragment),
@@ -661,9 +635,8 @@ static void run_unittests(void)
     TESTS_END();
 }
 
-int main(void)
-{
-    /* netreg requires queue, but queue size one should be enough for us */
+int main(void) {
+    // netreg requires queue, but queue size one should be enough for us
     msg_init_queue(&_msg_queue, 1U);
     run_unittests();
     return 0;

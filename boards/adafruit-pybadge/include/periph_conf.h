@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_adafruit-pybadge
- * @{
- *
- * @file
- * @brief       Configuration of CPU peripherals for the Adafruit PyBadge
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_adafruit-pybadge
+/// @{
+///
+/// @file
+/// @brief       Configuration of CPU peripherals for the Adafruit PyBadge
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "periph_cpu.h"
 
@@ -21,35 +17,27 @@
 extern "C" {
 #endif
 
-/**
- * @name    desired core clock frequency
- * @{
- */
+/// @name    desired core clock frequency
+/// @{
 #ifndef CLOCK_CORECLOCK
 #define CLOCK_CORECLOCK     MHZ(120)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    32kHz Oscillator configuration
- * @{
- */
+/// @name    32kHz Oscillator configuration
+/// @{
 #define EXTERNAL_OSC32_SOURCE                    0
 #define ULTRA_LOW_POWER_INTERNAL_OSC_SOURCE      1
-/** @} */
+/// @}
 
-/**
- * @brief Enable the internal DC/DC converter
- *        The board is equipped with the necessary inductor.
- */
+/// @brief Enable the internal DC/DC converter
+///        The board is equipped with the necessary inductor.
 #define USE_VREG_BUCK       (1)
 
-/**
- * @name Timer peripheral configuration
- * @{
- */
+/// @name Timer peripheral configuration
+/// @{
 static const tc32_conf_t timer_config[] = {
-    {   /* Timer 0 - System Clock */
+    {   // Timer 0 - System Clock
         .dev            = TC0,
         .irq            = TC0_IRQn,
         .mclk           = &MCLK->APBAMASK.reg,
@@ -58,7 +46,7 @@ static const tc32_conf_t timer_config[] = {
         .gclk_src       = SAM0_GCLK_TIMER,
         .flags          = TC_CTRLA_MODE_COUNT32,
     },
-    {   /* Timer 1 */
+    {   // Timer 1
         .dev            = TC2,
         .irq            = TC2_IRQn,
         .mclk           = &MCLK->APBBMASK.reg,
@@ -69,23 +57,21 @@ static const tc32_conf_t timer_config[] = {
     }
 };
 
-/* Timer 0 configuration */
+// Timer 0 configuration
 #define TIMER_0_CHANNELS    2
 #define TIMER_0_ISR         isr_tc0
 
-/* Timer 1 configuration */
+// Timer 1 configuration
 #define TIMER_1_CHANNELS    2
 #define TIMER_1_ISR         isr_tc2
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name UART configuration
- * @{
- */
+/// @name UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    {    /* Virtual COM Port */
+    {    // Virtual COM Port
         .dev      = &SERCOM5->USART,
         .rx_pin   = GPIO_PIN(PB, 16),
         .tx_pin   = GPIO_PIN(PB, 17),
@@ -101,28 +87,26 @@ static const uart_conf_t uart_config[] = {
     }
 };
 
-/* interrupt function name mapping */
+// interrupt function name mapping
 #define UART_0_ISR          isr_sercom5_2
 #define UART_0_ISR_TX       isr_sercom5_0
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name PWM configuration
- * @{
- */
+/// @name PWM configuration
+/// @{
 #define PWM_0_EN            1
 
 #if PWM_0_EN
-/* PWM0 channels */
+// PWM0 channels
 static const pwm_conf_chan_t pwm_chan0_config[] = {
-    /* GPIO pin, MUX value, TCC channel */
+    // GPIO pin, MUX value, TCC channel
     { GPIO_PIN(PA, 22), GPIO_MUX_G, 2 },
 };
 #endif
 
-/* PWM device configuration */
+// PWM device configuration
 static const pwm_conf_t pwm_config[] = {
 #if PWM_0_EN
     { .tim  = TCC_CONFIG(TCC0),
@@ -133,14 +117,12 @@ static const pwm_conf_t pwm_config[] = {
 #endif
 };
 
-/* number of devices that are actually defined */
+// number of devices that are actually defined
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = &(SERCOM1->SPI),
@@ -158,7 +140,7 @@ static const spi_conf_t spi_config[] = {
         .rx_trigger = SERCOM1_DMAC_ID_RX,
 #endif
     },
-    {   /* Connected to TFT display */
+    {   // Connected to TFT display
         .dev      = &(SERCOM4->SPI),
         .miso_pin = GPIO_PIN(PB, 12),
         .mosi_pin = GPIO_PIN(PB, 15),
@@ -174,7 +156,7 @@ static const spi_conf_t spi_config[] = {
         .rx_trigger = SERCOM4_DMAC_ID_RX,
 #endif
     },
-    {   /* Connected to PDM Mic */
+    {   // Connected to PDM Mic
         .dev      = &(SERCOM3->SPI),
         .miso_pin = GPIO_PIN(PA, 18),
         .mosi_pin = GPIO_PIN(PA, 19),
@@ -191,7 +173,7 @@ static const spi_conf_t spi_config[] = {
 #endif
     },
 #ifdef MODULE_PERIPH_SPI_ON_QSPI
-    {    /* QSPI in SPI mode */
+    {    // QSPI in SPI mode
         .dev      = QSPI,
         .miso_pin = SAM0_QSPI_PIN_DATA_1,
         .mosi_pin = SAM0_QSPI_PIN_DATA_0,
@@ -199,9 +181,9 @@ static const spi_conf_t spi_config[] = {
         .miso_mux = SAM0_QSPI_MUX,
         .mosi_mux = SAM0_QSPI_MUX,
         .clk_mux  = SAM0_QSPI_MUX,
-        .miso_pad = SPI_PAD_MISO_0,         /* unused */
-        .mosi_pad = SPI_PAD_MOSI_0_SCK_1,   /* unused */
-        .gclk_src = SAM0_GCLK_MAIN,         /* unused */
+        .miso_pad = SPI_PAD_MISO_0,         // unused
+        .mosi_pad = SPI_PAD_MOSI_0_SCK_1,   // unused
+        .gclk_src = SAM0_GCLK_MAIN,         // unused
 #ifdef MODULE_PERIPH_DMA
         .tx_trigger = QSPI_DMAC_ID_TX,
         .rx_trigger = QSPI_DMAC_ID_RX,
@@ -211,12 +193,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev      = &(SERCOM2->I2CM),
@@ -229,21 +209,18 @@ static const i2c_conf_t i2c_config[] = {
     },
 };
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**,
- * @name RTT configuration
- * @{
- */
+/// ,
+/// @name RTT configuration
+/// @{
 #ifndef RTT_FREQUENCY
 #define RTT_FREQUENCY       (32768U)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name USB peripheral configuration
- * @{
- */
+/// @name USB peripheral configuration
+/// @{
 static const sam0_common_usb_config_t sam_usbdev_config[] = {
     {
         .dm     = GPIO_PIN(PA, 24),
@@ -253,48 +230,44 @@ static const sam0_common_usb_config_t sam_usbdev_config[] = {
         .gclk_src = SAM0_GCLK_48MHZ,
     }
 };
-/** @} */
+/// @}
 
-/**
- * @name ADC Configuration
- * @{
- */
+/// @name ADC Configuration
+/// @{
 
-/* ADC Default values */
-#define ADC_GCLK_SRC                        SAM0_GCLK_PERIPH    /**< clock used for ADC */
+// ADC Default values
+#define ADC_GCLK_SRC                        SAM0_GCLK_PERIPH    ///< clock used for ADC
 #define ADC_PRESCALER                       ADC_CTRLA_PRESCALER_DIV8
 
 #define ADC_NEG_INPUT                       ADC_INPUTCTRL_MUXNEG(0x18u)
 #define ADC_REF_DEFAULT                     ADC_REFCTRL_REFSEL_INTVCC1
 
 static const adc_conf_chan_t adc_channels[] = {
-    /* port, pin, muxpos, dev */
-    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PA05, .dev = ADC0 },   /* A1 */
-    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PB08, .dev = ADC0 },   /* A2 */
-    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PB09, .dev = ADC0 },   /* A3 */
-    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PA04, .dev = ADC0 },   /* A4 */
-    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PA06, .dev = ADC0 },   /* A5 */
-    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PB01, .dev = ADC0 },  /* A6 - VMEAS */
-    { .inputctrl = ADC1_INPUTCTRL_MUXPOS_PB04, .dev = ADC1 },   /* A7 - Light sensor */
+    // port, pin, muxpos, dev
+    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PA05, .dev = ADC0 },   // A1
+    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PB08, .dev = ADC0 },   // A2
+    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PB09, .dev = ADC0 },   // A3
+    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PA04, .dev = ADC0 },   // A4
+    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PA06, .dev = ADC0 },   // A5
+    { .inputctrl = ADC0_INPUTCTRL_MUXPOS_PB01, .dev = ADC0 },  // A6 - VMEAS
+    { .inputctrl = ADC1_INPUTCTRL_MUXPOS_PB04, .dev = ADC1 },   // A7 - Light sensor
 };
 
 #define ADC_NUMOF                           ARRAY_SIZE(adc_channels)
-/** @} */
+/// @}
 
-/**
- * @name DAC configuration
- * @{
- */
-#define DAC_CLOCK           SAM0_GCLK_TIMER         /**< Must not exceed 12 MHz */
-/** Use external reference voltage on PA03
- *
- * PA03 has to be manually connected to Vcc.
- * Internal reference only gives 1V */
+/// @name DAC configuration
+/// @{
+#define DAC_CLOCK           SAM0_GCLK_TIMER         ///< Must not exceed 12 MHz
+/// Use external reference voltage on PA03
+///
+/// PA03 has to be manually connected to Vcc.
+/// Internal reference only gives 1V
 #define DAC_VREF            DAC_CTRLB_REFSEL_VREFPU
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

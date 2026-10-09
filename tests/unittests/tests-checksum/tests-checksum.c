@@ -1,12 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2016 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "tests-checksum.h"
 
-void tests_checksum(void)
-{
+void tests_checksum(void) {
     TESTS_RUN(tests_checksum_crc8_tests());
     TESTS_RUN(tests_checksum_crc8_lsb_tests());
     TESTS_RUN(tests_checksum_crc16_ccitt_kermit_tests());

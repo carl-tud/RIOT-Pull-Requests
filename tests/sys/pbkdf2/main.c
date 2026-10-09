@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Test PBKDF2-sha256 implementation.
- *
- * @author      Juan Carrano <j.carrano@fu-berlin.de>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       Test PBKDF2-sha256 implementation.
+///
+/// @author      Juan Carrano <j.carrano@fu-berlin.de>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <assert.h>
 #include <stdbool.h>
@@ -41,10 +37,9 @@ struct testcase testcases[] = {
         .password = "passwd",
         .salt = "salt",
         .iterations = 1,
-        /* dig = hashlib.pbkdf2_hmac("sha256", "passwd".encode("utf-8"),
-         *                           "salt".encode("utf-8"), 1)
-         * "".join("0x{:02x}, ".format(b) for b in dig)
-         */
+        // dig = hashlib.pbkdf2_hmac("sha256", "passwd".encode("utf-8"),
+        //                           "salt".encode("utf-8"), 1)
+        // "".join("0x{:02x}, ".format(b) for b in dig)
         .digest = {
             0x55, 0xac, 0x04, 0x6e, 0x56, 0xe3, 0x08, 0x9f,
             0xec, 0x16, 0x91, 0xc2, 0x25, 0x44, 0xb6, 0x05,
@@ -56,10 +51,9 @@ struct testcase testcases[] = {
         .password = "RIOT",
         .salt = "rocks",
         .iterations = 16,
-        /* dig = hashlib.pbkdf2_hmac("sha256", "RIOT".encode("utf-8"),
-         *                           "rocks".encode("utf-8"), 16)
-         * "".join("0x{:02x}, ".format(b) for b in dig)
-         */
+        // dig = hashlib.pbkdf2_hmac("sha256", "RIOT".encode("utf-8"),
+        //                           "rocks".encode("utf-8"), 16)
+        // "".join("0x{:02x}, ".format(b) for b in dig)
         .digest = {
             0x72, 0xa6, 0x06, 0xbb, 0x5c, 0xbe, 0x92, 0x4a,
             0xd2, 0x0a, 0xee, 0xc2, 0x4e, 0xa5, 0x17, 0xc4,
@@ -68,15 +62,14 @@ struct testcase testcases[] = {
         }
     },
     {
-        .password = "This is a secure password", /* <-- no it is NOT! */
+        .password = "This is a secure password", // <-- no it is NOT!
         .salt = "and this salt is even more secure",
         .iterations = 13,
-        /* dig = hashlib.pbkdf2_hmac("sha256",
-         *                           "This is a secure password".encode("utf-8"),
-         *                           "and this salt is even more secure".encode("utf-8"),
-         *                           13)
-         * "".join("0x{:02x}, ".format(b) for b in dig)
-         */
+        // dig = hashlib.pbkdf2_hmac("sha256",
+        //                           "This is a secure password".encode("utf-8"),
+        //                           "and this salt is even more secure".encode("utf-8"),
+        //                           13)
+        // "".join("0x{:02x}, ".format(b) for b in dig)
         .digest = {
             0x9a, 0x41, 0x83, 0x2b, 0x77, 0xc4, 0x61, 0x64,
             0x06, 0xd3, 0x2e, 0x97, 0x06, 0x5e, 0xc5, 0xc7,
@@ -86,8 +79,7 @@ struct testcase testcases[] = {
     },
 };
 
-int main(void)
-{
+int main(void) {
     bool failed = false;
     for (size_t i = 0; i < ARRAY_SIZE(testcases); i++) {
         struct testcase *tc = &testcases[i];

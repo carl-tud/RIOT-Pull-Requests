@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_lm75
- *
- * @{
- * @file
- * @brief       Driver for the LM75 temperature sensor.
- *
- * A general driver for the LM75 temperature sensor including support for the
- * LM75A and TMP1075 sensors as well.
- *
- * @author      Vitor Batista <vitor.batista@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     drivers_lm75
+///
+/// @{
+/// @file
+/// @brief       Driver for the LM75 temperature sensor.
+///
+/// A general driver for the LM75 temperature sensor including support for the
+/// LM75A and TMP1075 sensors as well.
+///
+/// @author      Vitor Batista <vitor.batista@ml-pa.com>
+///
+/// @}
 
 #include <byteorder.h>
 #include <stdint.h>
@@ -54,8 +50,7 @@ lm75_properties_t tmp1075_properties = {
 };
 #endif
 
-int lm75_init(lm75_t *dev, const lm75_params_t *params)
-{
+int lm75_init(lm75_t *dev, const lm75_params_t *params) {
     dev->lm75_params = *params;
     uint8_t config = (params->shutdown_mode) | (params->tm_mode << 1)
                    | (params->polarity << 2) | (params->fault_q << 3);
@@ -63,7 +58,7 @@ int lm75_init(lm75_t *dev, const lm75_params_t *params)
     i2c_acquire(I2C_BUS);
 
     int err;
-    /* read the device ID register of the TMP1075 sensor to confirm it is a TMP1075 */
+    // read the device ID register of the TMP1075 sensor to confirm it is a TMP1075
     if (IS_USED(MODULE_TMP1075) && (dev->lm75_params.res == &tmp1075_properties)) {
         uint16_t deid = 0;
         err = i2c_read_regs(I2C_BUS, I2C_ADDR, TMP1075_DEVICE_ID_REG, &deid, 2, 0);
@@ -74,8 +69,8 @@ int lm75_init(lm75_t *dev, const lm75_params_t *params)
         }
 
         deid = ntohs(deid);
-        /* checks if the device ID corresponds to the TMP1075 sensor
-         * and extends the parameter configuration if so */
+        // checks if the device ID corresponds to the TMP1075 sensor
+        // and extends the parameter configuration if so
         if (deid == 0x7500) {
             DEBUG("lm75: device is a TMP1075\n");
             config |= (params->conv_rate_reg << 5);
@@ -95,7 +90,7 @@ int lm75_init(lm75_t *dev, const lm75_params_t *params)
         return -EINVAL;
     }
 
-    /* write the config byte into the configuration register */
+    // write the config byte into the configuration register
     err = i2c_write_reg(I2C_BUS, I2C_ADDR, LM75_CONF_REG, config, 0);
     if (err) {
         i2c_release(I2C_BUS);
@@ -106,11 +101,10 @@ int lm75_init(lm75_t *dev, const lm75_params_t *params)
     return 0;
 }
 
-int lm75_get_temperature_raw(const lm75_t *dev, int32_t *temperature)
-{
+int lm75_get_temperature_raw(const lm75_t *dev, int32_t *temperature) {
     int16_t temp;
     i2c_acquire(I2C_BUS);
-    /* read the temperature register */
+    // read the temperature register
     int err = i2c_read_regs(I2C_BUS, I2C_ADDR, LM75_TEMP_REG, &temp, 2, 0);
     if (err) {
         i2c_release(I2C_BUS);
@@ -118,28 +112,27 @@ int lm75_get_temperature_raw(const lm75_t *dev, int32_t *temperature)
     }
     i2c_release(I2C_BUS);
 
-    /* since the value is read in big endian, it must be converted to little endian
-     * then it must be multiplied by its resolution
-     * and then shifted so only the correct number of bits is used */
+    // since the value is read in big endian, it must be converted to little endian
+    // then it must be multiplied by its resolution
+    // and then shifted so only the correct number of bits is used
     *temperature = (int16_t)ntohs(temp) * (int32_t)dev->lm75_params.res->temp_res;
     *temperature >>= dev->lm75_params.res->temp_shift;
 
     return 0;
 }
 
-int lm75_get_temperature(const lm75_t *dev, int32_t *temperature)
-{
+int lm75_get_temperature(const lm75_t *dev, int32_t *temperature) {
     int err = lm75_get_temperature_raw(dev, temperature);
     if (err) {
         return err;
     }
-    /* if the device's resolution is lower than mºC convert the temp to mºC */
+    // if the device's resolution is lower than mºC convert the temp to mºC
     if (dev->lm75_params.res->temp_mult < 1000) {
         *temperature *= 1000 / dev->lm75_params.res->temp_mult;
     }
 
-    /* if the device's resolution is greater than mºC
-     * truncates the device's values lower than the mºC range */
+    // if the device's resolution is greater than mºC
+    // truncates the device's values lower than the mºC range
     else if (dev->lm75_params.res->temp_mult > 1000) {
         *temperature /= dev->lm75_params.res->temp_mult / 1000;
     }
@@ -148,14 +141,13 @@ int lm75_get_temperature(const lm75_t *dev, int32_t *temperature)
 }
 
 int lm75_set_temp_limits(const lm75_t *dev, int32_t temp_hyst, int32_t temp_os,
-                         gpio_cb_t cb, void *arg)
-{
-    /* Check if the OS alert pin is valid */
+                         gpio_cb_t cb, void *arg) {
+    // Check if the OS alert pin is valid
     if (!gpio_is_valid(dev->lm75_params.gpio_alarm)) {
         return -EINVAL;
     }
 
-    /* Enable OS interrupt */
+    // Enable OS interrupt
     gpio_flank_t flank = dev->lm75_params.polarity ? GPIO_FALLING : GPIO_RISING;
     if (gpio_init_int(dev->lm75_params.gpio_alarm, GPIO_IN, flank,
                       cb, arg) != 0) {
@@ -169,14 +161,14 @@ int lm75_set_temp_limits(const lm75_t *dev, int32_t temp_hyst, int32_t temp_os,
     int16_t temp_hyst_short;
     int16_t temp_os_short;
 
-    /* getting into the correct precision value in units of 10 */
+    // getting into the correct precision value in units of 10
     temp_hyst = (temp_hyst * dev->lm75_params.res->os_mult) / 1000;
     temp_os = (temp_os * dev->lm75_params.res->os_mult) / 1000;
 
-    /* temp must first be converted to 16 bit format, and sampled to its
-     * resolution then shifted by the number of unused bits and finally reversed
-     * into little endian for writing into the register.
-     * NOTE: values smaller than the resolution steps are truncated */
+    // temp must first be converted to 16 bit format, and sampled to its
+    // resolution then shifted by the number of unused bits and finally reversed
+    // into little endian for writing into the register.
+    // NOTE: values smaller than the resolution steps are truncated
     temp_hyst_short = (int16_t)(temp_hyst / dev->lm75_params.res->os_res);
     temp_hyst_short = temp_hyst_short << dev->lm75_params.res->os_shift;
     temp_hyst_short = ntohs(temp_hyst_short);
@@ -204,11 +196,10 @@ int lm75_set_temp_limits(const lm75_t *dev, int32_t temp_hyst, int32_t temp_os,
     return 0;
 }
 
-int lm75_get_os_temp(const lm75_t *dev, int32_t *temperature)
-{
+int lm75_get_os_temp(const lm75_t *dev, int32_t *temperature) {
     int16_t temp;
     i2c_acquire(I2C_BUS);
-    /* read the temperature register */
+    // read the temperature register
     int err = i2c_read_regs(I2C_BUS, I2C_ADDR, LM75_TOS_REG, &temp, 2, 0);
     if (err) {
         i2c_release(I2C_BUS);
@@ -217,21 +208,20 @@ int lm75_get_os_temp(const lm75_t *dev, int32_t *temperature)
 
     i2c_release(I2C_BUS);
 
-    /* since the value is read in big endian, it must be converted into little endian
-     * then it must be multiplied by its resolution
-     * and then shifted by the number of unused bits that must be discarded */
+    // since the value is read in big endian, it must be converted into little endian
+    // then it must be multiplied by its resolution
+    // and then shifted by the number of unused bits that must be discarded
     *temperature = (int32_t)((int16_t)ntohs(temp)) * (int32_t)dev->lm75_params.res->os_res;
     *temperature >>= dev->lm75_params.res->os_shift;
 
     return 0;
 }
 
-int lm75_get_hyst_temp(const lm75_t *dev, int32_t *temperature)
-{
+int lm75_get_hyst_temp(const lm75_t *dev, int32_t *temperature) {
     int16_t temp;
     i2c_acquire(I2C_BUS);
 
-    /* read the temperature register */
+    // read the temperature register
     int err = i2c_read_regs(I2C_BUS, I2C_ADDR, LM75_THYST_REG, &temp, 2, 0);
     if (err) {
         i2c_release(I2C_BUS);
@@ -245,8 +235,7 @@ int lm75_get_hyst_temp(const lm75_t *dev, int32_t *temperature)
     return 0;
 }
 
-int lm75_get_os_pin(const lm75_t *dev, bool *os_pin_state)
-{
+int lm75_get_os_pin(const lm75_t *dev, bool *os_pin_state) {
     if (!gpio_is_valid(dev->lm75_params.gpio_alarm)) {
         LOG_ERROR("lm75: OS alert pin not connected or defined\n");
         return -EINVAL;
@@ -256,8 +245,7 @@ int lm75_get_os_pin(const lm75_t *dev, bool *os_pin_state)
     return 0;
 }
 
-int lm75_poweroff(const lm75_t *dev)
-{
+int lm75_poweroff(const lm75_t *dev) {
     i2c_acquire(I2C_BUS);
 
     uint8_t config;
@@ -268,14 +256,14 @@ int lm75_poweroff(const lm75_t *dev)
         return err;
     }
 
-    /* sets every register to 0 except the shutdown reg and sees if it is active */
+    // sets every register to 0 except the shutdown reg and sees if it is active
     if ((config & LM75_CONFIG_SHUTDOWN_MODE) != 0) {
         LOG_ERROR("lm75: device already in shutdown mode\n");
         i2c_release(I2C_BUS);
         return 0;
     }
 
-    /* set the shutdown register to 1 (shutdown mode) and keeps every other intact */
+    // set the shutdown register to 1 (shutdown mode) and keeps every other intact
     config |= LM75_CONFIG_SHUTDOWN_MODE;
     err = i2c_write_reg(I2C_BUS, I2C_ADDR, LM75_CONF_REG, config, 0);
     if (err) {
@@ -287,8 +275,7 @@ int lm75_poweroff(const lm75_t *dev)
     return 0;
 }
 
-int lm75_poweron(const lm75_t *dev)
-{
+int lm75_poweron(const lm75_t *dev) {
     i2c_acquire(I2C_BUS);
 
     uint8_t config;
@@ -298,13 +285,13 @@ int lm75_poweron(const lm75_t *dev)
         return err;
     }
 
-    /* sets every reg to 0 except the shutdown register and sees if it is active */
+    // sets every reg to 0 except the shutdown register and sees if it is active
     if ((config & LM75_CONFIG_SHUTDOWN_MODE) == 0) {
         LOG_INFO("lm75: device is already awake\n");
         i2c_release(I2C_BUS);
         return 0;
     }
-    /* set the shutdown bit to 0 (continuous conversion mode) and keep every other reg intact */
+    // set the shutdown bit to 0 (continuous conversion mode) and keep every other reg intact
     config &= ~LM75_CONFIG_SHUTDOWN_MODE;
 
     err = i2c_write_reg(I2C_BUS, I2C_ADDR, LM75_CONF_REG, config, 0);
@@ -317,8 +304,7 @@ int lm75_poweron(const lm75_t *dev)
     return 0;
 }
 
-int tmp1075_one_shot(const lm75_t *dev)
-{
+int tmp1075_one_shot(const lm75_t *dev) {
     if (!IS_USED(MODULE_TMP1075) || (dev->lm75_params.res != &tmp1075_properties)) {
         LOG_ERROR("lm75: device incompatible with the one shot conversion function\n");
         return -ENOTSUP;
@@ -333,7 +319,7 @@ int tmp1075_one_shot(const lm75_t *dev)
         return err;
     }
 
-    /* set the shutdown and one shot mode bits to 1 and keep every other register intact */
+    // set the shutdown and one shot mode bits to 1 and keep every other register intact
     config |= TMP1075_CONFIG_ONE_SHOT_MODE;
     err = i2c_write_reg(I2C_BUS, I2C_ADDR, LM75_CONF_REG, config, 0);
     if (err) {
@@ -346,8 +332,7 @@ int tmp1075_one_shot(const lm75_t *dev)
     return 0;
 }
 
-int lm75_low_power_mode(const lm75_t *dev, uint16_t interval)
-{
+int lm75_low_power_mode(const lm75_t *dev, uint16_t interval) {
     int err;
     if (IS_USED(MODULE_TMP1075) && (dev->lm75_params.res == &tmp1075_properties)) {
         err = tmp1075_one_shot(dev);
@@ -361,8 +346,8 @@ int lm75_low_power_mode(const lm75_t *dev, uint16_t interval)
         if (err) {
             return err;
         }
-        /* this is required to ensure the temp register updates for followup readings
-         * otherwise the temperature register will have outdated and possibly bogus values */
+        // this is required to ensure the temp register updates for followup readings
+        // otherwise the temperature register will have outdated and possibly bogus values
         if (interval < dev->lm75_params.conv_rate) {
             xtimer_msleep(dev->lm75_params.conv_rate);
         }

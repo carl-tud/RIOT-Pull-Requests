@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2015 Janos Kutscherauer <noshky@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Janos Kutscherauer <noshky@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @{
- *
- * @file    ColorTextOutputter.h
- */
+/// @{
+///
+/// @file    ColorTextOutputter.h
 
 #include "Outputter.h"
 
@@ -23,4 +19,4 @@ OutputterRef ColorTextOutputter_outputter(void);
 }
 #endif
 
-/** @} */
+/// @}

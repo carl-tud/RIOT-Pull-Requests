@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Kees Bakker, SODAQ
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Kees Bakker, SODAQ
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_sodaq-sara-sff
- * @{
- *
- * @file
- * @brief       Configuration of CPU peripherals for the SODAQ SARA SFF board
- *
- * @author      Kees Bakker <kees@sodaq.com>
- */
+/// @ingroup     boards_sodaq-sara-sff
+/// @{
+///
+/// @file
+/// @brief       Configuration of CPU peripherals for the SODAQ SARA SFF board
+///
+/// @author      Kees Bakker <kees@sodaq.com>
 
 #include <stdint.h>
 
@@ -29,15 +25,13 @@
 extern "C" {
 #endif
 
-/**
- * @name UART configuration
- * @{
- */
+/// @name UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev      = &SERCOM5->USART,
-        .rx_pin   = GPIO_PIN(PB, 3),  /* D0, RX Pin */
-        .tx_pin   = GPIO_PIN(PB, 2),  /* D1, TX Pin */
+        .rx_pin   = GPIO_PIN(PB, 3),  // D0, RX Pin
+        .tx_pin   = GPIO_PIN(PB, 2),  // D1, TX Pin
 #ifdef MODULE_PERIPH_UART_HW_FC
         .rts_pin  = GPIO_UNDEF,
         .cts_pin  = GPIO_UNDEF,
@@ -49,7 +43,7 @@ static const uart_conf_t uart_config[] = {
         .gclk_src = SAM0_GCLK_MAIN,
     },
     {
-        /* Connected to the UBlox */
+        // Connected to the UBlox
         .dev      = &SERCOM2->USART,
         .rx_pin   = GPIO_PIN(PA, 13),
         .tx_pin   = GPIO_PIN(PA, 12),
@@ -65,19 +59,17 @@ static const uart_conf_t uart_config[] = {
     },
 };
 
-/* interrupt function name mapping */
+// interrupt function name mapping
 #define UART_0_ISR          isr_sercom5
 #define UART_1_ISR          isr_sercom2
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name ADC configuration
- * @{
- */
+/// @name ADC configuration
+/// @{
 
-/* ADC Default values */
+// ADC Default values
 #define ADC_PRESCALER                       ADC_CTRLB_PRESCALER_DIV512
 
 #define ADC_NEG_INPUT                       ADC_INPUTCTRL_MUXNEG_GND
@@ -85,32 +77,30 @@ static const uart_conf_t uart_config[] = {
 #define ADC_REF_DEFAULT                     ADC_REFCTRL_REFSEL_INTVCC1
 
 static const adc_conf_chan_t adc_channels[] = {
-    /* port, pin, muxpos */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA02 },     /* A0 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA03 },     /* A1 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB08 },     /* A2 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB09 },     /* A3 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA06 },     /* A4 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA07 },     /* A5 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA08 },    /* A6 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA09 },    /* A7 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA10 },    /* A8 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA11 },    /* A9 */
+    // port, pin, muxpos
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA02 },     // A0
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA03 },     // A1
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB08 },     // A2
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB09 },     // A3
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA06 },     // A4
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA07 },     // A5
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA08 },    // A6
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA09 },    // A7
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA10 },    // A8
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA11 },    // A9
 #if 0
-    /* These pins are also used for RX/TX uart0 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB02 },    /* A10, TX */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB03 },    /* A11, RX */
+    // These pins are also used for RX/TX uart0
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB02 },    // A10, TX
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PB03 },    // A11, RX
 #endif
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA05 },     /* BAT_VOLT */
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA05 },     // BAT_VOLT
 };
 
 #define ADC_NUMOF                           ARRAY_SIZE(adc_channels)
-/** @} */
+/// @}
 
-/**
- * @name SPI configuration
- * @{
- */
+/// @name SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = &SERCOM0->SPI,
@@ -131,12 +121,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev      = &(SERCOM3->I2CM),
@@ -149,10 +137,10 @@ static const i2c_conf_t i2c_config[] = {
     }
 };
 #define I2C_NUMOF          ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

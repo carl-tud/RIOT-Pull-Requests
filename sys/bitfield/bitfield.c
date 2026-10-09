@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Bitfield auxiliary functions
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       Bitfield auxiliary functions
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdint.h>
 #include <string.h>
@@ -21,8 +17,7 @@
 #include "bitarithm.h"
 #include "irq.h"
 
-static inline unsigned _skip_bytes(const uint8_t field[], unsigned nbytes, uint8_t byte)
-{
+static inline unsigned _skip_bytes(const uint8_t field[], unsigned nbytes, uint8_t byte) {
     unsigned i = 0;
     for (unsigned j = 0; (j < nbytes) && (field[j] == byte); j++) {
         i += 8;
@@ -30,14 +25,13 @@ static inline unsigned _skip_bytes(const uint8_t field[], unsigned nbytes, uint8
     return i;
 }
 
-int bf_get_unset(uint8_t field[], size_t size)
-{
+int bf_get_unset(uint8_t field[], size_t size) {
     int result = -1;
     unsigned nbytes = (size + 7) / 8;
 
     unsigned state = irq_disable();
 
-    /* skip full bytes */
+    // skip full bytes
     unsigned i = _skip_bytes(field, nbytes, 0xff);
 
     for (; i < size; i++) {
@@ -52,8 +46,7 @@ int bf_get_unset(uint8_t field[], size_t size)
     return result;
 }
 
-int bf_find_first_set(const uint8_t field[], size_t size)
-{
+int bf_find_first_set(const uint8_t field[], size_t size) {
     unsigned nbytes = (size + 7) / 8;
     unsigned i = _skip_bytes(field, nbytes, 0);
 
@@ -66,8 +59,7 @@ int bf_find_first_set(const uint8_t field[], size_t size)
     return -1;
 }
 
-int bf_find_first_unset(const uint8_t field[], size_t size)
-{
+int bf_find_first_unset(const uint8_t field[], size_t size) {
     unsigned nbytes = (size + 7) / 8;
     unsigned i = _skip_bytes(field, nbytes, 0xff);
 
@@ -80,8 +72,7 @@ int bf_find_first_unset(const uint8_t field[], size_t size)
     return -1;
 }
 
-void bf_set_all(uint8_t field[], size_t size)
-{
+void bf_set_all(uint8_t field[], size_t size) {
     unsigned bytes = size >> 3;
     unsigned bits = size & 0x7;
 
@@ -91,8 +82,7 @@ void bf_set_all(uint8_t field[], size_t size)
     }
 }
 
-void bf_clear_all(uint8_t field[], size_t size)
-{
+void bf_clear_all(uint8_t field[], size_t size) {
     unsigned bytes = size >> 3;
     unsigned bits = size & 0x7;
 
@@ -102,8 +92,7 @@ void bf_clear_all(uint8_t field[], size_t size)
     }
 }
 
-unsigned bf_popcnt(const uint8_t field[], size_t size)
-{
+unsigned bf_popcnt(const uint8_t field[], size_t size) {
     unsigned bytes = size >> 3;
     unsigned bits = size & 0x7;
     unsigned mask = ~((1U << (8 - bits)) - 1);

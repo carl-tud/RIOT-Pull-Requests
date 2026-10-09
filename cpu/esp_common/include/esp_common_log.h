@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp_common
- * @{
- *
- * @file
- * @brief       Common log macros for ESP SoCs
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- */
+/// @ingroup     cpu_esp_common
+/// @{
+///
+/// @file
+/// @brief       Common log macros for ESP SoCs
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
 
 #ifndef DOXYGEN
 
@@ -40,7 +36,7 @@ extern int ets_printf(const char *fmt, ...);
 #define LOG_COLOR_D       "\033[0;32m"
 #define LOG_COLOR_V
 
-#else /* MODULE_ESP_LOG_COLORED */
+#else // MODULE_ESP_LOG_COLORED
 
 #define LOG_RESET_COLOR
 #define LOG_COLOR_E
@@ -49,7 +45,7 @@ extern int ets_printf(const char *fmt, ...);
 #define LOG_COLOR_D
 #define LOG_COLOR_V
 
-#endif /* MODULE_ESP_LOG_COLORED */
+#endif // MODULE_ESP_LOG_COLORED
 
 #if MODULE_ESP_LOG_TAGGED
 
@@ -70,7 +66,7 @@ extern int ets_printf(const char *fmt, ...);
                     } \
                 } while (0)
 
-#else /* MODULE_ESP_LOG_TAGGED */
+#else // MODULE_ESP_LOG_TAGGED
 
 #define LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter format LOG_RESET_COLOR
 
@@ -91,12 +87,10 @@ extern int ets_printf(const char *fmt, ...);
                     } \
                 } while (0U)
 
-#endif /* MODULE_ESP_LOG_TAGGED */
+#endif // MODULE_ESP_LOG_TAGGED
 
-/**
- * Override LOG_* definitions with a tagged version. By default the function
- * name is used as tag.
- */
+/// Override LOG_* definitions with a tagged version. By default the function
+/// name is used as tag.
 #ifndef MODULE_LOG_PRINTFNOFORMAT
 #undef LOG_ERROR
 #undef LOG_INFO
@@ -108,14 +102,14 @@ extern int ets_printf(const char *fmt, ...);
 #define LOG_DEBUG(format, ...)   LOG_TAG(LOG_DEBUG, D, __func__, format, ##__VA_ARGS__)
 #endif
 
-/** Tagged LOG_* definitions */
+/// Tagged LOG_* definitions
 #define LOG_TAG_ERROR(tag, format, ...)   LOG_TAG(LOG_ERROR, E, tag, format, ##__VA_ARGS__)
 #define LOG_TAG_WARNING(tag, format, ...) LOG_TAG(LOG_WARNING, W, tag, format, ##__VA_ARGS__)
 #define LOG_TAG_INFO(tag, format, ...)    LOG_TAG(LOG_INFO, I, tag, format, ##__VA_ARGS__)
 #define LOG_TAG_DEBUG(tag, format, ...)   LOG_TAG(LOG_DEBUG, D, tag, format, ##__VA_ARGS__)
 #define LOG_TAG_ALL(tag, format, ...)     LOG_TAG(LOG_ALL, V, tag, format, ##__VA_ARGS__)
 
-/** definitions for source code compatibility with ESP-IDF */
+/// definitions for source code compatibility with ESP-IDF
 #define ESP_EARLY_LOGE(tag, format, ...) LOG_TAG_EARLY(LOG_ERROR, E, tag, format "\n", ##__VA_ARGS__)
 #define ESP_EARLY_LOGW(tag, format, ...) LOG_TAG_EARLY(LOG_WARNING, W, tag, format "\n", ##__VA_ARGS__)
 #define ESP_EARLY_LOGI(tag, format, ...) LOG_TAG_EARLY(LOG_INFO, I, tag, format "\n", ##__VA_ARGS__)
@@ -134,6 +128,6 @@ extern int ets_printf(const char *fmt, ...);
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN
 
-/** @} */
+/// @}

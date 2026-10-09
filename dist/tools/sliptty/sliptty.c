@@ -1,13 +1,11 @@
-/*
- * Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * Copyright (C) 2018 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+// Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// Copyright (C) 2018 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
+//
+// @author  Kaspar Schleiser <kaspar@schleiser.de>
+// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <ctype.h>
 #include <errno.h>
@@ -53,8 +51,7 @@
 #define SLIP_END_ESC            0xdcU
 #define SLIP_ESC_ESC            0xddU
 
-static void _usage(char *cmd)
-{
+static void _usage(char *cmd) {
     fprintf(stderr, "Usage: %s [-I %s] <serial> [baudrate]\n",
             cmd, TUN_IFACE_DEFAULT);
     fprintf(stderr, "Usage: %s [-I %s] tcp:<host> [port]\n",
@@ -62,20 +59,18 @@ static void _usage(char *cmd)
 }
 
 #ifndef __linux__
-static int devopen(const char *dev, int flags)
-{
+static int devopen(const char *dev, int flags) {
     char t[1024];
     int written_len = snprintf(t, sizeof(t), "/dev/%s", dev);
     if (written_len >= sizeof(t)) {
-        /* we got truncated */
+        // we got truncated
         return -1;
     }
     return open(t, flags);
 }
 #endif
 
-static int tun_alloc(char *dev)
-{
+static int tun_alloc(char *dev) {
 #ifdef __linux__
     struct ifreq ifr;
     int fd, err;
@@ -106,8 +101,7 @@ static int tun_alloc(char *dev)
 #endif
 }
 
-static int _set_serial_attribs(int fd, int speed, int parity)
-{
+static int _set_serial_attribs(int fd, int speed, int parity) {
     struct termios tty;
 
     memset(&tty, 0, sizeof(tty));
@@ -119,23 +113,23 @@ static int _set_serial_attribs(int fd, int speed, int parity)
     cfsetospeed(&tty, speed);
     cfsetispeed(&tty, speed);
 
-    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; /* 8-bit chars */
-                                            /* disable IGNBRK for mismatched speed
-                                             * tests; otherwise receive break */
-                                            /* as \000 chars */
-    tty.c_iflag &= ~IGNBRK;                 /* disable break processing */
-    tty.c_lflag = 0;                        /* no signaling chars, no echo, */
-                                            /* no canonical processing */
-    tty.c_oflag = 0;                        /* no remapping, no delays */
-    tty.c_cc[VMIN] = 0;                     /* read doesn't block */
-    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; /* 0.5 seconds read timeout */
-                                            /* in tenths of a second */
+    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; // 8-bit chars
+                                            // disable IGNBRK for mismatched speed
+                                            // tests; otherwise receive break
+                                            // as \000 chars
+    tty.c_iflag &= ~IGNBRK;                 // disable break processing
+    tty.c_lflag = 0;                        // no signaling chars, no echo,
+                                            // no canonical processing
+    tty.c_oflag = 0;                        // no remapping, no delays
+    tty.c_cc[VMIN] = 0;                     // read doesn't block
+    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; // 0.5 seconds read timeout
+                                            // in tenths of a second
 
-    tty.c_iflag &= ~(IXON | IXOFF | IXANY); /* shut off xon/xoff ctrl */
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
 
-    tty.c_cflag |= (CLOCAL | CREAD);        /* ignore modem controls, */
-                                            /* enable reading */
-    tty.c_cflag &= ~(PARENB | PARODD);      /* shut off parity */
+    tty.c_cflag |= (CLOCAL | CREAD);        // ignore modem controls,
+                                            // enable reading
+    tty.c_cflag &= ~(PARENB | PARODD);      // shut off parity
     tty.c_cflag |= parity;
     tty.c_cflag &= ~CSTOPB;
     tty.c_cflag &= ~CRTSCTS;
@@ -148,8 +142,7 @@ static int _set_serial_attribs(int fd, int speed, int parity)
     return 0;
 }
 
-static void _set_blocking(int fd, int should_block)
-{
+static void _set_blocking(int fd, int should_block) {
     struct termios tty;
 
     memset(&tty, 0, sizeof tty);
@@ -159,16 +152,15 @@ static void _set_blocking(int fd, int should_block)
     }
 
     tty.c_cc[VMIN] = should_block ? 1 : 0;
-    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; /* 0.5 seconds read timeout */
-                                            /* in tenths of a second */
+    tty.c_cc[VTIME] = TTY_TIMEOUT_MS / 100; // 0.5 seconds read timeout
+                                            // in tenths of a second
 
     if (tcsetattr(fd, TCSANOW, &tty) != 0) {
         perror("error setting term attributes");
     }
 }
 
-static unsigned _parse_baudrate(char *arg)
-{
+static unsigned _parse_baudrate(char *arg) {
 #define case_baudrate(val)  \
     case val:               \
         return B ## val
@@ -182,7 +174,7 @@ static unsigned _parse_baudrate(char *arg)
         case_baudrate(38400);
         case_baudrate(57600);
         case_baudrate(115200);
-        /* the following baudrates might not be available on all platforms */
+        // the following baudrates might not be available on all platforms
 #ifdef B230400
         case_baudrate(230400);
 #endif
@@ -229,10 +221,9 @@ static unsigned _parse_baudrate(char *arg)
     return 0;
 }
 
-static int _open_tcp(int argc, char **argv)
-{
+static int _open_tcp(int argc, char **argv) {
     struct addrinfo hints, *result, *rp;
-    char *host = &argv[0][sizeof(TCP_SPEC) - 1];    /* remove TCP_SPEC */
+    char *host = &argv[0][sizeof(TCP_SPEC) - 1];    // remove TCP_SPEC
     char *port = TCP_PORT_STR_DEFAULT;
     int res;
 
@@ -249,10 +240,10 @@ static int _open_tcp(int argc, char **argv)
         return -1;
     }
 
-    /* getaddrinfo() returns a list of address structures.
-       Try each address until we successfully connect(2).
-       If socket(2) (or connect(2)) fails, we (close the socket
-       and) try the next address. */
+    // getaddrinfo() returns a list of address structures.
+    //    Try each address until we successfully connect(2).
+    //    If socket(2) (or connect(2)) fails, we (close the socket
+    //    and) try the next address.
     for (rp = result; rp != NULL; rp = rp->ai_next) {
         res = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
         if (res < 0) {
@@ -273,8 +264,7 @@ static int _open_tcp(int argc, char **argv)
     return res;
 }
 
-static int _open_serial(int argc, char **argv)
-{
+static int _open_serial(int argc, char **argv) {
     unsigned baudrate = BAUDRATE_DEFAULT;
     int fd;
 
@@ -295,8 +285,7 @@ static int _open_serial(int argc, char **argv)
     return fd;
 }
 
-static int _open_stream(int argc, char **argv)
-{
+static int _open_stream(int argc, char **argv) {
     if (strncmp(argv[0], TCP_SPEC, sizeof(TCP_SPEC) - 1) == 0) {
         return _open_tcp(argc, argv);
     }
@@ -305,8 +294,7 @@ static int _open_stream(int argc, char **argv)
     }
 }
 
-static int _checked_write(int fd, const uint8_t *buffer, size_t buffer_size)
-{
+static int _checked_write(int fd, const uint8_t *buffer, size_t buffer_size) {
     while (buffer_size > 0) {
         ssize_t res = write(fd, buffer, buffer_size);
         if (res <= 0) {
@@ -319,24 +307,20 @@ static int _checked_write(int fd, const uint8_t *buffer, size_t buffer_size)
     return 0;
 }
 
-static int _write_char(int fd, uint8_t c)
-{
+static int _write_char(int fd, uint8_t c) {
     return _checked_write(fd, &c, 1);
 }
 
-static void _write_escaped(int fd, const uint8_t *buffer, size_t buffer_size)
-{
-    /*
-     * Certain USB-to-UART adapters/drivers will immediately send a USB packet
-     * with a single byte instead of buffering internally when the application
-     * does writes one byte at a time. Since USB Full Speed can only send 1
-     * packet per 1 ms, this causes huge latencies for the network, because each
-     * byte of data will then add at least 1 ms on the latency.
-     * Observed on NXP OpenSDAv2 (Kinetis FRDM boards), both CMSIS/mbed DAPlink
-     * and Segger Jlink firmware are affected.
-     */
-    /* Our workaround is to prepare the data to send in a local buffer and then
-     * call write() on the buffer instead of one character at a time */
+static void _write_escaped(int fd, const uint8_t *buffer, size_t buffer_size) {
+    // Certain USB-to-UART adapters/drivers will immediately send a USB packet
+    // with a single byte instead of buffering internally when the application
+    // does writes one byte at a time. Since USB Full Speed can only send 1
+    // packet per 1 ms, this causes huge latencies for the network, because each
+    // byte of data will then add at least 1 ms on the latency.
+    // Observed on NXP OpenSDAv2 (Kinetis FRDM boards), both CMSIS/mbed DAPlink
+    // and Segger Jlink firmware are affected.
+    // Our workaround is to prepare the data to send in a local buffer and then
+    // call write() on the buffer instead of one character at a time
     uint8_t out[SERIAL_BUFFER_SIZE];
     size_t buffered = 0;
 
@@ -368,8 +352,7 @@ static void _write_escaped(int fd, const uint8_t *buffer, size_t buffer_size)
     _checked_write(fd, out, buffered);
 }
 
-static void _flush_stream(FILE *f)
-{
+static void _flush_stream(FILE *f) {
     for (int res = 0; (res != EOF) && (res != SLIP_END); res = fgetc(f)) {
         if (res == SLIP_START_STDIO) {
             ungetc(res, f);
@@ -378,8 +361,7 @@ static void _flush_stream(FILE *f)
     }
 }
 
-static int _demultiplex_slip(FILE *stream, int iface_fd, int out_fd)
-{
+static int _demultiplex_slip(FILE *stream, int iface_fd, int out_fd) {
     FILE *target;
     int escaped = 0;
     int byte;
@@ -394,7 +376,7 @@ static int _demultiplex_slip(FILE *stream, int iface_fd, int out_fd)
             return -1;
         }
         target = fdopen(dup(out_fd), "w");
-        /* don't print initial new line */
+        // don't print initial new line
     }
     else {
         switch (byte & SLIP_START_NET_MASK) {
@@ -422,14 +404,14 @@ static int _demultiplex_slip(FILE *stream, int iface_fd, int out_fd)
                     byte = SLIP_END;
                     escaped = 0;
                 }
-                /* Intentionally falls through */
-                /* to default when !escaped */
+                // Intentionally falls through
+                // to default when !escaped
             case SLIP_ESC_ESC:
                 if (escaped) {
                     byte = SLIP_ESC;
                     escaped = 0;
                 }
-                /* Intentionally falls through */
+                // Intentionally falls through
             default:
                 fputc(byte, target);
                 break;
@@ -444,8 +426,7 @@ static int _demultiplex_slip(FILE *stream, int iface_fd, int out_fd)
     return 0;
 }
 
-static int _dispatch(int iface_fd, int stream_fd, int in_fd, int out_fd)
-{
+static int _dispatch(int iface_fd, int stream_fd, int in_fd, int out_fd) {
     static uint8_t buffer[TUN_MTU];
     fd_set readfds;
     int max_fd = (iface_fd > stream_fd)
@@ -453,9 +434,9 @@ static int _dispatch(int iface_fd, int stream_fd, int in_fd, int out_fd)
                : ((stream_fd > in_fd) ? stream_fd : in_fd);
     int input_open = 1;
     int ret = 0;
-    /* reasons for using FILE pointer for stream are two-fold:
-     * - able to write back characters previously read (ungetc())
-     * - fgetc() */
+    // reasons for using FILE pointer for stream are two-fold:
+    // - able to write back characters previously read (ungetc())
+    // - fgetc()
     FILE *stream = fdopen(stream_fd, "r");
 
     fprintf(stderr, "Starting dispatch. TUN: %d, Stream: %d, In: %d, Out: %d\n",
@@ -493,15 +474,15 @@ static int _dispatch(int iface_fd, int stream_fd, int in_fd, int out_fd)
         if (FD_ISSET(in_fd, &readfds)) {
             ssize_t res = read(in_fd, buffer, sizeof(buffer));
             if (res == 0) {
-                /* handle EOF */
+                // handle EOF
                 fputs("EOF from input\n", stderr);
                 if (isatty(in_fd)) {
-                    /* EOF from terminal means we exit */
+                    // EOF from terminal means we exit
                     fputs("Exit by user.\n", stderr);
                     break;
                 }
                 else {
-                    /* ignore EOF when input is not a terminal */
+                    // ignore EOF when input is not a terminal
                     close(in_fd);
                     input_open = 0;
                 }
@@ -521,8 +502,7 @@ static int _dispatch(int iface_fd, int stream_fd, int in_fd, int out_fd)
     return ret;
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     int c;
     int stream_fd = -1;
     int iface_fd = -1;

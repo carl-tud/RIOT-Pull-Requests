@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2023 Bennet Blischke <bennet.blischke@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Bennet Blischke <bennet.blischke@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup         cpu_riscv_common
- * @{
- *
- * @file
- * @brief           RISCV PMP implementation
- *
- * @author          Bennet Blischke
- */
+/// @ingroup         cpu_riscv_common
+/// @{
+///
+/// @file
+/// @brief           RISCV PMP implementation
+///
+/// @author          Bennet Blischke
 
 #include <stdio.h>
 #include <stdint.h>
@@ -30,9 +26,8 @@
 #define WRITE_PMPCFG(REG, VALUE) _WRITE_PMPCFG(CSR_PMPCFG0 + REG, VALUE)
 #define READ_PMPCFG(REG) _READ_PMPCFG(CSR_PMPCFG0 + REG)
 
-/* These shifts are needed as the PMP Address registers stores
- * 34 Bit addresses with 4 byte alignment in a 32 bit register
- */
+// These shifts are needed as the PMP Address registers stores
+// 34 Bit addresses with 4 byte alignment in a 32 bit register
 #define _WRITE_PMPADDR(REG, VALUE) write_csr(REG, VALUE >> 2)
 #define _READ_PMPADDR(REG) (read_csr(REG) << 2)
 #define WRITE_PMPADDR(REG, VALUE) _WRITE_PMPADDR(CSR_PMPADDR0 + REG, VALUE)
@@ -41,13 +36,11 @@
 #define _NAPOT_base(addr) (addr & (addr + 1))
 #define _NAPOT_end(addr) (addr | (addr + 1))
 
-/* The assembly instructions for reading riscv CSRs, encode the CSR-address
- * in the immediate field which is not changeable at run-time.
- * Hence it is needed to generate all possible register accesses at build-time.
- * Settled for switch-case as they are easiest to read, understand and maintain.
- */
-void write_pmpcfg(uint8_t reg_num, uint32_t value)
-{
+// The assembly instructions for reading riscv CSRs, encode the CSR-address
+// in the immediate field which is not changeable at run-time.
+// Hence it is needed to generate all possible register accesses at build-time.
+// Settled for switch-case as they are easiest to read, understand and maintain.
+void write_pmpcfg(uint8_t reg_num, uint32_t value) {
     assert(reg_num < NUM_PMP_ENTRIES / 4);
     switch (reg_num) {
     case 0: WRITE_PMPCFG(0, value); break;
@@ -71,8 +64,7 @@ void write_pmpcfg(uint8_t reg_num, uint32_t value)
     }
 }
 
-uint32_t read_pmpcfg(uint8_t reg_num)
-{
+uint32_t read_pmpcfg(uint8_t reg_num) {
     assert(reg_num < NUM_PMP_ENTRIES / 4);
     switch (reg_num) {
     case 0: return READ_PMPCFG(0);
@@ -97,8 +89,7 @@ uint32_t read_pmpcfg(uint8_t reg_num)
     return 0;
 }
 
-void write_pmpaddr(uint8_t reg_num, uint32_t value)
-{
+void write_pmpaddr(uint8_t reg_num, uint32_t value) {
     assert(reg_num < NUM_PMP_ENTRIES);
     switch (reg_num) {
     case 0: WRITE_PMPADDR(0, value); break;
@@ -170,8 +161,7 @@ void write_pmpaddr(uint8_t reg_num, uint32_t value)
     }
 }
 
-uint32_t read_pmpaddr(uint8_t reg_num)
-{
+uint32_t read_pmpaddr(uint8_t reg_num) {
     assert(reg_num < NUM_PMP_ENTRIES);
     switch (reg_num) {
     case 0: return READ_PMPADDR(0);
@@ -244,13 +234,11 @@ uint32_t read_pmpaddr(uint8_t reg_num)
     return 0;
 }
 
-uint8_t get_pmpcfg(uint8_t entry)
-{
+uint8_t get_pmpcfg(uint8_t entry) {
     return (read_pmpcfg(entry / 4) >> (entry % 4) * 8) & 0xFF;
 }
 
-void set_pmpcfg(uint8_t entry, uint8_t value)
-{
+void set_pmpcfg(uint8_t entry, uint8_t value) {
     uint32_t cur_value = read_pmpcfg(entry / 4);
     uint32_t mask = 0xff << (entry % 4) * 8;
 
@@ -259,8 +247,7 @@ void set_pmpcfg(uint8_t entry, uint8_t value)
     write_pmpcfg(entry / 4, cur_value);
 }
 
-void print_pmpcfg(uint8_t entry)
-{
+void print_pmpcfg(uint8_t entry) {
     uint8_t cfg = get_pmpcfg(entry);
     uint32_t start = 0;
     uint32_t stop = 0;
@@ -279,7 +266,7 @@ void print_pmpcfg(uint8_t entry)
         break;
     case PMP_NAPOT:
         mode = "NAPOT";
-        /* Flipp last two bits in NAPOT mode */
+        // Flipp last two bits in NAPOT mode
         uint32_t _tmp = read_pmpaddr(entry) | 0x03;
         start = _NAPOT_base(_tmp);
         stop = _NAPOT_end(_tmp);

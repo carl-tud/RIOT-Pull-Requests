@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 /**
  * @ingroup     tests
@@ -50,23 +48,22 @@
 #include "pca9685.h"
 #include "pca9685_params.h"
 
-#define OSC_INTERVAL    (10LU * US_PER_MS) /* 10 ms */
+#define OSC_INTERVAL    (10LU * US_PER_MS) // 10 ms
 #define OSC_STEP        (10)
 #define OSC_MODE        PWM_LEFT
 #define OSC_FREQU       (1000U)
 #define OSC_STEPS       (1000U)
 #define PWR_SLEEP       (1U)
 
-/* Number of configured PCA9685 I/O expander devices */
+// Number of configured PCA9685 I/O expander devices
 #define PCA9685_NUMOF   ARRAY_SIZE(pca9685_params)
 
-/* PCA9685 devices allocation */
+// PCA9685 devices allocation
 pca9685_t pca9685_dev[PCA9685_NUMOF];
 
 static uint32_t initiated;
 
-static unsigned _get_dev(const char *dev_str)
-{
+static unsigned _get_dev(const char *dev_str) {
     unsigned dev = atoi(dev_str);
     if (dev >= PCA9685_NUMOF) {
         printf("Error: PWM device %u is unknown\n", dev);
@@ -76,8 +73,7 @@ static unsigned _get_dev(const char *dev_str)
     return dev;
 }
 
-static int _init(int argc, char** argv)
-{
+static int _init(int argc, char** argv) {
     if (argc != 5) {
         printf("usage: %s <dev> <mode> <frequency> <resolution>\n", argv[0]);
         printf("\tdev: device by number between 0 and %zu\n", PCA9685_NUMOF - 1);
@@ -124,8 +120,7 @@ static int _init(int argc, char** argv)
     return 1;
 }
 
-static int _set(int argc, char**argv)
-{
+static int _set(int argc, char**argv) {
     if (argc != 4) {
         printf("usage: %s <dev> <ch> <val>\n", argv[0]);
         printf("\tdev: device by number between 0 and %zu\n", PCA9685_NUMOF - 1);
@@ -155,8 +150,7 @@ static int _set(int argc, char**argv)
     return 0;
 }
 
-static int _oscillate(int argc, char** argv)
-{
+static int _oscillate(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
@@ -198,8 +192,7 @@ static int _oscillate(int argc, char** argv)
     return 0;
 }
 
-static int _power(int argc, char** argv)
-{
+static int _power(int argc, char** argv) {
     if (argc != 3) {
         printf("usage: %s <dev> <state>\n", argv[0]);
         printf("\tdev: device by number between 0 and %zu\n", PCA9685_NUMOF - 1);
@@ -230,8 +223,7 @@ static int _power(int argc, char** argv)
     return 0;
 }
 
-static int _power_test(int argc, char** argv)
-{
+static int _power_test(int argc, char** argv) {
     if (argc != 2) {
         printf("usage: %s <dev>\n", argv[0]);
         printf("\tdev: device by number between 0 and %zu\n", PCA9685_NUMOF - 1);
@@ -264,12 +256,11 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("PWM peripheral driver test\n");
     initiated = 0;
 
-    /* initialize configured PCA9685 devices */
+    // initialize configured PCA9685 devices
     for (unsigned i = 0; i < PCA9685_NUMOF; i++) {
         if (pca9685_init(&pca9685_dev[i], &pca9685_params[i]) != PCA9685_OK) {
             puts("[Failed]");

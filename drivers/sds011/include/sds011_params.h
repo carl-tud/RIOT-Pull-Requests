@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_sds011
- * @{
- *
- * @file
- * @brief       SDS011 sensor specific configuration
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- */
+/// @ingroup     drivers_sds011
+/// @{
+///
+/// @file
+/// @brief       SDS011 sensor specific configuration
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
 
 #include "board.h"
 #include "periph/uart.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Set default configuration parameters for the SDS011 driver
- * @{
- */
+/// @name   Set default configuration parameters for the SDS011 driver
+/// @{
 #ifndef SDS011_PARAM_UART_DEV
 #define SDS011_PARAM_UART_DEV       (UART_DEV(1))
 #endif
@@ -48,19 +42,15 @@ extern "C" {
 #ifndef SDS011_SAUL_INFO
 #define SDS011_SAUL_INFO            { .name = "SDS011" }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   SDS011 configuration
- */
+/// @brief   SDS011 configuration
 static const  sds011_params_t sds011_params[] =
 {
     SDS011_PARAMS
 };
 
-/**
- * @brief   Allocate and configure entries to the SAUL registry
- */
+/// @brief   Allocate and configure entries to the SAUL registry
 saul_reg_info_t sds011_saul_info[] =
 {
     SDS011_SAUL_INFO
@@ -70,4 +60,4 @@ saul_reg_info_t sds011_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the DSP0401 4 digit display.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the DSP0401 4 digit display.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -23,15 +19,14 @@
 #include "timex.h"
 #include "ztimer.h"
 
-#define TEST_DELAY_US   (2U * US_PER_SEC)  /* 2 seconds delay between each test */
-#define WORD_DELAY_US   (750U * US_PER_MS) /* 750 milliseconds delay between each word */
-#define SCROLL_DELAY_MS (200U)             /* 200 milliseconds delay between character shift */
+#define TEST_DELAY_US   (2U * US_PER_SEC)  // 2 seconds delay between each test
+#define WORD_DELAY_US   (750U * US_PER_MS) // 750 milliseconds delay between each word
+#define SCROLL_DELAY_MS (200U)             // 200 milliseconds delay between character shift
 #ifndef LOOPS
-#define LOOPS           (3U)               /* Number of display loops before exit */
+#define LOOPS           (3U)               // Number of display loops before exit
 #endif
 
-int main(void)
-{
+int main(void) {
     dsp0401_t dev;
 
     puts("Starting DSP0401 test application\n");

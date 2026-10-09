@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_vcnl40x0
- *
- * @{
- * @file
- * @brief       Default configuration for VCNL40X0 devices
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_vcnl40x0
+///
+/// @{
+/// @file
+/// @brief       Default configuration for VCNL40X0 devices
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "vcnl40x0.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Default configuration parameters for the VCNL40X0
- * @{
- */
+/// @name    Default configuration parameters for the VCNL40X0
+/// @{
 #ifndef VCNL40X0_PARAM_I2C_DEV
 #define VCNL40X0_PARAM_I2C_DEV          I2C_DEV(0)
 #endif
@@ -53,19 +47,15 @@ extern "C" {
                                       .proximity_rate = VCNL40X0_PARAM_PROXIMITY_RATE, \
                                       .ambient_avg = VCNL40X0_PARAM_AMBIENT_AVG,       \
                                       .ambient_rate = VCNL40X0_PARAM_AMBIENT_RATE }
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure VCNL40X0
- */
+/// @brief   Configure VCNL40X0
 static const vcnl40x0_params_t vcnl40x0_params[] =
 {
     VCNL40X0_PARAMS,
 };
 
-/**
- * @brief   Configure SAUL registry entries
- */
+/// @brief   Configure SAUL registry entries
 static const saul_reg_info_t vcnl40x0_saul_reg_info[] =
 {
     { .name = "vcnl40x0" }
@@ -75,4 +65,4 @@ static const saul_reg_info_t vcnl40x0_saul_reg_info[] =
 }
 #endif
 
-/** @} */
+/// @}

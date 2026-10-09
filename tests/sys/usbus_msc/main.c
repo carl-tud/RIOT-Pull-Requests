@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019-2022 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019-2022 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for demonstrating USBUS MSC implementation
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for demonstrating USBUS MSC implementation
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -26,9 +22,9 @@
 
 #include "mtd_emulated.h"
 
-/* The following parameters are only suitable for testing the basic functions
- * of USB MSC. To create a partition with a FAT file system, at least 64 sectors
- * have to be used. */
+// The following parameters are only suitable for testing the basic functions
+// of USB MSC. To create a partition with a FAT file system, at least 64 sectors
+// have to be used.
 
 #ifndef SECTOR_COUNT
 #define SECTOR_COUNT        64
@@ -44,7 +40,7 @@
 
 MTD_EMULATED_DEV(0, SECTOR_COUNT, PAGES_PER_SECTOR, PAGE_SIZE);
 
-#endif /* MODULE_MTD_EMULATED */
+#endif // MODULE_MTD_EMULATED
 
 #include "mtd.h"
 #include "shell.h"
@@ -54,8 +50,7 @@ MTD_EMULATED_DEV(0, SECTOR_COUNT, PAGES_PER_SECTOR, PAGE_SIZE);
 
 static usbus_t *usbus;
 
-static int _cmd_add_lun(int argc, char **argv)
-{
+static int _cmd_add_lun(int argc, char **argv) {
     int dev, ret;
     mtd_dev_t *mtd_dev;
 
@@ -68,7 +63,7 @@ static int _cmd_add_lun(int argc, char **argv)
         return -1;
     }
 
-    /* parse the given MTD device */
+    // parse the given MTD device
     dev = atol(argv[1]);
     if (dev < 0 || dev >= (int)MTD_NUMOF) {
         puts("error: invalid MTD device specified");
@@ -84,8 +79,7 @@ static int _cmd_add_lun(int argc, char **argv)
 
 SHELL_COMMAND(add_lun, "Add a MTD device as new LUN",  _cmd_add_lun);
 
-static int _cmd_remove_lun(int argc, char **argv)
-{
+static int _cmd_remove_lun(int argc, char **argv) {
     int dev, ret;
     mtd_dev_t *mtd_dev;
 
@@ -98,7 +92,7 @@ static int _cmd_remove_lun(int argc, char **argv)
         return -1;
     }
 
-    /* parse the given MTD device */
+    // parse the given MTD device
     dev = atol(argv[1]);
     if (dev < 0 || dev >= (int)MTD_NUMOF) {
         puts("error: invalid MTD device specified");
@@ -114,8 +108,7 @@ static int _cmd_remove_lun(int argc, char **argv)
 
 SHELL_COMMAND(remove_lun, "Remove existing LUN", _cmd_remove_lun);
 
-static int _cmd_usb_attach(int argc, char **argv)
-{
+static int _cmd_usb_attach(int argc, char **argv) {
     (void)argc;
     (void)argv;
     static const usbopt_enable_t _enable = USBOPT_ENABLE;
@@ -127,8 +120,7 @@ static int _cmd_usb_attach(int argc, char **argv)
 
 SHELL_COMMAND(usb_attach, "Attach USB to host", _cmd_usb_attach);
 
-static int _cmd_usb_detach(int argc, char **argv)
-{
+static int _cmd_usb_detach(int argc, char **argv) {
     (void)argc;
     (void)argv;
     static const usbopt_enable_t _enable = USBOPT_DISABLE;
@@ -140,8 +132,7 @@ static int _cmd_usb_detach(int argc, char **argv)
 
 SHELL_COMMAND(usb_detach, "Detach USB from host", _cmd_usb_detach);
 
-static int _cmd_usb_reset(int argc, char **argv)
-{
+static int _cmd_usb_reset(int argc, char **argv) {
     _cmd_usb_detach(argc, argv);
     ztimer_sleep(ZTIMER_MSEC, 100);
     _cmd_usb_attach(argc, argv);
@@ -150,25 +141,24 @@ static int _cmd_usb_reset(int argc, char **argv)
 
 SHELL_COMMAND(usb_reset, "Combine Detach and Attach with a 100ms delay", _cmd_usb_reset);
 
-int main(void)
-{
+int main(void) {
     puts("RIOT USB MSC test application");
     puts("Add one or more MTD devices as USB LUN");
     puts("Then use the attach command to connect");
     puts("your device and start USB operation");
 
-    /* Get driver context */
+    // Get driver context
     usbdev_t *usbdev = usbdev_get_ctx(0);
     expect(usbdev);
 
     usbus_t *usbus_auto_init_get(void);
     usbus = usbus_auto_init_get();
 
-    /* start shell */
+    // start shell
     puts("All up, running the shell now");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }

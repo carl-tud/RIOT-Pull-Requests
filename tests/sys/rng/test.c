@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2017 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdint.h>
 #include <math.h>
@@ -17,24 +15,17 @@
 #include "periph/hwrng.h"
 #endif
 
-/**
- * @brief   Seed for initializing random module.
- */
+/// @brief   Seed for initializing random module.
 uint32_t seed = 0;
 
-/**
- * @brief   Source of randomness.
- */
+/// @brief   Source of randomness.
 rng_source_t source = 0;
 
-/**
- * @brief   Initialize the RNG, is needed.
- *
- * @param[in] name  The test name.
- */
-static void test_init(char *name)
-{
-    /* prepare RNG source */
+/// @brief   Initialize the RNG, is needed.
+///
+/// @param[in] name  The test name.
+static void test_init(char *name) {
+    // prepare RNG source
     if (source == RNG_PRNG) {
         random_init(seed);
     }
@@ -44,7 +35,7 @@ static void test_init(char *name)
     }
 #endif
 
-    /* print test overview */
+    // print test overview
     printf("Running %s test, with seed %" PRIu32 " using ", name, seed);
 
     if (source == RNG_PRNG) {
@@ -80,11 +71,8 @@ static void test_init(char *name)
     }
 }
 
-/**
- * @brief   Retrieve a 32-bit number of the source RNG.
- */
-static inline uint32_t test_get_uint32(void)
-{
+/// @brief   Retrieve a 32-bit number of the source RNG.
+static inline uint32_t test_get_uint32(void) {
     if (source == RNG_PRNG) {
         return random_uint32();
     }
@@ -97,18 +85,15 @@ static inline uint32_t test_get_uint32(void)
     }
 #endif
     else if (source == RNG_CONSTANT) {
-        /* use the seed as the constant value */
+        // use the seed as the constant value
         return seed;
     }
 
     return 0;
 }
 
-/**
- * @brief   Retrieve a 32-bit number of the source RNG on [a,b)-interval
- */
-static inline uint32_t test_get_uint32_range(uint32_t a, uint32_t b)
-{
+/// @brief   Retrieve a 32-bit number of the source RNG on [a,b)-interval
+static inline uint32_t test_get_uint32_range(uint32_t a, uint32_t b) {
     if (source == RNG_PRNG) {
         return random_uint32_range(a, b);
     }
@@ -118,20 +103,17 @@ static inline uint32_t test_get_uint32_range(uint32_t a, uint32_t b)
     }
 #endif
     else if (source == RNG_CONSTANT) {
-        /* use the seed as the constant value */
+        // use the seed as the constant value
         return seed;
     }
 
     return 0;
 }
 
-/**
- * @brief   Helper for printing `passed` or `failed` depending on condition
- *
- * @param[in] condition     The test condition.
- */
-void test_pass_fail(bool condition)
-{
+/// @brief   Helper for printing `passed` or `failed` depending on condition
+///
+/// @param[in] condition     The test condition.
+void test_pass_fail(bool condition) {
     if (condition) {
         puts("passed");
     }
@@ -140,20 +122,19 @@ void test_pass_fail(bool condition)
     }
 }
 
-void test_distributions(uint32_t samples)
-{
+void test_distributions(uint32_t samples) {
     char tmp[16] = { 0 };
 
     uint32_t distributions[32] = { 0 };
 
-    /* initialize test */
+    // initialize test
     test_init("distributions");
 
-    /* take random samples */
+    // take random samples
     while (samples--) {
         uint32_t value = test_get_uint32();
 
-        /* count bits */
+        // count bits
         for (int i = 0; i < 32; i++) {
             if (value & (UINT32_C(1) << i)) {
                 distributions[i]++;
@@ -161,7 +142,7 @@ void test_distributions(uint32_t samples)
         }
     }
 
-    /* sum the total number of ones */
+    // sum the total number of ones
     uint64_t total = 0;
     uint32_t min = UINT32_MAX;
     uint32_t max = 0;
@@ -178,21 +159,21 @@ void test_distributions(uint32_t samples)
         }
     }
 
-    /* if total is zero, it would yield a division by zero */
+    // if total is zero, it would yield a division by zero
     if ((total / 100) == 0) {
         puts("Total ones is zero.\n");
         return;
     }
 
-    /* print the distribution to screen */
+    // print the distribution to screen
     fmt_u64_dec(tmp, total / 32);
     printf("For 32-bit samples (min = %" PRIu32 ", max = %" PRIu32 ", avg = %s):\n", min, max, tmp);
 
-    /* print a bar for each bin, scaling max to 100% */
+    // print a bar for each bin, scaling max to 100%
     for (int i = 0; i < 32; i++) {
         printf("%02d: ", i);
 
-        /* calculate the width of the bar (max 4 + 75 chars) */
+        // calculate the width of the bar (max 4 + 75 chars)
         uint8_t bars = (distributions[i] / (max / 75));
 
         for (unsigned int j = 0; j < bars; j++) {
@@ -205,8 +186,7 @@ void test_distributions(uint32_t samples)
     puts("");
 }
 
-void test_dump(uint32_t samples)
-{
+void test_dump(uint32_t samples) {
     test_init("dump");
 
     while (samples--) {
@@ -214,8 +194,7 @@ void test_dump(uint32_t samples)
     }
 }
 
-void test_dump_range(uint32_t samples, uint32_t low_thresh, uint32_t high_thresh)
-{
+void test_dump_range(uint32_t samples, uint32_t low_thresh, uint32_t high_thresh) {
     test_init("dump range");
 
     while (samples--) {
@@ -223,8 +202,7 @@ void test_dump_range(uint32_t samples, uint32_t low_thresh, uint32_t high_thresh
     }
 }
 
-void test_fips(void)
-{
+void test_fips(void) {
     uint8_t last_bit = UINT8_MAX;
 
     uint32_t ones = 0;
@@ -237,29 +215,29 @@ void test_fips(void)
     uint32_t longruns = 1;
     uint32_t longruns_max = 0;
 
-    /* initialize test */
+    // initialize test
     test_init("FIPS 140-2");
 
-    /* FIPS 140-2 needs 20.000 bits, which are 625 32-bit random numbers */
+    // FIPS 140-2 needs 20.000 bits, which are 625 32-bit random numbers
     for (int i = 0; i < 625; i++) {
         uint32_t value = test_get_uint32();
 
         for (int j = 0; j < 4; j++) {
             uint8_t byte = ((uint8_t *) &value)[j];
 
-            /* poker */
+            // poker
             poker[byte >> 4]++;
             poker[byte & 0x0f]++;
 
             for (int k = 0; k < 8; k++) {
                 uint8_t bit = (byte >> k) & 0x01;
 
-                /* monobit */
+                // monobit
                 if (bit) {
                     ones++;
                 }
 
-                /* run length */
+                // run length
                 if (bit == last_bit) {
                     runs++;
                 }
@@ -278,7 +256,7 @@ void test_fips(void)
                     runs = 1;
                 }
 
-                /* longruns */
+                // longruns
                 if (bit == last_bit) {
                     longruns++;
                 }
@@ -295,7 +273,7 @@ void test_fips(void)
         }
     }
 
-    /* for a constant stream of bits, the last (long)run must be added */
+    // for a constant stream of bits, the last (long)run must be added
     if (runs > 6) {
         runs = 6;
     }
@@ -311,12 +289,12 @@ void test_fips(void)
         longruns_max = longruns;
     }
 
-    /* monobit test result */
+    // monobit test result
     printf("- Monobit test: ");
 
     test_pass_fail(!((ones >= 10275) || (ones <= 9725)));
 
-    /* poker test result */
+    // poker test result
     uint32_t result = 0;
 
     for (int i = 0; i < 16; i++) {
@@ -327,7 +305,7 @@ void test_fips(void)
 
     test_pass_fail(!((result > 1576928) || (result < 1563176)));
 
-    /* runs test result */
+    // runs test result
     bool passed = true;
     uint32_t min[6] = { 2343, 1135, 542, 251, 111, 111 };
     uint32_t max[6] = { 2657, 1365, 708, 373, 201, 201 };
@@ -346,21 +324,20 @@ void test_fips(void)
 
     test_pass_fail(passed);
 
-    /* longruns test result */
+    // longruns test result
     printf("- Longrun test: ");
 
     test_pass_fail(longruns_max < 26);
 }
 
-void test_entropy(uint32_t samples)
-{
+void test_entropy(uint32_t samples) {
     uint8_t buffer[256] = { 0 };
     uint32_t length = 0;
 
-    /* initialize test */
+    // initialize test
     test_init("entropy");
 
-    /* take samples */
+    // take samples
     for (uint32_t i = 0; i < samples; i++) {
         uint32_t value = test_get_uint32();
 
@@ -372,7 +349,7 @@ void test_entropy(uint32_t samples)
         length += 4;
     }
 
-    /* calculate entropy */
+    // calculate entropy
     float entropy = 0.0;
 
     for (int i = 0; i < 256; i++) {
@@ -382,35 +359,33 @@ void test_entropy(uint32_t samples)
         }
     }
 
-    /* print results */
-    /* Use 'fmt/print_float' to work on all platforms (atmega)
-     * Stdout should be flushed before to prevent garbled output. */
+    // print results
+    // Use 'fmt/print_float' to work on all platforms (atmega)
+    // Stdout should be flushed before to prevent garbled output.
     printf("Calculated ");
 #if defined(MODULE_NEWLIB) || defined(MODULE_PICOLIBC)
-    /* no fflush on msp430 */
+    // no fflush on msp430
     fflush(stdout);
 #endif
     print_float(entropy, 6);
     printf(" bits of entropy from %" PRIu32 " samples.\n", samples);
 }
 
-void cb_speed_timeout(void *arg)
-{
+void cb_speed_timeout(void *arg) {
     unsigned *running = arg;
     *running = 0;
 }
 
-void test_speed(uint32_t duration)
-{
+void test_speed(uint32_t duration) {
     char tmp1[16] = { 0 }, tmp2[16] = { 0 }, tmp3[16] = { 0 };
 
     uint64_t samples = 0;
 
-    /* initialize test */
+    // initialize test
     test_init("speed");
     printf("Running speed test for %" PRIu32 " seconds\n", duration);
 
-    /* collect samples as long as timer has not expired */
+    // collect samples as long as timer has not expired
     unsigned running = 1;
     xtimer_t xt = {
         .callback = cb_speed_timeout,
@@ -424,23 +399,22 @@ void test_speed(uint32_t duration)
     }
     uint32_t actual_duration_usec = xtimer_now_usec() - start_usec;
 
-    /* print results */
+    // print results
     fmt_u64_dec(tmp1, samples);
     fmt_u64_dec(tmp2, (samples * 4000000 / 1024) / actual_duration_usec);
     fmt_s32_dfp(tmp3, actual_duration_usec, -6);
     printf("Collected %s samples in %s seconds (%s KiB/s).\n", tmp1, tmp3, tmp2);
 }
 
-void test_speed_range(uint32_t duration, uint32_t low_thresh, uint32_t high_thresh)
-{
+void test_speed_range(uint32_t duration, uint32_t low_thresh, uint32_t high_thresh) {
     char tmp1[16] = { 0 }, tmp2[16] = { 0 }, tmp3[16] = { 0 };
 
     uint64_t samples = 0;
 
-    /* initialize test */
+    // initialize test
     test_init("speed range");
 
-    /* collect samples as long as timer has not expired */
+    // collect samples as long as timer has not expired
     unsigned running = 1;
     xtimer_t xt = {
         .callback = cb_speed_timeout,
@@ -454,7 +428,7 @@ void test_speed_range(uint32_t duration, uint32_t low_thresh, uint32_t high_thre
     }
     uint32_t actual_duration_usec = xtimer_now_usec() - start_usec;
 
-    /* print results */
+    // print results
     fmt_u64_dec(tmp1, samples);
     fmt_u64_dec(tmp2, (samples * 4000000 / 1024) / actual_duration_usec);
     fmt_s32_dfp(tmp3, actual_duration_usec, -6);

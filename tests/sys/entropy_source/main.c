@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for Entropy Sources
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for Entropy Sources
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -30,27 +26,26 @@
 #define NUM_BYTES     (64)
 #endif
 
-int main(void)
-{
+int main(void) {
     uint8_t buf1;
     uint8_t buf2[NUM_BYTES];
     int ret, prop_cutorr;
 
-    /* Get Adaptive Proportion Test cutoff value and use as max. number of requests */
+    // Get Adaptive Proportion Test cutoff value and use as max. number of requests
     prop_cutorr = entropy_source_test_prop_cutoff(
         CONFIG_ENTROPY_SOURCE_ZERO_HMIN);
 
-    /* Initialize zero entropy source */
+    // Initialize zero entropy source
     entropy_source_zero_init();
 
-    /* Request single bytes*/
+    // Request single bytes
     for (int i = 0; i < prop_cutorr + 1; i++) {
         ret = entropy_source_zero_get(&buf1, 1);
         printf("Zero entropy single request %i/%i returned: %i\n",  i,
                prop_cutorr, ret);
     }
 
-    /* Request a buffer */
+    // Request a buffer
     ret = entropy_source_zero_get(buf2, NUM_BYTES);
     printf("Zero entropy request %i Bytes: %i\n", NUM_BYTES, ret);
 
@@ -65,11 +60,11 @@ int main(void)
     print_float(ENTROPY_SOURCE_HMIN_SCALE_BACK(entropy), 6);
     print_str(" [bit / sample]\n");
 
-    /* Initialize ADC noise source */
+    // Initialize ADC noise source
     entropy_source_adc_init();
 
     for (unsigned i = 0; i < NUM_BYTES; i++) {
-        /*Request single bytes*/
+        // Request single bytes
         ret = entropy_source_adc_get(&buf1, 1);
         if (ret < 0) {
             printf("ADC noise single request %u/%i: %i\n", i, NUM_BYTES, ret);
@@ -79,7 +74,7 @@ int main(void)
         }
     }
 
-    /* Request a buffer and measure time */
+    // Request a buffer and measure time
     start = xtimer_now_usec();
     ret = entropy_source_adc_get(buf2, NUM_BYTES);
     stop = xtimer_now_usec();

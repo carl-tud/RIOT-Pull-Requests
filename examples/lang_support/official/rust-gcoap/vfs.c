@@ -1,12 +1,8 @@
-/*
- * SPDX-FileCopyrightText: 2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * This file demonstrates how C code can be mixed with Rust code in an
- * application in an ad-hoc fashion.
- */
+/// This file demonstrates how C code can be mixed with Rust code in an
+/// application in an ad-hoc fashion.
 
 #include <vfs.h>
 #include "fs/constfs.h"

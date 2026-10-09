@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_pm
- * @brief   Native Power Management implementation
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_pm
+/// @brief   Native Power Management implementation
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
 
 #include <err.h>
 #include <stdio.h>
@@ -32,9 +28,8 @@
 
 unsigned _native_retval = EXIT_SUCCESS;
 
-static void _native_sleep(void)
-{
-    _native_pending_syscalls_up(); /* no switching here */
+static void _native_sleep(void) {
+    _native_pending_syscalls_up(); // no switching here
     real_pause();
     _native_pending_syscalls_down();
 
@@ -45,21 +40,18 @@ static void _native_sleep(void)
 }
 
 #if !defined(MODULE_PM_LAYERED)
-void pm_set_lowest(void)
-{
+void pm_set_lowest(void) {
     _native_sleep();
 }
 #endif
 
-void pm_set(unsigned mode)
-{
+void pm_set(unsigned mode) {
     if (mode == 0) {
         _native_sleep();
     }
 }
 
-void pm_off(void)
-{
+void pm_off(void) {
     puts("\nnative: exiting");
 #ifdef MODULE_PERIPH_SPIDEV_LINUX
     spidev_linux_teardown();
@@ -74,8 +66,7 @@ void pm_off(void)
     real_exit(_native_retval);
 }
 
-void pm_reboot(void)
-{
+void pm_reboot(void) {
     printf("\n\n\t\t!! REBOOT !!\n\n");
 
     native_async_read_cleanup();

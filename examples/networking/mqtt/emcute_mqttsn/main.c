@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Example application for demonstrating RIOT's MQTT-SN library
- *              emCute
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Example application for demonstrating RIOT's MQTT-SN library
+///              emCute
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -40,15 +36,13 @@ static msg_t queue[8];
 static emcute_sub_t subscriptions[NUMOFSUBS];
 static char topics[NUMOFSUBS][TOPIC_MAXLEN];
 
-static void *emcute_thread(void *arg)
-{
+static void *emcute_thread(void *arg) {
     (void)arg;
     emcute_run(CONFIG_EMCUTE_DEFAULT_PORT, EMCUTE_ID);
-    return NULL;    /* should never be reached */
+    return NULL;    // should never be reached
 }
 
-static void on_pub(const emcute_topic_t *topic, void *data, size_t len)
-{
+static void on_pub(const emcute_topic_t *topic, void *data, size_t len) {
     char *in = (char *)data;
 
     printf("### got publication for topic '%s' [%i] ###\n",
@@ -59,8 +53,7 @@ static void on_pub(const emcute_topic_t *topic, void *data, size_t len)
     puts("");
 }
 
-static unsigned get_qos(const char *str)
-{
+static unsigned get_qos(const char *str) {
     int qos = atoi(str);
     switch (qos) {
         case 1:     return EMCUTE_QOS_1;
@@ -69,8 +62,7 @@ static unsigned get_qos(const char *str)
     }
 }
 
-static int cmd_con(int argc, char **argv)
-{
+static int cmd_con(int argc, char **argv) {
     sock_udp_ep_t gw = { .family = AF_INET6, .port = CONFIG_EMCUTE_DEFAULT_PORT };
     char *topic = NULL;
     char *message = NULL;
@@ -82,7 +74,7 @@ static int cmd_con(int argc, char **argv)
         return 1;
     }
 
-    /* parse address */
+    // parse address
     if (ipv6_addr_from_str((ipv6_addr_t *)&gw.addr.ipv6, argv[1]) == NULL) {
         printf("error parsing IPv6 address\n");
         return 1;
@@ -109,8 +101,7 @@ static int cmd_con(int argc, char **argv)
 
 SHELL_COMMAND(con, "connect to MQTT broker", cmd_con);
 
-static int cmd_discon(int argc, char **argv)
-{
+static int cmd_discon(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -129,8 +120,7 @@ static int cmd_discon(int argc, char **argv)
 
 SHELL_COMMAND(discon, "disconnect from the current broker", cmd_discon);
 
-static int cmd_pub(int argc, char **argv)
-{
+static int cmd_pub(int argc, char **argv) {
     emcute_topic_t t;
     unsigned flags = EMCUTE_QOS_0;
 
@@ -139,21 +129,21 @@ static int cmd_pub(int argc, char **argv)
         return 1;
     }
 
-    /* parse QoS level */
+    // parse QoS level
     if (argc >= 4) {
         flags |= get_qos(argv[3]);
     }
 
     printf("pub with topic: %s and name %s and flags 0x%02x\n", argv[1], argv[2], (int)flags);
 
-    /* step 1: get topic id */
+    // step 1: get topic id
     t.name = argv[1];
     if (emcute_reg(&t) != EMCUTE_OK) {
         puts("error: unable to obtain topic ID");
         return 1;
     }
 
-    /* step 2: publish data */
+    // step 2: publish data
     if (emcute_pub(&t, argv[2], strlen(argv[2]), flags) != EMCUTE_OK) {
         printf("error: unable to publish data to topic '%s [%i]'\n",
                 t.name, (int)t.id);
@@ -168,8 +158,7 @@ static int cmd_pub(int argc, char **argv)
 
 SHELL_COMMAND(pub, "publish something", cmd_pub);
 
-static int cmd_sub(int argc, char **argv)
-{
+static int cmd_sub(int argc, char **argv) {
     unsigned flags = EMCUTE_QOS_0;
 
     if (argc < 2) {
@@ -185,7 +174,7 @@ static int cmd_sub(int argc, char **argv)
         flags |= get_qos(argv[2]);
     }
 
-    /* find empty subscription slot */
+    // find empty subscription slot
     unsigned i = 0;
     for (; (i < NUMOFSUBS) && (subscriptions[i].topic.id != 0); i++) {}
     if (i == NUMOFSUBS) {
@@ -207,14 +196,13 @@ static int cmd_sub(int argc, char **argv)
 
 SHELL_COMMAND(sub, "subscribe topic", cmd_sub);
 
-static int cmd_unsub(int argc, char **argv)
-{
+static int cmd_unsub(int argc, char **argv) {
     if (argc < 2) {
         printf("usage %s <topic name>\n", argv[0]);
         return 1;
     }
 
-    /* find subscriptions entry */
+    // find subscriptions entry
     for (unsigned i = 0; i < NUMOFSUBS; i++) {
         if (subscriptions[i].topic.name &&
             (strcmp(subscriptions[i].topic.name, argv[1]) == 0)) {
@@ -235,8 +223,7 @@ static int cmd_unsub(int argc, char **argv)
 
 SHELL_COMMAND(unsub, "unsubscribe from topic", cmd_unsub);
 
-static int cmd_will(int argc, char **argv)
-{
+static int cmd_will(int argc, char **argv) {
     if (argc < 3) {
         printf("usage %s <will topic name> <will message content>\n", argv[0]);
         return 1;
@@ -257,26 +244,25 @@ static int cmd_will(int argc, char **argv)
 
 SHELL_COMMAND(will, "register a last will", cmd_will);
 
-int main(void)
-{
+int main(void) {
     puts("MQTT-SN example application\n");
     puts("Type 'help' to get started. Have a look at the README.md for more"
          "information.");
 
-    /* the main thread needs a msg queue to be able to run `ping`*/
+    // the main thread needs a msg queue to be able to run `ping`
     msg_init_queue(queue, ARRAY_SIZE(queue));
 
-    /* initialize our subscription buffers */
+    // initialize our subscription buffers
     memset(subscriptions, 0, (NUMOFSUBS * sizeof(emcute_sub_t)));
 
-    /* start the emcute thread */
+    // start the emcute thread
     thread_create(stack, sizeof(stack), EMCUTE_PRIO, 0,
                   emcute_thread, NULL, "emcute");
 
-    /* start shell */
+    // start shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }

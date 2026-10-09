@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_nanocoap
- * @{
- *
- * @file
- * @brief       NanoCoAP Link Format parser
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     net_nanocoap
+/// @{
+///
+/// @file
+/// @brief       NanoCoAP Link Format parser
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include "fmt.h"
 #include "net/nanocoap/link_format.h"
@@ -30,8 +26,7 @@ struct dir_list_ctx {
     uint8_t esc_idx;
 };
 
-static int _dirlist_cb(void *arg, size_t offset, uint8_t *buf, size_t len, int more)
-{
+static int _dirlist_cb(void *arg, size_t offset, uint8_t *buf, size_t len, int more) {
     (void)offset;
 
     struct dir_list_ctx *ctx = arg;
@@ -39,13 +34,13 @@ static int _dirlist_cb(void *arg, size_t offset, uint8_t *buf, size_t len, int m
     char *end = (char *)buf + len;
     for (char *c = (char *)buf; c != end; ++c) {
 
-        /* start of escape sequence */
+        // start of escape sequence
         if (*c == '%') {
             ctx->esc_idx = 1;
             continue;
         }
         if (ctx->esc_idx) {
-            /* fill escape buffer */
+            // fill escape buffer
             ctx->esc_buf[ctx->esc_idx - 1] = *c;
             if (++ctx->esc_idx == 3) {
                 ctx->esc_idx = 0;
@@ -83,8 +78,7 @@ static int _dirlist_cb(void *arg, size_t offset, uint8_t *buf, size_t len, int m
 
 int nanocoap_link_format_get(nanocoap_sock_t *sock, const char *path,
                              coap_link_format_handler_t cb, void *arg,
-                             char *dirent_buf, size_t dirent_buf_len)
-{
+                             char *dirent_buf, size_t dirent_buf_len) {
     struct dir_list_ctx ctx = {
         .buf = dirent_buf,
         .end = dirent_buf + dirent_buf_len,
@@ -97,8 +91,7 @@ int nanocoap_link_format_get(nanocoap_sock_t *sock, const char *path,
 }
 
 int nanocoap_link_format_get_url(const char *url, coap_link_format_handler_t cb, void *arg,
-                                 char *dirent_buf, size_t dirent_buf_len)
-{
+                                 char *dirent_buf, size_t dirent_buf_len) {
     nanocoap_sock_t sock;
     int res = nanocoap_sock_url_connect(url, &sock);
     if (res) {

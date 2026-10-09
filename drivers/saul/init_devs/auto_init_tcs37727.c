@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of TCS37727 light sensors
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization of TCS37727 light sensors
+//
+// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,33 +17,22 @@
 #include "tcs37727.h"
 #include "tcs37727_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define TCS37727_NUM    ARRAY_SIZE(tcs37727_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static tcs37727_t tcs37727_devs[TCS37727_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[TCS37727_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define TCS37727_INFO_NUM    ARRAY_SIZE(tcs37727_saul_info)
 
-/**
- * @brief   Export the sensor's SAUL interface
- */
+/// @brief   Export the sensor's SAUL interface
 extern const saul_driver_t tcs37727_saul_driver;
 
-void auto_init_tcs37727(void)
-{
+void auto_init_tcs37727(void) {
     assert(TCS37727_NUM == TCS37727_INFO_NUM);
 
     for (unsigned i = 0; i < TCS37727_NUM; i++) {

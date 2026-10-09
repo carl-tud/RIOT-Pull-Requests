@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021 luisan00
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 luisan00
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -13,10 +11,8 @@ extern "C"
 {
 #endif
 
-/**
- * @name    LEDs and BTN configuration
- * @{
- */
+/// @name    LEDs and BTN configuration
+/// @{
 static const saul_gpio_params_t saul_gpio_params[] =
     {
         {
@@ -54,4 +50,4 @@ static const saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

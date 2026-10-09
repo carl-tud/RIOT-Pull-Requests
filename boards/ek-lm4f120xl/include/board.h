@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Rakendra Thapa <rakendrathapa@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Rakendra Thapa <rakendrathapa@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_ek-lm4f120xl
- * @{
- *
- * @file
- * @brief       Board specific definitions for the Stellaris Launchpad LM4F120 board
- *
- * @author      Rakendra Thapa <rakendrathapa@gmail.com>
- */
+/// @ingroup     boards_ek-lm4f120xl
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the Stellaris Launchpad LM4F120 board
+///
+/// @author      Rakendra Thapa <rakendrathapa@gmail.com>
 
 #include "cpu.h"
 #include "periph/uart.h"
@@ -23,29 +19,23 @@
 extern "C" {
 #endif
 
-/**
- * @name    Button pin definitions
- * @{
- */
+/// @name    Button pin definitions
+/// @{
 #define BTN0_PIN            GPIO_PIN(5, 4)
 #define BTN1_PIN            GPIO_PIN(5, 0)
 
 #define BTN0_MODE           GPIO_IN_PU
 #define BTN1_MODE           GPIO_IN_PU
-/** @} */
+/// @}
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(5, 1)
 #define LED1_PIN            GPIO_PIN(5, 2)
 #define LED2_PIN            GPIO_PIN(5, 3)
 
-/**
- * @brief Port used for `LED0_ON` and similar implementations
- * @internal
- * */
+/// @brief Port used for `LED0_ON` and similar implementations
+/// @internal
 #define LED_PORT()          (GPIO_PORTF_DATA_R)
 #define LED0_MASK           (1 << 7)
 #define LED1_MASK           (1 << 2)
@@ -62,19 +52,17 @@ extern "C" {
 #define LED2_ON             (LED_PORT() |=  LED2_MASK)
 #define LED2_OFF            (LED_PORT() &= ~LED2_MASK)
 #define LED2_TOGGLE         (LED_PORT() ^=  LED2_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    ztimer configuration
- * @{
- */
+/// @name    ztimer configuration
+/// @{
 #define CONFIG_ZTIMER_USEC_TYPE    ZTIMER_TYPE_PERIPH_TIMER
 #define CONFIG_ZTIMER_USEC_DEV     TIMER_DEV(0)
 #define CONFIG_ZTIMER_USEC_MIN     (8)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

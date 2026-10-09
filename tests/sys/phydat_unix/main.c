@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Silke Hofstra
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Silke Hofstra
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Phydat Unix timestamp tests
- *
- * @author      Silke Hofstra <silke@slxh.eu>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Phydat Unix timestamp tests
+///
+/// @author      Silke Hofstra <silke@slxh.eu>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -37,7 +33,7 @@ typedef struct {
 } test_t;
 
 static test_t tests[] = {
-    /* Test various ways of writing 0 */
+    // Test various ways of writing 0
     {
         .date = { { 1, 1, 1970 }, UNIT_DATE, 0 },
         .time = { { 0, 0, 0 }, UNIT_TIME, 0 },
@@ -46,29 +42,29 @@ static test_t tests[] = {
     {
         .date = { { 1, 1, 1970 }, UNIT_DATE, 0 },
         .time = { { 0, 0, 2 }, UNIT_TIME, 0 },
-        .offset = 7200,     /* UTC +0200 */
+        .offset = 7200,     // UTC +0200
         .ts = 0,
     },
     {
         .date = { { 31, 12, 1969 }, UNIT_DATE, 0 },
         .time = { { 0, 0, 22 }, UNIT_TIME, 0 },
-        .offset = -7200,     /* UTC -0200 */
+        .offset = -7200,     // UTC -0200
         .ts = 0,
     },
     {
         .date = { { 1, 1, 1970 }, UNIT_DATE, 0 },
         .time = { { 3600, 60, 0 }, UNIT_TIME, 0 },
-        .offset = 7200,       /* UTC +0200 */
+        .offset = 7200,       // UTC +0200
         .ts = 0,
     },
     {
         .date = { { 31, 12, 1969 }, UNIT_DATE, 0 },
         .time = { { 3600, 120, 19 }, UNIT_TIME, 0 },
-        .offset = -7200,       /* UTC -0200 */
+        .offset = -7200,       // UTC -0200
         .ts = 0,
     },
 
-    /* Test well-known dates */
+    // Test well-known dates
     {
         .date = { { 28, 4, 2021 }, UNIT_DATE, 0 },
         .time = { { 0, 0, 0 }, UNIT_TIME, 0 },
@@ -85,7 +81,7 @@ static test_t tests[] = {
         .ts = 1583020800,
     },
 
-    /* Test the first of every month */
+    // Test the first of every month
     {
         .date = { { 1, 1, 1900 }, UNIT_DATE, 0 },
         .time = { { 0, 0, 0 }, UNIT_TIME, 0 },
@@ -147,7 +143,7 @@ static test_t tests[] = {
         .ts = -2180131200,
     },
 
-    /* Test scale correction */
+    // Test scale correction
     {
         .date = { { 1, 1, 197 }, UNIT_DATE, 1 },
         .time = { { 0, 0, 0 }, UNIT_TIME, 0 },
@@ -164,7 +160,7 @@ static test_t tests[] = {
         .ts = 3600,
     },
 
-    /* An invalid date that might go out of bounds on the day of the year lookup table */
+    // An invalid date that might go out of bounds on the day of the year lookup table
     {
         .date = { { 1, 13, 1969 }, UNIT_DATE, 0 },
         .time = { { 0, 0, 0 }, UNIT_TIME, 0 },
@@ -172,8 +168,7 @@ static test_t tests[] = {
     },
 };
 
-void test_phydat_date_time_to_unix(void)
-{
+void test_phydat_date_time_to_unix(void) {
     for (size_t i = 0; i < ARRAY_SIZE(tests); i++) {
         int64_t result = phydat_date_time_to_unix(
             &(tests[i].date),  &(tests[i].time), tests[i].offset);
@@ -192,8 +187,7 @@ void test_phydat_date_time_to_unix(void)
     }
 }
 
-Test *tests_phydat_unix(void)
-{
+Test *tests_phydat_unix(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_phydat_date_time_to_unix),
     };
@@ -201,8 +195,7 @@ Test *tests_phydat_unix(void)
     return (Test *)&senml_tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_phydat_unix());
     TESTS_END();

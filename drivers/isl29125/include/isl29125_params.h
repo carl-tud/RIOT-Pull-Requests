@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_isl29125
- *
- * @{
- * @file
- * @brief       Default configuration for ISL29125 devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- */
+/// @ingroup     drivers_isl29125
+///
+/// @{
+/// @file
+/// @brief       Default configuration for ISL29125 devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
 
 #include "board.h"
 #include "isl29125.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Set default configuration parameters
- * @{
- */
+/// @brief   Set default configuration parameters
+/// @{
 #ifndef ISL29125_PARAM_I2C
 #define ISL29125_PARAM_I2C              I2C_DEV(0)
 #endif
@@ -51,11 +45,9 @@ extern "C" {
                                           .mode  = ISL29125_PARAM_MODE,  \
                                           .res   = ISL29125_PARAM_RES }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const isl29125_params_t isl29125_params[] =
 {
     ISL29125_PARAMS
@@ -65,4 +57,4 @@ static const isl29125_params_t isl29125_params[] =
 }
 #endif
 
-/** @} */
+/// @}

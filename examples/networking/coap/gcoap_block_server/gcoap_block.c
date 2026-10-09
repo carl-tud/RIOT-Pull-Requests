@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Ken Bannister
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Ken Bannister
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       gcoap block server handler example
- *
- * @author      Ken Bannister <kb2ma@runbox.com>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       gcoap block server handler example
+///
+/// @author      Ken Bannister <kb2ma@runbox.com>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -30,7 +26,7 @@ static ssize_t _sha256_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_r
 static ssize_t _riot_block2_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len,
                                     coap_request_ctx_t *ctx);
 
-/* CoAP resources */
+// CoAP resources
 static const coap_resource_t _resources[] = {
     { "/riot/ver", COAP_GET, _riot_block2_handler, NULL },
     { "/sha256", COAP_POST, _sha256_handler, NULL },
@@ -41,14 +37,13 @@ static gcoap_listener_t _listener = {
     .resources_len = ARRAY_SIZE(_resources),
 };
 
-/* Constants for /riot/ver. */
+// Constants for /riot/ver.
 static const uint8_t block2_intro[] = "This is RIOT (Version: ";
 static const uint8_t block2_board[] = " running on a ";
 static const uint8_t block2_mcu[] = " board with a ";
 
 static ssize_t _riot_block2_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len,
-                                    coap_request_ctx_t *ctx)
-{
+                                    coap_request_ctx_t *ctx) {
     (void)ctx;
     coap_block_slicer_t slicer;
     int res = coap_block2_init(pdu, &slicer);
@@ -59,7 +54,7 @@ static ssize_t _riot_block2_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len,
     coap_opt_add_block2(pdu, &slicer, 1);
     ssize_t plen = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
 
-    /* Add actual content */
+    // Add actual content
     res = coap_blockwise_put_bytes_pkt(pdu, &slicer, block2_intro, sizeof(block2_intro)-1);
     if (res) { return res; }
     res = coap_blockwise_put_bytes_pkt(pdu, &slicer, RIOT_VERSION, strlen(RIOT_VERSION));
@@ -74,7 +69,7 @@ static ssize_t _riot_block2_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len,
     if (res) { return res; }
     res = coap_blockwise_put_bytes_pkt(pdu, &slicer, RIOT_CPU, strlen(RIOT_CPU));
     if (res) { return res; }
-    /* To demonstrate individual chars */
+    // To demonstrate individual chars
     res = coap_blockwise_put_char_pkt(pdu, &slicer, ' ');
     if (res) { return res; }
     res = coap_blockwise_put_char_pkt(pdu, &slicer, 'M');
@@ -91,15 +86,13 @@ static ssize_t _riot_block2_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len,
     return plen;
 }
 
-/*
- * Uses block1 POSTs to generate an sha256 digest. */
-static ssize_t _sha256_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
-{
+// Uses block1 POSTs to generate an sha256 digest.
+static ssize_t _sha256_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx) {
     (void)ctx;
 
-    /* using a shared sha256 context *will* break if two requests are handled
-     * at the same time.  doing it anyways, as this is meant to showcase block1
-     * support, not proper synchronisation. */
+    // using a shared sha256 context *will* break if two requests are handled
+    // at the same time.  doing it anyways, as this is meant to showcase block1
+    // support, not proper synchronisation.
     static sha256_context_t sha256;
     uint8_t digest[SHA256_DIGEST_LENGTH];
     coap_block1_t block1;
@@ -109,7 +102,7 @@ static ssize_t _sha256_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_r
     printf("_sha256_handler: received data: offset=%" PRIuSIZE " len=%u blockwise=%i more=%i\n",
             block1.offset, pdu->payload_len, blockwise, block1.more);
 
-    /* initialize sha256 calculation and add payload bytes */
+    // initialize sha256 calculation and add payload bytes
     if (block1.blknum == 0) {
         puts("_sha256_handler: init");
         sha256_init(&sha256);
@@ -121,10 +114,10 @@ static ssize_t _sha256_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_r
         resp_code = COAP_CODE_CONTINUE;
     }
 
-    /* start response */
+    // start response
     gcoap_resp_init(pdu, buf, len, resp_code);
 
-    /* has payload */
+    // has payload
     if (!blockwise || !block1.more) {
         coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
     }
@@ -132,7 +125,7 @@ static ssize_t _sha256_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_r
         coap_opt_add_block1_control(pdu, &block1);
     }
 
-    /* include digest if done, otherwise response code above asks for next block */
+    // include digest if done, otherwise response code above asks for next block
     size_t pdu_len = 0;
     if (!blockwise || !block1.more) {
         puts("_sha256_handler: finish");
@@ -148,10 +141,9 @@ static ssize_t _sha256_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_r
     return pdu_len;
 }
 
-static int _cli_cmd(int argc, char **argv)
-{
+static int _cli_cmd(int argc, char **argv) {
     if (argc == 1) {
-        /* show help for main commands */
+        // show help for main commands
         goto end;
     }
 
@@ -170,7 +162,6 @@ static int _cli_cmd(int argc, char **argv)
 
 SHELL_COMMAND(coap, "CoAP example", _cli_cmd);
 
-void gcoap_cli_init(void)
-{
+void gcoap_cli_init(void) {
     gcoap_register_listener(&_listener);
 }

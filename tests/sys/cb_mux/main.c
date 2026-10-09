@@ -1,47 +1,40 @@
-/*
- * SPDX-FileCopyrightText: 2018 Acutam Automation, LLC
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Acutam Automation, LLC
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       cb_mux test application
- *
- * @author      Matthew Blue <matthew.blue.neuro@gmail.com>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       cb_mux test application
+///
+/// @author      Matthew Blue <matthew.blue.neuro@gmail.com>
+/// @}
 
 #include <stdio.h>
 
 #include "cb_mux.h"
 
-/* Head of cb_mux list */
+// Head of cb_mux list
 cb_mux_t *cb_mux_head;
 
-/* Flags for mux_iter */
+// Flags for mux_iter
 enum {
     ITER_TEST = 1
 };
 
-/* Function to iterate over cb_mux list */
-void mux_iter(cb_mux_t *entry, void *arg)
-{
+// Function to iterate over cb_mux list
+void mux_iter(cb_mux_t *entry, void *arg) {
     (void)arg;
 
     entry->info = (void *)((uintptr_t)entry->info | (1 << ITER_TEST));
 }
 
-/* Test callback */
-void cb(void *arg)
-{
+// Test callback
+void cb(void *arg) {
     printf("Callback %u executed\n", (uint8_t)(uintptr_t)arg);
 }
 
-int main(void)
-{
+int main(void) {
     cb_mux_t entries[5];
     cb_mux_cbid_t num;
     cb_mux_t *entry;

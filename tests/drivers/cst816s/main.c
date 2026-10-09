@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the CST816S touch screen driver
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the CST816S touch screen driver
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -26,14 +22,12 @@
 #define CST816S_THREAD_FLAG     (1 << 8)
 #define CST816S_NUM_TOUCHES     5
 
-static void _cb(void *arg)
-{
+static void _cb(void *arg) {
     kernel_pid_t *pid = arg;
     thread_flags_set((thread_t *)sched_threads[*pid], CST816S_THREAD_FLAG);
 }
 
-static void _dump_cst816s(cst816s_t *dev)
-{
+static void _dump_cst816s(cst816s_t *dev) {
     puts("Reading data:");
     cst816s_touch_data_t touches;
     if (cst816s_read(dev, &touches) == 0) {
@@ -45,8 +39,7 @@ static void _dump_cst816s(cst816s_t *dev)
     }
 }
 
-int main(void)
-{
+int main(void) {
     cst816s_t dev;
 
     kernel_pid_t pid = thread_getpid();

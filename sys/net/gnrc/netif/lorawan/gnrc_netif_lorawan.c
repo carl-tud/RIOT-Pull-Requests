@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Jose Ignacio Alamos <jose.alamos@haw-hamburg.de>
- */
+/// @{
+///
+/// @file
+/// @author  Jose Ignacio Alamos <jose.alamos@haw-hamburg.de>
 
 #include <assert.h>
 #include "fmt.h"
@@ -31,7 +27,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-#define MSG_TYPE_MLME_BACKOFF_EXPIRE (0x3458)           /**< Backoff timer expiration message type */
+#define MSG_TYPE_MLME_BACKOFF_EXPIRE (0x3458)           ///< Backoff timer expiration message type
 
 static uint8_t _appskey[LORAMAC_APPSKEY_LEN];
 static uint8_t _appkey[LORAMAC_APPKEY_LEN];
@@ -62,8 +58,7 @@ static const gnrc_netif_ops_t lorawan_ops = {
     .msg_handler = _msg_handler
 };
 
-void gnrc_lorawan_mlme_confirm(gnrc_lorawan_t *mac, mlme_confirm_t *confirm)
-{
+void gnrc_lorawan_mlme_confirm(gnrc_lorawan_t *mac, mlme_confirm_t *confirm) {
     gnrc_netif_lorawan_t *lw_netif =
         container_of(mac, gnrc_netif_lorawan_t, mac);
 
@@ -89,22 +84,19 @@ void gnrc_lorawan_mlme_confirm(gnrc_lorawan_t *mac, mlme_confirm_t *confirm)
     }
 }
 
-void gnrc_lorawan_set_timer(gnrc_lorawan_t *mac, uint32_t us)
-{
+void gnrc_lorawan_set_timer(gnrc_lorawan_t *mac, uint32_t us) {
     gnrc_netif_lorawan_t *lw_netif = container_of(mac, gnrc_netif_lorawan_t, mac);
 
     ztimer_set_msg(ZTIMER_MSEC, &lw_netif->timer, us / 1000, &timeout_msg, thread_getpid());
 }
 
-void gnrc_lorawan_remove_timer(gnrc_lorawan_t *mac)
-{
+void gnrc_lorawan_remove_timer(gnrc_lorawan_t *mac) {
     gnrc_netif_lorawan_t *lw_netif = container_of(mac, gnrc_netif_lorawan_t, mac);
 
     ztimer_remove(ZTIMER_MSEC, &lw_netif->timer);
 }
 
-static inline void _set_be_addr(gnrc_lorawan_t *mac, uint8_t *be_addr)
-{
+static inline void _set_be_addr(gnrc_lorawan_t *mac, uint8_t *be_addr) {
     uint32_t tmp = byteorder_bebuftohl(be_addr);
     le_uint32_t dev_addr = byteorder_btoll(byteorder_htonl(tmp));
 
@@ -118,8 +110,7 @@ static inline void _set_be_addr(gnrc_lorawan_t *mac, uint8_t *be_addr)
     gnrc_lorawan_mlme_request(mac, &mlme_request, &mlme_confirm);
 }
 
-void gnrc_lorawan_mcps_indication(gnrc_lorawan_t *mac, mcps_indication_t *ind)
-{
+void gnrc_lorawan_mcps_indication(gnrc_lorawan_t *mac, mcps_indication_t *ind) {
     gnrc_netif_t *netif = container_of(mac, gnrc_netif_t, lorawan.mac);
     gnrc_nettype_t nettype = GNRC_NETTYPE_UNDEF;
     uint32_t demux = GNRC_NETREG_DEMUX_CTX_ALL;
@@ -159,15 +150,13 @@ release:
 }
 
 __attribute__((weak))
-void gnrc_lorawan_mlme_indication(gnrc_lorawan_t *mac, mlme_indication_t *ind)
-{
+void gnrc_lorawan_mlme_indication(gnrc_lorawan_t *mac, mlme_indication_t *ind) {
     (void)mac;
     (void)ind;
 }
 
 __attribute__((weak))
-void gnrc_lorawan_mcps_confirm(gnrc_lorawan_t *mac, mcps_confirm_t *confirm)
-{
+void gnrc_lorawan_mcps_confirm(gnrc_lorawan_t *mac, mcps_confirm_t *confirm) {
     (void)mac;
 
     gnrc_pktbuf_release_error((gnrc_pktsnip_t *)confirm->msdu, confirm->status);
@@ -176,8 +165,7 @@ void gnrc_lorawan_mcps_confirm(gnrc_lorawan_t *mac, mcps_confirm_t *confirm)
           confirm->status);
 }
 
-static void _rx_done(gnrc_lorawan_t *mac)
-{
+static void _rx_done(gnrc_lorawan_t *mac) {
     netdev_t *dev = gnrc_lorawan_get_netdev(mac);
     int bytes_expected = dev->driver->recv(dev, NULL, 0, 0);
     int nread;
@@ -187,7 +175,7 @@ static void _rx_done(gnrc_lorawan_t *mac)
 
     if (pkt == NULL) {
         DEBUG("_recv_lorawan: cannot allocate pktsnip.\n");
-        /* Discard packet on netdev device */
+        // Discard packet on netdev device
         dev->driver->recv(dev, NULL, bytes_expected, NULL);
         gnrc_lorawan_radio_rx_error_cb(mac);
         return;
@@ -203,8 +191,7 @@ static void _rx_done(gnrc_lorawan_t *mac)
     gnrc_pktbuf_release(pkt);
 }
 
-static void _driver_cb(netdev_t *dev, netdev_event_t event)
-{
+static void _driver_cb(netdev_t *dev, netdev_event_t event) {
     gnrc_netif_t *netif = dev->context;
     gnrc_lorawan_t *mac = &netif->lorawan.mac;
 
@@ -246,8 +233,7 @@ static void _driver_cb(netdev_t *dev, netdev_event_t event)
     }
 }
 
-static void _reset(gnrc_netif_t *netif)
-{
+static void _reset(gnrc_netif_t *netif) {
     netif->lorawan.otaa = CONFIG_LORAMAC_DEFAULT_JOIN_PROCEDURE ==
                           LORAMAC_JOIN_OTAA ? NETOPT_ENABLE : NETOPT_DISABLE;
     netif->lorawan.datarate = CONFIG_LORAMAC_DEFAULT_DR;
@@ -258,15 +244,13 @@ static void _reset(gnrc_netif_t *netif)
     netif->lorawan.flags = 0;
 }
 
-netdev_t *gnrc_lorawan_get_netdev(gnrc_lorawan_t *mac)
-{
+netdev_t *gnrc_lorawan_get_netdev(gnrc_lorawan_t *mac) {
     gnrc_netif_t *netif = container_of(mac, gnrc_netif_t, lorawan.mac);
 
     return netif->dev;
 }
 
-static int _init(gnrc_netif_t *netif)
-{
+static int _init(gnrc_netif_t *netif) {
     DEBUG("netif init ! \n");
     int res = gnrc_netif_default_init(netif);
 
@@ -277,7 +261,7 @@ static int _init(gnrc_netif_t *netif)
     netif->dev->event_callback = _driver_cb;
     _reset(netif);
 
-    /* Convert default keys, address and EUIs to hex */
+    // Convert default keys, address and EUIs to hex
     fmt_hex_bytes(_appskey, CONFIG_LORAMAC_APP_SKEY_DEFAULT);
     if (IS_USED(MODULE_GNRC_LORAWAN_1_1)) {
         fmt_hex_bytes(_joineui, CONFIG_LORAMAC_JOIN_EUI_DEFAULT);
@@ -296,7 +280,7 @@ static int _init(gnrc_netif_t *netif)
     fmt_hex_bytes(_deveui, CONFIG_LORAMAC_DEV_EUI_DEFAULT);
     fmt_hex_bytes(_devaddr, CONFIG_LORAMAC_DEV_ADDR_DEFAULT);
 
-    /* Initialize default keys, address and EUIs */
+    // Initialize default keys, address and EUIs
     memcpy(netif->lorawan.appskey, _appskey, sizeof(_appskey));
     memcpy_reversed(netif->lorawan.deveui, _deveui, sizeof(_deveui));
     memcpy_reversed(netif->lorawan.joineui, _joineui, sizeof(_joineui));
@@ -335,21 +319,18 @@ static int _init(gnrc_netif_t *netif)
 }
 
 int gnrc_netif_lorawan_create(gnrc_netif_t *netif, char *stack, int stacksize,
-                              char priority, char *name, netdev_t *dev)
-{
+                              char priority, char *name, netdev_t *dev) {
     return gnrc_netif_create(netif, stack, stacksize, priority, name, dev,
                              &lorawan_ops);
 }
 
-static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif)
-{
+static gnrc_pktsnip_t *_recv(gnrc_netif_t *netif) {
     (void)netif;
-    /* Unused */
+    // Unused
     return 0;
 }
 
-static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *payload)
-{
+static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *payload) {
     gnrc_netif_hdr_t *netif_hdr;
     const uint8_t *dst;
     mlme_request_t mlme_request;
@@ -370,7 +351,7 @@ static int _send(gnrc_netif_t *netif, gnrc_pktsnip_t *payload)
         goto end;
     }
 
-    /* Remove the netif hdr snip and point to the MSDU */
+    // Remove the netif hdr snip and point to the MSDU
     payload = gnrc_pktbuf_remove_snip(payload, payload);
 
     if (netif->lorawan.flags & GNRC_NETIF_LORAWAN_FLAGS_LINK_CHECK) {
@@ -398,8 +379,7 @@ end:
     return res;
 }
 
-static void _msg_handler(gnrc_netif_t *netif, msg_t *msg)
-{
+static void _msg_handler(gnrc_netif_t *netif, msg_t *msg) {
     (void)netif;
     (void)msg;
     switch (msg->type) {
@@ -416,8 +396,7 @@ static void _msg_handler(gnrc_netif_t *netif, msg_t *msg)
     }
 }
 
-static int _get(gnrc_netif_t *netif, gnrc_netapi_opt_t *opt)
-{
+static int _get(gnrc_netif_t *netif, gnrc_netapi_opt_t *opt) {
     int res = 0;
     uint32_t tmp;
 
@@ -470,8 +449,7 @@ static int _get(gnrc_netif_t *netif, gnrc_netapi_opt_t *opt)
     return res;
 }
 
-static int _set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt)
-{
+static int _set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt) {
     int res = 0;
     mlme_confirm_t mlme_confirm;
     mlme_request_t mlme_request;
@@ -583,7 +561,7 @@ static int _set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt)
             if (mlme_confirm.status == 0) {
                 netif->flags &= ~GNRC_NETIF_FLAGS_HAS_L2ADDR;
                 netif->dev->event_callback(netif->dev, NETDEV_EVENT_LINK_DOWN);
-                /* reset netif as well */
+                // reset netif as well
                 _reset(netif);
             }
         }
@@ -612,4 +590,4 @@ static int _set(gnrc_netif_t *netif, const gnrc_netapi_opt_t *opt)
     gnrc_netif_release(netif);
     return res;
 }
-/** @} */
+/// @}

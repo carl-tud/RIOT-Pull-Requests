@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_lsm303dlhc
- * @{
- *
- * @file
- * @brief       Device driver implementation for the LSM303DLHC 3D accelerometer/magnetometer.
- *
- * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_lsm303dlhc
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the LSM303DLHC 3D accelerometer/magnetometer.
+///
+/// @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+///
+/// @}
 
 #include "lsm303dlhc.h"
 #include "lsm303dlhc-internal.h"
@@ -32,52 +28,51 @@
 #define DEV_MAG_RATE    (dev->params.mag_rate)
 #define DEV_MAG_GAIN    (dev->params.mag_gain)
 
-int lsm303dlhc_init(lsm303dlhc_t *dev, const lsm303dlhc_params_t *params)
-{
+int lsm303dlhc_init(lsm303dlhc_t *dev, const lsm303dlhc_params_t *params) {
     dev->params = *params;
 
     int res;
     uint8_t tmp;
 
     DEBUG("lsm303dlhc init...");
-    /* Acquire exclusive access to the bus. */
+    // Acquire exclusive access to the bus.
     i2c_acquire(DEV_I2C);
 
-    /* reboot sensor */
+    // reboot sensor
     res = i2c_write_reg(DEV_I2C, DEV_ACC_ADDR,
                         LSM303DLHC_REG_CTRL5_A, LSM303DLHC_REG_CTRL5_A_BOOT, 0);
 
-    /* configure accelerometer */
-    /* enable all three axis and set sample rate */
+    // configure accelerometer
+    // enable all three axis and set sample rate
     tmp = (LSM303DLHC_CTRL1_A_XEN
           | LSM303DLHC_CTRL1_A_YEN
           | LSM303DLHC_CTRL1_A_ZEN
           | DEV_ACC_RATE);
     res += i2c_write_reg(DEV_I2C, DEV_ACC_ADDR,
                          LSM303DLHC_REG_CTRL1_A, tmp, 0);
-    /* update on read, MSB @ low address, scale and high-resolution */
+    // update on read, MSB @ low address, scale and high-resolution
     tmp = (DEV_ACC_SCALE | LSM303DLHC_CTRL4_A_HR);
     res += i2c_write_reg(DEV_I2C, DEV_ACC_ADDR,
                          LSM303DLHC_REG_CTRL4_A, tmp, 0);
-    /* no interrupt generation */
+    // no interrupt generation
     res += i2c_write_reg(DEV_I2C, DEV_ACC_ADDR,
                          LSM303DLHC_REG_CTRL3_A, LSM303DLHC_CTRL3_A_I1_NONE, 0);
-    /* configure acc data ready pin */
+    // configure acc data ready pin
     gpio_init(DEV_ACC_PIN, GPIO_IN);
 
-    /* configure magnetometer and temperature */
-    /* enable temperature output and set sample rate */
+    // configure magnetometer and temperature
+    // enable temperature output and set sample rate
     tmp = LSM303DLHC_TEMP_EN | DEV_MAG_RATE;
     res += i2c_write_reg(DEV_I2C, DEV_MAG_ADDR,
                          LSM303DLHC_REG_CRA_M, tmp, 0);
-    /* configure z-axis gain */
+    // configure z-axis gain
     res += i2c_write_reg(DEV_I2C, DEV_MAG_ADDR,
                          LSM303DLHC_REG_CRB_M, DEV_MAG_GAIN, 0);
-    /* set continuous mode */
+    // set continuous mode
     res += i2c_write_reg(DEV_I2C, DEV_MAG_ADDR,
                          LSM303DLHC_REG_MR_M, LSM303DLHC_MAG_MODE_CONTINUOUS, 0);
     i2c_release(DEV_I2C);
-    /* configure mag data ready pin */
+    // configure mag data ready pin
     gpio_init(DEV_MAG_PIN, GPIO_IN);
     if (IS_ACTIVE(ENABLE_DEBUG) && res == 0) {
         DEBUG("[OK]\n");
@@ -89,8 +84,7 @@ int lsm303dlhc_init(lsm303dlhc_t *dev, const lsm303dlhc_params_t *params)
     return (res < 0) ? -1 : 0;
 }
 
-int lsm303dlhc_read_acc(const lsm303dlhc_t *dev, lsm303dlhc_3d_data_t *data)
-{
+int lsm303dlhc_read_acc(const lsm303dlhc_t *dev, lsm303dlhc_3d_data_t *data) {
     int res;
     uint8_t tmp;
 
@@ -133,8 +127,7 @@ int lsm303dlhc_read_acc(const lsm303dlhc_t *dev, lsm303dlhc_3d_data_t *data)
     return 0;
 }
 
-int lsm303dlhc_read_mag(const lsm303dlhc_t *dev, lsm303dlhc_3d_data_t *data)
-{
+int lsm303dlhc_read_mag(const lsm303dlhc_t *dev, lsm303dlhc_3d_data_t *data) {
     int res;
 
     DEBUG("lsm303dlhc: wait for mag values... ");
@@ -153,21 +146,20 @@ int lsm303dlhc_read_mag(const lsm303dlhc_t *dev, lsm303dlhc_3d_data_t *data)
     }
     DEBUG("[done]\n");
 
-    /* interchange y and z axis and fix endianness */
+    // interchange y and z axis and fix endianness
     int16_t tmp = data->y_axis;
     data->x_axis = ((data->x_axis<<8)|((data->x_axis>>8)&0xff));
     data->y_axis = ((data->z_axis<<8)|((data->z_axis>>8)&0xff));
     data->z_axis = ((tmp<<8)|((tmp>>8)&0xff));
 
-    /* compensate z-axis sensitivity */
-    /* gain is currently hardcoded to LSM303DLHC_GAIN_5 */
+    // compensate z-axis sensitivity
+    // gain is currently hardcoded to LSM303DLHC_GAIN_5
     data->z_axis = ((data->z_axis * 400) / 355);
 
     return 0;
 }
 
-int lsm303dlhc_read_temp(const lsm303dlhc_t *dev, int16_t *value)
-{
+int lsm303dlhc_read_temp(const lsm303dlhc_t *dev, int16_t *value) {
     int res;
 
     i2c_acquire(DEV_I2C);
@@ -186,8 +178,7 @@ int lsm303dlhc_read_temp(const lsm303dlhc_t *dev, int16_t *value)
     return 0;
 }
 
-int lsm303dlhc_disable(const lsm303dlhc_t *dev)
-{
+int lsm303dlhc_disable(const lsm303dlhc_t *dev) {
     int res;
 
     i2c_acquire(DEV_I2C);
@@ -202,8 +193,7 @@ int lsm303dlhc_disable(const lsm303dlhc_t *dev)
     return (res < 0) ? -1 : 0;
 }
 
-int lsm303dlhc_enable(const lsm303dlhc_t *dev)
-{
+int lsm303dlhc_enable(const lsm303dlhc_t *dev) {
     int res;
     uint8_t tmp = (LSM303DLHC_CTRL1_A_XEN
                   | LSM303DLHC_CTRL1_A_YEN

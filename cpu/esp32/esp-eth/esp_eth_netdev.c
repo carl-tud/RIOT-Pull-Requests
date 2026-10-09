@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32_esp_eth
- * @{
- *
- * @file
- * @brief       Netdev interface for the ESP32 Ethernet MAC (EMAC) module
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     cpu_esp32_esp_eth
+/// @{
+///
+/// @file
+/// @brief       Netdev interface for the ESP32 Ethernet MAC (EMAC) module
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #ifdef MODULE_ESP_ETH
 
@@ -78,24 +74,21 @@
 #error "Physiscal layer transceiver not defined"
 #endif
 
-/* for source code compatibility of board definitions from ESP-IDF 3.1 */
+// for source code compatibility of board definitions from ESP-IDF 3.1
 #define ETH_CLOCK_GPIO0_IN          0
 #define ETH_CLOCK_GPIO0_OUT         1
 #define ETH_CLOCK_GPIO16_OUT        2
 #define ETH_CLOCK_GPIO17_OUT        3
 
-/**
- * There is only one ESP-ETH device. We define it as static device variable
- * to have access to the device inside ESP-ETH interrupt routines which do
- * not provide an argument that could be used as pointer to the ESP-ETH
- * device which triggers the interrupt.
- */
+/// There is only one ESP-ETH device. We define it as static device variable
+/// to have access to the device inside ESP-ETH interrupt routines which do
+/// not provide an argument that could be used as pointer to the ESP-ETH
+/// device which triggers the interrupt.
 esp_eth_netdev_t _esp_eth_dev;
 
 static esp_err_t IRAM_ATTR _eth_input_callback(esp_eth_handle_t hdl,
                                                uint8_t *buffer, uint32_t len,
-                                               void *priv)
-{
+                                               void *priv) {
     DEBUG("%s: buf=%p len=%"PRIu32" priv=%p\n", __func__, buffer, len, priv);
 
     assert(buffer != NULL);
@@ -104,9 +97,9 @@ static esp_err_t IRAM_ATTR _eth_input_callback(esp_eth_handle_t hdl,
     mutex_lock(&_esp_eth_dev.dev_lock);
 
     memcpy(_esp_eth_dev.rx_buf, buffer, len);
-    /* buffer is allocated by the `emac_esp32_rx_task` upon receipt of a
-     * MAC frame and is forwarded to the consumer who responsible for
-     * freeing the buffer. */
+    // buffer is allocated by the `emac_esp32_rx_task` upon receipt of a
+    // MAC frame and is forwarded to the consumer who responsible for
+    // freeing the buffer.
     free(buffer);
     _esp_eth_dev.rx_len = len;
     _esp_eth_dev.event = SYSTEM_EVENT_ETH_RX_DONE;
@@ -117,10 +110,9 @@ static esp_err_t IRAM_ATTR _eth_input_callback(esp_eth_handle_t hdl,
     return ESP_OK;
 }
 
-/** Event handler for Ethernet events */
+/// Event handler for Ethernet events
 static void _esp_eth_event_handler(void *arg, esp_event_base_t event_base,
-                                   int32_t event_id, void *event_data)
-{
+                                   int32_t event_id, void *event_data) {
     (void)arg;
     (void)event_data;
 
@@ -153,27 +145,26 @@ static void _esp_eth_event_handler(void *arg, esp_event_base_t event_base,
     }
 }
 
-static int _esp_eth_init(netdev_t *netdev)
-{
+static int _esp_eth_init(netdev_t *netdev) {
     DEBUG("%s: netdev=%p\n", __func__, netdev);
 
     esp_eth_netdev_t* dev = container_of(netdev, esp_eth_netdev_t, netdev);
 
     mutex_lock(&dev->dev_lock);
 
-    /* set PHY configuration */
+    // set PHY configuration
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
 
     phy_config.phy_addr = EMAC_PHY_ADDRESS;
     phy_config.reset_gpio_num = EMAC_PHY_POWER_PIN;
 
-    /* set EMAC configuration */
+    // set EMAC configuration
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
 
     mac_config.sw_reset_timeout_ms = 500;
     mac_config.rx_task_prio = 20;
 
-    /* set EMAC configuration */
+    // set EMAC configuration
     eth_esp32_emac_config_t emac_config = ETH_ESP32_EMAC_DEFAULT_CONFIG();
 
     emac_config.smi_gpio.mdc_num = EMAC_PHY_SMI_MDC_PIN;
@@ -199,10 +190,10 @@ static int _esp_eth_init(netdev_t *netdev)
     esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&emac_config, &mac_config);
     esp_eth_phy_t *phy = esp_eth_phy_new_xxxxx(&phy_config);
 
-    /* generate Ethernet driver configuration */
+    // generate Ethernet driver configuration
     esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, phy);
 
-    /* install Ethernet driver */
+    // install Ethernet driver
     if (esp_eth_driver_install(&config, &_esp_eth_dev.eth_driver) != ESP_OK) {
         LOG_TAG_ERROR("esp_eth", "driver installation failed");
         return -ENODEV;
@@ -211,7 +202,7 @@ static int _esp_eth_init(netdev_t *netdev)
     esp_event_handler_instance_register(ETH_EVENT, ESP_EVENT_ANY_ID,
                                         &_esp_eth_event_handler, NULL, NULL);
 
-    /* start Ethernet driver state machine */
+    // start Ethernet driver state machine
     if (esp_eth_start(_esp_eth_dev.eth_driver) != ESP_OK) {
         LOG_TAG_ERROR("esp_eth", "driver installation failed");
         return -ENODEV;
@@ -225,8 +216,7 @@ static int _esp_eth_init(netdev_t *netdev)
     return 0;
 }
 
-static int _esp_eth_send(netdev_t *netdev, const iolist_t *iolist)
-{
+static int _esp_eth_send(netdev_t *netdev, const iolist_t *iolist) {
     DEBUG("%s: netdev=%p iolist=%p\n", __func__, netdev, iolist);
 
     CHECK_PARAM_RET (netdev != NULL, -ENODEV);
@@ -243,7 +233,7 @@ static int _esp_eth_send(netdev_t *netdev, const iolist_t *iolist)
 
     dev->tx_len = 0;
 
-    /* load packet data into TX buffer */
+    // load packet data into TX buffer
     for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
         if (dev->tx_len + iol->iol_len > ETHERNET_MAX_LEN) {
             mutex_unlock(&dev->dev_lock);
@@ -264,7 +254,7 @@ static int _esp_eth_send(netdev_t *netdev, const iolist_t *iolist)
 
     int ret = 0;
 
-    /* send the packet to the peer(s) mac address */
+    // send the packet to the peer(s) mac address
     if (esp_eth_transmit(dev->eth_driver, dev->tx_buf, dev->tx_len) == ESP_OK) {
         netdev->event_callback(netdev, NETDEV_EVENT_TX_COMPLETE);
     }
@@ -276,8 +266,7 @@ static int _esp_eth_send(netdev_t *netdev, const iolist_t *iolist)
     return ret;
 }
 
-static int _esp_eth_recv(netdev_t *netdev, void *buf, size_t len, void *info)
-{
+static int _esp_eth_recv(netdev_t *netdev, void *buf, size_t len, void *info) {
     DEBUG("%s: netdev=%p buf=%p len=%u info=%p\n",
           __func__, netdev, buf, len, info);
 
@@ -290,9 +279,9 @@ static int _esp_eth_recv(netdev_t *netdev, void *buf, size_t len, void *info)
     int size = dev->rx_len;
 
     if (!buf) {
-        /* get the size of the frame; if len > 0 then also drop the frame */
+        // get the size of the frame; if len > 0 then also drop the frame
         if (len > 0) {
-            /* drop frame requested */
+            // drop frame requested
             dev->rx_len = 0;
         }
         mutex_unlock(&dev->dev_lock);
@@ -300,7 +289,7 @@ static int _esp_eth_recv(netdev_t *netdev, void *buf, size_t len, void *info)
     }
 
     if (dev->rx_len > len) {
-        /* buffer is smaller than the number of received bytes */
+        // buffer is smaller than the number of received bytes
         DEBUG("%s: Not enough space in receive buffer for %d bytes\n",
               __func__, dev->rx_len);
         mutex_unlock(&dev->dev_lock);
@@ -314,7 +303,7 @@ static int _esp_eth_recv(netdev_t *netdev, void *buf, size_t len, void *info)
         }
     }
 
-    /* copy received date and reset the receive length */
+    // copy received date and reset the receive length
     memcpy(buf, dev->rx_buf, dev->rx_len);
     dev->rx_len = 0;
 
@@ -322,8 +311,7 @@ static int _esp_eth_recv(netdev_t *netdev, void *buf, size_t len, void *info)
     return size;
 }
 
-static int _esp_eth_get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len)
-{
+static int _esp_eth_get(netdev_t *netdev, netopt_t opt, void *val, size_t max_len) {
     DEBUG("%s: netdev=%p opt=%s val=%p len=%u\n",
           __func__, netdev, netopt2str(opt), val, max_len);
 
@@ -347,8 +335,7 @@ static int _esp_eth_get(netdev_t *netdev, netopt_t opt, void *val, size_t max_le
     }
 }
 
-static int _esp_eth_set(netdev_t *netdev, netopt_t opt, const void *val, size_t max_len)
-{
+static int _esp_eth_set(netdev_t *netdev, netopt_t opt, const void *val, size_t max_len) {
     DEBUG("%s: netdev=%p opt=%s val=%p len=%u\n",
           __func__, netdev, netopt2str(opt), val, max_len);
 
@@ -367,8 +354,7 @@ static int _esp_eth_set(netdev_t *netdev, netopt_t opt, const void *val, size_t 
     }
 }
 
-static void _esp_eth_isr(netdev_t *netdev)
-{
+static void _esp_eth_isr(netdev_t *netdev) {
     DEBUG("%s: netdev=%p\n", __func__, netdev);
 
     CHECK_PARAM(netdev != NULL);
@@ -377,7 +363,7 @@ static void _esp_eth_isr(netdev_t *netdev)
 
     switch (dev->event) {
         case SYSTEM_EVENT_ETH_RX_DONE:
-            /* if data were received */
+            // if data were received
             if (dev->rx_len) {
                 dev->netdev.event_callback(netdev, NETDEV_EVENT_RX_COMPLETE);
             }
@@ -391,13 +377,12 @@ static void _esp_eth_isr(netdev_t *netdev)
         default:
             break;
     }
-    _esp_eth_dev.event = SYSTEM_EVENT_MAX; /* no event */
+    _esp_eth_dev.event = SYSTEM_EVENT_MAX; // no event
 
     return;
 }
 
-static esp_err_t IRAM_ATTR _esp_system_event_handler(void *ctx, system_event_t *event)
-{
+static esp_err_t IRAM_ATTR _esp_system_event_handler(void *ctx, system_event_t *event) {
     switch (event->event_id) {
         case SYSTEM_EVENT_ETH_START:
             DEBUG("%s: Ethernet started\n", __func__);
@@ -441,23 +426,22 @@ static const netdev_driver_t _esp_eth_driver =
 extern esp_err_t esp_system_event_add_handler (system_event_cb_t handler,
                                                void *arg);
 
-void esp_eth_setup(esp_eth_netdev_t* dev)
-{
+void esp_eth_setup(esp_eth_netdev_t* dev) {
     (void)dev;
 
     LOG_TAG_INFO("esp_eth", "initializing ESP32 Ethernet MAC (EMAC) device\n");
 
-    /* initialize locking */
+    // initialize locking
     mutex_init(&_esp_eth_dev.dev_lock);
 
-    /* init esp system event loop */
+    // init esp system event loop
     esp_system_event_add_handler(_esp_system_event_handler, NULL);
 
-    /* set the netdev driver */
+    // set the netdev driver
     _esp_eth_dev.netdev.driver = &_esp_eth_driver;
 
-    /* initialize netdev data structure */
-    _esp_eth_dev.event = SYSTEM_EVENT_MAX; /* no event */
+    // initialize netdev data structure
+    _esp_eth_dev.event = SYSTEM_EVENT_MAX; // no event
     _esp_eth_dev.link_up = false;
     _esp_eth_dev.rx_len = 0;
     _esp_eth_dev.tx_len = 0;
@@ -465,5 +449,5 @@ void esp_eth_setup(esp_eth_netdev_t* dev)
     netdev_register(&dev->netdev, NETDEV_ESP_ETH, 0);
 }
 
-#endif /* MODULE_ESP_ETH */
-/**@}*/
+#endif // MODULE_ESP_ETH
+/// @}

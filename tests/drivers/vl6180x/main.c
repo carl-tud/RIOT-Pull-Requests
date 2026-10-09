@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 /**
  * @ingroup     tests
@@ -76,38 +74,37 @@
 
 #if IS_USED(MODULE_VL6180X_RNG)
 static const char *rng_errors[] = {
-    "No error",                         /**< VL6180X_RNG_OK */
-    "VCSEL continuity Test",            /**< VL6180X_RNG_VCSEL_CONT_TEST */
-    "VCSEL watchdog test",              /**< VL6180X_RNG_VCSEL_WD_TEST */
-    "VCSEL watchdog",                   /**< VL6180X_RNG_VCSEL_WD */
-    "PLL1 lock",                        /**< VL6180X_RNG_PLL1_LOCK */
-    "PLL2 lock",                        /**< VL6180X_RNG_PLL2_LOCK */
-    "Early convergence estimate",       /**< VL6180X_RNG_EARLY_CONV_EST */
-    "Maximum convergence time reached", /**< VL6180X_RNG_MAX_CONV */
-    "No target, ignore",                /**< VL6180X_RNG_NO_TARGET */
+    "No error",                         ///< VL6180X_RNG_OK
+    "VCSEL continuity Test",            ///< VL6180X_RNG_VCSEL_CONT_TEST
+    "VCSEL watchdog test",              ///< VL6180X_RNG_VCSEL_WD_TEST
+    "VCSEL watchdog",                   ///< VL6180X_RNG_VCSEL_WD
+    "PLL1 lock",                        ///< VL6180X_RNG_PLL1_LOCK
+    "PLL2 lock",                        ///< VL6180X_RNG_PLL2_LOCK
+    "Early convergence estimate",       ///< VL6180X_RNG_EARLY_CONV_EST
+    "Maximum convergence time reached", ///< VL6180X_RNG_MAX_CONV
+    "No target, ignore",                ///< VL6180X_RNG_NO_TARGET
     "Unknown",
     "Unknown",
-    "Maximum SNR reached",              /**< VL6180X_RNG_MAX_SNR */
-    "Raw ranging algorithm underflow",  /**< VL6180X_RNG_RAW_ALGO_UNDERFLOW */
-    "Raw ranging algorithn overflow",   /**< VL6180X_RNG_RAW_ALGO_OVERFLOW */
-    "Ranging algorithm underflow",      /**< VL6180X_RNG_ALGO_UNDERFLOW */
-    "Ranging algorithm overflow",       /**< VL6180X_RNG_ALGO_OVERFLOW */
+    "Maximum SNR reached",              ///< VL6180X_RNG_MAX_SNR
+    "Raw ranging algorithm underflow",  ///< VL6180X_RNG_RAW_ALGO_UNDERFLOW
+    "Raw ranging algorithn overflow",   ///< VL6180X_RNG_RAW_ALGO_OVERFLOW
+    "Ranging algorithm underflow",      ///< VL6180X_RNG_ALGO_UNDERFLOW
+    "Ranging algorithm overflow",       ///< VL6180X_RNG_ALGO_OVERFLOW
 };
 #endif
 
 #if IS_USED(MODULE_VL6180X_ALS)
 static const char *als_errors[] = {
-    "No error",                         /**< VL6180X_ALS_OK */
-    "ALS measurement overflow",         /**< VL6180X_ALS_OVERFLOW */
-    "ALS measurement underflow",        /**< VL6180X_ALS_UNDERFLOW */
+    "No error",                         ///< VL6180X_ALS_OK
+    "ALS measurement overflow",         ///< VL6180X_ALS_OVERFLOW
+    "ALS measurement underflow",        ///< VL6180X_ALS_UNDERFLOW
 };
 #endif
 
-#endif /* IS_USED(MODULE_VL6180X_IRQ) */
+#endif // IS_USED(MODULE_VL6180X_IRQ)
 
-int main(void)
-{
-    /* Initialize the sensor */
+int main(void) {
+    // Initialize the sensor
     vl6180x_t dev;
 
 #if IS_USED(MODULE_VL6180X_RNG)
@@ -119,7 +116,7 @@ int main(void)
     uint16_t lux;
 #endif
 
-    /* initialize the sensor  */
+    // initialize the sensor
     puts("VL6180X Time-of-Flight distance sensor\n");
     puts("Initializing VL6180X sensor");
 
@@ -140,21 +137,21 @@ int main(void)
     vl6180x_int_thresh_t thresh;
 
 #if IS_USED(MODULE_VL6180X_RNG)
-    /* interrupt when distance is less than 30 mm or greater than 100 mm */
+    // interrupt when distance is less than 30 mm or greater than 100 mm
     mode.rng_int = VL6180X_INT_OUT;
     thresh.rng_low = 30;
     thresh.rng_high = 100;
-#endif /* IS_USED(MODULE_VL6180X_RNG) */
+#endif // IS_USED(MODULE_VL6180X_RNG)
 
 #if IS_USED(MODULE_VL6180X_ALS)
-    /* interrupts when ALS data are ready */
+    // interrupts when ALS data are ready
     mode.als_int = VL6180X_INT_DRDY;
-#endif /* IS_USED(MODULE_VL6180X_RNG) */
+#endif // IS_USED(MODULE_VL6180X_RNG)
 
     vl6180x_int_config(&dev, thresh);
     vl6180x_int_enable(&dev, mode);
 
-#endif /* IS_USED(MODULE_VL6180X_CONFIG) && IS_USED(MODULE_VL6180X_IRQ) */
+#endif // IS_USED(MODULE_VL6180X_CONFIG) && IS_USED(MODULE_VL6180X_IRQ)
 
     while (1) {
 
@@ -187,7 +184,7 @@ int main(void)
         else if (src.rng_int == VL6180X_INT_RNG_HIGH) {
             puts("RNG: high level");
         }
-#endif /* IS_USED(MODULE_VL6180X_RNG) */
+#endif // IS_USED(MODULE_VL6180X_RNG)
 
 #if IS_USED(MODULE_VL6180X_ALS)
         if (src.als_int == VL6180X_INT_DRDY) {
@@ -213,11 +210,11 @@ int main(void)
         else if (src.als_int == VL6180X_INT_HIGH) {
             puts("ALS: high level");
         }
-#endif /* IS_USED(MODULE_VL6180X_ALS) */
+#endif // IS_USED(MODULE_VL6180X_ALS)
 
-#else /* IS_USED(MODULE_VL6180X_IRQ) */
+#else // IS_USED(MODULE_VL6180X_IRQ)
 
-        /* just wait 250 ms if module vl6180x_basic is used */
+        // just wait 250 ms if module vl6180x_basic is used
         ztimer_sleep(ZTIMER_MSEC, 250);
 
 #if IS_USED(MODULE_VL6180X_ALS)
@@ -225,7 +222,7 @@ int main(void)
             vl6180x_als_read(&dev, &als, &lux) == VL6180X_OK) {
             printf("ALS: %u [cnts], %u [lux]\n", als, lux);
         }
-#endif /* IS_USED(MODULE_VL6180X_ALS) */
+#endif // IS_USED(MODULE_VL6180X_ALS)
 
 #if IS_USED(MODULE_VL6180X_RNG)
          if (vl6180x_rng_data_ready(&dev) == VL6180X_OK) {
@@ -237,15 +234,13 @@ int main(void)
             }
             puts("+-----------------------------------------+");
         }
-#endif /* IS_USED(MODULE_VL6180X_RNG) */
+#endif // IS_USED(MODULE_VL6180X_RNG)
 
-#endif /* IS_USED(MODULE_VL6180X_IRQ) */
+#endif // IS_USED(MODULE_VL6180X_IRQ)
 
 #if IS_USED(MODULE_VL6180X_SHUTDOWN)
-        /*
-         * if shutdown pin is defined, the sensor is powered down and up
-         * again after 5 seconds every 50 cycles
-         */
+        // if shutdown pin is defined, the sensor is powered down and up
+        // again after 5 seconds every 50 cycles
         count++;
         if ((count % 50) == 0) {
             vl6180x_power_down(&dev);
@@ -254,7 +249,7 @@ int main(void)
             vl6180x_power_up(&dev);
             puts("Sensor powered up");
         }
-#endif /* IS_USED(MODULE_VL6180X_SHUTDOWN) */
+#endif // IS_USED(MODULE_VL6180X_SHUTDOWN)
     }
 
     return 0;

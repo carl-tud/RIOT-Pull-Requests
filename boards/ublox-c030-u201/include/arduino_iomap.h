@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_ublox-c030-u201
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Arduino pins
- *
- * You can use the defines in this file for simplified interaction with the
- * Arduino specific pin numbers.
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- */
+/// @ingroup     boards_ublox-c030-u201
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Arduino pins
+///
+/// You can use the defines in this file for simplified interaction with the
+/// Arduino specific pin numbers.
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
 
 #include "periph/gpio.h"
 #include "periph/adc.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Mapping of MCU pins to Arduino pins
- * @{
- */
+/// @name    Mapping of MCU pins to Arduino pins
+/// @{
 #define ARDUINO_PIN_0           GPIO_PIN(PORT_D, 9)
 #define ARDUINO_PIN_1           GPIO_PIN(PORT_D, 8)
 #define ARDUINO_PIN_2           GPIO_PIN(PORT_D, 11)
@@ -56,12 +50,10 @@ extern "C" {
 #define ARDUINO_PIN_21          GPIO_PIN(PORT_B, 6)
 
 #define ARDUINO_PIN_LAST        21
-/** @} */
+/// @}
 
-/**
- * @name    Aliases for analog pins
- * @{
- */
+/// @name    Aliases for analog pins
+/// @{
 #define ARDUINO_PIN_A0      ARDUINO_PIN_16
 #define ARDUINO_PIN_A1      ARDUINO_PIN_17
 #define ARDUINO_PIN_A2      ARDUINO_PIN_18
@@ -69,12 +61,10 @@ extern "C" {
 
 #define ARDUINO_PIN_A4      ARDUINO_PIN_20
 #define ARDUINO_PIN_A5      ARDUINO_PIN_21
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino analog pins to RIOT ADC lines
- * @{
- */
+/// @name    Mapping of Arduino analog pins to RIOT ADC lines
+/// @{
 #define ARDUINO_A0              ADC_LINE(0)
 #define ARDUINO_A1              ADC_LINE(1)
 #define ARDUINO_A2              ADC_LINE(2)
@@ -83,10 +73,10 @@ extern "C" {
 #define ARDUINO_A5              ADC_LINE(5)
 
 #define ARDUINO_ANALOG_PIN_LAST 5
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_lis2dh12
- *
- * @{
- * @file
- * @brief       Default configuration for LIS2DH12 devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_lis2dh12
+///
+/// @{
+/// @file
+/// @brief       Default configuration for LIS2DH12 devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "lis2dh12.h"
@@ -23,11 +19,9 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for LIS2DH12 devices
- * @{
- */
-#ifdef MODULE_LIS2DH12_SPI          /* default configuration for SPI mode */
+/// @name    Set default configuration parameters for LIS2DH12 devices
+/// @{
+#ifdef MODULE_LIS2DH12_SPI          // default configuration for SPI mode
 #ifndef LIS2DH12_PARAM_SPI
 #define LIS2DH12_PARAM_SPI          SPI_DEV(0)
 #endif
@@ -37,7 +31,7 @@ extern "C" {
 #define LIS2DH12_PARAMS_BUSCFG      .spi = LIS2DH12_PARAM_SPI, \
                                     .cs  = LIS2DH12_PARAM_CS
 
-#else                               /* default configuration for I2C mode */
+#else                               // default configuration for I2C mode
 #ifndef LIS2DH12_PARAM_I2C
 #define LIS2DH12_PARAM_I2C          I2C_DEV(0)
 #endif
@@ -77,32 +71,28 @@ extern "C" {
                                     .rate  = LIS2DH12_PARAM_RATE,  \
                                     .resolution = LIS2DH12_PARAM_RESOLUTION,  \
                                 }
-#else /* MODULE_LIS2DH12_INT */
+#else // MODULE_LIS2DH12_INT
 #define LIS2DH12_PARAMS         {  \
                                     LIS2DH12_PARAMS_BUSCFG,  \
                                     .scale = LIS2DH12_PARAM_SCALE,  \
                                     .rate  = LIS2DH12_PARAM_RATE,  \
                                     .resolution = LIS2DH12_PARAM_RESOLUTION,  \
                                 }
-#endif /* MODULE_LIS2DH12_INT */
-#endif /* LIS2DH12_PARAMS */
+#endif // MODULE_LIS2DH12_INT
+#endif // LIS2DH12_PARAMS
 
 #ifndef LIS2DH12_SAULINFO
 #define LIS2DH12_SAULINFO           { .name = "lis2dh12" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   LIS2DH12 configuration
- */
+/// @brief   LIS2DH12 configuration
 static const lis2dh12_params_t lis2dh12_params[] =
 {
     LIS2DH12_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t lis2dh12_saul_info[] =
 {
     LIS2DH12_SAULINFO
@@ -112,4 +102,4 @@ static const saul_reg_info_t lis2dh12_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_sam0_common
- * @ingroup         drivers_periph_gpio_ll
- * @{
- *
- * @file
- * @brief           CPU specific part of the Peripheral GPIO Low-Level API
- *
- * @author          Marian Buschsieweke <marian.buschsieweke@posteo.net>
- */
+/// @ingroup         cpu_sam0_common
+/// @ingroup         drivers_periph_gpio_ll
+/// @{
+///
+/// @file
+/// @brief           CPU specific part of the Peripheral GPIO Low-Level API
+///
+/// @author          Marian Buschsieweke <marian.buschsieweke@posteo.net>
 
 #include "architecture.h"
 #include "periph_cpu.h"
@@ -25,22 +21,22 @@
 extern "C" {
 #endif
 
-#ifndef DOXYGEN /* hide implementation specific details from Doxygen */
+#ifndef DOXYGEN // hide implementation specific details from Doxygen
 
-/* Provide base address of the GPIO peripheral via APB */
+// Provide base address of the GPIO peripheral via APB
 #if defined(PORT_SEC)
 #  define GPIO_APB_BASE PORT_SEC
 #else
 #  define GPIO_APB_BASE PORT
 #endif
 
-/* Provide base address of the GPIO peripheral via IOBUS */
+// Provide base address of the GPIO peripheral via IOBUS
 #if defined(PORT_IOBUS_SEC)
 #  define GPIO_IOBUS_BASE PORT_IOBUS_SEC
 #elif defined(PORT_IOBUS)
 #  define GPIO_IOBUS_BASE PORT_IOBUS
 #else
-#  define GPIO_IOBUS_BASE GPIO_APB_BASE /* no IOBUS present, fall back to APB */
+#  define GPIO_IOBUS_BASE GPIO_APB_BASE // no IOBUS present, fall back to APB
 #endif
 
 #define GPIO_PORT_NUMBERING_ALPHABETIC  1
@@ -73,37 +69,29 @@ extern "C" {
 #  define GPIO_PORT_7   ((uintptr_t)&GPIO_IOBUS_BASE->Group[7])
 #endif
 
-/**
- * @brief   Get a GPIO port by number
- */
+/// @brief   Get a GPIO port by number
 #define GPIO_PORT(num)  ((uintptr_t)&GPIO_IOBUS_BASE->Group[(num)])
 
-/**
- * @brief   Get a GPIO port number by gpio_port_t value
- */
+/// @brief   Get a GPIO port number by gpio_port_t value
 #define GPIO_PORT_NUM(port) \
     (((port) - (uintptr_t)&GPIO_IOBUS_BASE->Group[0]) / sizeof(GPIO_IOBUS_BASE->Group[0]))
 
-static inline gpio_port_t gpio_port(uword_t num)
-{
+static inline gpio_port_t gpio_port(uword_t num) {
     return (uintptr_t)&GPIO_IOBUS_BASE->Group[num];
 }
 
-static inline uword_t gpio_port_num(gpio_port_t port)
-{
+static inline uword_t gpio_port_num(gpio_port_t port) {
     return (port - (uintptr_t)&GPIO_IOBUS_BASE->Group[0]) / sizeof(GPIO_IOBUS_BASE->Group[0]);
 }
 
-static inline PortGroup *sam0_gpio_iobus2ap(PortGroup *iobus)
-{
+static inline PortGroup *sam0_gpio_iobus2ap(PortGroup *iobus) {
     const uintptr_t iobus_base = (uintptr_t)GPIO_IOBUS_BASE;
     const uintptr_t apb_base = (uintptr_t)GPIO_APB_BASE;
 
     return (PortGroup *)((uintptr_t)iobus - (iobus_base - apb_base));
 }
 
-static inline uword_t gpio_ll_read(gpio_port_t port)
-{
+static inline uword_t gpio_ll_read(gpio_port_t port) {
     PortGroup *p = (PortGroup *)port;
     if (!IS_USED(MODULE_PERIPH_GPIO_FAST_READ)) {
         p = sam0_gpio_iobus2ap(p);
@@ -111,54 +99,46 @@ static inline uword_t gpio_ll_read(gpio_port_t port)
     return p->IN.reg;
 }
 
-static inline uword_t gpio_ll_read_output(gpio_port_t port)
-{
+static inline uword_t gpio_ll_read_output(gpio_port_t port) {
     PortGroup *p = (PortGroup *)port;
     return p->OUT.reg;
 }
 
-static inline void gpio_ll_set(gpio_port_t port, uword_t mask)
-{
+static inline void gpio_ll_set(gpio_port_t port, uword_t mask) {
     PortGroup *p = (PortGroup *)port;
     p->OUTSET.reg = mask;
 }
 
-static inline void gpio_ll_clear(gpio_port_t port, uword_t mask)
-{
+static inline void gpio_ll_clear(gpio_port_t port, uword_t mask) {
     PortGroup *p = (PortGroup *)port;
     p->OUTCLR.reg = mask;
 }
 
-static inline void gpio_ll_toggle(gpio_port_t port, uword_t mask)
-{
+static inline void gpio_ll_toggle(gpio_port_t port, uword_t mask) {
     PortGroup *p = (PortGroup *)port;
     p->OUTTGL.reg = mask;
 }
 
-static inline void gpio_ll_write(gpio_port_t port, uword_t mask)
-{
+static inline void gpio_ll_write(gpio_port_t port, uword_t mask) {
     PortGroup *p = (PortGroup *)port;
     p->OUT.reg = mask;
 }
 
-static inline void gpio_ll_switch_dir_output(gpio_port_t port, uword_t outputs)
-{
+static inline void gpio_ll_switch_dir_output(gpio_port_t port, uword_t outputs) {
     PortGroup *p = (PortGroup *)port;
     p->DIRSET.reg = outputs;
 }
 
-static inline void gpio_ll_switch_dir_input(gpio_port_t port, uword_t inputs)
-{
+static inline void gpio_ll_switch_dir_input(gpio_port_t port, uword_t inputs) {
     PortGroup *p = (PortGroup *)port;
     p->DIRCLR.reg = inputs;
 }
 
-static inline gpio_port_t gpio_get_port(gpio_t pin)
-{
-    /* GPIO LL and legacy GPIO API may disagree on what is the GPIO base
-     * address if one is using the IOBUS and the other is using the APB for
-     * access. In this case, we need to do impedance matching by adding the
-     * offset. */
+static inline gpio_port_t gpio_get_port(gpio_t pin) {
+    // GPIO LL and legacy GPIO API may disagree on what is the GPIO base
+    // address if one is using the IOBUS and the other is using the APB for
+    // access. In this case, we need to do impedance matching by adding the
+    // offset.
     const uintptr_t gpio_ll_base = GPIO_PORT_0;
     const uintptr_t gpio_legacy_base = GPIO_PIN(0, 0) & ~(0x1f);
     uintptr_t addr = (pin & ~(0x1f));
@@ -166,18 +146,15 @@ static inline gpio_port_t gpio_get_port(gpio_t pin)
     return addr + (gpio_ll_base - gpio_legacy_base);
 }
 
-static inline uint8_t gpio_get_pin_num(gpio_t pin)
-{
+static inline uint8_t gpio_get_pin_num(gpio_t pin) {
     return pin & 0x1f;
 }
 
-static inline gpio_port_t gpio_port_pack_addr(void *addr)
-{
+static inline gpio_port_t gpio_port_pack_addr(void *addr) {
     return (gpio_port_t)addr;
 }
 
-static inline void * gpio_port_unpack_addr(gpio_port_t port)
-{
+static inline void * gpio_port_unpack_addr(gpio_port_t port) {
     if (port < GPIO_PORT(0)) {
         return (void *)port;
     }
@@ -188,14 +165,13 @@ static inline void * gpio_port_unpack_addr(gpio_port_t port)
     return NULL;
 }
 
-static inline bool is_gpio_port_num_valid(uint_fast8_t num)
-{
+static inline bool is_gpio_port_num_valid(uint_fast8_t num) {
     return (num < ARRAY_SIZE(GPIO_IOBUS_BASE->Group));
 }
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup   boards_firefly
- * @{
- *
- * @file
- * @brief     Board specific configuration of direct mapped ADC
- *
- * @author      Anon Mall <anon.mall@gt-arc.com>
- */
+/// @ingroup   boards_firefly
+/// @{
+///
+/// @file
+/// @brief     Board specific configuration of direct mapped ADC
+///
+/// @author      Anon Mall <anon.mall@gt-arc.com>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -23,9 +19,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    ADC configuration
- */
+/// @brief    ADC configuration
 static const  saul_adc_params_t saul_adc_params[] =
 {
     {
@@ -49,4 +43,4 @@ static const  saul_adc_params_t saul_adc_params[] =
 }
 #endif
 
-/** @} */
+/// @}

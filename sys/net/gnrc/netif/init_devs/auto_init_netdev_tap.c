@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup sys_auto_init_gnrc_netif
- * @{
- *
- * @file
- * @brief   Auto initialization for ethernet devices
- *
- * @author  Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @ingroup sys_auto_init_gnrc_netif
+/// @{
+///
+/// @file
+/// @brief   Auto initialization for ethernet devices
+///
+/// @author  Kaspar Schleiser <kaspar@schleiser.de>
 
 #include "log.h"
 #include "debug.h"
@@ -27,8 +23,7 @@ static char _netdev_eth_stack[NETDEV_TAP_MAX][TAP_MAC_STACKSIZE];
 
 static gnrc_netif_t _netif[NETDEV_TAP_MAX];
 
-void auto_init_netdev_tap(void)
-{
+void auto_init_netdev_tap(void) {
     for (unsigned i = 0; i < NETDEV_TAP_MAX; i++) {
         const netdev_tap_params_t *p = &netdev_tap_params[i];
 
@@ -45,4 +40,4 @@ void auto_init_netdev_tap(void)
                                    &netdev_tap[i].netdev);
     }
 }
-/** @} */
+/// @}

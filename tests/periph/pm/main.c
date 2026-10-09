@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Power management peripheral test.
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- * @author      Vincent Dupont <vincent@otakeys.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Power management peripheral test.
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,8 +36,7 @@
 #ifdef MODULE_PM_LAYERED
 
 #ifdef MODULE_PERIPH_RTC
-static int check_mode_duration(int argc, char **argv)
-{
+static int check_mode_duration(int argc, char **argv) {
     if (argc != 3) {
         printf("Usage: %s <power mode> <duration (s)>\n", argv[0]);
         return -1;
@@ -50,8 +45,7 @@ static int check_mode_duration(int argc, char **argv)
     return 0;
 }
 
-static int parse_mode(char *argv)
-{
+static int parse_mode(char *argv) {
     uint8_t mode = atoi(argv);
 
     if (mode >= PM_NUM_MODES) {
@@ -62,8 +56,7 @@ static int parse_mode(char *argv)
     return mode;
 }
 
-static int parse_duration(char *argv)
-{
+static int parse_duration(char *argv) {
     int duration = atoi(argv);
 
     if (duration < 0) {
@@ -74,21 +67,18 @@ static int parse_duration(char *argv)
     return duration;
 }
 
-static void cb_rtc(void *arg)
-{
+static void cb_rtc(void *arg) {
     int level = (int)arg;
 
     pm_block(level);
     puts("RTC alarm");
 }
 
-static void cb_rtc_puts(void *arg)
-{
+static void cb_rtc_puts(void *arg) {
     puts(arg);
 }
 
-static int cmd_unblock_rtc(int argc, char **argv)
-{
+static int cmd_unblock_rtc(int argc, char **argv) {
     if (check_mode_duration(argc, argv) != 0) {
         return 1;
     }
@@ -120,8 +110,7 @@ static int cmd_unblock_rtc(int argc, char **argv)
     return 0;
 }
 
-static int cmd_set_rtc(int argc, char **argv)
-{
+static int cmd_set_rtc(int argc, char **argv) {
     if (check_mode_duration(argc, argv) != 0) {
         return 1;
     }
@@ -146,20 +135,17 @@ static int cmd_set_rtc(int argc, char **argv)
 
     return 0;
 }
-#endif /* MODULE_PERIPH_RTC */
-#endif /* MODULE_PM_LAYERED */
+#endif // MODULE_PERIPH_RTC
+#endif // MODULE_PM_LAYERED
 
 #if defined(MODULE_PERIPH_GPIO_IRQ) && defined(BTN0_PIN)
-static void btn_cb(void *ctx)
-{
+static void btn_cb(void *ctx) {
     (void) ctx;
     puts("BTN0 pressed.");
 }
-#endif /* MODULE_PERIPH_GPIO_IRQ */
+#endif // MODULE_PERIPH_GPIO_IRQ
 
-/**
- * @brief   List of shell commands for this example.
- */
+/// @brief   List of shell commands for this example.
 static const shell_command_t shell_commands[] = {
 #if defined MODULE_PM_LAYERED && defined MODULE_PERIPH_RTC
     { "set_rtc", "temporary set power mode", cmd_set_rtc },
@@ -169,8 +155,7 @@ static const shell_command_t shell_commands[] = {
 };
 
 #if IS_USED(MODULE_PM_LAYERED)
-static void _show_blockers(void)
-{
+static void _show_blockers(void) {
     uint8_t lowest_allowed_mode = 0;
 
     pm_blocker_t pm_blocker = pm_get_blocker();
@@ -183,16 +168,13 @@ static void _show_blockers(void)
 
     printf("Lowest allowed mode: %u\n", lowest_allowed_mode);
 }
-#endif /* MODULE_PM_LAYERED */
+#endif // MODULE_PM_LAYERED
 
-/**
- * @brief   Application entry point.
- */
-int main(void)
-{
+/// @brief   Application entry point.
+int main(void) {
     char line_buf[SHELL_DEFAULT_BUFSIZE];
 
-    /* print test application information */
+    // print test application information
 #ifdef MODULE_PM_LAYERED
     printf("This application allows you to test the CPU power management.\n"
            "The available power modes are 0 - %d. Lower-numbered power modes\n"
@@ -200,10 +182,9 @@ int main(void)
            "the CPU. Reset the CPU if needed.\n",
            PM_NUM_MODES - 1);
 
-    /* In case the system boots into an unresponsive shell, at least display
-     * the state of PM blockers so that the user will know which power mode has
-     * been entered and is presumably responsible for the unresponsive shell.
-     */
+    // In case the system boots into an unresponsive shell, at least display
+    // the state of PM blockers so that the user will know which power mode has
+    // been entered and is presumably responsible for the unresponsive shell.
     _show_blockers();
 #else
     puts("This application allows you to test the CPU power management.\n"
@@ -216,7 +197,7 @@ int main(void)
     gpio_init_int(BTN0_PIN, BTN0_MODE, BTN0_INT_FLANK, btn_cb, NULL);
 #endif
 
-    /* run the shell and wait for the user to enter a mode */
+    // run the shell and wait for the user to enter a mode
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 
     return 0;

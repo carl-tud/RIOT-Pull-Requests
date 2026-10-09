@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_grove_ledbar
- * @{
- *
- * @file
- * @brief       Grove LED bar adaption to SAUL
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     drivers_grove_ledbar
+/// @{
+///
+/// @file
+/// @brief       Grove LED bar adaption to SAUL
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -21,8 +17,7 @@
 #include "saul.h"
 #include "grove_ledbar.h"
 
-static int set_ledbar(const void *dev, const phydat_t *res)
-{
+static int set_ledbar(const void *dev, const phydat_t *res) {
     uint8_t lvl = (uint8_t)res->val[0];
     grove_ledbar_set((grove_ledbar_t *)dev, lvl);
     return 1;

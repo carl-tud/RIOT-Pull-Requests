@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     test
- * @{
- *
- * @file
- * @brief       cross file array (XFA) test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     test
+/// @{
+///
+/// @file
+/// @brief       cross file array (XFA) test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -24,8 +20,7 @@
 XFA_INIT(xfatest_t, xfatest);
 XFA_INIT_CONST(xfatest_t, xfatest_const);
 
-int main(void)
-{
+int main(void) {
     puts("Cross file array test");
 
     unsigned n = XFA_LEN(xfatest_t, xfatest);

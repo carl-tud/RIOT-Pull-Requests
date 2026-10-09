@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief    evtimer_msg test application
- *
- * @author   Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief    evtimer_msg test application
+///
+/// @author   Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -40,9 +36,8 @@ static evtimer_msg_event_t events[] = {
 
 #define NEVENTS ARRAY_SIZE(events)
 
-/* This thread will print the drift to stdout once per second */
-void *worker_thread(void *arg)
-{
+// This thread will print the drift to stdout once per second
+void *worker_thread(void *arg) {
     (void)arg;
 
     msg_init_queue(worker_msg_queue, WORKER_MSG_QUEUE_SIZE);
@@ -56,16 +51,14 @@ void *worker_thread(void *arg)
     }
 }
 
-void sleep_msec(uint16_t t)
-{
+void sleep_msec(uint16_t t) {
     ztimer_sleep(ZTIMER_MSEC, t);
 }
 
-int main(void)
-{
+int main(void) {
     evtimer_init_msg(&evtimer);
 
-    /* create worker thread */
+    // create worker thread
     kernel_pid_t pid = thread_create(worker_stack, sizeof(worker_stack),
                                      THREAD_PRIORITY_MAIN - 1,
                                      0,

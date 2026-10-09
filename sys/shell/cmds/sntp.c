@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2016 Luminița Lăzărescu <cluminita.lazarescu@gmail.com>
- *               2017 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2016 Luminița Lăzărescu <cluminita.lazarescu@gmail.com>
+//               2017 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Prints the real time offset from the system time
- *
- * @author      Luminița Lăzărescu <cluminita.lazarescu@gmail.com>
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Prints the real time offset from the system time
+///
+/// @author      Luminița Lăzărescu <cluminita.lazarescu@gmail.com>
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <stdio.h>
 #include <time.h>
@@ -31,14 +27,12 @@
 
 #define _DEFAULT_TIMEOUT (500000LU)
 
-static void _usage(char *cmd)
-{
+static void _usage(char *cmd) {
     printf("Usage: %s <server addr>[%%<interface>] [<timeout in us>]\n", cmd);
     printf("default: timeout = %lu\n", _DEFAULT_TIMEOUT);
 }
 
-static int _ntpdate(int argc, char **argv)
-{
+static int _ntpdate(int argc, char **argv) {
     uint32_t timeout = _DEFAULT_TIMEOUT;
 
     if (argc < 2) {

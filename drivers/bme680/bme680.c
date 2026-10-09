@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Mesotic SAS
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Mesotic SAS
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_bme680
- * @{
- * @file
- * @brief       Bosch BME680 sensor driver implementation
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     drivers_bme680
+/// @{
+/// @file
+/// @brief       Bosch BME680 sensor driver implementation
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <assert.h>
 
@@ -38,8 +34,7 @@ unsigned int bme680_devs_numof = 0;
 
 bme680_t *bme680_devs[BME680_NUMOF] = { };
 
-int bme680_init(bme680_t *dev, const bme680_params_t *params)
-{
+int bme680_init(bme680_t *dev, const bme680_params_t *params) {
     int8_t ret;
 
     assert(bme680_devs_numof < BME680_NUMOF);
@@ -48,10 +43,10 @@ int bme680_init(bme680_t *dev, const bme680_params_t *params)
     bme680_devs[bme680_devs_numof] = dev;
     BME680_SENSOR(dev).dev_id = bme680_devs_numof++;
 
-    /* store interface parameters in the device for the HAL functions */
+    // store interface parameters in the device for the HAL functions
     dev->intf = params->intf;
 
-    /* Select device interface and apply needed params */
+    // Select device interface and apply needed params
     if (params->ifsel == BME680_I2C_INTF) {
 #ifdef MODULE_BME680_I2C
         BME680_SENSOR(dev).intf = BME680_I2C_INTF;
@@ -76,31 +71,31 @@ int bme680_init(bme680_t *dev, const bme680_params_t *params)
 
     BME680_SENSOR(dev).delay_ms = bme680_ms_sleep;
 
-    /* call internal bme680_init from Bosch Sensortech driver */
+    // call internal bme680_init from Bosch Sensortech driver
     ret = bme680_init_internal(&BME680_SENSOR(dev));
     if (ret != 0) {
         DEBUG("[bme680]: Failed to get ID\n");
         return ret;
     }
 
-    /*  retrieve params and set them in bme680_t */
+    // retrieve params and set them in bme680_t
     BME680_SENSOR(dev).tph_sett.os_temp = params->temp_os;
     BME680_SENSOR(dev).tph_sett.os_hum = params->hum_os;
     BME680_SENSOR(dev).tph_sett.os_pres = params->pres_os;
 
     BME680_SENSOR(dev).tph_sett.filter = params->filter;
 
-    /* Enable gas measurement if needed */
+    // Enable gas measurement if needed
     BME680_SENSOR(dev).gas_sett.run_gas = params->gas_measure;
-    /* Create a ramp heat waveform in 3 steps */
+    // Create a ramp heat waveform in 3 steps
     BME680_SENSOR(dev).gas_sett.heatr_temp = params->heater_temp;
     BME680_SENSOR(dev).gas_sett.heatr_dur = params->heater_dur;
 
-    /* Select the intended power mode */
-    /* Must be set before writing the sensor configuration */
+    // Select the intended power mode
+    // Must be set before writing the sensor configuration
     BME680_SENSOR(dev).power_mode = BME680_FORCED_MODE;
 
-    /* Set the desired sensor configuration */
+    // Set the desired sensor configuration
     ret = bme680_set_sensor_settings(params->settings, &BME680_SENSOR(dev));
     if (ret != 0) {
         DEBUG("[bme680]: failed to set settings\n");
@@ -109,15 +104,13 @@ int bme680_init(bme680_t *dev, const bme680_params_t *params)
     return ret;
 }
 
-int bme680_force_measurement(bme680_t *dev)
-{
+int bme680_force_measurement(bme680_t *dev) {
     assert(dev);
     BME680_SENSOR(dev).power_mode = BME680_FORCED_MODE;
     return bme680_set_sensor_mode(&BME680_SENSOR(dev));
 }
 
-int bme680_get_duration(bme680_t* dev)
-{
+int bme680_get_duration(bme680_t* dev) {
     assert(dev);
 
     uint16_t duration;
@@ -125,8 +118,7 @@ int bme680_get_duration(bme680_t* dev)
     return duration;
 }
 
-int bme680_get_data(bme680_t* dev, bme680_field_data_t *data)
-{
+int bme680_get_data(bme680_t* dev, bme680_field_data_t *data) {
     assert(dev);
 
     int8_t res;
@@ -142,8 +134,7 @@ int bme680_get_data(bme680_t* dev, bme680_field_data_t *data)
     return res;
 }
 
-int bme680_set_ambient_temp(bme680_t* dev, int8_t temp)
-{
+int bme680_set_ambient_temp(bme680_t* dev, int8_t temp) {
     assert(dev);
 
     BME680_SENSOR(dev).amb_temp = temp;

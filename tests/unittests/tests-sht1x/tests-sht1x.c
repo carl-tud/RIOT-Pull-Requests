@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <sht1x.h>
 #include <stdlib.h>
@@ -9,32 +7,29 @@
 #include "embUnit/embUnit.h"
 #include "tests-sht1x.h"
 
-/** @brief Maximum difference from correct temperature value [in e-02 °C] */
+/// @brief Maximum difference from correct temperature value [in e-02 °C]
 static const int16_t max_diff_temp = 1;
-/** @brief Maximum difference from correct humidity value [in e-02 %] */
+/// @brief Maximum difference from correct humidity value [in e-02 %]
 static const int16_t max_diff_hum = 10;
 
-/*
- * Configure tested values steps
- *
- * Verify less values on boards as without hwfloat it takes minutes to test.
- * Checking that the trend is valid is enough to find int overflow
- * or similar errors.
- *
- * Keep the full range test on native as it is "instant"
- */
+// Configure tested values steps
+//
+// Verify less values on boards as without hwfloat it takes minutes to test.
+// Checking that the trend is valid is enough to find int overflow
+// or similar errors.
+//
+// Keep the full range test on native as it is "instant"
 
 #ifdef CPU_NATIVE
 #define TEMPERATURE_TEST_STEPS      1
-/* Use 0.13°c steps. */
+// Use 0.13°c steps.
 #define HUMIDITY_TEST_TEMP_STEPS    13
-#else /* CPU_NATIVE */
+#else // CPU_NATIVE
 #define TEMPERATURE_TEST_STEPS      100
 #define HUMIDITY_TEST_TEMP_STEPS    1300
-#endif /* CPU_NATIVE */
+#endif // CPU_NATIVE
 
-static int16_t expected_temp(const sht1x_dev_t *dev, uint16_t _raw)
-{
+static int16_t expected_temp(const sht1x_dev_t *dev, uint16_t _raw) {
     static const double d1_table[] = { -40.1, -39.8, -39.7, -39.6, -39.4 };
     double d1 = d1_table[dev->vdd];
     double d2 = (dev->conf & SHT1X_CONF_LOW_RESOLUTION) ? 0.04 : 0.01;
@@ -44,8 +39,7 @@ static int16_t expected_temp(const sht1x_dev_t *dev, uint16_t _raw)
     return (int16_t)(temp * 100.0);
 }
 
-static int16_t expected_hum(const sht1x_dev_t *dev, uint16_t _raw, int16_t _temp)
-{
+static int16_t expected_hum(const sht1x_dev_t *dev, uint16_t _raw, int16_t _temp) {
     static const double c1 = -2.0468;
     static const double t1 = 0.01;
     double temp = ((double)_temp) / 100.0;
@@ -68,8 +62,7 @@ static int16_t expected_hum(const sht1x_dev_t *dev, uint16_t _raw, int16_t _temp
     return (int16_t)(hum_real * 100.0);
 }
 
-static void test_sht1x_conversion(void)
-{
+static void test_sht1x_conversion(void) {
     const uint8_t vdds[] = {
         SHT1X_VDD_5_0V, SHT1X_VDD_4_0V, SHT1X_VDD_3_5V, SHT1X_VDD_3_0V,
         SHT1X_VDD_2_5V,
@@ -95,13 +88,13 @@ static void test_sht1x_conversion(void)
             }
         }
 
-        /* Testing for temperatures between -10.00°C and 65.00°C */
+        // Testing for temperatures between -10.00°C and 65.00°C
         for (int16_t temp = -1000; temp < 6500;
                 temp += HUMIDITY_TEST_TEMP_STEPS) {
             for (uint16_t raw_hum = 0; raw_hum <= max_raw_hum; raw_hum++) {
                 int16_t exp_hum = expected_hum(&dev, raw_hum, temp);
                 if ((exp_hum < 0) || (exp_hum > 10000)) {
-                    /* Result out of range, ignore it */
+                    // Result out of range, ignore it
                     continue;
                 }
                 int16_t got_hum = sht1x_humidity(&dev, raw_hum, temp);
@@ -112,8 +105,7 @@ static void test_sht1x_conversion(void)
     }
 }
 
-Test *tests_sht1x_tests(void)
-{
+Test *tests_sht1x_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_sht1x_conversion),
     };
@@ -123,7 +115,6 @@ Test *tests_sht1x_tests(void)
     return (Test *)&sht1x_tests;
 }
 
-void tests_sht1x(void)
-{
+void tests_sht1x(void) {
     TESTS_RUN(tests_sht1x_tests());
 }

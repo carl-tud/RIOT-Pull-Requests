@@ -1,21 +1,17 @@
-/*
- * Copyright (C) 2021 TUBA Freiberg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
-/**
- * @ingroup     sys
- * @{
- *
- * @file
- * @brief       Round Robin Scheduler implementation
- *
- * @author      Karl Fessel <karl.fessel@ovgu.de>
- *
- * @}
- */
+// Copyright (C) 2021 TUBA Freiberg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
+/// @ingroup     sys
+/// @{
+///
+/// @file
+/// @brief       Round Robin Scheduler implementation
+///
+/// @author      Karl Fessel <karl.fessel@ovgu.de>
+///
+/// @}
 
 #include "sched.h"
 #include "thread.h"
@@ -29,23 +25,18 @@ static void _sched_round_robin_cb(void *d);
 
 static ztimer_t _rr_timer = { .callback = _sched_round_robin_cb };
 
-/*
- * Assuming simple reads from and writes to a byte to be atomic on every board
- * Value 0 is assumed to show this system is uninitialised.
- * The timer will not be started for prio = 0;
- */
+// Assuming simple reads from and writes to a byte to be atomic on every board
+// Value 0 is assumed to show this system is uninitialised.
+// The timer will not be started for prio = 0;
 static uint8_t _current_rr_priority = 0;
 
 void sched_runq_callback(uint8_t prio);
 
-void _sched_round_robin_cb(void *d)
-{
+void _sched_round_robin_cb(void *d) {
     (void)d;
-    /*
-     * reorder current Round Robin priority
-     * (put the current thread at the end of the run queue of its priority)
-     * and setup the scheduler to schedule when returning from the IRQ
-     */
+    // reorder current Round Robin priority
+    // (put the current thread at the end of the run queue of its priority)
+    // and setup the scheduler to schedule when returning from the IRQ
     uint8_t prio = _current_rr_priority;
     if (prio != 0xff) {
         DEBUG_PUTS("Round_Robin");
@@ -57,7 +48,7 @@ void _sched_round_robin_cb(void *d)
         uint8_t active_priority = active_thread->priority;
         if (active_priority == prio) {
             thread_yield_higher();
-            /* thread change will call the runqueue_change_cb */
+            // thread change will call the runqueue_change_cb
         }
         else {
             sched_runq_callback(active_priority);
@@ -65,14 +56,12 @@ void _sched_round_robin_cb(void *d)
     }
 }
 
-static inline void _sched_round_robin_remove(void)
-{
+static inline void _sched_round_robin_remove(void) {
     _current_rr_priority = 0xff;
     ztimer_remove(SCHED_RR_TIMERBASE, &_rr_timer);
 }
 
-static inline void _sched_round_robin_set(uint8_t prio)
-{
+static inline void _sched_round_robin_set(uint8_t prio) {
     if (prio == 0) {
         return;
     }
@@ -80,8 +69,7 @@ static inline void _sched_round_robin_set(uint8_t prio)
     ztimer_set(SCHED_RR_TIMERBASE, &_rr_timer, SCHED_RR_TIMEOUT);
 }
 
-void sched_runq_callback(uint8_t prio)
-{
+void sched_runq_callback(uint8_t prio) {
     if (SCHED_RR_MASK & (1 << prio) || prio == 0) {
         return;
     }
@@ -106,11 +94,10 @@ void sched_runq_callback(uint8_t prio)
     }
 }
 
-void sched_round_robin_init(void)
-{
-    /* init _current_rr_priority */
+void sched_round_robin_init(void) {
+    // init _current_rr_priority
     _current_rr_priority = 0xff;
-    /* check if applicable to active priority */
+    // check if applicable to active priority
     thread_t *active_thread = thread_get_active();
     if (active_thread) {
         sched_runq_callback(active_thread->priority);

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_samr34-xpro
- * @{
- *
- * @file        board.c
- * @brief       Board specific implementations for the Microchip
- *              SAM R34 Xplained Pro board
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup     boards_samr34-xpro
+/// @{
+///
+/// @file        board.c
+/// @brief       Board specific implementations for the Microchip
+///              SAM R34 Xplained Pro board
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -29,7 +25,7 @@
 #ifdef MODULE_MTD_SPI_NOR
 #include "timex.h"
 #include "mtd_spi_nor.h"
-/* AT25DF041B */
+// AT25DF041B
 static const mtd_spi_nor_params_t _mtd_nor_params = {
     .opcode = &mtd_spi_nor_opcode_default,
     .wait_chip_erase = 3600 * US_PER_MS,
@@ -60,15 +56,14 @@ MTD_XFA_ADD(_nor_dev, 0);
 #include "vfs_default.h"
 VFS_AUTO_MOUNT(littlefs2, VFS_MTD(_nor_dev), VFS_DEFAULT_NVM(0), 0);
 #endif
-#endif /* MODULE_MTD_SPI_NOR */
+#endif // MODULE_MTD_SPI_NOR
 
-void board_init(void)
-{
-    /* initialize board specific pins for LoRa */
+void board_init(void) {
+    // initialize board specific pins for LoRa
 #ifdef MODULE_SX127X
     gpio_init(TCXO_PWR_PIN, GPIO_OUT);
     gpio_set(TCXO_PWR_PIN);
     gpio_init(TX_OUTPUT_SEL_PIN, GPIO_OUT);
     gpio_write(TX_OUTPUT_SEL_PIN, !SX127X_PARAM_PASELECT);
-#endif /* USEMODULE_SX127X */
+#endif // USEMODULE_SX127X
 }

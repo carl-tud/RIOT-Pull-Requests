@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2025 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       SDK configuration used by the ESP-IDF for ESP32-H2 SoC variant (family)
- *
- * The SDK configuration can be partially overridden by application-specific
- * board configuration.
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       SDK configuration used by the ESP-IDF for ESP32-H2 SoC variant (family)
+///
+/// The SDK configuration can be partially overridden by application-specific
+/// board configuration.
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
 
 #ifndef DOXYGEN
 
@@ -24,15 +20,13 @@
 extern "C" {
 #endif
 
-/**
- * @name ESP32-H2 specific clock configuration
- * @{
- */
+/// @name ESP32-H2 specific clock configuration
+/// @{
 
-/* external crystal frequency */
+// external crystal frequency
 #define CONFIG_XTAL_FREQ 32
 
-/* Mapping of Kconfig defines to the respective enumeration values */
+// Mapping of Kconfig defines to the respective enumeration values
 #if CONFIG_ESP32H2_DEFAULT_CPU_FREQ_MHZ_16
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ       16
 #elif CONFIG_ESP32H2_DEFAULT_CPU_FREQ_MHZ_32
@@ -45,56 +39,42 @@ extern "C" {
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ       96
 #endif
 
-/**
- * @brief Defines the CPU frequency [values = 16, 32, 48, 64, 96]
- */
+/// @brief Defines the CPU frequency [values = 16, 32, 48, 64, 96]
 #ifndef CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ       96
 #endif
 
-/** @} */
+/// @}
 
-/**
- * ESP32-H2 MMU configuration (DO NOT CHANGE)
- */
+/// ESP32-H2 MMU configuration (DO NOT CHANGE)
 #ifndef CONFIG_MMU_PAGE_SIZE
 #  define CONFIG_MMU_PAGE_SIZE_32KB             1
 #  define CONFIG_MMU_PAGE_SIZE                  0x8000
 #endif
 
-/**
- * ESP32-H2 specific RTC clock configuration
- */
+/// ESP32-H2 specific RTC clock configuration
 #define CONFIG_RTC_CLK_CAL_CYCLES               1024
 
 #ifdef MODULE_ESP_RTC_TIMER_32K
 #endif
 
-/**
- * ESP32-H2 specific EFUSE configuration
- */
+/// ESP32-H2 specific EFUSE configuration
 #define CONFIG_EFUSE_MAX_BLK_LEN                256
 #define CONFIG_ESP_EFUSE_BLOCK_REV_MIN_FULL     0
 #define CONFIG_ESP_EFUSE_BLOCK_REV_MAX_FULL     99
 
-/**
- * ESP32-H2 specific MAC configuration
- */
+/// ESP32-H2 specific MAC configuration
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_WIFI_STA   1
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_WIFI_AP    1
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_BT         1
 #define CONFIG_ESP_MAC_ADDR_UNIVERSE_IEEE802154 1
 #define CONFIG_ESP32H2_UNIVERSAL_MAC_ADDRESSES  2
 
-/**
- * ESP32-H2 specific serial flasher config (DO NOT CHANGE)
- */
+/// ESP32-H2 specific serial flasher config (DO NOT CHANGE)
 #define CONFIG_ESPTOOLPY_FLASHFREQ_64M          1
 #define CONFIG_ESPTOOLPY_FLASHFREQ              "64m"
 
-/**
- * ESP32-H2 specific system configuration (DO NOT CHANGE)
- */
+/// ESP32-H2 specific system configuration (DO NOT CHANGE)
 #define CONFIG_ESP32H2_REV_MIN_FULL             0
 #define CONFIG_ESP32H2_REV_MAX_FULL             99
 
@@ -106,19 +86,15 @@ extern "C" {
 #define CONFIG_ESP_BROWNOUT_DET                 1
 #define CONFIG_ESP_BROWNOUT_DET_LVL             0
 
-/**
- * ESP32-H2 specific sleep configuration (DO NOT CHANGE)
- */
+/// ESP32-H2 specific sleep configuration (DO NOT CHANGE)
 #define CONFIG_ESP_ROM_SUPPORT_DEEP_SLEEP_WAKEUP_STUB   1
 #define CONFIG_ESP_SLEEP_FLASH_LEAKAGE_WORKAROUND       1
-#define CONFIG_ESP_SLEEP_GPIO_ENABLE_INTERNAL_RESISTORS 0   /* we realize it */
+#define CONFIG_ESP_SLEEP_GPIO_ENABLE_INTERNAL_RESISTORS 0   // we realize it
 #define CONFIG_ESP_SLEEP_GPIO_RESET_WORKAROUND          1
 #define CONFIG_ESP_SLEEP_WAIT_FLASH_READY_EXTRA_DELAY   0
 #define CONFIG_PM_POWER_DOWN_CPU_IN_LIGHT_SLEEP         0
 
-/**
- * ESP32-H2 BLE driver configuration (DO NOT CHANGE)
- */
+/// ESP32-H2 BLE driver configuration (DO NOT CHANGE)
 #ifdef MODULE_ESP_BLE
 #  define CONFIG_BT_ALARM_MAX_NUM                           50
 #  define CONFIG_BT_CTRL_BLE_ADV_REPORT_DISCARD_THRSHOLD    20
@@ -131,7 +107,7 @@ extern "C" {
 #  define CONFIG_BT_LE_COEX_PHY_CODED_TX_RX_TLIM_EFF        0
 #  define CONFIG_BT_LE_CONTROLLER_NPL_OS_PORTING_SUPPORT    1
 #  define CONFIG_BT_LE_CONTROLLER_TASK_STACK_SIZE           4096
-#  define CONFIG_BT_LE_CRYPTO_STACK_MBEDTLS                 0   /* default 1 */
+#  define CONFIG_BT_LE_CRYPTO_STACK_MBEDTLS                 0   // default 1
 #  define CONFIG_BT_LE_DFT_TX_POWER_LEVEL_DBM_EFF           9
 #  define CONFIG_BT_LE_DFT_TX_POWER_LEVEL_P9                1
 #  define CONFIG_BT_LE_ENABLE_PERIODIC_ADV                  1
@@ -174,5 +150,5 @@ extern "C" {
 }
 #endif
 
-#endif /* DOXYGEN */
-/** @} */
+#endif // DOXYGEN
+/// @}

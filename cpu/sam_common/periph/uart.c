@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_sam_common
- * @ingroup     drivers_periph_uart
- * @{
- *
- * @file
- * @brief       Low-level UART driver implementation
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     cpu_sam_common
+/// @ingroup     drivers_periph_uart
+/// @{
+///
+/// @file
+/// @brief       Low-level UART driver implementation
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include "cpu.h"
 #include "board.h"
@@ -24,41 +20,38 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief Allocate memory to store the callback functions.
- */
+/// @brief Allocate memory to store the callback functions.
 static uart_isr_ctx_t ctx[UART_NUMOF];
 
-int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
-{
+int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg) {
     Uart *dev;
 
-    /* make sure given device is valid */
+    // make sure given device is valid
     if (uart >= UART_NUMOF) {
         return UART_NODEV;
     }
 
-    /* get base register */
+    // get base register
     dev = uart_config[uart].dev;
 
-    /* register callback */
+    // register callback
     ctx[uart].rx_cb = rx_cb;
     ctx[uart].arg = arg;
 
-    /* enable clock */
+    // enable clock
     uart_poweron(uart);
 
-    /* reset configuration */
+    // reset configuration
     dev->UART_CR = 0;
     dev->UART_IDR = 0x0000ffff;
 
-    /* configure pins */
+    // configure pins
     gpio_init_mux(uart_config[uart].tx_pin, uart_config[uart].mux);
     if (rx_cb) {
         gpio_init_mux(uart_config[uart].rx_pin, uart_config[uart].mux);
     }
 
-    /* configure baud rate and set mode to 8N1 */
+    // configure baud rate and set mode to 8N1
     dev->UART_BRGR = (CLOCK_CORECLOCK / (16 * baudrate));
     dev->UART_MR = UART_MR_PAR_NO | US_MR_CHRL_8_BIT;
 
@@ -74,8 +67,7 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
     return UART_OK;
 }
 
-void uart_write(uart_t uart, const uint8_t *data, size_t len)
-{
+void uart_write(uart_t uart, const uint8_t *data, size_t len) {
     Uart *dev = uart_config[uart].dev;
 
     for (size_t i = 0; i < len; i++) {
@@ -84,18 +76,15 @@ void uart_write(uart_t uart, const uint8_t *data, size_t len)
     }
 }
 
-void uart_poweron(uart_t uart)
-{
+void uart_poweron(uart_t uart) {
     PMC->PMC_PCER0 = (1 << uart_config[uart].pmc_id);
 }
 
-void uart_poweroff(uart_t uart)
-{
+void uart_poweroff(uart_t uart) {
     PMC->PMC_PCDR0 = (1 << uart_config[uart].pmc_id);
 }
 
-static inline void isr_handler(int num)
-{
+static inline void isr_handler(int num) {
     Uart *dev = uart_config[num].dev;
 
     if (dev->UART_SR & UART_SR_RXRDY) {
@@ -105,29 +94,25 @@ static inline void isr_handler(int num)
 }
 
 #ifdef UART_0_ISR
-void UART_0_ISR(void)
-{
+void UART_0_ISR(void) {
     isr_handler(0);
 }
 #endif
 
 #ifdef UART_1_ISR
-void UART_1_ISR(void)
-{
+void UART_1_ISR(void) {
     isr_handler(1);
 }
 #endif
 
 #ifdef UART_2_ISR
-void UART_2_ISR(void)
-{
+void UART_2_ISR(void) {
     isr_handler(2);
 }
 #endif
 
 #ifdef UART_3_ISR
-void UART_3_ISR(void)
-{
+void UART_3_ISR(void) {
     isr_handler(3);
 }
 #endif

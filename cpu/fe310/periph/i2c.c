@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_fe310
- * @ingroup     drivers_periph_i2c
- * @{
- *
- * @file
- * @brief       Low-level I2C driver implementation
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu_fe310
+/// @ingroup     drivers_periph_i2c
+/// @{
+///
+/// @file
+/// @brief       Low-level I2C driver implementation
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <inttypes.h>
 #include <assert.h>
@@ -43,29 +39,26 @@ static inline int _read(i2c_t dev, uint8_t *data, int length, uint8_t stop);
 static inline int _write(i2c_t dev, const uint8_t *data, int length,
                          uint8_t stop);
 
-/**
- * @brief   Initialized bus locks
- */
+/// @brief   Initialized bus locks
 static mutex_t locks[I2C_NUMOF];
 
-void i2c_init(i2c_t dev)
-{
+void i2c_init(i2c_t dev) {
     assert(dev < I2C_NUMOF);
 
-    /* Initialize mutex */
+    // Initialize mutex
     mutex_init(&locks[dev]);
 
-    /* Select IOF0 */
+    // Select IOF0
     GPIO_REG(GPIO_IOF_SEL) &=
         ~((1 << i2c_config[dev].scl) | (1 << i2c_config[dev].sda));
-    /* Enable IOF */
+    // Enable IOF
     GPIO_REG(GPIO_IOF_EN) |=
         ((1 << i2c_config[dev].scl) | (1 << i2c_config[dev].sda));
 
     _REG32(i2c_config[dev].addr,
            I2C_CONTROL) &= ~(I2C_CONTROL_IE | I2C_CONTROL_EN);
 
-    /* Compute prescale: presc = (CORE_CLOCK / (5 * I2C_SPEED)) - 1 */
+    // Compute prescale: presc = (CORE_CLOCK / (5 * I2C_SPEED)) - 1
     uint16_t presc =
         ((uint16_t)(coreclk() / 1000) /
          (5 * _fe310_i2c_speed[i2c_config[dev].speed])) - 1;
@@ -88,21 +81,18 @@ void i2c_init(i2c_t dev)
     DEBUG("[i2c] initialization done\n");
 }
 
-void i2c_acquire(i2c_t dev)
-{
+void i2c_acquire(i2c_t dev) {
     assert(dev < I2C_NUMOF);
     mutex_lock(&locks[dev]);
 }
 
-void i2c_release(i2c_t dev)
-{
+void i2c_release(i2c_t dev) {
     assert(dev < I2C_NUMOF);
     mutex_unlock(&locks[dev]);
 }
 
 int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length,
-                   uint8_t flags)
-{
+                   uint8_t flags) {
     assert(length > 0);
     assert(dev < I2C_NUMOF);
 
@@ -110,7 +100,7 @@ int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length,
         return -EOPNOTSUPP;
     }
 
-    /* Check for wrong arguments given */
+    // Check for wrong arguments given
     if (data == NULL || length == 0) {
         return -EINVAL;
     }
@@ -127,7 +117,7 @@ int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length,
         }
     }
 
-    /* read data and issue stop if needed */
+    // read data and issue stop if needed
     ret = _read(dev, data, length, (flags & I2C_NOSTOP) ? 0 : 1);
     if (ret < 0) {
         DEBUG("[i2c] Error: read command failed\n");
@@ -141,17 +131,16 @@ int i2c_read_bytes(i2c_t dev, uint16_t address, void *data, size_t length,
 
 int i2c_write_bytes(i2c_t dev, uint16_t address, const void *data,
                     size_t length,
-                    uint8_t flags)
-{
+                    uint8_t flags) {
     assert(dev < I2C_NUMOF);
 
     int ret = 0;
 
-    /* Check for unsupported operations */
+    // Check for unsupported operations
     if (flags & I2C_ADDR10) {
         return -EOPNOTSUPP;
     }
-    /* Check for wrong arguments given */
+    // Check for wrong arguments given
     if (data == NULL || length == 0) {
         return -EINVAL;
     }
@@ -175,8 +164,7 @@ int i2c_write_bytes(i2c_t dev, uint16_t address, const void *data,
     return 0;
 }
 
-static inline int _wait_busy(i2c_t dev, uint32_t max_timeout_counter)
-{
+static inline int _wait_busy(i2c_t dev, uint32_t max_timeout_counter) {
     uint32_t timeout_counter = 0;
 
     DEBUG("[i2c] wait for transfer\n");
@@ -187,7 +175,7 @@ static inline int _wait_busy(i2c_t dev, uint32_t max_timeout_counter)
         }
         else if ((_REG32(i2c_config[dev].addr,
                          I2C_STATUS) & I2C_STATUS_ALOST) == I2C_STATUS_ALOST) {
-            /* Arbitration lost */
+            // Arbitration lost
             DEBUG("[i2c] error: Arbitration lost\n");
             return -EAGAIN;
         }
@@ -195,18 +183,17 @@ static inline int _wait_busy(i2c_t dev, uint32_t max_timeout_counter)
     return 0;
 }
 
-static inline int _start(i2c_t dev, uint16_t address)
-{
+static inline int _start(i2c_t dev, uint16_t address) {
     _wait_busy(dev, I2C_BUSY_TIMEOUT);
 
-    /* start transmission */
+    // start transmission
     DEBUG("[i2c] write slave address, 0x%02X\n", address);
     _REG32(i2c_config[dev].addr, I2C_DATA) = address;
 
     DEBUG("[i2c] send start condition\n");
     _REG32(i2c_config[dev].addr, I2C_CMD) = (I2C_CMD_STA | I2C_CMD_WR);
 
-    /* Ensure all bytes has been read */
+    // Ensure all bytes has been read
     int ret = _wait_busy(dev, I2C_BUSY_TIMEOUT);
 
     if (ret < 0) {
@@ -216,24 +203,23 @@ static inline int _start(i2c_t dev, uint16_t address)
     return 0;
 }
 
-static inline int _read(i2c_t dev, uint8_t *data, int length, uint8_t stop)
-{
+static inline int _read(i2c_t dev, uint8_t *data, int length, uint8_t stop) {
     uint8_t count = 0;
 
-    /* Read data buffer. */
+    // Read data buffer.
     while (length--) {
         uint8_t command = I2C_CMD_RD;
 
-        /* Wait for hardware module to sync */
+        // Wait for hardware module to sync
         int ret = _wait_busy(dev, I2C_BUSY_TIMEOUT);
         if (ret < 0) {
             return ret;
         }
 
         if (length == 0) {
-            /* Send NACK before STOP */
+            // Send NACK before STOP
             command |= I2C_CMD_ACK;
-            /* Prepare stop command */
+            // Prepare stop command
             if (stop) {
                 command |= I2C_CMD_STO;
             }
@@ -241,7 +227,7 @@ static inline int _read(i2c_t dev, uint8_t *data, int length, uint8_t stop)
 
         _REG32(i2c_config[dev].addr, I2C_CMD) = command;
 
-        /* Wait for response on bus. */
+        // Wait for response on bus.
         ret = _wait_busy(dev, I2C_BUSY_TIMEOUT);
         if (ret < 0) {
             return ret;
@@ -256,13 +242,12 @@ static inline int _read(i2c_t dev, uint8_t *data, int length, uint8_t stop)
 }
 
 static inline int _write(i2c_t dev, const uint8_t *data, int length,
-                         uint8_t stop)
-{
+                         uint8_t stop) {
     uint8_t count = 0;
 
-    /* Write data buffer until the end. */
+    // Write data buffer until the end.
     while (length--) {
-        /* Wait for hardware module to sync */
+        // Wait for hardware module to sync
         int ret = _wait_busy(dev, I2C_BUSY_TIMEOUT);
         if (ret < 0) {
             return ret;
@@ -273,7 +258,7 @@ static inline int _write(i2c_t dev, const uint8_t *data, int length,
         DEBUG("[i2c] write byte #%i, 0x%02X\n", count, data[count]);
         _REG32(i2c_config[dev].addr, I2C_DATA) = data[count++];
 
-        /* Check if this is the last byte to read */
+        // Check if this is the last byte to read
         if ((length == 0) && stop) {
             command |= I2C_CMD_STO;
         }

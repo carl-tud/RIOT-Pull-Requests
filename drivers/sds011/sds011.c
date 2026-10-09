@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sds011
- * @{
- *
- * @file
- * @brief       SDS011 Laser Dust Sensor driver implementation
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_sds011
+/// @{
+///
+/// @file
+/// @brief       SDS011 Laser Dust Sensor driver implementation
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -21,18 +17,15 @@
 #include "sds011.h"
 #include "periph/uart.h"
 
-/**
- * @brief             UART receive callback
- *
- * @param[in]   arg   Context value previously handed to the uart_init call
- * @param[in]   data  single byte received over UART
- */
-static void _rx_cb(void *arg, uint8_t data)
-{
+/// @brief             UART receive callback
+///
+/// @param[in]   arg   Context value previously handed to the uart_init call
+/// @param[in]   data  single byte received over UART
+static void _rx_cb(void *arg, uint8_t data) {
     sds011_t *dev = (sds011_t*)arg;
 
-    /* frame MUST start with HEAD byte and the buffer must be cleared
-       before writing to it again */
+    // frame MUST start with HEAD byte and the buffer must be cleared
+    //    before writing to it again
     if (((dev->pos == 0) && (data != SDS011_FRAME_HEAD)) ||
          (dev->pos == SDS011_FRAME_RECV_LEN)) {
         return;
@@ -68,24 +61,21 @@ static void _rx_cb(void *arg, uint8_t data)
 
         dev->checksum = 0;
 
-        /* unlock the mutex for the calling function */
+        // unlock the mutex for the calling function
         mutex_unlock(&dev->cb_lock);
     }
 
     dev->pos++;
 }
 
-/**
- * @brief             send command and wait for first replied message
- *
- * @param[in]   dev         SDS011 device the command is sent to
- * @param[in]   data_bytes  data bytes to send within the command
- * @param[in]   len         number of data bytes
- * @param[out]  recv_frm    pointer where the received frame will be stored
- *                          must at least provide SDS011_FRAME_RECV_LEN bytes
- */
-int _send_recv_cmd(sds011_t *dev, uint8_t *data_bytes, size_t len, uint8_t *recv_frm)
-{
+/// @brief             send command and wait for first replied message
+///
+/// @param[in]   dev         SDS011 device the command is sent to
+/// @param[in]   data_bytes  data bytes to send within the command
+/// @param[in]   len         number of data bytes
+/// @param[out]  recv_frm    pointer where the received frame will be stored
+///                          must at least provide SDS011_FRAME_RECV_LEN bytes
+int _send_recv_cmd(sds011_t *dev, uint8_t *data_bytes, size_t len, uint8_t *recv_frm) {
     uint8_t cmd[SDS011_FRAME_SEND_LEN] = {0};
     int checksum = 0;
     int res = SDS011_ERROR;
@@ -113,7 +103,7 @@ int _send_recv_cmd(sds011_t *dev, uint8_t *data_bytes, size_t len, uint8_t *recv
 
     mutex_lock(&dev->cb_lock);
 
-    /* if no active reporting callback is registered, UART must be enabled first */
+    // if no active reporting callback is registered, UART must be enabled first
     if((dev->cb == NULL) &&
        (uart_init(dev->params.uart, SDS011_UART_BAUDRATE, _rx_cb, dev) != 0)) {
         mutex_unlock(&dev->cb_lock);
@@ -123,17 +113,17 @@ int _send_recv_cmd(sds011_t *dev, uint8_t *data_bytes, size_t len, uint8_t *recv
 
     uart_write(dev->params.uart, cmd, SDS011_FRAME_SEND_LEN);
 
-    /* wait for the isr callback to unlock the mutex */
+    // wait for the isr callback to unlock the mutex
     mutex_lock(&dev->cb_lock);
 
-    /* only copy data when checksum was valid */
+    // only copy data when checksum was valid
     if (dev->pos != 0) {
         memcpy(recv_frm, dev->rx_mem, SDS011_FRAME_RECV_LEN);
-        /* mark the recv buffer as free */
+        // mark the recv buffer as free
         dev->pos = 0;
         dev->checksum = 0;
 
-        /* check if we received a valid response for the cmd sent*/
+        // check if we received a valid response for the cmd sent
         if(((recv_frm[SDS011_CMDID_IDX]  == SDS011_RCMDID_REPLY) &&
             (cmd[SDS011_DB1_IDX] == recv_frm[SDS011_DB1_IDX]))
            || ((recv_frm[SDS011_CMDID_IDX] == SDS011_RCMDID_DATA)
@@ -148,33 +138,30 @@ int _send_recv_cmd(sds011_t *dev, uint8_t *data_bytes, size_t len, uint8_t *recv
         res = SDS011_INVALID_CHKSUM;
     }
 
-    /* reset mutex state */
+    // reset mutex state
     mutex_unlock(&dev->cb_lock);
 
-    /* if no active reporting callback is registered, UART can be disabled */
+    // if no active reporting callback is registered, UART can be disabled
     if((dev->cb == NULL) &&
        (uart_init(dev->params.uart, SDS011_UART_BAUDRATE, NULL, NULL) != 0)) {
         res = SDS011_ERROR;
     }
 
-    /* release device */
+    // release device
     mutex_unlock(&dev->dev_lock);
 
     return res;
 }
 
-/**
- * @brief       shorthand to get a single byte property with _send_recv_cmd
- *
- * @param[in]   dev         SDS011 device the command is sent to
- * @param[in]   data_bytes  data bytes to send within the command
- * @param[in]   len         number of data bytes
- * @param[out]  p           pointer for storing single data byte of the reply
- * @param[out]  p_idx       index of data byte we want to read
- */
+/// @brief       shorthand to get a single byte property with _send_recv_cmd
+///
+/// @param[in]   dev         SDS011 device the command is sent to
+/// @param[in]   data_bytes  data bytes to send within the command
+/// @param[in]   len         number of data bytes
+/// @param[out]  p           pointer for storing single data byte of the reply
+/// @param[out]  p_idx       index of data byte we want to read
 static int _get_property(sds011_t *dev, uint8_t *data_bytes, size_t len,
-                         uint8_t *p, uint8_t p_idx)
-{
+                         uint8_t *p, uint8_t p_idx) {
     uint8_t recv[SDS011_FRAME_RECV_LEN];
     int res = _send_recv_cmd(dev, data_bytes, len, recv);
 
@@ -185,8 +172,7 @@ static int _get_property(sds011_t *dev, uint8_t *data_bytes, size_t len,
     return res;
 }
 
-int sds011_init(sds011_t *dev, const sds011_params_t *params)
-{
+int sds011_init(sds011_t *dev, const sds011_params_t *params) {
     assert((dev != NULL) && (params != NULL) && (params->uart < UART_NUMOF));
 
     if ((gpio_is_valid(params->pwr_pin)) &&
@@ -206,14 +192,13 @@ int sds011_init(sds011_t *dev, const sds011_params_t *params)
     return SDS011_OK;
 }
 
-int sds011_register_callback(sds011_t *dev, sds011_callback_t cb, void *ctx)
-{
+int sds011_register_callback(sds011_t *dev, sds011_callback_t cb, void *ctx) {
     assert(dev != NULL);
     mutex_lock(&dev->dev_lock);
     dev->cbctx = ctx;
     dev->cb = cb;
 
-    /* either register un unregister the uart callback */
+    // either register un unregister the uart callback
     if (uart_init(dev->params.uart, SDS011_UART_BAUDRATE,
                   cb == NULL ? NULL : _rx_cb,
                   cb == NULL ? NULL : dev) != 0) {
@@ -224,24 +209,21 @@ int sds011_register_callback(sds011_t *dev, sds011_callback_t cb, void *ctx)
     return SDS011_OK;
 }
 
-void sds011_power_on(const sds011_t *dev)
-{
+void sds011_power_on(const sds011_t *dev) {
     assert(dev != NULL);
     if(gpio_is_valid(dev->params.pwr_pin)) {
         gpio_write(dev->params.pwr_pin, dev->params.pwr_ah);
     }
 }
 
-void sds011_power_off(const sds011_t *dev)
-{
+void sds011_power_off(const sds011_t *dev) {
     assert(dev != NULL);
     if(gpio_is_valid(dev->params.pwr_pin)) {
         gpio_write(dev->params.pwr_pin, !dev->params.pwr_ah);
     }
 }
 
-int sds011_get_reporting_mode(sds011_t *dev, sds011_reporting_mode_t *mode)
-{
+int sds011_get_reporting_mode(sds011_t *dev, sds011_reporting_mode_t *mode) {
     assert(dev != NULL);
     uint8_t cmd[] = {SDS011_CMD_DB1_SET_DR_MODE, SDS011_CMD_OPT_QUERY};
     uint8_t prop = 0;
@@ -250,8 +232,7 @@ int sds011_get_reporting_mode(sds011_t *dev, sds011_reporting_mode_t *mode)
     return res;
 }
 
-int sds011_set_reporting_mode(sds011_t *dev, sds011_reporting_mode_t mode)
-{
+int sds011_set_reporting_mode(sds011_t *dev, sds011_reporting_mode_t mode) {
     assert(dev != NULL);
     uint8_t cmd[] = {SDS011_CMD_DB1_SET_DR_MODE, SDS011_CMD_OPT_SET, mode};
 
@@ -270,8 +251,7 @@ int sds011_set_reporting_mode(sds011_t *dev, sds011_reporting_mode_t mode)
     return res;
 }
 
-int sds011_read(sds011_t *dev, sds011_data_t *data)
-{
+int sds011_read(sds011_t *dev, sds011_data_t *data) {
     assert((dev != NULL) && (data != NULL));
     uint8_t cmd[] = {SDS011_CMD_DB1_QUERY_DATA};
 
@@ -286,8 +266,7 @@ int sds011_read(sds011_t *dev, sds011_data_t *data)
     return res;
 }
 
-int sds011_set_dev_id(sds011_t *dev, uint16_t sens_dev_id)
-{
+int sds011_set_dev_id(sds011_t *dev, uint16_t sens_dev_id) {
     assert(dev != NULL);
     uint8_t cmd[13] = {0};
     cmd[0]  = SDS011_CMD_DB1_SET_DEV_ID;
@@ -306,8 +285,7 @@ int sds011_set_dev_id(sds011_t *dev, uint16_t sens_dev_id)
     return SDS011_ERROR;
 }
 
-int sds011_get_working_mode(sds011_t *dev, sds011_working_mode_t *mode)
-{
+int sds011_get_working_mode(sds011_t *dev, sds011_working_mode_t *mode) {
     assert(dev != NULL);
     uint8_t cmd[] = {SDS011_CMD_DB1_SET_SLEEP_WORK, SDS011_CMD_OPT_QUERY};
     uint8_t prop = 0;
@@ -316,8 +294,7 @@ int sds011_get_working_mode(sds011_t *dev, sds011_working_mode_t *mode)
     return res;
 }
 
-int sds011_set_working_mode(sds011_t *dev, sds011_working_mode_t mode)
-{
+int sds011_set_working_mode(sds011_t *dev, sds011_working_mode_t mode) {
     assert(dev != NULL);
     uint8_t cmd[] = {SDS011_CMD_DB1_SET_SLEEP_WORK, SDS011_CMD_OPT_SET, mode};
 
@@ -336,15 +313,13 @@ int sds011_set_working_mode(sds011_t *dev, sds011_working_mode_t mode)
     return res;
 }
 
-int sds011_get_working_period(sds011_t *dev, uint8_t *minutes)
-{
+int sds011_get_working_period(sds011_t *dev, uint8_t *minutes) {
     assert(dev != NULL);
     uint8_t cmd[] = {SDS011_CMD_DB1_SET_WORK_PERIOD, SDS011_CMD_OPT_QUERY};
     return _get_property(dev, cmd, sizeof(cmd), minutes, SDS011_DB3_IDX);
 }
 
-int sds011_set_working_period(sds011_t *dev, uint8_t minutes)
-{
+int sds011_set_working_period(sds011_t *dev, uint8_t minutes) {
     assert(dev != NULL);
     uint8_t cmd[] = {SDS011_CMD_DB1_SET_WORK_PERIOD, SDS011_CMD_OPT_SET, minutes};
 
@@ -363,8 +338,7 @@ int sds011_set_working_period(sds011_t *dev, uint8_t minutes)
     return res;
 }
 
-int sds011_get_fw_version(sds011_t *dev, uint8_t *year, uint8_t *mon, uint8_t *day)
-{
+int sds011_get_fw_version(sds011_t *dev, uint8_t *year, uint8_t *mon, uint8_t *day) {
     assert((dev != NULL) && (year != NULL) && (mon != NULL) && (day != NULL));
     uint8_t cmd[] = {SDS011_CMD_DB1_CHECK_FIRMWARE};
 

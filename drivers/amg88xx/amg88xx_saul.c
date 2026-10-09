@@ -1,26 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_amg88xx
- * @{
- *
- * @file
- * @brief       SAUL adoption for the AMG88xx infrared array sensor
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_amg88xx
+/// @{
+///
+/// @file
+/// @brief       SAUL adoption for the AMG88xx infrared array sensor
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include "saul.h"
 
 #include "amg88xx.h"
 
-static int read_temperature(const void *dev, phydat_t *res)
-{
+static int read_temperature(const void *dev, phydat_t *res) {
     uint16_t temp;
 
     if (amg88xx_get_temperature((const amg88xx_t *)dev, (int16_t *)&temp) != 0) {

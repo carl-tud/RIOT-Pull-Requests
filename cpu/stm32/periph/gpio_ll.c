@@ -1,29 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Hamburg University of Applied Sciences
- * SPDX-FileCopyrightText: 2017-2020 Inria
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Hamburg University of Applied Sciences
+// SPDX-FileCopyrightText: 2017-2020 Inria
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @ingroup     drivers_periph_gpio_ll
- * @{
- *
- * @file
- * @brief       GPIO Low-level API implementation for the STM32 GPIO peripheral
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Fabian Nack <nack@inf.fu-berlin.de>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Katja Kirstein <katja.kirstein@haw-hamburg.de>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @ingroup     drivers_periph_gpio_ll
+/// @{
+///
+/// @file
+/// @brief       GPIO Low-level API implementation for the STM32 GPIO peripheral
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Fabian Nack <nack@inf.fu-berlin.de>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Katja Kirstein <katja.kirstein@haw-hamburg.de>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 
@@ -34,8 +30,7 @@
 #  include "fmt.h"
 #else
 #  include <stdio.h>
-static inline void print_str(const char *str)
-{
+static inline void print_str(const char *str) {
     fputs(str, stdout);
 }
 #endif
@@ -80,28 +75,27 @@ static inline void print_str(const char *str)
 #  define GPIOAEN       RCC_AHB4ENR_GPIOAEN
 #endif
 
-/* Bitmask to extract a mode field of the mode register "MODER".
- * Note: Some families provide both, hence #elif */
+// Bitmask to extract a mode field of the mode register "MODER".
+// Note: Some families provide both, hence #elif
 #ifdef GPIO_MODER_MODER0_Msk
 #  define MODE_Msk GPIO_MODER_MODER0_Msk
 #elif GPIO_MODER_MODE0_Msk
 #  define MODE_Msk GPIO_MODER_MODE0_Msk
 #endif
 
-/* Number of bits a mode field in the mode register "MODER" is wide.
- * Note: Some families provide both, hence #elif */
+// Number of bits a mode field in the mode register "MODER" is wide.
+// Note: Some families provide both, hence #elif
 #ifdef GPIO_MODER_MODER1_Pos
 #  define MODE_BITS GPIO_MODER_MODER1_Pos
 #elif GPIO_MODER_MODE1_Pos
 #  define MODE_BITS GPIO_MODER_MODE1_Pos
 #endif
 
-static void _init_clock(gpio_port_t port)
-{
+static void _init_clock(gpio_port_t port) {
     periph_clk_en(GPIO_BUS, (GPIOAEN << gpio_port_num(port)));
 #ifdef PORTG_REQUIRES_EXTERNAL_POWER
     if (port == (uintptr_t)GPIOG) {
-        /* Port G requires external power supply */
+        // Port G requires external power supply
         periph_clk_en(APB1, RCC_APB1ENR1_PWREN);
         PWR->CR2 |= PWR_CR2_IOSV;
     }
@@ -109,8 +103,7 @@ static void _init_clock(gpio_port_t port)
 }
 
 #if defined(GPIO_MODER_MODER0) || defined(GPIO_MODER_MODE0)
-static void _set_mode(gpio_port_t port, uint8_t pin, gpiox_moder_t mode)
-{
+static void _set_mode(gpio_port_t port, uint8_t pin, gpiox_moder_t mode) {
     GPIO_TypeDef *p = (void *)port;
     uint32_t tmp = p->MODER;
     tmp &= ~(MODE_Msk << (MODE_BITS * pin));
@@ -121,8 +114,7 @@ static void _set_mode(gpio_port_t port, uint8_t pin, gpiox_moder_t mode)
 
 #if (defined(GPIO_MODER_MODER0) || defined(GPIO_MODER_MODE0)) \
     && (defined(GPIO_OTYPER_OT0) || defined(GPIO_OTYPER_OT_0))
-static gpio_state_t _get_state(gpio_port_t port, uint8_t pin)
-{
+static gpio_state_t _get_state(gpio_port_t port, uint8_t pin) {
     GPIO_TypeDef *p = (void *)port;
     gpiox_moder_t moder = (p->MODER >> (MODE_BITS * pin)) & MODE_Msk;
     switch (moder) {
@@ -141,8 +133,7 @@ static gpio_state_t _get_state(gpio_port_t port, uint8_t pin)
 #endif
 
 #if defined(GPIO_OTYPER_OT0) || defined(GPIO_OTYPER_OT_0)
-static void _set_output_type(gpio_port_t port, uint8_t pin, bool open_drain)
-{
+static void _set_output_type(gpio_port_t port, uint8_t pin, bool open_drain) {
     GPIO_TypeDef *p = (void *)port;
     if (open_drain) {
         p->OTYPER |= 1UL << pin;
@@ -154,19 +145,17 @@ static void _set_output_type(gpio_port_t port, uint8_t pin, bool open_drain)
 #endif
 
 #if defined(GPIO_PUPDR_PUPDR0) || defined(GPIO_PUPDR_PUPD0)
-static void _set_pull_config(gpio_port_t port, uint8_t pin, gpio_pull_t pull)
-{
+static void _set_pull_config(gpio_port_t port, uint8_t pin, gpio_pull_t pull) {
     GPIO_TypeDef *p = (void *)port;
-    /* being more verbose here so that compiler doesn't generate two loads and stores when accessing
-     * volatile variable */
+    // being more verbose here so that compiler doesn't generate two loads and stores when accessing
+    // volatile variable
     uint32_t pupdr = p->PUPDR;
     pupdr &= ~(0x3UL << (2 * pin));
     pupdr |= (uint32_t)pull << (2 * pin);
     p->PUPDR = pupdr;
 }
 
-static gpio_pull_t _get_pull_config(gpio_port_t port, uint8_t pin)
-{
+static gpio_pull_t _get_pull_config(gpio_port_t port, uint8_t pin) {
     GPIO_TypeDef *p = (void *)port;
     uint32_t pupdr = (p->PUPDR >> (2 * pin)) & 0x3UL;
     return (gpio_pull_t)pupdr;
@@ -175,19 +164,17 @@ static gpio_pull_t _get_pull_config(gpio_port_t port, uint8_t pin)
 
 #if defined(GPIO_OSPEEDR_OSPEED0) || defined(GPIO_OSPEEDER_OSPEEDR0) \
     || defined(GPIO_OSPEEDER_OSPEED0) || defined(GPIO_OSPEEDR_OSPEEDR0)
-static void _set_slew_rate(gpio_port_t port, uint8_t pin, gpio_slew_t slew_rate)
-{
+static void _set_slew_rate(gpio_port_t port, uint8_t pin, gpio_slew_t slew_rate) {
     GPIO_TypeDef *p = (void *)port;
-    /* being more verbose here so that compiler doesn't generate two loads and
-     * stores when accessing volatile variable */
+    // being more verbose here so that compiler doesn't generate two loads and
+    // stores when accessing volatile variable
     uint32_t ospeedr = p->OSPEEDR;
     ospeedr &= ~(3UL << (2 * pin));
     ospeedr |= (uint32_t)slew_rate << (2 * pin);
     p->OSPEEDR = ospeedr;
 }
 
-static gpio_slew_t _get_slew_rate(gpio_port_t port, uint8_t pin)
-{
+static gpio_slew_t _get_slew_rate(gpio_port_t port, uint8_t pin) {
     GPIO_TypeDef *p = (void *)port;
     uint32_t ospeedr = (p->OSPEEDR >> (2 * pin)) & 0x3UL;
     return (gpio_slew_t)ospeedr;
@@ -196,11 +183,10 @@ static gpio_slew_t _get_slew_rate(gpio_port_t port, uint8_t pin)
 
 #ifdef GPIO_CRL_MODE
 static void _set_legacy_f1_config(gpio_port_t port, uint8_t pin,
-                                  gpio_conf_t conf)
-{
-    /* STM32F1 style config register mix output mode and slew rate into the
-     * same field. This look up table can be used to look up the correct
-     * output mode by slew rate */
+                                  gpio_conf_t conf) {
+    // STM32F1 style config register mix output mode and slew rate into the
+    // same field. This look up table can be used to look up the correct
+    // output mode by slew rate
     static const uint8_t output_mode_by_slew_rate[] = {
         [GPIO_SLEW_SLOWEST] = GPIO_CRL_MODE0_OUTPUT_2MHZ,
         [GPIO_SLEW_FAST] = GPIO_CRL_MODE0_OUTPUT_10MHZ,
@@ -208,23 +194,23 @@ static void _set_legacy_f1_config(gpio_port_t port, uint8_t pin,
     };
 
     GPIO_TypeDef *p = (void *)port;
-    /* There is low control register (CRL) for pins 0-7, and a high control
-     * register (CRH) for pins 8-15. `offset` is the offset within the
-     * registers, `high_reg` is true if CRH is to be used */
+    // There is low control register (CRL) for pins 0-7, and a high control
+    // register (CRH) for pins 8-15. `offset` is the offset within the
+    // registers, `high_reg` is true if CRH is to be used
     unsigned offset = (pin & 0x7U) << 2;
     bool high_reg = pin > 7;
     uint32_t control = high_reg ? p->CRH : p -> CRL;
 
     assert((unsigned)conf.slew_rate < ARRAY_SIZE(output_mode_by_slew_rate));
 
-    /* prepare bis in cnf and mode fields for given pin */
+    // prepare bis in cnf and mode fields for given pin
     uint32_t cnf_mode = 0;
     switch (conf.state) {
     default:
     case GPIO_DISCONNECT:
-        /* Keeping GPIO in analog mode is said to reduce power consumption.
-         * This is plausible, as the Schmitt trigger and the input buffer could
-         * be disabled. */
+        // Keeping GPIO in analog mode is said to reduce power consumption.
+        // This is plausible, as the Schmitt trigger and the input buffer could
+        // be disabled.
         cnf_mode = GPIO_CRL_MODE0_INPUT | GPIO_CRL_CNF0_INPUT_ANALOG;
         break;
     case GPIO_INPUT:
@@ -235,16 +221,16 @@ static void _set_legacy_f1_config(gpio_port_t port, uint8_t pin,
             break;
         case GPIO_PULL_UP:
             cnf_mode = GPIO_CRL_MODE0_INPUT | GPIO_CRL_CNF0_INPUT_PULL;
-            /* ODR controls pull resistor in input mode. We access ODR via
-             * BSRR to atomically set the bit (mostly to safe ROM and CPU
-             * cycles, IRQs are disabled anyway) */
+            // ODR controls pull resistor in input mode. We access ODR via
+            // BSRR to atomically set the bit (mostly to safe ROM and CPU
+            // cycles, IRQs are disabled anyway)
             p->BSRR = 1U << pin;
             break;
         case GPIO_PULL_DOWN:
             cnf_mode = GPIO_CRL_MODE0_INPUT | GPIO_CRL_CNF0_INPUT_PULL;
-            /* ODR controls pull resistor in input mode. We access ODR via
-             * BSRR to atomically clear the bit (mostly to safe ROM and CPU
-             * cycles, IRQs are disabled anyway) */
+            // ODR controls pull resistor in input mode. We access ODR via
+            // BSRR to atomically clear the bit (mostly to safe ROM and CPU
+            // cycles, IRQs are disabled anyway)
             p->BSRR = 1U << (pin | 0x10);
         }
         break;
@@ -257,9 +243,9 @@ static void _set_legacy_f1_config(gpio_port_t port, uint8_t pin,
                  | output_mode_by_slew_rate[conf.slew_rate];
     }
 
-    /* clear old values of cnf and mode fields in config reg */
+    // clear old values of cnf and mode fields in config reg
     control &= ~(0xFU << offset);
-    /* apply new values of cnf and mode fields in config reg */
+    // apply new values of cnf and mode fields in config reg
     control |= cnf_mode << offset;
 
     if (high_reg) {
@@ -269,8 +255,7 @@ static void _set_legacy_f1_config(gpio_port_t port, uint8_t pin,
         p->CRL = control;
     }
 }
-static gpio_conf_t _get_legacy_f1_config(gpio_port_t port, uint8_t pin)
-{
+static gpio_conf_t _get_legacy_f1_config(gpio_port_t port, uint8_t pin) {
     gpio_conf_t result = { 0 };
     GPIO_TypeDef *p = (void *)port;
     unsigned offset = (pin & 0x7U) << 2;
@@ -327,15 +312,14 @@ static gpio_conf_t _get_legacy_f1_config(gpio_port_t port, uint8_t pin)
 }
 #endif
 
-int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
-{
+int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf) {
     if ((conf.pull == GPIO_PULL_KEEP) || (conf.state == GPIO_OUTPUT_OPEN_SOURCE)) {
         return -ENOTSUP;
     }
 
 #if !defined(GPIO_PUPDR_PUPDR0) && !defined(GPIO_PUPDR_PUPD0)
-    /* without dedicated pull up / pull down register, pull resistors can only
-     * be used with input pins */
+    // without dedicated pull up / pull down register, pull resistors can only
+    // be used with input pins
     if ((conf.state == GPIO_OUTPUT_OPEN_DRAIN) && (conf.pull != GPIO_FLOATING)) {
         return -ENOTSUP;
     }
@@ -350,10 +334,10 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
         gpio_ll_clear(port, 1UL << pin);
     }
 #ifdef GPIO_CRL_MODE
-    /* old STM32F1 style GPIO configuration register layout */
+    // old STM32F1 style GPIO configuration register layout
     _set_legacy_f1_config(port, pin, conf);
 #else
-    /* modern STM32 style GPIO configuration register layout */
+    // modern STM32 style GPIO configuration register layout
     _set_output_type(port, pin, conf.state & GPIO_STATE_T_OPEN_DRAIN_FLAG);
     _set_pull_config(port, pin, conf.pull);
     _set_slew_rate(port, pin, conf.slew_rate);
@@ -364,38 +348,36 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
     return 0;
 }
 
-uword_t gpio_ll_prepare_switch_dir_impl(uword_t mask)
-{
-    /* Mask contains a bitmask containing the pins needed to change
-     * the direction of. E.g. for pins 0 to 3 it looks like:
-     *
-     *   3    2    1    0
-     * +----+----+----+----+
-     * | P3 | P2 | P1 | P0 |
-     * +----+----+----+----+
-     *
-     * We need to update the GPIOX->MODER register, which for pins 0 to 3
-     * looks like this:
-     *
-     *   7    6    5    4    3    2    1    0
-     * +---------+---------+---------+---------+
-     * |  MODE3  |  MODE2  |  MODE1  |  MODE0  |
-     * +---------+---------+---------+---------+
-     *
-     * Where each mode field will have the value `0b00` for input or `0b01`
-     * for output (the others two values are for alternate function mode and
-     * analog mode, which are both not relevant here). So, we need a way to
-     * efficiently set and clear every second bit. Specifically, a bitmask
-     * that looks like this is our goal:
-     *
-     *   7    6    5    4    3    2    1    0
-     * +----+----+----+----+----+----+----+----+
-     * | 0  | P3 | 0  | P2 | 0  | P1 | 0  | P0 |
-     * +----+----+----+----+----+----+----+----+
-     *
-     * This is what below bit magic magic does (but for 16 pins instead of
-     * 4).
-     */
+uword_t gpio_ll_prepare_switch_dir_impl(uword_t mask) {
+    // Mask contains a bitmask containing the pins needed to change
+    // the direction of. E.g. for pins 0 to 3 it looks like:
+    //
+    //   3    2    1    0
+    // +----+----+----+----+
+    // | P3 | P2 | P1 | P0 |
+    // +----+----+----+----+
+    //
+    // We need to update the GPIOX->MODER register, which for pins 0 to 3
+    // looks like this:
+    //
+    //   7    6    5    4    3    2    1    0
+    // +---------+---------+---------+---------+
+    // |  MODE3  |  MODE2  |  MODE1  |  MODE0  |
+    // +---------+---------+---------+---------+
+    //
+    // Where each mode field will have the value `0b00` for input or `0b01`
+    // for output (the others two values are for alternate function mode and
+    // analog mode, which are both not relevant here). So, we need a way to
+    // efficiently set and clear every second bit. Specifically, a bitmask
+    // that looks like this is our goal:
+    //
+    //   7    6    5    4    3    2    1    0
+    // +----+----+----+----+----+----+----+----+
+    // | 0  | P3 | 0  | P2 | 0  | P1 | 0  | P0 |
+    // +----+----+----+----+----+----+----+----+
+    //
+    // This is what below bit magic magic does (but for 16 pins instead of
+    // 4).
     uword_t output = mask & 0xFFFF;
     output |= output << 8;
     output &= 0x00FF00FF;
@@ -408,15 +390,14 @@ uword_t gpio_ll_prepare_switch_dir_impl(uword_t mask)
     return output;
 }
 
-gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
-{
+gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin) {
     gpio_conf_t result = { 0 };
     unsigned state = irq_disable();
 #ifdef GPIO_CRL_MODE
-    /* old STM32F1 style GPIO configuration register layout */
+    // old STM32F1 style GPIO configuration register layout
     result = _get_legacy_f1_config(port, pin);
 #else
-    /* modern STM32 style GPIO configuration register layout */
+    // modern STM32 style GPIO configuration register layout
     result.state = _get_state(port, pin);
     result.pull = _get_pull_config(port, pin);
     result.slew_rate = _get_slew_rate(port, pin);
@@ -432,8 +413,7 @@ gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
     return result;
 }
 
-void gpio_ll_print_conf(gpio_conf_t conf)
-{
+void gpio_ll_print_conf(gpio_conf_t conf) {
     static const char *slew_strs[] = {
         [GPIO_SLEW_SLOWEST] = "slowest",
 #if STM32_HAS_OSPEED
@@ -441,8 +421,8 @@ void gpio_ll_print_conf(gpio_conf_t conf)
 #endif
         [GPIO_SLEW_FAST] = "fast",
         [GPIO_SLEW_FASTEST] = "fastest",
-/* If only three slew rates are supported, a fourth value would be
- * representable with the two-bit field. Let's be rather safe than sorry */
+// If only three slew rates are supported, a fourth value would be
+// representable with the two-bit field. Let's be rather safe than sorry
 #if !STM32_HAS_OSPEED
         "invalid"
 #endif

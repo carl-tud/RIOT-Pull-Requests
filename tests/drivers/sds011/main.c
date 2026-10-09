@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 HAW-Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 HAW-Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the SDS011 Laser Dust Sensor driver
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the SDS011 Laser Dust Sensor driver
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+///
+/// @}
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -31,13 +27,10 @@
 #define MANUAL_QUERY_CNT                         (10U)
 #define WORKING_PERIOD                           (0U)
 
-/**
- * @brief   Allocate the device descriptor
- */
+/// @brief   Allocate the device descriptor
 static sds011_t dev;
 
-static char* _rmode_str(sds011_reporting_mode_t rmode)
-{
+static char* _rmode_str(sds011_reporting_mode_t rmode) {
     switch (rmode) {
         case SDS011_RMODE_ACTIVE:
             return "ACTIVE";
@@ -48,8 +41,7 @@ static char* _rmode_str(sds011_reporting_mode_t rmode)
     }
 }
 
-static char* _wmode_str(sds011_working_mode_t wmode)
-{
+static char* _wmode_str(sds011_working_mode_t wmode) {
     switch (wmode) {
         case SDS011_WMODE_WORK:
             return "WORK";
@@ -60,8 +52,7 @@ static char* _wmode_str(sds011_working_mode_t wmode)
     }
 }
 
-static void _print_measurement(sds011_data_t *data)
-{
+static void _print_measurement(sds011_data_t *data) {
     uint16_t pm10_ug_int = data->pm_10 / 10;
     uint16_t pm10_ug_dec = data->pm_10 - 10 * pm10_ug_int;
     uint16_t pm2_5_ug_int = data->pm_2_5 / 10;
@@ -70,15 +61,13 @@ static void _print_measurement(sds011_data_t *data)
            pm2_5_ug_int, pm2_5_ug_dec, pm10_ug_int, pm10_ug_dec);
 }
 
-void measure_cb(sds011_data_t *data, void *ctx)
-{
+void measure_cb(sds011_data_t *data, void *ctx) {
     msg_t msg = { .content.value = (((uint32_t)data->pm_10) << 16 | data->pm_2_5) };
     kernel_pid_t target_pid = (intptr_t)ctx;
     msg_send(&msg, target_pid);
 }
 
-int main(void)
-{
+int main(void) {
     unsigned retry_cnt = 0;
     uint8_t year;
     uint8_t month;
@@ -90,7 +79,7 @@ int main(void)
 
     puts("SDS011 test application");
 
-    /* initialize the driver */
+    // initialize the driver
     if (sds011_init(&dev, &sds011_params[0]) == SDS011_OK) {
         puts("init [OK]");
     }
@@ -101,9 +90,9 @@ int main(void)
 
     printf("setting reporting mode to '%s'...\n", _rmode_str(SDS011_RMODE_QUERY));
 
-    /* set the sensor to query mode to disable active reporting messages
-       -> to work correctly, this step may need to be repeated if the automatic
-          output is incoming while the reply is expected */
+    // set the sensor to query mode to disable active reporting messages
+    //    -> to work correctly, this step may need to be repeated if the automatic
+    //       output is incoming while the reply is expected
     while (sds011_set_reporting_mode(&dev, SDS011_RMODE_QUERY) != SDS011_OK) {
         if (retry_cnt++ >= PUT_TO_QUERY_MODE_RETRIES) {
             puts("[ERROR]");
@@ -204,7 +193,7 @@ int main(void)
         return -1;
     }
 
-    /* wait a little bit so the callback gets executed a few times */
+    // wait a little bit so the callback gets executed a few times
     msg_t msg;
     for (unsigned msg_cnt = 0; msg_cnt < ACTIVE_REPORTING_TEST_CNT; msg_cnt++) {
         msg_receive(&msg);
@@ -215,7 +204,7 @@ int main(void)
         _print_measurement(&data);
     }
 
-    /* unregister callback */
+    // unregister callback
     sds011_register_callback(&dev, NULL, NULL);
 
     puts("switching to sleep mode...");

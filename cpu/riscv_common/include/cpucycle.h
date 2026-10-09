@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 JP Bonn
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 JP Bonn
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_riscv_common
- * @{
- *
- * @file
- * @brief           Functions to read CPU cycle counter
- *
- * @author          JP Bonn
- */
+/// @ingroup         cpu_riscv_common
+/// @{
+///
+/// @file
+/// @brief           Functions to read CPU cycle counter
+///
+/// @author          JP Bonn
 
 #include <stdint.h>
 
@@ -21,15 +17,13 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Returns a count of the number of clock cycles executed by the
- *          processor core on which the hart is running from an arbitrary
- *          start time in the past.
- */
+/// @brief   Returns a count of the number of clock cycles executed by the
+///          processor core on which the hart is running from an arbitrary
+///          start time in the past.
 uint64_t get_cycle_count(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

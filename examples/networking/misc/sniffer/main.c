@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015-2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @defgroup    app_sniffer
- * @brief       Sniffer application based on the new network stack
- * @{
- *
- * @file
- * @brief       Sniffer application for RIOT
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @defgroup    app_sniffer
+/// @brief       Sniffer application based on the new network stack
+/// @{
+///
+/// @file
+/// @brief       Sniffer application for RIOT
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -25,31 +21,20 @@
 #include "net/gnrc.h"
 #include "ztimer64.h"
 
-/**
- * @brief   Buffer size used by the shell
- */
+/// @brief   Buffer size used by the shell
 #define SHELL_BUFSIZE           (64U)
 
-/**
- * @brief   Priority of the RAW dump thread
- */
+/// @brief   Priority of the RAW dump thread
 #define RAWDUMP_PRIO            (THREAD_PRIORITY_MAIN - 1)
 
-/**
- * @brief   Message queue size of the RAW dump thread
- */
+/// @brief   Message queue size of the RAW dump thread
 #define RAWDUMP_MSG_Q_SIZE      (32U)
 
-/**
- * @brief   Stack for the raw dump thread
- */
+/// @brief   Stack for the raw dump thread
 static char rawdmp_stack[THREAD_STACKSIZE_SMALL];
 
-/**
- * @brief   Make a raw dump of the given packet contents
- */
-void dump_pkt(gnrc_pktsnip_t *pkt)
-{
+/// @brief   Make a raw dump of the given packet contents
+void dump_pkt(gnrc_pktsnip_t *pkt) {
     gnrc_pktsnip_t *snip = pkt;
     uint8_t lqi = 0;
     if (pkt->next) {
@@ -80,13 +65,10 @@ void dump_pkt(gnrc_pktsnip_t *pkt)
     gnrc_pktbuf_release(pkt);
 }
 
-/**
- * @brief   Event loop of the RAW dump thread
- *
- * @param[in] arg   unused parameter
- */
-void *rawdump(void *arg)
-{
+/// @brief   Event loop of the RAW dump thread
+///
+/// @param[in] arg   unused parameter
+void *rawdump(void *arg) {
     msg_t msg_q[RAWDUMP_MSG_Q_SIZE];
 
     (void)arg;
@@ -100,32 +82,29 @@ void *rawdump(void *arg)
                 dump_pkt((gnrc_pktsnip_t *)msg.content.ptr);
                 break;
             default:
-                /* do nothing */
+                // do nothing
                 break;
         }
     }
 
-    /* never reached */
+    // never reached
     return NULL;
 }
 
-/**
- * @brief   Maybe you are a golfer?!
- */
-int main(void)
-{
+/// @brief   Maybe you are a golfer?!
+int main(void) {
     gnrc_netreg_entry_t dump;
 
     puts("RIOT sniffer application");
 
-    /* start and register rawdump thread */
+    // start and register rawdump thread
     puts("Run the rawdump thread and register it");
     dump.target.pid = thread_create(rawdmp_stack, sizeof(rawdmp_stack), RAWDUMP_PRIO,
                                     0, rawdump, NULL, "rawdump");
     dump.demux_ctx = GNRC_NETREG_DEMUX_CTX_ALL;
     gnrc_netreg_register(GNRC_NETTYPE_UNDEF, &dump);
 
-    /* start the shell */
+    // start the shell
     puts("All ok, starting the shell now");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);

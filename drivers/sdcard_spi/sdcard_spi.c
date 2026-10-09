@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_sdcard_spi
- * @{
- *
- * @file
- * @brief       low level driver for accessing sd-cards via spi interface.
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_sdcard_spi
+/// @{
+///
+/// @file
+/// @brief       low level driver for accessing sd-cards via spi interface.
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+///
+/// @}
 #define ENABLE_DEBUG 0
 #include "debug.h"
 #include "sdcard_spi_internal.h"
@@ -44,36 +40,34 @@ static sd_rw_response_t _read_data_packet(sdcard_spi_t *card, uint8_t token,
 static sd_rw_response_t _write_data_packet(sdcard_spi_t *card, uint8_t token,
                                            const uint8_t *data, uint16_t size);
 
-/* number of used sd cards */
+// number of used sd cards
 #define SDCARD_SPI_NUM ARRAY_SIZE(sdcard_spi_params)
 
-/* Allocate memory for the device descriptors */
+// Allocate memory for the device descriptors
 sdcard_spi_t sdcard_spi_devs[SDCARD_SPI_NUM];
 
-/* CRC-7 (polynomial: x^7 + x^3 + 1) LSB of CRC-7 in a 8-bit variable is always 1*/
+// CRC-7 (polynomial: x^7 + x^3 + 1) LSB of CRC-7 in a 8-bit variable is always 1
 static uint8_t _crc_7(const uint8_t *data, int n);
 
-/* use this transfer method instead of _transfer_bytes to force the use of 0xFF as dummy bytes */
+// use this transfer method instead of _transfer_bytes to force the use of 0xFF as dummy bytes
 static inline uint16_t _transfer_bytes(sdcard_spi_t *card, const uint8_t *out,
                                   uint8_t *in, uint16_t length);
 
-/* uses bitbanging for spi communication which allows to enable pull-up on the miso pin for
-   greater card compatibility on platforms that don't have a hw pull up installed */
+// uses bitbanging for spi communication which allows to enable pull-up on the miso pin for
+//    greater card compatibility on platforms that don't have a hw pull up installed
 static inline void _sw_spi_rxtx_byte(sdcard_spi_t *card, uint8_t out, uint8_t *in);
 
-/* wrapper for default spi_transfer_byte function */
+// wrapper for default spi_transfer_byte function
 static inline void _hw_spi_rxtx_byte(sdcard_spi_t *card, uint8_t out, uint8_t *in);
 
-/* function pointer to switch to hw spi mode after init sequence */
+// function pointer to switch to hw spi mode after init sequence
 static void (*_dyn_spi_rxtx_byte)(sdcard_spi_t *card, uint8_t out, uint8_t *in);
 
-static inline uint32_t _deadline_from_interval(uint32_t interval)
-{
+static inline uint32_t _deadline_from_interval(uint32_t interval) {
     return ztimer_now(ZTIMER_USEC) + interval;
 }
 
-static inline uint32_t _deadline_left(uint32_t deadline)
-{
+static inline uint32_t _deadline_left(uint32_t deadline) {
     int32_t left = (int32_t)(deadline - ztimer_now(ZTIMER_USEC));
 
     if (left < 0) {
@@ -82,8 +76,7 @@ static inline uint32_t _deadline_left(uint32_t deadline)
     return left;
 }
 
-int sdcard_spi_init(sdcard_spi_t *card, const sdcard_spi_params_t *params)
-{
+int sdcard_spi_init(sdcard_spi_t *card, const sdcard_spi_params_t *params) {
     sd_init_fsm_state_t state = SD_INIT_START;
 
     card->params = params;
@@ -101,8 +94,7 @@ int sdcard_spi_init(sdcard_spi_t *card, const sdcard_spi_params_t *params)
     return SDCARD_SPI_INIT_ERROR;
 }
 
-static sd_init_fsm_state_t _init_sd_fsm_step(sdcard_spi_t *card, sd_init_fsm_state_t state)
-{
+static sd_init_fsm_state_t _init_sd_fsm_step(sdcard_spi_t *card, sd_init_fsm_state_t state) {
     switch (state) {
 
     case SD_INIT_START:
@@ -134,10 +126,10 @@ static sd_init_fsm_state_t _init_sd_fsm_step(sdcard_spi_t *card, sd_init_fsm_sta
         }
 
         gpio_set(card->params->mosi);
-        gpio_set(card->params->cs);       /* unselect sdcard for power up sequence */
+        gpio_set(card->params->cs);       // unselect sdcard for power up sequence
 
-        /* powersequence: perform at least 74 clockcycles with mosi_pin being high
-         * (same as sending dummy bytes with 0xFF) */
+        // powersequence: perform at least 74 clockcycles with mosi_pin being high
+        // (same as sending dummy bytes with 0xFF)
         for (int i = 0; i < SD_POWERSEQUENCE_CLOCK_COUNT; i += 1) {
             gpio_set(card->params->clk);
             ztimer_sleep(ZTIMER_USEC, SD_CARD_PREINIT_CLOCK_PERIOD_US / 2);
@@ -151,10 +143,10 @@ static sd_init_fsm_state_t _init_sd_fsm_step(sdcard_spi_t *card, sd_init_fsm_sta
 
         gpio_clear(card->params->mosi);
 
-        /* use soft-spi to perform init command to allow use of internal pull-ups on miso */
+        // use soft-spi to perform init command to allow use of internal pull-ups on miso
         _dyn_spi_rxtx_byte = &_sw_spi_rxtx_byte;
 
-        /* select sdcard for cmd0 */
+        // select sdcard for cmd0
         gpio_clear(card->params->cs);
         uint8_t cmd0_r1 = sdcard_spi_send_cmd(card, SD_CMD_0, SD_CMD_NO_ARG, INIT_CMD0_RETRY_US);
         gpio_set(card->params->cs);
@@ -162,9 +154,9 @@ static sd_init_fsm_state_t _init_sd_fsm_step(sdcard_spi_t *card, sd_init_fsm_sta
         if (R1_VALID(cmd0_r1) && !R1_ERROR(cmd0_r1) && R1_IDLE_BIT_SET(cmd0_r1)) {
             DEBUG("CMD0: [OK]\n");
 
-            /* give control over SPI pins back to HW SPI device */
+            // give control over SPI pins back to HW SPI device
             spi_init_pins(card->params->spi_dev);
-            /* switch to HW SPI since SD card is now in real SPI mode */
+            // switch to HW SPI since SD card is now in real SPI mode
             _dyn_spi_rxtx_byte = &_hw_spi_rxtx_byte;
             return SD_INIT_ENABLE_CRC;
         }
@@ -196,8 +188,8 @@ static sd_init_fsm_state_t _init_sd_fsm_step(sdcard_spi_t *card, sd_init_fsm_sta
 
             if (_transfer_bytes(card, 0, &r7[0], sizeof(r7)) == sizeof(r7)) {
                 DEBUG("R7 response: 0x%02x 0x%02x 0x%02x 0x%02x\n", r7[0], r7[1], r7[2], r7[3]);
-                /* check if lower 12 bits (voltage range and check pattern) of response and arg
-                   are equal to verify compatibility and communication is working properly */
+                // check if lower 12 bits (voltage range and check pattern) of response and arg
+                //    are equal to verify compatibility and communication is working properly
                 if (((r7[2] & 0x0F) == ((cmd8_arg >> 8) & 0x0F)) &&
                     (r7[3] == (cmd8_arg & 0xFF))) {
                     DEBUG("CMD8: [R7 MATCH]\n");
@@ -274,10 +266,10 @@ static sd_init_fsm_state_t _init_sd_fsm_step(sdcard_spi_t *card, sd_init_fsm_sta
                 if ((ocr & SYSTEM_VOLTAGE) != 0) {
                     DEBUG("OCR: SYS VOLTAGE SUPPORTED\n");
 
-                    /* if power up outine is finished */
+                    // if power up outine is finished
                     if ((ocr & OCR_POWER_UP_STATUS) != 0) {
                         DEBUG("OCR: POWER UP ROUTINE FINISHED\n");
-                        /* if sd card is sdhc */
+                        // if sd card is sdhc
                         if ((ocr & OCR_CCS) != 0) {
                             DEBUG("OCR: CARD TYPE IS SDHC (SD_V2 with block addressing)\n");
                             card->use_block_addr = true;
@@ -291,7 +283,7 @@ static sd_init_fsm_state_t _init_sd_fsm_step(sdcard_spi_t *card, sd_init_fsm_sta
                     }
 
                     DEBUG("OCR: POWER UP ROUTINE NOT FINISHED!\n");
-                    /* poll status till power up is finished */
+                    // poll status till power up is finished
                     return SD_INIT_SEND_CMD58;
                 }
 
@@ -357,8 +349,7 @@ static sd_init_fsm_state_t _init_sd_fsm_step(sdcard_spi_t *card, sd_init_fsm_sta
     }
 }
 
-static inline bool _wait_for_token(sdcard_spi_t *card, uint8_t token, uint32_t retry_us)
-{
+static inline bool _wait_for_token(sdcard_spi_t *card, uint8_t token, uint32_t retry_us) {
     uint32_t retry_timeout = _deadline_from_interval(retry_us);
 
     do {
@@ -378,16 +369,14 @@ static inline bool _wait_for_token(sdcard_spi_t *card, uint8_t token, uint32_t r
     return false;
 }
 
-static inline void _send_dummy_byte(sdcard_spi_t *card)
-{
+static inline void _send_dummy_byte(sdcard_spi_t *card) {
     uint8_t read_byte;
 
     _dyn_spi_rxtx_byte(card, SD_CARD_DUMMY_BYTE, &read_byte);
     DEBUG("_send_ummy_byte:echo: 0x%02x\n", read_byte);
 }
 
-static inline bool _wait_for_not_busy(sdcard_spi_t *card, uint32_t retry_us)
-{
+static inline bool _wait_for_not_busy(sdcard_spi_t *card, uint32_t retry_us) {
     uint32_t retry_timeout = _deadline_from_interval(retry_us);
 
     do {
@@ -406,8 +395,7 @@ static inline bool _wait_for_not_busy(sdcard_spi_t *card, uint32_t retry_us)
     return false;
 }
 
-static uint8_t _crc_7(const uint8_t *data, int n)
-{
+static uint8_t _crc_7(const uint8_t *data, int n) {
     uint8_t crc = 0;
 
     for (int i = 0; i < n; i++) {
@@ -424,8 +412,7 @@ static uint8_t _crc_7(const uint8_t *data, int n)
 }
 
 uint8_t sdcard_spi_send_cmd(sdcard_spi_t *card, uint8_t sd_cmd_idx, uint32_t argument,
-                            uint32_t retry_us)
-{
+                            uint32_t retry_us) {
     uint32_t retry_timeout = _deadline_from_interval(retry_us);
 
     uint8_t r1_resu;
@@ -463,7 +450,7 @@ uint8_t sdcard_spi_send_cmd(sdcard_spi_t *card, uint8_t sd_cmd_idx, uint32_t arg
         }
         DEBUG("\n");
 
-        /* received byte after cmd12 is a dummy byte and should be ignored */
+        // received byte after cmd12 is a dummy byte and should be ignored
         if (sd_cmd_idx == SD_CMD_12) {
             _send_dummy_byte(card);
         }
@@ -484,8 +471,7 @@ uint8_t sdcard_spi_send_cmd(sdcard_spi_t *card, uint8_t sd_cmd_idx, uint32_t arg
 }
 
 uint8_t sdcard_spi_send_acmd(sdcard_spi_t *card, uint8_t sd_cmd_idx, uint32_t argument,
-                             uint32_t retry_us)
-{
+                             uint32_t retry_us) {
     uint32_t retry_timeout = _deadline_from_interval(retry_us);
 
     uint8_t r1_resu;
@@ -514,8 +500,7 @@ uint8_t sdcard_spi_send_acmd(sdcard_spi_t *card, uint8_t sd_cmd_idx, uint32_t ar
     return r1_resu;
 }
 
-static inline uint8_t _wait_for_r1(sdcard_spi_t *card, uint32_t retry_us)
-{
+static inline uint8_t _wait_for_r1(sdcard_spi_t *card, uint32_t retry_us) {
     uint32_t retry_timeout = _deadline_from_interval(retry_us);
 
     uint8_t r1;
@@ -535,21 +520,18 @@ static inline uint8_t _wait_for_r1(sdcard_spi_t *card, uint32_t retry_us)
     return r1;
 }
 
-void _select_card_spi(sdcard_spi_t *card)
-{
+void _select_card_spi(sdcard_spi_t *card) {
     spi_acquire(card->params->spi_dev, SPI_CS_UNDEF,
                 SD_CARD_SPI_MODE, card->spi_clk);
     gpio_clear(card->params->cs);
 }
 
-void _unselect_card_spi(sdcard_spi_t *card)
-{
+void _unselect_card_spi(sdcard_spi_t *card) {
     gpio_set(card->params->cs);
     spi_release(card->params->spi_dev);
 }
 
-static inline void _sw_spi_rxtx_byte(sdcard_spi_t *card, uint8_t out, uint8_t *in)
-{
+static inline void _sw_spi_rxtx_byte(sdcard_spi_t *card, uint8_t out, uint8_t *in) {
     uint8_t rx = 0;
     int i = 7;
 
@@ -569,14 +551,12 @@ static inline void _sw_spi_rxtx_byte(sdcard_spi_t *card, uint8_t out, uint8_t *i
     *in = rx;
 }
 
-static inline void _hw_spi_rxtx_byte(sdcard_spi_t *card, uint8_t out, uint8_t *in)
-{
+static inline void _hw_spi_rxtx_byte(sdcard_spi_t *card, uint8_t out, uint8_t *in) {
     *in = spi_transfer_byte(card->params->spi_dev, SPI_CS_UNDEF, true, out);
 }
 
 static inline uint16_t _transfer_bytes(sdcard_spi_t *card, const uint8_t *out,
-                                       uint8_t *in, uint16_t length)
-{
+                                       uint8_t *in, uint16_t length) {
     unsigned trans_bytes = 0;
     uint8_t in_temp;
 
@@ -596,8 +576,7 @@ static inline uint16_t _transfer_bytes(sdcard_spi_t *card, const uint8_t *out,
 }
 
 static sd_rw_response_t _read_data_packet(sdcard_spi_t *card, uint8_t token,
-                                          uint8_t *data, uint16_t size)
-{
+                                          uint8_t *data, uint16_t size) {
     DEBUG("_read_data_packet: size: %" PRIu16 "\n", size);
     if (_wait_for_token(card, token, SD_DATA_TOKEN_RETRY_US) == true) {
         DEBUG("_read_data_packet: [GOT TOKEN]\n");
@@ -640,8 +619,7 @@ static sd_rw_response_t _read_data_packet(sdcard_spi_t *card, uint8_t token,
 static uint16_t _read_blocks(sdcard_spi_t *card, uint8_t cmd_idx,
                              uint32_t bladdr, uint8_t *data,
                              uint16_t blsz, uint16_t nbl,
-                             sd_rw_response_t *state)
-{
+                             sd_rw_response_t *state) {
     _select_card_spi(card);
     uint16_t reads = 0;
 
@@ -664,7 +642,7 @@ static uint16_t _read_blocks(sdcard_spi_t *card, uint8_t cmd_idx,
             }
         }
 
-        /* if this was a multi-block read */
+        // if this was a multi-block read
         if (cmd_idx == SD_CMD_18) {
             cmd_r1_resu = sdcard_spi_send_cmd(card, SD_CMD_12, 0, 1);
 
@@ -693,8 +671,7 @@ static uint16_t _read_blocks(sdcard_spi_t *card, uint8_t cmd_idx,
 
 int sdcard_spi_read_blocks(sdcard_spi_t *card, uint32_t blockaddr,
                            void *data, uint16_t blocksize,
-                           uint16_t nblocks, sd_rw_response_t *state)
-{
+                           uint16_t nblocks, sd_rw_response_t *state) {
     *state = 0;
 
     if (nblocks > 1) {
@@ -706,8 +683,7 @@ int sdcard_spi_read_blocks(sdcard_spi_t *card, uint32_t blockaddr,
 }
 
 static sd_rw_response_t _write_data_packet(sdcard_spi_t *card, uint8_t token,
-                                           const uint8_t *data, uint16_t size)
-{
+                                           const uint8_t *data, uint16_t size) {
 
     spi_transfer_byte(card->params->spi_dev, SPI_CS_UNDEF, true, token);
 
@@ -762,8 +738,7 @@ static sd_rw_response_t _write_data_packet(sdcard_spi_t *card, uint8_t token,
 static uint16_t _write_blocks(sdcard_spi_t *card, uint8_t cmd_idx,
                               uint32_t bladdr, const uint8_t *data,
                               uint16_t blsz, uint16_t nbl,
-                              sd_rw_response_t *state)
-{
+                              sd_rw_response_t *state) {
     _select_card_spi(card);
     uint16_t written = 0;
 
@@ -798,15 +773,15 @@ static uint16_t _write_blocks(sdcard_spi_t *card, uint8_t cmd_idx,
             written++;
         }
 
-        /* if this is a multi-block write it is needed to issue a stop
-           command */
+        // if this is a multi-block write it is needed to issue a stop
+        //    command
         if (cmd_idx == SD_CMD_25) {
             spi_transfer_byte(card->params->spi_dev, SPI_CS_UNDEF, true,
                               SD_DATA_TOKEN_CMD_25_STOP);
             DEBUG("_write_blocks: write multi (%d) blocks: [OK]\n", nbl);
 
-            /* sd card needs dummy byte before we can wait for not-busy
-               state */
+            // sd card needs dummy byte before we can wait for not-busy
+            //    state
             _send_dummy_byte(card);
             if (!_wait_for_not_busy(card, SD_WAIT_FOR_NOT_BUSY_US)) {
                 _unselect_card_spi(card);
@@ -831,8 +806,7 @@ static uint16_t _write_blocks(sdcard_spi_t *card, uint8_t cmd_idx,
 
 int sdcard_spi_write_blocks(sdcard_spi_t *card, uint32_t blockaddr,
                             const void *data, uint16_t blocksize,
-                            uint16_t nblocks, sd_rw_response_t *state)
-{
+                            uint16_t nblocks, sd_rw_response_t *state) {
     *state = 0;
 
     if (nblocks > 1) {
@@ -843,8 +817,7 @@ int sdcard_spi_write_blocks(sdcard_spi_t *card, uint32_t blockaddr,
     }
 }
 
-sd_rw_response_t _read_cid(sdcard_spi_t *card)
-{
+sd_rw_response_t _read_cid(sdcard_spi_t *card) {
     uint8_t cid_raw_data[SD_SIZE_OF_CID_AND_CSD_REG];
     sd_rw_response_t state;
     int nbl = _read_blocks(card, SD_CMD_10, 0, cid_raw_data, SD_SIZE_OF_CID_AND_CSD_REG,
@@ -880,8 +853,7 @@ sd_rw_response_t _read_cid(sdcard_spi_t *card)
     return state;
 }
 
-sd_rw_response_t _read_csd(sdcard_spi_t *card)
-{
+sd_rw_response_t _read_csd(sdcard_spi_t *card) {
     uint8_t c[SD_SIZE_OF_CID_AND_CSD_REG];
     sd_rw_response_t state;
     int read_resu = _read_blocks(card, SD_CMD_9, 0, c, SD_SIZE_OF_CID_AND_CSD_REG,
@@ -970,8 +942,7 @@ sd_rw_response_t _read_csd(sdcard_spi_t *card)
     return state;
 }
 
-sd_rw_response_t sdcard_spi_read_sds(sdcard_spi_t *card, sd_status_t *sd_status)
-{
+sd_rw_response_t sdcard_spi_read_sds(sdcard_spi_t *card, sd_status_t *sd_status) {
     _select_card_spi(card);
     uint8_t sds_raw_data[SD_SIZE_OF_SD_STATUS];
     uint8_t r1_resu = sdcard_spi_send_cmd(card, SD_CMD_55, SD_CMD_NO_ARG, 0);
@@ -1023,8 +994,7 @@ sd_rw_response_t sdcard_spi_read_sds(sdcard_spi_t *card, sd_status_t *sd_status)
     return SD_RW_TIMEOUT;
 }
 
-uint64_t sdcard_spi_get_capacity(sdcard_spi_t *card)
-{
+uint64_t sdcard_spi_get_capacity(sdcard_spi_t *card) {
     if (card->csd_structure == SD_CSD_V1) {
         uint32_t block_len = (1 << card->csd.v1.READ_BL_LEN);
         uint32_t mult = 1 << (card->csd.v1.C_SIZE_MULT + 2);
@@ -1037,31 +1007,29 @@ uint64_t sdcard_spi_get_capacity(sdcard_spi_t *card)
     return 0;
 }
 
-uint32_t sdcard_spi_get_sector_count(sdcard_spi_t *card)
-{
+uint32_t sdcard_spi_get_sector_count(sdcard_spi_t *card) {
     return sdcard_spi_get_capacity(card) / SD_HC_BLOCK_SIZE;
 }
 
-uint32_t sdcard_spi_get_au_size(sdcard_spi_t *card)
-{
+uint32_t sdcard_spi_get_au_size(sdcard_spi_t *card) {
     sd_status_t sds;
 
     if (sdcard_spi_read_sds(card, &sds) == SD_RW_OK) {
         if (sds.AU_SIZE < 0xB) {
-            return 1UL << (13 + sds.AU_SIZE); /* sds->AU_SIZE = 1 maps to 16KB; 2 to 32KB etc.*/
+            return 1UL << (13 + sds.AU_SIZE); // sds->AU_SIZE = 1 maps to 16KB; 2 to 32KB etc.
         }
         else if (sds.AU_SIZE == 0xB) {
-            return 12 * SDCARD_SPI_IEC_KIBI * SDCARD_SPI_IEC_KIBI; /* 12 MB */
+            return 12 * SDCARD_SPI_IEC_KIBI * SDCARD_SPI_IEC_KIBI; // 12 MB
         }
         else if (sds.AU_SIZE == 0xC) {
-            return 1UL << (12 + sds.AU_SIZE); /* 16 MB */
+            return 1UL << (12 + sds.AU_SIZE); // 16 MB
         }
         else if (sds.AU_SIZE == 0xD) {
-            return 24 * SDCARD_SPI_IEC_KIBI * SDCARD_SPI_IEC_KIBI; /* 24 MB */
+            return 24 * SDCARD_SPI_IEC_KIBI * SDCARD_SPI_IEC_KIBI; // 24 MB
         }
         else if (sds.AU_SIZE > 0xD) {
-            return 1UL << (11 + sds.AU_SIZE); /* 32 MB or 64 MB */
+            return 1UL << (11 + sds.AU_SIZE); // 32 MB or 64 MB
         }
     }
-    return 0; /* AU_SIZE is not defined by the card */
+    return 0; // AU_SIZE is not defined by the card
 }

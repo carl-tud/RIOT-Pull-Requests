@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Simple memarray module tests
- *
- * @author      Tobias Heider <heidert@nm.ifi.lmu.de>
- * @author      Raul Fuentes <raul.fuentes-samaniego@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Simple memarray module tests
+///
+/// @author      Tobias Heider <heidert@nm.ifi.lmu.de>
+/// @author      Raul Fuentes <raul.fuentes-samaniego@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +37,7 @@
 struct block_t {
     struct node *next;
     int number;
-    /* static size for the components */
+    // static size for the components
     unsigned char message[MESSAGE_SIZE];
 };
 
@@ -51,13 +47,11 @@ memarray_t block_storage;
 
 int total = 0;
 
-static void memory_block_init(void)
-{
+static void memory_block_init(void) {
     memarray_init(&block_storage, block_storage_data, sizeof(struct block_t), MAX_NUMBER_BLOCKS);
 }
 
-void fill_memory(struct block_t *head)
-{
+void fill_memory(struct block_t *head) {
     int aux = 0;
 
     while ((aux < MAX_NUMBER_BLOCKS) && (head)) {
@@ -69,7 +63,7 @@ void fill_memory(struct block_t *head)
                head->number, head->message, sizeof(struct block_t),
                (void *)head, total);
 
-        /* NOTE: If there is not space, memarray_alloc returns zero */
+        // NOTE: If there is not space, memarray_alloc returns zero
         head->next = memarray_alloc(&block_storage);
         head = (struct block_t *)head->next;
 
@@ -78,8 +72,7 @@ void fill_memory(struct block_t *head)
     }
 }
 
-void free_memory(struct block_t *head)
-{
+void free_memory(struct block_t *head) {
     struct block_t *old;
 
     while (head) {
@@ -100,8 +93,7 @@ void free_memory(struct block_t *head)
     }
 }
 
-int main(void)
-{
+int main(void) {
     printf("MAX_NUMBER_BLOCKS: %d\n", MAX_NUMBER_BLOCKS);
     printf("NUMBER_OF_LOOPS: %d\n", NUMBER_OF_LOOPS);
     printf("NUMBER_OF_TESTS: %d\n", NUMBER_OF_TESTS);
@@ -143,39 +135,39 @@ int main(void)
     printf("Memarray available: %" PRIuSIZE "\n",
            memarray_available(&block_storage));
 
-    /* Extend with second block */
+    // Extend with second block
     memarray_extend(&block_storage, block_storage_data_extend,
                     MAX_NUMBER_BLOCKS);
     printf("Memarray available: %" PRIuSIZE "\n",
            memarray_available(&block_storage));
 
-    /* remove the original block */
+    // remove the original block
     int res = memarray_reduce(&block_storage, block_storage_data,
                               MAX_NUMBER_BLOCKS);
     printf("Memarray reduction: %d available: %" PRIuSIZE "\n",
            res, memarray_available(&block_storage));
 
-    /* try to remove original block a second time */
+    // try to remove original block a second time
     res = memarray_reduce(&block_storage, block_storage_data,
                           MAX_NUMBER_BLOCKS);
     printf("Memarray reduction: %d available: %" PRIuSIZE "\n",
            res, memarray_available(&block_storage));
 
-    /* remove the extension block */
+    // remove the extension block
     res = memarray_reduce(&block_storage, block_storage_data_extend,
                           MAX_NUMBER_BLOCKS);
     printf("Memarray reduction: %d available: %" PRIuSIZE "\n",
            res, memarray_available(&block_storage));
 
-    /* extend again with the original block */
+    // extend again with the original block
     memarray_extend(&block_storage, block_storage_data, MAX_NUMBER_BLOCKS);
 
-    /* remove one element */
+    // remove one element
     memarray_alloc(&block_storage);
     printf("Memarray available: %" PRIuSIZE "\n",
            memarray_available(&block_storage));
 
-    /* try to reduce with a missing element */
+    // try to reduce with a missing element
     res = memarray_reduce(&block_storage, block_storage_data, MAX_NUMBER_BLOCKS);
     printf("Memarray reduction: %d available: %" PRIuSIZE "\n",
            res, memarray_available(&block_storage));

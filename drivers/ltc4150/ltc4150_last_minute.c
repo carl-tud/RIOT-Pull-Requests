@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ltc4150
- * @{
- *
- * @file
- * @brief       Track the drawn charged of the last minute
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- * @}
- */
+/// @ingroup     drivers_ltc4150
+/// @{
+///
+/// @file
+/// @brief       Track the drawn charged of the last minute
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+/// @}
 
 #include <errno.h>
 #include <string.h>
@@ -29,8 +25,7 @@ const ltc4150_recorder_t ltc4150_last_minute = {
     .pulse = pulse,
 };
 
-static void init_or_reset(ltc4150_dev_t *dev, uint64_t now_usec, void *arg)
-{
+static void init_or_reset(ltc4150_dev_t *dev, uint64_t now_usec, void *arg) {
     (void)dev;
     ltc4150_last_minute_data_t *data = arg;
 
@@ -39,11 +34,10 @@ static void init_or_reset(ltc4150_dev_t *dev, uint64_t now_usec, void *arg)
 }
 
 static void update_ringbuffer(ltc4150_last_minute_data_t *data,
-                              uint64_t now_usec)
-{
+                              uint64_t now_usec) {
     uint32_t now_sec = (now_usec / US_PER_SEC);
 
-    /* Note: This expression should be correct even when time overflows */
+    // Note: This expression should be correct even when time overflows
     while (now_sec - data->last_rotate_sec > 10) {
         data->last_rotate_sec += 10;
         data->charged += data->buf_charged[data->ring_pos];
@@ -59,8 +53,7 @@ static void update_ringbuffer(ltc4150_last_minute_data_t *data,
 }
 
 static void pulse(ltc4150_dev_t *dev, ltc4150_dir_t dir, uint64_t now_usec,
-                  void *arg)
-{
+                  void *arg) {
     (void)dev;
     ltc4150_last_minute_data_t *data = arg;
     update_ringbuffer(data, now_usec);
@@ -78,8 +71,7 @@ static void pulse(ltc4150_dev_t *dev, ltc4150_dir_t dir, uint64_t now_usec,
 
 int ltc4150_last_minute_charge(ltc4150_dev_t *dev,
                                ltc4150_last_minute_data_t *d,
-                               uint32_t *charged, uint32_t *discharged)
-{
+                               uint32_t *charged, uint32_t *discharged) {
     if (!dev || !d) {
         return -EINVAL;
     }

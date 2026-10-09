@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ccs811
- * @brief       Default configuration for AMS CCS811 digital gas sensors
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_ccs811
+/// @brief       Default configuration for AMS CCS811 digital gas sensors
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include "board.h"
 #include "ccs811.h"
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    CCS811 default configuration parameters
- * @{
- */
+/// @name    CCS811 default configuration parameters
+/// @{
 #ifndef CCS811_PARAM_I2C_DEV
 #define CCS811_PARAM_I2C_DEV     (I2C_DEV(0))
 #endif
@@ -69,19 +63,15 @@ extern "C" {
 #ifndef CCS811_SAUL_INFO
 #define CCS811_SAUL_INFO { .name = "ccs811" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   CCS811 configuration
- */
+/// @brief   CCS811 configuration
 static const ccs811_params_t ccs811_params[] =
 {
     CCS811_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t ccs811_saul_info[] =
 {
     CCS811_SAUL_INFO
@@ -91,4 +81,4 @@ static const saul_reg_info_t ccs811_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

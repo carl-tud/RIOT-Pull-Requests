@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_saul
- * @{
- *
- * @file
- * @brief       SAUL string functions
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_saul
+/// @{
+///
+/// @file
+/// @brief       SAUL string functions
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stddef.h>
 #include <stdint.h>
@@ -109,13 +105,12 @@ static FLASH_ATTR const char _class_undef[] = "CLASS_UNDEF";
 static FLASH_ATTR const char _class_any[] = "CLASS_ANY";
 static FLASH_ATTR const char _class_unknown[] = "CLASS_UNKNOWN";
 
-const char *saul_class_to_str(const uint8_t class_id)
-{
+const char *saul_class_to_str(const uint8_t class_id) {
 #if IS_ACTIVE(HAS_FLASH_UTILS_ARCH)
-    /* Yeah, this is as bad as it looks... The function is deprecated for this
-     * reason and it will only affect AVR users, for whom this is a good
-     * trade-off. */
-    static char buf[32]; /* yes, whopping 32 byte ... */
+    // Yeah, this is as bad as it looks... The function is deprecated for this
+    // reason and it will only affect AVR users, for whom this is a good
+    // trade-off.
+    static char buf[32]; // yes, whopping 32 byte ...
     ssize_t len = saul_class_write(buf, sizeof(buf) - 1, class_id);
     if (len < 0) {
         flash_memcpy(buf, _class_unknown, sizeof(_class_unknown));
@@ -155,8 +150,7 @@ const char *saul_class_to_str(const uint8_t class_id)
 #endif
 }
 
-void saul_class_print(uint8_t class_id)
-{
+void saul_class_print(uint8_t class_id) {
     uint8_t id = class_id & SAUL_ID_MASK;
     uint8_t cat = class_id & SAUL_CAT_MASK;
     FLASH_ATTR const char *str = NULL;
@@ -187,8 +181,7 @@ void saul_class_print(uint8_t class_id)
     }
 }
 
-ssize_t saul_class_write(char *dest, size_t max_size, uint8_t class_id)
-{
+ssize_t saul_class_write(char *dest, size_t max_size, uint8_t class_id) {
     uint8_t id = class_id & SAUL_ID_MASK;
     uint8_t cat = class_id & SAUL_CAT_MASK;
     FLASH_ATTR const char *str = NULL;

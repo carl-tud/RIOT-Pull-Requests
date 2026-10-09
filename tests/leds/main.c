@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test for the on-board LED macros
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test for the on-board LED macros
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -25,24 +21,22 @@
 #define DELAY_SHORT         (coreclk() / 50)
 #define DELAY_LONG          (DELAY_SHORT * 4)
 
-void dumb_delay(uint32_t delay)
-{
+void dumb_delay(uint32_t delay) {
     for (uint32_t i = 0; i < delay; i++) {
         __asm__("nop");
     }
 }
 
-int main(void)
-{
-    /* get the number of available LED's and turn them all off*/
+int main(void) {
+    // get the number of available LED's and turn them all off
     unsigned numof = LED_NUMOF;
     for (unsigned i = 0; i < numof; i++) {
         led_off(i);
     }
 
     puts("On-board LED test\n");
-    /* cppcheck-suppress knownConditionTrueFalse
-     * (reason: board-dependent ifdefs) */
+    // cppcheck-suppress knownConditionTrueFalse
+    // (reason: board-dependent ifdefs)
     if (numof == 0) {
         puts("NO LEDs AVAILABLE");
     }

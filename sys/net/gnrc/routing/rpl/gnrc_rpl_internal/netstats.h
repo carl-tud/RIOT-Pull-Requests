@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     net_gnrc_rpl
- * @{
- *
- * @file
- * @brief       RPL control message statistics functions
- *
- * @author      Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- */
+/// @ingroup     net_gnrc_rpl
+/// @{
+///
+/// @file
+/// @brief       RPL control message statistics functions
+///
+/// @author      Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,17 +21,14 @@ extern "C" {
 #define GNRC_RPL_NETSTATS_MULTICAST (0)
 #define GNRC_RPL_NETSTATS_UNICAST   (1)
 
-/**
- * @brief   Increase statistics for received DIO
- *
- * @param[in]   netstats    Pointer to netstats_rpl_t
- * @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
- * @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
- */
-static inline void gnrc_rpl_netstats_rx_DIO(netstats_rpl_t *netstats, size_t len, int cast)
-{
-    /* other threads (e.g. the shell thread via the rpl shell command) read
-     * out the data, so we have to sync accesses */
+/// @brief   Increase statistics for received DIO
+///
+/// @param[in]   netstats    Pointer to netstats_rpl_t
+/// @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
+/// @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
+static inline void gnrc_rpl_netstats_rx_DIO(netstats_rpl_t *netstats, size_t len, int cast) {
+    // other threads (e.g. the shell thread via the rpl shell command) read
+    // out the data, so we have to sync accesses
     unsigned irq_state = irq_disable();
     if (cast == GNRC_RPL_NETSTATS_MULTICAST) {
         netstats->dio.rx_mcast_count++;
@@ -48,17 +41,14 @@ static inline void gnrc_rpl_netstats_rx_DIO(netstats_rpl_t *netstats, size_t len
     irq_restore(irq_state);
 }
 
-/**
- * @brief   Increase statistics for sent DIO
- *
- * @param[in]   netstats    Pointer to netstats_rpl_t
- * @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
- * @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
- */
-static inline void gnrc_rpl_netstats_tx_DIO(netstats_rpl_t *netstats, size_t len, int cast)
-{
-    /* other threads (e.g. the shell thread via the rpl shell command) read
-     * out the data, so we have to sync accesses */
+/// @brief   Increase statistics for sent DIO
+///
+/// @param[in]   netstats    Pointer to netstats_rpl_t
+/// @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
+/// @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
+static inline void gnrc_rpl_netstats_tx_DIO(netstats_rpl_t *netstats, size_t len, int cast) {
+    // other threads (e.g. the shell thread via the rpl shell command) read
+    // out the data, so we have to sync accesses
     unsigned irq_state = irq_disable();
     if (cast == GNRC_RPL_NETSTATS_MULTICAST) {
         netstats->dio.tx_mcast_count++;
@@ -71,17 +61,14 @@ static inline void gnrc_rpl_netstats_tx_DIO(netstats_rpl_t *netstats, size_t len
     irq_restore(irq_state);
 }
 
-/**
- * @brief   Increase statistics for received DIS
- *
- * @param[in]   netstats    Pointer to netstats_rpl_t
- * @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
- * @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
- */
-static inline void gnrc_rpl_netstats_rx_DIS(netstats_rpl_t *netstats, size_t len, int cast)
-{
-    /* other threads (e.g. the shell thread via the rpl shell command) read
-     * out the data, so we have to sync accesses */
+/// @brief   Increase statistics for received DIS
+///
+/// @param[in]   netstats    Pointer to netstats_rpl_t
+/// @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
+/// @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
+static inline void gnrc_rpl_netstats_rx_DIS(netstats_rpl_t *netstats, size_t len, int cast) {
+    // other threads (e.g. the shell thread via the rpl shell command) read
+    // out the data, so we have to sync accesses
     unsigned irq_state = irq_disable();
     if (cast == GNRC_RPL_NETSTATS_MULTICAST) {
         netstats->dis.rx_mcast_count++;
@@ -94,17 +81,14 @@ static inline void gnrc_rpl_netstats_rx_DIS(netstats_rpl_t *netstats, size_t len
     irq_restore(irq_state);
 }
 
-/**
- * @brief   Increase statistics for sent DIS
- *
- * @param[in]   netstats    Pointer to netstats_rpl_t
- * @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
- * @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
- */
-static inline void gnrc_rpl_netstats_tx_DIS(netstats_rpl_t *netstats, size_t len, int cast)
-{
-    /* other threads (e.g. the shell thread via the rpl shell command) read
-     * out the data, so we have to sync accesses */
+/// @brief   Increase statistics for sent DIS
+///
+/// @param[in]   netstats    Pointer to netstats_rpl_t
+/// @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
+/// @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
+static inline void gnrc_rpl_netstats_tx_DIS(netstats_rpl_t *netstats, size_t len, int cast) {
+    // other threads (e.g. the shell thread via the rpl shell command) read
+    // out the data, so we have to sync accesses
     unsigned irq_state = irq_disable();
     if (cast == GNRC_RPL_NETSTATS_MULTICAST) {
         netstats->dis.tx_mcast_count++;
@@ -117,17 +101,14 @@ static inline void gnrc_rpl_netstats_tx_DIS(netstats_rpl_t *netstats, size_t len
     irq_restore(irq_state);
 }
 
-/**
- * @brief   Increase statistics for received DAO
- *
- * @param[in]   netstats    Pointer to netstats_rpl_t
- * @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
- * @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
- */
-static inline void gnrc_rpl_netstats_rx_DAO(netstats_rpl_t *netstats, size_t len, int cast)
-{
-    /* other threads (e.g. the shell thread via the rpl shell command) read
-     * out the data, so we have to sync accesses */
+/// @brief   Increase statistics for received DAO
+///
+/// @param[in]   netstats    Pointer to netstats_rpl_t
+/// @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
+/// @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
+static inline void gnrc_rpl_netstats_rx_DAO(netstats_rpl_t *netstats, size_t len, int cast) {
+    // other threads (e.g. the shell thread via the rpl shell command) read
+    // out the data, so we have to sync accesses
     unsigned irq_state = irq_disable();
     if (cast == GNRC_RPL_NETSTATS_MULTICAST) {
         netstats->dao.rx_mcast_count++;
@@ -140,17 +121,14 @@ static inline void gnrc_rpl_netstats_rx_DAO(netstats_rpl_t *netstats, size_t len
     irq_restore(irq_state);
 }
 
-/**
- * @brief   Increase statistics for sent DIO
- *
- * @param[in]   netstats    Pointer to netstats_rpl_t
- * @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
- * @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
- */
-static inline void gnrc_rpl_netstats_tx_DAO(netstats_rpl_t *netstats, size_t len, int cast)
-{
-    /* other threads (e.g. the shell thread via the rpl shell command) read
-     * out the data, so we have to sync accesses */
+/// @brief   Increase statistics for sent DIO
+///
+/// @param[in]   netstats    Pointer to netstats_rpl_t
+/// @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
+/// @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
+static inline void gnrc_rpl_netstats_tx_DAO(netstats_rpl_t *netstats, size_t len, int cast) {
+    // other threads (e.g. the shell thread via the rpl shell command) read
+    // out the data, so we have to sync accesses
     unsigned irq_state = irq_disable();
     if (cast == GNRC_RPL_NETSTATS_MULTICAST) {
         netstats->dao.tx_mcast_count++;
@@ -163,17 +141,14 @@ static inline void gnrc_rpl_netstats_tx_DAO(netstats_rpl_t *netstats, size_t len
     irq_restore(irq_state);
 }
 
-/**
- * @brief   Increase statistics for received DAO-ACK
- *
- * @param[in]   netstats    Pointer to netstats_rpl_t
- * @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
- * @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
- */
-static inline void gnrc_rpl_netstats_rx_DAO_ACK(netstats_rpl_t *netstats, size_t len, int cast)
-{
-    /* other threads (e.g. the shell thread via the rpl shell command) read
-     * out the data, so we have to sync accesses */
+/// @brief   Increase statistics for received DAO-ACK
+///
+/// @param[in]   netstats    Pointer to netstats_rpl_t
+/// @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
+/// @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
+static inline void gnrc_rpl_netstats_rx_DAO_ACK(netstats_rpl_t *netstats, size_t len, int cast) {
+    // other threads (e.g. the shell thread via the rpl shell command) read
+    // out the data, so we have to sync accesses
     unsigned irq_state = irq_disable();
     if (cast == GNRC_RPL_NETSTATS_MULTICAST) {
         netstats->dao_ack.rx_mcast_count++;
@@ -186,17 +161,14 @@ static inline void gnrc_rpl_netstats_rx_DAO_ACK(netstats_rpl_t *netstats, size_t
     irq_restore(irq_state);
 }
 
-/**
- * @brief   Increase statistics for sent DAO-ACK
- *
- * @param[in]   netstats    Pointer to netstats_rpl_t
- * @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
- * @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
- */
-static inline void gnrc_rpl_netstats_tx_DAO_ACK(netstats_rpl_t *netstats, size_t len, int cast)
-{
-    /* other threads (e.g. the shell thread via the rpl shell command) read
-     * out the data, so we have to sync accesses */
+/// @brief   Increase statistics for sent DAO-ACK
+///
+/// @param[in]   netstats    Pointer to netstats_rpl_t
+/// @param[in]   len         Length in bytes of an ICMPv6 packet to add to statistics
+/// @param[in]   cast        GNRC_RPL_NETSTATS_MULTICAST or GNRC_RPL_NETSTATS_UNICAST
+static inline void gnrc_rpl_netstats_tx_DAO_ACK(netstats_rpl_t *netstats, size_t len, int cast) {
+    // other threads (e.g. the shell thread via the rpl shell command) read
+    // out the data, so we have to sync accesses
     unsigned irq_state = irq_disable();
     if (cast == GNRC_RPL_NETSTATS_MULTICAST) {
         netstats->dao_ack.tx_mcast_count++;
@@ -213,4 +185,4 @@ static inline void gnrc_rpl_netstats_tx_DAO_ACK(netstats_rpl_t *netstats, size_t
 }
 #endif
 
-/** @} */
+/// @}

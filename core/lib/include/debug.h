@@ -1,24 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     core_util
- * @{
- *
- * @file
- * @brief       Debug-header
- *
- * @details     If *ENABLE_DEBUG* is defined inside an implementation file, all
- *              calls to ::DEBUG will work the same as *printf* and output the
- *              given information to stdout. If *ENABLE_DEBUG* is not defined,
- *              all calls to ::DEBUG will be ignored.
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @ingroup     core_util
+/// @{
+///
+/// @file
+/// @brief       Debug-header
+///
+/// @details     If *ENABLE_DEBUG* is defined inside an implementation file, all
+///              calls to ::DEBUG will work the same as *printf* and output the
+///              given information to stdout. If *ENABLE_DEBUG* is not defined,
+///              all calls to ::DEBUG will be ignored.
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
 
 #include <stdio.h>
 #include "sched.h"
@@ -28,16 +24,14 @@
 extern "C" {
 #endif
 
-/**
- * @def DEBUG_PRINT
- *
- * @brief Print debug information if the calling thread stack is large enough
- *
- * Use this macro the same as `printf`. When `DEVELHELP` is defined inside an
- * implementation file, all usages of ::DEBUG_PRINT will print the given
- * information to stdout after verifying the stack is big enough. If `DEVELHELP`
- * is not set, this check is not performed. (CPU exception may occur)
- */
+/// @def DEBUG_PRINT
+///
+/// @brief Print debug information if the calling thread stack is large enough
+///
+/// Use this macro the same as `printf`. When `DEVELHELP` is defined inside an
+/// implementation file, all usages of ::DEBUG_PRINT will print the given
+/// information to stdout after verifying the stack is big enough. If `DEVELHELP`
+/// is not set, this check is not performed. (CPU exception may occur)
 #ifdef DEVELHELP
 #include "cpu_conf.h"
 #define DEBUG_PRINT(...) \
@@ -55,20 +49,18 @@ extern "C" {
 #define DEBUG_PRINT(...) printf(__VA_ARGS__)
 #endif
 
-/**
- * @def DEBUG_BREAKPOINT
- *
- * @brief Set a debug breakpoint
- *
- * When `DEVELHELP` is enabled, this traps the CPU and allows to debug the
- * program with e.g. `gdb`.
- * Without `DEVELHELP` this turns into a no-op.
- *
- * @warning     If no Debugger is attached, the CPU might get stuck here
- *              and consume a lot of power until reset.
- *
- * @param val   Breakpoint context for debugger, usually ignored.
- */
+/// @def DEBUG_BREAKPOINT
+///
+/// @brief Set a debug breakpoint
+///
+/// When `DEVELHELP` is enabled, this traps the CPU and allows to debug the
+/// program with e.g. `gdb`.
+/// Without `DEVELHELP` this turns into a no-op.
+///
+/// @warning     If no Debugger is attached, the CPU might get stuck here
+///              and consume a lot of power until reset.
+///
+/// @param val   Breakpoint context for debugger, usually ignored.
 #ifdef DEVELHELP
 #include "architecture.h"
 #define DEBUG_BREAKPOINT(val)   ARCHITECTURE_BREAKPOINT(val)
@@ -76,24 +68,18 @@ extern "C" {
 #define DEBUG_BREAKPOINT(val)   (void)0
 #endif
 
-/**
- * @name Debugging defines
- * @{
- */
-/**
- * @brief   This macro can be defined as 0 or other on a file-based level.
- *          @ref DEBUG() will generate output only if ENABLE_DEBUG is non-zero.
- */
+/// @name Debugging defines
+/// @{
+/// @brief   This macro can be defined as 0 or other on a file-based level.
+///          @ref DEBUG() will generate output only if ENABLE_DEBUG is non-zero.
 #if !defined(ENABLE_DEBUG) || defined(DOXYGEN)
 #define ENABLE_DEBUG 0
 #endif
 
-/**
- * @def DEBUG_FUNC
- *
- * @brief   Contains the function name if given compiler supports it.
- *          Otherwise it is an empty string.
- */
+/// @def DEBUG_FUNC
+///
+/// @brief   Contains the function name if given compiler supports it.
+///          Otherwise it is an empty string.
 # if defined(__cplusplus) && defined(__GNUC__)
 #  define DEBUG_FUNC __PRETTY_FUNCTION__
 # elif __STDC_VERSION__ >= 199901L
@@ -104,36 +90,30 @@ extern "C" {
 #  define DEBUG_FUNC ""
 # endif
 
-/**
- * @def DEBUG
- *
- * @brief Print debug information to stdout
- *
- * @note    This looks similar to the @ref LOG_DEBUG() function. However, it is
- *          enabled on a per-file basis. Prefer @ref DEBUG for debug output
- *          relevant for debugging a module in RIOT. Prefer @ref LOG_DEBUG() for
- *          debug output relevant for application developers using your module
- *          (e.g. to hint potentially incorrect / inefficient use of your
- *          library).
- * @details If a variable is only accessed by `DEBUG()`, the compiler will
- *          warn about unused variables when `ENABLE_DEBUG` is set to `0`.
- */
+/// @def DEBUG
+///
+/// @brief Print debug information to stdout
+///
+/// @note    This looks similar to the @ref LOG_DEBUG() function. However, it is
+///          enabled on a per-file basis. Prefer @ref DEBUG for debug output
+///          relevant for debugging a module in RIOT. Prefer @ref LOG_DEBUG() for
+///          debug output relevant for application developers using your module
+///          (e.g. to hint potentially incorrect / inefficient use of your
+///          library).
+/// @details If a variable is only accessed by `DEBUG()`, the compiler will
+///          warn about unused variables when `ENABLE_DEBUG` is set to `0`.
 #define DEBUG(...) do { if (ENABLE_DEBUG) { DEBUG_PRINT(__VA_ARGS__); } } while (0)
 
-/**
- * @def DEBUG_PUTS
- *
- * @brief Print debug information to stdout using puts(), so no stack size
- *        restrictions do apply.
- */
+/// @def DEBUG_PUTS
+///
+/// @brief Print debug information to stdout using puts(), so no stack size
+///        restrictions do apply.
 #define DEBUG_PUTS(str) do { if (ENABLE_DEBUG) { puts(str); } } while (0)
-/** @} */
+/// @}
 
-/**
- * @def DEBUG_EXTRA_STACKSIZE
- *
- * @brief Extra stacksize needed when ENABLE_DEBUG==1
- */
+/// @def DEBUG_EXTRA_STACKSIZE
+///
+/// @brief Extra stacksize needed when ENABLE_DEBUG==1
 #if ENABLE_DEBUG
 #define DEBUG_EXTRA_STACKSIZE THREAD_EXTRA_STACKSIZE_PRINTF
 #else
@@ -144,4 +124,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

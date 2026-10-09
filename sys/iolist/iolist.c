@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       iolist scatter / gather IO
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       iolist scatter / gather IO
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @}
 
 #include <errno.h>
 #include <stdint.h>
@@ -22,8 +18,7 @@
 
 #include "iolist.h"
 
-unsigned iolist_count(const iolist_t *iolist)
-{
+unsigned iolist_count(const iolist_t *iolist) {
     unsigned count = 0;
     while (iolist) {
         count++;
@@ -32,8 +27,7 @@ unsigned iolist_count(const iolist_t *iolist)
     return count;
 }
 
-size_t iolist_size(const iolist_t *iolist)
-{
+size_t iolist_size(const iolist_t *iolist) {
     size_t result = 0;
     while (iolist) {
         result += iolist->iol_len;
@@ -42,8 +36,7 @@ size_t iolist_size(const iolist_t *iolist)
     return result;
 }
 
-size_t iolist_to_iovec(const iolist_t *iolist, struct iovec *iov, unsigned *count)
-{
+size_t iolist_to_iovec(const iolist_t *iolist, struct iovec *iov, unsigned *count) {
     size_t bytes = 0;
     unsigned _count = 0;
 
@@ -61,8 +54,7 @@ size_t iolist_to_iovec(const iolist_t *iolist, struct iovec *iov, unsigned *coun
     return bytes;
 }
 
-ssize_t iolist_to_buffer(const iolist_t *iolist, void *buf, size_t len)
-{
+ssize_t iolist_to_buffer(const iolist_t *iolist, void *buf, size_t len) {
     char *dst = buf;
 
     while (iolist) {

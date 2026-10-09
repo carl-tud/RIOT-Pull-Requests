@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <arpa/inet.h>
 
@@ -11,16 +9,13 @@
 #include "net/uhcp.h"
 #include "ztimer.h"
 
-/**
- * @brief Request prefix from uhcp server
- *
- * Never returns.
- * Calls @c uhcp_handle_prefix() when a prefix or prefix change is received.
- *
- * @param[in]   iface   interface to request prefix on
- */
-void uhcp_client(uhcp_iface_t iface)
-{
+/// @brief Request prefix from uhcp server
+///
+/// Never returns.
+/// Calls @c uhcp_handle_prefix() when a prefix or prefix change is received.
+///
+/// @param[in]   iface   interface to request prefix on
+void uhcp_client(uhcp_iface_t iface) {
     sock_udp_t sock;
     sock_udp_ep_t local = { .family=AF_INET6, .port=UHCP_PORT, .netif=iface };
     sock_udp_ep_t req_target = { .family=AF_INET6, .port=UHCP_PORT, .netif=iface };
@@ -28,12 +23,12 @@ void uhcp_client(uhcp_iface_t iface)
 
     inet_pton(AF_INET6, "ff15::abcd", req_target.addr.ipv6);
 
-    /* prepare UHCP header */
+    // prepare UHCP header
     uhcp_req_t req;
     uhcp_hdr_set(&req.hdr, UHCP_REQ);
     req.prefix_len = 64;
 
-    /* create listening socket */
+    // create listening socket
     int res = sock_udp_create(&sock, &local, NULL, 0);
     if (res < 0) {
         LOG_ERROR("uhcp_client(): cannot create listening socket\n");

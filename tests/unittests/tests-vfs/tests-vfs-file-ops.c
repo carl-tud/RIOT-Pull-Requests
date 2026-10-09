@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief Transparent-box unit tests of vfs functions stubs used when the file
- * system does not implement the requested function.
- */
+/// @{
+///
+/// @file
+/// @brief Transparent-box unit tests of vfs functions stubs used when the file
+/// system does not implement the requested function.
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -61,8 +57,7 @@ static vfs_mount_t _test_vfs_mount_null = {
 
 static int _test_vfs_file_op_my_fd = -1;
 
-static void setup(void)
-{
+static void setup(void) {
     int res = vfs_mount(&_test_vfs_mount_null);
     if (res < 0) {
         _test_vfs_file_op_my_fd = -1;
@@ -71,8 +66,7 @@ static void setup(void)
     _test_vfs_file_op_my_fd = vfs_open("/test/somefile", O_RDONLY, 0);
 }
 
-static void teardown(void)
-{
+static void teardown(void) {
     if (_test_vfs_file_op_my_fd >= 0) {
         vfs_close(_test_vfs_file_op_my_fd);
         _test_vfs_file_op_my_fd = -1;
@@ -80,16 +74,14 @@ static void teardown(void)
     vfs_umount(&_test_vfs_mount_null, false);
 }
 
-static void test_vfs_null_file_ops_close(void)
-{
+static void test_vfs_null_file_ops_close(void) {
     TEST_ASSERT(_test_vfs_file_op_my_fd >= 0);
     int res = vfs_close(_test_vfs_file_op_my_fd);
     TEST_ASSERT_EQUAL_INT(0, res);
-    _test_vfs_file_op_my_fd = -1; /* prevent double close */
+    _test_vfs_file_op_my_fd = -1; // prevent double close
 }
 
-static void test_vfs_null_file_ops_fcntl(void)
-{
+static void test_vfs_null_file_ops_fcntl(void) {
     TEST_ASSERT(_test_vfs_file_op_my_fd >= 0);
     int res = vfs_fcntl(_test_vfs_file_op_my_fd, F_GETFL, 0);
     TEST_ASSERT_EQUAL_INT(O_RDONLY, res);
@@ -97,8 +89,7 @@ static void test_vfs_null_file_ops_fcntl(void)
     TEST_ASSERT_EQUAL_INT(-EINVAL, res);
 }
 
-static void test_vfs_null_file_ops_lseek(void)
-{
+static void test_vfs_null_file_ops_lseek(void) {
     TEST_ASSERT(_test_vfs_file_op_my_fd >= 0);
     off_t pos;
     pos = vfs_lseek(_test_vfs_file_op_my_fd, 4, SEEK_SET);
@@ -113,22 +104,20 @@ static void test_vfs_null_file_ops_lseek(void)
     TEST_ASSERT_EQUAL_INT(12345, pos);
     pos = vfs_lseek(_test_vfs_file_op_my_fd, -1, SEEK_SET);
     TEST_ASSERT_EQUAL_INT(-EINVAL, pos);
-    pos = vfs_lseek(_test_vfs_file_op_my_fd, 0, SEEK_END); /* not implemented in "file system" */
+    pos = vfs_lseek(_test_vfs_file_op_my_fd, 0, SEEK_END); // not implemented in "file system"
     TEST_ASSERT_EQUAL_INT(-EINVAL, pos);
     pos = vfs_lseek(_test_vfs_file_op_my_fd, 0, SEEK_CUR);
     TEST_ASSERT_EQUAL_INT(12345, pos);
 }
 
-static void test_vfs_null_file_ops_fstat(void)
-{
+static void test_vfs_null_file_ops_fstat(void) {
     TEST_ASSERT(_test_vfs_file_op_my_fd >= 0);
     struct stat buf;
     int res = vfs_fstat(_test_vfs_file_op_my_fd, &buf);
     TEST_ASSERT_EQUAL_INT(-EINVAL, res);
 }
 
-static void test_vfs_null_file_ops_read(void)
-{
+static void test_vfs_null_file_ops_read(void) {
     TEST_ASSERT(_test_vfs_file_op_my_fd >= 0);
     uint8_t buf[8];
     int res = vfs_read(_test_vfs_file_op_my_fd, buf, sizeof(buf));
@@ -137,8 +126,7 @@ static void test_vfs_null_file_ops_read(void)
     TEST_ASSERT_EQUAL_INT(-EFAULT, res);
 }
 
-static void test_vfs_null_file_ops_write(void)
-{
+static void test_vfs_null_file_ops_write(void) {
     TEST_ASSERT(_test_vfs_file_op_my_fd >= 0);
     static const char buf[] = "Unit test";
     int res = vfs_write(_test_vfs_file_op_my_fd, buf, sizeof(buf));
@@ -147,8 +135,7 @@ static void test_vfs_null_file_ops_write(void)
     TEST_ASSERT_EQUAL_INT(-EFAULT, res);
 }
 
-Test *tests_vfs_null_file_ops_tests(void)
-{
+Test *tests_vfs_null_file_ops_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_vfs_null_file_ops_close),
         new_TestFixture(test_vfs_null_file_ops_fcntl),
@@ -163,4 +150,4 @@ Test *tests_vfs_null_file_ops_tests(void)
     return (Test *)&vfs_file_op_tests;
 }
 
-/** @} */
+/// @}

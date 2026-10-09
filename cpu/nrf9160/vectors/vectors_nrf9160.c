@@ -1,32 +1,28 @@
-/*
- * SPDX-FileCopyrightText: 2021 Mesotic SAS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Mesotic SAS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf9160
- * @{
- *
- * @file
- * @brief       nRF9160 interrupt vector definitions
- *
- * @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
- *
- * @}
- */
+/// @ingroup     cpu_nrf9160
+/// @{
+///
+/// @file
+/// @brief       nRF9160 interrupt vector definitions
+///
+/// @author      Dylan Laduranty <dylan.laduranty@mesotic.com>
+///
+/// @}
 
 #include <stdint.h>
 
 #include "cpu.h"
 #include "vectors_cortexm.h"
 
-/* define a local dummy handler as it needs to be in the same compilation unit
- * as the alias definition */
+// define a local dummy handler as it needs to be in the same compilation unit
+// as the alias definition
 void dummy_handler(void) {
     dummy_handler_default();
 }
 
-/* nRF9160 specific interrupt vectors */
+// nRF9160 specific interrupt vectors
 WEAK_DEFAULT void isr_spu(void);
 WEAK_DEFAULT void isr_clock_power(void);
 WEAK_DEFAULT void isr_uarte0_spim0_spis0_twim0_twis0(void);
@@ -59,15 +55,15 @@ WEAK_DEFAULT void isr_gpiote1(void);
 WEAK_DEFAULT void isr_kmu(void);
 WEAK_DEFAULT void isr_cryptocell(void);
 
-/* CPU specific interrupt vector table */
+// CPU specific interrupt vector table
 ISR_VECTOR(1) const isr_t vector_cpu[CPU_IRQ_NUMOF] = {
-    [3] = isr_spu,                /* SPU */
-    [5] = isr_clock_power,        /* power_clock */
+    [3] = isr_spu,                // SPU
+    [5] = isr_clock_power,        // power_clock
     [8] = isr_uarte0_spim0_spis0_twim0_twis0,
     [9] = isr_uarte1_spim1_spis1_twim1_twis1,
     [10] = isr_uarte2_spim2_spis2_twim2_twis2,
     [11] = isr_uarte3_spim3_spis3_twim3_twis3,
-    [13] = isr_gpiote0,             /* gpiote0 */
+    [13] = isr_gpiote0,             // gpiote0
     [14] = isr_saadc,
     [15] = isr_timer0,
     [16] = isr_timer1,

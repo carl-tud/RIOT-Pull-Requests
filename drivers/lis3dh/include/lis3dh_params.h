@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_lis3dh
- *
- * @{
- * @file
- * @brief       Default configuration for LIS3DH devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_lis3dh
+///
+/// @{
+/// @file
+/// @brief       Default configuration for LIS3DH devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "lis3dh.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef LIS3DH_PARAM_SPI
 #define LIS3DH_PARAM_SPI            (SPI_DEV(0))
 #endif
@@ -61,19 +55,15 @@ extern "C" {
 #ifndef LIS3DH_SAUL_INFO
 #define LIS3DH_SAUL_INFO            { .name = "lis3dh" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const lis3dh_params_t lis3dh_params[] =
 {
     LIS3DH_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t lis3dh_saul_info[] =
 {
     LIS3DH_SAUL_INFO
@@ -83,4 +73,4 @@ static const saul_reg_info_t lis3dh_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

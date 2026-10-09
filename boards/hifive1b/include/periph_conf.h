@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Ken Rabold
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Ken Rabold
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_hifive1b
- * @{
- *
- * @file
- * @brief       Peripheral specific definitions for the HiFive1b RISC-V board
- *
- * @author      Ken Rabold
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_hifive1b
+/// @{
+///
+/// @file
+/// @brief       Peripheral specific definitions for the HiFive1b RISC-V board
+///
+/// @author      Ken Rabold
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "kernel_defines.h"
 #include "macros/units.h"
@@ -26,18 +22,14 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- *
- * @{
- */
+/// @name    Timer configuration
+///
+/// @{
 #define TIMER_NUMOF                 (1)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .addr       = UART0_CTRL_ADDR,
@@ -54,37 +46,31 @@ static const uart_conf_t uart_config[] = {
 };
 
 #define UART_NUMOF                  ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI device configuration
- *
- * @{
- */
+/// @name    SPI device configuration
+///
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .addr       = SPI1_CTRL_ADDR,
-        .mosi       = GPIO_PIN(0, 3), /* D11 */
-        .miso       = GPIO_PIN(0, 4), /* D12 */
-        .sclk       = GPIO_PIN(0, 5), /* D13 */
+        .mosi       = GPIO_PIN(0, 3), // D11
+        .miso       = GPIO_PIN(0, 4), // D12
+        .sclk       = GPIO_PIN(0, 5), // D13
     },
 };
 
 #define SPI_NUMOF                  ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- *
- * @{
- */
+/// @name    PWM configuration
+///
+/// @{
 #define PWM_NUMOF                   (3)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .addr   = I2C0_CTRL_ADDR,
@@ -95,10 +81,10 @@ static const i2c_conf_t i2c_config[] = {
 };
 
 #define I2C_NUMOF                   ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

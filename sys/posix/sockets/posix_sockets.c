@@ -1,20 +1,16 @@
-/*
- * Copyright (C) 2015 Freie Universität Berlin
- * Copyright (C) 2015 INRIA
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2015 Freie Universität Berlin
+// Copyright (C) 2015 INRIA
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- * @file
- * @brief   Providing implementation for POSIX socket wrapper.
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author  Oliver Hahm <oliver.hahm@inria.fr>
- * @todo
- */
+/// @{
+/// @file
+/// @brief   Providing implementation for POSIX socket wrapper.
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author  Oliver Hahm <oliver.hahm@inria.fr>
+/// @todo
 
 #include <assert.h>
 #include <arpa/inet.h>
@@ -48,32 +44,30 @@
 #include "thread_flags.h"
 #endif
 
-/* enough to create sockets both with socket() and accept() */
+// enough to create sockets both with socket() and accept()
 #define _ACTUAL_SOCKET_POOL_SIZE   (SOCKET_POOL_SIZE + \
                                     (SOCKET_POOL_SIZE * SOCKET_TCP_QUEUE_SIZE))
 #define SOCKET_BLKSIZE             (512)
 
-/**
- * @brief   Unitfied connection type.
- */
+/// @brief   Unitfied connection type.
 typedef union {
-    /* is not supposed to be used, this is only for the case that no
-     * sock module was added (maybe useful for UNIX sockets?) */
-    /* cppcheck-suppress unusedStructMember
-     * (reason: is not supposed to be used) */
+    // is not supposed to be used, this is only for the case that no
+    // sock module was added (maybe useful for UNIX sockets?)
+    // cppcheck-suppress unusedStructMember
+    // (reason: is not supposed to be used)
     int undef;
 #ifdef MODULE_SOCK_IP
-    sock_ip_t raw;              /**< raw IP sock */
-#endif /* MODULE_SOCK_IP */
+    sock_ip_t raw;              ///< raw IP sock
+#endif // MODULE_SOCK_IP
 #ifdef MODULE_SOCK_TCP
     union {
-        sock_tcp_t sock;        /**< TCP sock */
-        sock_tcp_queue_t queue; /**< TCP queue */
-    } tcp;                      /**< both TCP types */
-#endif /* MODULE_SOCK_TCP */
+        sock_tcp_t sock;        ///< TCP sock
+        sock_tcp_queue_t queue; ///< TCP queue
+    } tcp;                      ///< both TCP types
+#endif // MODULE_SOCK_TCP
 #ifdef MODULE_SOCK_UDP
-    sock_udp_t udp;             /**< UDP sock */
-#endif /* MODULE_SOCK_UDP */
+    sock_udp_t udp;             ///< UDP sock
+#endif // MODULE_SOCK_UDP
 } socket_sock_t;
 
 typedef struct {
@@ -96,7 +90,7 @@ typedef struct {
 #if IS_USED(MODULE_POSIX_SELECT)
     thread_t *selecting_thread;
 #endif
-    sock_tcp_ep_t local;        /* to store bind before connect/listen */
+    sock_tcp_ep_t local;        // to store bind before connect/listen
 } socket_t;
 
 static socket_t _socket_pool[_ACTUAL_SOCKET_POOL_SIZE];
@@ -118,8 +112,7 @@ static ssize_t socket_sendto(socket_t *s, const void *buffer, size_t length,
                              int flags, const struct sockaddr *address,
                              socklen_t address_len);
 
-static socket_t *_get_free_socket(void)
-{
+static socket_t *_get_free_socket(void) {
     for (int i = 0; i < _ACTUAL_SOCKET_POOL_SIZE; i++) {
         if (_socket_pool[i].domain == AF_UNSPEC) {
 #if IS_USED(MODULE_SOCK_ASYNC)
@@ -134,8 +127,7 @@ static socket_t *_get_free_socket(void)
     return NULL;
 }
 
-static socket_sock_t *_get_free_sock(void)
-{
+static socket_sock_t *_get_free_sock(void) {
     int i = bf_get_unset(_sock_pool_used, SOCKET_POOL_SIZE);
     if (i < 0) {
         return NULL;
@@ -143,10 +135,9 @@ static socket_sock_t *_get_free_sock(void)
     return &_sock_pool[i];
 }
 
-static socket_t *_get_socket(int fd)
-{
+static socket_t *_get_socket(int fd) {
     const vfs_file_t *file = vfs_file_get(fd);
-    /* we know what to do with `socket`, so it's okay to discard the const */
+    // we know what to do with `socket`, so it's okay to discard the const
     socket_t *socket = (file == NULL)
                      ? NULL
                      : file->private_data.ptr;
@@ -160,16 +151,14 @@ static socket_t *_get_socket(int fd)
     }
 }
 
-static int _get_sock_idx(socket_sock_t *sock)
-{
+static int _get_sock_idx(socket_sock_t *sock) {
     if ((sock < &_sock_pool[0]) || (sock > &_sock_pool[SOCKET_POOL_SIZE - 1])) {
         return -1;
     }
     return sock - &_sock_pool[0];
 }
 
-static inline int _choose_ipproto(int type, int protocol)
-{
+static inline int _choose_ipproto(int type, int protocol) {
     switch (type) {
 #ifdef MODULE_SOCK_TCP
     case SOCK_STREAM:
@@ -212,8 +201,7 @@ static inline socklen_t _addr_truncate(struct sockaddr *out, socklen_t out_len,
 }
 
 static int _ep_to_sockaddr(const struct _sock_tl_ep *ep,
-                           struct sockaddr_storage *out)
-{
+                           struct sockaddr_storage *out) {
     switch (ep->family) {
     case AF_INET:
         {
@@ -237,15 +225,14 @@ static int _ep_to_sockaddr(const struct _sock_tl_ep *ep,
         }
 #endif
     default:
-        /* should not happen */
+        // should not happen
         assert(0);
         return 0;
     }
 }
 
 static int _sockaddr_to_ep(const struct sockaddr *address, socklen_t address_len,
-                           struct _sock_tl_ep *out)
-{
+                           struct _sock_tl_ep *out) {
     assert(address != NULL);
 
     switch (address->sa_family) {
@@ -283,8 +270,7 @@ static int _sockaddr_to_ep(const struct sockaddr *address, socklen_t address_len
     return 0;
 }
 
-static int socket_close(vfs_file_t *filp)
-{
+static int socket_close(vfs_file_t *filp) {
     socket_t *s = filp->private_data.ptr;
     int res = 0;
 
@@ -328,35 +314,31 @@ static int socket_close(vfs_file_t *filp)
     return res;
 }
 
-static inline int socket_fstat(vfs_file_t *filp, struct stat *buf)
-{
+static inline int socket_fstat(vfs_file_t *filp, struct stat *buf) {
     (void)filp;
     buf->st_mode |= (S_IFSOCK | S_IRWXU | S_IRWXG | S_IRWXO);
     buf->st_blksize = SOCKET_BLKSIZE;
     return 0;
 }
 
-static inline off_t socket_lseek(vfs_file_t *filp, off_t off, int whence)
-{
+static inline off_t socket_lseek(vfs_file_t *filp, off_t off, int whence) {
     (void)filp;
     (void)off;
     (void)whence;
-    return -ESPIPE; /* see http://pubs.opengroup.org/onlinepubs/9699919799/functions/lseek.html */
+    return -ESPIPE; // see http://pubs.opengroup.org/onlinepubs/9699919799/functions/lseek.html
 }
 
-static inline ssize_t socket_read(vfs_file_t *filp, void *buf, size_t n)
-{
+static inline ssize_t socket_read(vfs_file_t *filp, void *buf, size_t n) {
     return socket_recvfrom(filp->private_data.ptr, buf, n, 0, NULL, NULL);
 }
 
-static inline ssize_t socket_write(vfs_file_t *filp, const void *buf, size_t n)
-{
+static inline ssize_t socket_write(vfs_file_t *filp, const void *buf, size_t n) {
     return socket_sendto(filp->private_data.ptr, buf, n, 0, NULL, 0);
 }
 
 static const vfs_file_ops_t socket_ops = {
     .close = socket_close,
-    .fcntl = NULL,          /* TODO: provide when needed */
+    .fcntl = NULL,          // TODO: provide when needed
     .fstat = socket_fstat,
     .lseek = socket_lseek,
     .read = socket_read,
@@ -365,8 +347,7 @@ static const vfs_file_ops_t socket_ops = {
 
 #if IS_USED(MODULE_SOCK_ASYNC)
 static void _async_cb(void *sock, sock_async_flags_t type,
-                      void *arg)
-{
+                      void *arg) {
     socket_t *socket = arg;
 
     (void)sock;
@@ -381,8 +362,7 @@ static void _async_cb(void *sock, sock_async_flags_t type,
     }
 }
 
-static void _sock_set_cb(socket_t *socket)
-{
+static void _sock_set_cb(socket_t *socket) {
     union {
         void (*sock_pool)(void *, sock_async_flags_t, void *);
 #ifdef MODULE_SOCK_IP
@@ -405,11 +385,11 @@ static void _sock_set_cb(socket_t *socket)
 #endif
 #ifdef MODULE_SOCK_TCP
     case SOCK_STREAM:
-        /* is a TCP client socket */
+        // is a TCP client socket
         if (socket->queue_array == NULL) {
             sock_tcp_set_cb(&socket->sock->tcp.sock, callback.tcp, socket);
         }
-        /* is a TCP listening socket */
+        // is a TCP listening socket
         else {
             sock_tcp_queue_set_cb(&socket->sock->tcp.queue,
                                   callback.tcp_queue, socket);
@@ -427,8 +407,7 @@ static void _sock_set_cb(socket_t *socket)
 }
 #endif
 
-int socket(int domain, int type, int protocol)
-{
+int socket(int domain, int type, int protocol) {
     int res = 0;
     socket_t *s;
 
@@ -486,8 +465,7 @@ int socket(int domain, int type, int protocol)
 }
 
 int accept(int socket, struct sockaddr *restrict address,
-           socklen_t *restrict address_len)
-{
+           socklen_t *restrict address_len) {
 #ifdef MODULE_SOCK_TCP
     sock_tcp_t *sock = NULL;
     socket_t *s, *new_s = NULL;
@@ -568,7 +546,7 @@ int accept(int socket, struct sockaddr *restrict address,
         }
         break;
     default:
-        /* Each case needs to unlock the mutex individually */
+        // Each case needs to unlock the mutex individually
         mutex_unlock(&_socket_pool_mutex);
         errno = EOPNOTSUPP;
         res = -1;
@@ -587,12 +565,11 @@ int accept(int socket, struct sockaddr *restrict address,
 #endif
 }
 
-int bind(int socket, const struct sockaddr *address, socklen_t address_len)
-{
+int bind(int socket, const struct sockaddr *address, socklen_t address_len) {
     socket_t *s;
     int res = 0;
 
-    /* only store bind data, real bind happens in _bind_connect/listen */
+    // only store bind data, real bind happens in _bind_connect/listen
     mutex_lock(&_socket_pool_mutex);
     s = _get_socket(socket);
     mutex_unlock(&_socket_pool_mutex);
@@ -634,8 +611,7 @@ int bind(int socket, const struct sockaddr *address, socklen_t address_len)
 }
 
 static int _bind_connect(socket_t *s, const struct sockaddr *address,
-                         socklen_t address_len)
-{
+                         socklen_t address_len) {
     struct _sock_tl_ep r, *remote = NULL, *local = NULL;
     int res;
     socket_sock_t *sock;
@@ -664,14 +640,14 @@ static int _bind_connect(socket_t *s, const struct sockaddr *address,
     switch (s->type) {
 #ifdef MODULE_SOCK_IP
     case SOCK_RAW:
-        /* TODO apply flags if possible */
+        // TODO apply flags if possible
         res = sock_ip_create(&sock->raw, (sock_ip_ep_t *)local,
                              (sock_ip_ep_t *)remote, s->protocol, 0);
         break;
 #endif
 #ifdef MODULE_SOCK_TCP
     case SOCK_STREAM:
-        /* TODO apply flags if possible */
+        // TODO apply flags if possible
         assert(remote != NULL);
         res = sock_tcp_connect(&sock->tcp.sock, remote,
                                (local == NULL) ? 0 : local->port, 0);
@@ -679,7 +655,7 @@ static int _bind_connect(socket_t *s, const struct sockaddr *address,
 #endif
 #ifdef MODULE_SOCK_UDP
     case SOCK_DGRAM:
-        /* TODO apply flags if possible */
+        // TODO apply flags if possible
         res = sock_udp_create(&sock->udp, local, remote, 0);
         break;
 #endif
@@ -691,7 +667,7 @@ static int _bind_connect(socket_t *s, const struct sockaddr *address,
     }
     if (res < 0) {
         errno = -res;
-        /* free sock again */
+        // free sock again
         mutex_lock(&_socket_pool_mutex);
         bf_unset(_sock_pool_used, _get_sock_idx(sock));
         mutex_unlock(&_socket_pool_mutex);
@@ -705,8 +681,7 @@ static int _bind_connect(socket_t *s, const struct sockaddr *address,
     return 0;
 }
 
-int connect(int socket, const struct sockaddr *address, socklen_t address_len)
-{
+int connect(int socket, const struct sockaddr *address, socklen_t address_len) {
     socket_t *s;
 
     mutex_lock(&_socket_pool_mutex);
@@ -732,8 +707,7 @@ int connect(int socket, const struct sockaddr *address, socklen_t address_len)
 }
 
 static int _getpeername(socket_t *s, struct sockaddr *__restrict address,
-                        socklen_t *__restrict address_len)
-{
+                        socklen_t *__restrict address_len) {
     struct _sock_tl_ep ep;
     int res = 0;
 
@@ -775,8 +749,7 @@ static int _getpeername(socket_t *s, struct sockaddr *__restrict address,
 }
 
 int getpeername(int socket, struct sockaddr *__restrict address,
-                socklen_t *__restrict address_len)
-{
+                socklen_t *__restrict address_len) {
     socket_t *s;
     int res;
 
@@ -795,8 +768,7 @@ int getpeername(int socket, struct sockaddr *__restrict address,
 }
 
 int getsockname(int socket, struct sockaddr *__restrict address,
-                socklen_t *__restrict address_len)
-{
+                socklen_t *__restrict address_len) {
     socket_t *s;
     struct sockaddr_storage sa;
     socklen_t sa_len;
@@ -852,8 +824,7 @@ int getsockname(int socket, struct sockaddr *__restrict address,
     return res;
 }
 
-int listen(int socket, int backlog)
-{
+int listen(int socket, int backlog) {
 #ifdef MODULE_SOCK_TCP
     socket_t *s;
     socket_sock_t *sock;
@@ -867,7 +838,7 @@ int listen(int socket, int backlog)
         return -1;
     }
     if (s->sock != NULL) {
-        /* or this socket is already connected, this is an error */
+        // or this socket is already connected, this is an error
         if (s->queue_array == NULL) {
             errno = EINVAL;
             res = -1;
@@ -887,7 +858,7 @@ int listen(int socket, int backlog)
     switch (s->type) {
         case SOCK_STREAM:
             if (s->bound) {
-                /* TODO apply flags if possible */
+                // TODO apply flags if possible
                 res = sock_tcp_listen(&sock->tcp.queue, &s->local,
                                       s->queue_array, s->queue_array_len, 0);
             }
@@ -924,8 +895,7 @@ int listen(int socket, int backlog)
 static ssize_t socket_recvfrom(socket_t *s, void *restrict buffer,
                                size_t length, int flags,
                                struct sockaddr *restrict address,
-                               socklen_t *restrict address_len)
-{
+                               socklen_t *restrict address_len) {
     int res = 0;
     struct _sock_tl_ep ep = { .port = 0 };
 
@@ -933,13 +903,13 @@ static ssize_t socket_recvfrom(socket_t *s, void *restrict buffer,
     if (s == NULL) {
         return -ENOTSOCK;
     }
-    if (s->sock == NULL) {  /* socket is not connected */
+    if (s->sock == NULL) {  // socket is not connected
 #ifdef MODULE_SOCK_TCP
         if (s->type == SOCK_STREAM) {
             return -ENOTCONN;
         }
 #endif
-        /* bind implicitly */
+        // bind implicitly
         if ((res = _bind_connect(s, NULL, 0)) < 0) {
             return res;
         }
@@ -1004,8 +974,7 @@ static ssize_t socket_recvfrom(socket_t *s, void *restrict buffer,
 
 ssize_t recvfrom(int socket, void *restrict buffer, size_t length, int flags,
                  struct sockaddr *restrict address,
-                 socklen_t *restrict address_len)
-{
+                 socklen_t *restrict address_len) {
     socket_t *s;
     int res;
 
@@ -1022,8 +991,7 @@ ssize_t recvfrom(int socket, void *restrict buffer, size_t length, int flags,
 
 static ssize_t socket_sendto(socket_t *s, const void *buffer, size_t length,
                              int flags, const struct sockaddr *address,
-                             socklen_t address_len)
-{
+                             socklen_t address_len) {
     int res = 0;
 #if defined(MODULE_SOCK_IP) || defined(MODULE_SOCK_UDP)
     struct _sock_tl_ep ep = { .port = 0 };
@@ -1034,7 +1002,7 @@ static ssize_t socket_sendto(socket_t *s, const void *buffer, size_t length,
         errno = ENOTSOCK;
         return -1;
     }
-    if (s->sock == NULL) {  /* socket is not connected */
+    if (s->sock == NULL) {  // socket is not connected
 #ifdef MODULE_SOCK_TCP
         if (s->type == SOCK_STREAM) {
             errno = ENOTCONN;
@@ -1097,8 +1065,7 @@ static ssize_t socket_sendto(socket_t *s, const void *buffer, size_t length,
 }
 
 ssize_t sendto(int socket, const void *buffer, size_t length, int flags,
-               const struct sockaddr *address, socklen_t address_len)
-{
+               const struct sockaddr *address, socklen_t address_len) {
     socket_t *s;
     int res;
 
@@ -1113,13 +1080,10 @@ ssize_t sendto(int socket, const void *buffer, size_t length, int flags,
     return res;
 }
 
-/*
- * This is a partial implementation of setsockopt for changing the receive
- * timeout value of a socket.
- */
+// This is a partial implementation of setsockopt for changing the receive
+// timeout value of a socket.
 int setsockopt(int socket, int level, int option_name, const void *option_value,
-               socklen_t option_len)
-{
+               socklen_t option_len) {
 #ifdef POSIX_SETSOCKOPT
     socket_t *s;
     struct timeval *tv;
@@ -1147,17 +1111,17 @@ int setsockopt(int socket, int level, int option_name, const void *option_value,
     tv = (struct timeval *) option_value;
 
 #if MODULE_AVR8_COMMON
-    /* tv_sec is uint32_t, so never negative */
+    // tv_sec is uint32_t, so never negative
     if (tv->tv_usec < 0) {
         errno = EINVAL;
         return -1;
     }
-#else /* ! MODULE_AVR8_COMMON */
+#else // ! MODULE_AVR8_COMMON
     if (tv->tv_sec < 0 || tv->tv_usec < 0) {
         errno = EINVAL;
         return -1;
     }
-#endif /* ! MODULE_AVR8_COMMON */
+#endif // ! MODULE_AVR8_COMMON
 
     if ((uint32_t)tv->tv_sec > max_timeout_secs
     || ((uint32_t)tv->tv_sec == max_timeout_secs && (uint32_t)tv->tv_usec > UINT32_MAX - max_timeout_secs * 1000 * 1000)) {
@@ -1177,13 +1141,11 @@ int setsockopt(int socket, int level, int option_name, const void *option_value,
 #endif
 }
 
-bool posix_socket_is(int fd)
-{
+bool posix_socket_is(int fd) {
     return IS_USED(MODULE_SOCK_ASYNC) && (_get_socket(fd) != NULL);
 }
 
-unsigned posix_socket_avail(int fd)
-{
+unsigned posix_socket_avail(int fd) {
 #if IS_USED(MODULE_SOCK_ASYNC)
     socket_t *socket = _get_socket(fd);
 
@@ -1194,16 +1156,15 @@ unsigned posix_socket_avail(int fd)
 #endif
 }
 
-int posix_socket_select(int fd)
-{
+int posix_socket_select(int fd) {
 #if IS_USED(MODULE_POSIX_SELECT)
     socket_t *socket = _get_socket(fd);
 
     if (socket != NULL) {
-        if (socket->sock == NULL) {  /* socket is not connected */
+        if (socket->sock == NULL) {  // socket is not connected
             int res;
 
-            /* bind implicitly */
+            // bind implicitly
             if ((res = _bind_connect(socket, NULL, 0)) < 0) {
                 return res;
             }
@@ -1218,6 +1179,4 @@ int posix_socket_select(int fd)
     return -1;
 }
 
-/**
- * @}
- */
+/// @}

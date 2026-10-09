@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2018 Acutam Automation, LLC
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Acutam Automation, LLC
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       eepreg test application
- *
- * @author      Matthew Blue <matthew.blue.neuro@gmail.com>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       eepreg test application
+///
+/// @author      Matthew Blue <matthew.blue.neuro@gmail.com>
+/// @}
 
 #include <errno.h>
 #include <stdint.h>
@@ -31,8 +27,7 @@
 #define ENT2_SIZE    (34U)
 #define DATA         "spam and eggs"
 
-int eepreg_iter_cb(char *name, void *arg)
-{
+int eepreg_iter_cb(char *name, void *arg) {
     (void)arg;
 
     printf("%s ", name);
@@ -40,8 +35,7 @@ int eepreg_iter_cb(char *name, void *arg)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     int ret;
     uint32_t tmp1, tmp2, tmp3;
     char data[sizeof(DATA)];
@@ -82,7 +76,7 @@ int main(void)
         return 1;
     }
 
-    /* read via add */
+    // read via add
     printf("add ");
     ret = eepreg_add(&tmp3, ENT1_NAME, ENT1_SIZE);
     if (ret < 0 || tmp1 != tmp3) {

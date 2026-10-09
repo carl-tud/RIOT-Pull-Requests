@@ -1,49 +1,41 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_nrf5x_common
- * @{
- *
- * @file
- * @brief       Implementation of the temperature peripheral internal driver
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu_nrf5x_common
+/// @{
+///
+/// @file
+/// @brief       Implementation of the temperature peripheral internal driver
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "cpu.h"
 #include "saul.h"
 #include "saul_reg.h"
 #include "phydat.h"
 
-/**
- * @brief   Read the temperature in E-02 °C
- * @return  The measured temperature in E-02 °C (e.g. 1825 would mean 18.25 °C)
- */
-static int16_t temperature_read(void)
-{
-    /* Start temperature measurement task */
+/// @brief   Read the temperature in E-02 °C
+/// @return  The measured temperature in E-02 °C (e.g. 1825 would mean 18.25 °C)
+static int16_t temperature_read(void) {
+    // Start temperature measurement task
     NRF_TEMP->TASKS_START = 1;
 
-    /* Wait for temperature measurement to be ready */
-    while (!NRF_TEMP->EVENTS_DATARDY); /* takes 36us according to manual */
+    // Wait for temperature measurement to be ready
+    while (!NRF_TEMP->EVENTS_DATARDY); // takes 36us according to manual
 
-    /* temperature is in 0.25°C step, multiply by 25 to convert to E-02 °C */
+    // temperature is in 0.25°C step, multiply by 25 to convert to E-02 °C
     int32_t temp = NRF_TEMP->TEMP * 25;
 
-    /* Clear data ready bit and stop temperature measurement task */
+    // Clear data ready bit and stop temperature measurement task
     NRF_TEMP->EVENTS_DATARDY = 0;
     NRF_TEMP->TASKS_STOP = 1;
 
     return temp;
 }
 
-static int _read_temperature(const void *dev, phydat_t *res)
-{
+static int _read_temperature(const void *dev, phydat_t *res) {
     (void)dev;
     res->val[0] = temperature_read();
     res->val[1] = 0;

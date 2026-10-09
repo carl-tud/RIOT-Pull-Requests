@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the MAX313xx RTC driver
- *
- * @author      Jakob Müller <ja.mueller@tuhh.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the MAX313xx RTC driver
+///
+/// @author      Jakob Müller <ja.mueller@tuhh.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -28,8 +24,8 @@
 #include "ztimer.h"
 #include "kernel_defines.h"
 
-#define ISOSTR_LEN  (20U)   /* "YYYY-MM-DDTHH:mm:ss" + NUL */
-#define TEST_DELAY  (2U)    /* seconds used in the self-test */
+#define ISOSTR_LEN  (20U)   // "YYYY-MM-DDTHH:mm:ss" + NUL
+#define TEST_DELAY  (2U)    // seconds used in the self-test
 
 static max313xx_t _dev;
 
@@ -37,15 +33,14 @@ static const struct tm _ref_time = {
     .tm_sec   = 0,
     .tm_min   = 0,
     .tm_hour  = 0,
-    .tm_wday  = 1,   /* Thursday */
+    .tm_wday  = 1,   // Thursday
     .tm_mday  = 9,
-    .tm_mon   = 10,   /* January */
-    .tm_year  = 126, /* 2026 */
+    .tm_mon   = 10,   // January
+    .tm_year  = 126, // 2026
     .tm_isdst = -1,
 };
 
-static int _tm_from_str(const char *str, struct tm *t)
-{
+static int _tm_from_str(const char *str, struct tm *t) {
     char tmp[5];
 
     if (strlen(str) != ISOSTR_LEN - 1) {
@@ -80,16 +75,14 @@ static int _tm_from_str(const char *str, struct tm *t)
     return 0;
 }
 
-static void _print_time(const struct tm *t)
-{
+static void _print_time(const struct tm *t) {
     char buf[ISOSTR_LEN];
     size_t n = strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S", t);
     buf[n] = '\0';
     printf("%s\n", buf);
 }
 
-static int _cmd_get(int argc, char **argv)
-{
+static int _cmd_get(int argc, char **argv) {
     (void)argc; (void)argv;
 
     struct tm t;
@@ -104,8 +97,7 @@ static int _cmd_get(int argc, char **argv)
 }
 SHELL_COMMAND(time_get, "read current time", _cmd_get);
 
-static int _cmd_set(int argc, char **argv)
-{
+static int _cmd_set(int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s <YYYY-MM-DDTHH:mm:ss>\n", argv[0]);
         return 1;
@@ -127,8 +119,7 @@ static int _cmd_set(int argc, char **argv)
 }
 SHELL_COMMAND(time_set, "set time", _cmd_set);
 
-static int _cmd_alarm_get(int argc, char **argv)
-{
+static int _cmd_alarm_get(int argc, char **argv) {
     (void)argc; (void)argv;
 
     struct tm t;
@@ -147,8 +138,7 @@ static int _cmd_alarm_get(int argc, char **argv)
 }
 SHELL_COMMAND(alarm_get, "read configured alarm time", _cmd_alarm_get);
 
-static int _cmd_alarm_set(int argc, char **argv)
-{
+static int _cmd_alarm_set(int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s <YYYY-MM-DDTHH:mm:ss>\n", argv[0]);
         return 1;
@@ -170,8 +160,7 @@ static int _cmd_alarm_set(int argc, char **argv)
 }
 SHELL_COMMAND(alarm_set, "set alarm time", _cmd_alarm_set);
 
-static int _cmd_set_alarm_int(int argc, char **argv)
-{
+static int _cmd_set_alarm_int(int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s <0|1>\n", argv[0]);
         return 1;
@@ -189,8 +178,7 @@ static int _cmd_set_alarm_int(int argc, char **argv)
 SHELL_COMMAND(set_alarm_int, "enable/disable alarm interrupt", _cmd_set_alarm_int);
 
 #if IS_USED(MODULE_MAX31343)
-static int _cmd_temp(int argc, char **argv)
-{
+static int _cmd_temp(int argc, char **argv) {
     (void)argc; (void)argv;
 
     int16_t centi;
@@ -206,11 +194,10 @@ static int _cmd_temp(int argc, char **argv)
     return 0;
 }
 SHELL_COMMAND(temp, "read temperature", _cmd_temp);
-#endif /* IS_USED(MAX31343) */
+#endif // IS_USED(MAX31343)
 
 #if IS_USED(MODULE_MAX31343)
-static int _cmd_sqw(int argc, char **argv)
-{
+static int _cmd_sqw(int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s <0-5>  (0=1Hz 1=2Hz 2=4Hz 3=8Hz 4=16Hz 5=32Hz)\n",
                argv[0]);
@@ -232,10 +219,9 @@ static int _cmd_sqw(int argc, char **argv)
     return 0;
 }
 SHELL_COMMAND(sqw, "set SQW output frequency", _cmd_sqw);
-#endif /* IS_USED(MAX31343) */
+#endif // IS_USED(MAX31343)
 
-static int _cmd_trickle(int argc, char **argv)
-{
+static int _cmd_trickle(int argc, char **argv) {
     if (argc == 2 && argv[1][0] == '0') {
         int res = max313xx_trickle_charge_disable(&_dev);
         if (res != 0) {
@@ -273,8 +259,7 @@ static int _cmd_trickle(int argc, char **argv)
 SHELL_COMMAND(trickle, "configure trickle charger", _cmd_trickle);
 
 #if IS_USED(MODULE_MAX31343)
-static int _cmd_automode(int argc, char **argv)
-{
+static int _cmd_automode(int argc, char **argv) {
     if (argc != 3) {
         printf("usage: %s <0|1> <ttsint 0-7>\n", argv[0]);
         puts("  ttsint: 0=1s 1=2s 2=4s 3=8s 4=16s 5=32s 6=64s 7=128s");
@@ -299,8 +284,7 @@ static int _cmd_automode(int argc, char **argv)
 SHELL_COMMAND(automode, "configure temp automode and interval", _cmd_automode);
 #endif
 
-static int _cmd_power(int argc, char **argv)
-{
+static int _cmd_power(int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s <0|1>  (0=off, 1=on)\n", argv[0]);
         return 1;
@@ -324,8 +308,7 @@ static int _cmd_power(int argc, char **argv)
 }
 SHELL_COMMAND(power, "oscillator power on/off", _cmd_power);
 
-static int _cmd_test(int argc, char **argv)
-{
+static int _cmd_test(int argc, char **argv) {
     (void)argc; (void)argv;
 
     struct tm t;
@@ -339,9 +322,9 @@ static int _cmd_test(int argc, char **argv)
         return 1;
     }
 
-    /* The MAX313xx only latches a written time at the next internal 1 Hz
-     * tick boundary. Waiting two full second guarantees the new value is
-     * committed before we read it back. */
+    // The MAX313xx only latches a written time at the next internal 1 Hz
+    // tick boundary. Waiting two full second guarantees the new value is
+    // committed before we read it back.
     ztimer_sleep(ZTIMER_SEC, 2);
 
     puts("[test] reading back time...");
@@ -351,15 +334,13 @@ static int _cmd_test(int argc, char **argv)
         return 1;
     }
 
-    /*
-     * Use a local, mutable copy for mktime – _ref_time is const and mktime
-     * writes back tm_wday / tm_yday / tm_isdst, which is undefined behaviour
-     * on a const object (and a BusFault if it lives in flash).
-     *
-     * Expected window: [ref, ref + 3s]. The lower bound guards against the
-     * chip returning a time before what we wrote; the upper bound gives slack
-     * for the 1s latch delay plus two I2C round-trips.
-     */
+    // Use a local, mutable copy for mktime – _ref_time is const and mktime
+    // writes back tm_wday / tm_yday / tm_isdst, which is undefined behaviour
+    // on a const object (and a BusFault if it lives in flash).
+    //
+    // Expected window: [ref, ref + 3s]. The lower bound guards against the
+    // chip returning a time before what we wrote; the upper bound gives slack
+    // for the 1s latch delay plus two I2C round-trips.
     struct tm ref_copy = _ref_time;
     ref_copy.tm_isdst  = 0;
     t.tm_isdst         = 0;
@@ -447,8 +428,7 @@ static int _cmd_test(int argc, char **argv)
 }
 SHELL_COMMAND(test, "run built-in self test", _cmd_test);
 
-int main(void)
-{
+int main(void) {
     puts("MAX313xx RTC driver test\n");
 
     int res = max313xx_init(&_dev, &max313xx_params[0]);

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32
- * @{
- *
- * @file
- * @brief       Implementation of required system calls
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @{
+///
+/// @file
+/// @brief       Implementation of required system calls
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 #include <stdint.h>
 #include <sys/unistd.h>
 #include <sys/time.h>
@@ -60,25 +56,22 @@
 #include "debug.h"
 
 #if IS_USED(MODULE_CPP)
-/* weak function that have to be overridden, otherwise DEFAULT_ARENA_SIZE would
- * be allocated that would consume the whole heap memory */
-size_t __cxx_eh_arena_size_get(void)
-{
+// weak function that have to be overridden, otherwise DEFAULT_ARENA_SIZE would
+// be allocated that would consume the whole heap memory
+size_t __cxx_eh_arena_size_get(void) {
     return 0;
 }
 #endif
 
 #if IS_USED(MODULE_ESP_IDF_HEAP)
 
-/* if module esp_idf_heap is used, this function has to be defined for ESP32 */
-unsigned int get_free_heap_size(void)
-{
+// if module esp_idf_heap is used, this function has to be defined for ESP32
+unsigned int get_free_heap_size(void) {
     return heap_caps_get_free_size(MALLOC_CAP_DEFAULT);
 }
 
-/* this function is platform specific if module esp_idf_heap is used */
-void heap_stats(void)
-{
+// this function is platform specific if module esp_idf_heap is used
+void heap_stats(void) {
     size_t _free = 0;
     size_t _alloc = 0;
 
@@ -93,43 +86,36 @@ void heap_stats(void)
                _alloc + _free, _alloc, _free);
 }
 
-#else /* IS_USED(MODULE_ESP_IDF_HEAP) */
+#else // IS_USED(MODULE_ESP_IDF_HEAP)
 
-void *heap_caps_malloc_prefer(size_t size, size_t num, ...)
-{
-    /* This function usually allocates a chunk of memory in descending order
-     * of the capabilities as defined in variable parameters. However,
-     * allocating memory according to given capabilities is only relevant
-     * if multiple heaps use memories of different capabalities, like the
-     * alignment, the memory type a.s.o. Since we only use embedded RAM with
-     * identical capabilities, we just map this function to the standard malloc.
-     */
+void *heap_caps_malloc_prefer(size_t size, size_t num, ...) {
+    // This function usually allocates a chunk of memory in descending order
+    // of the capabilities as defined in variable parameters. However,
+    // allocating memory according to given capabilities is only relevant
+    // if multiple heaps use memories of different capabalities, like the
+    // alignment, the memory type a.s.o. Since we only use embedded RAM with
+    // identical capabilities, we just map this function to the standard malloc.
     return malloc(size);
 }
 
-void *heap_caps_aligned_calloc(size_t alignment, size_t n, size_t size, uint32_t caps)
-{
+void *heap_caps_aligned_calloc(size_t alignment, size_t n, size_t size, uint32_t caps) {
     (void)alignment;
     (void)caps;
 
     return calloc(n, size);
 }
 
-#endif /* IS_USED(MODULE_ESP_IDF_HEAP) */
+#endif // IS_USED(MODULE_ESP_IDF_HEAP)
 
-/**
- * @name Other system functions
- */
+/// @name Other system functions
 
-void _abort(void)
-{
+void _abort(void) {
     ets_printf("#! abort called: powering off\n");
     pm_off();
     while (1) { };
 }
 
-void _exit_r(struct _reent *r, int status)
-{
+void _exit_r(struct _reent *r, int status) {
     _exit(status);
 }
 
@@ -146,8 +132,7 @@ int _fcntl_r(struct _reent *r, int fd, int cmd, int arg)
 #define CLOCK_MONOTONIC (clockid_t)4
 #endif
 
-int clock_gettime_r(struct _reent *r, clockid_t clock_id, struct timespec *tp)
-{
+int clock_gettime_r(struct _reent *r, clockid_t clock_id, struct timespec *tp) {
    if (tp == NULL) {
         r->_errno = EINVAL;
         return -1;
@@ -177,14 +162,12 @@ int clock_gettime_r(struct _reent *r, clockid_t clock_id, struct timespec *tp)
     return 0;
 }
 
-int clock_gettime(clockid_t clock_id, struct timespec *tp)
-{
+int clock_gettime(clockid_t clock_id, struct timespec *tp) {
     return clock_gettime_r(_GLOBAL_REENT, clock_id, tp);
 }
 
 #if !IS_USED(MODULE_LIBC_GETTIMEOFDAY)
-int IRAM _gettimeofday_r(struct _reent *r, struct timeval *tv, void *tz)
-{
+int IRAM _gettimeofday_r(struct _reent *r, struct timeval *tv, void *tz) {
     (void) tz;
     uint64_t now = system_get_time_64();
     tv->tv_sec = div_u64_by_1000000(now);
@@ -193,8 +176,7 @@ int IRAM _gettimeofday_r(struct _reent *r, struct timeval *tv, void *tz)
 }
 #endif
 
-static int _no_sys_func(struct _reent *r)
-{
+static int _no_sys_func(struct _reent *r) {
     DEBUG("%s: system function does not exist\n", __func__);
     r->_errno = ENOSYS;
     return -1;
@@ -213,21 +195,19 @@ extern int _scanf_float(struct _reent *rptr,
                         va_list *ap);
 
 #if !defined(CPU_FAM_ESP32) && !defined(CPU_FAM_ESP32S2)
-/* We need to override these functions that are used from ROM */
+// We need to override these functions that are used from ROM
 
 __attribute__((__noreturn__))
 static void _riot__assert_func(const char *file, int line, const char * func,
-                               const char *failedexpr)
-{
+                               const char *failedexpr) {
     extern __NORETURN void _assert_failure(const char *file, unsigned line);
     (void)func;
     (void)failedexpr;
     _assert_failure(file, line);
 }
 
-static void _riot__sinit(struct _reent *reent)
-{
-    /* this function should never be called from ROM */
+static void _riot__sinit(struct _reent *reent) {
+    // this function should never be called from ROM
     assert(0);
 }
 
@@ -287,19 +267,19 @@ static struct syscall_stub_table s_stub_table =
     ._retarget_lock_release = &__retarget_lock_release,
     ._retarget_lock_release_recursive = &__retarget_lock_release_recursive,
 #endif
-/* if mpaland-printf is used, do not keep references to _printf_float here to
- * not pull in two stdio implementations */
+// if mpaland-printf is used, do not keep references to _printf_float here to
+// not pull in two stdio implementations
 #if CONFIG_NEWLIB_NANO_FORMAT && !MODULE_MPALAND_PRINTF
     ._printf_float = &_printf_float,
     ._scanf_float = &_scanf_float,
-#else /* CONFIG_NEWLIB_NANO_FORMAT */
+#else // CONFIG_NEWLIB_NANO_FORMAT
     ._printf_float = NULL,
     ._scanf_float = NULL,
-#endif /* CONFIG_NEWLIB_NANO_FORMAT */
+#endif // CONFIG_NEWLIB_NANO_FORMAT
 #if !defined(CPU_FAM_ESP32) && !defined(CPU_FAM_ESP32S2)
     .__assert_func = &_riot__assert_func,
     .__sinit = &_riot__sinit,
-    ._cleanup_r = NULL,             /* we don't need a cleanup of stdio */
+    ._cleanup_r = NULL,             // we don't need a cleanup of stdio
 #endif
 };
 
@@ -310,11 +290,11 @@ timer_hal_context_t sys_timer = {
 
 #if defined(_RETARGETABLE_LOCKING)
 
-/* all locking variables share the same mutex respectively the same rmutex */
+// all locking variables share the same mutex respectively the same rmutex
 static mutex_t  s_shared_mutex = MUTEX_INIT;
 static rmutex_t s_shared_rmutex = RMUTEX_INIT;
 
-/* definition of locks required by the newlib if retargetable locking is used */
+// definition of locks required by the newlib if retargetable locking is used
 extern struct __lock __attribute__((alias("s_shared_rmutex"))) __lock___sinit_recursive_mutex;
 extern struct __lock __attribute__((alias("s_shared_rmutex"))) __lock___sfp_recursive_mutex;
 extern struct __lock __attribute__((alias("s_shared_rmutex"))) __lock___atexit_recursive_mutex;
@@ -325,94 +305,82 @@ extern struct __lock __attribute__((alias("s_shared_mutex"))) __lock___tz_mutex;
 extern struct __lock __attribute__((alias("s_shared_mutex"))) __lock___dd_hash_mutex;
 extern struct __lock __attribute__((alias("s_shared_mutex"))) __lock___arc4random_mutex;
 
-/* map newlib's `__retarget_*` functions to the existing `_lock_*` functions */
+// map newlib's `__retarget_*` functions to the existing `_lock_*` functions
 
-void __retarget_lock_init(_LOCK_T *lock)
-{
+void __retarget_lock_init(_LOCK_T *lock) {
     _lock_init(lock);
 }
 
-extern void __retarget_lock_init_recursive(_LOCK_T *lock)
-{
+extern void __retarget_lock_init_recursive(_LOCK_T *lock) {
     _lock_init_recursive(lock);
 }
 
-void __retarget_lock_close(_LOCK_T lock)
-{
+void __retarget_lock_close(_LOCK_T lock) {
     _lock_close(&lock);
 }
 
-void __retarget_lock_close_recursive(_LOCK_T lock)
-{
+void __retarget_lock_close_recursive(_LOCK_T lock) {
     _lock_close_recursive(&lock);
 }
 
-void __retarget_lock_acquire(_LOCK_T lock)
-{
+void __retarget_lock_acquire(_LOCK_T lock) {
     if (lock == NULL) {
-        /* use the shared mutex if lock is NULL */
+        // use the shared mutex if lock is NULL
         lock = (_lock_t)&s_shared_mutex;
     }
     _lock_acquire(&lock);
 }
 
-void __retarget_lock_acquire_recursive(_LOCK_T lock)
-{
+void __retarget_lock_acquire_recursive(_LOCK_T lock) {
     if (lock == NULL) {
-        /* use the shared rmutex if lock is NULL */
+        // use the shared rmutex if lock is NULL
         lock = (_lock_t)&s_shared_rmutex;
     }
     _lock_acquire_recursive(&lock);
 }
 
-int __retarget_lock_try_acquire(_LOCK_T lock)
-{
+int __retarget_lock_try_acquire(_LOCK_T lock) {
     if (lock == NULL) {
-        /* use the shared mutex if lock is NULL */
+        // use the shared mutex if lock is NULL
         lock = (_lock_t)&s_shared_mutex;
     }
     return _lock_try_acquire(&lock);
 }
 
-int __retarget_lock_try_acquire_recursive(_LOCK_T lock)
-{
+int __retarget_lock_try_acquire_recursive(_LOCK_T lock) {
     if (lock == NULL) {
-        /* use the shared rmutex if lock is NULL */
+        // use the shared rmutex if lock is NULL
         lock = (_lock_t)&s_shared_rmutex;
     }
     return _lock_try_acquire_recursive(&lock);
 }
 
-void __retarget_lock_release(_LOCK_T lock)
-{
+void __retarget_lock_release(_LOCK_T lock) {
     if (lock == NULL) {
-        /* use the shared mutex if lock is NULL */
+        // use the shared mutex if lock is NULL
         lock = (_lock_t)&s_shared_mutex;
     }
     _lock_release(&lock);
 }
 
-void __retarget_lock_release_recursive(_LOCK_T lock)
-{
+void __retarget_lock_release_recursive(_LOCK_T lock) {
     if (lock == NULL) {
-        /* use the shared rmutex if lock is NULL */
+        // use the shared rmutex if lock is NULL
         lock = (_lock_t)&s_shared_rmutex;
     }
     _lock_release_recursive(&lock);
 }
 
-#endif /* _RETARGETABLE_LOCKING */
+#endif // _RETARGETABLE_LOCKING
 
-void IRAM syscalls_init_arch(void)
-{
+void IRAM syscalls_init_arch(void) {
 #if 0
-    /* In ESP-IDF, the newlibc functions in ROM are used that require some
-     * variables that have to be set to the shared mutex/rmutex. Since we
-     * don't use the newlib functions in ROM, we don't have to set these
-     * variables here for the moment
-     */
+    // In ESP-IDF, the newlibc functions in ROM are used that require some
+    // variables that have to be set to the shared mutex/rmutex. Since we
+    // don't use the newlib functions in ROM, we don't have to set these
+    // variables here for the moment
 #ifdef CONFIG_IDF_TARGET_ESP32
-    /* Newlib 2.2.0 is used in ROM, the following lock symbols are defined: */
+    // Newlib 2.2.0 is used in ROM, the following lock symbols are defined:
     extern _lock_t __sfp_lock;
     __sfp_lock = (_lock_t) &s_shared_rmutex;
     extern _lock_t __sinit_lock;
@@ -422,7 +390,7 @@ void IRAM syscalls_init_arch(void)
     extern _lock_t __tz_lock_object;
     __tz_lock_object = (_lock_t) &s_shared_rmutex;
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-    /* Newlib 3.0.0 is used in ROM, the following lock symbols are defined: */
+    // Newlib 3.0.0 is used in ROM, the following lock symbols are defined:
     extern _lock_t __sinit_recursive_mutex;
     __sinit_recursive_mutex = (_lock_t) &s_shared_rmutex;
     extern _lock_t __sfp_recursive_mutex;
@@ -430,7 +398,7 @@ void IRAM syscalls_init_arch(void)
 #endif
 #endif
 
-    /* initialize and enable the system timer in us */
+    // initialize and enable the system timer in us
     periph_module_enable(PERIPH_TIMG0_MODULE);
 
     uint32_t clk_freq;
@@ -458,26 +426,23 @@ void IRAM syscalls_init_arch(void)
     syscall_table_ptr = &s_stub_table;
 #endif
 
-    /* we don't need a cleanup for stdio */
+    // we don't need a cleanup for stdio
     _GLOBAL_REENT->__cleanup = NULL;
-    /* init stdio */
+    // init stdio
     _REENT_SDIDINIT(_GLOBAL_REENT) = 0;
     __sinit(_GLOBAL_REENT);
     _REENT_SDIDINIT(_GLOBAL_REENT) = 1;
 }
 
-uint32_t system_get_time(void)
-{
+uint32_t system_get_time(void) {
     return system_get_time_64();
 }
 
-uint32_t system_get_time_ms(void)
-{
+uint32_t system_get_time_ms(void) {
     return system_get_time_64() / US_PER_MS;
 }
 
-uint64_t system_get_time_64(void)
-{
+uint64_t system_get_time_64(void) {
     timer_ll_trigger_soft_capture(sys_timer.dev, sys_timer.timer_id);
     return timer_ll_get_counter_value(sys_timer.dev, sys_timer.timer_id);
 }
@@ -485,26 +450,23 @@ uint64_t system_get_time_64(void)
 wdt_hal_context_t mwdt;
 wdt_hal_context_t rwdt;
 
-static IRAM void system_wdt_int_handler(void *arg)
-{
+static IRAM void system_wdt_int_handler(void *arg) {
     wdt_hal_handle_intr(&mwdt);
     wdt_hal_write_protect_disable(&mwdt);
     wdt_hal_feed(&mwdt);
     wdt_hal_write_protect_enable(&mwdt);
 }
 
-void IRAM system_wdt_feed(void)
-{
+void IRAM system_wdt_feed(void) {
     wdt_hal_write_protect_disable(&mwdt);
     wdt_hal_feed(&mwdt);
     wdt_hal_write_protect_enable(&mwdt);
 }
 
-void system_wdt_init(void)
-{
-    /* initialize and disable boot watchdogs MWDT and RWDT (the prescaler for
-     * MWDT is the APB clock in MHz to get a microsecond tick, for RWDT it is
-     * not applicable) */
+void system_wdt_init(void) {
+    // initialize and disable boot watchdogs MWDT and RWDT (the prescaler for
+    // MWDT is the APB clock in MHz to get a microsecond tick, for RWDT it is
+    // not applicable)
     uint32_t clk_freq;
     esp_clk_tree_src_get_freq_hz((soc_module_clk_t)GPTIMER_CLK_SRC_DEFAULT,
                                  ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED,
@@ -513,20 +475,20 @@ void system_wdt_init(void)
     wdt_hal_init(&mwdt, WDT_MWDT0, clk_freq / MHZ, true);
     wdt_hal_init(&rwdt, WDT_RWDT, 0, false);
 
-    /* disable write protection for MWDT and RWDT */
+    // disable write protection for MWDT and RWDT
     wdt_hal_write_protect_disable(&mwdt);
     wdt_hal_write_protect_disable(&rwdt);
 
-    /* configure stages */
+    // configure stages
     wdt_hal_config_stage(&mwdt, WDT_STAGE0, 2 * US_PER_SEC, WDT_STAGE_ACTION_INT);
     wdt_hal_config_stage(&mwdt, WDT_STAGE1, 2 * US_PER_SEC, WDT_STAGE_ACTION_RESET_SYSTEM);
     wdt_hal_config_stage(&mwdt, WDT_STAGE2, 0, WDT_STAGE_ACTION_OFF);
     wdt_hal_config_stage(&mwdt, WDT_STAGE3, 0, WDT_STAGE_ACTION_OFF);
 
-    /* enable the watchdog */
+    // enable the watchdog
     wdt_hal_enable(&mwdt);
 
-    /* enable write protection for MWDT and RWDT */
+    // enable write protection for MWDT and RWDT
     wdt_hal_write_protect_enable(&mwdt);
     wdt_hal_write_protect_enable(&rwdt);
 
@@ -537,23 +499,21 @@ void system_wdt_init(void)
           TIMERG0.wdtconfig2.val, TIMERG0.wdtconfig3.val,
           TIMERG0.wdtconfig4.val, TIMERG0.regclk.val);
 
-    /* route WDT peripheral interrupt source to CPU_INUM_WDT */
+    // route WDT peripheral interrupt source to CPU_INUM_WDT
     intr_matrix_set(PRO_CPU_NUM, ETS_TG0_WDT_LEVEL_INTR_SOURCE, CPU_INUM_WDT);
-    /* set the interrupt handler and activate the interrupt */
+    // set the interrupt handler and activate the interrupt
     esp_cpu_intr_set_handler(CPU_INUM_WDT, system_wdt_int_handler, NULL);
     esp_cpu_intr_enable(BIT(CPU_INUM_WDT));
 }
 
-void system_wdt_stop(void)
-{
+void system_wdt_stop(void) {
     esp_cpu_intr_disable(BIT(CPU_INUM_WDT));
     wdt_hal_write_protect_disable(&mwdt);
     wdt_hal_disable(&mwdt);
     wdt_hal_write_protect_enable(&mwdt);
 }
 
-void system_wdt_start(void)
-{
+void system_wdt_start(void) {
     wdt_hal_write_protect_disable(&mwdt);
     wdt_hal_enable(&mwdt);
     wdt_hal_write_protect_enable(&mwdt);
@@ -562,8 +522,7 @@ void system_wdt_start(void)
 
 #ifndef MODULE_POSIX_SLEEP
 
-int usleep(useconds_t us)
-{
+int usleep(useconds_t us) {
     extern void esp_rom_delay_us(uint32_t us);
     esp_rom_delay_us((uint32_t) us);
     return 0;

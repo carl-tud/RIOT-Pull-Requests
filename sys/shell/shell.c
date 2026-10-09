@@ -1,32 +1,28 @@
-/*
- * Copyright (C) 2009, 2020 Freie Universität Berlin
- * Copyright (C) 2013, INRIA.
- * Copyright (C) 2015 Kaspar Schleiser <kaspar@schleiser.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2009, 2020 Freie Universität Berlin
+// Copyright (C) 2013, INRIA.
+// Copyright (C) 2015 Kaspar Schleiser <kaspar@schleiser.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell
- * @{
- *
- * @file
- * @brief       Implementation of a simple command interpreter.
- *              For each command (i.e. "echo"), a handler can be specified.
- *              If the first word of a user-entered command line matches the
- *              name of a handler, the handler will be called with the remaining
- *              arguments passed in a manner similar to `main()`'s argc/argv
- *              parameters.
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      René Kijewski <rene.kijewski@fu-berlin.de>
- * @author      Juan Carrano <j.carrano@fu-berlin.de>
- * @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_shell
+/// @{
+///
+/// @file
+/// @brief       Implementation of a simple command interpreter.
+///              For each command (i.e. "echo"), a handler can be specified.
+///              If the first word of a user-entered command line matches the
+///              name of a handler, the handler will be called with the remaining
+///              arguments passed in a manner similar to `main()`'s argc/argv
+///              parameters.
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      René Kijewski <rene.kijewski@fu-berlin.de>
+/// @author      Juan Carrano <j.carrano@fu-berlin.de>
+/// @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -45,19 +41,19 @@
 #include "vfs.h"
 #endif
 
-/* define shell command cross file array */
+// define shell command cross file array
 XFA_INIT_CONST(shell_command_xfa_t, shell_commands_xfa_v2);
 
-#define ETX '\x03'  /** ASCII "End-of-Text", or Ctrl-C */
-#define EOT '\x04'  /** ASCII "End-of-Transmission", or Ctrl-D */
-#define BS  '\x08'  /** ASCII "Backspace" */
-#define DEL '\x7f'  /** ASCII "Delete" */
+#define ETX '\x03'  /// ASCII "End-of-Text", or Ctrl-C
+#define EOT '\x04'  /// ASCII "End-of-Transmission", or Ctrl-D
+#define BS  '\x08'  /// ASCII "Backspace"
+#define DEL '\x7f'  /// ASCII "Delete"
 
 #if defined(MODULE_NEWLIB) || defined(MODULE_PICOLIBC)
     #define flush_if_needed() fflush(stdout)
 #else
     #define flush_if_needed()
-#endif /* MODULE_NEWLIB || MODULE_PICOLIBC */
+#endif // MODULE_NEWLIB || MODULE_PICOLIBC
 
 #define SQUOTE '\''
 #define DQUOTE '"'
@@ -83,14 +79,12 @@ enum parse_state {
     PARSE_DOUBLEQUOTE_ESC   = 0x7,
 };
 
-static enum parse_state escape_toggle(enum parse_state s)
-{
+static enum parse_state escape_toggle(enum parse_state s) {
     return s ^ PARSE_ESCAPE_MASK;
 }
 
 static shell_command_handler_t search_commands(const shell_command_t *entry,
-                                               char *command)
-{
+                                               char *command) {
     for (; entry->name != NULL; entry++) {
         if (strcmp(entry->name, command) == 0) {
             return entry->handler;
@@ -99,8 +93,7 @@ static shell_command_handler_t search_commands(const shell_command_t *entry,
     return NULL;
 }
 
-static shell_command_handler_t search_commands_xfa(char *command)
-{
+static shell_command_handler_t search_commands_xfa(char *command) {
     unsigned n = XFA_LEN(shell_command_t, shell_commands_xfa_v2);
 
     for (unsigned i = 0; i < n; i++) {
@@ -113,8 +106,7 @@ static shell_command_handler_t search_commands_xfa(char *command)
 }
 
 static shell_command_handler_t find_handler(
-        const shell_command_t *command_list, char *command)
-{
+        const shell_command_t *command_list, char *command) {
     shell_command_handler_t handler = NULL;
 
     if (command_list != NULL) {
@@ -128,8 +120,7 @@ static shell_command_handler_t find_handler(
     return handler;
 }
 
-static void print_commands_json(const shell_command_t *cmd_list)
-{
+static void print_commands_json(const shell_command_t *cmd_list) {
     bool first = true;
 
     printf("{\"cmds\": [");
@@ -160,15 +151,13 @@ static void print_commands_json(const shell_command_t *cmd_list)
     puts("]}");
 }
 
-static void print_commands(const shell_command_t *entry)
-{
+static void print_commands(const shell_command_t *entry) {
     for (; entry->name != NULL; entry++) {
         printf("%-20s %s\n", entry->name, entry->desc);
     }
 }
 
-static void print_commands_xfa(void)
-{
+static void print_commands_xfa(void) {
     unsigned n = XFA_LEN(shell_command_xfa_t, shell_commands_xfa_v2);
     for (unsigned i = 0; i < n; i++) {
         const volatile shell_command_xfa_t *entry = &shell_commands_xfa_v2[i];
@@ -177,8 +166,7 @@ static void print_commands_xfa(void)
     }
 }
 
-static void print_help(const shell_command_t *command_list)
-{
+static void print_help(const shell_command_t *command_list) {
     printf("Command              Description\n"
            "---------------------------------------\n");
     if (command_list != NULL) {
@@ -188,63 +176,60 @@ static void print_help(const shell_command_t *command_list)
     print_commands_xfa();
 }
 
-/**
- * Break input line into words, create argv and call the command handler.
- *
- * Words are broken up at spaces. A backslash escapes the character that comes
- * after (meaning if it is taken literally and if it is a space it does not break
- * the word). Spaces can also be protected by quoting with double or single
- * quotes.
- *
- * There are two unquoted states (PARSE_BLANK and PARSE_UNQUOTED) and two quoted
- * states (PARSE_SINGLEQUOTE and PARSE_DOUBLEQUOTE). In addition, every state
- * (except PARSE_BLANK) has an escaped pair state (e.g PARSE_SINGLEQUOTE and
- * PARSE_SINGLEQUOTE_ESC).
- *
- * For the following let's define some things
- *      - Function transit(character, state) to change to 'state' after
- *        'character' was read. The order of a list of transit-functions matters.
- *      - A BLANK is either SPACE or TAB
- *      - '*' means any character
- *
- *      PARSE_BLANK
- *          transit(SQUOTE, PARSE_SINGLEQUOTE)
- *          transit(DQUOTE, PARSE_DOUBLEQUOTE)
- *          transit(ESCAPECHAR, PARSE_UNQUOTED_ESC)
- *          transit(BLANK, PARSE_BLANK)
- *          transit(*, PARSE_UNQUOTED) -> store character
- *
- *      PARSE_UNQUOTED
- *          transit(SQUOTE, PARSE_SINGLEQUOTE)
- *          transit(DQUOTE, PARSE_DOUBLEQUOTE)
- *          transit(BLANK, PARSE_BLANK)
- *          transit(ESCAPECHAR, PARSE_UNQUOTED_ESC)
- *          transit(*, PARSE_UNQUOTED) -> store character
- *
- *      PARSE_UNQUOTED_ESC
- *          transit(*, PARSE_UNQUOTED) -> store character
- *
- *      PARSE_SINGLEQUOTE
- *          transit(SQUOTE, PARSE_UNQUOTED)
- *          transit(ESCAPECHAR, PARSE_SINGLEQUOTE_ESC)
- *          transit(*, PARSE_SINGLEQUOTE) -> store character
- *
- *      PARSE_SINGLEQUOTE_ESC
- *          transit(*, PARSE_SINGLEQUOTE) -> store character
- *
- *      PARSE_DOUBLEQUOTE
- *          transit(DQUOTE, PARSE_UNQUOTED)
- *          transit(ESCAPECHAR, PARSE_DOUBLEQUOTE_ESC)
- *          transit(*, PARSE_DOUBLEQUOTE) -> store character
- *
- *      PARSE_DOUBLEQUOTE_ESC
- *          transit(*, PARSE_DOUBLEQUOTE) -> store character
- *
- *
- */
-int shell_handle_input_line(const shell_command_t *command_list, char *line)
-{
-    /* first we need to calculate the number of arguments */
+/// Break input line into words, create argv and call the command handler.
+///
+/// Words are broken up at spaces. A backslash escapes the character that comes
+/// after (meaning if it is taken literally and if it is a space it does not break
+/// the word). Spaces can also be protected by quoting with double or single
+/// quotes.
+///
+/// There are two unquoted states (PARSE_BLANK and PARSE_UNQUOTED) and two quoted
+/// states (PARSE_SINGLEQUOTE and PARSE_DOUBLEQUOTE). In addition, every state
+/// (except PARSE_BLANK) has an escaped pair state (e.g PARSE_SINGLEQUOTE and
+/// PARSE_SINGLEQUOTE_ESC).
+///
+/// For the following let's define some things
+///      - Function transit(character, state) to change to 'state' after
+///        'character' was read. The order of a list of transit-functions matters.
+///      - A BLANK is either SPACE or TAB
+///      - '*' means any character
+///
+///      PARSE_BLANK
+///          transit(SQUOTE, PARSE_SINGLEQUOTE)
+///          transit(DQUOTE, PARSE_DOUBLEQUOTE)
+///          transit(ESCAPECHAR, PARSE_UNQUOTED_ESC)
+///          transit(BLANK, PARSE_BLANK)
+///          transit(*, PARSE_UNQUOTED) -> store character
+///
+///      PARSE_UNQUOTED
+///          transit(SQUOTE, PARSE_SINGLEQUOTE)
+///          transit(DQUOTE, PARSE_DOUBLEQUOTE)
+///          transit(BLANK, PARSE_BLANK)
+///          transit(ESCAPECHAR, PARSE_UNQUOTED_ESC)
+///          transit(*, PARSE_UNQUOTED) -> store character
+///
+///      PARSE_UNQUOTED_ESC
+///          transit(*, PARSE_UNQUOTED) -> store character
+///
+///      PARSE_SINGLEQUOTE
+///          transit(SQUOTE, PARSE_UNQUOTED)
+///          transit(ESCAPECHAR, PARSE_SINGLEQUOTE_ESC)
+///          transit(*, PARSE_SINGLEQUOTE) -> store character
+///
+///      PARSE_SINGLEQUOTE_ESC
+///          transit(*, PARSE_SINGLEQUOTE) -> store character
+///
+///      PARSE_DOUBLEQUOTE
+///          transit(DQUOTE, PARSE_UNQUOTED)
+///          transit(ESCAPECHAR, PARSE_DOUBLEQUOTE_ESC)
+///          transit(*, PARSE_DOUBLEQUOTE) -> store character
+///
+///      PARSE_DOUBLEQUOTE_ESC
+///          transit(*, PARSE_DOUBLEQUOTE) -> store character
+///
+///
+int shell_handle_input_line(const shell_command_t *command_list, char *line) {
+    // first we need to calculate the number of arguments
     int argc = 0;
     char *readpos = line;
     char *writepos = readpos;
@@ -309,7 +294,7 @@ int shell_handle_input_line(const shell_command_t *command_list, char *line)
                 is_wordbreak = true;
                 break;
 
-            default: /* QUOTED state */
+            default: // QUOTED state
                 pstate = escape_toggle(pstate);
                 *writepos++ = *readpos;
                 break;
@@ -340,10 +325,10 @@ int shell_handle_input_line(const shell_command_t *command_list, char *line)
         return 0;
     }
 
-    /* then we fill the argv array */
+    // then we fill the argv array
     int collected;
 
-    /* allocate argv on the stack leaving space for NULL termination */
+    // allocate argv on the stack leaving space for NULL termination
     char *argv[argc + 1];
 
     readpos = line;
@@ -352,11 +337,11 @@ int shell_handle_input_line(const shell_command_t *command_list, char *line)
         readpos += strlen(readpos) + 1;
     }
 
-    /* NULL terminate argv. See `shell_command_handler_t` doc in shell.h for
-       rationale. */
+    // NULL terminate argv. See `shell_command_handler_t` doc in shell.h for
+    //    rationale.
     argv[argc] = NULL;
 
-    /* then we call the appropriate handler */
+    // then we call the appropriate handler
     shell_command_handler_t handler = find_handler(command_list, argv[0]);
     if (handler != NULL) {
         if (IS_USED(MODULE_SHELL_HOOKS)) {
@@ -386,27 +371,23 @@ int shell_handle_input_line(const shell_command_t *command_list, char *line)
     return -ENOEXEC;
 }
 
-__attribute__((weak)) void shell_post_readline_hook(void)
-{
+__attribute__((weak)) void shell_post_readline_hook(void) {
 
 }
 
-__attribute__((weak)) void shell_pre_command_hook(int argc, char **argv)
-{
+__attribute__((weak)) void shell_pre_command_hook(int argc, char **argv) {
     (void)argv;
     (void)argc;
 }
 
 __attribute__((weak)) void shell_post_command_hook(int ret, int argc,
-                                                   char **argv)
-{
+                                                   char **argv) {
     (void)ret;
     (void)argv;
     (void)argc;
 }
 
-static inline void print_prompt(void)
-{
+static inline void print_prompt(void) {
     if (!IS_ACTIVE(CONFIG_SHELL_NO_PROMPT) && !IS_ACTIVE(SHELL_NO_PROMPT)) {
         putchar('>');
         putchar(' ');
@@ -415,15 +396,13 @@ static inline void print_prompt(void)
     flush_if_needed();
 }
 
-static inline void echo_char(char c)
-{
+static inline void echo_char(char c) {
     if (!IS_ACTIVE(CONFIG_SHELL_NO_ECHO) && !IS_ACTIVE(SHELL_NO_ECHO)) {
         putchar(c);
     }
 }
 
-static inline void white_tape(void)
-{
+static inline void white_tape(void) {
     if (!IS_ACTIVE(CONFIG_SHELL_NO_ECHO) && !IS_ACTIVE(SHELL_NO_ECHO)) {
         putchar('\b');
         putchar(' ');
@@ -431,16 +410,14 @@ static inline void white_tape(void)
     }
 }
 
-static inline void new_line(void)
-{
+static inline void new_line(void) {
     if (!IS_ACTIVE(CONFIG_SHELL_NO_ECHO) && !IS_ACTIVE(SHELL_NO_ECHO)) {
         putchar('\r');
         putchar('\n');
     }
 }
 
-int shell_readline(char *buf, size_t size)
-{
+int shell_readline(char *buf, size_t size) {
     int curr_pos = 0;
     bool length_exceeded = false;
 
@@ -454,18 +431,18 @@ int shell_readline(char *buf, size_t size)
         switch (c) {
 
             case EOT:
-                /* Ctrl-D terminates the current shell instance. */
-                /* fall-thru */
+                // Ctrl-D terminates the current shell instance.
+                // fall-thru
             case EOF:
                 return EOF;
 
             case ETX:
-                /* Ctrl-C cancels the current line. */
+                // Ctrl-C cancels the current line.
                 curr_pos = 0;
                 length_exceeded = false;
-                /* fall-thru */
+                // fall-thru
             case '\r':
-                /* fall-thru */
+                // fall-thru
             case '\n':
                 buf[curr_pos] = '\0';
 
@@ -473,10 +450,10 @@ int shell_readline(char *buf, size_t size)
 
                 return (length_exceeded) ? -ENOBUFS : curr_pos;
 
-            /* check for backspace: */
-            case BS:    /* 0x08 (BS) for most terminals */
-                /* fall-thru */
-            case DEL:   /* 0x7f (DEL) when using QEMU */
+            // check for backspace:
+            case BS:    // 0x08 (BS) for most terminals
+                // fall-thru
+            case DEL:   // 0x7f (DEL) when using QEMU
                 if (curr_pos > 0) {
                     curr_pos--;
                     if ((size_t) curr_pos < size) {
@@ -488,7 +465,7 @@ int shell_readline(char *buf, size_t size)
                 break;
 
             default:
-                /* Always consume characters, but do not not always store them */
+                // Always consume characters, but do not not always store them
                 if ((size_t) curr_pos < size - 1) {
                     buf[curr_pos++] = c;
                 }
@@ -504,8 +481,7 @@ int shell_readline(char *buf, size_t size)
 }
 
 void shell_run_once(const shell_command_t *shell_commands,
-                    char *line_buf, int len)
-{
+                    char *line_buf, int len) {
     if (IS_USED(MODULE_SHELL_LOCK)) {
         shell_lock_checkpoint(line_buf, len);
     }
@@ -522,7 +498,7 @@ void shell_run_once(const shell_command_t *shell_commands,
         }
 
         if (IS_USED(MODULE_SHELL_LOCK_AUTO_LOCKING)) {
-            /* reset lock countdown in case of new input */
+            // reset lock countdown in case of new input
             shell_lock_auto_lock_refresh();
         }
 
@@ -549,8 +525,7 @@ void shell_run_once(const shell_command_t *shell_commands,
 
 #ifdef MODULE_VFS
 int shell_parse_file(const shell_command_t *shell_commands,
-                     const char *filename, unsigned *line_nr)
-{
+                     const char *filename, unsigned *line_nr) {
     char buffer[SHELL_DEFAULT_BUFSIZE];
 
     if (line_nr) {
@@ -568,11 +543,11 @@ int shell_parse_file(const shell_command_t *shell_commands,
         if (line_nr) {
             *line_nr += 1;
         }
-        /* error reading line */
+        // error reading line
         if (res < 0) {
             break;
         }
-        /* skip comment and empty lines */
+        // skip comment and empty lines
         if (buffer[0] == '#') {
             continue;
         }

@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 #include <stdint.h>
 
@@ -18,102 +14,88 @@
 
 #include "tests-ipv4_addr.h"
 
-static void test_ipv4_addr_equal__unequal(void)
-{
+static void test_ipv4_addr_equal__unequal(void) {
     ipv4_addr_t a = { { 1, 1, 1, 0 } };
     ipv4_addr_t b = { { 1, 1, 1, 1 } };
 
     TEST_ASSERT(!ipv4_addr_equal(&a, &b));
 }
 
-static void test_ipv4_addr_equal__equal(void)
-{
+static void test_ipv4_addr_equal__equal(void) {
     ipv4_addr_t a = { { 1, 1, 1, 1 } };
     ipv4_addr_t b = { { 1, 1, 1, 1 } };
 
     TEST_ASSERT(ipv4_addr_equal(&a, &b));
 }
 
-static void test_ipv4_addr_to_str__string_too_short(void)
-{
+static void test_ipv4_addr_to_str__string_too_short(void) {
     ipv4_addr_t a = { { 1, 1, 1, 1 } };
     char result[1];
 
     TEST_ASSERT_NULL(ipv4_addr_to_str(result, &a, sizeof(result)));
 }
 
-static void test_ipv4_addr_to_str__addr_NULL(void)
-{
+static void test_ipv4_addr_to_str__addr_NULL(void) {
     char result[IPV4_ADDR_MAX_STR_LEN];
 
     TEST_ASSERT_NULL(ipv4_addr_to_str(result, NULL, sizeof(result)));
 }
 
-static void test_ipv4_addr_to_str__result_NULL(void)
-{
+static void test_ipv4_addr_to_str__result_NULL(void) {
     ipv4_addr_t a = {0};
 
     TEST_ASSERT_NULL(ipv4_addr_to_str(NULL, &a, IPV4_ADDR_MAX_STR_LEN));
 }
 
-static void test_ipv4_addr_to_str__success(void)
-{
+static void test_ipv4_addr_to_str__success(void) {
     ipv4_addr_t a = { { 1, 1, 1, 1 } };
     char result[IPV4_ADDR_MAX_STR_LEN];
 
     TEST_ASSERT_EQUAL_STRING("1.1.1.1", ipv4_addr_to_str(result, &a, sizeof(result)));
 }
 
-static void test_ipv4_addr_to_str__success2(void)
-{
+static void test_ipv4_addr_to_str__success2(void) {
     ipv4_addr_t a = { { 0, 1, 12, 123 } };
     char result[IPV4_ADDR_MAX_STR_LEN];
 
     TEST_ASSERT_EQUAL_STRING("0.1.12.123", ipv4_addr_to_str(result, &a, sizeof(result)));
 }
 
-static void test_ipv4_addr_from_str__dot_start(void)
-{
+static void test_ipv4_addr_from_str__dot_start(void) {
     ipv4_addr_t result;
 
     TEST_ASSERT_NULL(ipv4_addr_from_str(&result, ".1.12.123"));
 }
 
-static void test_ipv4_addr_from_str__double_dot(void)
-{
+static void test_ipv4_addr_from_str__double_dot(void) {
     ipv4_addr_t result;
 
     TEST_ASSERT_NULL(ipv4_addr_from_str(&result, "0..12.123"));
 }
 
-static void test_ipv4_addr_from_str__string_too_long(void)
-{
+static void test_ipv4_addr_from_str__string_too_long(void) {
     ipv4_addr_t result;
 
     TEST_ASSERT_NULL(ipv4_addr_from_str(&result, "255.255.255.255.255"));
 }
 
-static void test_ipv4_addr_from_str__illegal_chars(void)
-{
+static void test_ipv4_addr_from_str__illegal_chars(void) {
     ipv4_addr_t result;
 
     TEST_ASSERT_NULL(ipv4_addr_from_str(&result, "0.::ab-)"));
 }
 
-static void test_ipv4_addr_from_str__addr_NULL(void)
-{
+static void test_ipv4_addr_from_str__addr_NULL(void) {
     ipv4_addr_t result;
 
     TEST_ASSERT_NULL(ipv4_addr_from_str(&result, NULL));
 }
 
-static void test_ipv4_addr_from_str__result_NULL(void)
-{
+static void test_ipv4_addr_from_str__result_NULL(void) {
     TEST_ASSERT_NULL(ipv4_addr_from_str(NULL, "::"));
 }
 
-static void test_ipv4_addr_from_str__success(void)
-{
+static void test_ipv4_addr_from_str__success(void) {
     ipv4_addr_t a = { { 1, 1, 1, 1 } };
     ipv4_addr_t result;
 
@@ -121,16 +103,14 @@ static void test_ipv4_addr_from_str__success(void)
     TEST_ASSERT(ipv4_addr_equal(&a, &result));
 }
 
-static void test_ipv4_addr_from_str__success2(void)
-{
+static void test_ipv4_addr_from_str__success2(void) {
     ipv4_addr_t a = { { 0, 1, 12, 123 } }, result;
 
     TEST_ASSERT_NOT_NULL(ipv4_addr_from_str(&result, "0.1.12.123"));
     TEST_ASSERT(ipv4_addr_equal(&a, &result));
 }
 
-static void test_ipv4_addr_from_buf__success(void)
-{
+static void test_ipv4_addr_from_buf__success(void) {
     ipv4_addr_t a = { { 1, 1, 1, 1 } };
     ipv4_addr_t result;
 
@@ -138,27 +118,23 @@ static void test_ipv4_addr_from_buf__success(void)
     TEST_ASSERT(ipv4_addr_equal(&a, &result));
 }
 
-static void test_ipv4_addr_from_buf__result_NULL(void)
-{
+static void test_ipv4_addr_from_buf__result_NULL(void) {
     TEST_ASSERT_NULL(ipv4_addr_from_buf(NULL, "::", 2));
 }
 
-static void test_ipv4_addr_from_buf__illegal_chars(void)
-{
+static void test_ipv4_addr_from_buf__illegal_chars(void) {
     ipv4_addr_t result;
 
     TEST_ASSERT_NULL(ipv4_addr_from_buf(&result, "1.1.1.1%tap0", 13));
 }
 
-static void test_ipv4_addr_from_buf__too_long_len(void)
-{
+static void test_ipv4_addr_from_buf__too_long_len(void) {
     ipv4_addr_t result;
 
     TEST_ASSERT_NULL(ipv4_addr_from_buf(&result, "1.1.1.1", IPV4_ADDR_MAX_STR_LEN + 1));
 }
 
-Test *tests_ipv4_addr_tests(void)
-{
+Test *tests_ipv4_addr_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_ipv4_addr_equal__unequal),
         new_TestFixture(test_ipv4_addr_equal__equal),
@@ -186,8 +162,7 @@ Test *tests_ipv4_addr_tests(void)
     return (Test *)&ipv4_addr_tests;
 }
 
-void tests_ipv4_addr(void)
-{
+void tests_ipv4_addr(void) {
     TESTS_RUN(tests_ipv4_addr_tests());
 }
-/** @} */
+/// @}

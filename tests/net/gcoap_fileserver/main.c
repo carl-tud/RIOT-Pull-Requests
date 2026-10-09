@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       test application for the GCoAP file server
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       test application for the GCoAP file server
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include "fs/constfs.h"
 #include "net/gcoap.h"
@@ -23,7 +19,7 @@
 #define MAIN_QUEUE_SIZE (4)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
-/* CoAP resources. Must be sorted by path (ASCII order). */
+// CoAP resources. Must be sorted by path (ASCII order).
 static const coap_resource_t _resources[] = {
     {
         .path = "/const",
@@ -65,7 +61,7 @@ static const char song[] =
     "Join us now and share the software;\n"
     "You'll be free, hackers, you'll be free.\n";
 
-/* this defines two const files in the constfs */
+// this defines two const files in the constfs
 static constfs_file_t constfs_files[] = {
     {
         .path = "/song.txt",
@@ -74,22 +70,21 @@ static constfs_file_t constfs_files[] = {
     },
 };
 
-/* this is the constfs specific descriptor */
+// this is the constfs specific descriptor
 static constfs_t constfs_desc = {
     .nfiles = ARRAY_SIZE(constfs_files),
     .files = constfs_files,
 };
 
-/* constfs mount point, as for previous example, it needs a file system driver,
- * a mount point and private_data as a pointer to the constfs descriptor */
+// constfs mount point, as for previous example, it needs a file system driver,
+// a mount point and private_data as a pointer to the constfs descriptor
 static vfs_mount_t const_mount = {
     .fs = &constfs_file_system,
     .mount_point = "/const",
     .private_data = &constfs_desc,
 };
 
-int main(void)
-{
+int main(void) {
     vfs_mount(&const_mount);
 
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);

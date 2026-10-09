@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Hamburg University of Applied Sciences
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Hamburg University of Applied Sciences
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_kw2xrf
- *
- * @{
- * @file
- * @brief       Default configuration for the KW2XRF driver
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- */
+/// @ingroup     drivers_kw2xrf
+///
+/// @{
+/// @file
+/// @brief       Default configuration for the KW2XRF driver
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
 
 #include "board.h"
 #include "kw2xrf.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the KW2XRF driver
- * @{
- */
+/// @name    Set default configuration parameters for the KW2XRF driver
+/// @{
 #ifndef KW2XRF_PARAM_SPI
 #define KW2XRF_PARAM_SPI         (SPI_DEV(0))
 #endif
@@ -52,11 +46,9 @@ extern "C" {
                                    .int_pin = KW2XRF_PARAM_INT, \
                                    .rst_pin = KW2XRF_PARAM_RESET }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   KW2XRF configuration
- */
+/// @brief   KW2XRF configuration
 static const kw2xrf_params_t kw2xrf_params[] =
 {
     KW2XRF_PARAMS
@@ -66,4 +58,4 @@ static const kw2xrf_params_t kw2xrf_params[] =
 }
 #endif
 
-/** @} */
+/// @}

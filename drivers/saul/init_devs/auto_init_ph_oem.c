@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 University of Applied Sciences Emden / Leer
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 University of Applied Sciences Emden / Leer
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of Atlas Scientific pH OEM sensor
- *
- * @author      igor.knippenberg@gmail.com
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of Atlas Scientific pH OEM sensor
+///
+/// @author      igor.knippenberg@gmail.com
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -22,33 +18,22 @@
 #include "ph_oem.h"
 #include "ph_oem_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define PH_OEM_NUM   (sizeof(ph_oem_params) / sizeof(ph_oem_params[0]))
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static ph_oem_t ph_oem_devs[PH_OEM_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[PH_OEM_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define PH_OEM_INFO_NUM (sizeof(ph_oem_saul_info) / sizeof(ph_oem_saul_info[0]))
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern saul_driver_t ph_oem_saul_driver;
 
-void auto_init_ph_oem(void)
-{
+void auto_init_ph_oem(void) {
     assert(PH_OEM_INFO_NUM == PH_OEM_NUM);
 
     for (unsigned i = 0; i < PH_OEM_NUM; i++) {

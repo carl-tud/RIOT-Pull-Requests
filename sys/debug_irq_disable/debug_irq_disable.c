@@ -1,29 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     debug_irq_disable
- * @{
- *
- * @file
- * @brief       Helper for debug_irq_disable
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @}
- */
+/// @ingroup     debug_irq_disable
+/// @{
+///
+/// @file
+/// @brief       Helper for debug_irq_disable
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @}
 
 #include <stdbool.h>
 #include "fmt.h"
 #include "debug_irq_disable.h"
 
-void debug_irq_disable_print(const char *file, unsigned line, uint32_t ticks)
-{
+void debug_irq_disable_print(const char *file, unsigned line, uint32_t ticks) {
     static unsigned is_printing;
     static unsigned init_skip = 10;
 
-    /* if we try to print before libc is initialized, we will hard fault */
+    // if we try to print before libc is initialized, we will hard fault
     if (init_skip && --init_skip) {
         return;
     }
@@ -36,7 +31,7 @@ void debug_irq_disable_print(const char *file, unsigned line, uint32_t ticks)
         return;
     }
 
-    /* prevent infinite recursion if stdio driver uses irq_disable()  */
+    // prevent infinite recursion if stdio driver uses irq_disable()
     ++is_printing;
 
     print_str("irq disabled for ");

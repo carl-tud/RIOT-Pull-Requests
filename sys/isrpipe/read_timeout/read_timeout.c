@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     isr_pipe_read_timeout
- * @{
- * @file
- * @brief       ISR -> userspace pipe with timeout implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     isr_pipe_read_timeout
+/// @{
+/// @file
+/// @brief       ISR -> userspace pipe with timeout implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <errno.h>
 
@@ -24,16 +20,14 @@ typedef struct {
     int flag;
 } _isrpipe_timeout_t;
 
-static void _cb(void *arg)
-{
+static void _cb(void *arg) {
     _isrpipe_timeout_t *_timeout = (_isrpipe_timeout_t *) arg;
 
     _timeout->flag = 1;
     mutex_unlock(_timeout->mutex);
 }
 
-int isrpipe_read_timeout(isrpipe_t *isrpipe, uint8_t *buffer, size_t count, uint32_t timeout)
-{
+int isrpipe_read_timeout(isrpipe_t *isrpipe, uint8_t *buffer, size_t count, uint32_t timeout) {
     if (!count) {
         return 0;
     }
@@ -50,7 +44,7 @@ int isrpipe_read_timeout(isrpipe_t *isrpipe, uint8_t *buffer, size_t count, uint
     while ((res = tsrb_get(&isrpipe->tsrb, buffer, count)) == 0) {
         mutex_lock(&isrpipe->mutex);
         if (_timeout.flag) {
-            /* timer was consumed */
+            // timer was consumed
             return -ETIMEDOUT;
         }
     }
@@ -59,8 +53,7 @@ int isrpipe_read_timeout(isrpipe_t *isrpipe, uint8_t *buffer, size_t count, uint
     return res;
 }
 
-int isrpipe_read_all_timeout(isrpipe_t *isrpipe, uint8_t *buffer, size_t count, uint32_t timeout)
-{
+int isrpipe_read_all_timeout(isrpipe_t *isrpipe, uint8_t *buffer, size_t count, uint32_t timeout) {
     uint8_t *pos = buffer;
 
     while (count) {

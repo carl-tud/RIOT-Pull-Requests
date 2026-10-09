@@ -1,27 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2020 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_bluepill-stm32f030c8
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the bluepill-stm32f030c8 board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- */
+/// @ingroup     boards_bluepill-stm32f030c8
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the bluepill-stm32f030c8 board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
 
-/* This board provides a LSE */
+// This board provides a LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE        1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE        1
 #endif
@@ -33,10 +29,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM1,
@@ -58,12 +52,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         (isr_tim3)
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -80,12 +72,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM3,
@@ -100,12 +90,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -123,12 +111,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- * @{
- */
+/// @name   ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_A, 0), 0 },
     { GPIO_PIN(PORT_A, 1), 1 },
@@ -139,10 +125,10 @@ static const adc_conf_t adc_config[] = {
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

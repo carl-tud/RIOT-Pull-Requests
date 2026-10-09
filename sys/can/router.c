@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_can_dll
- * @{
- * @file
- * @brief       Functions for routing RX can frames
- *
- * @author      Toon Stegen <toon.stegen@altran.com>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @}
- */
+/// @ingroup     sys_can_dll
+/// @{
+/// @file
+/// @brief       Functions for routing RX can frames
+///
+/// @author      Toon Stegen <toon.stegen@altran.com>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @}
 
 #include <stdint.h>
 #include <errno.h>
@@ -33,19 +29,15 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * This is a can_id element
- */
+/// This is a can_id element
 typedef struct filter_el {
-    can_reg_entry_t entry;   /**< filter entry */
-    canid_t can_id;          /**< CAN ID of the element */
-    canid_t mask;            /**< Mask of the element */
-    void *data;              /**< Private data */
+    can_reg_entry_t entry;   ///< filter entry
+    canid_t can_id;          ///< CAN ID of the element
+    canid_t mask;            ///< Mask of the element
+    void *data;              ///< Private data
 } filter_el_t;
 
-/**
- * This table contains @p CAN_ROUTER_APP_MAX lists of CAN IDs per interface
- */
+/// This table contains @p CAN_ROUTER_APP_MAX lists of CAN IDs per interface
 static can_reg_entry_t *table[CAN_DLL_NUMOF];
 
 #ifndef CAN_ROUTER_MAX_FILTER
@@ -63,8 +55,7 @@ static filter_el_t *_find_filter_el(can_reg_entry_t *list, can_reg_entry_t *entr
 static int _filter_is_used(unsigned int ifnum, canid_t can_id, canid_t mask);
 
 #if IS_ACTIVE(ENABLE_DEBUG)
-static void _print_filters(void)
-{
+static void _print_filters(void) {
     for (int i = 0; i < (int)CAN_DLL_NUMOF; i++) {
         DEBUG("--- Ifnum: %d ---\n", i);
         can_reg_entry_t *entry;
@@ -80,14 +71,12 @@ static void _print_filters(void)
 #define PRINT_FILTERS()
 #endif
 
-void can_router_init(void)
-{
+void can_router_init(void) {
     mutex_init(&lock);
     memarray_init(&_filter_array, _filter_buf, sizeof(filter_el_t), CAN_ROUTER_MAX_FILTER);
 }
 
-static filter_el_t *_alloc_filter_el(canid_t can_id, canid_t mask, void *data)
-{
+static filter_el_t *_alloc_filter_el(canid_t can_id, canid_t mask, void *data) {
     filter_el_t *el;
     el = memarray_alloc(&_filter_array);
     if (!el) {
@@ -104,8 +93,7 @@ static filter_el_t *_alloc_filter_el(canid_t can_id, canid_t mask, void *data)
     return el;
 }
 
-static void _free_filter_el(filter_el_t *el)
-{
+static void _free_filter_el(filter_el_t *el) {
     assert(el);
 
     DEBUG("_free_canid_el: el freed with can_id=0x%" PRIx32 ", mask=0x%" PRIx32
@@ -114,10 +102,9 @@ static void _free_filter_el(filter_el_t *el)
     memarray_free(&_filter_array, el);
 }
 
-/* Insert to the list in a sorted way
- * Lower CAN IDs are inserted first */
-static void _insert_to_list(can_reg_entry_t **list, filter_el_t *el)
-{
+// Insert to the list in a sorted way
+// Lower CAN IDs are inserted first
+static void _insert_to_list(can_reg_entry_t **list, filter_el_t *el) {
     can_reg_entry_t *next_entry = *list;
     filter_el_t *next_el = container_of(next_entry, filter_el_t, entry);
 
@@ -158,8 +145,7 @@ static void _insert_to_list(can_reg_entry_t **list, filter_el_t *el)
 #define ENTRY_MATCHES(e1, e2)  ((e1)->target.pid == (e2)->target.pid)
 #endif
 
-static filter_el_t *_find_filter_el(can_reg_entry_t *list, can_reg_entry_t *entry, canid_t can_id, canid_t mask, void *data)
-{
+static filter_el_t *_find_filter_el(can_reg_entry_t *list, can_reg_entry_t *entry, canid_t can_id, canid_t mask, void *data) {
     filter_el_t *el = container_of(list, filter_el_t, entry);
     if (!el) {
         return el;
@@ -177,8 +163,7 @@ static filter_el_t *_find_filter_el(can_reg_entry_t *list, can_reg_entry_t *entr
     return NULL;
 }
 
-static int _filter_is_used(unsigned int ifnum, canid_t can_id, canid_t mask)
-{
+static int _filter_is_used(unsigned int ifnum, canid_t can_id, canid_t mask) {
     filter_el_t *el = container_of(table[ifnum], filter_el_t, entry);
     if (!el) {
         DEBUG("_filter_is_used: empty list\n");
@@ -198,9 +183,8 @@ static int _filter_is_used(unsigned int ifnum, canid_t can_id, canid_t mask)
     return 0;
 }
 
-/* register interested users */
-int can_router_register(can_reg_entry_t *entry, canid_t can_id, canid_t mask, void *param)
-{
+// register interested users
+int can_router_register(can_reg_entry_t *entry, canid_t can_id, canid_t mask, void *param) {
     filter_el_t *filter;
     int ret;
 
@@ -248,10 +232,9 @@ int can_router_register(can_reg_entry_t *entry, canid_t can_id, canid_t mask, vo
     return ret;
 }
 
-/* unregister interested users */
+// unregister interested users
 int can_router_unregister(can_reg_entry_t *entry, canid_t can_id,
-                          canid_t mask, void *param)
-{
+                          canid_t mask, void *param) {
     filter_el_t *el;
     int ret;
 
@@ -283,8 +266,7 @@ int can_router_unregister(can_reg_entry_t *entry, canid_t can_id,
     return ret;
 }
 
-static int _send_msg(msg_t *msg, can_reg_entry_t *entry)
-{
+static int _send_msg(msg_t *msg, can_reg_entry_t *entry) {
 #ifdef MODULE_CAN_MBOX
     switch (entry->type) {
     case CAN_TYPE_DEFAULT:
@@ -300,9 +282,8 @@ static int _send_msg(msg_t *msg, can_reg_entry_t *entry)
 #endif
 }
 
-/* send received pkt to all interested users */
-int can_router_dispatch_rx_indic(can_pkt_t *pkt)
-{
+// send received pkt to all interested users
+int can_router_dispatch_rx_indic(can_pkt_t *pkt) {
     if (!pkt) {
         DEBUG("can_router_dispatch_rx_indic: invalid pkt\n");
         return -EINVAL;
@@ -354,8 +335,7 @@ int can_router_dispatch_rx_indic(can_pkt_t *pkt)
     return res;
 }
 
-int can_router_dispatch_tx_conf(can_pkt_t *pkt)
-{
+int can_router_dispatch_tx_conf(can_pkt_t *pkt) {
     msg_t msg;
     msg.type = CAN_MSG_TX_CONFIRMATION;
     msg.content.value = pkt->handle;
@@ -370,8 +350,7 @@ int can_router_dispatch_tx_conf(can_pkt_t *pkt)
     return 0;
 }
 
-int can_router_dispatch_tx_error(can_pkt_t *pkt)
-{
+int can_router_dispatch_tx_error(can_pkt_t *pkt) {
     msg_t msg;
     msg.type = CAN_MSG_TX_ERROR;
     msg.content.value = pkt->handle;
@@ -386,8 +365,7 @@ int can_router_dispatch_tx_error(can_pkt_t *pkt)
     return 0;
 }
 
-int can_router_free_frame(can_frame_t *frame)
-{
+int can_router_free_frame(can_frame_t *frame) {
     can_pkt_t *pkt = container_of(frame, can_pkt_t, frame);
 
     DEBUG("can_router_free_frame: pkt=%p\n", (void*) pkt);

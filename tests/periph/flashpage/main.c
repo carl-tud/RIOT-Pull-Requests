@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Manual test application for flashpage peripheral drivers
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Manual test application for flashpage peripheral drivers
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -31,55 +27,46 @@
 
 #define LINE_LEN            (16)
 
-/* For MSP430 cpu's the last page holds the interrupt vector, although the api
-   should not limit erasing that page, we don't want to break when testing */
+// For MSP430 cpu's the last page holds the interrupt vector, although the api
+//    should not limit erasing that page, we don't want to break when testing
 #if defined(CPU_CC430) || defined(CPU_MSP430FXYZ)
 #define TEST_LAST_AVAILABLE_PAGE    (FLASHPAGE_NUMOF - 2)
 #else
 #define TEST_LAST_AVAILABLE_PAGE    (FLASHPAGE_NUMOF - 1)
 #endif
 
-/* When writing raw bytes on flash, data must be correctly aligned. */
+// When writing raw bytes on flash, data must be correctly aligned.
 #define ALIGNMENT_ATTR __attribute__((aligned(FLASHPAGE_WRITE_BLOCK_ALIGNMENT)))
 
-/* We must not write chunks smaller than FLASHPAGE_WRITE_BLOCK_SIZE */
+// We must not write chunks smaller than FLASHPAGE_WRITE_BLOCK_SIZE
 #if FLASHPAGE_WRITE_BLOCK_SIZE > 64
 #define RAW_BUF_SIZE FLASHPAGE_WRITE_BLOCK_SIZE
 #else
 #define RAW_BUF_SIZE 64
 #endif
 
-/*
- * @brief   Allocate an aligned buffer for raw writings
- */
+// @brief   Allocate an aligned buffer for raw writings
 static uint8_t raw_buf[RAW_BUF_SIZE] ALIGNMENT_ATTR;
 
 #ifdef MODULE_PERIPH_FLASHPAGE_PAGEWISE
-/**
- * @brief   Allocate space for 1 flash page in RAM
- *
- * @note    The flash page in RAM must be correctly aligned, even in RAM, when
- *          using flashpage. This is because some architecture uses
- *          32 bit alignment implicitly and there are cases (stm32l4) that
- *          requires 64 bit alignment.
- */
+/// @brief   Allocate space for 1 flash page in RAM
+///
+/// @note    The flash page in RAM must be correctly aligned, even in RAM, when
+///          using flashpage. This is because some architecture uses
+///          32 bit alignment implicitly and there are cases (stm32l4) that
+///          requires 64 bit alignment.
 static uint8_t page_mem[FLASHPAGE_SIZE] ALIGNMENT_ATTR;
 
 #ifdef MODULE_PERIPH_FLASHPAGE_IN_ADDRESS_SPACE
-/**
- * @brief Reserve 1 page of flash memory
- */
+/// @brief Reserve 1 page of flash memory
 FLASH_WRITABLE_INIT(_backing_memory, 0x1);
 
-/*
-* @brief Created to test the sorting of symbols in .flash_writable section
-*/
+// @brief Created to test the sorting of symbols in .flash_writable section
 FLASH_WRITABLE_INIT(_abacking_memory, 0x1);
-#endif /* MODULE_PERIPH_FLASHPAGE_IN_ADDRESS_SPACE */
-#endif /* MODULE_PERIPH_FLASHPAGE_PAGEWISE */
+#endif // MODULE_PERIPH_FLASHPAGE_IN_ADDRESS_SPACE
+#endif // MODULE_PERIPH_FLASHPAGE_PAGEWISE
 
-static int getpage(const char *str)
-{
+static int getpage(const char *str) {
     int page = atoi(str);
     if ((page >= (int)FLASHPAGE_NUMOF) || (page < 0)) {
         printf("error: page %i is invalid\n", page);
@@ -89,20 +76,17 @@ static int getpage(const char *str)
 }
 
 #ifdef MODULE_PERIPH_FLASHPAGE_PAGEWISE
-static void memdump(void *addr, size_t len)
-{
+static void memdump(void *addr, size_t len) {
     od_hex_dump(addr, len, LINE_LEN);
 }
 
-static void dump_local(void)
-{
+static void dump_local(void) {
     puts("Local page buffer:");
     memdump(page_mem, FLASHPAGE_SIZE);
 }
 #endif
 
-static int cmd_info(int argc, char **argv)
-{
+static int cmd_info(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -128,8 +112,7 @@ static int cmd_info(int argc, char **argv)
 }
 
 #ifdef MODULE_PERIPH_FLASHPAGE_PAGEWISE
-static int cmd_dump(int argc, char **argv)
-{
+static int cmd_dump(int argc, char **argv) {
     int page;
     void *addr;
 
@@ -150,8 +133,7 @@ static int cmd_dump(int argc, char **argv)
     return 0;
 }
 
-static int cmd_dump_local(int argc, char **argv)
-{
+static int cmd_dump_local(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -160,8 +142,7 @@ static int cmd_dump_local(int argc, char **argv)
     return 0;
 }
 
-static int cmd_read(int argc, char **argv)
-{
+static int cmd_read(int argc, char **argv) {
     int page;
 
     if (argc < 2) {
@@ -183,8 +164,7 @@ static int cmd_read(int argc, char **argv)
 #endif
 
 #ifdef MODULE_PERIPH_FLASHPAGE_PAGEWISE
-static int cmd_write(int argc, char **argv)
-{
+static int cmd_write(int argc, char **argv) {
     int page;
 
     if (argc < 2) {
@@ -208,15 +188,13 @@ static int cmd_write(int argc, char **argv)
 }
 #endif
 
-static uintptr_t getaddr(const char *str)
-{
+static uintptr_t getaddr(const char *str) {
     uintptr_t addr = (uintptr_t)strtol(str, NULL, 16);
 
     return addr;
 }
 
-static int cmd_write_raw(int argc, char **argv)
-{
+static int cmd_write_raw(int argc, char **argv) {
     uintptr_t addr;
 
     if (argc < 3) {
@@ -225,7 +203,7 @@ static int cmd_write_raw(int argc, char **argv)
     }
 
     addr = getaddr(argv[1]);
-    /* try to align */
+    // try to align
     int len;
     if ((len = strlen(argv[2])) % 2 || (unsigned)len > sizeof(raw_buf) * 2) {
         printf("error: data must have an even length and must be <= %"PRIuSIZE"\n",
@@ -246,8 +224,7 @@ static int cmd_write_raw(int argc, char **argv)
     return 0;
 }
 
-static int cmd_erase(int argc, char **argv)
-{
+static int cmd_erase(int argc, char **argv) {
     int page;
 
     if (argc < 2) {
@@ -267,8 +244,7 @@ static int cmd_erase(int argc, char **argv)
 }
 
 #ifdef MODULE_PERIPH_FLASHPAGE_PAGEWISE
-static int cmd_edit(int argc, char **argv)
-{
+static int cmd_edit(int argc, char **argv) {
     int offset;
     size_t data_len;
 
@@ -293,8 +269,7 @@ static int cmd_edit(int argc, char **argv)
     return 0;
 }
 
-static int cmd_test(int argc, char **argv)
-{
+static int cmd_test(int argc, char **argv) {
     int page;
     char fill = 'a';
 
@@ -325,15 +300,12 @@ static int cmd_test(int argc, char **argv)
     return 0;
 }
 
-/**
- * @brief   Does a write and verify test on last page available
- *
- * @note    Since every hardware can have different flash layouts for
- *          automated testing we always write to the last page available
- *          so we are independent of the size or layout
- */
-static int cmd_test_last(int argc, char **argv)
-{
+/// @brief   Does a write and verify test on last page available
+///
+/// @note    Since every hardware can have different flash layouts for
+///          automated testing we always write to the last page available
+///          so we are independent of the size or layout
+static int cmd_test_last(int argc, char **argv) {
     (void) argc;
     (void) argv;
     char fill = 'a';
@@ -357,18 +329,13 @@ static int cmd_test_last(int argc, char **argv)
 }
 
 #ifdef MODULE_PERIPH_FLASHPAGE_IN_ADDRESS_SPACE
-/**
- * @brief   Does a write and verify test on reserved page
- */
-static int cmd_test_reserved(int argc, char **argv)
-{
+/// @brief   Does a write and verify test on reserved page
+static int cmd_test_reserved(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
-    /**
-     * Arrays created by the FLASH_WRITABLE_INIT macro should be sorted in
-     * ascending order by name.
-     */
+    /// Arrays created by the FLASH_WRITABLE_INIT macro should be sorted in
+    /// ascending order by name.
     expect(&_abacking_memory < &_backing_memory);
 
     char fill = 'a';
@@ -379,7 +346,7 @@ static int cmd_test_reserved(int argc, char **argv)
 
     flashpage_read(page, page_mem);
 
-    /* test is running for the first time so initialize flash */
+    // test is running for the first time so initialize flash
     if (memcmp(sig, &page_mem[1], sizeof(sig)) != 0) {
         page_mem[0] = 0;
         memcpy(&page_mem[1], sig, sizeof(sig));
@@ -391,7 +358,7 @@ static int cmd_test_reserved(int argc, char **argv)
     printf("Since the last firmware update this test has been run "
            "%u times \n", page_mem[0]);
 
-    /* fill memory after counter and signature */
+    // fill memory after counter and signature
     for (unsigned i = 0x1 + sizeof(sig); i < sizeof(page_mem); i++) {
         page_mem[i] = (uint8_t)fill++;
         if (fill > 'z') {
@@ -410,35 +377,32 @@ static int cmd_test_reserved(int argc, char **argv)
 
     return 0;
 }
-#endif /* MODULE_PERIPH_FLASHPAGE_IN_ADDRESS_SPACE */
-#endif /* MODULE_PERIPH_FLASHPAGE_PAGEWISE */
+#endif // MODULE_PERIPH_FLASHPAGE_IN_ADDRESS_SPACE
+#endif // MODULE_PERIPH_FLASHPAGE_PAGEWISE
 
-/**
- * @brief   Does a short raw write on last page available
- *
- * @note    Since every hardware can have different flash layouts for
- *          automated testing we always write to the last page available
- *          so we are independent of the size or layout
- */
-static int cmd_test_last_raw(int argc, char **argv)
-{
+/// @brief   Does a short raw write on last page available
+///
+/// @note    Since every hardware can have different flash layouts for
+///          automated testing we always write to the last page available
+///          so we are independent of the size or layout
+static int cmd_test_last_raw(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
     memset(raw_buf, 0xff, sizeof(raw_buf));
 
-    /* try to align */
+    // try to align
     memcpy(raw_buf, "test12344321tset", 16);
 #if defined(CPU_CC430) || defined(CPU_MSP430FXYZ)
     printf("The last page holds the ISR vector, so test page %d\n", TEST_LAST_AVAILABLE_PAGE);
 #endif
 
-    /* erase the page first */
+    // erase the page first
     flashpage_erase(TEST_LAST_AVAILABLE_PAGE);
 
     flashpage_write(flashpage_addr(TEST_LAST_AVAILABLE_PAGE), raw_buf, sizeof(raw_buf));
 
-    /* verify that previous write_raw effectively wrote the desired data */
+    // verify that previous write_raw effectively wrote the desired data
     if (memcmp(flashpage_addr(TEST_LAST_AVAILABLE_PAGE), raw_buf, 16) != 0) {
         puts("error verifying the content of last page");
         return 1;
@@ -450,8 +414,7 @@ static int cmd_test_last_raw(int argc, char **argv)
 
 #ifdef FLASHPAGE_RWWEE_NUMOF
 
-static int getpage_rwwee(const char *str)
-{
+static int getpage_rwwee(const char *str) {
     int page = atoi(str);
     if ((page >= (int)FLASHPAGE_RWWEE_NUMOF) || (page < 0)) {
         printf("error: RWWEE page %i is invalid\n", page);
@@ -460,8 +423,7 @@ static int getpage_rwwee(const char *str)
     return page;
 }
 
-static int cmd_read_rwwee(int argc, char **argv)
-{
+static int cmd_read_rwwee(int argc, char **argv) {
     int page;
 
     if (argc < 2) {
@@ -481,8 +443,7 @@ static int cmd_read_rwwee(int argc, char **argv)
     return 0;
 }
 
-static int cmd_write_rwwee(int argc, char **argv)
-{
+static int cmd_write_rwwee(int argc, char **argv) {
     int page;
 
     if (argc < 2) {
@@ -505,8 +466,7 @@ static int cmd_write_rwwee(int argc, char **argv)
     return 0;
 }
 
-static int cmd_test_rwwee(int argc, char **argv)
-{
+static int cmd_test_rwwee(int argc, char **argv) {
     int page;
     char fill = 'a';
 
@@ -539,15 +499,12 @@ static int cmd_test_rwwee(int argc, char **argv)
     return 0;
 }
 
-/**
- * @brief   Does a write and verify test on last page available
- *
- * @note    Since every hardware can have different flash layouts for
- *          automated testing we always write to the last page available
- *          so we are independent of the size or layout
- */
-static int cmd_test_last_rwwee(int argc, char **argv)
-{
+/// @brief   Does a write and verify test on last page available
+///
+/// @note    Since every hardware can have different flash layouts for
+///          automated testing we always write to the last page available
+///          so we are independent of the size or layout
+static int cmd_test_last_rwwee(int argc, char **argv) {
     (void) argc;
     (void) argv;
     char fill = 'a';
@@ -568,27 +525,24 @@ static int cmd_test_last_rwwee(int argc, char **argv)
     return 0;
 }
 
-/**
- * @brief   Does a short raw write on last page available
- *
- * @note    Since every hardware can have different flash layouts for
- *          automated testing we always write to the last page available
- *          so we are independent of the size or layout
- */
-static int cmd_test_last_rwwee_raw(int argc, char **argv)
-{
+/// @brief   Does a short raw write on last page available
+///
+/// @note    Since every hardware can have different flash layouts for
+///          automated testing we always write to the last page available
+///          so we are independent of the size or layout
+static int cmd_test_last_rwwee_raw(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
-    /* try to align */
+    // try to align
     memcpy(raw_buf, "test12344321tset", 16);
 
-    /* erase the page first */
+    // erase the page first
     flashpage_rwwee_write_page(((int)FLASHPAGE_RWWEE_NUMOF - 1), NULL);
 
     flashpage_rwwee_write(flashpage_rwwee_addr((int)FLASHPAGE_RWWEE_NUMOF - 1), raw_buf, 16);
 
-    /* verify that previous write_raw effectively wrote the desired data */
+    // verify that previous write_raw effectively wrote the desired data
     if (memcmp(flashpage_rwwee_addr((int)FLASHPAGE_RWWEE_NUMOF - 1), raw_buf, 16) != 0) {
         puts("error verifying the content of last RWWEE page");
         return 1;
@@ -601,8 +555,7 @@ static int cmd_test_last_rwwee_raw(int argc, char **argv)
 #endif
 
 #ifdef NVMCTRL_USER
-static int cmd_dump_config(int argc, char **argv)
-{
+static int cmd_dump_config(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -615,12 +568,10 @@ static int cmd_dump_config(int argc, char **argv)
     return 0;
 }
 
-static int cmd_test_config(int argc, char **argv)
-{
-    /* This test is sam0 specific and also tests
-     * the unaligned writes for the sam0 flashpage
-     * driver implementation
-     */
+static int cmd_test_config(int argc, char **argv) {
+    // This test is sam0 specific and also tests
+    // the unaligned writes for the sam0 flashpage
+    // driver implementation
 
     (void) argc;
     (void) argv;
@@ -633,16 +584,16 @@ static int cmd_test_config(int argc, char **argv)
     puts("[START]");
 
     for (uint32_t dst_offset = 0; dst_offset < 4; dst_offset++) {
-        /* destination base at 4 byte aligned address */
+        // destination base at 4 byte aligned address
         uint32_t dst = (uint32_t)(FLASH_USER_PAGE_AUX_SIZE
                 - (sizeof(test_data) + 2 + 3)) & ~((uint32_t)0x3);
-        /* add data destination offset */
+        // add data destination offset
         dst += dst_offset;
 
-        /* reset aux page */
+        // reset aux page
         sam0_flashpage_aux_reset(NULL);
 
-        /* check if the AUX page has been cleared */
+        // check if the AUX page has been cleared
         for (uint32_t i = 0; i < FLASH_USER_PAGE_AUX_SIZE; ++i) {
             if (*(uint8_t*)sam0_flashpage_aux_get(i) != 0xFF) {
                 printf("dst_offset=%"PRIu32": user page not cleared at offset 0x%"PRIx32"\n", dst_offset, i);
@@ -650,20 +601,20 @@ static int cmd_test_config(int argc, char **argv)
             }
         }
 
-        /* write test data */
+        // write test data
         sam0_flashpage_aux_write(dst, test_data, sizeof(test_data));
 
-        /* write single half-word */
+        // write single half-word
         sam0_flashpage_aux_write(dst + sizeof(test_data), &single_data, sizeof(single_data));
 
-        /* check if half-word was written correctly */
+        // check if half-word was written correctly
         uint16_t data_in = unaligned_get_u16(sam0_flashpage_aux_get(dst + sizeof(test_data)));
         if (data_in != single_data) {
             printf("dst_offset=%"PRIu32": %x != %x, offset = 0x%"PRIx32"\n", dst_offset, single_data, data_in, dst + sizeof(test_data));
             return -1;
         }
 
-        /* check if test data was written correctly */
+        // check if test data was written correctly
         if (memcmp(sam0_flashpage_aux_get(dst), test_data, sizeof(test_data))) {
             printf("dst_offset=%"PRIu32": write test_data failed, offset = 0x%"PRIx32"\n", dst_offset, dst);
             return -1;
@@ -674,7 +625,7 @@ static int cmd_test_config(int argc, char **argv)
 
     return 0;
 }
-#endif /* NVMCTRL_USER */
+#endif // NVMCTRL_USER
 
 static const shell_command_t shell_commands[] = {
     { "info", "Show information about pages", cmd_info },
@@ -709,14 +660,13 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("ROM flash read write test\n");
     puts("Please refer to the README.md for further information\n");
 
     cmd_info(0, NULL);
 
-    /* run the shell */
+    // run the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
     return 0;

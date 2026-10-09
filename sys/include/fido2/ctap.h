@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    fido2_ctap CTAP
- * @ingroup     fido2
- * @brief       FIDO2 CTAP
- *
- * The Client-to-Authenticator Protocol (CTAP) is an application layer protocol
- * for the communication between an authenticator and a host.
- *
- * @{
- *
- * @file
- * @brief       Public FIDO2 CTAP defines, structures and function declarations
- *
- * @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
- */
+/// @defgroup    fido2_ctap CTAP
+/// @ingroup     fido2
+/// @brief       FIDO2 CTAP
+///
+/// The Client-to-Authenticator Protocol (CTAP) is an application layer protocol
+/// for the communication between an authenticator and a host.
+///
+/// @{
+///
+/// @file
+/// @brief       Public FIDO2 CTAP defines, structures and function declarations
+///
+/// @author      Nils Ollrogge <nils.ollrogge@fu-berlin.de>
 
 #include <stdint.h>
 
@@ -27,19 +23,15 @@
 extern "C" {
 #endif
 
-/**
- * @brief CTAP max message size
- *
- * CTAP specification (version 20190130) section 6
- */
+/// @brief CTAP max message size
+///
+/// CTAP specification (version 20190130) section 6
 #define CTAP_MAX_MSG_SIZE                   0x400
 
-/**
- * @brief CTAP status codes
- *
- * CTAP specification (version 20190130) section 6.3
- * @{
- */
+/// @brief CTAP status codes
+///
+/// CTAP specification (version 20190130) section 6.3
+/// @{
 typedef enum {
     CTAP2_OK                            = 0x00,
     CTAP1_ERR_INVALID_COMMAND           = 0x01,
@@ -95,13 +87,11 @@ typedef enum {
     CTAP2_ERR_VENDOR_FIRST              = 0xF0,
     CTAP2_ERR_VENDOR_LAST               = 0xFF
 } ctap_status_code_t;
-/** @} */
+/// @}
 
-/**
- * @brief CTAP methods
- *
- * @{
- */
+/// @brief CTAP methods
+///
+/// @{
 typedef enum {
     CTAP_MAKE_CREDENTIAL    =   0x01,
     CTAP_GET_ASSERTION      =   0x02,
@@ -110,120 +100,100 @@ typedef enum {
     CTAP_RESET              =   0x07,
     CTAP_GET_NEXT_ASSERTION =   0x08
 } ctap_method_t;
-/** @} */
+/// @}
 
-/**
- * @brief CTAP request struct
- *
- * CTAP specification (version 20190130) section 6.1
- */
+/// @brief CTAP request struct
+///
+/// CTAP specification (version 20190130) section 6.1
 typedef struct {
-    uint8_t *buf;   /**< Buffer holding CBOR encoded data */
-    size_t len;     /**< Length of buf */
-    uint8_t method; /**< CTAP method identitifer */
+    uint8_t *buf;   ///< Buffer holding CBOR encoded data
+    size_t len;     ///< Length of buf
+    uint8_t method; ///< CTAP method identitifer
 } ctap_req_t;
 
-/**
- * @brief CTAP response struct
- *
- * CTAP specification (version 20190130) section 6.2
- */
+/// @brief CTAP response struct
+///
+/// CTAP specification (version 20190130) section 6.2
 typedef struct {
-    ctap_status_code_t status;          /**< response status */
-    uint8_t data[CTAP_MAX_MSG_SIZE];    /**< response data */
-    size_t len;                         /**< length of response data */
+    ctap_status_code_t status;          ///< response status
+    uint8_t data[CTAP_MAX_MSG_SIZE];    ///< response data
+    size_t len;                         ///< length of response data
 } ctap_resp_t;
 
-/**
- * @brief Initialize ctap
- *
- * @return @ref ctap_status_code_t
- */
+/// @brief Initialize ctap
+///
+/// @return @ref ctap_status_code_t
 ctap_status_code_t fido2_ctap_init(void);
 
-/**
- * @brief Handle CBOR encoded ctap request.
- *
- * This is a convenience function that checks @p req->method and calls the
- * appropriate CTAP method handler function
- *
- * @param[in] req               request struct
- * @param[in] resp              response struct
- *
- * @return @ref ctap_status_code_t
- */
+/// @brief Handle CBOR encoded ctap request.
+///
+/// This is a convenience function that checks @p req->method and calls the
+/// appropriate CTAP method handler function
+///
+/// @param[in] req               request struct
+/// @param[in] resp              response struct
+///
+/// @return @ref ctap_status_code_t
 ctap_status_code_t fido2_ctap_handle_request(ctap_req_t *req, ctap_resp_t *resp);
 
-/**
- * @brief MakeCredential method
- *
- * CTAP specification (version 20190130) section 5.1
- *
- * @param[in] req               CTAP request
- * @param[in, out] resp         CTAP response
- *
- * @return @ref ctap_status_code_t
- */
+/// @brief MakeCredential method
+///
+/// CTAP specification (version 20190130) section 5.1
+///
+/// @param[in] req               CTAP request
+/// @param[in, out] resp         CTAP response
+///
+/// @return @ref ctap_status_code_t
 ctap_status_code_t fido2_ctap_make_credential(ctap_req_t *req, ctap_resp_t *resp);
 
-/**
- * @brief GetAssertion method
- *
- * CTAP specification (version 20190130) section 5.2
- *
- * @param[in] req               CTAP request
- * @param[in, out] resp         CTAP response
- *
- * @return @ref ctap_status_code_t
- */
+/// @brief GetAssertion method
+///
+/// CTAP specification (version 20190130) section 5.2
+///
+/// @param[in] req               CTAP request
+/// @param[in, out] resp         CTAP response
+///
+/// @return @ref ctap_status_code_t
 ctap_status_code_t fido2_ctap_get_assertion(ctap_req_t *req, ctap_resp_t *resp);
 
-/**
- * @brief GetNextAssertion method
- *
- * CTAP specification (version 20190130) section 5.3
- *
- * @param[in, out] resp         CTAP response
- *
- * @return @ref ctap_status_code_t
- */
+/// @brief GetNextAssertion method
+///
+/// CTAP specification (version 20190130) section 5.3
+///
+/// @param[in, out] resp         CTAP response
+///
+/// @return @ref ctap_status_code_t
 ctap_status_code_t fido2_ctap_get_next_assertion(ctap_resp_t *resp);
 
-/**
- * @brief GetInfo method
- *
- * CTAP specification (version 20190130) section 5.4
- *
- * @param[in, out] resp CTAP response
- *
- * @return @ref ctap_status_code_t
- */
+/// @brief GetInfo method
+///
+/// CTAP specification (version 20190130) section 5.4
+///
+/// @param[in, out] resp CTAP response
+///
+/// @return @ref ctap_status_code_t
 ctap_status_code_t fido2_ctap_get_info(ctap_resp_t *resp);
 
-/**
- * @brief ClientPIN method
- *
- * CTAP specification (version 20190130) section 5.5
- *
- * @param[in] req               CTAP request
- * @param[in, out] resp         CTAP response
- *
- * @return @ref ctap_status_code_t
- */
+/// @brief ClientPIN method
+///
+/// CTAP specification (version 20190130) section 5.5
+///
+/// @param[in] req               CTAP request
+/// @param[in, out] resp         CTAP response
+///
+/// @return @ref ctap_status_code_t
 ctap_status_code_t fido2_ctap_client_pin(ctap_req_t *req, ctap_resp_t *resp);
 
-/**
- * @brief Reset method
- *
- * CTAP specification (version 20190130) section 5.6
- *
- * @param[in, out] resp         CTAP response
- *
- * @return @ref ctap_status_code_t
- */
+/// @brief Reset method
+///
+/// CTAP specification (version 20190130) section 5.6
+///
+/// @param[in, out] resp         CTAP response
+///
+/// @return @ref ctap_status_code_t
 ctap_status_code_t fido2_ctap_reset(ctap_resp_t *resp);
 
 #ifdef __cplusplus
 }
 #endif
-/** @} */
+/// @}

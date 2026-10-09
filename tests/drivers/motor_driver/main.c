@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gilles DOFFE <g.doffe@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gilles DOFFE <g.doffe@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       High-level driver for DC motors test application
- *
- * @author      Gilles DOFFE <g.doffe@gmail.com>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       High-level driver for DC motors test application
+///
+/// @author      Gilles DOFFE <g.doffe@gmail.com>
+/// @}
 
 #include <stdio.h>
 #include <string.h>
 
-/* RIOT includes */
+// RIOT includes
 #include "init_dev.h"
 #include "log.h"
 #include "motor_driver.h"
@@ -28,8 +24,7 @@
 
 void motor_driver_callback_example(
     const motor_driver_t *motor_driver, uint8_t motor_id,
-    int32_t pwm_duty_cycle)
-{
+    int32_t pwm_duty_cycle) {
     LOG_DEBUG("MOTOR-DRIVER=%p" \
         "    MOTOR_ID = %"PRIu8     \
         "    PWM_VALUE = %"PRIi32"\n", \
@@ -37,7 +32,7 @@ void motor_driver_callback_example(
         pwm_duty_cycle);
 }
 
-/* Set interval to 3 seconds */
+// Set interval to 3 seconds
 #define INTERVAL (3 * MS_PER_SEC)
 
 #define MOTOR_0_ID  ((uint8_t)0)
@@ -45,8 +40,7 @@ void motor_driver_callback_example(
 
 static motor_driver_t motor_driver;
 
-void motors_control(int32_t duty_cycle)
-{
+void motors_control(int32_t duty_cycle) {
     char str[4];
 
     if (duty_cycle >= 0) {
@@ -68,8 +62,7 @@ void motors_control(int32_t duty_cycle)
     }
 }
 
-void motors_brake(void)
-{
+void motors_brake(void) {
     puts("\nBrake motors");
 
     if (motor_brake(&motor_driver, MOTOR_0_ID)) {
@@ -80,8 +73,7 @@ void motors_brake(void)
     }
 }
 
-void motion_control(void)
-{
+void motion_control(void) {
     int8_t dir = 1;
     int ret = 0;
     int32_t pwm_res = motor_driver_params->pwm_resolution;
@@ -93,16 +85,16 @@ void motion_control(void)
     expect(ret == 0);
 
     while (1) {
-        /* BRAKE - duty cycle 100% */
+        // BRAKE - duty cycle 100%
         motors_brake();
         ztimer_sleep(ZTIMER_MSEC, INTERVAL);
 
-        /* CW - duty cycle 50% */
+        // CW - duty cycle 50%
         motors_control(dir * pwm_res / 2);
         ztimer_sleep(ZTIMER_MSEC, INTERVAL);
 
-        /* Disable motor during INTERVAL µs (motor driver must have enable
-         * feature) */
+        // Disable motor during INTERVAL µs (motor driver must have enable
+        // feature)
         puts("\nDisable motors");
         motor_disable(&motor_driver, MOTOR_0_ID);
         motor_disable(&motor_driver, MOTOR_1_ID);
@@ -112,17 +104,16 @@ void motion_control(void)
         motor_enable(&motor_driver, MOTOR_1_ID);
         ztimer_sleep(ZTIMER_MSEC, INTERVAL);
 
-        /* CW - duty cycle 100% */
+        // CW - duty cycle 100%
         motors_control(dir * pwm_res);
         ztimer_sleep(ZTIMER_MSEC, INTERVAL);
 
-        /* Reverse direction */
+        // Reverse direction
         dir *= -1;
     }
 }
 
-int main(void)
-{
+int main(void) {
     motion_control();
 
     return 0;

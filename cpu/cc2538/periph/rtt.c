@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_cc2538
- * @ingroup     drivers_periph_rtt
- * @{
- *
- * @file
- * @brief       RTT implementation sleepmode timer
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu_cc2538
+/// @ingroup     drivers_periph_rtt
+/// @{
+///
+/// @file
+/// @brief       RTT implementation sleepmode timer
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <assert.h>
 #include <stdint.h>
@@ -27,7 +23,7 @@
 
 #define SMWDTHROSC_STLOAD_STLOAD_MASK  (0x00000001)
 
-/* allocate memory for alarm and overflow callbacks + args */
+// allocate memory for alarm and overflow callbacks + args
 static rtt_cb_t alarm_cb;
 static void *alarm_arg;
 static rtt_cb_t overflow_cb;
@@ -41,31 +37,26 @@ static enum {
     RTT_OVERFLOW
 } rtt_next_alarm;
 
-static inline void _rtt_irq_enable(void)
-{
+static inline void _rtt_irq_enable(void) {
     NVIC_SetPriority(SM_TIMER_ALT_IRQn, RTT_IRQ_PRIO);
     NVIC_EnableIRQ(SM_TIMER_ALT_IRQn);
 }
 
-static inline void _rtt_irq_disable(void)
-{
+static inline void _rtt_irq_disable(void) {
     NVIC_DisableIRQ(SM_TIMER_ALT_IRQn);
 }
 
-void rtt_poweron(void)
-{
-    /* sleepmode timer is always running so only enable IRQ */
+void rtt_poweron(void) {
+    // sleepmode timer is always running so only enable IRQ
     _rtt_irq_enable();
 }
 
-void rtt_poweroff(void)
-{
-    /* sleepmode timer is always running so only disable IRQ */
+void rtt_poweroff(void) {
+    // sleepmode timer is always running so only disable IRQ
     _rtt_irq_disable();
 }
 
-void rtt_init(void)
-{
+void rtt_init(void) {
     rtt_clear_overflow_cb();
     rtt_clear_alarm();
     rtt_offset = 0;
@@ -73,33 +64,29 @@ void rtt_init(void)
     rtt_poweron();
 }
 
-static inline uint32_t _rtt_get_counter(void)
-{
+static inline uint32_t _rtt_get_counter(void) {
     return ((SMWDTHROSC_ST0 & 0xFF)
          | ((SMWDTHROSC_ST1 & 0xFF) << 8)
          | ((SMWDTHROSC_ST2 & 0xFF) << 16)
          | ((SMWDTHROSC_ST3 & 0xFF) << 24));
 }
 
-uint32_t rtt_get_counter(void)
-{
+uint32_t rtt_get_counter(void) {
     return _rtt_get_counter() - rtt_offset;
 }
 
-void rtt_set_counter(uint32_t counter)
-{
+void rtt_set_counter(uint32_t counter) {
     rtt_alarm -= rtt_offset;
     rtt_offset = _rtt_get_counter() - counter;
     rtt_alarm += rtt_offset;
 
-    /* re-set the overflow callback */
+    // re-set the overflow callback
     if (overflow_cb) {
         rtt_set_overflow_cb(overflow_cb, overflow_arg);
     }
 }
 
-static void _set_alarm(uint32_t alarm)
-{
+static void _set_alarm(uint32_t alarm) {
     while (!(SMWDTHROSC_STLOAD & SMWDTHROSC_STLOAD_STLOAD_MASK)) {}
     SMWDTHROSC_ST3 = (alarm >> 24) & 0xFF;
     SMWDTHROSC_ST2 = (alarm >> 16) & 0xFF;
@@ -107,14 +94,13 @@ static void _set_alarm(uint32_t alarm)
     SMWDTHROSC_ST0 = alarm & 0xFF;
 }
 
-void rtt_set_alarm(uint32_t alarm, rtt_cb_t cb, void *arg)
-{
+void rtt_set_alarm(uint32_t alarm, rtt_cb_t cb, void *arg) {
     assert(cb && !(alarm & ~RTT_MAX_VALUE));
 
     unsigned irq = irq_disable();
     rtt_alarm = alarm + rtt_offset;
 
-    /* set callback*/
+    // set callback
     alarm_cb = cb;
     alarm_arg = arg;
 
@@ -123,7 +109,7 @@ void rtt_set_alarm(uint32_t alarm, rtt_cb_t cb, void *arg)
           alarm, rtt_alarm - _rtt_get_counter(),
           rtt_offset - _rtt_get_counter());
 
-    /* only set overflow alarm if it happens before the scheduled alarm */
+    // only set overflow alarm if it happens before the scheduled alarm
     if (overflow_cb == NULL || (rtt_offset >= rtt_alarm )) {
         rtt_next_alarm = RTT_ALARM;
         _set_alarm(rtt_alarm);
@@ -132,13 +118,11 @@ void rtt_set_alarm(uint32_t alarm, rtt_cb_t cb, void *arg)
     irq_restore(irq);
 }
 
-uint32_t rtt_get_alarm(void)
-{
+uint32_t rtt_get_alarm(void) {
     return rtt_alarm - rtt_offset;
 }
 
-void rtt_clear_alarm(void)
-{
+void rtt_clear_alarm(void) {
     unsigned irq = irq_disable();
 
     alarm_cb = NULL;
@@ -146,15 +130,14 @@ void rtt_clear_alarm(void)
     irq_restore(irq);
 }
 
-void rtt_set_overflow_cb(rtt_cb_t cb, void *arg)
-{
+void rtt_set_overflow_cb(rtt_cb_t cb, void *arg) {
     unsigned irq = irq_disable();
 
-    /* set callback*/
+    // set callback
     overflow_cb = cb;
     overflow_arg = arg;
 
-    /* only set overflow alarm if it happens before the scheduled alarm */
+    // only set overflow alarm if it happens before the scheduled alarm
     if (alarm_cb == NULL || (rtt_alarm > rtt_offset)) {
         rtt_next_alarm = RTT_OVERFLOW;
         _set_alarm(rtt_offset);
@@ -163,8 +146,7 @@ void rtt_set_overflow_cb(rtt_cb_t cb, void *arg)
     irq_restore(irq);
 }
 
-void rtt_clear_overflow_cb(void)
-{
+void rtt_clear_overflow_cb(void) {
     unsigned irq = irq_disable();
 
     overflow_cb = NULL;
@@ -172,15 +154,14 @@ void rtt_clear_overflow_cb(void)
     irq_restore(irq);
 }
 
-void isr_sleepmode(void)
-{
+void isr_sleepmode(void) {
     rtt_cb_t tmp;
     bool both = (rtt_alarm == rtt_offset);
 
     switch (rtt_next_alarm) {
     case RTT_ALARM:
         if (alarm_cb) {
-            /* 'consume' the callback (as it might be set again in the cb) */
+            // 'consume' the callback (as it might be set again in the cb)
             tmp = alarm_cb;
             alarm_cb = NULL;
             tmp(alarm_arg);
@@ -188,11 +169,11 @@ void isr_sleepmode(void)
         }
         if (!both) {
             break;
-        } /* fall-through */
+        } // fall-through
     case RTT_OVERFLOW:
-        /* 'consume' the callback (as it might be set again in the cb) */
+        // 'consume' the callback (as it might be set again in the cb)
         if (overflow_cb) {
-            /* 'consume' the callback (as it might be set again in the cb) */
+            // 'consume' the callback (as it might be set again in the cb)
             tmp = overflow_cb;
             overflow_cb = NULL;
             tmp(overflow_arg);

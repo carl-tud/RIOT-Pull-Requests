@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the EFM32 CPU information database.
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the EFM32 CPU information database.
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -21,31 +17,21 @@
 
 #include "em_device.h"
 
-/**
- * @brief   Start of the RAM, as defined by the linker script.
- */
+/// @brief   Start of the RAM, as defined by the linker script.
 extern uint8_t _sram;
 
-/**
- * @brief   End of the RAM, as defined by the linker script.
- */
+/// @brief   End of the RAM, as defined by the linker script.
 extern uint8_t _eram;
 
-/**
- * @brief   Start of the ROM, as defined by the linker script.
- */
+/// @brief   Start of the ROM, as defined by the linker script.
 extern uint8_t _rom_start_addr;
 
-/**
- * @brief   Length of the ROM, as defined by the linker script.
- */
+/// @brief   Length of the ROM, as defined by the linker script.
 extern uint8_t _rom_length;
 
-/**
- * @name    Peripherals as reported by the vendor headers
- *
- * @{
- */
+/// @name    Peripherals as reported by the vendor headers
+///
+/// @{
 #if defined(_SILICON_LABS_32B_SERIES_2)
 #  if defined(SEMAILBOX_COUNT) && (SEMAILBOX_COUNT > 0)
 #    define VENDOR_CRYPTO   1
@@ -73,7 +59,7 @@ extern uint8_t _rom_length;
 #ifndef VENDOR_RADIO
 #  define VENDOR_RADIO      0
 #endif
-/** @} */
+/// @}
 
 #if TEST_EFM32_SERIES != _SILICON_LABS_32B_SERIES
 #  error "EFM32_SERIES does not match _SILICON_LABS_32B_SERIES."
@@ -107,11 +93,10 @@ extern uint8_t _rom_length;
 #  error "EFM32_RADIO does not match the vendor headers."
 #endif
 
-static int _test_flash(void)
-{
+static int _test_flash(void) {
     puts("Testing the flash layout.");
 
-    /* the linker script derives its ROM region from the database */
+    // the linker script derives its ROM region from the database
     volatile uintptr_t start = (uintptr_t)&_rom_start_addr;
     volatile uintptr_t length = (uintptr_t)&_rom_length;
 
@@ -131,11 +116,10 @@ static int _test_flash(void)
     return 0;
 }
 
-static int _test_sram(void)
-{
+static int _test_sram(void) {
     puts("Testing the SRAM layout.");
 
-    /* the linker script derives its RAM region from the database */
+    // the linker script derives its RAM region from the database
     volatile uintptr_t start = (uintptr_t)&_sram;
     volatile uintptr_t end = (uintptr_t)&_eram;
 
@@ -154,8 +138,7 @@ static int _test_sram(void)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     int failures = 0;
 
     printf("Series: %d\n", TEST_EFM32_SERIES);

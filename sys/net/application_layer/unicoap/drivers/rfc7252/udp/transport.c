@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2026 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2026 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2026 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup net_unicoap_drivers_udp
- * @brief   Transport implementation of CoAP over UDP driver
- * @author  Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @ingroup net_unicoap_drivers_udp
+/// @brief   Transport implementation of CoAP over UDP driver
+/// @author  Carl Seifert <carl.seifert@tu-dresden.de>
 
 #include <stdint.h>
 #include <errno.h>
@@ -32,8 +28,7 @@ static sock_udp_t _udp_socket;
 extern int unicoap_messaging_process_rfc7252(const uint8_t* pdu, size_t size, bool truncated,
                                              unicoap_packet_t* packet);
 
-static void _udp_on_event(sock_udp_t* sock, sock_async_flags_t type, void* arg)
-{
+static void _udp_on_event(sock_udp_t* sock, sock_async_flags_t type, void* arg) {
     (void)arg;
     unicoap_endpoint_t remote = {
         .proto = UNICOAP_PROTO_UDP,
@@ -103,16 +98,15 @@ static void _udp_on_event(sock_udp_t* sock, sock_async_flags_t type, void* arg)
         if (IS_ACTIVE(CONFIG_UNICOAP_SOCK_ZERO_COPY_GUARANTEES)) {
             received = sock_udp_recv_buf_aux(sock, &stackbuf, &buffer_ctx, 0,
                                              unicoap_endpoint_get_udp(&remote), &aux_rx);
-            /* If the networking backends holds its zero-copy guarantee, then trying to read
-             * another chunk must not yield any more data. */
+            // If the networking backends holds its zero-copy guarantee, then trying to read
+            // another chunk must not yield any more data.
             assert(received == 0);
         }
     }
 }
 
 int unicoap_transport_sendv_udp(iolist_t* iolist, const sock_udp_ep_t* remote,
-                                const sock_udp_ep_t* local)
-{
+                                const sock_udp_ep_t* local) {
     assert(remote);
     assert(iolist);
 
@@ -134,8 +128,7 @@ int unicoap_transport_sendv_udp(iolist_t* iolist, const sock_udp_ep_t* remote,
     return res;
 }
 
-static int _add_socket(event_queue_t* queue, sock_udp_t* socket, sock_udp_ep_t* local)
-{
+static int _add_socket(event_queue_t* queue, sock_udp_t* socket, sock_udp_ep_t* local) {
     _UDP_DEBUG("zero_copy_guarantees=%u creating UDP sock, port=%" PRIu16 " if=%" PRIu16
               " family=%s\n",
               CONFIG_UNICOAP_SOCK_ZERO_COPY_GUARANTEES, local->port, local->netif,
@@ -152,11 +145,10 @@ static int _add_socket(event_queue_t* queue, sock_udp_t* socket, sock_udp_ep_t* 
     return 0;
 }
 
-int unicoap_init_udp(event_queue_t* queue)
-{
+int unicoap_init_udp(event_queue_t* queue) {
     sock_udp_ep_t local = {
-    /* FIXME: Once the problems with IPv4/IPv6 dual stack use in RIOT are fixed, adapt these lines
-     *        (and e.g. use AF_UNSPEC) */
+    // FIXME: Once the problems with IPv4/IPv6 dual stack use in RIOT are fixed, adapt these lines
+    //        (and e.g. use AF_UNSPEC)
 #if defined(SOCK_HAS_IPV6)
         .family = AF_INET6,
 #elif defined(SOCK_HAS_IPV4)
@@ -169,8 +161,7 @@ int unicoap_init_udp(event_queue_t* queue)
     return _add_socket(queue, &_udp_socket, &local);
 }
 
-sock_udp_t* unicoap_transport_udp_get_socket(void)
-{
+sock_udp_t* unicoap_transport_udp_get_socket(void) {
     return &_udp_socket;
 }
 
@@ -183,8 +174,7 @@ int unicoap_transport_udp_remove_socket(sock_udp_t* socket) {
     return 0;
 }
 
-int unicoap_deinit_udp(event_queue_t* queue)
-{
+int unicoap_deinit_udp(event_queue_t* queue) {
     (void)queue;
     sock_udp_close(&_udp_socket);
     return 0;

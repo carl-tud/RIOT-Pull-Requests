@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for sched_change_priority / nice
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for sched_change_priority / nice
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,17 +30,14 @@ static const shell_command_t cmds[] = {
     { NULL, NULL, NULL }
 };
 
-/*
- * Note: An extra shell command just for displaying this hint is very much of
- *       an overkill for a human being, especially since the ps command already
- *       provides all the details. However, for automatic testing this makes it
- *       easy to extract the pid of t3 and the numeric value of
- *       THREAD_PRIORITY_MAIN - 1, resulting in more robust automatic testing.
- *       A shell command also has the convenient side effect of synchronizing
- *       with the shell.
- */
-static int sc_hint(int argc, char **argv)
-{
+// Note: An extra shell command just for displaying this hint is very much of
+//       an overkill for a human being, especially since the ps command already
+//       provides all the details. However, for automatic testing this makes it
+//       easy to extract the pid of t3 and the numeric value of
+//       THREAD_PRIORITY_MAIN - 1, resulting in more robust automatic testing.
+//       A shell command also has the convenient side effect of synchronizing
+//       with the shell.
+static int sc_hint(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -54,19 +47,17 @@ static int sc_hint(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
-static void *t2_func(void *unused)
-{
+static void *t2_func(void *unused) {
     (void)unused;
 
     while (1) {
-        /* blocking t3 from running with busy loop while t3 has lower prio than me */
+        // blocking t3 from running with busy loop while t3 has lower prio than me
     }
 
     return NULL;
 }
 
-static void *t3_func(void *unused)
-{
+static void *t3_func(void *unused) {
     (void)unused;
 
     while (1) {
@@ -80,8 +71,7 @@ static void *t3_func(void *unused)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     thread_create(t2_stack, sizeof(t2_stack), THREAD_PRIORITY_MAIN + 1,
                   0, t2_func, NULL, "t2");
 

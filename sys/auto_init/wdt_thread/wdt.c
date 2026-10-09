@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init
- * @{
- *
- * @file        wdt.c
- * @brief       Watchdog Thread
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_auto_init
+/// @{
+///
+/// @file        wdt.c
+/// @brief       Watchdog Thread
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include "auto_init.h"
 #include "auto_init_utils.h"
@@ -33,8 +29,7 @@
 
 static char WORD_ALIGNED wdt_stack[WDT_THREAD_STACKSIZE];
 
-static void *_wdt_thread(void *ctx)
-{
+static void *_wdt_thread(void *ctx) {
     (void)ctx;
     unsigned sleep_ms = (CONFIG_PERIPH_WDT_WIN_MIN_MS + CONFIG_PERIPH_WDT_WIN_MAX_MS)
                       / 2;
@@ -46,8 +41,7 @@ static void *_wdt_thread(void *ctx)
     return NULL;
 }
 
-static void auto_init_wdt_thread(void)
-{
+static void auto_init_wdt_thread(void) {
     thread_create(wdt_stack, sizeof(wdt_stack), THREAD_PRIORITY_MIN,
                   0, _wdt_thread, NULL, "watchdog");
 }

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_fe310
- * @ingroup     drivers_periph_wdt
- * @{
- *
- * @file
- * @brief       Implementation of the watchdog peripheral interface
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu_fe310
+/// @ingroup     drivers_periph_wdt
+/// @{
+///
+/// @file
+/// @brief       Implementation of the watchdog peripheral interface
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <inttypes.h>
 #include <assert.h>
@@ -29,32 +25,28 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-void wdt_start(void)
-{
+void wdt_start(void) {
     DEBUG("[wdt] start watchdog\n");
 
     AON_REG(AON_WDOGKEY) = AON_WDOGKEY_VALUE;
     AON_REG(AON_WDOGCFG) |= AON_WDOGCFG_ENCOREAWAKE;
 }
 
-void wdt_stop(void)
-{
+void wdt_stop(void) {
     DEBUG("[wdt] stop watchdog\n");
 
     AON_REG(AON_WDOGKEY) = AON_WDOGKEY_VALUE;
     AON_REG(AON_WDOGCFG) &= ~(AON_WDOGCFG_ENCOREAWAKE);
 }
 
-void wdt_kick(void)
-{
+void wdt_kick(void) {
     DEBUG("[wdt] reload the watchdog\n");
 
     AON_REG(AON_WDOGKEY) = AON_WDOGKEY_VALUE;
     AON_REG(AON_WDOGFEED) = AON_WDOGFEED_VALUE;
 }
 
-static inline uint8_t _scale(uint32_t count)
-{
+static inline uint8_t _scale(uint32_t count) {
     uint8_t scale = 0;
 
     while (count > (UINT16_MAX - 1)) {
@@ -65,14 +57,13 @@ static inline uint8_t _scale(uint32_t count)
     return scale;
 }
 
-static inline uint8_t _setup(uint32_t min_time, uint32_t max_time)
-{
+static inline uint8_t _setup(uint32_t min_time, uint32_t max_time) {
     (void)min_time;
 
-    /* Windowed wdt not supported */
+    // Windowed wdt not supported
     assert(min_time == 0);
 
-    /* Check reset time limit */
+    // Check reset time limit
     assert((max_time > NWDT_TIME_LOWER_LIMIT) || \
            (max_time < NWDT_TIME_UPPER_LIMIT));
 
@@ -85,8 +76,7 @@ static inline uint8_t _setup(uint32_t min_time, uint32_t max_time)
     return scale;
 }
 
-void wdt_setup_reboot(uint32_t min_time, uint32_t max_time)
-{
+void wdt_setup_reboot(uint32_t min_time, uint32_t max_time) {
     uint8_t scale = _setup(min_time, max_time);
 
     AON_REG(AON_WDOGKEY) = AON_WDOGKEY_VALUE;

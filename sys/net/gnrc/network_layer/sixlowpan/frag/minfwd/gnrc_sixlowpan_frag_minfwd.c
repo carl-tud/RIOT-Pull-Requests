@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <errno.h>
 #include <stdbool.h>
@@ -23,8 +19,7 @@
 #define ENABLE_DEBUG    0
 #include "debug.h"
 
-static gnrc_pktsnip_t *_netif_hdr_from_vrbe(const gnrc_sixlowpan_frag_vrb_t *vrbe)
-{
+static gnrc_pktsnip_t *_netif_hdr_from_vrbe(const gnrc_sixlowpan_frag_vrb_t *vrbe) {
     gnrc_pktsnip_t *res = gnrc_netif_hdr_build(NULL, 0, vrbe->super.dst,
                                                vrbe->super.dst_len);
     if (res == NULL) {
@@ -35,16 +30,14 @@ static gnrc_pktsnip_t *_netif_hdr_from_vrbe(const gnrc_sixlowpan_frag_vrb_t *vrb
     return res;
 }
 
-static inline bool _is_last_frag(const gnrc_sixlowpan_frag_vrb_t *vrbe)
-{
+static inline bool _is_last_frag(const gnrc_sixlowpan_frag_vrb_t *vrbe) {
     return (vrbe->super.current_size >= vrbe->super.datagram_size);
 }
 
 int gnrc_sixlowpan_frag_minfwd_forward(gnrc_pktsnip_t *pkt,
                                        const sixlowpan_frag_n_t *frag,
                                        gnrc_sixlowpan_frag_vrb_t *vrbe,
-                                       unsigned page)
-{
+                                       unsigned page) {
     sixlowpan_frag_t *new;
     gnrc_pktsnip_t *tmp;
     const size_t fragsnip_size = sizeof(sixlowpan_frag_t) +
@@ -86,8 +79,7 @@ int gnrc_sixlowpan_frag_minfwd_forward(gnrc_pktsnip_t *pkt,
 int gnrc_sixlowpan_frag_minfwd_frag_iphc(gnrc_pktsnip_t *pkt,
                                          size_t orig_datagram_size,
                                          const ipv6_addr_t *ipv6_dst,
-                                         gnrc_sixlowpan_frag_fb_t *fbuf)
-{
+                                         gnrc_sixlowpan_frag_fb_t *fbuf) {
     gnrc_netif_t *netif;
     int res = -1;
 
@@ -98,8 +90,8 @@ int gnrc_sixlowpan_frag_minfwd_frag_iphc(gnrc_pktsnip_t *pkt,
 
     if (!ipv6_addr_is_link_local(ipv6_dst) &&
         (fbuf->datagram_size > netif->sixlo.max_frag_size)) {
-        fbuf->pkt = pkt;    /* packet might have been rewritten */
-        /* put slack of IPHC in first fragment */
+        fbuf->pkt = pkt;    // packet might have been rewritten
+        // put slack of IPHC in first fragment
         fbuf->hint.fragsz = pkt->next->size;
         fbuf->hint.fragsz_uncomp = orig_datagram_size -
                                        gnrc_pkt_len(pkt->next->next);
@@ -107,7 +99,7 @@ int gnrc_sixlowpan_frag_minfwd_frag_iphc(gnrc_pktsnip_t *pkt,
         res = 0;
     }
     else {
-        /* we don't forward link-local so free fbuf again */
+        // we don't forward link-local so free fbuf again
         DEBUG("6lo minfwd: link-local address is not forwarded or "
               "no fragmentation necessary (%u < %u)\n",
               fbuf->datagram_size, netif->sixlo.max_frag_size);
@@ -116,4 +108,4 @@ int gnrc_sixlowpan_frag_minfwd_frag_iphc(gnrc_pktsnip_t *pkt,
     return res;
 }
 
-/** @} */
+/// @}

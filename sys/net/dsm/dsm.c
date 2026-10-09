@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_dsm
- * @{
- *
- * @file
- * @brief       DTLS Session Management module implementation
- *
- * @author      János Brodbeck <janos.brodbeck@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     net_dsm
+/// @{
+///
+/// @file
+/// @brief       DTLS Session Management module implementation
+///
+/// @author      János Brodbeck <janos.brodbeck@ml-pa.com>
+///
+/// @}
 
 #include "net/dsm.h"
 #include "mutex.h"
@@ -37,15 +33,13 @@ static mutex_t _lock;
 static dsm_session_t _sessions[CONFIG_DSM_PEER_MAX];
 static uint8_t _available_slots;
 
-void dsm_init(void)
-{
+void dsm_init(void) {
     mutex_init(&_lock);
     _available_slots = CONFIG_DSM_PEER_MAX;
 }
 
 dsm_state_t dsm_store(sock_dtls_t *sock, sock_dtls_session_t *session,
-                      dsm_state_t new_state, bool restore)
-{
+                      dsm_state_t new_state, bool restore) {
     sock_udp_ep_t ep;
     dsm_session_t *session_slot = NULL;
     dsm_state_t prev_state = NO_SPACE;
@@ -62,7 +56,7 @@ dsm_state_t dsm_store(sock_dtls_t *sock, sock_dtls_session_t *session,
         session_slot->state = new_state;
     }
 
-    /* no existing session found */
+    // no existing session found
     if (res == 0) {
         DEBUG("dsm: no existing session found, storing as new session\n");
         sock_dtls_session_get_udp_ep(session, &ep);
@@ -71,7 +65,7 @@ dsm_state_t dsm_store(sock_dtls_t *sock, sock_dtls_session_t *session,
         _available_slots--;
     }
 
-    /* existing session found and session should be restored */
+    // existing session found and session should be restored
     if (res == 1 && restore) {
         DEBUG("dsm: existing session found, restoring\n");
         memcpy(session, &session_slot->session, sizeof(sock_dtls_session_t));
@@ -83,16 +77,15 @@ out:
     return prev_state;
 }
 
-void dsm_remove(sock_dtls_t *sock, sock_dtls_session_t *session)
-{
+void dsm_remove(sock_dtls_t *sock, sock_dtls_session_t *session) {
     dsm_session_t *session_slot = NULL;
     mutex_lock(&_lock);
     if (_find_session(sock, session, &session_slot) == 1) {
         if (session_slot->state == SESSION_STATE_NONE) {
-            /* session has already been removed. Can happen when we remove the session
-            before we get the close ACK of the remote peer (e.g. force reset of peer)
-            and then get an ACK (= SOCK_ASYNC_CONN_FIN event) of the remote and
-            call this function again. */
+            // session has already been removed. Can happen when we remove the session
+            // before we get the close ACK of the remote peer (e.g. force reset of peer)
+            // and then get an ACK (= SOCK_ASYNC_CONN_FIN event) of the remote and
+            // call this function again.
             goto out;
         }
 
@@ -106,18 +99,15 @@ out:
     mutex_unlock(&_lock);
 }
 
-uint8_t dsm_get_num_available_slots(void)
-{
+uint8_t dsm_get_num_available_slots(void) {
     return _available_slots;
 }
 
-uint8_t dsm_get_num_maximum_slots(void)
-{
+uint8_t dsm_get_num_maximum_slots(void) {
     return CONFIG_DSM_PEER_MAX;
 }
 
-ssize_t dsm_get_least_recently_used_session(sock_dtls_t *sock, sock_dtls_session_t *session)
-{
+ssize_t dsm_get_least_recently_used_session(sock_dtls_t *sock, sock_dtls_session_t *session) {
     int res = -1;
     dsm_session_t *session_slot = NULL;
 
@@ -148,15 +138,14 @@ ssize_t dsm_get_least_recently_used_session(sock_dtls_t *sock, sock_dtls_session
     return res;
 }
 
-/* Search for existing session or empty slot for new one
- * Returns 1, if existing session found
- * Returns 0, if empty slot found
- * Returns -1, if no existing or empty session found */
+// Search for existing session or empty slot for new one
+// Returns 1, if existing session found
+// Returns 0, if empty slot found
+// Returns -1, if no existing or empty session found
 static int _find_session(sock_dtls_t *sock, sock_dtls_session_t *to_find,
-                         dsm_session_t **session)
-{
+                         dsm_session_t **session) {
 
-    /* FIXME: optimize search / data structure */
+    // FIXME: optimize search / data structure
     sock_udp_ep_t to_find_ep, curr_ep;
     dsm_session_t *empty_session = NULL;
 
@@ -169,7 +158,7 @@ static int _find_session(sock_dtls_t *sock, sock_dtls_session_t *to_find,
 
         sock_dtls_session_get_udp_ep(&_sessions[i].session, &curr_ep);
         if (sock_udp_ep_equal(&curr_ep, &to_find_ep) && _sessions[i].sock == sock) {
-            /* found existing session */
+            // found existing session
             *session = &_sessions[i];
             return 1;
         }

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       AMG88xx driver test
- *
- * Interactive test application for the AMG88xx infrared array sensor.
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       AMG88xx driver test
+///
+/// Interactive test application for the AMG88xx infrared array sensor.
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -32,31 +28,22 @@
 #include "amg88xx.h"
 #include "amg88xx_params.h"
 
-/**
- * @brief   Default polling interval in milliseconds
- */
+/// @brief   Default polling interval in milliseconds
 #define AMG88XX_DEFAULT_POLL_MS     (1000)
 
-/**
- * @brief   Device descriptor for the AMG88xx driver
- */
+/// @brief   Device descriptor for the AMG88xx driver
 static amg88xx_t _dev;
 
-/**
- * @brief   Flag to enable/disable grid display of pixel values
- */
+/// @brief   Flag to enable/disable grid display of pixel values
 static bool _grid_enabled = true;
 
-/**
- * @brief   Flag to display grid in raw values (true) or temperature (false)
- */
+/// @brief   Flag to display grid in raw values (true) or temperature (false)
 static bool _grid_raw = true;
 
 #if IS_USED(MODULE_PERIPH_GPIO_IRQ)
 static kernel_pid_t _main_pid;
 
-static void _int_cb(void *arg)
-{
+static void _int_cb(void *arg) {
     (void)arg;
 
     msg_t msg;
@@ -64,8 +51,7 @@ static void _int_cb(void *arg)
 }
 #endif
 
-static void _print_grid(const int16_t *pixels, const uint8_t *int_table)
-{
+static void _print_grid(const int16_t *pixels, const uint8_t *int_table) {
     const unsigned rows = AMG88XX_PIXELS_VERTICAL;
     const unsigned cols = AMG88XX_PIXELS_HORIZONTAL;
 
@@ -103,8 +89,7 @@ static void _print_grid(const int16_t *pixels, const uint8_t *int_table)
     }
 }
 
-static int _cmd_read(int argc, char **argv)
-{
+static int _cmd_read(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -127,8 +112,7 @@ static int _cmd_read(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_temp(int argc, char **argv)
-{
+static int _cmd_temp(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -145,8 +129,7 @@ static int _cmd_temp(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_poll(int argc, char **argv)
-{
+static int _cmd_poll(int argc, char **argv) {
     unsigned interval = AMG88XX_DEFAULT_POLL_MS;
 
     if (argc >= 2) {
@@ -182,8 +165,7 @@ static int _cmd_poll(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_fps(int argc, char **argv)
-{
+static int _cmd_fps(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <1|10>\n", argv[0]);
         return 1;
@@ -215,8 +197,7 @@ static int _cmd_fps(int argc, char **argv)
 }
 
 #if IS_USED(MODULE_PERIPH_GPIO_IRQ)
-static int _cmd_interrupt(int argc, char **argv)
-{
+static int _cmd_interrupt(int argc, char **argv) {
     if (argc < 4) {
         printf("usage: %s <upper> <lower> <hysteresis>\n", argv[0]);
         puts("  values in raw units (0.25 deg C per LSB)");
@@ -301,8 +282,7 @@ static int _cmd_interrupt(int argc, char **argv)
 }
 #endif
 
-static int _cmd_mode(int argc, char **argv)
-{
+static int _cmd_mode(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <normal|sleep|standby60|standby10>\n", argv[0]);
         return 1;
@@ -337,8 +317,7 @@ static int _cmd_mode(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_grid(int argc, char **argv)
-{
+static int _cmd_grid(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <on|off|raw|temp>\n", argv[0]);
         return 1;
@@ -368,8 +347,7 @@ static int _cmd_grid(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_averaging(int argc, char **argv)
-{
+static int _cmd_averaging(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <on|off>\n", argv[0]);
         return 1;
@@ -398,8 +376,7 @@ static int _cmd_averaging(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_dump(int argc, char **argv)
-{
+static int _cmd_dump(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -498,8 +475,7 @@ SHELL_COMMAND(temp, "read the thermistor temperature", _cmd_temp);
 SHELL_COMMAND(interrupt, "wait for threshold interrupts", _cmd_interrupt);
 #endif
 
-int main(void)
-{
+int main(void) {
     puts("Initializing AMG88xx sensor...");
 
     if (amg88xx_init(&_dev, &amg88xx_params[0]) != 0) {
@@ -509,7 +485,7 @@ int main(void)
 
     puts("[OK]");
 
-    /* spawn a shell */
+    // spawn a shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 

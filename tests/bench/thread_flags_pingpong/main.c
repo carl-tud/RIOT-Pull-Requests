@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Thread flags benchmark test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Thread flags benchmark test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "macros/units.h"
@@ -30,15 +26,13 @@
 volatile unsigned _flag = 0;
 static char _stack[THREAD_STACKSIZE_MAIN];
 
-static void _timer_callback(void*arg)
-{
+static void _timer_callback(void*arg) {
     (void)arg;
 
     _flag = 1;
 }
 
-static void *_second_thread(void *arg)
-{
+static void *_second_thread(void *arg) {
     (void)arg;
 
     while (1) {
@@ -48,8 +42,7 @@ static void *_second_thread(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     printf("main starting\n");
 
     kernel_pid_t other = thread_create(_stack,

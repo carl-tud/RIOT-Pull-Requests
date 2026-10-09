@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2017-2018 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2017-2018 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands for the cord_ep module
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands for the cord_ep module
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,15 +25,14 @@
 #include "uri_parser.h"
 #include "shell.h"
 
-static int _make_sock_ep(sock_udp_ep_t *ep, const char *addr)
-{
+static int _make_sock_ep(sock_udp_ep_t *ep, const char *addr) {
     ep->port = 0;
     if (sock_udp_name2ep(ep, addr) < 0) {
         return -1;
     }
-    /* if netif not specified in addr */
+    // if netif not specified in addr
     if ((ep->netif == SOCK_ADDR_ANY_NETIF) && (gnrc_netif_numof() == 1)) {
-        /* assign the single interface found in gnrc_netif_numof() */
+        // assign the single interface found in gnrc_netif_numof()
         ep->netif = (uint16_t)gnrc_netif_iter(NULL)->pid;
     }
     ep->family = AF_INET6;
@@ -47,8 +42,7 @@ static int _make_sock_ep(sock_udp_ep_t *ep, const char *addr)
     return 0;
 }
 
-static int _cord_ep_handler(int argc, char **argv)
-{
+static int _cord_ep_handler(int argc, char **argv) {
     int res;
 
     if ((argc > 1) && (strcmp(argv[1], "register") == 0)) {

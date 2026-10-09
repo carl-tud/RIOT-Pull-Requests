@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2024 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "irq.h"
 #include "macros/math.h"
@@ -101,20 +99,18 @@ static mutex_t _usci_locks[MSP430_USCI_ID_NUMOF] = {
 static uint8_t _auxiliary_clock_acquired;
 
 void msp430_usci_acquire(const msp430_usci_params_t *params,
-                         const msp430_usci_conf_t *conf)
-{
+                         const msp430_usci_conf_t *conf) {
     assume((unsigned)params->id < MSP430_USCI_ID_NUMOF);
 
     mutex_lock(&_usci_locks[params->id]);
     msp430_usci_b_t *dev = params->dev;
 
-    /* We only need to acquire the auxiliary (low frequency) clock domain, as
-     * the subsystem main clock (SMCLK) will be acquired on-demand when activity
-     * is detected on RXD, as per datasheet:
-     *
-     * > The USCI module provides automatic clock activation for SMCLK for use
-     * > with low-power modes.
-     */
+    // We only need to acquire the auxiliary (low frequency) clock domain, as
+    // the subsystem main clock (SMCLK) will be acquired on-demand when activity
+    // is detected on RXD, as per datasheet:
+    //
+    // > The USCI module provides automatic clock activation for SMCLK for use
+    // > with low-power modes.
     switch (conf->prescaler.clk_source) {
     case USCI_CLK_AUX:
         msp430_clock_acquire(MSP430_CLOCK_AUXILIARY);
@@ -125,17 +121,17 @@ void msp430_usci_acquire(const msp430_usci_params_t *params,
         break;
     }
 
-    /* put device in disabled/reset state */
+    // put device in disabled/reset state
     dev->CTL1 = UCSWRST;
 
-    /* apply given configuration */
+    // apply given configuration
     dev->CTL0 = conf->ctl0;
     dev->CTL1 = conf->prescaler.clk_source | UCSWRST;
     dev->BR0 = conf->prescaler.br0;
     dev->BR1 = conf->prescaler.br1;
     dev->MCTL = conf->prescaler.mctl;
 
-    /* disable USCI IRQs and clear any spurious IRQ flags */
+    // disable USCI IRQs and clear any spurious IRQ flags
     uint8_t clear_irq_mask = ~(params->tx_irq_mask | params->rx_irq_mask);
     unsigned irq_mask = irq_disable();
     *params->interrupt_flag &= clear_irq_mask;
@@ -143,16 +139,15 @@ void msp430_usci_acquire(const msp430_usci_params_t *params,
     irq_restore(irq_mask);
 }
 
-void msp430_usci_release(const msp430_usci_params_t *params)
-{
+void msp430_usci_release(const msp430_usci_params_t *params) {
     assume(params->id < MSP430_USCI_ID_NUMOF);
 
     msp430_usci_b_t *dev = params->dev;
 
-    /* Disable USCI */
+    // Disable USCI
     dev->CTL0 = UCSWRST;
 
-    /* disable USCI IRQs and clear any spurious IRQ flags */
+    // disable USCI IRQs and clear any spurious IRQ flags
     uint8_t clear_irq_mask = ~(params->tx_irq_mask | params->rx_irq_mask);
     unsigned irq_mask = irq_disable();
     *params->interrupt_enable &= clear_irq_mask;
@@ -163,32 +158,30 @@ void msp430_usci_release(const msp430_usci_params_t *params)
     }
     irq_restore(irq_mask);
 
-    /* Release mutex */
+    // Release mutex
     mutex_unlock(&_usci_locks[params->id]);
 }
 
-msp430_usci_prescaler_t msp430_usci_prescale(uint32_t target_hz)
-{
+msp430_usci_prescaler_t msp430_usci_prescale(uint32_t target_hz) {
     msp430_usci_prescaler_t result = {
         .mctl = 0,
         .clk_source = USCI_CLK_SUBMAIN,
     };
 
-    /* If a watch crystal is used for the auxiliary clock, allow using the
-     * auxiliary clock to be used as clock source for well-known
-     * symbol rates, so that enabling low power modes is possible while
-     * UART RX is active */
+    // If a watch crystal is used for the auxiliary clock, allow using the
+    // auxiliary clock to be used as clock source for well-known
+    // symbol rates, so that enabling low power modes is possible while
+    // UART RX is active
     if ((clock_params.lfxt1_frequency == 32768)
             && (clock_params.auxiliary_clock_divier == AUXILIARY_CLOCK_DIVIDE_BY_1)) {
         assert(msp430_auxiliary_clock_freq() == 32768);
         result.clk_source = USCI_CLK_AUX;
-        /* The datasheet gives a formula that is used to estimate BRS, but
-         * for optimal accuracy "a detailed error calculation must be performed
-         * for each bit for each UCBRSx setting". We take the pre-calculated
-         * optimal values from the datasheet here. The idea is that if the
-         * clock source is slow ticking, the extra bit timing accuracy may
-         * be needed. Otherwise the estimation will be good enough.
-         */
+        // The datasheet gives a formula that is used to estimate BRS, but
+        // for optimal accuracy "a detailed error calculation must be performed
+        // for each bit for each UCBRSx setting". We take the pre-calculated
+        // optimal values from the datasheet here. The idea is that if the
+        // clock source is slow ticking, the extra bit timing accuracy may
+        // be needed. Otherwise the estimation will be good enough.
         switch (target_hz) {
         case 1200:
             result.mctl = 2U << UCBRS_Pos;
@@ -209,16 +202,16 @@ msp430_usci_prescaler_t msp430_usci_prescale(uint32_t target_hz)
         }
     }
 
-    /* Otherwise, we compute BR and estimate BRS. We shift left by 7 to avoid
-     * floating point arithmetic. (7 is the largest shit amount for which
-     * clock frequencies with two-digit values in MHz don't exceed the 32 bit
-     * value range.) */
+    // Otherwise, we compute BR and estimate BRS. We shift left by 7 to avoid
+    // floating point arithmetic. (7 is the largest shit amount for which
+    // clock frequencies with two-digit values in MHz don't exceed the 32 bit
+    // value range.)
     uint32_t tmp = DIV_ROUND(msp430_submain_clock_freq() << 7, target_hz);
-    /* BR is the integral part */
+    // BR is the integral part
     uint16_t br = tmp >> 7;
-    /* BRS is the fractional part multiplied by 8. We combine the multiplication
-     * by 8 (left-shift by 3) with the right-shift by 7 here to a right-shift
-     * by 4. */
+    // BRS is the fractional part multiplied by 8. We combine the multiplication
+    // by 8 (left-shift by 3) with the right-shift by 7 here to a right-shift
+    // by 4.
     uint8_t brs = (tmp & 0x7f) >> 4;
     result.clk_source = USCI_CLK_SUBMAIN;
 

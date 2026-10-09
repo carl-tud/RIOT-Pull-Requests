@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 UC Berkeley
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 UC Berkeley
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_pir
- * @{
- *
- * @file
- * @brief       PIR adaption to the RIOT actuator/sensor interface
- *
- * @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
- *
- * @}
- */
+/// @ingroup     drivers_pir
+/// @{
+///
+/// @file
+/// @brief       PIR adaption to the RIOT actuator/sensor interface
+///
+/// @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
+///
+/// @}
 
 #include <string.h>
 
@@ -23,7 +19,7 @@
 static int read_occup(const void *dev, phydat_t *res) {
     pir_t *d = (pir_t *)dev;
     if (pir_get_occupancy(d, &(res->val[0]))) {
-        /* Read failure */
+        // Read failure
         return -ECANCELED;
     }
     res->val[1] = 0;

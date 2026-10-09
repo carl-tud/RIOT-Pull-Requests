@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Koen Zandberg <koen@bergzand.net>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_riscv_common
- * @{
- *
- * @file
- * @brief           CPU specific definitions for internal peripheral handling
- *
- * @author          Koen Zandberg <koen@bergzand.net>
- */
+/// @ingroup         cpu_riscv_common
+/// @{
+///
+/// @file
+/// @brief           CPU specific definitions for internal peripheral handling
+///
+/// @author          Koen Zandberg <koen@bergzand.net>
 
 #include <inttypes.h>
 
@@ -23,20 +19,16 @@
 extern "C" {
 #endif
 
-/**
- * @name    Power management configuration
- * @{
- */
+/// @name    Power management configuration
+/// @{
 #define PROVIDES_PM_SET_LOWEST
-/** @} */
+/// @}
 
-/**
- * @brief Convenience typedef for interrupt lines
- */
+/// @brief Convenience typedef for interrupt lines
 typedef unsigned irqn_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

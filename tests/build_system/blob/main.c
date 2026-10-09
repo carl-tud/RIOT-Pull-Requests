@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       test application for including files as blobs
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       test application for including files as blobs
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include "fmt.h"
 #include "blob/blobtest.txt.h"
@@ -21,8 +17,7 @@
 
 void blobtest_bin_print(void);
 
-int main(void)
-{
+int main(void) {
     print((char *)blobtest_txt, blobtest_txt_len);
     print("\n", 1);
 

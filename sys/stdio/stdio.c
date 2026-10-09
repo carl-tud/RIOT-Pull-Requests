@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2023 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2023 ML!PA Consulting GmbH
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_stdio
- * @{
- *
- * @file
- * @brief       STDIO common layer
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_stdio
+/// @{
+///
+/// @file
+/// @brief       STDIO common layer
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include "errno.h"
 #include "isrpipe.h"
@@ -31,8 +27,7 @@ isrpipe_t stdin_isrpipe = ISRPIPE_INIT(_rx_buf_mem);
 static stdio_notify_cb_t _notify_cb;
 static void *_notify_arg;
 
-void stdio_set_notify(stdio_notify_cb_t cb, void *arg)
-{
+void stdio_set_notify(stdio_notify_cb_t cb, void *arg) {
     unsigned irqstate = irq_disable();
 
     _notify_arg = arg;
@@ -41,11 +36,10 @@ void stdio_set_notify(stdio_notify_cb_t cb, void *arg)
     irq_restore(irqstate);
 }
 
-int stdio_rx_write_one(uint8_t c)
-{
+int stdio_rx_write_one(uint8_t c) {
     int res = isrpipe_write_one(&stdin_isrpipe, c);
 
-    /* notify even if the pipe is full, isrpipe_read() would unblock anyway */
+    // notify even if the pipe is full, isrpipe_read() would unblock anyway
     if (_notify_cb) {
         _notify_cb(_notify_arg);
     }
@@ -53,11 +47,10 @@ int stdio_rx_write_one(uint8_t c)
     return res;
 }
 
-int stdio_rx_write(const uint8_t *buf, size_t len)
-{
+int stdio_rx_write(const uint8_t *buf, size_t len) {
     int res = isrpipe_write(&stdin_isrpipe, buf, len);
 
-    /* notify even if the pipe is full, isrpipe_read() would unblock anyway */
+    // notify even if the pipe is full, isrpipe_read() would unblock anyway
     if (_notify_cb) {
         _notify_cb(_notify_arg);
     }
@@ -69,8 +62,7 @@ int stdio_rx_write(const uint8_t *buf, size_t len)
 #ifdef MODULE_STDIO_DISPATCH
 XFA_INIT_CONST(stdio_provider_t, stdio_provider_xfa);
 
-void stdio_init(void)
-{
+void stdio_init(void) {
     for (unsigned i = 0; i < XFA_LEN(stdio_provider_t, stdio_provider_xfa); ++i) {
         if (stdio_provider_xfa[i].open) {
             stdio_provider_xfa[i].open();
@@ -78,8 +70,7 @@ void stdio_init(void)
     }
 }
 
-ssize_t stdio_write(const void* buffer, size_t len)
-{
+ssize_t stdio_write(const void* buffer, size_t len) {
     for (unsigned i = 0; i < XFA_LEN(stdio_provider_t, stdio_provider_xfa); ++i) {
         stdio_provider_xfa[i].write(buffer, len);
     }
@@ -101,8 +92,7 @@ void stdio_close(void) {
 #endif
 
 MAYBE_WEAK
-ssize_t stdio_read(void* buffer, size_t len)
-{
+ssize_t stdio_read(void* buffer, size_t len) {
     if (!IS_USED(MODULE_STDIN)) {
         return -ENOTSUP;
     }
@@ -112,8 +102,7 @@ ssize_t stdio_read(void* buffer, size_t len)
 
 #if IS_USED(MODULE_STDIO_AVAILABLE)
 MAYBE_WEAK
-int stdio_available(void)
-{
+int stdio_available(void) {
     if (!IS_USED(MODULE_STDIN)) {
         return 0;
     }
@@ -121,8 +110,7 @@ int stdio_available(void)
 }
 #endif
 
-void stdio_clear_stdin(void)
-{
+void stdio_clear_stdin(void) {
     if (IS_USED(MODULE_STDIN)) {
         isrpipe_clear(&stdin_isrpipe);
     }

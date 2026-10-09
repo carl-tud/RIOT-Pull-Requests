@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 iosabi
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 iosabi
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_si1133
- *
- * @{
- * @file
- * @brief       Default configuration for SI1133
- *
- * @author      iosabi <iosabi@protonmail.com>
- */
+/// @ingroup     drivers_si1133
+///
+/// @{
+/// @file
+/// @brief       Default configuration for SI1133
+///
+/// @author      iosabi <iosabi@protonmail.com>
 
 #include "board.h"
 #include "si1133.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the Si1133
- * @{
- */
+/// @name    Set default configuration parameters for the Si1133
+/// @{
 #ifndef SI1133_PARAM_I2C_DEV
 #define SI1133_PARAM_I2C_DEV         I2C_DEV(0)
 #endif
@@ -44,19 +38,15 @@ extern "C" {
 #ifndef SI1133_SAUL_INFO
 #define SI1133_SAUL_INFO             { .name = "si1133" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure Si1133
- */
+/// @brief   Configure Si1133
 static const si1133_params_t si1133_params[] =
 {
     SI1133_PARAMS
 };
 
-/**
- * @brief   Allocate and configure entries to the SAUL registry
- */
+/// @brief   Allocate and configure entries to the SAUL registry
 saul_reg_t si1133_saul_reg_info[] =
 {
     SI1133_SAUL_INFO
@@ -66,4 +56,4 @@ saul_reg_t si1133_saul_reg_info[] =
 }
 #endif
 
-/** @} */
+/// @}

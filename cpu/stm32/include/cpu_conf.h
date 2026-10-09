@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_stm32
- * @{
- *
- * @file
- * @brief           Implementation specific CPU configuration options
- *
- * @author          Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author          Alexandre Abadie <alexandre.abadie@inria.fr>
-*/
+/// @ingroup         cpu_stm32
+/// @{
+///
+/// @file
+/// @brief           Implementation specific CPU configuration options
+///
+/// @author          Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author          Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include <stdint.h>
 #include "cpu_conf_common.h"
@@ -26,7 +22,7 @@
 #include "stm32_irqs.h"
 #endif
 
-/* add unused backup RAM as extra heap */
+// add unused backup RAM as extra heap
 #if !defined(NUM_HEAPS) && CPU_HAS_BACKUP_RAM
 #define NUM_HEAPS   2
 #endif
@@ -35,46 +31,39 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Enable workaround for bug in WFI by issuing an ISB
- *
- * This works around a bug on STM32 systems, see [1] for details, or [2] for
- * an archive.org backup.
- * [1]: https://cliffle.com/blog/stm32-wfi-bug
- * [2]: https://web.archive.org/web/20231205101603/https://cliffle.com/blog/stm32-wfi-bug/
- */
+/// @brief   Enable workaround for bug in WFI by issuing an ISB
+///
+/// This works around a bug on STM32 systems, see [1] for details, or [2] for
+/// an archive.org backup.
+/// [1]: https://cliffle.com/blog/stm32-wfi-bug
+/// [2]: https://web.archive.org/web/20231205101603/https://cliffle.com/blog/stm32-wfi-bug/
 #define CORTEXM_ISB_REQUIRED_AFTER_WFI  1
 
-/**
- * @brief   ARM Cortex-M specific CPU configuration
- * @{
- */
+/// @brief   ARM Cortex-M specific CPU configuration
+/// @{
 #define CPU_DEFAULT_IRQ_PRIO            (1U)
-/* STM32MP1 family has no flash */
+// STM32MP1 family has no flash
 #if !defined(CPU_FAM_STM32MP1)
 #define CPU_FLASH_BASE                  FLASH_BASE
 #endif
 
-/* CPU_IRQ_NUMOF cannot be determined automatically from cmsis header */
+// CPU_IRQ_NUMOF cannot be determined automatically from cmsis header
 #if defined(CPU_MODEL_STM32MP157CAC)
 #define CPU_IRQ_NUMOF                   (150U)
 #endif
-/** @} */
+/// @}
 
-/* Provide a CPU_IRQ_NUMOF for STM32H7 family ---
- * The H7 family typically exposes up to 150 maskable interrupt lines
- * (NVIC external interrupts). Defining this prevents undefined behavior
- * where code expects CPU_IRQ_NUMOF to be present.
- * NOTE: we only add this define; existing logic is left untouched.
- */
+// Provide a CPU_IRQ_NUMOF for STM32H7 family ---
+// The H7 family typically exposes up to 150 maskable interrupt lines
+// (NVIC external interrupts). Defining this prevents undefined behavior
+// where code expects CPU_IRQ_NUMOF to be present.
+// NOTE: we only add this define; existing logic is left untouched.
 #if defined(CPU_FAM_STM32H7) && !defined(CPU_IRQ_NUMOF)
 #  define CPU_IRQ_NUMOF                   (150U)
 #endif
 
-/**
- * @brief   Flash page configuration
- * @{
- */
+/// @brief   Flash page configuration
+/// @{
 #if defined(CPU_FAM_STM32U5)
 #define FLASHPAGE_SIZE                  (8192U)
 #elif defined(CPU_FAM_STM32WB)
@@ -110,24 +99,22 @@ extern "C" {
 #define PERIPH_FLASHPAGE_CUSTOM_PAGESIZES
 #define PERIPH_FLASHPAGE_NEEDS_FLASHPAGE_ADDR
 
-/**
- * @brief stm32 dual bank configuration
- *
- * By default, the stm32f4 series with 1MB flash enable the DB1M flag to split
- * the 1MB flash into two banks, 2MB devices are always split in two banks.
- * On both the stm32f4 and the stm32f7 this can be modified with user
- * programmable flags. Detecting the settings at runtime is not supported
- *
- * @note This must match the setting on the MCU. by default it is assumed that
- * the user has not changed this setting manually.
- */
+/// @brief stm32 dual bank configuration
+///
+/// By default, the stm32f4 series with 1MB flash enable the DB1M flag to split
+/// the 1MB flash into two banks, 2MB devices are always split in two banks.
+/// On both the stm32f4 and the stm32f7 this can be modified with user
+/// programmable flags. Detecting the settings at runtime is not supported
+///
+/// @note This must match the setting on the MCU. by default it is assumed that
+/// the user has not changed this setting manually.
 #if (defined(FLASH_OPTCR_DB1M) && (STM32_FLASHSIZE >= (1024 * 1024)))
 #define FLASHPAGE_DUAL_BANK             1
 #else
 #define FLASHPAGE_DUAL_BANK             0
 #endif
 
-/* stm32f7 uses single bank with 32KB to 256KB sectors on a number of devices */
+// stm32f7 uses single bank with 32KB to 256KB sectors on a number of devices
 #if defined(CPU_FAM_STM32F7)
 #if defined(CPU_LINE_STM32F745xx) || \
     defined(CPU_LINE_STM32F746xx) || \
@@ -146,32 +133,31 @@ extern "C" {
       defined(CPU_LINE_STM32F733xx)
 #define FLASHPAGE_MIN_SECTOR_SIZE       (16 * 1024)
 #else
-/* Intentionally error on an unknown line to prevent flashpage errors */
+// Intentionally error on an unknown line to prevent flashpage errors
 #error Unknown STM32F7 Line, unable to determine FLASHPAGE_MIN_SECTOR_SIZE
 #endif
 
-#else /* CPU_FAM_STM32F7 */
+#else // CPU_FAM_STM32F7
 #define FLASHPAGE_MIN_SECTOR_SIZE       (16 * 1024)
 #endif
 
 #if FLASHPAGE_DUAL_BANK
-/* Number of "large" sectors + 4 for the small sectors that together equal a
- * single large sector. Times two to account for the two banks */
+// Number of "large" sectors + 4 for the small sectors that together equal a
+// single large sector. Times two to account for the two banks
 #define FLASHPAGE_NUMOF                 ((STM32_FLASHSIZE / \
                                          (8 * FLASHPAGE_MIN_SECTOR_SIZE)) + 8)
 #else
-/* Number of "large" sectors + 4 for the small sectors that together equal a
- * single large sector, eg: 1 MB = 7 * 128 KB sectors + 1 64 KB and 4 16 KB
- * sectors */
+// Number of "large" sectors + 4 for the small sectors that together equal a
+// single large sector, eg: 1 MB = 7 * 128 KB sectors + 1 64 KB and 4 16 KB
+// sectors
 #define FLASHPAGE_NUMOF                 ((STM32_FLASHSIZE / \
                                          (8 * FLASHPAGE_MIN_SECTOR_SIZE)) + 4)
 #endif
 
 #endif
 
-/* The minimum block size which can be written depends on the family.
- * However, the erase block is always FLASHPAGE_SIZE.
- */
+// The minimum block size which can be written depends on the family.
+// However, the erase block is always FLASHPAGE_SIZE.
 #if defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
     defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
     defined(CPU_FAM_STM32L5) || defined(CPU_FAM_STM32U5) || \
@@ -194,22 +180,20 @@ typedef uint16_t stm32_flashpage_block_t;
     defined(CPU_FAM_STM32WL) || defined(CPU_FAM_STM32C0)
 #define FLASHPAGE_WRITE_BLOCK_ALIGNMENT       (8U)
 #else
-/* Writing should be always 4 bytes aligned */
+// Writing should be always 4 bytes aligned
 #define FLASHPAGE_WRITE_BLOCK_ALIGNMENT       (4U)
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   Bit-Band configuration
- * @{
- */
+/// @brief   Bit-Band configuration
+/// @{
 #ifdef SRAM_BB_BASE
 #define CPU_HAS_BITBAND 1
 #endif
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

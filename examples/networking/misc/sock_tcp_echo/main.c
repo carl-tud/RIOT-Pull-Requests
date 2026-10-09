@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <stdio.h>
 
@@ -22,8 +18,7 @@
 
 static char _echo_server_stack[THREAD_STACKSIZE_DEFAULT];
 
-static int _cmd_tcp_send(int argc, char **argv)
-{
+static int _cmd_tcp_send(int argc, char **argv) {
     int res;
     sock_tcp_t sock;
     sock_tcp_ep_t remote;
@@ -75,8 +70,7 @@ error:
 }
 SHELL_COMMAND(send, "send data over TCP", _cmd_tcp_send);
 
-static void *_run_echo_server(void *ctx)
-{
+static void *_run_echo_server(void *ctx) {
     sock_tcp_t sock_queue[SOCK_QUEUE_LEN];
     char buf[128];
     uint16_t port = (uintptr_t)ctx;
@@ -116,8 +110,7 @@ static void *_run_echo_server(void *ctx)
     return NULL;
 }
 
-static int _cmd_tcp_listen(int argc, char **argv)
-{
+static int _cmd_tcp_listen(int argc, char **argv) {
     static kernel_pid_t pid;
     uint16_t port;
 
@@ -145,16 +138,15 @@ static int _cmd_tcp_listen(int argc, char **argv)
 }
 SHELL_COMMAND(listen, "start echo server", _cmd_tcp_listen);
 
-int main(void)
-{
+int main(void) {
     puts("RIOT TCP client example application");
 
-    /* start shell */
+    // start shell
     puts("All up, running the shell now");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }
-/** @} */
+/// @}

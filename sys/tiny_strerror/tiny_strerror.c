@@ -1,21 +1,17 @@
-/*
- * Copyright (C) 2021 ML!PA Consulting GmbH
- *               2022 Otto-von-Guericke-Universität Magdeburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2021 ML!PA Consulting GmbH
+//               2022 Otto-von-Guericke-Universität Magdeburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @{
- *
- * @file
- * @brief       Tiny strerror() implementation
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- */
+/// @{
+///
+/// @file
+/// @brief       Tiny strerror() implementation
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
 
 #include <errno.h>
 #include <stdio.h>
@@ -48,7 +44,7 @@ static FLASH_ATTR const char _edquot[] = "-EDQUOT";
 static FLASH_ATTR const char _eexist[] = "-EEXIST";
 static FLASH_ATTR const char _efault[] = "-EFAULT";
 static FLASH_ATTR const char _efbig[] = "-EFBIG";
-#ifdef EHOSTDOWN /* not part of POSIX and not universally available */
+#ifdef EHOSTDOWN // not part of POSIX and not universally available
 static FLASH_ATTR const char _ehostdown[] = "-EHOSTDOWN";
 #endif
 static FLASH_ATTR const char _ehostunreach[] = "-EHOSTUNREACH";
@@ -95,7 +91,7 @@ static FLASH_ATTR const char _enxio[] = "-ENXIO";
 static FLASH_ATTR const char _eoverflow[] = "-EOVERFLOW";
 static FLASH_ATTR const char _eownerdead[] = "-EOWNERDEAD";
 static FLASH_ATTR const char _eperm[] = "-EPERM";
-#ifdef EPFNOSUPPORT /* not part of POSIX and not universally available */
+#ifdef EPFNOSUPPORT // not part of POSIX and not universally available
 static FLASH_ATTR const char _epfnosupport[] = "-EPFNOSUPPORT";
 #endif
 static FLASH_ATTR const char _epipe[] = "-EPIPE";
@@ -109,18 +105,18 @@ static FLASH_ATTR const char _esrch[] = "-ESRCH";
 static FLASH_ATTR const char _estale[] = "-ESTALE";
 static FLASH_ATTR const char _etimedout[] = "-ETIMEDOUT";
 static FLASH_ATTR const char _etime[] = "-ETIME";
-#ifdef ETOOMANYREFS /* not part of POSIX and not universally available */
+#ifdef ETOOMANYREFS // not part of POSIX and not universally available
 static FLASH_ATTR const char _etoomanyrefs[] = "-ETOOMANYREFS";
 #endif
 static FLASH_ATTR const char _etxtbsy[] = "-ETXTBSY";
 static FLASH_ATTR const char _exdev[] = "-EXDEV";
-/* EAGAIN and EWOULDBLOCK have the exact same meaning and consequently may
- * have the same numeric value */
+// EAGAIN and EWOULDBLOCK have the exact same meaning and consequently may
+// have the same numeric value
 #if EAGAIN != EWOULDBLOCK
 static FLASH_ATTR const char _ewouldblock[] = "-EWOULDBLOCK";
 #endif
-/* ENOTSUP and EOPNOTSUPP do not have the exact same meaning. Still, they
- * have the same numeric value on Linux, breaking POSIX standard */
+// ENOTSUP and EOPNOTSUPP do not have the exact same meaning. Still, they
+// have the same numeric value on Linux, breaking POSIX standard
 #if ENOTSUP != EOPNOTSUPP
 static FLASH_ATTR const char _eopnotsupp[] = "-EOPNOTSUPP";
 #endif
@@ -149,7 +145,7 @@ static FLASH_ATTR const char * FLASH_ATTR const lookup[] = {
     [EEXIST]            = _eexist,
     [EFAULT]            = _efault,
     [EFBIG]             = _efbig,
-#ifdef EHOSTDOWN /* not part of POSIX and not universally available */
+#ifdef EHOSTDOWN // not part of POSIX and not universally available
     [EHOSTDOWN]         = _ehostdown,
 #endif
     [EHOSTUNREACH]      = _ehostunreach,
@@ -196,7 +192,7 @@ static FLASH_ATTR const char * FLASH_ATTR const lookup[] = {
     [EOVERFLOW]         = _eoverflow,
     [EOWNERDEAD ]       = _eownerdead,
     [EPERM]             = _eperm,
-#ifdef EPFNOSUPPORT /* not part of POSIX and not universally available */
+#ifdef EPFNOSUPPORT // not part of POSIX and not universally available
     [EPFNOSUPPORT]      = _epfnosupport,
 #endif
     [EPIPE]             = _epipe,
@@ -210,7 +206,7 @@ static FLASH_ATTR const char * FLASH_ATTR const lookup[] = {
     [ESTALE]            = _estale,
     [ETIMEDOUT]         = _etimedout,
     [ETIME]             = _etime,
-#ifdef ETOOMANYREFS /* not part of POSIX and not universally available */
+#ifdef ETOOMANYREFS // not part of POSIX and not universally available
     [ETOOMANYREFS]      = _etoomanyrefs,
 #endif
     [ETXTBSY]           = _etxtbsy,
@@ -218,26 +214,24 @@ static FLASH_ATTR const char * FLASH_ATTR const lookup[] = {
 #if EAGAIN != EWOULDBLOCK
     [EWOULDBLOCK]       = _ewouldblock,
 #endif
-/* ENOTSUP and EOPNOTSUPP do not have the exact same meaning. Still, they
- * have the same numeric value on Linux, breaking POSIX standard */
+// ENOTSUP and EOPNOTSUPP do not have the exact same meaning. Still, they
+// have the same numeric value on Linux, breaking POSIX standard
 #if ENOTSUP != EOPNOTSUPP
     [EOPNOTSUPP]        = _eopnotsupp,
 #endif
 };
 
-const char *tiny_strerror(int errnum)
-{
+const char *tiny_strerror(int errnum) {
     if (IS_USED(MODULE_TINY_STRERROR_MINIMAL)) {
         static char buf[4];
         snprintf(buf, sizeof(buf), "%d", errnum);
         return buf;
     }
 
-    /* dark magic: All error strings start with a "-". For positive error codes
-     * an offset of 1 is added to the address of the string, jumping one char
-     * behind the "-". This way the strings do not have to be allocated twice
-     * (once with and once without minus char).
-     */
+    // dark magic: All error strings start with a "-". For positive error codes
+    // an offset of 1 is added to the address of the string, jumping one char
+    // behind the "-". This way the strings do not have to be allocated twice
+    // (once with and once without minus char).
     unsigned offset = 1;
     if (errnum <= 0) {
         offset = 0;
@@ -262,4 +256,4 @@ const char *tiny_strerror(int errnum)
 __attribute__((alias("tiny_strerror"))) const char *__wrap_strerror(int errnum);
 #endif
 
-/** @} */
+/// @}

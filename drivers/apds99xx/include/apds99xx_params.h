@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_apds99xx
- * @brief       Default configuration for Broadcom APDS99XX proximity and ambient light sensor
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_apds99xx
+/// @brief       Default configuration for Broadcom APDS99XX proximity and ambient light sensor
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include "board.h"
 #include "apds99xx.h"
@@ -21,47 +17,45 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef APDS99XX_PARAM_DEV
-/** device is I2C_DEV(0) */
+/// device is I2C_DEV(0)
 #define APDS99XX_PARAM_DEV          I2C_DEV(0)
 #endif
 
 #ifndef APDS99XX_PARAM_ALS_STEPS
-/** ALS measurement: enabled with integration time of 64 steps */
+/// ALS measurement: enabled with integration time of 64 steps
 #define APDS99XX_PARAM_ALS_STEPS    (64)
 #endif
 #ifndef APDS99XX_PARAM_ALS_GAIN
-/** ALS gain: 1 x gain */
+/// ALS gain: 1 x gain
 #define APDS99XX_PARAM_ALS_GAIN     (APDS99XX_ALS_GAIN_1)
 #endif
 
 #ifndef APDS99XX_PARAM_PRX_PULSES
-/** PRX LED pulse count: 8 pulses as recommended in datasheet */
+/// PRX LED pulse count: 8 pulses as recommended in datasheet
 #define APDS99XX_PARAM_PRX_PULSES   (8)
 #endif
 #ifndef APDS99XX_PARAM_PRX_DRIVE
-/** PRX LED drive strength: 100 mA as recommended in datasheet */
+/// PRX LED drive strength: 100 mA as recommended in datasheet
 #define APDS99XX_PARAM_PRX_DRIVE    (APDS99XX_PRX_DRIVE_100)
 #endif
 #ifndef APDS99XX_PARAM_PRX_GAIN
-/** PRX gain: 1 x gain */
+/// PRX gain: 1 x gain
 #define APDS99XX_PARAM_PRX_GAIN     (APDS99XX_PRX_GAIN_1)
 #endif
 #ifndef APDS99XX_PARAM_WAIT_STEPS
-/** Waiting time: disabled */
+/// Waiting time: disabled
 #define APDS99XX_PARAM_WAIT_STEPS    (0)
 #endif
 #ifndef APDS99XX_PARAM_WAIT_LONG
-/** Wait long: false */
+/// Wait long: false
 #define APDS99XX_PARAM_WAIT_LONG    (false)
 #endif
 
 #ifndef APDS99XX_PARAM_INT_PIN
-/** Interrupt pin */
+/// Interrupt pin
 #define APDS99XX_PARAM_INT_PIN      (GPIO_PIN(0, 0))
 #endif
 
@@ -82,19 +76,15 @@ extern "C" {
 #ifndef APDS99XX_SAUL_INFO
 #define APDS99XX_SAUL_INFO          { .name = "apds99xx" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const apds99xx_params_t apds99xx_params[] =
 {
     APDS99XX_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t apds99xx_saul_info[] =
 {
     APDS99XX_SAUL_INFO
@@ -104,4 +94,4 @@ static const saul_reg_info_t apds99xx_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

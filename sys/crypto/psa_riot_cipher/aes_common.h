@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @cond
- * @ingroup     sys_crypto
- * @{
- *
- * @brief       Glue code translating between PSA Crypto and the RIOT Cipher module
- *
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- */
+/// @cond
+/// @ingroup     sys_crypto
+/// @{
+///
+/// @brief       Glue code translating between PSA Crypto and the RIOT Cipher module
+///
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,16 +19,12 @@ extern "C" {
 #include "psa/crypto.h"
 #include "crypto/modes/cbc.h"
 
-/**
- * @brief   Converts errors of the RIOT cipher module to PSA status values
- */
+/// @brief   Converts errors of the RIOT cipher module to PSA status values
 psa_status_t cipher_to_psa_error(int error);
 
-/**
- * @brief   Common AES CBC Encrypt function
- *
- * @return  @ref psa_status_t
- */
+/// @brief   Common AES CBC Encrypt function
+///
+/// @return  @ref psa_status_t
 psa_status_t cbc_aes_common_encrypt_decrypt(cipher_t *ctx,
                                     const uint8_t *key_buffer,
                                     size_t key_buffer_size,
@@ -47,5 +39,5 @@ psa_status_t cbc_aes_common_encrypt_decrypt(cipher_t *ctx,
 }
 #endif
 
-/** @} */
-/** @endcond */
+/// @}
+/// @endcond

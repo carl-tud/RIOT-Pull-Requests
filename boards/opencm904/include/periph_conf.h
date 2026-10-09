@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 INRIA
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 INRIA
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_opencm904
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the opencm904 board
- *
- * @author      Loïc Dauphin <loic.dauphin@inria.fr>
- */
+/// @ingroup     boards_opencm904
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the opencm904 board
+///
+/// @author      Loïc Dauphin <loic.dauphin@inria.fr>
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -27,10 +23,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -52,12 +46,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tim3
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -90,10 +82,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          isr_usart3
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,24 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2023 TU Dresden
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 TU Dresden
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @brief       Tests the SHA3 gluecode for all variants (SHA3-256, SHA3-384, SHA3-512)
- *
- * @author      Katharina Volkenand <katharina_marlene.volkenand@msx.tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @brief       Tests the SHA3 gluecode for all variants (SHA3-256, SHA3-384, SHA3-512)
+///
+/// @author      Katharina Volkenand <katharina_marlene.volkenand@msx.tu-dresden.de>
+///
+/// @}
 
 #include "psa/crypto.h"
 
-/* certain PSA backends require the data to be in RAM rather than ROM
- * so these values cannot be `const` */
+// certain PSA backends require the data to be in RAM rather than ROM
+// so these values cannot be `const`
 static const uint8_t msg[] = "Hello World!";
 static const size_t msg_len = sizeof(msg)-1; // exclude NULL-byte
 
@@ -44,12 +40,10 @@ static const uint8_t hash_sha3_512[] = {
     0x36, 0xa5, 0xbf, 0x48
 };
 
-/**
- * @brief   Compares the computed hashes with the expected hashes.
- * Hashes are computed using the PSA algorithm dispatch.
- *
- * @return  psa_status_t
- */
+/// @brief   Compares the computed hashes with the expected hashes.
+/// Hashes are computed using the PSA algorithm dispatch.
+///
+/// @return  psa_status_t
 psa_status_t example_sha3_glue(void) {
 
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;

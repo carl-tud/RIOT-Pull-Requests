@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2016 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup drivers_candev_linux
- * @brief   Implementation of simulated CAN controller driver using SocketCAN on Linux
- * @author  Hermann Lelong <hermann@otakeys.com>
- * @author  Aurelien Gonce <aurelien.gonce@altran.com>
- * @author  Vincent Dupont <vincent@otakeys.com>
- */
+/// @file
+/// @ingroup drivers_candev_linux
+/// @brief   Implementation of simulated CAN controller driver using SocketCAN on Linux
+/// @author  Hermann Lelong <hermann@otakeys.com>
+/// @author  Aurelien Gonce <aurelien.gonce@altran.com>
+/// @author  Vincent Dupont <vincent@otakeys.com>
 
 #if !defined(__linux__)
 #error "Usage of periph_can on RIOT native requires libsocketcan. Currently \
@@ -76,8 +72,7 @@ can_conf_t candev_conf[CAN_DLL_NUMOF] = {
 #endif
 };
 
-int can_init(can_t *dev, const can_conf_t *conf)
-{
+int can_init(can_t *dev, const can_conf_t *conf) {
     memset(dev, 0, sizeof(can_t));
     dev->candev.driver = &candev_linux_driver;
     dev->conf = conf;
@@ -87,8 +82,7 @@ int can_init(can_t *dev, const can_conf_t *conf)
     return 0;
 }
 
-static candev_event_t _can_error_to_can_evt(can_frame_t can_frame_err)
-{
+static candev_event_t _can_error_to_can_evt(can_frame_t can_frame_err) {
     candev_event_t can_evt = CANDEV_EVENT_NOEVENT;
     can_err_mask_t can_err_type = can_frame_err.can_id & CAN_ERR_MASK;
 
@@ -120,8 +114,7 @@ static candev_event_t _can_error_to_can_evt(can_frame_t can_frame_err)
     return can_evt;
 }
 
-static void _callback_can_sigio(int sockfd, void *arg)
-{
+static void _callback_can_sigio(int sockfd, void *arg) {
     (void) sockfd;
     can_t *dev = (can_t *) arg;
 
@@ -136,8 +129,7 @@ static void _callback_can_sigio(int sockfd, void *arg)
     }
 }
 
-static int _init(candev_t *candev)
-{
+static int _init(candev_t *candev) {
     struct sockaddr_can addr;
     struct ifreq ifr;
     int ret;
@@ -184,8 +176,8 @@ static int _init(candev_t *candev)
     }
 
     native_async_read_setup();
-    /* This func will also automatically configure socket to be asynchronous */
-    /* and to activate SIGIO */
+    // This func will also automatically configure socket to be asynchronous
+    // and to activate SIGIO
     native_async_read_add_handler(dev->sock, (void *) dev, _callback_can_sigio);
 
     addr.can_family = AF_CAN;
@@ -193,8 +185,8 @@ static int _init(candev_t *candev)
 
     real_bind(dev->sock, (struct sockaddr *)&addr, sizeof(addr));
 
-    /* Only set bitrate on real can interfaces.
-     * Not supported on virtual can interfaces ("vcanX") */
+    // Only set bitrate on real can interfaces.
+    // Not supported on virtual can interfaces ("vcanX")
     if (strncmp(dev->conf->interface_name, "can", strlen("can"))) {
         DEBUG("not setting bitrate on virtual can interface %s\n", dev->conf->interface_name);
     }
@@ -207,8 +199,7 @@ static int _init(candev_t *candev)
     return 0;
 }
 
-static int _send(candev_t *candev, const can_frame_t *frame)
-{
+static int _send(candev_t *candev, const can_frame_t *frame) {
     int nbytes;
     can_t *dev = (can_t *)candev;
 
@@ -226,8 +217,7 @@ static int _send(candev_t *candev, const can_frame_t *frame)
     return 0;
 }
 
-static void _isr(candev_t *candev)
-{
+static void _isr(candev_t *candev) {
     int nbytes;
     can_frame_t rcv_frame;
     can_t *dev = (can_t *)candev;
@@ -239,7 +229,7 @@ static void _isr(candev_t *candev)
     DEBUG("candev_native _isr: CAN SIGIO interrupt received, sock = %i\n", dev->sock);
     nbytes = real_read(dev->sock, &rcv_frame, sizeof(can_frame_t));
 
-    if (nbytes < 0) {   /* SIGIO signal was probably due to an error with the socket */
+    if (nbytes < 0) {   // SIGIO signal was probably due to an error with the socket
         DEBUG("candev_native _isr: read: error during read\n");
         return;
     }
@@ -270,8 +260,7 @@ static void _isr(candev_t *candev)
 
 }
 
-static int _set_bittiming(can_t *dev, struct can_bittiming *bittiming)
-{
+static int _set_bittiming(can_t *dev, struct can_bittiming *bittiming) {
     int res;
 
     dev->candev.bittiming = *bittiming;
@@ -281,7 +270,7 @@ static int _set_bittiming(can_t *dev, struct can_bittiming *bittiming)
           dev->candev.bittiming.phase_seg1, dev->candev.bittiming.phase_seg2,
           dev->candev.bittiming.sjw);
 
-    /* bitrate setting */
+    // bitrate setting
     DEBUG("_set: setting %s down\n", dev->conf->interface_name);
     res = can_do_stop(dev->conf->interface_name);
     if (res < 0) {
@@ -296,8 +285,7 @@ static int _set_bittiming(can_t *dev, struct can_bittiming *bittiming)
     return res;
 }
 
-static int _set(candev_t *candev, canopt_t opt, void *value, size_t value_len)
-{
+static int _set(candev_t *candev, canopt_t opt, void *value, size_t value_len) {
     can_t *dev = (can_t *) candev;
     int res = 0;
 
@@ -305,8 +293,8 @@ static int _set(candev_t *candev, canopt_t opt, void *value, size_t value_len)
     case CANOPT_BITTIMING:
         DEBUG("candev_linux: CANOPT_BITTIMING\n");
 
-        /* Only set bitrate on real can interfaces.
-         * Not supported on virtual can interfaces ("vcanX") */
+        // Only set bitrate on real can interfaces.
+        // Not supported on virtual can interfaces ("vcanX")
         if (strncmp(dev->conf->interface_name, "can", strlen("can"))) {
             DEBUG("candev_native: _set: error interface is not real can\n");
             return -EINVAL;
@@ -345,8 +333,7 @@ static int _set(candev_t *candev, canopt_t opt, void *value, size_t value_len)
     return res;
 }
 
-static int _get(candev_t *candev, canopt_t opt, void *value, size_t max_len)
-{
+static int _get(candev_t *candev, canopt_t opt, void *value, size_t max_len) {
     can_t *dev = (can_t *) candev;
     int res = 0;
 
@@ -452,8 +439,7 @@ static int _get(candev_t *candev, canopt_t opt, void *value, size_t max_len)
     return res;
 }
 
-static int _set_filter(candev_t *candev, const struct can_filter *filter)
-{
+static int _set_filter(candev_t *candev, const struct can_filter *filter) {
     can_t *dev = (can_t *)candev;
 
     if (filter == NULL) {
@@ -480,7 +466,7 @@ static int _set_filter(candev_t *candev, const struct can_filter *filter)
     }
     for (i = 0; i < CANDEV_LINUX_MAX_FILTERS_RX; i++) {
         if (dev->filters[i].can_id == 0) {
-            /* Only 29 bits must be used for masks in SocketCAN */
+            // Only 29 bits must be used for masks in SocketCAN
             dev->filters[i] = *filter;
             dev->filters[i].can_mask &= CAN_EFF_MASK;
             DEBUG("candev_native: _set_filter: filter:ID=0x%x\n", filter->can_id);
@@ -496,8 +482,7 @@ static int _set_filter(candev_t *candev, const struct can_filter *filter)
     return i;
 }
 
-static int _remove_filter(candev_t *candev, const struct can_filter *filter)
-{
+static int _remove_filter(candev_t *candev, const struct can_filter *filter) {
     can_t *dev = (can_t *)candev;
 
     if (filter == NULL) {
@@ -541,25 +526,22 @@ static int _remove_filter(candev_t *candev, const struct can_filter *filter)
     return 0;
 }
 
-static int _abort(candev_t *candev, const can_frame_t *frame)
-{
+static int _abort(candev_t *candev, const can_frame_t *frame) {
     (void)frame;
     (void)candev;
 
     return 0;
 }
 
-static int _power_down(candev_t *candev)
-{
+static int _power_down(candev_t *candev) {
     (void)candev;
 
     return 0;
 }
 
-static int _power_up(candev_t *candev)
-{
+static int _power_up(candev_t *candev) {
     (void)candev;
 
     return 0;
 }
-#endif   /* defined(__linux__) */
+#endif   // defined(__linux__)

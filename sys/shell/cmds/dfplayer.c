@@ -1,22 +1,18 @@
-/*
- * Copyright 2019 Marian Buschsieweke
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright 2019 Marian Buschsieweke
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Provides a shell command to control a DFPlayer Mini
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Provides a shell command to control a DFPlayer Mini
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdint.h>
@@ -54,8 +50,7 @@ static const char *_states[] = {
     [DFPLAYER_STATE_NUMOF]      = NULL
 };
 
-static void _print_error(int retval)
-{
+static void _print_error(int retval) {
     print_str("Error: ");
 #ifdef CONFIG_DFPLAYER_NO_STRERROR
     print_s32_dec(retval);
@@ -65,8 +60,7 @@ static void _print_error(int retval)
     print("\n", 1);
 }
 
-static void _print_state(dfplayer_t *dev)
-{
+static void _print_state(dfplayer_t *dev) {
     dfplayer_state_t state;
     print_str("State: ");
     int retval = dfplayer_get_state(dev, &state);
@@ -79,8 +73,7 @@ static void _print_state(dfplayer_t *dev)
     }
 }
 
-static void _print_tracks(dfplayer_t *dev)
-{
+static void _print_tracks(dfplayer_t *dev) {
     dfplayer_source_set_t srcs = dfplayer_get_sources(dev);
     print_str("Selected file numbers (in file system):\n");
 
@@ -137,8 +130,7 @@ static void _print_tracks(dfplayer_t *dev)
     print("\n", 1);
 }
 
-static void _print_volume(dfplayer_t *dev)
-{
+static void _print_volume(dfplayer_t *dev) {
     uint8_t volume = 0;
     int retval = dfplayer_get_volume(dev, &volume);
     print_str("Volume: ");
@@ -151,8 +143,7 @@ static void _print_volume(dfplayer_t *dev)
     }
 }
 
-static void _print_equalizer(dfplayer_t *dev)
-{
+static void _print_equalizer(dfplayer_t *dev) {
     dfplayer_eq_t equalizer = 0;
     int retval = dfplayer_get_equalizer(dev, &equalizer);
     print_str("Equalizer: ");
@@ -170,8 +161,7 @@ static void _print_equalizer(dfplayer_t *dev)
     }
 }
 
-static void _print_mode(dfplayer_t *dev)
-{
+static void _print_mode(dfplayer_t *dev) {
     dfplayer_mode_t mode = {0};
     int retval = dfplayer_get_mode(dev, &mode);
     if (retval) {
@@ -184,8 +174,7 @@ static void _print_mode(dfplayer_t *dev)
     }
 }
 
-static void _print_files(dfplayer_t *dev)
-{
+static void _print_files(dfplayer_t *dev) {
     dfplayer_source_set_t srcs = dfplayer_get_sources(dev);
     uint16_t files;
     int retval;
@@ -236,8 +225,7 @@ static void _print_files(dfplayer_t *dev)
     }
 }
 
-static void _print_status(dfplayer_t *dev)
-{
+static void _print_status(dfplayer_t *dev) {
     uint16_t version;
     int retval;
 
@@ -258,15 +246,13 @@ static void _print_status(dfplayer_t *dev)
     _print_files(dev);
 }
 
-static void _print_usage(const char *progname)
-{
+static void _print_usage(const char *progname) {
     print_str("Usage: ");
     print_str(progname);
     print_str(" [-d <DEV_NUM>] [CMD [PARAMS]]\n");
 }
 
-static void _print_help(const char *progname)
-{
+static void _print_help(const char *progname) {
     _print_usage(progname);
     print_str("Run ");
     print_str(progname);
@@ -306,8 +292,7 @@ static void _print_help(const char *progname)
     );
 }
 
-static int _sc_dfplayer(int argc, char **argv)
-{
+static int _sc_dfplayer(int argc, char **argv) {
     unsigned dev_num = 0;
     int pos = 1;
     dfplayer_t *dev;

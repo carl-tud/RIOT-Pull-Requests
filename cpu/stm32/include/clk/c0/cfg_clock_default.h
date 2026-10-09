@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 BISSELL Homecare, Inc.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 BISSELL Homecare, Inc.
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Configure STM32C0 clock
- *
- * @author      Jason Parker <Jason.Parker@bissell.com>
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Configure STM32C0 clock
+///
+/// @author      Jason Parker <Jason.Parker@bissell.com>
 
 #include "cfg_clock_common_fx_gx_mp1_c0.h"
 #include "kernel_defines.h"
@@ -23,11 +19,9 @@
 extern "C" {
 #endif
 
-/**
- * @name    C0 clock settings
- *
- * @{
- */
+/// @name    C0 clock settings
+///
+/// @{
 #if IS_ACTIVE(CONFIG_BOARD_HAS_HSE) && (CONFIG_CLOCK_HSE < MHZ(4) || CONFIG_CLOCK_HSE > MHZ(48))
 #error "HSE clock frequency must be between 4MHz and 48MHz"
 #endif
@@ -49,17 +43,17 @@ extern "C" {
 
 #endif
 
-#define CLOCK_AHB                       CLOCK_CORECLOCK  /* max: 48MHz (C0) */
+#define CLOCK_AHB                       CLOCK_CORECLOCK  // max: 48MHz (C0)
 
 #ifndef CONFIG_CLOCK_APB1_DIV
 #define CONFIG_CLOCK_APB1_DIV           (1)
 #endif
 #define CLOCK_APB1                      (CLOCK_CORECLOCK / CONFIG_CLOCK_APB1_DIV)  \
                                         /* max: 48MHz (C0) */
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

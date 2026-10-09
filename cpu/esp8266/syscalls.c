@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp8266
- * @{
- *
- * @file
- * @brief       Implementation of required system calls
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     cpu_esp8266
+/// @{
+///
+/// @file
+/// @brief       Implementation of required system calls
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include "esp_attr.h"
 #include "esp_common.h"
@@ -29,9 +25,8 @@
 
 #ifdef MODULE_ESP_IDF_HEAP
 
-/* this function is platform specific if module esp_idf_heap is used */
-void heap_stats(void)
-{
+// this function is platform specific if module esp_idf_heap is used
+void heap_stats(void) {
     size_t _free = 0;
     size_t _alloc = 0;
 
@@ -46,22 +41,17 @@ void heap_stats(void)
                _alloc + _free, _alloc, _free);
 }
 
-#endif /* MODULE_ESP_IDF_HEAP */
+#endif // MODULE_ESP_IDF_HEAP
 
-/**
- * @name Other system functions
- */
+/// @name Other system functions
 
-uint32_t system_get_time(void)
-{
+uint32_t system_get_time(void) {
     return phy_get_mactime();
 }
 
-uint32_t system_get_time_ms(void)
-{
+uint32_t system_get_time_ms(void) {
     return system_get_time() / US_PER_MS;
 }
 
-void IRAM_ATTR syscalls_init_arch(void)
-{
+void IRAM_ATTR syscalls_init_arch(void) {
 }

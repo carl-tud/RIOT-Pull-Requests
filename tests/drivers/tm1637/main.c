@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 Nico Behrens <nifrabe@outlook.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Nico Behrens <nifrabe@outlook.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for TM1637 4-digit 7-segment display driver
- *
- * @author      Nico Behrens <nifrabe@outlook.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for TM1637 4-digit 7-segment display driver
+///
+/// @author      Nico Behrens <nifrabe@outlook.de>
+///
+/// @}
 
 #include "tm1637.h"
 #include "tm1637_params.h"
@@ -24,21 +20,15 @@
 
 #include <stdio.h>
 
-/**
- * @brief device descriptor of the display
- */
+/// @brief device descriptor of the display
 static tm1637_t dev;
 
-static void test_setup(void)
-{
+static void test_setup(void) {
     tm1637_init(&dev, &tm1637_params[0]);
 }
 
-/**
- * @brief Display a number with different settings
- */
-static void test_number(void)
-{
+/// @brief Display a number with different settings
+static void test_number(void) {
     int number = -42;
     TEST_ASSERT_EQUAL_INT(0, tm1637_write_number(&dev, number, TM1637_PW_14_16, false, false));
     ztimer_sleep(ZTIMER_SEC, 1);
@@ -52,11 +42,8 @@ static void test_number(void)
     ztimer_sleep(ZTIMER_SEC, 1);
 }
 
-/**
- * @brief Shows all digits on the display
- */
-static void test_all_digits(void)
-{
+/// @brief Shows all digits on the display
+static void test_all_digits(void) {
     for (int i = 0; i < 10; i++) {
         TEST_ASSERT_EQUAL_INT(0, tm1637_write_number(&dev, i, TM1637_PW_14_16, false, false));
         ztimer_sleep(ZTIMER_SEC, 1);
@@ -64,13 +51,10 @@ static void test_all_digits(void)
     TEST_ASSERT_EQUAL_INT(0, tm1637_clear(&dev));
 }
 
-/**
- * @brief Test all brightness levels
- */
-static void test_brightness(void)
-{
+/// @brief Test all brightness levels
+static void test_brightness(void) {
     int number = 8888;
-    /* the brightness goes from 0 to 7 */
+    // the brightness goes from 0 to 7
     for (int i = 0; i <= 7; i++) {
         TEST_ASSERT_EQUAL_INT(0, tm1637_write_number(&dev, number, i, false, false));
         ztimer_sleep(ZTIMER_SEC, 1);
@@ -79,8 +63,7 @@ static void test_brightness(void)
     ztimer_sleep(ZTIMER_SEC, 1);
 }
 
-static Test *tests_tm1637_tests(void)
-{
+static Test *tests_tm1637_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures){
         new_TestFixture(test_number),
         new_TestFixture(test_all_digits),
@@ -92,8 +75,7 @@ static Test *tests_tm1637_tests(void)
     return (Test *)&tm1637_tests;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Starting TM1637 driver test application");
 
     TESTS_START();

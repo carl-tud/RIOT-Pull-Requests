@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Regression test to test subscribing to IPv6 packets while
- *              forwarding
- *
- * @author      Martine S. Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Regression test to test subscribing to IPv6 packets while
+///              forwarding
+///
+/// @author      Martine S. Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -43,7 +39,7 @@
 #define DST                 { 0x20, 0x01, 0x0d, 0xb8, 0x00, 0x00, 0xab, 0xcd, \
                               0x55, 0x44, 0x33, 0xff, 0xfe, 0x22, 0x11, 0x00, }
 #define DST_PFX_LEN         (64U)
-/* IPv6 header + payload:     version+TC  FL: 0       plen: 16    NH:17 HL:64 */
+// IPv6 header + payload:     version+TC  FL: 0       plen: 16    NH:17 HL:64
 #define L2_PAYLOAD          { 0x60, 0x00, 0x00, 0x00, 0x00, 0x10, 0x11, 0x40, \
                               /* source: random address */                    \
                               0x20, 0x01, 0x0d, 0xb8, 0x00, 0x00, 0xef, 0x01, \
@@ -70,8 +66,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-static void *_dumper_thread(void *arg)
-{
+static void *_dumper_thread(void *arg) {
     (void)arg;
     msg_init_queue(_dumper_queue, DUMPER_QUEUE_SIZE);
 
@@ -82,16 +77,16 @@ static void *_dumper_thread(void *arg)
         if (msg.type == GNRC_NETAPI_MSG_TYPE_RCV) {
             gnrc_pktsnip_t *pkt = msg.content.ptr;
 
-            /* wait a bit to give IPv6 time to handle the packet */
+            // wait a bit to give IPv6 time to handle the packet
             xtimer_usleep(500);
-            /* dump pkt. Should be equal to _l2_payloa*/
+            // dump pkt. Should be equal to _l2_payloa
             puts("I got a subscription!");
             od_hex_dump(pkt->data, pkt->size, OD_WIDTH_DEFAULT);
             gnrc_pktbuf_release(pkt);
         }
         else if (msg.type == GNRC_NETAPI_MSG_TYPE_SND) {
-            /* we are not interested in sent packets from the node itself;
-             * just release it */
+            // we are not interested in sent packets from the node itself;
+            // just release it
             gnrc_pktbuf_release(msg.content.ptr);
         }
     }
@@ -99,8 +94,7 @@ static void *_dumper_thread(void *arg)
     return NULL;
 }
 
-static int _dump_etherframe(netdev_t *dev, const iolist_t *iolist)
-{
+static int _dump_etherframe(netdev_t *dev, const iolist_t *iolist) {
     static uint8_t outbuf[sizeof(ethernet_hdr_t) + sizeof(_l2_payload)];
     size_t outbuf_len = 0U;
 
@@ -110,7 +104,7 @@ static int _dump_etherframe(netdev_t *dev, const iolist_t *iolist)
             printf("Ignoring packet: %" PRIuSIZE " > %" PRIuSIZE "\n",
                   (outbuf_len + iolist->iol_len),
                   sizeof(outbuf));
-            /* ignore larger packets */
+            // ignore larger packets
             return outbuf_len;
         }
         memcpy(&outbuf[outbuf_len], iolist->iol_base, iolist->iol_len);
@@ -123,8 +117,7 @@ static int _dump_etherframe(netdev_t *dev, const iolist_t *iolist)
     return outbuf_len;
 }
 
-static gnrc_pktsnip_t *_build_recvd_pkt(void)
-{
+static gnrc_pktsnip_t *_build_recvd_pkt(void) {
     gnrc_pktsnip_t *netif;
     gnrc_pktsnip_t *pkt;
 
@@ -137,8 +130,7 @@ static gnrc_pktsnip_t *_build_recvd_pkt(void)
     return pkt;
 }
 
-static int _run_test(int argc, char **argv)
-{
+static int _run_test(int argc, char **argv) {
     int subscribers;
     (void)argc;
     (void)argv;
@@ -150,10 +142,10 @@ static int _run_test(int argc, char **argv)
                                                  _dumper_thread, NULL,
                                                  "dumper"));
         expect(_dumper.target.pid > KERNEL_PID_UNDEF);
-        /* give dumper thread time to run */
+        // give dumper thread time to run
         xtimer_usleep(200);
     }
-    /* activate dumping of sent ethernet frames */
+    // activate dumping of sent ethernet frames
     netdev_ieee802154_t *netdev_ieee802154 = container_of(_mock_netif->dev,
                                                           netdev_ieee802154_t,
                                                           netdev);
@@ -162,41 +154,40 @@ static int _run_test(int argc, char **argv)
                                               netdev);
     netdev_test_set_send_cb(netdev_test,
                             _dump_etherframe);
-    /* first, test forwarding without subscription */
+    // first, test forwarding without subscription
     subscribers = gnrc_netapi_dispatch_receive(GNRC_NETTYPE_IPV6,
                                                GNRC_NETREG_DEMUX_CTX_ALL,
                                                _build_recvd_pkt());
-    /* only IPv6 should be subscribed at the moment */
+    // only IPv6 should be subscribed at the moment
     expect(subscribers == 1);
-    /* subscribe dumper thread for any IPv6 packets */
+    // subscribe dumper thread for any IPv6 packets
     gnrc_netreg_register(GNRC_NETTYPE_IPV6, &_dumper);
-    /* now test forwarding with subscription */
+    // now test forwarding with subscription
     subscribers = gnrc_netapi_dispatch_receive(GNRC_NETTYPE_IPV6,
                                                GNRC_NETREG_DEMUX_CTX_ALL,
                                                _build_recvd_pkt());
-    /* expect 2 subscribers: IPv6 and gnrc_pktdump as registered above */
+    // expect 2 subscribers: IPv6 and gnrc_pktdump as registered above
     expect(subscribers == 2);
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     int res;
 
-    /* initialize mock interface */
+    // initialize mock interface
     _tests_init();
-    /* define neighbor to forward to */
+    // define neighbor to forward to
     res = gnrc_ipv6_nib_nc_set(&_nbr_link_local, _mock_netif->pid,
                                _nbr_mac, sizeof(_nbr_mac));
     expect(res == 0);
-    /* set route to neighbor */
+    // set route to neighbor
     res = gnrc_ipv6_nib_ft_add(&_dst, DST_PFX_LEN, &_nbr_link_local,
                                _mock_netif->pid, 0);
     expect(res == 0);
-    /* start shell */
+    // start shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }

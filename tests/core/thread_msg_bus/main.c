@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Message bus test application
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Message bus test application
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <assert.h>
 #include <stdio.h>
@@ -31,8 +27,7 @@ char t3_stack[THREAD_STACKSIZE_MAIN];
 
 kernel_pid_t p_main, p1, p2, p3;
 
-static bool _recv_msg(const char *name, const msg_bus_t *bus)
-{
+static bool _recv_msg(const char *name, const msg_bus_t *bus) {
     msg_t msg;
 
     msg_receive(&msg);
@@ -45,8 +40,7 @@ static bool _recv_msg(const char *name, const msg_bus_t *bus)
     return msg_bus_get_type(&msg) != MSG_TYPE_EXIT;
 }
 
-void *thread1(void *arg)
-{
+void *thread1(void *arg) {
     msg_bus_entry_t sub;
 
     puts("THREAD 1 start");
@@ -63,8 +57,7 @@ void *thread1(void *arg)
     return NULL;
 }
 
-void *thread2(void *arg)
-{
+void *thread2(void *arg) {
     msg_bus_entry_t sub;
 
     puts("THREAD 2 start");
@@ -80,8 +73,7 @@ void *thread2(void *arg)
     return NULL;
 }
 
-void *thread3(void *arg)
-{
+void *thread3(void *arg) {
     msg_bus_entry_t sub;
 
     puts("THREAD 3 start");
@@ -97,8 +89,7 @@ void *thread3(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     msg_bus_t my_bus;
 
     msg_bus_init(&my_bus);
@@ -120,7 +111,7 @@ int main(void)
         printf("Posted event %d to %d threads\n", id, woken);
     }
 
-    /* mix non-bus message with bus messages */
+    // mix non-bus message with bus messages
     puts("Post message to thread 1");
     msg_t msg = {
         .type = 0x1337,
@@ -132,7 +123,7 @@ int main(void)
     woken = msg_bus_post(&my_bus, MSG_TYPE_EXIT, "shutdown request");
     assert(woken == 3);
 
-    /* make sure all threads have terminated */
+    // make sure all threads have terminated
     if (thread_getstatus(p1) != STATUS_NOT_FOUND ||
         thread_getstatus(p2) != STATUS_NOT_FOUND ||
         thread_getstatus(p3) != STATUS_NOT_FOUND ) {

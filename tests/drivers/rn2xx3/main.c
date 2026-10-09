@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for RN2483/RN2903 LoRa module driver
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for RN2483/RN2903 LoRa module driver
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -30,25 +26,21 @@
 static rn2xx3_t rn2xx3_dev;
 static uint8_t payload[RN2XX3_MAX_BUF];
 
-static void _print_sys_usage(void)
-{
+static void _print_sys_usage(void) {
     puts("Usage: sys <sleep|reset|factoryRESET>");
 }
 
-static void _print_mac_usage(void)
-{
+static void _print_mac_usage(void) {
     puts("Usage: mac <join|tx|set|get|save>");
 }
 
-static void _print_mac_get_usage(void)
-{
+static void _print_mac_get_usage(void) {
     puts("Usage: mac get "
          "<deveui|appeui|devaddr|txport|txmode|poweridx|dr|adr|"
          "band|retx|rx1|rx2|ar|rx2dr|rx2freq>");
 }
 
-static void _print_mac_set_usage(void)
-{
+static void _print_mac_set_usage(void) {
     puts("Usage: mac set "
          "<deveui|appeui|appkey|devaddr|appskey|nwkskey|txport|txmode|pwridx|dr"
          "|adr|bat|retx|linkchk|rx1|ar|rx2dr|rx2freq|sleep_duration> <value>");
@@ -147,7 +139,7 @@ int rn2xx3_mac_cmd(int argc, char **argv) {
                 return -1;
 
             default:
-                /* Should not happen */
+                // Should not happen
                 break;
         }
     }
@@ -217,7 +209,7 @@ int rn2xx3_mac_cmd(int argc, char **argv) {
                 break;
 
             default:
-                /* Should not happen */
+                // Should not happen
                 break;
         }
     }
@@ -426,8 +418,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("RN2XX3 device driver test");
 
     rn2xx3_setup(&rn2xx3_dev, &rn2xx3_params[0]);
@@ -436,7 +427,7 @@ int main(void)
         return -1;
     }
 
-    /* start the shell */
+    // start the shell
     puts("Initialization OK, starting shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

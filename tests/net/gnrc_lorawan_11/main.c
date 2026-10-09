@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2021 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @author      Jose I. Alamos <jose.alamos@haw-hamburg.de>
- * @file
- */
+/// @{
+///
+/// @author      Jose I. Alamos <jose.alamos@haw-hamburg.de>
+/// @file
 #include <stdio.h>
 #include <string.h>
 #include "embUnit.h"
@@ -43,16 +39,14 @@ static uint8_t tx_ch = 0x04;
 static void (*mlme_confirm_cb)(gnrc_lorawan_t *mac, mlme_confirm_t *confirm);
 static bool mlme_confirm_exec;
 
-/* Callback function required by GNRC LoRaWAN */
-void gnrc_lorawan_mlme_confirm(gnrc_lorawan_t *mac, mlme_confirm_t *confirm)
-{
+// Callback function required by GNRC LoRaWAN
+void gnrc_lorawan_mlme_confirm(gnrc_lorawan_t *mac, mlme_confirm_t *confirm) {
     TEST_ASSERT(mlme_confirm_cb);
     mlme_confirm_cb(mac, confirm);
     mlme_confirm_exec = true;
 }
 
-static void _cb__gnrc_lorawan_fopts__perform(gnrc_lorawan_t *mac, mlme_confirm_t *confirm)
-{
+static void _cb__gnrc_lorawan_fopts__perform(gnrc_lorawan_t *mac, mlme_confirm_t *confirm) {
     (void)mac;
     TEST_ASSERT(confirm->type == MLME_LINK_CHECK);
     TEST_ASSERT(confirm->status == GNRC_LORAWAN_REQ_STATUS_SUCCESS);
@@ -60,19 +54,17 @@ static void _cb__gnrc_lorawan_fopts__perform(gnrc_lorawan_t *mac, mlme_confirm_t
     TEST_ASSERT(confirm->link_req.num_gateways == 5);
 }
 
-void set_up(void)
-{
+void set_up(void) {
     mlme_confirm_exec = false;
     mlme_confirm_cb = NULL;
 }
 
-static void test_gnrc_lorawan__validate_mic(void)
-{
+static void test_gnrc_lorawan__validate_mic(void) {
     iolist_t pkt = { .iol_base = lorawan_packet_no_mic,
                      .iol_len = sizeof(lorawan_packet_no_mic),
                      .iol_next = NULL };
 
-    /* Uplink packet */
+    // Uplink packet
     le_uint32_t calc_mic;
 
     gnrc_lorawan_t mac = { 0 };
@@ -90,13 +82,12 @@ static void test_gnrc_lorawan__validate_mic(void)
     TEST_ASSERT(memcmp(&calc_mic, mic, sizeof(le_uint32_t)) == 0);
 }
 
-static void test_gnrc_lorawan__wrong_mic(void)
-{
+static void test_gnrc_lorawan__wrong_mic(void) {
     iolist_t pkt = { .iol_base = lorawan_packet_wrong,
                      .iol_len = sizeof(lorawan_packet_wrong),
                      .iol_next = NULL };
 
-    /* Uplink packet */
+    // Uplink packet
     le_uint32_t calc_mic;
 
     gnrc_lorawan_t mac = { 0 };
@@ -113,8 +104,7 @@ static void test_gnrc_lorawan__wrong_mic(void)
     TEST_ASSERT(memcmp(&calc_mic, mic, sizeof(le_uint32_t)) != 0);
 }
 
-static void test_gnrc_lorawan__build_hdr(void)
-{
+static void test_gnrc_lorawan__build_hdr(void) {
     uint8_t buf[sizeof(lorawan_hdr_t)];
 
     lorawan_buffer_t lw_buf = {
@@ -129,8 +119,7 @@ static void test_gnrc_lorawan__build_hdr(void)
     TEST_ASSERT(memcmp(lw_buf.data, lorawan_packet_no_mic, sizeof(lorawan_hdr_t)) == 0);
 }
 
-static void test_gnrc_lorawan_fopts__mlme_link_check_req(void)
-{
+static void test_gnrc_lorawan_fopts__mlme_link_check_req(void) {
     uint8_t buf[1];
     lorawan_buffer_t lw_buf = {
         .data = buf,
@@ -158,8 +147,7 @@ static void test_gnrc_lorawan_fopts__mlme_link_check_req(void)
     TEST_ASSERT(*buf == 0x02);
 }
 
-static void test_gnrc_lorawan_fopts__perform(void)
-{
+static void test_gnrc_lorawan_fopts__perform(void) {
     gnrc_lorawan_t mac;
 
     mac.mlme.pending_mlme_opts = GNRC_LORAWAN_MLME_OPTS_LINK_CHECK_REQ;
@@ -172,8 +160,7 @@ static void test_gnrc_lorawan_fopts__perform(void)
     TEST_ASSERT(mlme_confirm_exec);
 }
 
-static void test_gnrc_lorawan_fopts__perform_wrong(void)
-{
+static void test_gnrc_lorawan_fopts__perform_wrong(void) {
     gnrc_lorawan_t mac;
 
     mac.mlme.pending_mlme_opts = GNRC_LORAWAN_MLME_OPTS_LINK_CHECK_REQ;
@@ -183,8 +170,7 @@ static void test_gnrc_lorawan_fopts__perform_wrong(void)
     TEST_ASSERT(mac.mlme.pending_mlme_opts & GNRC_LORAWAN_MLME_OPTS_LINK_CHECK_REQ);
 }
 
-Test *tests_gnrc_lorawan_tests(void)
-{
+Test *tests_gnrc_lorawan_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_gnrc_lorawan__validate_mic),
         new_TestFixture(test_gnrc_lorawan__wrong_mic),
@@ -199,12 +185,11 @@ Test *tests_gnrc_lorawan_tests(void)
     return (Test *)&gnrc_lorawan_tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_gnrc_lorawan_tests());
     TESTS_END();
 
     return 0;
 }
-/** @} */
+/// @}

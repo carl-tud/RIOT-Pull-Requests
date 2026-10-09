@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2023-2026 Jon Shallow <supjps-libcoap@jpshallow.com>
- * SPDX-License-Identifier: BSD-2-Clause
- */
+// SPDX-FileCopyrightText: 2023-2026 Jon Shallow <supjps-libcoap@jpshallow.com>
+// SPDX-License-Identifier: BSD-2-Clause
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       libcoap Server Example Implementation
- *
- * This file is part of the CoAP library libcoap. Please see README for terms
- * of use.
- *
- * @author      Jon Shallow <supjps-libcoap@jpshallow.com>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       libcoap Server Example Implementation
+///
+/// This file is part of the CoAP library libcoap. Please see README for terms
+/// of use.
+///
+/// @author      Jon Shallow <supjps-libcoap@jpshallow.com>
+///
+/// @}
 
 #include "coap_config.h"
 #include <coap3/coap.h>
@@ -26,9 +22,9 @@
 
 #ifdef CONFIG_LIBCOAP_USE_PSK
 #  define COAP_USE_PSK CONFIG_LIBCOAP_USE_PSK
-#else /* CONFIG_LIBCOAP_USE_PSK */
+#else // CONFIG_LIBCOAP_USE_PSK
 #  define COAP_USE_PSK NULL
-#endif /* CONFIG_LIBCOAP_USE_PSK */
+#endif // CONFIG_LIBCOAP_USE_PSK
 
 static volatile int running = 0;
 static int quit;
@@ -36,14 +32,13 @@ static int quit;
 coap_context_t *main_coap_context;
 
 static coap_time_t clock_offset;
-/* changeable clock base (see handle_put_time()) */
+// changeable clock base (see handle_put_time())
 static coap_time_t my_clock_base = 0;
-static coap_resource_t *time_resource = NULL; /* just for testing */
+static coap_resource_t *time_resource = NULL; // just for testing
 
 static void hnd_get_time(coap_resource_t *resource, coap_session_t  *session,
                          const coap_pdu_t *request, const coap_string_t *query,
-                         coap_pdu_t *response)
-{
+                         coap_pdu_t *response) {
     unsigned char buf[40];
     size_t len;
     coap_tick_t now;
@@ -52,10 +47,10 @@ static void hnd_get_time(coap_resource_t *resource, coap_session_t  *session,
     (void)resource;
     (void)session;
     (void)request;
-    /* FIXME: return time, e.g. in human-readable by default and ticks
-     * when query ?ticks is given. */
+    // FIXME: return time, e.g. in human-readable by default and ticks
+    // when query ?ticks is given.
 
-    /* if my_clock_base was deleted, we pretend to have no such resource */
+    // if my_clock_base was deleted, we pretend to have no such resource
     coap_pdu_set_code(response, my_clock_base ? COAP_RESPONSE_CODE_CONTENT :
                       COAP_RESPONSE_CODE_NOT_FOUND);
     if (my_clock_base) {
@@ -70,24 +65,23 @@ static void hnd_get_time(coap_resource_t *resource, coap_session_t  *session,
 
     if (my_clock_base) {
 
-        /* calculate current time */
+        // calculate current time
         coap_ticks(&t);
         now = my_clock_base + (t / COAP_TICKS_PER_SECOND);
 
         if (query != NULL
             && coap_string_equal(query, coap_make_str_const("ticks"))) {
-            /* output ticks */
+            // output ticks
             len = snprintf((char *)buf, sizeof(buf), "%u", (unsigned int)now);
             coap_add_data(response, len, buf);
         }
     }
 }
 
-static void init_coap_resources(coap_context_t *ctx)
-{
+static void init_coap_resources(coap_context_t *ctx) {
     coap_resource_t *r;
 
-    /* store clock base to use in /time */
+    // store clock base to use in /time
     my_clock_base = clock_offset;
 
     r = coap_resource_init(coap_make_str_const("time"), 0);
@@ -111,8 +105,7 @@ error:
     coap_log_crit("cannot create resource\n");
 }
 
-static int init_coap_context_endpoints(const char *use_psk)
-{
+static int init_coap_context_endpoints(const char *use_psk) {
     coap_address_t listenaddress;
     gnrc_netif_t *netif = gnrc_netif_iter(NULL);
     ipv6_addr_t addr;
@@ -123,7 +116,7 @@ static int init_coap_context_endpoints(const char *use_psk)
     coap_str_const_t local;
     int have_ep = 0;
 
-    /* Get the first address on the interface */
+    // Get the first address on the interface
     if (gnrc_netif_ipv6_addrs_get(netif, &addr, sizeof(addr)) < 0) {
         puts("Unable to get first address of the interface");
         return 0;
@@ -144,7 +137,7 @@ static int init_coap_context_endpoints(const char *use_psk)
     if (use_psk && coap_dtls_is_supported()) {
         coap_dtls_spsk_t setup_data;
 
-        /* Need PSK set up before setting up endpoints */
+        // Need PSK set up before setting up endpoints
         memset(&setup_data, 0, sizeof(setup_data));
         setup_data.version = COAP_DTLS_SPSK_SETUP_VERSION;
         setup_data.psk_info.key.s = (const uint8_t *)use_psk;
@@ -181,11 +174,10 @@ static int init_coap_context_endpoints(const char *use_psk)
     return 1;
 }
 
-void *server_coap_run(void *arg)
-{
+void *server_coap_run(void *arg) {
     (void)arg;
 
-    /* Initialize libcoap library */
+    // Initialize libcoap library
     coap_startup();
 
     coap_set_log_level(COAP_MAX_LOGGING_LEVEL);
@@ -194,18 +186,18 @@ void *server_coap_run(void *arg)
         goto fail;
     }
 
-    /* Limit the number of idle sessions to save RAM */
+    // Limit the number of idle sessions to save RAM
     coap_context_set_max_idle_sessions(main_coap_context, 2);
-    clock_offset = 1; /* Need a non-zero value */
+    clock_offset = 1; // Need a non-zero value
     init_coap_resources(main_coap_context);
 
     coap_log_info("libcoap server ready\n");
-    /* Keep on processing ... */
+    // Keep on processing ...
     while (quit == 0) {
         coap_io_process(main_coap_context, 1000);
     }
 fail:
-    /* Clean up library usage so client can be run again */
+    // Clean up library usage so client can be run again
     coap_free_context(main_coap_context);
     main_coap_context = NULL;
     coap_cleanup();
@@ -218,24 +210,23 @@ fail:
 static char server_stack[THREAD_STACKSIZE_MAIN +
                          THREAD_EXTRA_STACKSIZE_PRINTF];
 
-static void start_server(void)
-{
+static void start_server(void) {
     kernel_pid_t server_pid;
 
-    /* Only one instance of the server */
+    // Only one instance of the server
     if (running) {
         puts("Error: server already running");
         return;
     }
 
-    /* The server is initialized */
+    // The server is initialized
     server_pid = thread_create(server_stack,
                                sizeof(server_stack),
                                THREAD_PRIORITY_MAIN - 1,
                                THREAD_CREATE_STACKTEST,
                                server_coap_run, NULL, "libcoap_server");
 
-    /* Uncommon but better be sure */
+    // Uncommon but better be sure
     if (server_pid == EINVAL) {
         puts("ERROR: Thread invalid");
         return;
@@ -250,9 +241,8 @@ static void start_server(void)
     return;
 }
 
-static void stop_server(void)
-{
-    /* check if server is running at all */
+static void stop_server(void) {
+    // check if server is running at all
     if (running == 0) {
         puts("Error: libcoap server is not running");
         return;
@@ -263,8 +253,7 @@ static void stop_server(void)
     puts("Stopping server...");
 }
 
-void server_coap_init(int argc, char **argv)
-{
+void server_coap_init(int argc, char **argv) {
     if (argc < 2 || strcmp(argv[1], "--help") == 0 ||
         strcmp(argv[1], "help") == 0) {
         printf("usage: %s start|stop\n", argv[0]);

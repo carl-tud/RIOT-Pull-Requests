@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp_common
- * @{
- *
- * @file
- * @brief       Exception handling for RISC-V-based ESP SoCs
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp_common
+/// @{
+///
+/// @file
+/// @brief       Exception handling for RISC-V-based ESP SoCs
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #include <inttypes.h>
 
@@ -41,28 +37,24 @@ static const char *exceptions[] = {
 
 static RvExcFrame *_frame = NULL;
 
-void init_exceptions (void)
-{
+void init_exceptions (void) {
 }
 
-void IRAM_ATTR xt_unhandled_exception(RvExcFrame *frame)
-{
+void IRAM_ATTR xt_unhandled_exception(RvExcFrame *frame) {
     _frame = frame;
     core_panic(PANIC_GENERAL_ERROR, "Unhandled exception");
 }
 
-void IRAM_ATTR panicHandler(RvExcFrame *frame)
-{
+void IRAM_ATTR panicHandler(RvExcFrame *frame) {
     _frame = frame;
     core_panic(PANIC_GENERAL_ERROR, "Panic handler");
 }
 
 extern void heap_stats(void);
 
-void panic_arch(void)
-{
+void panic_arch(void) {
     if (_frame) {
-        /* TODO */
+        // TODO
         ets_printf("Exception @0x%08"PRIx32", cause %s\n",
                    _frame->mepc, exceptions[_frame->mcause]);
     }

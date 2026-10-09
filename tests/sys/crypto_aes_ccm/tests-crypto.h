@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @addtogroup  unittests
- * @{
- *
- * @file
- * @brief       Unittests for the ``crypto`` module
- *
- * @author      Nils Ollrogge <nils-ollrogge@outlook.de>
- */
+/// @addtogroup  unittests
+/// @{
+///
+/// @file
+/// @brief       Unittests for the ``crypto`` module
+///
+/// @author      Nils Ollrogge <nils-ollrogge@outlook.de>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -24,8 +20,7 @@
 extern "C" {
 #endif
 
-static inline int compare(const uint8_t *a, const uint8_t *b, uint8_t len)
-{
+static inline int compare(const uint8_t *a, const uint8_t *b, uint8_t len) {
     int result = 1;
 
     for (uint8_t i = 0; i < len; ++i) {
@@ -43,4 +38,4 @@ Test *tests_crypto_modes_ccm_tests_256(void);
 }
 #endif
 
-/** @} */
+/// @}

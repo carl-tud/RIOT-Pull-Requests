@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -350,7 +348,7 @@ extern "C" {
 
 #if IS_USED(MODULE_SAUL_GPIO) || DOXYGEN
 #include "saul/periph.h"
-#endif /* MODULE_SAUL_GPIO */
+#endif // MODULE_SAUL_GPIO
 
 #if !IS_USED(MODULE_MCP23X17_I2C) && !IS_USED(MODULE_MCP23X17_SPI)
 #error "Please provide the MCP23x17 variants used by the application."
@@ -361,325 +359,279 @@ extern "C" {
 
 #include "event.h"
 
-#endif /* MODULE_MCP23X17_IRQ */
+#endif // MODULE_MCP23X17_IRQ
 
-/**
- * @brief   MCP23x17 device base address
- *
- * The address of a MCP23x17 device, both for devices with I2C interface and
- * for devices with SPI interface, is defined as the offset to a base address.
- * The address is in the range from 0 to 7 and is defined for the respective
- * MCP23x17 device by its hardware address pins A0 ... A2.
- *
- * @note The base address MCP23X17_BASE_ADDR is for internal use only. In the
- * device parameters only the offset to the base address is used as address.
- */
+/// @brief   MCP23x17 device base address
+///
+/// The address of a MCP23x17 device, both for devices with I2C interface and
+/// for devices with SPI interface, is defined as the offset to a base address.
+/// The address is in the range from 0 to 7 and is defined for the respective
+/// MCP23x17 device by its hardware address pins A0 ... A2.
+///
+/// @note The base address MCP23X17_BASE_ADDR is for internal use only. In the
+/// device parameters only the offset to the base address is used as address.
 #define MCP23X17_BASE_ADDR          (0x20)
 
-/**
- * @brief   MCP23x17 has 16 I/O pins
- */
+/// @brief   MCP23x17 has 16 I/O pins
 #define MCP23X17_GPIO_PIN_NUM       (16)
 
-/**
- * @brief   Conversion of (port x : pin y) to a pin number
- *
- * MCP23x17 expanders have 16 pins arranged in 2 ports with 8 pins each.
- * #MCP23X17_GPIO_PIN can either be used
- *
- * - #MCP23X17_GPIO_PIN(0, 0...15) or
- * - #MCP23X17_GPIO_PIN(0, 0...7) and MCP23X17_GPIO_PIN(1, 0...7)
- *
- * to address the 16 expander pins.
- */
+/// @brief   Conversion of (port x : pin y) to a pin number
+///
+/// MCP23x17 expanders have 16 pins arranged in 2 ports with 8 pins each.
+/// #MCP23X17_GPIO_PIN can either be used
+///
+/// - #MCP23X17_GPIO_PIN(0, 0...15) or
+/// - #MCP23X17_GPIO_PIN(0, 0...7) and MCP23X17_GPIO_PIN(1, 0...7)
+///
+/// to address the 16 expander pins.
 #define MCP23X17_GPIO_PIN(port, pin) ((gpio_t)((port << 3) | pin))
 
-/**
- * @brief   Named MCP23x17 driver error codes
- */
+/// @brief   Named MCP23x17 driver error codes
 typedef enum {
-    MCP23X17_OK,                    /**< success */
-    MCP23X17_ERROR_I2C,             /**< I2C communication error */
-    MCP23X17_ERROR_SPI,             /**< SPI communication error */
-    MCP23X17_ERROR_NO_DEV,          /**< no MCP23x17 I/O expander device */
-    MCP23X17_ERROR_INV_MODE,        /**< invalid pin mode */
-    MCP23X17_ERROR_INV_FLANK,       /**< invalid interrupt flank */
-    MCP23X17_ERROR_GPIO,            /**< GPIO pin error */
-    MCP23X17_ERROR_INT_PIN,         /**< `INTA`/`INTB` pin error */
-    MCP23X17_ERROR_RESET_PIN,       /**< `RESET` pin error */
+    MCP23X17_OK,                    ///< success
+    MCP23X17_ERROR_I2C,             ///< I2C communication error
+    MCP23X17_ERROR_SPI,             ///< SPI communication error
+    MCP23X17_ERROR_NO_DEV,          ///< no MCP23x17 I/O expander device
+    MCP23X17_ERROR_INV_MODE,        ///< invalid pin mode
+    MCP23X17_ERROR_INV_FLANK,       ///< invalid interrupt flank
+    MCP23X17_ERROR_GPIO,            ///< GPIO pin error
+    MCP23X17_ERROR_INT_PIN,         ///< `INTA`/`INTB` pin error
+    MCP23X17_ERROR_RESET_PIN,       ///< `RESET` pin error
 } mcp23x17_error_codes_t;
 
-/**
- * @brief   MCP23x17 interface types
- */
+/// @brief   MCP23x17 interface types
 typedef enum {
 #if IS_USED(MODULE_MCP23X17_I2C) || DOXYGEN
-    MCP23X17_I2C,                   /**< I2C interface used */
+    MCP23X17_I2C,                   ///< I2C interface used
 #endif
 #if IS_USED(MODULE_MCP23X17_SPI) || DOXYGEN
-    MCP23X17_SPI,                   /**< SPI interface used */
+    MCP23X17_SPI,                   ///< SPI interface used
 #endif
 } mcp23x17_if_t;
 
-/**
- * @brief   MCP23017 I2C parameters
- */
+/// @brief   MCP23017 I2C parameters
 #if IS_USED(MODULE_MCP23X17_I2C) || DOXYGEN
 typedef struct {
-    i2c_t dev;                      /**< I2C device used */
+    i2c_t dev;                      ///< I2C device used
 } mcp23x17_i2c_params_t;
 #endif
 
-/**
- * @brief   MCP23S17 SPI parameters
- */
+/// @brief   MCP23S17 SPI parameters
 #if IS_USED(MODULE_MCP23X17_SPI) || DOXYGEN
 typedef struct {
-    spi_t     dev;                  /**< SPI device used */
-    spi_clk_t clk;                  /**< SPI clock speed */
-    gpio_t    cs;                   /**< SPI chip Select pin */
+    spi_t     dev;                  ///< SPI device used
+    spi_clk_t clk;                  ///< SPI clock speed
+    gpio_t    cs;                   ///< SPI chip Select pin
 } mcp23x17_spi_params_t;
 #endif
 
-/**
- * @brief   MCP23x17 Hardware interface parameters union
- */
+/// @brief   MCP23x17 Hardware interface parameters union
 typedef struct {
-    mcp23x17_if_t type;             /**< I2C/SPI interface type selector */
+    mcp23x17_if_t type;             ///< I2C/SPI interface type selector
     union {
 #if IS_USED(MODULE_MCP23X17_I2C) || DOXYGEN
-        mcp23x17_i2c_params_t i2c;  /**< I2C specific interface parameters */
+        mcp23x17_i2c_params_t i2c;  ///< I2C specific interface parameters
 #endif
 #if IS_USED(MODULE_MCP23X17_SPI) || DOXYGEN
-        mcp23x17_spi_params_t spi;  /**< SPI specific interface parameters */
+        mcp23x17_spi_params_t spi;  ///< SPI specific interface parameters
 #endif
     };
 } mcp23x17_if_params_t;
 
-/**
- * @brief   Struct containing the peripheral configuration
- */
+/// @brief   Struct containing the peripheral configuration
 typedef struct {
-    /**
-     * @brief  MCP2317 device address.
-     *
-     * The MCP2317 device address is the address configured via the hardware
-     * address pins A0 ... A2 of the MCP23x17 device. It is in the range
-     * from 0 to 7. The address is used internally by the driver as an offset
-     * to the base address MCP23X17_BASE_ADDR to derive the complete device
-     * address.
-     *
-     * @note The driver uses hardware addressing with MCP23x17
-     * pins A0 ... A2 also for MCP23x17 SPI devices. The use of hardware
-     * addressing also for SPI devices allows the use of up to eight
-     * SPI devices with the same CS signal.
-     */
+    /// @brief  MCP2317 device address.
+    ///
+    /// The MCP2317 device address is the address configured via the hardware
+    /// address pins A0 ... A2 of the MCP23x17 device. It is in the range
+    /// from 0 to 7. The address is used internally by the driver as an offset
+    /// to the base address MCP23X17_BASE_ADDR to derive the complete device
+    /// address.
+    ///
+    /// @note The driver uses hardware addressing with MCP23x17
+    /// pins A0 ... A2 also for MCP23x17 SPI devices. The use of hardware
+    /// addressing also for SPI devices allows the use of up to eight
+    /// SPI devices with the same CS signal.
     uint8_t addr;
     gpio_t int_pin;     /**< GPIO pin used for combined `INTA`/`INTB` signal.
                              Each device must use its own GPIO pin for its
                              combined `INTA`/`INTB` signal. */
-    gpio_t reset_pin;   /**< GPIO pin used for `RESET` signal */
-    mcp23x17_if_params_t if_params; /**< specific I2C/SPI interface parameters */
+    gpio_t reset_pin;   ///< GPIO pin used for `RESET` signal
+    mcp23x17_if_params_t if_params; ///< specific I2C/SPI interface parameters
 } mcp23x17_params_t;
 
 #if IS_USED(MODULE_MCP23X17_IRQ) || DOXYGEN
-/**
- * @brief   IRQ event type
- *
- * Handling an interrupt of a MCP23x17 expander requires direct access to the
- * device by the driver over I2C/SPI within the ISR. However, the mutex
- * based synchronization of I2C/SPI accesses does not work in the interrupt
- * context. Accessing I2C/SPI within an ISR could therefore interfere with an
- * existing I2C/SPI access. Therefore, the ISR must not access the MCP23x17
- * expander device. Rather, the ISR has only to indicate the occurrence
- * of the interrupt. The interrupt is then handled asynchronously by a thread.
- *
- * The type defines the data structure which is part of each device data
- * structure to indicate that an interrupt for the device occurred. Since there
- * is only one interrupt source, only one interrupt can be pending per device.
- * Thus, only one object of this type per device is required.
- */
+/// @brief   IRQ event type
+///
+/// Handling an interrupt of a MCP23x17 expander requires direct access to the
+/// device by the driver over I2C/SPI within the ISR. However, the mutex
+/// based synchronization of I2C/SPI accesses does not work in the interrupt
+/// context. Accessing I2C/SPI within an ISR could therefore interfere with an
+/// existing I2C/SPI access. Therefore, the ISR must not access the MCP23x17
+/// expander device. Rather, the ISR has only to indicate the occurrence
+/// of the interrupt. The interrupt is then handled asynchronously by a thread.
+///
+/// The type defines the data structure which is part of each device data
+/// structure to indicate that an interrupt for the device occurred. Since there
+/// is only one interrupt source, only one interrupt can be pending per device.
+/// Thus, only one object of this type per device is required.
 typedef struct {
-    event_t event;      /**< Super event data structure */
-    void *dev;          /**< MCP23x17 device reference */
+    event_t event;      ///< Super event data structure
+    void *dev;          ///< MCP23x17 device reference
 } mcp23x17_irq_event_t;
 
-#endif /* MODULE_MCP23X17_IRQ */
+#endif // MODULE_MCP23X17_IRQ
 
-/**
- * @brief   Device descriptor for MCP23x17 I/O expanders
- */
+/// @brief   Device descriptor for MCP23x17 I/O expanders
 typedef struct {
-    mcp23x17_params_t params;   /**< Device initialization parameters */
+    mcp23x17_params_t params;   ///< Device initialization parameters
 
-    uint16_t od_pins;           /**< Pins defined as GPIO_OD or GPIO_OD_PU */
+    uint16_t od_pins;           ///< Pins defined as GPIO_OD or GPIO_OD_PU
 
 #if IS_USED(MODULE_MCP23X17_IRQ) || DOXYGEN
-    gpio_isr_ctx_t isr[MCP23X17_GPIO_PIN_NUM];  /**< ISR with arg for each expander pin */
-    gpio_flank_t flank[MCP23X17_GPIO_PIN_NUM];  /**< interrupt flank for each expander pin */
+    gpio_isr_ctx_t isr[MCP23X17_GPIO_PIN_NUM];  ///< ISR with arg for each expander pin
+    gpio_flank_t flank[MCP23X17_GPIO_PIN_NUM];  ///< interrupt flank for each expander pin
 
-    mcp23x17_irq_event_t irq_event;             /**< IRQ event object used for the device */
-#endif /* MODULE_MCP23X17_IRQ */
+    mcp23x17_irq_event_t irq_event;             ///< IRQ event object used for the device
+#endif // MODULE_MCP23X17_IRQ
 
 } mcp23x17_t;
 
 #if IS_USED(MODULE_SAUL_GPIO) || DOXYGEN
-/**
- * @brief   MCP23x17 configuration structure for mapping expander pins to SAUL
- *
- * This data structure is an extension of the GPIO configuration structure for
- * mapping GPIOs to SAUL. The only additional information required is a
- * reference to the according MCP23x17 device.
- *
- * @note To use MCP23x17 with SAUL, module `saul_gpio` has to be added to the
- * project.
- */
+/// @brief   MCP23x17 configuration structure for mapping expander pins to SAUL
+///
+/// This data structure is an extension of the GPIO configuration structure for
+/// mapping GPIOs to SAUL. The only additional information required is a
+/// reference to the according MCP23x17 device.
+///
+/// @note To use MCP23x17 with SAUL, module `saul_gpio` has to be added to the
+/// project.
 typedef struct {
-    uint8_t dev;                /**< MCP23x17 device index */
-    saul_gpio_params_t gpio;    /**< GPIO configuration for mapping to SAUL */
+    uint8_t dev;                ///< MCP23x17 device index
+    saul_gpio_params_t gpio;    ///< GPIO configuration for mapping to SAUL
 } mcp23x17_saul_gpio_params_t;
 #endif
 
-/**
- * @brief   Initialize the MCP23x17 I/O expander
- *
- * All expander pins are set to be input and are pulled up.
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   params  Configuration parameters, see #mcp23x17_params_t
- *
- * @retval  MCP23X17_OK      on success
- * @retval  MCP23X17_ERROR_* on error, a negative error code,
- *                           see #mcp23x17_error_codes_t
- */
+/// @brief   Initialize the MCP23x17 I/O expander
+///
+/// All expander pins are set to be input and are pulled up.
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   params  Configuration parameters, see #mcp23x17_params_t
+///
+/// @retval  MCP23X17_OK      on success
+/// @retval  MCP23X17_ERROR_* on error, a negative error code,
+///                           see #mcp23x17_error_codes_t
 int mcp23x17_init(mcp23x17_t *dev, const mcp23x17_params_t *params);
 
-/**
- * @brief   Initialize a MCP23x17 pin
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   pin     Pin to initialize, use MCP23X17_GPIO_PIN(x,y) to specify
- * @param[in]   mode    Mode of the pin, see #gpio_t
- *
- * @retval  MCP23X17_OK      on success
- * @retval  MCP23X17_ERROR_* on error, a negative error code,
- *                           see #mcp23x17_error_codes_t
- */
+/// @brief   Initialize a MCP23x17 pin
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   pin     Pin to initialize, use MCP23X17_GPIO_PIN(x,y) to specify
+/// @param[in]   mode    Mode of the pin, see #gpio_t
+///
+/// @retval  MCP23X17_OK      on success
+/// @retval  MCP23X17_ERROR_* on error, a negative error code,
+///                           see #mcp23x17_error_codes_t
 int mcp23x17_gpio_init(mcp23x17_t *dev, gpio_t pin, gpio_mode_t mode);
 
 #if IS_USED(MODULE_MCP23X17_IRQ) || DOXYGEN
-/**
- * @brief   Initialize a MCP23x17 pin for external interrupt usage
- *
- * The registered callback function will be called in interrupt context every
- * time the defined flank(s) are detected. Therefore, it MUST NOT be blocking
- * or time-consuming.
- *
- * The interrupt is activated automatically after the initialization.
- *
- * @note
- * - Module `mcp23x17_irq` has to be added to the project to enable this
- *   function.
- * - The GPIO pin connected to the MCP23x17 combined `INTA`/`INTB` signal has
- *   to be defined by parameter mcp23x17_params_t::int_pin.
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   pin     pin to initialize, use MCP23X17_GPIO_PIN(x,y) to specify
- * @param[in]   mode    mode of the pin, see #gpio_t
- * @param[in]   flank   define the active flanks, see #gpio_flank_t
- * @param[in]   isr     ISR that is called back from interrupt context
- * @param[in]   arg     optional argument passed to the callback
- *
- * @retval  MCP23X17_OK      on success
- * @retval  MCP23X17_ERROR_* on error, a negative error code,
- *                           see #mcp23x17_error_codes_t
- */
+/// @brief   Initialize a MCP23x17 pin for external interrupt usage
+///
+/// The registered callback function will be called in interrupt context every
+/// time the defined flank(s) are detected. Therefore, it MUST NOT be blocking
+/// or time-consuming.
+///
+/// The interrupt is activated automatically after the initialization.
+///
+/// @note
+/// - Module `mcp23x17_irq` has to be added to the project to enable this
+///   function.
+/// - The GPIO pin connected to the MCP23x17 combined `INTA`/`INTB` signal has
+///   to be defined by parameter mcp23x17_params_t::int_pin.
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   pin     pin to initialize, use MCP23X17_GPIO_PIN(x,y) to specify
+/// @param[in]   mode    mode of the pin, see #gpio_t
+/// @param[in]   flank   define the active flanks, see #gpio_flank_t
+/// @param[in]   isr     ISR that is called back from interrupt context
+/// @param[in]   arg     optional argument passed to the callback
+///
+/// @retval  MCP23X17_OK      on success
+/// @retval  MCP23X17_ERROR_* on error, a negative error code,
+///                           see #mcp23x17_error_codes_t
 int mcp23x17_gpio_init_int(mcp23x17_t *dev, gpio_t pin,
                                           gpio_mode_t mode,
                                           gpio_flank_t flank,
                                           gpio_cb_t isr,
                                           void *arg);
-#endif /* MODULE_MCP23X17_IRQ || DOXYGEN */
+#endif // MODULE_MCP23X17_IRQ || DOXYGEN
 
-/**
- * @brief   Get the value from MCP23x17 input pin
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   pin     pin to read, use MCP23X17_GPIO_PIN(x,y) to specify
- *
- * @retval  0                on LOW signal
- * @retval  1                on HIGH signal
- * @retval  MCP23X17_ERROR_* on error, a negative error code,
- *                           see #mcp23x17_error_codes_t
- */
+/// @brief   Get the value from MCP23x17 input pin
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   pin     pin to read, use MCP23X17_GPIO_PIN(x,y) to specify
+///
+/// @retval  0                on LOW signal
+/// @retval  1                on HIGH signal
+/// @retval  MCP23X17_ERROR_* on error, a negative error code,
+///                           see #mcp23x17_error_codes_t
 int mcp23x17_gpio_read(mcp23x17_t *dev, gpio_t pin);
 
-/**
- * @brief   Write the value to MCP23x17 input pin
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   pin     pin to write, use MCP23X17_GPIO_PIN(x,y) to specify
- * @param[in]   value   value to write
- */
+/// @brief   Write the value to MCP23x17 input pin
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   pin     pin to write, use MCP23X17_GPIO_PIN(x,y) to specify
+/// @param[in]   value   value to write
 void mcp23x17_gpio_write(mcp23x17_t *dev, gpio_t pin, int value);
 
-/**
- * @brief   Clear the MCP23x17 output pin
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   pin     pin to clear, use MCP23X17_GPIO_PIN(x,y) to specify
- */
+/// @brief   Clear the MCP23x17 output pin
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   pin     pin to clear, use MCP23X17_GPIO_PIN(x,y) to specify
 void mcp23x17_gpio_clear(mcp23x17_t *dev, gpio_t pin);
 
-/**
- * @brief   Set the MCP23x17 output pin
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   pin     pin to set, use MCP23X17_GPIO_PIN(x,y) to specify
- */
+/// @brief   Set the MCP23x17 output pin
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   pin     pin to set, use MCP23X17_GPIO_PIN(x,y) to specify
 void mcp23x17_gpio_set(mcp23x17_t *dev, gpio_t pin);
 
-/**
- * @brief   Toggle the value of the MCP23x17 output pin
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   pin     pin to toggle, use MCP23X17_GPIO_PIN(x,y) to specify
- */
+/// @brief   Toggle the value of the MCP23x17 output pin
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   pin     pin to toggle, use MCP23X17_GPIO_PIN(x,y) to specify
 void mcp23x17_gpio_toggle(mcp23x17_t *dev, gpio_t pin);
 
 #if IS_USED(MODULE_MCP23X17_IRQ) || DOXYGEN
-/**
- * @brief   Enable pin interrupt
- *
- * @note
- * - Module `mcp23x17_irq` has to be added to the project to enable this
- *   function.
- * - The GPIO pin connected to the MCP23x17 combined `INTA`/`INTB` signal has
- *   to be defined by parameter mcp23x17_params_t::int_pin.
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   pin     pin to enable the interrupt for
- */
+/// @brief   Enable pin interrupt
+///
+/// @note
+/// - Module `mcp23x17_irq` has to be added to the project to enable this
+///   function.
+/// - The GPIO pin connected to the MCP23x17 combined `INTA`/`INTB` signal has
+///   to be defined by parameter mcp23x17_params_t::int_pin.
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   pin     pin to enable the interrupt for
 void mcp23x17_gpio_irq_enable(mcp23x17_t *dev, gpio_t pin);
 
-/**
- * @brief   Disable pin interrupt
- *
- * @note
- * - Module `mcp23x17_irq` has to be added to the project to enable this
- *   function.
- * - The GPIO pin connected to the MCP23x17 combined `INTA`/`INTB` signal has
- *   to be defined by parameter mcp23x17_params_t::int_pin.
- *
- * @param[in]   dev     Descriptor of MCP23x17 I/O expander device
- * @param[in]   pin     pin to enable the interrupt for
- */
+/// @brief   Disable pin interrupt
+///
+/// @note
+/// - Module `mcp23x17_irq` has to be added to the project to enable this
+///   function.
+/// - The GPIO pin connected to the MCP23x17 combined `INTA`/`INTB` signal has
+///   to be defined by parameter mcp23x17_params_t::int_pin.
+///
+/// @param[in]   dev     Descriptor of MCP23x17 I/O expander device
+/// @param[in]   pin     pin to enable the interrupt for
 void mcp23x17_gpio_irq_disable(mcp23x17_t *dev, gpio_t pin);
 
-#endif /* MODULE_MCP23X17_IRQ || DOXYGEN */
+#endif // MODULE_MCP23X17_IRQ || DOXYGEN
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

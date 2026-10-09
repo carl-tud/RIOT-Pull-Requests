@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the ft5x06 touch driver
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the ft5x06 touch driver
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -31,16 +27,14 @@
 #endif
 
 #if !IS_ACTIVE(FT5X06_POLLING_MODE)
-static void _touch_event_cb(void *arg)
-{
+static void _touch_event_cb(void *arg) {
     mutex_unlock(arg);
 }
 #endif
 
 static ft5x06_touch_position_t positions[FT5X06_TOUCHES_COUNT_MAX];
 
-int main(void)
-{
+int main(void) {
 #if !IS_ACTIVE(FT5X06_POLLING_MODE)
     mutex_t lock = MUTEX_INIT_LOCKED;
 #endif
@@ -68,10 +62,10 @@ int main(void)
 
     while (1) {
 #if IS_ACTIVE(FT5X06_POLLING_MODE)
-        /* polling is used */
+        // polling is used
         ztimer_sleep(ZTIMER_MSEC, FT5X06_POLLING_PERIOD);
 #else
-        /* wait for touch event */
+        // wait for touch event
         mutex_lock(&lock);
 #endif
 
@@ -93,7 +87,7 @@ int main(void)
             printf("Gesture detected: %d\n", gesture);
         }
 
-        /* Display touch positions if there are some */
+        // Display touch positions if there are some
         if (current_touch_count > 0) {
             ft5x06_read_touch_positions(&dev, positions, current_touch_count);
             for (uint8_t touch = 0; touch < current_touch_count; touch++) {

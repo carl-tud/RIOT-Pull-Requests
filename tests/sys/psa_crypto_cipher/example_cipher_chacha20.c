@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2024 TU-Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 TU-Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @brief       Tests the PSA cipher configurations
- *              Contents have been copied from `examples/advanced/psa_crypto`
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @brief       Tests the PSA cipher configurations
+///              Contents have been copied from `examples/advanced/psa_crypto`
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
+/// @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -27,22 +23,19 @@ static const uint8_t KEY_CHACHA20[] = {
     0x00, 0x08, 0x9a, 0x8b, 0x86, 0x55, 0x2e, 0x9a
 };
 
-/* certain PSA backends require the data to be in RAM rather than ROM
- * so these values cannot be `const` */
+// certain PSA backends require the data to be in RAM rather than ROM
+// so these values cannot be `const`
 static uint8_t PLAINTEXT[] = {
     0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x52, 0x49, 0x4F, 0x54, 0x21, 0x20,
     0x54, 0x68, 0x65, 0x20, 0x41, 0x6E, 0x73, 0x77, 0x65, 0x72, 0x20, 0x69,
     0x73, 0x20, 0x34, 0x32, 0x2E
 };
 
-/**
- * @brief   Example function to perform an CHACHA20 encryption and decryption
- *          with the PSA Crypto API.
- *
- * @return  psa_status_t
- */
-psa_status_t example_cipher_chacha20(void)
-{
+/// @brief   Example function to perform an CHACHA20 encryption and decryption
+///          with the PSA Crypto API.
+///
+/// @return  psa_status_t
+psa_status_t example_cipher_chacha20(void) {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     psa_key_id_t key_id = 0;
     psa_key_attributes_t attr = psa_key_attributes_init();

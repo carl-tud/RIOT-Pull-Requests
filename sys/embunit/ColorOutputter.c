@@ -1,31 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2015 Janos Kutscherauer <noshky@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Janos Kutscherauer <noshky@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdio.h>
 #include "ColorOutputter.h"
 #include "ColorTextColors.h"
 
-static void ColorOutputter_printHeader(OutputterRef self)
-{
+static void ColorOutputter_printHeader(OutputterRef self) {
     (void) self;
 }
 
-static void ColorOutputter_printStartTest(OutputterRef self, TestRef test)
-{
+static void ColorOutputter_printStartTest(OutputterRef self, TestRef test) {
     (void) self;
     (void) test;
 }
 
-static void ColorOutputter_printEndTest(OutputterRef self, TestRef test)
-{
+static void ColorOutputter_printEndTest(OutputterRef self, TestRef test) {
     (void) self;
     (void) test;
 }
 
-static void ColorOutputter_printSuccessful(OutputterRef self, TestRef test, int runCount)
-{
+static void ColorOutputter_printSuccessful(OutputterRef self, TestRef test, int runCount) {
     (void) self;
     (void) test;
     (void) runCount;
@@ -33,15 +27,13 @@ static void ColorOutputter_printSuccessful(OutputterRef self, TestRef test, int 
 }
 
 static void ColorOutputter_printFailure(OutputterRef self, TestRef test, char *msg, int line,
-        char *file, int runCount)
-{
+        char *file, int runCount) {
     (void) self;
     (void) runCount;
     printf("\n" CRED "FAILED %s (%s:%d) %s" CDEFAULT "\n", Test_name(test), file, line, msg);
 }
 
-void ColorOutputter_printStatistics(OutputterRef self, TestResultRef result)
-{
+void ColorOutputter_printStatistics(OutputterRef self, TestResultRef result) {
     (void) self;
     if (result->failureCount) {
         printf("\n" BGRED SBOLD "FAILED" SDEFAULT " (%d of %d failed)", result->failureCount,
@@ -66,7 +58,6 @@ static const Outputter ColorOutputter = {
     (OutputterImplementRef) &ColorOutputterImplement
 };
 
-OutputterRef ColorOutputter_outputter(void)
-{
+OutputterRef ColorOutputter_outputter(void) {
     return (OutputterRef) &ColorOutputter;
 }

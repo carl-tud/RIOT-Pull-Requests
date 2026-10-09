@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the sd-card spi driver
- *
- * @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the sd-card spi driver
+///
+/// @author      Michel Rottleuthner <michel.rottleuthner@haw-hamburg.de>
+///
+/// @}
 #include "shell.h"
 #include "sdcard_spi.h"
 #include "sdcard_spi_internal.h"
@@ -25,22 +21,21 @@
 #include <string.h>
 #include <stdio.h>
 
-/* independent of what you specify in a r/w cmd this is the maximum number of blocks read at once.
-   If you call read with a bigger blockcount the read is performed in chunks*/
+// independent of what you specify in a r/w cmd this is the maximum number of blocks read at once.
+//    If you call read with a bigger blockcount the read is performed in chunks
 #define MAX_BLOCKS_IN_BUFFER 4
 #define BLOCK_PRINT_BYTES_PER_LINE 16
 #define FIRST_PRINTABLE_ASCII_CHAR 0x20
 #define ASCII_UNPRINTABLE_REPLACEMENT "."
 
-/* this is provided by the sdcard_spi driver
- * see drivers/sdcard_spi/sdcard_spi.c */
+// this is provided by the sdcard_spi driver
+// see drivers/sdcard_spi/sdcard_spi.c
 extern sdcard_spi_t sdcard_spi_devs[ARRAY_SIZE(sdcard_spi_params)];
 sdcard_spi_t *card = &sdcard_spi_devs[0];
 
 uint8_t buffer[SD_HC_BLOCK_SIZE * MAX_BLOCKS_IN_BUFFER];
 
-static int _init(int argc, char **argv)
-{
+static int _init(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -55,8 +50,7 @@ static int _init(int argc, char **argv)
     return 0;
 }
 
-static int _cid(int argc, char **argv)
-{
+static int _cid(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -73,8 +67,7 @@ static int _cid(int argc, char **argv)
     return 0;
 }
 
-static int _csd(int argc, char **argv)
-{
+static int _csd(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -141,8 +134,7 @@ static int _csd(int argc, char **argv)
     return 0;
 }
 
-static int _sds(int argc, char **argv)
-{
+static int _sds(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -171,8 +163,7 @@ static int _sds(int argc, char **argv)
     return -1;
 }
 
-static int _size(int argc, char **argv)
-{
+static int _size(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -185,7 +176,7 @@ static int _size(int argc, char **argv)
 
     uint32_t gb_int = bytes / (SDCARD_SPI_SI_KILO * SDCARD_SPI_SI_KILO * SDCARD_SPI_SI_KILO);
     uint32_t gb_frac = (bytes / (SDCARD_SPI_SI_KILO * SDCARD_SPI_SI_KILO))
-                       - (gb_int * SDCARD_SPI_SI_KILO); /* [MB] */
+                       - (gb_int * SDCARD_SPI_SI_KILO); // [MB]
 
     puts("\nCard size: ");
     print_u64_dec( bytes );
@@ -194,8 +185,7 @@ static int _size(int argc, char **argv)
     return 0;
 }
 
-static int _read(int argc, char **argv)
-{
+static int _read(int argc, char **argv) {
     int blockaddr;
     int cnt;
     bool print_as_char = false;
@@ -246,11 +236,11 @@ static int _read(int argc, char **argv)
             }
 
             if ((i % BLOCK_PRINT_BYTES_PER_LINE) == (BLOCK_PRINT_BYTES_PER_LINE - 1)) {
-                puts(""); /* line break after BLOCK_PRINT_BYTES_PER_LINE bytes */
+                puts(""); // line break after BLOCK_PRINT_BYTES_PER_LINE bytes
             }
 
             if ((i % SD_HC_BLOCK_SIZE) == (SD_HC_BLOCK_SIZE - 1)) {
-                puts(""); /* empty line after each printed block */
+                puts(""); // empty line after each printed block
             }
         }
         total_read += chunks_read;
@@ -258,8 +248,7 @@ static int _read(int argc, char **argv)
     return 0;
 }
 
-static int _write(int argc, char **argv)
-{
+static int _write(int argc, char **argv) {
     int bladdr;
     char *data;
     int size;
@@ -288,7 +277,7 @@ static int _write(int argc, char **argv)
         return -1;
     }
 
-    /* copy data to a full-block-sized buffer an fill remaining block space according to -r param*/
+    // copy data to a full-block-sized buffer an fill remaining block space according to -r param
     uint8_t write_buffer[SD_HC_BLOCK_SIZE];
     for (unsigned i = 0; i < sizeof(write_buffer); i++) {
         if (repeat_data || ((int)i < size)) {
@@ -311,8 +300,7 @@ static int _write(int argc, char **argv)
     return 0;
 }
 
-static int _copy(int argc, char **argv)
-{
+static int _copy(int argc, char **argv) {
     int src_block;
     int dst_block;
     uint8_t tmp_copy[SD_HC_BLOCK_SIZE];
@@ -345,8 +333,7 @@ static int _copy(int argc, char **argv)
     return 0;
 }
 
-static int _sector_count(int argc, char **argv)
-{
+static int _sector_count(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -370,8 +357,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("SD-card spi driver test application");
 
     card->init_done = false;

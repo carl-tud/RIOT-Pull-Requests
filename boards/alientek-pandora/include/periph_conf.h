@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2021 Luo Jia (HUST IoT Security Lab)
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Luo Jia (HUST IoT Security Lab)
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_alientek-pandora
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the Alientek Pandora board
- *
- * @author      Luo Jia <luojia@hust.edu.cn>
- */
+/// @ingroup     boards_alientek-pandora
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the Alientek Pandora board
+///
+/// @author      Luo Jia <luojia@hust.edu.cn>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
-#define CONFIG_BOARD_HAS_LSE            1   /**< This board provides LSE  */
+#define CONFIG_BOARD_HAS_LSE            1   ///< This board provides LSE
 #endif
 
 #include "periph_cpu.h"
@@ -28,11 +24,9 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- * @{
- */
-/** All timers on board */
+/// @name    Timer configuration
+/// @{
+/// All timers on board
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM5,
@@ -43,16 +37,14 @@ static const timer_conf_t timer_config[] = {
     }
 };
 
-#define TIMER_0_ISR         isr_tim5 /**< Timer 0 ISR number */
+#define TIMER_0_ISR         isr_tim5 ///< Timer 0 ISR number
 
-#define TIMER_NUMOF         ARRAY_SIZE(timer_config) /**< Number of timers on this board */
-/** @} */
+#define TIMER_NUMOF         ARRAY_SIZE(timer_config) ///< Number of timers on this board
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
-/** All UARTs on board */
+/// @name    UART configuration
+/// @{
+/// All UARTs on board
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -64,7 +56,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
 #ifdef UART_USE_DMA
         .dma_stream = 6,
         .dma_chan   = 4
@@ -72,13 +64,13 @@ static const uart_conf_t uart_config[] = {
     }
 };
 
-#define UART_0_ISR          (isr_usart1) /**< Usart1 ISR number */
+#define UART_0_ISR          (isr_usart1) ///< Usart1 ISR number
 
-#define UART_NUMOF          ARRAY_SIZE(uart_config) /**< Number of uarts on this board */
-/** @} */
+#define UART_NUMOF          ARRAY_SIZE(uart_config) ///< Number of uarts on this board
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

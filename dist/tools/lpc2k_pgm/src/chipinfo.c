@@ -1,21 +1,19 @@
-/*
- * LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
- * Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
- * Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- *
- */
+// LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
+// Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the
+// Free Software Foundation; version 2 of the License.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+// Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
 
 #include <stdio.h>
 #include "chipinfo.h"
@@ -93,22 +91,22 @@ struct sector_info_struct lpc2138_layout[] = {
 
 
 
-/* chunk_size is the number of bytes that will be sent with each */
-/* "C" (Copy RAM to Flash) command.  This must be one of the sizes */
-/* supported by that command.  Beware that different chips support */
-/* different sets of sizes, so check the user manual specific to */
-/* the chip.  You must choose a chunk_size which is an an integer */
-/* multiple of all the sector sizes, and it must be able to fit */
-/* entirely within the RAM (allowing for the bootloader memory and */
-/* stack usage).  Currently, all available chunk sizes meet these */
-/* requirements, but who knows what Philips will do in the future? */
+// chunk_size is the number of bytes that will be sent with each
+// "C" (Copy RAM to Flash) command.  This must be one of the sizes
+// supported by that command.  Beware that different chips support
+// different sets of sizes, so check the user manual specific to
+// the chip.  You must choose a chunk_size which is an an integer
+// multiple of all the sector sizes, and it must be able to fit
+// entirely within the RAM (allowing for the bootloader memory and
+// stack usage).  Currently, all available chunk sizes meet these
+// requirements, but who knows what Philips will do in the future?
 //
-/* ram_addr is the location in RAM where the chunks are sent by the */
-/* "W" (Write to RAM) command. */
+// ram_addr is the location in RAM where the chunks are sent by the
+// "W" (Write to RAM) command.
 
 
 struct chip_info_struct chip_info[] = {
-    /* part_number     id_string     ram_addr    _size   sec  sector layout  boot code */
+    // part_number     id_string     ram_addr    _size   sec  sector layout  boot code
     {"LPC2104 (120k)", "4293984018", 0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
     {"LPC2105 (120k)", "4293984034", 0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
     {"LPC2106 (120k)", "4293984050", 0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},

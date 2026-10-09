@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Robin Lösch
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Robin Lösch
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- *
- * @file
- * @brief       Interface definition for the stm32 ethernet driver
- *
- * @author      Robin Lösch <robin@chilio.net>
- *
- * @{
- */
+///
+/// @file
+/// @brief       Interface definition for the stm32 ethernet driver
+///
+/// @author      Robin Lösch <robin@chilio.net>
+///
+/// @{
 
 #pragma once
 
@@ -21,14 +17,12 @@
 extern "C" {
 #endif
 
-/**
- * @brief Setup netdev
- *
- */
+/// @brief Setup netdev
+///
 void stm32_eth_netdev_setup(netdev_t *netdev);
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

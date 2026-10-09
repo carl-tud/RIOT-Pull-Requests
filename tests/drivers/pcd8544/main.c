@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the PCD8544 display driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the PCD8544 display driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #ifndef TEST_PCD8544_SPI
 #error "TEST_PCD8544_SPI not defined"
@@ -37,8 +33,7 @@
 
 static pcd8544_t dev;
 
-static int _contrast(int argc, char **argv)
-{
+static int _contrast(int argc, char **argv) {
     uint8_t val;
 
     if (argc < 2) {
@@ -50,8 +45,7 @@ static int _contrast(int argc, char **argv)
     return 0;
 }
 
-static int _temp(int argc, char **argv)
-{
+static int _temp(int argc, char **argv) {
     uint8_t val;
 
     if (argc < 2) {
@@ -63,8 +57,7 @@ static int _temp(int argc, char **argv)
     return 0;
 }
 
-static int _bias(int argc, char **argv)
-{
+static int _bias(int argc, char **argv) {
     uint8_t val;
 
     if (argc < 2) {
@@ -76,8 +69,7 @@ static int _bias(int argc, char **argv)
     return 0;
 }
 
-static int _on(int argc, char **argv)
-{
+static int _on(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -85,8 +77,7 @@ static int _on(int argc, char **argv)
     return 0;
 }
 
-static int _off(int argc, char **argv)
-{
+static int _off(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -94,8 +85,7 @@ static int _off(int argc, char **argv)
     return 0;
 }
 
-static int _clear(int argc, char **argv)
-{
+static int _clear(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -103,8 +93,7 @@ static int _clear(int argc, char **argv)
     return 0;
 }
 
-static int _invert(int argc, char **argv)
-{
+static int _invert(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -120,8 +109,7 @@ static int _riot(int argc, char **argv) {
     return 0;
 }
 
-static int _write(int argc, char **argv)
-{
+static int _write(int argc, char **argv) {
     uint8_t x, y;
 
     if (argc < 4) {
@@ -149,8 +137,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("PCD8544 LCD display test application\n");
     printf("Initializing PCD8544 LCD at SPI_%i... ", TEST_PCD8544_SPI);
     if (pcd8544_init(&dev, TEST_PCD8544_SPI, TEST_PCD8544_CS,
@@ -159,7 +146,7 @@ int main(void)
         return 1;
     }
 
-    /* run shell */
+    // run shell
     puts("All OK, running shell now");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];

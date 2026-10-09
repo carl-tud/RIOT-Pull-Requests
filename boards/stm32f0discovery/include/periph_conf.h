@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_stm32f0discovery
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the STM32F0discovery board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     boards_stm32f0discovery
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the STM32F0discovery board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE        1
 #endif
@@ -27,10 +23,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Timer configuration
- * @{
- */
+/// @name   Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -44,12 +38,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_0_ISR         isr_tim2
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name   UART configuration
- * @{
- */
+/// @name   UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART1,
@@ -77,15 +69,13 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- *
- * We need to configure the following values:
- * [ pin, channel ]
- * @{
- */
+/// @name   ADC configuration
+///
+/// We need to configure the following values:
+/// [ pin, channel ]
+/// @{
 static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_C, 0), 10 },
     { GPIO_PIN(PORT_C, 1), 11 },
@@ -93,17 +83,15 @@ static const adc_conf_t adc_config[] = {
     { GPIO_PIN(PORT_C, 3), 13 },
     { GPIO_PIN(PORT_C, 4), 14 },
     { GPIO_PIN(PORT_C, 5), 15 },
-    { GPIO_UNDEF, 18 }, /* VBAT */
+    { GPIO_UNDEF, 18 }, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(6) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(6) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
-/**
- * @name SPI configuration
- * @{
- */
+/// @name SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -134,10 +122,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,24 +1,20 @@
-/*
- * Copyright (C) 2019 Inria
- *               2019 Freie Universität Berlin
- *               2019 Kaspar Schleiser <kaspar@schleiser.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Inria
+//               2019 Freie Universität Berlin
+//               2019 Kaspar Schleiser <kaspar@schleiser.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_riotboot_flashwrite
- * @{
- *
- * @file
- * @brief       Firmware update sha256 verification helper functions
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     sys_riotboot_flashwrite
+/// @{
+///
+/// @file
+/// @brief       Firmware update sha256 verification helper functions
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <string.h>
@@ -29,8 +25,7 @@
 #include "riotboot/slot.h"
 
 int riotboot_flashwrite_verify_sha256(const uint8_t *sha256_digest,
-                                      size_t img_len, int target_slot)
-{
+                                      size_t img_len, int target_slot) {
     char digest[SHA256_DIGEST_LENGTH];
 
     sha256_context_t sha256;
@@ -47,11 +42,11 @@ int riotboot_flashwrite_verify_sha256(const uint8_t *sha256_digest,
 
     sha256_init(&sha256);
 
-    /* add RIOTBOOT_MAGIC since it isn't written into flash until
-     * riotboot_flashwrite_finish()" */
+    // add RIOTBOOT_MAGIC since it isn't written into flash until
+    // riotboot_flashwrite_finish()"
     sha256_update(&sha256, "RIOT", 4);
 
-    /* account for injected RIOTBOOT_MAGIC by skipping RIOTBOOT_MAGIC_LEN */
+    // account for injected RIOTBOOT_MAGIC by skipping RIOTBOOT_MAGIC_LEN
     sha256_update(&sha256, img_start + 4, img_len - 4);
 
     sha256_final(&sha256, digest);

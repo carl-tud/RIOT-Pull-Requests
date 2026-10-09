@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ft5x06
- * @{
- *
- * @file
- * @brief       Device driver implementation for the FT5x06 touch driver
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_ft5x06
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the FT5x06 touch driver
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <errno.h>
 #include <stdint.h>
@@ -36,14 +32,13 @@
 
 #define FT5X06_RESET_DELAY_MS   (200)
 
-int ft5x06_init(ft5x06_t *dev, const ft5x06_params_t *params, ft5x06_event_cb_t cb, void *arg)
-{
+int ft5x06_init(ft5x06_t *dev, const ft5x06_params_t *params, ft5x06_event_cb_t cb, void *arg) {
     assert(dev);
     assert(params);
 
     dev->params = params;
 
-    /* Wait at least 200ms after power up before accessing registers */
+    // Wait at least 200ms after power up before accessing registers
     ztimer_sleep(ZTIMER_MSEC, FT5X06_RESET_DELAY_MS);
 
     i2c_acquire(FT5X06_BUS);
@@ -69,14 +64,14 @@ int ft5x06_init(ft5x06_t *dev, const ft5x06_params_t *params, ft5x06_event_cb_t 
         return -ENODEV;
     }
 
-    /* Auto-calibrate if needed */
+    // Auto-calibrate if needed
     if (dev->params->type == FT5X06_TYPE_FT5606|| dev->params->type == FT5X06_TYPE_FT5X16 ||
         dev->params->type == FT5X06_TYPE_FT5X06I) {
         DEBUG("[ft5x06] init: enable device auto-calibration\n");
         i2c_write_reg(FT5X06_BUS, FT5X06_ADDR, FT5X06_G_AUTO_CLB_MODE_REG, 0, 0);
     }
 
-    /* Configure interrupt */
+    // Configure interrupt
     if (gpio_is_valid(dev->params->int_pin) && cb) {
         DEBUG("[ft5x06] init: configuring touchscreen interrupt\n");
         gpio_init_int(dev->params->int_pin, GPIO_IN, GPIO_RISING, cb, arg);
@@ -97,8 +92,7 @@ static const uint8_t touch_reg_map[FT5X06_TOUCHES_COUNT_MAX] = {
     FT5X06_TOUCH5_XH_REG,
 };
 
-int ft5x06_read_touch_positions(const ft5x06_t *dev, ft5x06_touch_position_t *positions, size_t len)
-{
+int ft5x06_read_touch_positions(const ft5x06_t *dev, ft5x06_touch_position_t *positions, size_t len) {
     assert(dev);
     assert(positions);
 
@@ -120,13 +114,13 @@ int ft5x06_read_touch_positions(const ft5x06_t *dev, ft5x06_touch_position_t *po
         }
 
         if (dev->params->xyconv & FT5X06_MIRROR_X) {
-            /* X position is mirrored */
+            // X position is mirrored
             assert(positions[touch].x <= dev->params->xmax);
             positions[touch].x = dev->params->xmax - positions[touch].x;
         }
 
         if (dev->params->xyconv & FT5X06_MIRROR_Y) {
-            /* Y position is mirrored */
+            // Y position is mirrored
             assert(positions[touch].y <= dev->params->ymax);
             positions[touch].y = dev->params->ymax - positions[touch].y;
         }
@@ -139,8 +133,7 @@ int ft5x06_read_touch_positions(const ft5x06_t *dev, ft5x06_touch_position_t *po
     return 0;
 }
 
-int ft5x06_read_touch_count(const ft5x06_t *dev, uint8_t *count)
-{
+int ft5x06_read_touch_count(const ft5x06_t *dev, uint8_t *count) {
     assert(dev);
     assert(count);
 
@@ -156,8 +149,7 @@ int ft5x06_read_touch_count(const ft5x06_t *dev, uint8_t *count)
     return 0;
 }
 
-int ft5x06_read_touch_gesture(const ft5x06_t *dev, ft5x06_touch_gesture_t *gesture)
-{
+int ft5x06_read_touch_gesture(const ft5x06_t *dev, ft5x06_touch_gesture_t *gesture) {
     assert(dev);
     assert(gesture);
 
@@ -187,7 +179,7 @@ int ft5x06_read_touch_gesture(const ft5x06_t *dev, ft5x06_touch_gesture_t *gestu
         case FT5X06_GESTURE_ID_ZOOM_OUT:
             *gesture = FT5X06_TOUCH_ZOOM_OUT;
             break;
-        default: /* Fallback to None */
+        default: // Fallback to None
             *gesture = FT5X06_TOUCH_NO_GESTURE;
             break;
     }

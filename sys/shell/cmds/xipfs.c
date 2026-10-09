@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 Université de Lille
- * SPDX-License-Identifier: LGPL-2.1-or-later
- */
+// SPDX-FileCopyrightText: 2024 Université de Lille
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands for XIPFS
- *
- * @author      Gregory Guche <gregory.guche@univ-lille.fr>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands for XIPFS
+///
+/// @author      Gregory Guche <gregory.guche@univ-lille.fr>
+///
+/// @}
 
 #if defined(MODULE_XIPFS_FS) || defined(MODULE_XIPFS)
 #include <stdlib.h>
@@ -36,7 +32,7 @@ static void print_execute_file_usage(void) {
 #else
     printf("Usage : execute xipfs_executable_filename [arg0] [arg1] ... [arg%d]\n",
            (XIPFS_EXEC_ARGC_MAX - 1));
-#endif /* XIPFS_ENABLE_SAFE_EXEC_SUPPORT */
+#endif // XIPFS_ENABLE_SAFE_EXEC_SUPPORT
 }
 
 static int _execute_file_handler(int argc, char **argv) {
@@ -117,4 +113,4 @@ static int _create_executable_file(int argc, char **argv) {
 
 SHELL_COMMAND(create_executable, "Create an XIPFS executable file", _create_executable_file);
 
-#endif /* MODULE_XIPFS_FS */
+#endif // MODULE_XIPFS_FS

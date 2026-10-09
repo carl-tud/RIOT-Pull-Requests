@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_TESTRESULT_H
 #define EMBUNIT_TESTRESULT_H
 
@@ -13,7 +11,7 @@ extern "C" {
 /*typedef struct __TestResult*      TestResultRef;*//* -> Test.h*/
 
 typedef struct __TestListner    TestListner;
-typedef struct __TestListner*   TestListnerRef;/*downward compatible*/
+typedef struct __TestListner*   TestListnerRef;// downward compatible
 
 struct __TestResult {
     unsigned short runCount;
@@ -37,4 +35,4 @@ void TestResult_addFailure(TestResult* self,Test* test,const char* msg,int line,
 }
 #endif
 
-#endif /* EMBUNIT_TESTRESULT_H */
+#endif // EMBUNIT_TESTRESULT_H

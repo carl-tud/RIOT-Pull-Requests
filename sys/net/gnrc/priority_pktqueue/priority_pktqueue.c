@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Daniel Krebs
- * SPDX-FileCopyrightText: 2016 INRIA
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Daniel Krebs
+// SPDX-FileCopyrightText: 2016 INRIA
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_gnrc_priority_pktqueue
- * @{
- *
- * @file
- * @brief       gnrc priority packet queue implementation
- *
- * @author      Daniel Krebs <github@daniel-krebs.net>
- * @author      Shuguo Zhuo <shuguo.zhuo@inria.fr>
- * @}
- */
+/// @ingroup     net_gnrc_priority_pktqueue
+/// @{
+///
+/// @file
+/// @brief       gnrc priority packet queue implementation
+///
+/// @author      Daniel Krebs <github@daniel-krebs.net>
+/// @author      Shuguo Zhuo <shuguo.zhuo@inria.fr>
+/// @}
 
 #include <assert.h>
 
@@ -23,8 +19,7 @@
 
 /******************************************************************************/
 
-static inline void _free_node(gnrc_priority_pktqueue_node_t *node)
-{
+static inline void _free_node(gnrc_priority_pktqueue_node_t *node) {
     assert(node != NULL);
 
     priority_queue_node_init((priority_queue_node_t *)node);
@@ -32,8 +27,7 @@ static inline void _free_node(gnrc_priority_pktqueue_node_t *node)
 
 /******************************************************************************/
 
-gnrc_pktsnip_t *gnrc_priority_pktqueue_pop(gnrc_priority_pktqueue_t *queue)
-{
+gnrc_pktsnip_t *gnrc_priority_pktqueue_pop(gnrc_priority_pktqueue_t *queue) {
     if (!queue || (gnrc_priority_pktqueue_length(queue) == 0)) {
         return NULL;
     }
@@ -45,8 +39,7 @@ gnrc_pktsnip_t *gnrc_priority_pktqueue_pop(gnrc_priority_pktqueue_t *queue)
 
 /******************************************************************************/
 
-gnrc_pktsnip_t *gnrc_priority_pktqueue_head(gnrc_priority_pktqueue_t *queue)
-{
+gnrc_pktsnip_t *gnrc_priority_pktqueue_head(gnrc_priority_pktqueue_t *queue) {
     if (!queue || (gnrc_priority_pktqueue_length(queue) == 0)) {
         return NULL;
     }
@@ -55,8 +48,7 @@ gnrc_pktsnip_t *gnrc_priority_pktqueue_head(gnrc_priority_pktqueue_t *queue)
 /******************************************************************************/
 
 void gnrc_priority_pktqueue_push(gnrc_priority_pktqueue_t *queue,
-                                 gnrc_priority_pktqueue_node_t *node)
-{
+                                 gnrc_priority_pktqueue_node_t *node) {
     assert(queue != NULL);
     assert(node != NULL);
     assert(node->pkt != NULL);
@@ -67,8 +59,7 @@ void gnrc_priority_pktqueue_push(gnrc_priority_pktqueue_t *queue,
 
 /******************************************************************************/
 
-void gnrc_priority_pktqueue_flush(gnrc_priority_pktqueue_t *queue)
-{
+void gnrc_priority_pktqueue_flush(gnrc_priority_pktqueue_t *queue) {
     assert(queue != NULL);
 
     if (gnrc_priority_pktqueue_length(queue) == 0) {
@@ -82,8 +73,7 @@ void gnrc_priority_pktqueue_flush(gnrc_priority_pktqueue_t *queue)
 }
 
 /******************************************************************************/
-uint32_t gnrc_priority_pktqueue_length(gnrc_priority_pktqueue_t *queue)
-{
+uint32_t gnrc_priority_pktqueue_length(gnrc_priority_pktqueue_t *queue) {
     assert(queue != NULL);
 
     uint32_t length = 0;

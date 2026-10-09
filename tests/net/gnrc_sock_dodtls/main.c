@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       sock DNS over DTLS client test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Martine S. Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       sock DNS over DTLS client test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Martine S. Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -52,16 +48,14 @@ static credman_credential_t _credential = {
     }
 };
 
-static void _usage(char *cmd)
-{
+static void _usage(char *cmd) {
     printf("usage: %s server <DNS server addr> <DNS server port> <cred tag> "
            "<PSK id> <PSK key>\n", cmd);
     printf("usage: %s server -d\n", cmd);
     printf("       %s request <name> [<family>]\n", cmd);
 }
 
-static int _dodtls_server(int argc, char **argv)
-{
+static int _dodtls_server(int argc, char **argv) {
     sock_udp_ep_t server;
     int res;
 
@@ -82,8 +76,8 @@ static int _dodtls_server(int argc, char **argv)
         }
         if (server.netif == SOCK_ADDR_ANY_NETIF) {
             netif_t *netif = netif_iter(NULL);
-            /* we only have one interface so take that one, otherwise
-             * TinyDTLS is not able to identify the peer */
+            // we only have one interface so take that one, otherwise
+            // TinyDTLS is not able to identify the peer
             server.netif = netif_get_id(netif);
         }
         if ((_credential.tag = atoi(argv[3])) == 0) {
@@ -106,7 +100,7 @@ static int _dodtls_server(int argc, char **argv)
         }
     }
     if (sock_dodtls_get_server(&server) == 0) {
-        char addrstr[INET6_ADDRSTRLEN + 8U];    /* + 8 for port + colons + [] */
+        char addrstr[INET6_ADDRSTRLEN + 8U];    // + 8 for port + colons + []
         uint16_t port;
 
         sock_udp_ep_fmt(&server, addrstr, &port);
@@ -118,8 +112,7 @@ static int _dodtls_server(int argc, char **argv)
     return 0;
 }
 
-static int _dodtls_request(int argc, char **argv)
-{
+static int _dodtls_request(int argc, char **argv) {
     uint8_t addr[16] = {0};
     int res, family = AF_UNSPEC;
 
@@ -159,8 +152,7 @@ static int _dodtls_request(int argc, char **argv)
     return 0;
 }
 
-static int _dodtls(int argc, char **argv)
-{
+static int _dodtls(int argc, char **argv) {
     if ((argc > 1) && (strcmp(argv[1], "server") == 0)) {
         return _dodtls_server(argc, argv);
     }
@@ -173,13 +165,12 @@ static int _dodtls(int argc, char **argv)
     }
 }
 
-int main(void)
-{
-    /* we need a message queue for the thread running the shell in order to
-     * receive potentially fast incoming networking packets */
+int main(void) {
+    // we need a message queue for the thread running the shell in order to
+    // receive potentially fast incoming networking packets
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
-    /* start shell */
+    // start shell
     shell_run(_shell_commands, _shell_buffer, sizeof(_shell_buffer));
     return 0;
 }

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2024 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_seeedstudio-xiao-nrf52840
- * @ingroup     boards_seeedstudio-xiao-nrf52840-sense
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- */
+/// @ingroup     boards_seeedstudio-xiao-nrf52840
+/// @ingroup     boards_seeedstudio-xiao-nrf52840-sense
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -23,9 +19,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    LED configuration
- */
+/// @brief    LED configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -52,4 +46,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

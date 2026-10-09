@@ -1,51 +1,46 @@
-/*
- * Copyright (C) 2014 - 2016 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
- */
+// Copyright (C) 2014 - 2016 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for more
+// details.
 
-/**
- * @ingroup     sys_color
- * @{
- *
- * @file
- * @brief       Implementation of color module
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Cenk Gündoğan <mail@cgundogan.de>
- * @author      Simon Brummer <brummer.simon@googlemail.com>
- *
- * @}
- */
+/// @ingroup     sys_color
+/// @{
+///
+/// @file
+/// @brief       Implementation of color module
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Cenk Gündoğan <mail@cgundogan.de>
+/// @author      Simon Brummer <brummer.simon@googlemail.com>
+///
+/// @}
 
 #include "color.h"
 
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-void color_rgb2hsv(color_rgb_t *rgb, color_hsv_t *hsv)
-{
+void color_rgb2hsv(color_rgb_t *rgb, color_hsv_t *hsv) {
     float rd, gd, bd, delta, min, max;
     int imax, imin, sector;
 
-    /* catch special case grey first */
+    // catch special case grey first
     if (rgb->r == rgb->g && rgb->r == rgb->b) {
         hsv->v = (float)rgb->r * (1 / 255.0f);
         hsv->s = 0.0f;
-        hsv->h = 0.0f; /* hue might be anything for grey, but it is not uncommon to use 0 */
+        hsv->h = 0.0f; // hue might be anything for grey, but it is not uncommon to use 0
         return;
     }
 
-    /* normalize RGB colors to the range [0 - 1.0] */
-    /* multiplication is often faster than division -> using compile time constant */
+    // normalize RGB colors to the range [0 - 1.0]
+    // multiplication is often faster than division -> using compile time constant
     rd = (float)rgb->r * (1 / 255.0f);
     gd = (float)rgb->g * (1 / 255.0f);
     bd = (float)rgb->b * (1 / 255.0f);
 
-    /* find maximum of the three colors and sector */
-    /* using the comparing faster integer color value */
+    // find maximum of the three colors and sector
+    // using the comparing faster integer color value
     imax = rgb->r;
     max = rd;
     sector = 0;
@@ -59,10 +54,10 @@ void color_rgb2hsv(color_rgb_t *rgb, color_hsv_t *hsv)
         max = bd;
         sector = 2;
     }
-    /* value is maximum*/
+    // value is maximum
     hsv->v = max;
 
-    /* find of minimum the three RGB colors */
+    // find of minimum the three RGB colors
     imin = rgb->r;
     min = rd;
     if (rgb->g < imin) {
@@ -73,14 +68,14 @@ void color_rgb2hsv(color_rgb_t *rgb, color_hsv_t *hsv)
         imin = rgb->b;
         min = bd;
     }
-    /* compute delta from value and minimum*/
+    // compute delta from value and minimum
     delta = hsv->v - min;
 
-    /* find the saturation from value and delta */
-    /* special case gray r == g == b ^= min == max */
+    // find the saturation from value and delta
+    // special case gray r == g == b ^= min == max
     hsv->s = delta / max;
 
-    /* compute hue */
+    // compute hue
     float p = 60.0f / delta;
     switch (sector){
         case 0:
@@ -98,8 +93,7 @@ void color_rgb2hsv(color_rgb_t *rgb, color_hsv_t *hsv)
     }
 }
 
-void color_hsv2rgb(color_hsv_t *hsv, color_rgb_t *rgb)
-{
+void color_hsv2rgb(color_hsv_t *hsv, color_rgb_t *rgb) {
     int i;
     float aa, bb, cc, f, h;
 
@@ -152,53 +146,48 @@ void color_hsv2rgb(color_hsv_t *hsv, color_rgb_t *rgb)
     }
 }
 
-void color_hex2rgb(const uint32_t hex, color_rgb_t *rgb)
-{
+void color_hex2rgb(const uint32_t hex, color_rgb_t *rgb) {
     rgb->r = ((hex >> 16UL) & 0xFF);
     rgb->g = ((hex >> 8UL) & 0xFF);
     rgb->b = (hex & 0xFF);
 }
 
-void color_rgb2hex(const color_rgb_t *rgb, uint32_t *hex)
-{
+void color_rgb2hex(const color_rgb_t *rgb, uint32_t *hex) {
     *hex = (((uint32_t) rgb->r) << 16UL) | (rgb->g << 8UL) | (rgb->b);
 }
 
-void color_str2rgb(const char* str, color_rgb_t *rgb)
-{
-    rgb->r = (((str[0] > '9') ? (str[0] &~ 0x20) - 'A' + 10 : (str[0] - '0')) << 4) | /* R */
-             (((str[1] > '9') ? (str[1] &~ 0x20) - 'A' + 10 : (str[1] - '0')) << 0) ; /* R */
-    rgb->g = (((str[2] > '9') ? (str[2] &~ 0x20) - 'A' + 10 : (str[2] - '0')) << 4) | /* G */
-             (((str[3] > '9') ? (str[3] &~ 0x20) - 'A' + 10 : (str[3] - '0')) << 0) ; /* G */
-    rgb->b = (((str[4] > '9') ? (str[4] &~ 0x20) - 'A' + 10 : (str[4] - '0')) << 4) | /* B */
-             (((str[5] > '9') ? (str[5] &~ 0x20) - 'A' + 10 : (str[5] - '0')) << 0) ; /* B */
+void color_str2rgb(const char* str, color_rgb_t *rgb) {
+    rgb->r = (((str[0] > '9') ? (str[0] &~ 0x20) - 'A' + 10 : (str[0] - '0')) << 4) | // R
+             (((str[1] > '9') ? (str[1] &~ 0x20) - 'A' + 10 : (str[1] - '0')) << 0) ; // R
+    rgb->g = (((str[2] > '9') ? (str[2] &~ 0x20) - 'A' + 10 : (str[2] - '0')) << 4) | // G
+             (((str[3] > '9') ? (str[3] &~ 0x20) - 'A' + 10 : (str[3] - '0')) << 0) ; // G
+    rgb->b = (((str[4] > '9') ? (str[4] &~ 0x20) - 'A' + 10 : (str[4] - '0')) << 4) | // B
+             (((str[5] > '9') ? (str[5] &~ 0x20) - 'A' + 10 : (str[5] - '0')) << 0) ; // B
 }
 
-void color_rgb2str(const color_rgb_t *rgb, char* str)
-{
+void color_rgb2str(const color_rgb_t *rgb, char* str) {
     uint8_t tmp;
 
-    /* RR */
+    // RR
     tmp = rgb->r >> 4;
     str[0] = (tmp > 9) ? ('A' - 10 + tmp) : ('0' + tmp);
     tmp = rgb->r & 0x0F;
     str[1] = (tmp > 9) ? ('A' - 10 + tmp) : ('0' + tmp);
 
-    /* GG */
+    // GG
     tmp = rgb->g >> 4;
     str[2] = (tmp > 9) ? ('A' - 10 + tmp) : ('0' + tmp);
     tmp = rgb->g & 0x0F;
     str[3] = (tmp > 9) ? ('A' - 10 + tmp) : ('0' + tmp);
 
-    /* BB */
+    // BB
     tmp = rgb->b >> 4;
     str[4] = (tmp > 9) ? ('A' - 10 + tmp) : ('0' + tmp);
     tmp = rgb->b & 0x0F;
     str[5] = (tmp > 9) ? ('A' - 10 + tmp) : ('0' + tmp);
 }
 
-void color_rgb_complementary(const color_rgb_t *rgb, color_rgb_t *comp_rgb)
-{
+void color_rgb_complementary(const color_rgb_t *rgb, color_rgb_t *comp_rgb) {
     uint8_t  max = 0;
     uint8_t  min = 0;
     uint16_t val = 0;

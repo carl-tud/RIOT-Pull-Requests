@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2019 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands to control NimBLEs netif wrapper
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands to control NimBLEs netif wrapper
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <assert.h>
 #include <stdio.h>
@@ -45,7 +41,7 @@
 #define DEFAULT_CONN_TIMEOUT_MS     500U
 #define DEFAULT_SCAN_ITVL_MS        100U
 #define DEFAULT_CONN_ITVL_MS        75U
-#define DEFAULT_TX_POWER            0           /* 0dBm */
+#define DEFAULT_TX_POWER            0           // 0dBm
 #define DEFAULT_ADV_ITVL_MS         75U
 
 static const char *_phystr[] = { "N/A", "1M", "2M", "CODED" };
@@ -59,15 +55,14 @@ static nimble_netif_connect_cfg_t _connect_params = {
     .conn_itvl_max_ms = DEFAULT_CONN_ITVL_MS,
     .conn_supervision_timeout_ms = DEFAULT_CONN_ITVL_MS * 20,
     .conn_slave_latency = 0,
-    .timeout_ms = 0,       /* will be filled later */
-    .phy_mode = 0,      /* will be filled later */
+    .timeout_ms = 0,       // will be filled later
+    .phy_mode = 0,      // will be filled later
     .own_addr_type = 0  /* will be filled later */,
 };
 
 static void _scan_for_name(uint8_t type, const ble_addr_t *addr,
                            const nimble_scanner_info_t *info,
-                           const uint8_t *ad, size_t ad_len)
-{
+                           const uint8_t *ad, size_t ad_len) {
     (void)type;
     (void)info;
     int res;
@@ -82,16 +77,14 @@ static void _scan_for_name(uint8_t type, const ble_addr_t *addr,
     }
 }
 
-static void _print_evt(const char *msg, int handle, const uint8_t *addr)
-{
+static void _print_evt(const char *msg, int handle, const uint8_t *addr) {
     printf("event: handle %i -> %s (", handle, msg);
     bluetil_addr_print(addr);
     puts(")");
 }
 
 static void _on_ble_evt(int handle, nimble_netif_event_t event,
-                        const uint8_t *addr)
-{
+                        const uint8_t *addr) {
     switch (event) {
         case NIMBLE_NETIF_CONNECTED_MASTER: {
             _print_evt("CONNECTED as MASTER", handle, addr);
@@ -116,13 +109,12 @@ static void _on_ble_evt(int handle, nimble_netif_event_t event,
             _print_evt("ACCEPT STOP", handle, addr);
         case NIMBLE_NETIF_CONN_UPDATED:
         default:
-            /* do nothing */
+            // do nothing
             break;
     }
 }
 
-static uint8_t _parsephy(const char *phy_str)
-{
+static uint8_t _parsephy(const char *phy_str) {
     if (memcmp(phy_str, "1M", 2) == 0) {
         return NIMBLE_PHY_1M;
     }
@@ -142,13 +134,12 @@ static uint8_t _parsephy(const char *phy_str)
 }
 #endif
 
-static int _conn_dump(nimble_netif_conn_t *conn, int handle, void *arg)
-{
+static int _conn_dump(nimble_netif_conn_t *conn, int handle, void *arg) {
     (void)arg;
     struct ble_gap_conn_desc desc;
 
     int res = ble_gap_conn_find(conn->gaphandle, &desc);
-    assert(res == 0);   /* the handle should always be valid here */
+    assert(res == 0);   // the handle should always be valid here
     (void)res;
 
     char role = (conn->state & NIMBLE_NETIF_GAP_MASTER) ? 'M' : 'S';
@@ -170,7 +161,7 @@ static int _conn_dump(nimble_netif_conn_t *conn, int handle, void *arg)
         phy_rx = 1;
     }
 #else
-    /* when not using extended advertisements we always use the 1M phy mode */
+    // when not using extended advertisements we always use the 1M phy mode
     uint8_t phy_rx = 1;
 #endif
     printf(" (%c,%ums,%ums,%i,%s)\n",
@@ -179,8 +170,7 @@ static int _conn_dump(nimble_netif_conn_t *conn, int handle, void *arg)
     return 0;
 }
 
-static int _conn_state_dump(nimble_netif_conn_t *conn, int handle, void *arg)
-{
+static int _conn_state_dump(nimble_netif_conn_t *conn, int handle, void *arg) {
     (void)arg;
     printf("[%2i] state: 0x%04x -", handle, conn->state);
     if (conn->state & NIMBLE_NETIF_UNUSED) {
@@ -208,8 +198,7 @@ static int _conn_state_dump(nimble_netif_conn_t *conn, int handle, void *arg)
     return 0;
 }
 
-static void _conn_list(void)
-{
+static void _conn_list(void) {
     unsigned active = nimble_netif_conn_count(NIMBLE_NETIF_L2CAP_CONNECTED);
     printf("Connections: %u\n", active);
     if (active > 0) {
@@ -219,8 +208,7 @@ static void _conn_list(void)
     }
 }
 
-static void _cmd_info(void)
-{
+static void _cmd_info(void) {
     unsigned free = nimble_netif_conn_count(NIMBLE_NETIF_UNUSED);
 
     uint8_t own_addr[BLE_ADDR_LEN];
@@ -263,15 +251,14 @@ static void _cmd_info(void)
 }
 
 #if FULL_CONTROL
-static int _cmd_adv(int argc, char **argv, bool legacy)
-{
+static int _cmd_adv(int argc, char **argv, bool legacy) {
     int res;
     (void)res;
     const char *name = NULL;
     uint8_t addrn[BLE_ADDR_LEN];
     ble_addr_t addr = { .type = nimble_riot_own_addr_type };
 
-    /* stop sub-command: stop advertising */
+    // stop sub-command: stop advertising
     if (memcmp(argv[2], "stop", 4) == 0) {
         res = nimble_netif_accept_stop();
         if (res == 0) {
@@ -283,16 +270,16 @@ static int _cmd_adv(int argc, char **argv, bool legacy)
         return 0;
     }
 
-    /* make sure no advertising is in progress */
+    // make sure no advertising is in progress
     if (nimble_netif_conn_is_adv()) {
         puts("err: advertising already in progress");
         return 1;
     }
 
-    /* try if first parameter is a BLE address, if so, use directed
-     * advertisement */
+    // try if first parameter is a BLE address, if so, use directed
+    // advertisement
     if (bluetil_addr_from_str(addrn, argv[2]) != NULL) {
-        /* NimBLE expects address in little endian, so swap */
+        // NimBLE expects address in little endian, so swap
         bluetil_addr_swapped_cp(addrn, addr.val);
         puts("Found BLE address: sending directed advertisements");
     }
@@ -330,7 +317,7 @@ static int _cmd_adv(int argc, char **argv, bool legacy)
     if (name != NULL) {
         uint8_t buf[BLE_HS_ADV_MAX_SZ];
         bluetil_ad_t ad;
-        /* build advertising data */
+        // build advertising data
         res = bluetil_ad_init_with_flags(&ad, buf, BLE_HS_ADV_MAX_SZ,
                                          BLUETIL_AD_FLAGS_DEFAULT);
         assert(res == BLUETIL_AD_OK);
@@ -365,8 +352,7 @@ static int _cmd_adv(int argc, char **argv, bool legacy)
     return 0;
 }
 
-static void _do_scan(nimble_scanner_cb cb, unsigned duration)
-{
+static void _do_scan(nimble_scanner_cb cb, unsigned duration) {
     if (duration == 0) {
         printf("err: duration must be > 0\n");
         return;
@@ -394,20 +380,18 @@ static void _do_scan(nimble_scanner_cb cb, unsigned duration)
     nimble_scanner_stop();
 }
 
-static void _cmd_scan(unsigned duration)
-{
+static void _cmd_scan(unsigned duration) {
     printf("scanning (for %ums) ...\n", duration);
     _do_scan(nimble_scanlist_update, duration);
     puts("done");
     nimble_scanlist_print();
 }
 
-static void _cmd_connect(int argc, char **argv)
-{
+static void _cmd_connect(int argc, char **argv) {
     ble_addr_t addr;
     int proceed = 0;
 
-    /* populate connection parameters */
+    // populate connection parameters
     _connect_params.timeout_ms = DEFAULT_CONN_TIMEOUT_MS;
     if (argc >= 4) {
         _connect_params.timeout_ms = atoi(argv[3]);
@@ -422,15 +406,15 @@ static void _cmd_connect(int argc, char **argv)
     }
     _connect_params.own_addr_type = nimble_riot_own_addr_type;
 
-    /* try to parse address directly */
+    // try to parse address directly
     uint8_t addrn[BLE_ADDR_LEN];
     if (bluetil_addr_from_str(addrn, argv[2]) != NULL) {
         addr.type = nimble_riot_own_addr_type;
-        /* NimBLE expects address in little endian, so swap */
+        // NimBLE expects address in little endian, so swap
         bluetil_addr_swapped_cp(addrn, addr.val);
         proceed = 1;
     }
-    /* try if param is a number, if so use it as scanlist entry number */
+    // try if param is a number, if so use it as scanlist entry number
     else if (fmt_is_number(argv[2])) {
         unsigned pos = atoi(argv[2]);
         nimble_scanlist_entry_t *sle = nimble_scanlist_get_by_pos(pos);
@@ -442,7 +426,7 @@ static void _cmd_connect(int argc, char **argv)
         memcpy(&addr, &sle->addr, sizeof(addr));
         proceed = 1;
     }
-    /* else interpret value as name and search for that peer */
+    // else interpret value as name and search for that peer
     else {
         unsigned duration = DEFAULT_SCAN_DURATION_MS;
         if (argc > 3) {
@@ -470,8 +454,7 @@ static void _cmd_connect(int argc, char **argv)
 }
 #endif
 
-static void _cmd_close(int handle)
-{
+static void _cmd_close(int handle) {
     int res = nimble_netif_close(handle);
     if (res != 0) {
         puts("err: unable to close connection with given handle");
@@ -481,8 +464,7 @@ static void _cmd_close(int handle)
     }
 }
 
-static void _cmd_update(int handle, int itvl, int timeout)
-{
+static void _cmd_update(int handle, int itvl, int timeout) {
     struct ble_gap_upd_params params;
     params.itvl_min = (uint16_t)BLE_GAP_CONN_ITVL_MS(itvl);
     params.itvl_max = (uint16_t)BLE_GAP_CONN_ITVL_MS(itvl);
@@ -500,24 +482,21 @@ static void _cmd_update(int handle, int itvl, int timeout)
     }
 }
 
-static int _ishelp(char *argv)
-{
+static int _ishelp(char *argv) {
     return memcmp(argv, "help", 4) == 0;
 }
 
-void sc_nimble_netif_init(void)
-{
+void sc_nimble_netif_init(void) {
 #if FULL_CONTROL
-    /* setup the scanning environment */
+    // setup the scanning environment
     nimble_scanlist_init();
 
-    /* register event callback with the netif wrapper */
+    // register event callback with the netif wrapper
     nimble_netif_eventcb(_on_ble_evt);
 #endif
 }
 
-static int _nimble_netif_handler(int argc, char **argv)
-{
+static int _nimble_netif_handler(int argc, char **argv) {
     if ((argc == 1) || _ishelp(argv[1])) {
 #if FULL_CONTROL
         printf("usage: %s [help|info|adv|adv_ext|adv_dir|"

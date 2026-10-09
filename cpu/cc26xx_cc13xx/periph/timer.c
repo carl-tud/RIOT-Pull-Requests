@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 Leon George
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Leon George
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_cc26xx_cc13xx
- * @ingroup     drivers_periph_timer
- * @{
- *
- * @file
- * @brief       Low-level timer driver implementation for the CC26x0
- *
- * @author      Leon M. George <leon@georgemail.eu>
- * @author      Sebastian Meiling <s@mlng.net>
- * @}
- */
+/// @ingroup     cpu_cc26xx_cc13xx
+/// @ingroup     drivers_periph_timer
+/// @{
+///
+/// @file
+/// @brief       Low-level timer driver implementation for the CC26x0
+///
+/// @author      Leon M. George <leon@georgemail.eu>
+/// @author      Sebastian Meiling <s@mlng.net>
+/// @}
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -49,32 +45,25 @@ static _isr_cfg_t chn_isr_cfg[] = {
     { .mask = TIMER_B_IRQ_MASK, .flag = GPT_IMR_TBMIM }
 };
 
-/**
- * @name function prototypes
- * @{
- */
+/// @name function prototypes
+/// @{
 static void irq_handler(tim_t tim, int channel);
-/** @} */
+/// @}
 
-/**
- * @brief   Allocate memory for timer interrupt context(s)
- */
+/// @brief   Allocate memory for timer interrupt context(s)
 static timer_isr_ctx_t isr_ctx[TIMER_NUMOF];
 
-/**
- * @brief   Enable global interrupts for timer channel(s)
- *
- * @param[in] tim   index of the timer
- */
-static void _irq_enable(tim_t tim)
-{
+/// @brief   Enable global interrupts for timer channel(s)
+///
+/// @param[in] tim   index of the timer
+static void _irq_enable(tim_t tim) {
     assert(tim < TIMER_NUMOF);
 
-    /* enable global timer interrupt for channel A */
+    // enable global timer interrupt for channel A
     IRQn_Type irqn = GPTIMER_0A_IRQN + (2 * tim);
     NVIC_SetPriority(irqn, TIMER_IRQ_PRIO);
     NVIC_EnableIRQ(irqn);
-    /* and channel B, if enabled */
+    // and channel B, if enabled
     if(timer_config[tim].chn == 2) {
         irqn++;
         NVIC_SetPriority(irqn, TIMER_IRQ_PRIO);
@@ -82,24 +71,20 @@ static void _irq_enable(tim_t tim)
     }
 }
 
-/**
- * @brief   Get the GPT register base for a timer
- *
- * @param[in] tim   index of the timer
- *
- * @return          base address
- */
-static inline gpt_reg_t *dev(tim_t tim)
-{
+/// @brief   Get the GPT register base for a timer
+///
+/// @param[in] tim   index of the timer
+///
+/// @return          base address
+static inline gpt_reg_t *dev(tim_t tim) {
     assert(tim < TIMER_NUMOF);
 
     return ((gpt_reg_t *)(GPT0_BASE | (((uint32_t)tim) << 12)));
 }
 
-uword_t timer_query_freqs_numof(tim_t dev)
-{
+uword_t timer_query_freqs_numof(tim_t dev) {
     assert(dev < TIMER_NUMOF);
-    /* 32 bit timers only work at CPU clock */
+    // 32 bit timers only work at CPU clock
     if (timer_config[dev].cfg == GPT_CFG_32T) {
         return 1;
     }
@@ -107,17 +92,15 @@ uword_t timer_query_freqs_numof(tim_t dev)
     return 256;
 }
 
-uword_t timer_query_channel_numof(tim_t dev)
-{
+uword_t timer_query_channel_numof(tim_t dev) {
     assert(dev < TIMER_NUMOF);
     return timer_config[dev].chn;
 }
 
-uint32_t timer_query_freqs(tim_t dev, uword_t index)
-{
+uint32_t timer_query_freqs(tim_t dev, uword_t index) {
     assert(dev < TIMER_NUMOF);
 
-    /* 32 bit timers only work at CPU clock */
+    // 32 bit timers only work at CPU clock
     if (timer_config[dev].cfg == GPT_CFG_32T) {
         if (index) {
             return 0;
@@ -131,21 +114,20 @@ uint32_t timer_query_freqs(tim_t dev, uword_t index)
     return RCOSC48M_FREQ / (index + 1);
 }
 
-int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
-{
+int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg) {
     DEBUG("timer_init(%u, %" PRIu32 ")\n", tim, freq);
-    /* make sure given timer is valid */
+    // make sure given timer is valid
     if (tim >= TIMER_NUMOF) {
         return -1;
     }
 
-    /* enable the timer clock */
+    // enable the timer clock
     power_clock_enable_gpt(tim);
 
-    /* disable (and reset) timer */
+    // disable (and reset) timer
     dev(tim)->CTL = 0;
 
-    /* save context */
+    // save context
     isr_ctx[tim].cb = cb;
     isr_ctx[tim].arg = arg;
 
@@ -163,7 +145,7 @@ int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
         chan_mode |= GPT_TXMR_TXCDIR_UP;
     }
     else if (timer_config[tim].cfg == GPT_CFG_16T) {
-        /* prescaler only available in 16Bit mode */
+        // prescaler only available in 16Bit mode
         prescaler = RCOSC48M_FREQ;
         prescaler += freq / 2;
         prescaler /= freq;
@@ -180,26 +162,25 @@ int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
         DEBUG("timer_init: invalid timer config must be 16 or 32Bit mode!\n");
         return -1;
     }
-    /* configure channels and start timer */
+    // configure channels and start timer
     dev(tim)->CFG  = timer_config[tim].cfg;
     dev(tim)->CTL = GPT_CTL_TAEN;
     dev(tim)->TAMR = chan_mode;
 
     if (timer_config[tim].chn == 2) {
-        /* set the timer speed */
+        // set the timer speed
         dev(tim)->TBPR = prescaler;
         dev(tim)->TBMR = chan_mode;
         dev(tim)->TBILR = LOAD_VALUE;
         dev(tim)->CTL = GPT_CTL_TAEN | GPT_CTL_TBEN;
     }
-    /* enable timer IRQs */
+    // enable timer IRQs
     _irq_enable(tim);
 
     return 0;
 }
 
-int timer_set_absolute(tim_t tim, int channel, unsigned int value)
-{
+int timer_set_absolute(tim_t tim, int channel, unsigned int value) {
     DEBUG("timer_set_absolute(%u, %u, %u)\n", tim, channel, value);
 
     if ((tim >= TIMER_NUMOF) || (channel >= timer_config[tim].chn)) {
@@ -216,26 +197,24 @@ int timer_set_absolute(tim_t tim, int channel, unsigned int value)
                              value : (LOAD_VALUE - value);
     }
 
-    /* unmask IRQ */
+    // unmask IRQ
     dev(tim)->IMR |= chn_isr_cfg[channel].flag;
 
     return 0;
 }
 
-int timer_clear(tim_t tim, int channel)
-{
+int timer_clear(tim_t tim, int channel) {
     DEBUG("timer_clear(%u, %d)\n", tim, channel);
     if ((tim >= TIMER_NUMOF) || (channel >= timer_config[tim].chn)) {
         return -1;
     }
-    /* clear interrupt flags */
+    // clear interrupt flags
     dev(tim)->IMR &= ~(chn_isr_cfg[channel].flag);
 
     return 0;
 }
 
-unsigned int timer_read(tim_t tim)
-{
+unsigned int timer_read(tim_t tim) {
     DEBUG("timer_read(%u)\n", tim);
     if (tim >= TIMER_NUMOF) {
         return 0;
@@ -246,16 +225,14 @@ unsigned int timer_read(tim_t tim)
     return LOAD_VALUE - (dev(tim)->TAV & 0xFFFF);
 }
 
-void timer_stop(tim_t tim)
-{
+void timer_stop(tim_t tim) {
     DEBUG("timer_stop(%u)\n", tim);
     if (tim < TIMER_NUMOF) {
         dev(tim)->CTL = 0;
     }
 }
 
-void timer_start(tim_t tim)
-{
+void timer_start(tim_t tim) {
     DEBUG("timer_start(%u)\n", tim);
 
     if (tim < TIMER_NUMOF) {
@@ -268,27 +245,24 @@ void timer_start(tim_t tim)
     }
 }
 
-/**
- * @brief   Timer interrupt handler
- *
- * @param[in] tim   index of the timer
- * @param[in] chn   channel number (0=A, 1=B)
- */
-static void irq_handler(tim_t tim, int channel)
-{
+/// @brief   Timer interrupt handler
+///
+/// @param[in] tim   index of the timer
+/// @param[in] chn   channel number (0=A, 1=B)
+static void irq_handler(tim_t tim, int channel) {
     assert(tim < TIMER_NUMOF);
     assert(channel < timer_config[tim].chn);
 
     uint32_t mis;
-    /* Latch the active interrupt flags */
+    // Latch the active interrupt flags
     mis = dev(tim)->MIS & chn_isr_cfg[channel].mask;
-    /* Clear the latched interrupt flags */
+    // Clear the latched interrupt flags
     dev(tim)->ICLR = mis;
 
     if (mis & chn_isr_cfg[channel].flag) {
-        /* Disable further match interrupts for this timer/channel */
+        // Disable further match interrupts for this timer/channel
         dev(tim)->IMR &= ~chn_isr_cfg[channel].flag;
-        /* Invoke the callback function */
+        // Invoke the callback function
         isr_ctx[tim].cb(isr_ctx[tim].arg, channel);
     }
 

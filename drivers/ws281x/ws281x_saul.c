@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ws281x
- * @{
- *
- * @file
- * @brief       NEOPixel/ws281x adaption to SAUL
- *
- * @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     drivers_ws281x
+/// @{
+///
+/// @file
+/// @brief       NEOPixel/ws281x adaption to SAUL
+///
+/// @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
+///
+/// @}
 
 #include <string.h>
 #include <stdio.h>
@@ -21,8 +17,7 @@
 #include "saul.h"
 #include "ws281x.h"
 
-static int set_rgb_led(const void *dev, const phydat_t *res)
-{
+static int set_rgb_led(const void *dev, const phydat_t *res) {
     ws281x_t *ws281x = (ws281x_t *)dev;
     ws281x_pixel_t color = {
         .r = res->val[0],

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for testing the mutex_cancel function in
- *              core_mutex
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for testing the mutex_cancel function in
+///              core_mutex
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -25,18 +21,15 @@
 
 static mutex_t testlock = MUTEX_INIT;
 
-static void cb_unlock(void *mutex)
-{
+static void cb_unlock(void *mutex) {
     mutex_unlock(mutex);
 }
 
-static void cb_cancel(void *mc)
-{
+static void cb_cancel(void *mc) {
     mutex_cancel(mc);
 }
 
-int main(void)
-{
+int main(void) {
     xtimer_t xt;
     puts(
         "Test Application for mutex_cancel / mutex_lock_cancelable\n"

@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- *
- * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @{
+///
+/// @file
+///
+/// @author      Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -31,14 +27,12 @@ const ipv6_addr_t ipv6_addr_all_routers_if_local = IPV6_ADDR_ALL_ROUTERS_IF_LOCA
 const ipv6_addr_t ipv6_addr_all_routers_link_local = IPV6_ADDR_ALL_ROUTERS_LINK_LOCAL;
 const ipv6_addr_t ipv6_addr_all_routers_site_local = IPV6_ADDR_ALL_ROUTERS_SITE_LOCAL;
 
-bool ipv6_addr_equal(const ipv6_addr_t *a, const ipv6_addr_t *b)
-{
+bool ipv6_addr_equal(const ipv6_addr_t *a, const ipv6_addr_t *b) {
     return (a->u64[0].u64 == b->u64[0].u64) &&
            (a->u64[1].u64 == b->u64[1].u64);
 }
 
-uint8_t ipv6_addr_match_prefix(const ipv6_addr_t *a, const ipv6_addr_t *b)
-{
+uint8_t ipv6_addr_match_prefix(const ipv6_addr_t *a, const ipv6_addr_t *b) {
     uint8_t prefix_len = 0;
 
     if ((a == NULL) || (b == NULL)) {
@@ -52,12 +46,12 @@ uint8_t ipv6_addr_match_prefix(const ipv6_addr_t *a, const ipv6_addr_t *b)
     for (int i = 0; i < 16; i++) {
         uint8_t xor = a->u8[i] ^ b->u8[i];
         if (xor) {
-            /* if bytes aren't equal count matching leading bits */
+            // if bytes aren't equal count matching leading bits
             prefix_len += bitarithm_clzb(xor);
             break;
         }
         else {
-            /* if bytes are equal add 8 */
+            // if bytes are equal add 8
             prefix_len += 8;
         }
     }
@@ -66,8 +60,7 @@ uint8_t ipv6_addr_match_prefix(const ipv6_addr_t *a, const ipv6_addr_t *b)
 }
 
 void ipv6_addr_init_prefix(ipv6_addr_t *out, const ipv6_addr_t *prefix,
-                           uint8_t bits)
-{
+                           uint8_t bits) {
     uint8_t bytes;
 
     if (bits > 128) {
@@ -86,8 +79,7 @@ void ipv6_addr_init_prefix(ipv6_addr_t *out, const ipv6_addr_t *prefix,
     }
 }
 
-void ipv6_addr_init_iid(ipv6_addr_t *out, const uint8_t *iid, uint8_t bits)
-{
+void ipv6_addr_init_iid(ipv6_addr_t *out, const uint8_t *iid, uint8_t bits) {
     uint8_t unaligned_bits, bytes, pos;
 
     if (bits > 128) {
@@ -108,8 +100,7 @@ void ipv6_addr_init_iid(ipv6_addr_t *out, const uint8_t *iid, uint8_t bits)
     memcpy(&(out->u8[pos]), iid, bytes);
 }
 
-char *ipv6_addr_split_str(char *addr_str, char separator)
-{
+char *ipv6_addr_split_str(char *addr_str, char separator) {
     char *sep = addr_str;
     while (*(++sep)) {
         if (*sep == separator) {
@@ -121,14 +112,12 @@ char *ipv6_addr_split_str(char *addr_str, char separator)
     return *sep ? sep : NULL;
 }
 
-int ipv6_addr_split_int(char *addr_str, char separator, int _default)
-{
+int ipv6_addr_split_int(char *addr_str, char separator, int _default) {
     char *val = ipv6_addr_split_str(addr_str, separator);
     return val ? atoi(val) : _default;
 }
 
-void ipv6_addr_print(const ipv6_addr_t *addr)
-{
+void ipv6_addr_print(const ipv6_addr_t *addr) {
     assert(addr);
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
     ipv6_addr_to_str(addr_str, addr, sizeof(addr_str));
@@ -142,8 +131,7 @@ void ipv6_addr_print(const ipv6_addr_t *addr)
 }
 
 void ipv6_addrs_print(const ipv6_addr_t *addrs, size_t num,
-                      const char *separator)
-{
+                      const char *separator) {
     if (num == 0) {
         return;
     }
@@ -170,8 +158,7 @@ void ipv6_addrs_print(const ipv6_addr_t *addrs, size_t num,
     }
 }
 
-void ipv6_prefix_print(const ipv6_addr_t *pfx, uint8_t bits)
-{
+void ipv6_prefix_print(const ipv6_addr_t *pfx, uint8_t bits) {
     ipv6_addr_t tmp = {};
     ipv6_addr_init_prefix(&tmp, pfx, bits);
     ipv6_addr_print(&tmp);
@@ -183,6 +170,4 @@ void ipv6_prefix_print(const ipv6_addr_t *pfx, uint8_t bits)
     }
 }
 
-/**
- * @}
- */
+/// @}

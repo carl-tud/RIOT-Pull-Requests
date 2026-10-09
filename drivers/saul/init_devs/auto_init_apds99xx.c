@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_apds99xx
- * @{
- * @ingroup     sys_auto_init_saul
- * @brief       Auto initialization of Broadcom APDS99XX proximity and ambient light sensor
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @}
- */
+/// @ingroup     drivers_apds99xx
+/// @{
+/// @ingroup     sys_auto_init_saul
+/// @brief       Auto initialization of Broadcom APDS99XX proximity and ambient light sensor
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -19,10 +15,8 @@
 #include "apds99xx.h"
 #include "apds99xx_params.h"
 
-/**
- * @name    Reference the driver structs
- * @{
- */
+/// @name    Reference the driver structs
+/// @{
 extern saul_driver_t apds99xx_saul_prx_driver;
 extern saul_driver_t apds99xx_saul_als_driver;
 #if MODULE_APDS9900 || MODULE_APDS9901 || MODULE_APDS9930
@@ -34,30 +28,21 @@ extern saul_driver_t apds99xx_saul_rgb_driver;
 
 #define APDS99XX_SAUL_ENTRY_NUM 3
 
-/** @} */
+/// @}
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define APDS99XX_NUM    (sizeof(apds99xx_params) / sizeof(apds99xx_params[0]))
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static apds99xx_t apds99xx_devs[APDS99XX_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[APDS99XX_NUM * APDS99XX_SAUL_ENTRY_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define APDS99XX_INFO_NUM    (sizeof(apds99xx_saul_info) / sizeof(apds99xx_saul_info[0]))
 
-void auto_init_apds99xx(void)
-{
+void auto_init_apds99xx(void) {
     assert(APDS99XX_NUM == APDS99XX_INFO_NUM);
 
     for (unsigned int i = 0; i < APDS99XX_NUM; i++) {
@@ -68,20 +53,20 @@ void auto_init_apds99xx(void)
             continue;
         }
 
-        /* proximity */
+        // proximity
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM)].dev = &(apds99xx_devs[i]);
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM)].name = apds99xx_saul_info[i].name;
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM)].driver = &apds99xx_saul_prx_driver;
         saul_reg_add(&(saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM)]));
 
-        /* ambient light sensing */
+        // ambient light sensing
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 1].dev = &(apds99xx_devs[i]);
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 1].name = apds99xx_saul_info[i].name;
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 1].driver = &apds99xx_saul_als_driver;
         saul_reg_add(&(saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 1]));
 
         #if MODULE_APDS9900 || MODULE_APDS9901 || MODULE_APDS9930
-        /* illuminance */
+        // illuminance
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 2].dev = &(apds99xx_devs[i]);
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 2].name = apds99xx_saul_info[i].name;
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 2].driver = &apds99xx_saul_lux_driver;
@@ -89,7 +74,7 @@ void auto_init_apds99xx(void)
         #endif
 
         #if MODULE_APDS9950 || MODULE_APDS9960
-        /* RGB sensing */
+        // RGB sensing
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 2].dev = &(apds99xx_devs[i]);
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 2].name = apds99xx_saul_info[i].name;
         saul_entries[(i * APDS99XX_SAUL_ENTRY_NUM) + 2].driver = &apds99xx_saul_rgb_driver;

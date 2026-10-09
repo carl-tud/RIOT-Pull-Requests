@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 
 #include "net/gnrc/ipv6.h"
 #include "net/gnrc/ndp.h"
@@ -19,4 +15,4 @@
 
 #include "net/gnrc/sixlowpan/nd/router.h"
 
-/** @} */
+/// @}

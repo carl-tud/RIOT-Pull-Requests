@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @brief       Test application for the PCA9633 I2C PWM controller
- * @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
- * @file
- *
- */
+/// @ingroup     tests
+/// @brief       Test application for the PCA9633 I2C PWM controller
+/// @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
+/// @file
+///
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +18,7 @@
 
 pca9633_t pca9633_dev;
 
-int turn_on(int argc, char **argv)
-{
+int turn_on(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -31,8 +26,7 @@ int turn_on(int argc, char **argv)
     return 0;
 }
 
-int turn_off(int argc, char **argv)
-{
+int turn_off(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -40,8 +34,7 @@ int turn_off(int argc, char **argv)
     return 0;
 }
 
-int wakeup(int argc, char **argv)
-{
+int wakeup(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -49,8 +42,7 @@ int wakeup(int argc, char **argv)
     return 0;
 }
 
-int enter_sleep(int argc, char **argv)
-{
+int enter_sleep(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -58,8 +50,7 @@ int enter_sleep(int argc, char **argv)
     return 0;
 }
 
-int pwm(int argc, char **argv)
-{
+int pwm(int argc, char **argv) {
     if (argc != 3) {
         puts("usage: pwm <channel (0-3)> <signal (0-255)>");
     }
@@ -91,8 +82,7 @@ int pwm(int argc, char **argv)
     return 0;
 }
 
-int grp_pwm(int argc, char **argv)
-{
+int grp_pwm(int argc, char **argv) {
     if (argc != 2) {
         puts("usage: grp_pwm <signal (0-255)>");
     }
@@ -105,8 +95,7 @@ int grp_pwm(int argc, char **argv)
     return 0;
 }
 
-int blinking(int argc, char **argv)
-{
+int blinking(int argc, char **argv) {
     if (argc != 2) {
         puts("usage: blinking <0 or 1>");
     }
@@ -131,8 +120,7 @@ int blinking(int argc, char **argv)
     return 0;
 }
 
-int rgb(int argc, char **argv)
-{
+int rgb(int argc, char **argv) {
     if (argc != 4) {
         puts("usage: rgb <red (0-255)> <green (0-255)> <blue (0-255)>");
     }
@@ -147,8 +135,7 @@ int rgb(int argc, char **argv)
     return 0;
 }
 
-int rgba(int argc, char **argv)
-{
+int rgba(int argc, char **argv) {
     if (argc != 5) {
         puts("usage: rgba <red (0-255)> <green (0-255)> <blue (0-255)> <amber (0-255)>");
     }
@@ -164,8 +151,7 @@ int rgba(int argc, char **argv)
     return 0;
 }
 
-int ldr_state(int argc, char **argv)
-{
+int ldr_state(int argc, char **argv) {
     if (argc != 3) {
         puts("usage: ldr_state <state (0-3)> pwm <channel (0-3)>");
 
@@ -232,8 +218,7 @@ int ldr_state(int argc, char **argv)
     return 0;
 }
 
-int ldr_state_all(int argc, char **argv)
-{
+int ldr_state_all(int argc, char **argv) {
     if (argc != 2) {
         puts("usage: ldr_state <state (0-3)>");
 
@@ -272,8 +257,7 @@ int ldr_state_all(int argc, char **argv)
     return 0;
 }
 
-int auto_inc(int argc, char **argv)
-{
+int auto_inc(int argc, char **argv) {
     if (argc != 2) {
         puts("usage: auto_inc <option (0-4)>");
 
@@ -317,8 +301,7 @@ int auto_inc(int argc, char **argv)
     return 0;
 }
 
-int grp_ctrl_mode(int argc, char **argv)
-{
+int grp_ctrl_mode(int argc, char **argv) {
     if (argc != 2) {
         puts("usage: grp_ctrl_mode <mode (0-1)>");
 
@@ -347,8 +330,7 @@ int grp_ctrl_mode(int argc, char **argv)
     return 0;
 }
 
-int run_demo(int argc, char **argv)
-{
+int run_demo(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -465,8 +447,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
 
     if (pca9633_init(&pca9633_dev, &pca9633_params[0]) != PCA9633_OK) {
         puts("Initialization failed!");

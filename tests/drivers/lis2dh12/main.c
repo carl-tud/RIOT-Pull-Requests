@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for LIS2DH12 accelerometer driver
- *
- * @author      Jan Mohr <jan.mohr@ml-pa.com>
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for LIS2DH12 accelerometer driver
+///
+/// @author      Jan Mohr <jan.mohr@ml-pa.com>
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -32,10 +28,10 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* device specific */
+// device specific
 #define NUM_FIFO_VALUES 32
 
-/* allocate device descriptor */
+// allocate device descriptor
 static lis2dh12_t dev;
 
 void lis2dh12_test_init(void) {
@@ -46,7 +42,7 @@ void lis2dh12_test_init(void) {
         puts("using I2C mode, for SPI mode select the lis2dh12_spi module");
     }
 
-    /* init lis */
+    // init lis
     if (lis2dh12_init(&dev, &lis2dh12_params[0]) == LIS2DH12_OK) {
         puts("lis2dh12 [Initialized]");
     }
@@ -54,12 +50,12 @@ void lis2dh12_test_init(void) {
         puts("lis2dh12 [Failed]");
     }
 
-    /* change LIS settings */
+    // change LIS settings
     lis2dh12_set_resolution(&dev, LIS2DH12_POWER_LOW);
     lis2dh12_set_datarate(&dev, LIS2DH12_RATE_100HZ);
     lis2dh12_set_scale(&dev, LIS2DH12_SCALE_16G);
 
-    /* configure FIFO */
+    // configure FIFO
     lis2dh12_fifo_t fifo_cfg = {
         .FIFO_mode = LIS2DH12_FIFO_MODE_STREAM,
     };
@@ -71,12 +67,12 @@ void lis2dh12_test_init(void) {
 void* lis2dh12_test_process(void* arg) {
     (void) arg;
 
-    /* start processing */
+    // start processing
     DEBUG("[Process]: start process\n");
 
     while (1) {
 
-        /* wait for interrupt */
+        // wait for interrupt
         int32_t int1_src = lis2dh12_wait_event(&dev, LIS2DH12_INT1, false);
 
         if (int1_src <= 0) {
@@ -97,10 +93,9 @@ void* lis2dh12_test_process(void* arg) {
 
     return NULL;
 }
-#endif /* MODULE_LIS2DH12_INT */
+#endif // MODULE_LIS2DH12_INT
 
-static int shell_is2dh12_read(int argc, char **argv)
-{
+static int shell_is2dh12_read(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -108,10 +103,10 @@ static int shell_is2dh12_read(int argc, char **argv)
 
     lis2dh12_read(&dev, &data);
 
-    /* Memory to print current data */
+    // Memory to print current data
     char str_out[3][8];
 
-    /* format data */
+    // format data
     for (unsigned j = 0; j < 3; ++j) {
         size_t len = fmt_s16_dfp(str_out[j], data.data[j], -3);
         str_out[j][len] = '\0';
@@ -122,8 +117,7 @@ static int shell_is2dh12_read(int argc, char **argv)
     return 0;
 }
 
-static int shell_is2dh12_read_fifo(int argc, char **argv)
-{
+static int shell_is2dh12_read_fifo(int argc, char **argv) {
     uint8_t num = NUM_FIFO_VALUES;
     lis2dh12_fifo_data_t data[NUM_FIFO_VALUES];
 
@@ -133,13 +127,13 @@ static int shell_is2dh12_read_fifo(int argc, char **argv)
 
     num = lis2dh12_read_fifo_data(&dev, data, num);
 
-    /* print data */
+    // print data
     for (unsigned i = 0; i < num; ++i) {
 
-        /* Memory to print current data */
+        // Memory to print current data
         char str_out[3][8];
 
-        /* format data */
+        // format data
         for (unsigned j = 0; j < 3; ++j) {
             size_t len = fmt_s16_dfp(str_out[j], data[i].data[j], -3);
             str_out[j][len] = '\0';
@@ -151,8 +145,7 @@ static int shell_is2dh12_read_fifo(int argc, char **argv)
     return 0;
 }
 
-static int shell_is2dh12_threshold(int argc, char **argv)
-{
+static int shell_is2dh12_threshold(int argc, char **argv) {
     uint8_t slot;
     uint32_t mg;
     uint32_t us = 0;
@@ -182,8 +175,7 @@ static int shell_is2dh12_threshold(int argc, char **argv)
     return 0;
 }
 
-static int shell_is2dh12_click(int argc, char **argv)
-{
+static int shell_is2dh12_click(int argc, char **argv) {
     uint32_t mg;
     uint32_t us = 0;
     uint32_t us_delay = 0;
@@ -217,8 +209,7 @@ static int shell_is2dh12_click(int argc, char **argv)
     return 0;
 }
 
-static int shell_is2dh12_power(int argc, char **argv)
-{
+static int shell_is2dh12_power(int argc, char **argv) {
     bool on;
 
     if (argc > 1 && (!strcmp(argv[1], "on") || !strcmp(argv[1], "1"))) {
@@ -239,8 +230,7 @@ static int shell_is2dh12_power(int argc, char **argv)
     return 0;
 }
 
-static int shell_is2dh12_set_resolution(int argc, char **argv)
-{
+static int shell_is2dh12_set_resolution(int argc, char **argv) {
     unsigned resolution = UINT_MAX;
 
     const char* resolutions[4] = {
@@ -270,8 +260,7 @@ static int shell_is2dh12_set_resolution(int argc, char **argv)
     return 0;
 }
 
-static int shell_is2dh12_set_rate(int argc, char **argv)
-{
+static int shell_is2dh12_set_rate(int argc, char **argv) {
     unsigned rate = UINT_MAX;
 
     if (argc > 1) {
@@ -300,8 +289,7 @@ static int shell_is2dh12_set_rate(int argc, char **argv)
     return 0;
 }
 
-static int shell_is2dh12_set_scale(int argc, char **argv)
-{
+static int shell_is2dh12_set_scale(int argc, char **argv) {
     unsigned scale = UINT_MAX;
 
     const uint8_t scales[] = {
@@ -329,8 +317,7 @@ static int shell_is2dh12_set_scale(int argc, char **argv)
     return 0;
 }
 
-static int shell_is2dh12_read_temp(int argc, char **argv)
-{
+static int shell_is2dh12_read_temp(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -355,21 +342,20 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL },
 };
 
-int main(void)
-{
-    /* init lis */
+int main(void) {
+    // init lis
     lis2dh12_test_init();
 
 #ifdef MODULE_LIS2DH12_INT
     static char lis2dh12_process_stack[THREAD_STACKSIZE_MAIN];
 
-    /* processing lis2dh12 acceleration data */
+    // processing lis2dh12 acceleration data
     thread_create(lis2dh12_process_stack, sizeof(lis2dh12_process_stack),
                   THREAD_PRIORITY_MAIN - 1, 0,
                   lis2dh12_test_process, NULL, "lis2dh12_process");
-#endif /* MODULE_LIS2DH12_INT */
+#endif // MODULE_LIS2DH12_INT
 
-    /* running shell */
+    // running shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

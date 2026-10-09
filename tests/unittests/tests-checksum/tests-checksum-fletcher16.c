@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2016 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdint.h>
 
@@ -11,29 +9,26 @@
 
 #include "tests-checksum.h"
 
-/* String is longer than 20 so it checks the wrap-around property of
- * fletcher16 */
+// String is longer than 20 so it checks the wrap-around property of
+// fletcher16
 static const unsigned char wrap_around_data[] = "u9k89rm88z58f3hGxTfgG3BnyKnyRP";
 
 static int calc_and_compare_checksum(const unsigned char *buf, size_t len,
-                                     uint16_t expected)
-{
+                                     uint16_t expected) {
     uint16_t result = fletcher16(buf, len);
 
     return result == expected;
 }
 
-static void test_checksum_fletcher16_empty(void)
-{
+static void test_checksum_fletcher16_empty(void) {
     unsigned char buf[] = "";
     uint16_t expect = 0xFFFF;
 
     TEST_ASSERT(calc_and_compare_checksum(buf, sizeof(buf) - 1, expect));
 }
 
-static void test_checksum_fletcher16_0to1_undetected(void)
-{
-    /* fletcher cannot distinguish between all 0 and all 1 segments */
+static void test_checksum_fletcher16_0to1_undetected(void) {
+    // fletcher cannot distinguish between all 0 and all 1 segments
     unsigned char buf0[16] = {
         0xA1, 0xA1, 0xA1, 0xA1,
         0x00, 0x00, 0x00, 0x00,
@@ -51,26 +46,23 @@ static void test_checksum_fletcher16_0to1_undetected(void)
     TEST_ASSERT(calc_and_compare_checksum(buf1, sizeof(buf1), expect));
 }
 
-static void test_checksum_fletcher16_atoe(void)
-{
-    /* verified with http://www.nitrxgen.net/hashgen/ */
+static void test_checksum_fletcher16_atoe(void) {
+    // verified with http://www.nitrxgen.net/hashgen/
     unsigned char buf[] = "abcde";
     uint16_t expect = 0xc8f0;
 
     TEST_ASSERT(calc_and_compare_checksum(buf, sizeof(buf) - 1, expect));
 }
 
-static void test_checksum_fletcher16_wrap_around(void)
-{
-    /* verified with http://www.nitrxgen.net/hashgen/ */
+static void test_checksum_fletcher16_wrap_around(void) {
+    // verified with http://www.nitrxgen.net/hashgen/
     uint16_t expect = 0xf122;
 
     TEST_ASSERT(calc_and_compare_checksum(wrap_around_data,
                                           sizeof(wrap_around_data) - 1, expect));
 }
 
-static void test_checksum_fletcher16_multipart(void)
-{
+static void test_checksum_fletcher16_multipart(void) {
     static const uint16_t expect = 0xf122;
     static const size_t half_len = sizeof(wrap_around_data)/2;
     fletcher16_ctx_t ctx;
@@ -82,8 +74,7 @@ static void test_checksum_fletcher16_multipart(void)
     TEST_ASSERT_EQUAL_INT(expect, fletcher16_finish(&ctx));
 }
 
-Test *tests_checksum_fletcher16_tests(void)
-{
+Test *tests_checksum_fletcher16_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_checksum_fletcher16_empty),
         new_TestFixture(test_checksum_fletcher16_0to1_undetected),

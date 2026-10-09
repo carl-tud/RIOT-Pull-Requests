@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 University of Applied Sciences Emden / Leer
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 University of Applied Sciences Emden / Leer
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_ph_oem
- * @{
- *
- * @file
- * @brief       Default configuration for Atlas Scientific pH OEM sensors
- *
- * @author      Igor Knippenberg <igor.knippenberg@gmail.com>
- */
+/// @ingroup     drivers_ph_oem
+/// @{
+///
+/// @file
+/// @brief       Default configuration for Atlas Scientific pH OEM sensors
+///
+/// @author      Igor Knippenberg <igor.knippenberg@gmail.com>
 
-#include "board.h" /* THIS INCLUDE IS MANDATORY */
+#include "board.h" // THIS INCLUDE IS MANDATORY
 #include "saul_reg.h"
 #include "ph_oem.h"
 #include "ph_oem_regs.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the Atlas Scientific pH OEM driver
- * @{
- */
+/// @name    Set default configuration parameters for the Atlas Scientific pH OEM driver
+/// @{
 #ifndef PH_OEM_PARAM_I2C
 #define PH_OEM_PARAM_I2C                  (I2C_DEV(0))
 #endif
@@ -54,18 +48,14 @@ extern "C" {
 #ifndef PH_OEM_SAUL_INFO
 #define PH_OEM_SAUL_INFO       { .name = "pH OEM sensor" }
 #endif
-/** @} */
-/**
- * @brief   pH OEM defaults if not defined for a board or application
- */
+/// @}
+/// @brief   pH OEM defaults if not defined for a board or application
 static const ph_oem_params_t ph_oem_params[] =
 {
     PH_OEM_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t ph_oem_saul_info[] =
 {
     PH_OEM_SAUL_INFO
@@ -75,4 +65,4 @@ static const saul_reg_info_t ph_oem_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

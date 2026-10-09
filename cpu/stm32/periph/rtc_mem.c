@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @{
- * @file
- * @brief       Low-level RTC backup memory implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @{
+/// @file
+/// @brief       Low-level RTC backup memory implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+/// @}
 
 #include <string.h>
 
@@ -90,13 +86,11 @@
 extern void rtc_lock(void);
 extern void rtc_unlock(void);
 
-size_t rtc_mem_size(void)
-{
+size_t rtc_mem_size(void) {
     return RTC_MEM_SIZE * __SIZEOF_POINTER__;
 }
 
-void rtc_mem_write(unsigned offset, const void *data, size_t len)
-{
+void rtc_mem_write(unsigned offset, const void *data, size_t len) {
     if (offset + len > rtc_mem_size()) {
         return;
     }
@@ -127,8 +121,7 @@ void rtc_mem_write(unsigned offset, const void *data, size_t len)
     rtc_lock();
 }
 
-void rtc_mem_read(unsigned offset, void *data, size_t len)
-{
+void rtc_mem_read(unsigned offset, void *data, size_t len) {
     if (offset + len > rtc_mem_size()) {
         return;
     }

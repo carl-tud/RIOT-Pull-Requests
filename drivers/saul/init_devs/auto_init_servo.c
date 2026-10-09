@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_saul
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization for servo motors
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     drivers_saul
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization for servo motors
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <string.h>
 #include <stdint.h>
@@ -34,8 +30,7 @@
 static servo_t servos[SERVO_NUMOF];
 static saul_reg_t saul_entries[SERVO_NUMOF];
 
-void auto_init_servo(void)
-{
+void auto_init_servo(void) {
     for (unsigned i = 0; i < SERVO_NUMOF; i++) {
         LOG_DEBUG("[servo] auto-init servo #%u\n", i);
         int retval = servo_init(&servos[i], &servo_params[i]);

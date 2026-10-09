@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup sys_od Object dump
- * @ingroup  sys
- * @brief    Allows to print out data dumps of memory regions in hexadecimal or/and
-             ASCII representation.
- *
- * @{
- *
- * @file
- *
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @defgroup sys_od Object dump
+/// @ingroup  sys
+/// @brief    Allows to print out data dumps of memory regions in hexadecimal or/and
+///              ASCII representation.
+///
+/// @{
+///
+/// @file
+///
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,42 +21,35 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
-/**
- * @brief   Default value for parameter *width* of @ref od_hex_dump()
- */
+/// @brief   Default value for parameter *width* of @ref od_hex_dump()
 #define OD_WIDTH_DEFAULT    (16)
 
-/**
- * @brief Dumps memory stored at *data* byte-wise up to *data_len* in
- *        hexadecimal representation to stdout. If the pseudomodlue `od_string`
- *        is used (`USEMODULE += od_string`) the ASCII representation of *data* is
- *        also displayed.
- *        The displayed start address of *data* can be given as *offset*.
- *
- * @param[in] data      Data to dump.
- * @param[in] data_len  Length in bytes of *data* to output.
- * @param[in] width     Number of bytes per line. If *width* is 0,
- *                      @ref OD_WIDTH_DEFAULT is assumed as a default value.
- * @param[in] offset    Adds an offset to the printed memory addresses.
- *                      If the origin of the data is an address in memory,
- *                      this can be used to print the real addresses together
- *                      with the data.
- */
+/// @brief Dumps memory stored at *data* byte-wise up to *data_len* in
+///        hexadecimal representation to stdout. If the pseudomodlue `od_string`
+///        is used (`USEMODULE += od_string`) the ASCII representation of *data* is
+///        also displayed.
+///        The displayed start address of *data* can be given as *offset*.
+///
+/// @param[in] data      Data to dump.
+/// @param[in] data_len  Length in bytes of *data* to output.
+/// @param[in] width     Number of bytes per line. If *width* is 0,
+///                      @ref OD_WIDTH_DEFAULT is assumed as a default value.
+/// @param[in] offset    Adds an offset to the printed memory addresses.
+///                      If the origin of the data is an address in memory,
+///                      this can be used to print the real addresses together
+///                      with the data.
 void od_hex_dump_ext(const void *data, size_t data_len, uint8_t width, uint32_t offset);
 
-/**
- * @brief Dumps memory stored at *data* byte-wise up to *data_len* in
- *        hexadecimal representation to stdout. If the pseudomodlue `od_string`
- *        is used (`USEMODULE += od_string`) the ASCII representation of *data* is
- *        also displayed.
- *
- * @param[in] data      Data to dump.
- * @param[in] data_len  Length in bytes of *data* to output.
- * @param[in] width     Number of bytes per line. If *width* is 0,
- *                      @ref OD_WIDTH_DEFAULT is assumed as a default value.
- */
-static inline void od_hex_dump(const void *data, size_t data_len, uint8_t width)
-{
+/// @brief Dumps memory stored at *data* byte-wise up to *data_len* in
+///        hexadecimal representation to stdout. If the pseudomodlue `od_string`
+///        is used (`USEMODULE += od_string`) the ASCII representation of *data* is
+///        also displayed.
+///
+/// @param[in] data      Data to dump.
+/// @param[in] data_len  Length in bytes of *data* to output.
+/// @param[in] width     Number of bytes per line. If *width* is 0,
+///                      @ref OD_WIDTH_DEFAULT is assumed as a default value.
+static inline void od_hex_dump(const void *data, size_t data_len, uint8_t width) {
     od_hex_dump_ext(data, data_len, width, 0);
 }
 
@@ -68,4 +57,4 @@ static inline void od_hex_dump(const void *data, size_t data_len, uint8_t width)
 }
 #endif
 
-/** @} */
+/// @}

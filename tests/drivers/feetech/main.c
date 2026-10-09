@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "feetech.h"
 #include "shell.h"
@@ -74,8 +72,7 @@ static const int32_t baudrates[] = {
 static uint8_t feetech_buffer[128];
 static uart_half_duplex_t stream;
 
-static int parse_uart(char *arg)
-{
+static int parse_uart(char *arg) {
     unsigned uart = atoi(arg);
     if (uart >= UART_NUMOF) {
         printf("Error: Invalid UART_DEV device specified (%u).\n", uart);
@@ -88,8 +85,7 @@ static int parse_uart(char *arg)
     return uart;
 }
 
-static int32_t parse_baud(char *arg)
-{
+static int32_t parse_baud(char *arg) {
     int32_t baud = atoi(arg);
 
     for (size_t i = 0 ; i < ARRAY_SIZE(baudrates); i++) {
@@ -102,8 +98,7 @@ static int32_t parse_baud(char *arg)
     return -1;
 }
 
-static int parse_dev(char *arg)
-{
+static int parse_dev(char *arg) {
     int dev = atoi(arg);
     if (dev < 0 || 254 < dev) {
         printf("Error: Invalid device id (%s)\n", arg);
@@ -112,8 +107,7 @@ static int parse_dev(char *arg)
     return dev;
 }
 
-static void parse_reg(char *arg, int *reg8, int *reg16)
-{
+static void parse_reg(char *arg, int *reg8, int *reg16) {
     *reg8 = -1;
     *reg16 = -1;
 
@@ -159,7 +153,7 @@ static int cmd_init(int argc, char **argv) {
         }
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     uart = parse_uart(argv[1]);
     if (uart < 0) {
         return -1;
@@ -178,7 +172,7 @@ static int cmd_init(int argc, char **argv) {
         }
     }
 
-    /* init */
+    // init
     uart_half_duplex_params_t params = {
         .uart = uart,
         .baudrate = baud,
@@ -223,13 +217,13 @@ static int cmd_ping(int argc, char **argv) {
         printf("usage; %s <dev_id>\n", argv[0]);
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     id = parse_dev(argv[1]);
     if (id < 0) {
         return -1;
     }
 
-    /* ping */
+    // ping
     if (feetech_ping(&stream, id) == FEETECH_OK) {
         printf("Device %i responded\n", id);
     }
@@ -265,7 +259,7 @@ static int cmd_scan(int argc, char **argv) {
         return 1;
     }
 
-    /* ping */
+    // ping
     puts("Scanning...");
     for (int id = min ; id < max ; id++) {
         if (feetech_ping(&stream, id) == FEETECH_OK) {
@@ -286,7 +280,7 @@ static int cmd_read(int argc, char **argv) {
         print_registers();
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     id = parse_dev(argv[1]);
     if (id < 0) {
         return -1;
@@ -297,7 +291,7 @@ static int cmd_read(int argc, char **argv) {
         return -1;
     }
 
-    /* read */
+    // read
     feetech_t dev;
     feetech_init(&dev, &stream, id);
     if (reg8 >= 0) {
@@ -331,7 +325,7 @@ static int cmd_write(int argc, char **argv) {
         print_registers();
         return 1;
     }
-    /* parse parameters */
+    // parse parameters
     id = parse_dev(argv[1]);
     if (id < 0) {
         return -1;
@@ -347,7 +341,7 @@ static int cmd_write(int argc, char **argv) {
         return -1;
     }
 
-    /* read */
+    // read
     feetech_t dev;
     feetech_init(&dev, &stream, id);
     if (reg8 >= 0) {
@@ -378,8 +372,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("\nManual Feetech device driver test");
     puts("===================================");
     puts("This application is intended for testing Feetech TTL bus\n");

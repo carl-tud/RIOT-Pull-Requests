@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_enc28j60
- * @{
- *
- * @file
- * @brief       Default configuration for the ENC28J60 driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_enc28j60
+/// @{
+///
+/// @file
+/// @brief       Default configuration for the ENC28J60 driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the ENC28J60 driver
- * @{
- */
+/// @name    Set default configuration parameters for the ENC28J60 driver
+/// @{
 #ifndef ENC28J60_PARAM_SPI
 #define ENC28J60_PARAM_SPI      (SPI_DEV(0))
 #endif
@@ -44,11 +38,9 @@ extern "C" {
                                   .int_pin = ENC28J60_PARAM_INT, \
                                   .rst_pin = ENC28J60_PARAM_RESET }
 #endif
-/** @} */
+/// @}
 
-/**
- * @brief   ENC28J60 configuration
- */
+/// @brief   ENC28J60 configuration
 static const  enc28j60_params_t enc28j60_params[] = {
     ENC28J60_PARAMS
 };
@@ -57,4 +49,4 @@ static const  enc28j60_params_t enc28j60_params[] = {
 }
 #endif
 
-/** @} */
+/// @}

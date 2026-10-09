@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2016 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Unittests for DevFS
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @{
+///
+/// @file
+/// @brief       Unittests for DevFS
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -52,8 +48,7 @@ static vfs_mount_t _test_devfs_mount = {
     .private_data = &_mock_private_data,
 };
 
-static int _mock_open(vfs_file_t *filp, const char *name, int flags, mode_t mode)
-{
+static int _mock_open(vfs_file_t *filp, const char *name, int flags, mode_t mode) {
     (void) name;
     (void) flags;
     (void) mode;
@@ -66,8 +61,7 @@ static int _mock_open(vfs_file_t *filp, const char *name, int flags, mode_t mode
     return 0;
 }
 
-static ssize_t _mock_read(vfs_file_t *filp, void *dest, size_t nbytes)
-{
+static ssize_t _mock_read(vfs_file_t *filp, void *dest, size_t nbytes) {
     (void) dest;
     (void) nbytes;
     if (filp->private_data.ptr != &_mock_private_data_tag) {
@@ -79,8 +73,7 @@ static ssize_t _mock_read(vfs_file_t *filp, void *dest, size_t nbytes)
     return 0;
 }
 
-static ssize_t _mock_write(vfs_file_t *filp, const void *src, size_t nbytes)
-{
+static ssize_t _mock_write(vfs_file_t *filp, const void *src, size_t nbytes) {
     (void) src;
     (void) nbytes;
     if (filp->private_data.ptr != &_mock_private_data_tag) {
@@ -92,8 +85,7 @@ static ssize_t _mock_write(vfs_file_t *filp, const void *src, size_t nbytes)
     return 0;
 }
 
-static void test_devfs_register(void)
-{
+static void test_devfs_register(void) {
     int res = devfs_register(NULL);
     TEST_ASSERT(res < 0);
 
@@ -110,8 +102,7 @@ static void test_devfs_register(void)
     TEST_ASSERT(res < 0);
 }
 
-static void test_devfs_mount_open(void)
-{
+static void test_devfs_mount_open(void) {
     _mock_private_data = 12345;
     int res;
     res = vfs_mount(&_test_devfs_mount);
@@ -137,8 +128,7 @@ static void test_devfs_mount_open(void)
     TEST_ASSERT_EQUAL_INT(0, res);
 }
 
-static void test_devfs_urandom(void)
-{
+static void test_devfs_urandom(void) {
     const uint8_t zeroes[8] = { 0 };
     int res;
     int fd = vfs_open("/dev/urandom", O_RDONLY, 0);
@@ -150,8 +140,7 @@ static void test_devfs_urandom(void)
     TEST_ASSERT(memcmp(zeroes, buf, sizeof(buf)));
 }
 
-static void test_devfs_hwrng(void)
-{
+static void test_devfs_hwrng(void) {
     const uint8_t zeroes[8] = { 0 };
     int res;
     int fd = vfs_open("/dev/hwrng", O_RDONLY, 0);
@@ -163,8 +152,7 @@ static void test_devfs_hwrng(void)
     TEST_ASSERT(memcmp(zeroes, buf, sizeof(buf)));
 }
 
-Test *tests_devfs(void)
-{
+Test *tests_devfs(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_devfs_register),
         new_TestFixture(test_devfs_mount_open),
@@ -177,8 +165,7 @@ Test *tests_devfs(void)
     return (Test *)&devfs_tests;
 }
 
-int main(void)
-{
+int main(void) {
     extern void auto_init_devfs(void);
     auto_init_devfs();
 
@@ -189,4 +176,4 @@ int main(void)
     TESTS_END();
     return 0;
 }
-/** @} */
+/// @}

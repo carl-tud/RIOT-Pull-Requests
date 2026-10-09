@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_at24cxxx
- * @{
- *
- * @file
- * @brief       Device driver implementation for at24cxxx EEPROM units.
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- * @}
- */
+/// @ingroup     drivers_at24cxxx
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for at24cxxx EEPROM units.
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+/// @}
 
 #include <stdio.h>
 #include <errno.h>
@@ -28,61 +24,44 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief Calculate x mod y, if y is a power of 2
- */
+/// @brief Calculate x mod y, if y is a power of 2
 #define MOD_POW2(x, y) ((x) & ((y) - 1))
 
-/**
- * @brief I2C bus number shortcut
- */
+/// @brief I2C bus number shortcut
 #define DEV_I2C_BUS                     (dev->params.i2c)
-/**
- * @brief Pin wp shortcut
- */
+/// @brief Pin wp shortcut
 #define DEV_PIN_WP                      (dev->params.pin_wp)
-/**
- * @brief EEPROM size shortcut
- */
+/// @brief EEPROM size shortcut
 #define DEV_EEPROM_SIZE                 (dev->params.eeprom_size)
-/**
- * @brief I2C device address shortcut
- */
+/// @brief I2C device address shortcut
 #define DEV_I2C_ADDR                    (dev->params.dev_addr)
-/**
- * @brief Page size shortcut
- */
+/// @brief Page size shortcut
 #define DEV_PAGE_SIZE                   (dev->params.page_size)
-/**
- * @brief Max polls shortcut
- */
+/// @brief Max polls shortcut
 #define DEV_MAX_POLLS                   (dev->params.max_polls)
 
 #ifndef AT24CXXX_SET_BUF_SIZE
-/**
- * @brief  Adjust to configure buffer size
- */
+/// @brief  Adjust to configure buffer size
 #define AT24CXXX_SET_BUF_SIZE           (32U)
 #endif
 
 static
-int _read(const at24cxxx_t *dev, uint32_t pos, void *data, size_t len)
-{
+int _read(const at24cxxx_t *dev, uint32_t pos, void *data, size_t len) {
     int check;
     uint8_t polls = DEV_MAX_POLLS;
     uint8_t dev_addr;
     uint8_t flags = 0;
 
     if (DEV_EEPROM_SIZE > 2048) {
-        /* 2 bytes word address length if more than 11 bits are
-           used for addressing */
-        /* append page address bits to device address (if any) */
+        // 2 bytes word address length if more than 11 bits are
+        //    used for addressing
+        // append page address bits to device address (if any)
         dev_addr  = (DEV_I2C_ADDR | ((pos & 0xFF0000) >> 16));
         pos &= 0xFFFF;
         flags = I2C_REG16;
     }
     else {
-        /* append page address bits to device address (if any) */
+        // append page address bits to device address (if any)
         dev_addr = (DEV_I2C_ADDR | ((pos & 0xFF00) >> 8));
         pos &= 0xFF;
     }
@@ -100,8 +79,7 @@ int _read(const at24cxxx_t *dev, uint32_t pos, void *data, size_t len)
     return check;
 }
 
-static int _read_max(const at24cxxx_t *dev, uint32_t pos, void *data, size_t len)
-{
+static int _read_max(const at24cxxx_t *dev, uint32_t pos, void *data, size_t len) {
 #ifdef PERIPH_I2C_MAX_BYTES_PER_FRAME
     uint8_t *data_p = data;
 
@@ -125,23 +103,22 @@ static int _read_max(const at24cxxx_t *dev, uint32_t pos, void *data, size_t len
 }
 
 static
-int _write_page(const at24cxxx_t *dev, uint32_t pos, const void *data, size_t len)
-{
+int _write_page(const at24cxxx_t *dev, uint32_t pos, const void *data, size_t len) {
     int check;
     uint8_t polls = DEV_MAX_POLLS;
     uint8_t dev_addr;
     uint8_t flags = 0;
 
     if (DEV_EEPROM_SIZE > 2048) {
-        /* 2 bytes word address length if more than 11 bits are
-           used for addressing */
-        /* append page address bits to device address (if any) */
+        // 2 bytes word address length if more than 11 bits are
+        //    used for addressing
+        // append page address bits to device address (if any)
         dev_addr  = (DEV_I2C_ADDR | ((pos & 0xFF0000) >> 16));
         pos &= 0xFFFF;
         flags = I2C_REG16;
     }
     else {
-        /* append page address bits to device address (if any) */
+        // append page address bits to device address (if any)
         dev_addr = (DEV_I2C_ADDR | ((pos & 0xFF00) >> 8));
         pos &= 0xFF;
     }
@@ -160,8 +137,7 @@ int _write_page(const at24cxxx_t *dev, uint32_t pos, const void *data, size_t le
 }
 
 static
-int _write(const at24cxxx_t *dev, uint32_t pos, const void *data, size_t len)
-{
+int _write(const at24cxxx_t *dev, uint32_t pos, const void *data, size_t len) {
     int check = 0;
     const uint8_t *cdata = ((const uint8_t *)data);
 
@@ -183,8 +159,7 @@ int _write(const at24cxxx_t *dev, uint32_t pos, const void *data, size_t len)
 }
 
 static
-int _set(const at24cxxx_t *dev, uint32_t pos, uint8_t val, size_t len)
-{
+int _set(const at24cxxx_t *dev, uint32_t pos, uint8_t val, size_t len) {
     int check = 0;
     uint8_t set_buffer[AT24CXXX_SET_BUF_SIZE];
 
@@ -203,8 +178,7 @@ int _set(const at24cxxx_t *dev, uint32_t pos, uint8_t val, size_t len)
     return check;
 }
 
-int at24cxxx_init(at24cxxx_t *dev, const at24cxxx_params_t *params)
-{
+int at24cxxx_init(at24cxxx_t *dev, const at24cxxx_params_t *params) {
     if (!dev || !params) {
         return -EINVAL;
     }
@@ -213,14 +187,13 @@ int at24cxxx_init(at24cxxx_t *dev, const at24cxxx_params_t *params)
         gpio_init(DEV_PIN_WP, GPIO_OUT);
         at24cxxx_disable_write_protect(dev);
     }
-    /* Check I2C bus once */
+    // Check I2C bus once
     i2c_acquire(DEV_I2C_BUS);
     i2c_release(DEV_I2C_BUS);
     return AT24CXXX_OK;
 }
 
-int at24cxxx_read_byte(const at24cxxx_t *dev, uint32_t pos, void *dest)
-{
+int at24cxxx_read_byte(const at24cxxx_t *dev, uint32_t pos, void *dest) {
     if (pos >= DEV_EEPROM_SIZE) {
         return -ERANGE;
     }
@@ -231,8 +204,7 @@ int at24cxxx_read_byte(const at24cxxx_t *dev, uint32_t pos, void *dest)
     return check;
 }
 
-int at24cxxx_read(const at24cxxx_t *dev, uint32_t pos, void *data, size_t len)
-{
+int at24cxxx_read(const at24cxxx_t *dev, uint32_t pos, void *data, size_t len) {
     if (pos + len > DEV_EEPROM_SIZE) {
         return -ERANGE;
     }
@@ -247,8 +219,7 @@ int at24cxxx_read(const at24cxxx_t *dev, uint32_t pos, void *data, size_t len)
     return check;
 }
 
-int at24cxxx_write_byte(const at24cxxx_t *dev, uint32_t pos, uint8_t data)
-{
+int at24cxxx_write_byte(const at24cxxx_t *dev, uint32_t pos, uint8_t data) {
     if (pos >= DEV_EEPROM_SIZE) {
         return -ERANGE;
     }
@@ -260,8 +231,7 @@ int at24cxxx_write_byte(const at24cxxx_t *dev, uint32_t pos, uint8_t data)
 }
 
 int at24cxxx_write(const at24cxxx_t *dev, uint32_t pos, const void *data,
-                       size_t len)
-{
+                       size_t len) {
     if (pos + len > DEV_EEPROM_SIZE) {
         return -ERANGE;
     }
@@ -276,8 +246,7 @@ int at24cxxx_write(const at24cxxx_t *dev, uint32_t pos, const void *data,
 }
 
 int at24cxxx_set(const at24cxxx_t *dev, uint32_t pos, uint8_t val,
-                     size_t len)
-{
+                     size_t len) {
     if (pos + len > DEV_EEPROM_SIZE) {
         return -ERANGE;
     }
@@ -291,18 +260,15 @@ int at24cxxx_set(const at24cxxx_t *dev, uint32_t pos, uint8_t val,
     return check;
 }
 
-int at24cxxx_clear(const at24cxxx_t *dev, uint32_t pos, size_t len)
-{
+int at24cxxx_clear(const at24cxxx_t *dev, uint32_t pos, size_t len) {
     return at24cxxx_set(dev, pos, AT24CXXX_CLEAR_BYTE, len);
 }
 
-int at24cxxx_erase(const at24cxxx_t *dev)
-{
+int at24cxxx_erase(const at24cxxx_t *dev) {
     return at24cxxx_clear(dev, 0, DEV_EEPROM_SIZE);
 }
 
-int at24cxxx_enable_write_protect(const at24cxxx_t *dev)
-{
+int at24cxxx_enable_write_protect(const at24cxxx_t *dev) {
     if (!gpio_is_valid(DEV_PIN_WP)) {
         return -ENOTSUP;
     }
@@ -310,8 +276,7 @@ int at24cxxx_enable_write_protect(const at24cxxx_t *dev)
     return AT24CXXX_OK;
 }
 
-int at24cxxx_disable_write_protect(const at24cxxx_t *dev)
-{
+int at24cxxx_disable_write_protect(const at24cxxx_t *dev) {
     if (!gpio_is_valid(DEV_PIN_WP)) {
         return -ENOTSUP;
     }
@@ -325,8 +290,7 @@ int at24cxxx_disable_write_protect(const at24cxxx_t *dev)
 #define DEV(mtd_ptr)        (((mtd_at24cxxx_t *)(mtd_ptr))->at24cxxx_eeprom)
 #define PARAMS(mtd_ptr)     (((mtd_at24cxxx_t *)(mtd_ptr))->params)
 
-static int _mtd_at24cxxx_init(mtd_dev_t *mtd)
-{
+static int _mtd_at24cxxx_init(mtd_dev_t *mtd) {
     assert(mtd);
     assert(mtd->driver == &mtd_at24cxxx_driver);
     assert(DEV(mtd));
@@ -344,11 +308,10 @@ static int _mtd_at24cxxx_init(mtd_dev_t *mtd)
 }
 
 static int _mtd_at24cxxx_read_page(mtd_dev_t *mtd, void *dest, uint32_t page,
-                                   uint32_t offset, uint32_t size)
-{
+                                   uint32_t offset, uint32_t size) {
     const at24cxxx_t *dev = DEV(mtd);
 
-    /* some i2c implementations have a limit on the transfer size */
+    // some i2c implementations have a limit on the transfer size
 #ifdef PERIPH_I2C_MAX_BYTES_PER_FRAME
     size = MIN(size, PERIPH_I2C_MAX_BYTES_PER_FRAME);
 #endif
@@ -361,11 +324,10 @@ static int _mtd_at24cxxx_read_page(mtd_dev_t *mtd, void *dest, uint32_t page,
 }
 
 static int mtd_at24cxxx_write_page(mtd_dev_t *mtd, const void *src, uint32_t page,
-                                   uint32_t offset, uint32_t size)
-{
+                                   uint32_t offset, uint32_t size) {
     const at24cxxx_t *dev = DEV(mtd);
 
-    /* write no more than to the end of the current page to prevent wrap-around */
+    // write no more than to the end of the current page to prevent wrap-around
     size_t remaining = DEV_PAGE_SIZE - offset;
     size = MIN(size, remaining);
 
@@ -376,13 +338,11 @@ static int mtd_at24cxxx_write_page(mtd_dev_t *mtd, const void *src, uint32_t pag
     return res < 0 ? res : (int)size;
 }
 
-static int _mtd_at24cxxx_erase(mtd_dev_t *mtd, uint32_t addr, uint32_t size)
-{
+static int _mtd_at24cxxx_erase(mtd_dev_t *mtd, uint32_t addr, uint32_t size) {
     return at24cxxx_clear(DEV(mtd), addr, size) == AT24CXXX_OK ? 0 : -EIO;
 }
 
-static int _mtd_at24cxxx_power(mtd_dev_t *mtd, enum mtd_power_state power)
-{
+static int _mtd_at24cxxx_power(mtd_dev_t *mtd, enum mtd_power_state power) {
     (void)mtd;
     (void)power;
     return -ENOTSUP;

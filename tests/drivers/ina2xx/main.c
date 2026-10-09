@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the INA2XX sensor driver
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the INA2XX sensor driver
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdlib.h>
@@ -24,8 +20,7 @@
 #include "ina2xx.h"
 #include "ina2xx_params.h"
 
-int main(void)
-{
+int main(void) {
     ina2xx_t dev;
 
     print_str("INA2XX sensor driver test application\n\n");
@@ -53,20 +48,20 @@ int main(void)
         int32_t i_shunt;
         uint32_t p;
 
-        /* Read bus voltage until flag indicates new value is present */
+        // Read bus voltage until flag indicates new value is present
         switch (ina2xx_read_bus(&dev, &u_bus)){
             case 0:
-                /* No measurement available yet */
+                // No measurement available yet
                 continue;
             case 1:
-                /* New measurement available, continue */
+                // New measurement available, continue
                 break;
             case -EDOM:
                 print_str("[WARNING]: INA2xx detected math overflow ==> data "
                           "will be incorrect\n");
                 break;
             default:
-                /* Error */
+                // Error
                 print_str("Error while reading bus voltage\n");
                 return EXIT_FAILURE;
         }

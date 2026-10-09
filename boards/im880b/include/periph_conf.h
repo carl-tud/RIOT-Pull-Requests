@@ -1,37 +1,27 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_im880b
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the im808b board
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- */
+/// @ingroup     boards_im880b
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the im808b board
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
 
-/*
- * This board provides an LSE, so enable it before including the default clock config
- */
+// This board provides an LSE, so enable it before including the default clock config
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
 
-/**
- * @brief   This board has an HSE clock
- */
+/// @brief   This board has an HSE clock
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE            1
 #endif
 
-/**
- * @brief   Speed of the HSE clock in Hz
- */
+/// @brief   Speed of the HSE clock in Hz
 #ifndef CONFIG_CLOCK_HSE
 #define CONFIG_CLOCK_HSE                       MHZ(16)
 #endif
@@ -43,10 +33,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM3,
@@ -60,12 +48,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_0_ISR         (isr_tim3)
 
 #define TIMER_NUMOF         (sizeof(timer_config) / sizeof(timer_config[0]))
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev      = USART1,
@@ -82,12 +68,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          (isr_usart1)
 
 #define UART_NUMOF          (sizeof(uart_config) / sizeof(uart_config[0]))
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -118,12 +102,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           (sizeof(spi_config) / sizeof(spi_config[0]))
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .dev            = I2C1,
@@ -142,27 +124,25 @@ static const i2c_conf_t i2c_config[] = {
 #define I2C_0_ISR           isr_i2c1_ev
 
 #define I2C_NUMOF           (sizeof(i2c_config) / sizeof(i2c_config[0]))
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
-    { GPIO_PIN(PORT_A, 0), 0 }, /* P14 */
-    { GPIO_PIN(PORT_A, 1), 1 }, /* P15 */
-    { GPIO_PIN(PORT_A, 3), 3 }, /* P17 */
-    /* ADC Temperature channel */
+    { GPIO_PIN(PORT_A, 0), 0 }, // P14
+    { GPIO_PIN(PORT_A, 1), 1 }, // P15
+    { GPIO_PIN(PORT_A, 3), 3 }, // P17
+    // ADC Temperature channel
     { GPIO_UNDEF,          16 },
-    /* ADC VREF channel */
+    // ADC VREF channel
     { GPIO_UNDEF,          17 },
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

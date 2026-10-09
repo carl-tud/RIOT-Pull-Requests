@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Zolertia SL
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Zolertia SL
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_remote
- * @{
- *
- * @file
- * @brief       Common default SPI configuration for the RE-Mote board revision A
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Antonio Lignan <alinan@zolertia.com>
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     boards_common_remote
+/// @{
+///
+/// @file
+/// @brief       Common default SPI configuration for the RE-Mote board revision A
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Antonio Lignan <alinan@zolertia.com>
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "periph_cpu.h"
 
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name SPI configuration
- * @{
- */
+/// @name SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .num      = 0,
@@ -46,10 +40,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2024 BISSELL Homecare, Inc.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 BISSELL Homecare, Inc.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     boards_stm32c0316-dk
- * @{
- *
- * @file
- * @brief       Configuration of CPU peripherals for STM32C0316-DK board
- *
- * @author      Jason Parker <Jason.Parker@bissell.com>
- */
+/// @ingroup     boards_stm32c0316-dk
+/// @{
+///
+/// @file
+/// @brief       Configuration of CPU peripherals for STM32C0316-DK board
+///
+/// @author      Jason Parker <Jason.Parker@bissell.com>
 
 #pragma once
 
@@ -26,10 +22,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM3,
@@ -44,15 +38,13 @@ static const timer_conf_t timer_config[] = {
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
 
-#define TIMER_0_MAX_VALUE   0x0000FFFFUL /* the STM32C031 doesn't have a 32-bit timer */
-/** @} */
+#define TIMER_0_MAX_VALUE   0x0000FFFFUL // the STM32C031 doesn't have a 32-bit timer
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    { /* USART is connected to the ST-Link */
+    { // USART is connected to the ST-Link
         .dev        = USART1,
         .rcc_mask   = RCC_APBENR2_USART1EN,
         .rx_pin     = GPIO_PIN(PORT_B, 7),
@@ -62,7 +54,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB12,
         .irqn       = USART1_IRQn,
     },
-    { /* this USART is connected to the Morpho-Connector */
+    { // this USART is connected to the Morpho-Connector
         .dev        = USART2,
         .rcc_mask   = RCC_APBENR1_USART2EN,
         .rx_pin     = GPIO_PIN(PORT_A, 3),
@@ -78,10 +70,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_psa_crypto
- * @{
- *
- * @file
- * @brief       Glue code translating between PSA Crypto and the RIOT ChaCha20 Cipher from the ChaCha20-Poly1305 Cipher module
- *
- * @author      Lennard Melling <lennard.melling@msx.tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     sys_psa_crypto
+/// @{
+///
+/// @file
+/// @brief       Glue code translating between PSA Crypto and the RIOT ChaCha20 Cipher from the ChaCha20-Poly1305 Cipher module
+///
+/// @author      Lennard Melling <lennard.melling@msx.tu-dresden.de>
+///
+/// @}
 
 #include "psa/crypto.h"
 #include "crypto/chacha20poly1305.h"
@@ -27,8 +23,7 @@ psa_status_t psa_cipher_chacha20_encrypt(uint8_t *key_buffer,
                                          size_t input_length,
                                          uint8_t *output,
                                          size_t output_size,
-                                         size_t *output_length)
-{
+                                         size_t *output_length) {
     DEBUG("RIOT ChaCha20 Cipher encryption");
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
@@ -58,8 +53,7 @@ psa_status_t psa_cipher_chacha20_decrypt(uint8_t *key_buffer,
                                          size_t input_length,
                                          uint8_t *output,
                                          size_t output_size,
-                                         size_t *output_length)
-{
+                                         size_t *output_length) {
     DEBUG("RIOT ChaCha20 Cipher decryption");
 
     if ((key_buffer_size != CHACHA20POLY1305_KEY_BYTES) ||

@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- *
- * @file
- * @brief       Visual test for the conversion from phydat to a string
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- */
+/// @ingroup     tests
+///
+/// @file
+/// @brief       Visual test for the conversion from phydat to a string
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
 
 #include <stdio.h>
 
@@ -63,8 +59,7 @@ _phydat_test_t _test_vector[] =
     { .dim = 3, .dat = { .val = { 27, 2, 2020 }, .unit = UNIT_DATE, .scale = -1 } },
 };
 
-int main(void)
-{
+int main(void) {
     puts("Visual phydat test application");
 
     for (unsigned int i = 0; i < ARRAY_SIZE(_test_vector); i++) {

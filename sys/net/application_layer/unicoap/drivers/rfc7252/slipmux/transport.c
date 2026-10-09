@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2026 TU Dresden
- * SPDX-FileCopyrightText: 2026 Bennet Hattesen
- * SPDX-FileCopyrightText: 2026 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2026 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2026 TU Dresden
+// SPDX-FileCopyrightText: 2026 Bennet Hattesen
+// SPDX-FileCopyrightText: 2026 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup net_unicoap_drivers_slipmux
- * @brief   Transport implementation of CoAP over Slipmux driver
- * @author  Bennet Hattesen
- */
+/// @file
+/// @ingroup net_unicoap_drivers_slipmux
+/// @brief   Transport implementation of CoAP over Slipmux driver
+/// @author  Bennet Hattesen
 
 #include <stdint.h>
 #include <errno.h>
@@ -24,14 +20,13 @@
 
 #define _SLIPMUX_DEBUG(...) _UNICOAP_PREFIX_DEBUG(".transport.slipmux", __VA_ARGS__)
 
-/* Provides unicoap_receiver_buffer */
+// Provides unicoap_receiver_buffer
 UNICOAP_DECL_RECEIVER_STORAGE_EXTERN;
 
 extern int unicoap_messaging_process_rfc7252(const uint8_t *pdu, size_t size, bool truncated,
                                              unicoap_packet_t *packet);
 
-void unicoap_slipdev_recv_handler(event_t *event)
-{
+void unicoap_slipdev_recv_handler(event_t *event) {
     slipdev_t *dev = container_of(event, slipdev_t, rxevent);
 
     unicoap_endpoint_t remote = {
@@ -61,8 +56,7 @@ void unicoap_slipdev_recv_handler(event_t *event)
     }
 }
 
-int unicoap_transport_sendv_slipmux(iolist_t *iolist, const unicoap_endpoint_t *remote)
-{
+int unicoap_transport_sendv_slipmux(iolist_t *iolist, const unicoap_endpoint_t *remote) {
     _SLIPMUX_DEBUG("sendv: %" PRIuSIZE " bytes via UART(%d)\n", iolist_size(iolist),
                    remote->slipmux_ep->config.uart);
 
@@ -71,14 +65,12 @@ int unicoap_transport_sendv_slipmux(iolist_t *iolist, const unicoap_endpoint_t *
     return 0;
 }
 
-int unicoap_init_slipmux(event_queue_t *queue)
-{
+int unicoap_init_slipmux(event_queue_t *queue) {
     slipdev_coap_set_event_queue(queue);
     return 0;
 }
 
-int unicoap_deinit_slipmux(event_queue_t *queue)
-{
+int unicoap_deinit_slipmux(event_queue_t *queue) {
     (void)queue;
     slipdev_coap_unset_event_queue();
     return 0;

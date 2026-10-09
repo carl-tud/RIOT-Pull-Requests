@@ -1,26 +1,22 @@
-/*
- * SPDX-FileCopyrightText: 2016 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f411re
- * @{
- *
- * @file
- * @name        Peripheral MCU configuration for the nucleo-f411re board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nucleo-f411re
+/// @{
+///
+/// @file
+/// @name        Peripheral MCU configuration for the nucleo-f411re board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -34,25 +30,21 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 11 },   /* DMA2 Stream 3 - SPI1_TX */
-    { .stream = 10 },   /* DMA2 Stream 2 - SPI1_RX */
+    { .stream = 11 },   // DMA2 Stream 3 - SPI1_TX
+    { .stream = 10 },   // DMA2 Stream 2 - SPI1_RX
 };
 
 #define DMA_0_ISR           isr_dma2_stream3
 #define DMA_1_ISR           isr_dma2_stream2
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -98,18 +90,17 @@ static const uart_conf_t uart_config[] = {
     }
 };
 
-/* assign ISR vector names */
+// assign ISR vector names
 #define UART_0_ISR          isr_usart2
 #define UART_1_ISR          isr_usart1
 #define UART_2_ISR          isr_usart6
 
-/* deduct number of defined UART interfaces */
+// deduct number of defined UART interfaces
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/** @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM2,
@@ -134,12 +125,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev            = SPI1,
@@ -163,18 +152,16 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name   ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32F411 order.  Instead, we
- * just define 6 ADC channels, for the Nucleo
- * Arduino header pins A0-A5 and the internal VBAT channel.
- *
- * @{
- */
+/// @name   ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32F411 order.  Instead, we
+/// just define 6 ADC channels, for the Nucleo
+/// Arduino header pins A0-A5 and the internal VBAT channel.
+///
+/// @{
 static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_A, 0), 0, 0},
     {GPIO_PIN(PORT_A, 1), 0, 1},
@@ -182,15 +169,15 @@ static const adc_conf_t adc_config[] = {
     {GPIO_PIN(PORT_B, 0), 0, 8},
     {GPIO_PIN(PORT_C, 1), 0, 11},
     {GPIO_PIN(PORT_C, 0), 0, 10},
-    {GPIO_UNDEF, 0, 18}, /* VBAT */
+    {GPIO_UNDEF, 0, 18}, // VBAT
 };
 
-#define VBAT_ADC            ADC_LINE(6) /**< VBAT ADC line */
+#define VBAT_ADC            ADC_LINE(6) ///< VBAT ADC line
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

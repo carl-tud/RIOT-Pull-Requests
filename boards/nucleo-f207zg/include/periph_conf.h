@@ -1,28 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2016-2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-f207zg
- * @{
- *
- * @file
- * @name        Peripheral MCU configuration for the nucleo-f207zg board
- *
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Aurelien Gonce <aurelien.gonce@altran.fr>
- * @author      Toon Stegen <toon.stegen@altran.com>
- */
+/// @ingroup     boards_nucleo-f207zg
+/// @{
+///
+/// @file
+/// @name        Peripheral MCU configuration for the nucleo-f207zg board
+///
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Aurelien Gonce <aurelien.gonce@altran.fr>
+/// @author      Toon Stegen <toon.stegen@altran.com>
 
-/* This board provides an LSE */
+// This board provides an LSE
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE    1
 #endif
 
-/* This board provides an HSE */
+// This board provides an HSE
 #ifndef CONFIG_BOARD_HAS_HSE
 #define CONFIG_BOARD_HAS_HSE    1
 #endif
@@ -37,18 +33,16 @@
 extern "C" {
 #endif
 
-/**
- * @name    DMA streams configuration
- * @{
- */
+/// @name    DMA streams configuration
+/// @{
 static const dma_conf_t dma_config[] = {
-    { .stream = 10 },   /* DMA2 Stream 2 - SPI1_RX */
-    { .stream = 11 },   /* DMA2 Stream 3 - SPI1_TX */
-    { .stream = 3 },    /* DMA1 Stream 3 - SPI2_RX/USART3_TX */
-    { .stream = 4 },    /* DMA1 Stream 4 - SPI2_TX */
-    { .stream = 14 },   /* DMA2 Stream 6 - USART6_TX */
-    { .stream = 6 },    /* DMA1 Stream 6 - USART2_TX */
-    { .stream = 8 },    /* DMA2 Stream 0 - ETH_TX */
+    { .stream = 10 },   // DMA2 Stream 2 - SPI1_RX
+    { .stream = 11 },   // DMA2 Stream 3 - SPI1_TX
+    { .stream = 3 },    // DMA1 Stream 3 - SPI2_RX/USART3_TX
+    { .stream = 4 },    // DMA1 Stream 4 - SPI2_TX
+    { .stream = 14 },   // DMA2 Stream 6 - USART6_TX
+    { .stream = 6 },    // DMA1 Stream 6 - USART2_TX
+    { .stream = 8 },    // DMA2 Stream 0 - ETH_TX
 };
 
 #define DMA_0_ISR  isr_dma2_stream2
@@ -60,12 +54,10 @@ static const dma_conf_t dma_config[] = {
 #define DMA_6_ISR  isr_dma2_stream0
 
 #define DMA_NUMOF           ARRAY_SIZE(dma_config)
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM1,
@@ -90,12 +82,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    Timer configuration
- * @{
- */
+/// @name    Timer configuration
+/// @{
 static const timer_conf_t timer_config[] = {
     {
         .dev      = TIM2,
@@ -117,12 +107,10 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_1_ISR         isr_tim5
 
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART3,
@@ -173,12 +161,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_2_ISR          (isr_usart2)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -221,55 +207,47 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @brief   ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32F207ZG order.  Instead, we
- * just define 6 ADC channels, for the Nucleo
- * Arduino header pins A0-A5 and the internal VBAT channel.
- *
- * To find appropriate device and channel find in the
- * board manual, table showing pin assignments and
- * information about ADC - a text similar to ADC[X]_IN[Y],
- * where:
- * [X] - describes used device - indexed from 0,
- * for example ADC1_IN10 is device 0,
- * [Y] - describes used channel - indexed from 1,
- * for example ADC1_IN10 is channel 10
- *
- * For Nucleo-F207ZG this information is in board manual,
- * Table 13, page 37.
- * @{
- */
+/// @brief   ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32F207ZG order.  Instead, we
+/// just define 6 ADC channels, for the Nucleo
+/// Arduino header pins A0-A5 and the internal VBAT channel.
+///
+/// To find appropriate device and channel find in the
+/// board manual, table showing pin assignments and
+/// information about ADC - a text similar to ADC[X]_IN[Y],
+/// where:
+/// [X] - describes used device - indexed from 0,
+/// for example ADC1_IN10 is device 0,
+/// [Y] - describes used channel - indexed from 1,
+/// for example ADC1_IN10 is channel 10
+///
+/// For Nucleo-F207ZG this information is in board manual,
+/// Table 13, page 37.
+/// @{
 static const adc_conf_t adc_config[] = {
-    { .pin = GPIO_PIN(PORT_A, 3), .dev = 0, .chan =  3 }, /* ADC123_IN3  */
-    { .pin = GPIO_PIN(PORT_C, 0), .dev = 0, .chan = 10 }, /* ADC123_IN10 */
-    { .pin = GPIO_PIN(PORT_C, 3), .dev = 0, .chan = 13 }, /* ADC123_IN13 */
-    { .pin = GPIO_PIN(PORT_F, 3), .dev = 2, .chan =  9 }, /* ADC3_IN9  */
-    { .pin = GPIO_PIN(PORT_F, 5), .dev = 2, .chan = 15 }, /* ADC3_IN15   */
-    { .pin = GPIO_PIN(PORT_F, 10), .dev = 2, .chan = 8 }, /* ADC3_IN8    */
-    { .pin = GPIO_UNDEF, .dev = 0, .chan = 18 }, /* VBAT */
+    { .pin = GPIO_PIN(PORT_A, 3), .dev = 0, .chan =  3 }, // ADC123_IN3
+    { .pin = GPIO_PIN(PORT_C, 0), .dev = 0, .chan = 10 }, // ADC123_IN10
+    { .pin = GPIO_PIN(PORT_C, 3), .dev = 0, .chan = 13 }, // ADC123_IN13
+    { .pin = GPIO_PIN(PORT_F, 3), .dev = 2, .chan =  9 }, // ADC3_IN9
+    { .pin = GPIO_PIN(PORT_F, 5), .dev = 2, .chan = 15 }, // ADC3_IN15
+    { .pin = GPIO_PIN(PORT_F, 10), .dev = 2, .chan = 8 }, // ADC3_IN8
+    { .pin = GPIO_UNDEF, .dev = 0, .chan = 18 }, // VBAT
 };
 
-/**
- * @brief VBAT ADC line
- */
+/// @brief VBAT ADC line
 #define VBAT_ADC            ADC_LINE(6)
 
-/**
- * @brief Number of ADC devices
- */
+/// @brief Number of ADC devices
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
 
-/** @} */
+/// @}
 
-/**
- * @name ETH configuration
- * @{
- */
+/// @name ETH configuration
+/// @{
 static const eth_conf_t eth_config = {
     .mode = RMII,
     .speed = MII_BMCR_SPEED_100 | MII_BMCR_FULL_DPLX,
@@ -291,10 +269,10 @@ static const eth_conf_t eth_config = {
 
 #define ETH_DMA_ISR        isr_dma2_stream0
 
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

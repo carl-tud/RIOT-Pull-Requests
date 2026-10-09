@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Eistec AB
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Eistec AB
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_frdm-k22f
- * @{
- *
- * @file
- * @brief       Board specific definitions for the FRDM-K22F
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- */
+/// @ingroup     boards_frdm-k22f
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the FRDM-K22F
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
 
 #include "cpu.h"
 #include "periph_conf.h"
@@ -23,10 +19,8 @@ extern "C"
 {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(PORT_A,  1)
 #define LED1_PIN            GPIO_PIN(PORT_A,  2)
 #define LED2_PIN            GPIO_PIN(PORT_D,  5)
@@ -46,32 +40,28 @@ extern "C"
 #define LED2_ON            (GPIOD->PCOR = LED2_MASK)
 #define LED2_OFF           (GPIOD->PSOR = LED2_MASK)
 #define LED2_TOGGLE        (GPIOD->PTOR = LED2_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    Button pin definitions
- * @{
- */
-/* SW2, SW3 will short these pins to ground when pushed. Both pins have external
- * pull-up resistors to VDD */
-/* BTN0 is mapped to SW2 */
+/// @name    Button pin definitions
+/// @{
+// SW2, SW3 will short these pins to ground when pushed. Both pins have external
+// pull-up resistors to VDD
+// BTN0 is mapped to SW2
 #define BTN0_PIN            GPIO_PIN(PORT_C,  1)
 #define BTN0_MODE           GPIO_IN
-/* BTN1 is mapped to SW3 */
+// BTN1 is mapped to SW3
 #define BTN1_PIN            GPIO_PIN(PORT_B, 17)
 #define BTN1_MODE           GPIO_IN
-/** @} */
+/// @}
 
-/**
- * @name    FXOS8700CQ 3-axis accelerometer and magnetometer bus configuration
- * @{
- */
+/// @name    FXOS8700CQ 3-axis accelerometer and magnetometer bus configuration
+/// @{
 #define FXOS8700_PARAM_I2C          I2C_DEV(0)
 #define FXOS8700_PARAM_ADDR         0x1C
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,16 +1,12 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_itg320x
- * @ingroup     sys_auto_init_saul
- * @brief       Auto initialization of InvenSense ITG320X 3-axis gyroscope
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_itg320x
+/// @ingroup     sys_auto_init_saul
+/// @brief       Auto initialization of InvenSense ITG320X 3-axis gyroscope
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include "assert.h"
 #include "log.h"
@@ -18,36 +14,25 @@
 #include "itg320x.h"
 #include "itg320x_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define ITG320X_NUM    (ARRAY_SIZE(itg320x_params))
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static itg320x_t itg320x_devs[ITG320X_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[ITG320X_NUM * 2];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define ITG320X_INFO_NUM    (ARRAY_SIZE(itg320x_saul_info))
 
-/**
- * @name    Reference the driver structs
- * @{
- */
+/// @name    Reference the driver structs
+/// @{
 extern saul_driver_t itg320x_saul_gyro_driver;
 extern saul_driver_t itg320x_saul_temp_driver;
-/** @} */
+/// @}
 
-void auto_init_itg320x(void)
-{
+void auto_init_itg320x(void) {
     assert(ITG320X_NUM == ITG320X_INFO_NUM);
 
     for (unsigned int i = 0; i < ITG320X_NUM; i++) {

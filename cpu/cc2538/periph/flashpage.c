@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_cc2538
- * @ingroup     drivers_periph_flashpage
- * @{
- *
- * @file
- * @brief       Implementation of the peripheral flashpage interface
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup     cpu_cc2538
+/// @ingroup     drivers_periph_flashpage
+/// @{
+///
+/// @file
+/// @brief       Implementation of the peripheral flashpage interface
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <assert.h>
 
@@ -32,34 +28,32 @@
 #define FLASH_CTRL_FCTL_CM_MASK     0x0000000C
 
 __attribute__ ((section (".ramfunc")))
-static inline void _erase(uint32_t *page_addr)
-{
-    /* wait for ongoing operations*/
+static inline void _erase(uint32_t *page_addr) {
+    // wait for ongoing operations
     DEBUG("[flashpage] erase: wait for ongoing operations\n");
     while (FLASH_CTRL_FCTL & FLASH_CTRL_FCTL_BUSY) {}
 
-    /* disable interrupts  */
+    // disable interrupts
     int state = irq_disable();
 
-    /* Initialize Flash control register without changing the cache mode.*/
+    // Initialize Flash control register without changing the cache mode.
     FLASH_CTRL_FCTL &= FLASH_CTRL_FCTL_CM_MASK;
 
-    /* set page to erase*/
+    // set page to erase
     FLASH_CTRL_FADDR = (uint32_t)page_addr;
 
-    /* starts the write-sequence state machine */
+    // starts the write-sequence state machine
     DEBUG("[flashpage] erase: start erase sequence at %p\n", page_addr);
     FLASH_CTRL_FCTL |= FLASH_CTRL_FCTL_ERASE;
 
-    /* wait erase to complete */
+    // wait erase to complete
     while (FLASH_CTRL_FCTL & FLASH_CTRL_FCTL_BUSY) {}
 
-    /* re-enable interrupts */
+    // re-enable interrupts
     irq_restore(state);
 }
 
-void flashpage_erase(unsigned page)
-{
+void flashpage_erase(unsigned page) {
     assert((unsigned) page < FLASHPAGE_NUMOF);
 
     uint32_t *page_addr = (uint32_t *)flashpage_addr(page);
@@ -68,39 +62,38 @@ void flashpage_erase(unsigned page)
 }
 
 __attribute__ ((section (".ramfunc")))
-void flashpage_write(void *target_addr, const void *data, size_t len)
-{
-    /* assert multiples of FLASHPAGE_WRITE_BLOCK_SIZE are written and no less of
-       that length. */
+void flashpage_write(void *target_addr, const void *data, size_t len) {
+    // assert multiples of FLASHPAGE_WRITE_BLOCK_SIZE are written and no less of
+    //    that length.
     assert(!(len % FLASHPAGE_WRITE_BLOCK_SIZE));
 
-    /* ensure writes are aligned */
+    // ensure writes are aligned
     assert(!(((unsigned)target_addr % FLASHPAGE_WRITE_BLOCK_ALIGNMENT) ||
             ((unsigned)data % FLASHPAGE_WRITE_BLOCK_ALIGNMENT)));
 
-    /* ensure the length doesn't exceed the actual flash size */
+    // ensure the length doesn't exceed the actual flash size
     assert(((unsigned)target_addr + len) <=
            (CPU_FLASH_BASE + (FLASHPAGE_SIZE * FLASHPAGE_NUMOF)));
 
     uint32_t *dst = target_addr;
     const uint32_t *data_addr = data;
 
-   /* disable interrupts and unlock flash */
+   // disable interrupts and unlock flash
     int state = irq_disable();
 
     DEBUG("[flashpage_raw] write: to %p \n", dst);
-    /* Initialize Flash control register without changing the cache mode.*/
+    // Initialize Flash control register without changing the cache mode.
     FLASH_CTRL_FCTL &= FLASH_CTRL_FCTL_CM_MASK;
-    /* set start address*/
+    // set start address
     FLASH_CTRL_FADDR = (uint32_t) dst;
-    /* starts the write-sequence state machine */
+    // starts the write-sequence state machine
     DEBUG("[flashpage_raw] write: now writing the data\n");
     FLASH_CTRL_FCTL |= FLASH_CTRL_FCTL_WRITE;
     for (unsigned i = 0; i < (len / FLASHPAGE_WRITE_BLOCK_SIZE); i++) {
         FLASH_CTRL_FWDATA = (uint32_t) *(data_addr++);
-        /* wait for flash operation to complete */
+        // wait for flash operation to complete
         while (FLASH_CTRL_FCTL & FLASH_CTRL_FCTL_FULL) {}
     }
-    /* re-enable interrupts */
+    // re-enable interrupts
     irq_restore(state);
 }

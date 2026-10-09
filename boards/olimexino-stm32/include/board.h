@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Scallog
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Scallog
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_olimexino-stm32
- * @{
- *
- * @file
- * @brief       Board specific definitions for the OLIMEXINO STM32 board
- *
- * @author      Corentin Vigourt <cvigourt@scallog.com>
- */
+/// @ingroup     boards_olimexino-stm32
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the OLIMEXINO STM32 board
+///
+/// @author      Corentin Vigourt <cvigourt@scallog.com>
 
 #include "cpu.h"
 #include "periph_conf.h"
@@ -22,36 +18,30 @@
 extern "C" {
 #endif
 
-/**
- * @name Xtimer configuration
- * @{
- */
+/// @name Xtimer configuration
+/// @{
 #define XTIMER_WIDTH                (16)
 #define XTIMER_BACKOFF              (19)
-/** @} */
+/// @}
 
-/**
- * @name LED pin definitions and handlers
- * @{
- */
+/// @name LED pin definitions and handlers
+/// @{
 #define LED0_PIN_NUM        1
-#define LED0_PORT           GPIO_PORT_A /**< GPIO port of LED 0 */
+#define LED0_PORT           GPIO_PORT_A ///< GPIO port of LED 0
 #define LED0_PORT_NUM       PORT_A
 
 #define LED1_PIN_NUM        5
-#define LED1_PORT           GPIO_PORT_A /**< GPIO port of LED 1 */
+#define LED1_PORT           GPIO_PORT_A ///< GPIO port of LED 1
 #define LED1_PORT_NUM       PORT_A
 
 #define LED_PANIC           LED0_ON
-/** @} */
+/// @}
 
-/**
- * @name User button
- * @{
- */
+/// @name User button
+/// @{
 #define BTN0_PIN            GPIO_PIN(PORT_C, 9)
 #define BTN0_MODE           GPIO_IN
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
@@ -59,4 +49,4 @@ extern "C" {
 
 #include "stm32_leds.h"
 
-/** @} */
+/// @}

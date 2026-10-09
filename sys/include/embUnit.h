@@ -1,25 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @defgroup unittests Unittests
- * @ingroup  sys
- * @brief RIOT Unittests based on the EmbUnit Framework
- *
- * @see https://sourceforge.net/projects/embunit
- *
- * @note Please refer to https://doc.riot-os.org/advanced_tutorials/unittests/
- * @note If mocking would be helpful for your unit test, you can also have a look at @ref pkg_fff.
- *
- * @author Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @defgroup unittests Unittests
+/// @ingroup  sys
+/// @brief RIOT Unittests based on the EmbUnit Framework
+///
+/// @see https://sourceforge.net/projects/embunit
+///
+/// @note Please refer to https://doc.riot-os.org/advanced_tutorials/unittests/
+/// @note If mocking would be helpful for your unit test, you can also have a look at @ref pkg_fff.
+///
+/// @author Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #ifndef EMBUNIT_H
 #define EMBUNIT_H
 
-#include "embUnit/embUnit.h" /* IWYU pragma: export */
+#include "embUnit/embUnit.h" // IWYU pragma: export
 
 #ifdef OUTPUT
 #   define OUTPUT_XML       (1)
@@ -64,4 +60,4 @@ extern "C" {
 }
 #endif
 
-#endif /* EMBUNIT_H */
+#endif // EMBUNIT_H

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     test
- * @{
- *
- * @file
- * @brief       ztimer overhead test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     test
+/// @{
+///
+/// @file
+/// @brief       ztimer overhead test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -28,8 +24,7 @@
 #define SAMPLES 1024
 
 static int32_t _ztimer_usec_overhead(unsigned samples, unsigned base,
-                                     int32_t (*overhead_fn)(ztimer_clock_t *clock, uint32_t base))
-{
+                                     int32_t (*overhead_fn)(ztimer_clock_t *clock, uint32_t base)) {
     uint32_t total = 0;
 
     int32_t min = INT32_MAX;
@@ -54,9 +49,8 @@ static int32_t _ztimer_usec_overhead(unsigned samples, unsigned base,
     return min;
 }
 
-int main(void)
-{
-    /* unset configured adjustment */
+int main(void) {
+    // unset configured adjustment
     printf("ZTIMER_USEC auto_adjust params:\n");
     printf("    ZTIMER_USEC->adjust_set = %" PRIu16 "\n", ZTIMER_USEC->adjust_set);
     ZTIMER_USEC->adjust_set = 0;

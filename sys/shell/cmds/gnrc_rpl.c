@@ -1,20 +1,16 @@
-/*
- * Copyright (C) 2018       HAW Hamburg
- * Copyright (C) 2015–2017  Cenk Gündoğan <mail-github@cgundogan.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for
- * more details.
- */
+// Copyright (C) 2018       HAW Hamburg
+// Copyright (C) 2015–2017  Cenk Gündoğan <mail-github@cgundogan.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for
+// more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- *
- * @author      Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+///
+/// @author      Cenk Gündoğan <cenk.guendogan@haw-hamburg.de>
 
 #include <string.h>
 #include <stdio.h>
@@ -32,8 +28,7 @@
 #include "net/gnrc/rpl/p2p_structs.h"
 #endif
 
-int _gnrc_rpl_init(char *arg)
-{
+int _gnrc_rpl_init(char *arg) {
     kernel_pid_t iface_pid = atoi(arg);
     if (gnrc_netif_get_by_pid(iface_pid) == NULL) {
         printf("unknown interface specified\n");
@@ -45,8 +40,7 @@ int _gnrc_rpl_init(char *arg)
     return 0;
 }
 
-int _gnrc_rpl_dodag_root(char *arg1, char *arg2)
-{
+int _gnrc_rpl_dodag_root(char *arg1, char *arg2) {
     uint8_t instance_id = atoi(arg1);
     ipv6_addr_t dodag_id;
 
@@ -68,8 +62,7 @@ int _gnrc_rpl_dodag_root(char *arg1, char *arg2)
 }
 
 #ifdef MODULE_GNRC_RPL_P2P
-int _gnrc_rpl_find(char *arg1, char *arg2)
-{
+int _gnrc_rpl_find(char *arg1, char *arg2) {
     uint8_t instance_id = atoi(arg1);
     ipv6_addr_t dodag_id;
     ipv6_addr_t target;
@@ -96,8 +89,7 @@ int _gnrc_rpl_find(char *arg1, char *arg2)
 }
 #endif
 
-int _gnrc_rpl_instance_remove(char *arg1)
-{
+int _gnrc_rpl_instance_remove(char *arg1) {
     uint8_t instance_id = atoi(arg1);
     gnrc_rpl_instance_t *inst;
 
@@ -112,8 +104,7 @@ int _gnrc_rpl_instance_remove(char *arg1)
     return 0;
 }
 
-int _gnrc_rpl_trickle_reset(char *arg1)
-{
+int _gnrc_rpl_trickle_reset(char *arg1) {
     uint8_t instance_id = atoi(arg1);
     gnrc_rpl_instance_t *inst;
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
@@ -131,8 +122,7 @@ int _gnrc_rpl_trickle_reset(char *arg1)
     return 0;
 }
 
-int _gnrc_rpl_trickle_stop(char *arg1)
-{
+int _gnrc_rpl_trickle_stop(char *arg1) {
     uint8_t instance_id = atoi(arg1);
     gnrc_rpl_instance_t *inst;
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
@@ -149,8 +139,7 @@ int _gnrc_rpl_trickle_stop(char *arg1)
     return 0;
 }
 
-int _gnrc_rpl_trickle_start(char *arg1)
-{
+int _gnrc_rpl_trickle_start(char *arg1) {
     uint8_t instance_id = atoi(arg1);
     gnrc_rpl_instance_t *inst;
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
@@ -170,8 +159,7 @@ int _gnrc_rpl_trickle_start(char *arg1)
     return 0;
 }
 
-int _gnrc_rpl_send_dis_w_sol_opt(char* VID, char* version, char* instance, char* dodag)
-{
+int _gnrc_rpl_send_dis_w_sol_opt(char* VID, char* version, char* instance, char* dodag) {
     uint8_t VID_flags = atoi(VID);
     uint8_t version_number = atoi(version);
     uint8_t instance_id = atoi(instance);
@@ -183,8 +171,7 @@ int _gnrc_rpl_send_dis_w_sol_opt(char* VID, char* version, char* instance, char*
     sol.version_number = version_number;
     sol.instance_id = instance_id;
 
-    if (ipv6_addr_from_str(&sol.dodag_id, dodag))
-    {
+    if (ipv6_addr_from_str(&sol.dodag_id, dodag)) {
         gnrc_rpl_internal_opt_t* opt[] = {(gnrc_rpl_internal_opt_t*)&sol};
         gnrc_rpl_send_DIS(NULL, (ipv6_addr_t *) &ipv6_addr_all_rpl_nodes, opt, 1);
         printf("success: send a DIS with SOL option\n\n");
@@ -192,8 +179,7 @@ int _gnrc_rpl_send_dis_w_sol_opt(char* VID, char* version, char* instance, char*
     return 0;
 }
 
-int _gnrc_rpl_send_dis(void)
-{
+int _gnrc_rpl_send_dis(void) {
     gnrc_rpl_send_DIS(NULL, (ipv6_addr_t *) &ipv6_addr_all_rpl_nodes, NULL, 0);
 
     printf("success: send a DIS\n\n");
@@ -201,23 +187,21 @@ int _gnrc_rpl_send_dis(void)
 }
 
 #ifdef MODULE_NETSTATS_RPL
-static void _print_stats_block(netstats_rpl_block_t *block, const char *name)
-{
-    /* In the following we need to sync with the RPL thread via disabling IRQs
-     * to avoid reading corrupted data. The simpler strategy would be to
-     * disable IRQs during the whole printing (so in _stats()_, but stdio could
-     * be via a slow UART and, hence, have severe impact on the real time
-     * capabilities of the system. The second and simplest strategy would be to
-     * memcpy the whole netstats_rpl_t on to the stack with IRQs disabled and
-     * print the stack copy with IRQs re-enabled. However, that structure is
-     * 128 B in size, so that we would easily provoke a stack-overflow.
-     *
-     * Our strategy instead is to read the data four values at a time with
-     * IRQs disabled, and print them with IRQs re-enabled. The disadvantage is
-     * that stats may get updated while printing one group of values. However,
-     * the stats are grouped such that closely related values are read together.
-     * Hence, related metrics will always refer to the same state of the stats.
-     */
+static void _print_stats_block(netstats_rpl_block_t *block, const char *name) {
+    // In the following we need to sync with the RPL thread via disabling IRQs
+    // to avoid reading corrupted data. The simpler strategy would be to
+    // disable IRQs during the whole printing (so in _stats()_, but stdio could
+    // be via a slow UART and, hence, have severe impact on the real time
+    // capabilities of the system. The second and simplest strategy would be to
+    // memcpy the whole netstats_rpl_t on to the stack with IRQs disabled and
+    // print the stack copy with IRQs re-enabled. However, that structure is
+    // 128 B in size, so that we would easily provoke a stack-overflow.
+    //
+    // Our strategy instead is to read the data four values at a time with
+    // IRQs disabled, and print them with IRQs re-enabled. The disadvantage is
+    // that stats may get updated while printing one group of values. However,
+    // the stats are grouped such that closely related values are read together.
+    // Hence, related metrics will always refer to the same state of the stats.
     unsigned irq_state = irq_disable();
     uint32_t rx_ucast = block->rx_ucast_count;
     uint32_t tx_ucast = block->tx_ucast_count;
@@ -237,8 +221,7 @@ static void _print_stats_block(netstats_rpl_block_t *block, const char *name)
            name, rx_ucast, tx_ucast, rx_mcast, tx_mcast);
 }
 
-int _stats(void)
-{
+int _stats(void) {
    printf(  "Statistics        (ucast) RX / TX                  RX / TX (mcast)\n");
     _print_stats_block(&gnrc_rpl_netstats.dio, "DIO");
     _print_stats_block(&gnrc_rpl_netstats.dis, "DIS");
@@ -248,8 +231,7 @@ int _stats(void)
 }
 #endif
 
-int _gnrc_rpl_dodag_show(void)
-{
+int _gnrc_rpl_dodag_show(void) {
     if (gnrc_rpl_pid == KERNEL_PID_UNDEF) {
         printf("RPL not initializied\n");
         return 1;
@@ -339,8 +321,7 @@ int _gnrc_rpl_dodag_show(void)
     return 0;
 }
 
-int _gnrc_rpl_operation(bool leaf, char *arg1)
-{
+int _gnrc_rpl_operation(bool leaf, char *arg1) {
     uint8_t instance_id = atoi(arg1);
     gnrc_rpl_instance_t *inst;
 
@@ -360,8 +341,7 @@ int _gnrc_rpl_operation(bool leaf, char *arg1)
     return 0;
 }
 
-int _gnrc_rpl_set_pio(char *inst_id, bool status)
-{
+int _gnrc_rpl_set_pio(char *inst_id, bool status) {
     uint8_t instance_id = atoi(inst_id);
     gnrc_rpl_instance_t *inst;
 
@@ -376,8 +356,7 @@ int _gnrc_rpl_set_pio(char *inst_id, bool status)
     return 0;
 }
 
-static int _gnrc_rpl(int argc, char **argv)
-{
+static int _gnrc_rpl(int argc, char **argv) {
     if ((argc < 2) || (strcmp(argv[1], "show") == 0)) {
         return _gnrc_rpl_dodag_show();
     }
@@ -470,6 +449,4 @@ static int _gnrc_rpl(int argc, char **argv)
 }
 
 SHELL_COMMAND(rpl, "rpl configuration tool ('rpl help' for more information)", _gnrc_rpl);
-/**
- * @}
- */
+/// @}

@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2021 Franz Freitag, Justus Krebs, Nick Weiler
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Franz Freitag, Justus Krebs, Nick Weiler
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_seeeduino_xiao
- * @brief       Support for the Seeeduino XIAO board.
- * @{
- *
- * @file
- * @brief       Board specific definitions for the Seeeduino XIAO
- *
- * @author      Franz Freitag <franz.freitag@st.ovgu.de>
- * @author      Justus Krebs <justus.krebs@st.ovgu.de>
- * @author      Nick Weiler <nick.weiler@st.ovgu.de>
- */
+/// @ingroup     boards_seeeduino_xiao
+/// @brief       Support for the Seeeduino XIAO board.
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the Seeeduino XIAO
+///
+/// @author      Franz Freitag <franz.freitag@st.ovgu.de>
+/// @author      Justus Krebs <justus.krebs@st.ovgu.de>
+/// @author      Nick Weiler <nick.weiler@st.ovgu.de>
 
 #include "cpu.h"
 #include "periph_conf.h"
@@ -26,10 +22,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED_PORT            PORT->Group[PA]
 
 #define LED0_PIN            GPIO_PIN(PA, 18)
@@ -55,20 +49,18 @@ extern "C" {
 #define LED2_OFF            (LED_PORT.OUTSET.reg = LED2_MASK)
 #define LED2_ON             (LED_PORT.OUTCLR.reg = LED2_MASK)
 #define LED2_TOGGLE         (LED_PORT.OUTTGL.reg = LED2_MASK)
-/** @} */
+/// @}
 
-/**
- * @name USB configuration
- * @{
- */
+/// @name USB configuration
+/// @{
 #define INTERNAL_PERIPHERAL_VID         (0x239A)
 #define INTERNAL_PERIPHERAL_PID         (0x0057)
-/** @} */
+/// @}
 
-#define BOOTLOADER_UF2    1     /**< This board uses the UF2 bootloader */
+#define BOOTLOADER_UF2    1     ///< This board uses the UF2 bootloader
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

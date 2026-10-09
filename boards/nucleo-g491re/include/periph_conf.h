@@ -1,29 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-g491re
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the NUCLEO-G491RE board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nucleo-g491re
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the NUCLEO-G491RE board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #  define CONFIG_BOARD_HAS_LSE          1
 #endif
-/* This board provides a 24MHz HSE oscillator */
+// This board provides a 24MHz HSE oscillator
 #ifndef CONFIG_BOARD_HAS_HSE
 #  define CONFIG_BOARD_HAS_HSE          1
 #endif
-/* By default, configure a 80MHz SYSCLK with PLL using HSE as input clock */
+// By default, configure a 80MHz SYSCLK with PLL using HSE as input clock
 #ifndef CONFIG_CLOCK_PLL_M
 #  define CONFIG_CLOCK_PLL_M            (6)
 #endif
@@ -38,10 +34,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = LPUART1,
@@ -53,9 +47,9 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB12,
         .irqn       = LPUART1_IRQn,
         .type       = STM32_LPUART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
-    { /* Connected to Arduino D0/D1 */
+    { // Connected to Arduino D0/D1
         .dev        = USART1,
         .rcc_mask   = RCC_APB2ENR_USART1EN,
         .rx_pin     = GPIO_PIN(PORT_C, 5),
@@ -65,7 +59,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
 };
 
@@ -73,18 +67,16 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev            = SPI1,
-        .mosi_pin       = GPIO_PIN(PORT_A, 7),  /* Arduino D11 */
-        .miso_pin       = GPIO_PIN(PORT_A, 6),  /* Arduino D12 */
-        .sclk_pin       = GPIO_PIN(PORT_A, 5),  /* Arduino D13 */
+        .mosi_pin       = GPIO_PIN(PORT_A, 7),  // Arduino D11
+        .miso_pin       = GPIO_PIN(PORT_A, 6),  // Arduino D12
+        .sclk_pin       = GPIO_PIN(PORT_A, 5),  // Arduino D13
         .cs_pin         = GPIO_UNDEF,
         .mosi_af        = GPIO_AF5,
         .miso_af        = GPIO_AF5,
@@ -96,10 +88,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

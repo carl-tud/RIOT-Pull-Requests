@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2023 ML!PA Consulting Gmbh
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2023 ML!PA Consulting Gmbh
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell commands for interacting with Wi-Fi interfaces
- *
- * @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell commands for interacting with Wi-Fi interfaces
+///
+/// @author      Fabian Hüßler <fabian.huessler@ml-pa.com>
+///
+/// @}
 
 #include <errno.h>
 #include <stdlib.h>
@@ -53,8 +49,7 @@ static union {
     wifi_security_wpa_enterprise_t eap;
 } _cred;
 
-static const wifi_scan_result_t *_get_ap(const char *ssid)
-{
+static const wifi_scan_result_t *_get_ap(const char *ssid) {
     for (unsigned i = 0; i < _aps.numof; i++) {
         if (!strcmp(_aps.ap[i].ssid, ssid)) {
             return &_aps.ap[i];
@@ -63,8 +58,7 @@ static const wifi_scan_result_t *_get_ap(const char *ssid)
     return NULL;
 }
 
-static const char *_ssec(wifi_security_mode_t mode)
-{
+static const char *_ssec(wifi_security_mode_t mode) {
     switch (mode) {
         case WIFI_SECURITY_MODE_OPEN:
             return "open";
@@ -79,8 +73,7 @@ static const char *_ssec(wifi_security_mode_t mode)
     }
 }
 
-static void _list_ap(void)
-{
+static void _list_ap(void) {
     puts(" SSID                             | BSSID             | SEC             | RSSI  | CHANNEL");
     puts("----------------------------------+-------------------+-----------------+-------+--------");
     for (unsigned i = 0; i < _aps.numof; i++) {
@@ -98,16 +91,14 @@ static void _list_ap(void)
     }
 }
 
-static void _wifi_scan_cb(void *netif, const wifi_scan_list_t *result)
-{
+static void _wifi_scan_cb(void *netif, const wifi_scan_list_t *result) {
     (void)netif;
     _aps.numof = wifi_scan_list_to_array(result, _aps.ap, ARRAY_SIZE(_aps.ap));
     _list_ap();
     mutex_unlock(&_sync);
 }
 
-static void _wifi_connect_cb(void *netif, const wifi_connect_result_t *result)
-{
+static void _wifi_connect_cb(void *netif, const wifi_connect_result_t *result) {
     (void)netif;
     if (result) {
         printf("connected to %s\n", result->ssid);
@@ -115,8 +106,7 @@ static void _wifi_connect_cb(void *netif, const wifi_connect_result_t *result)
     mutex_unlock(&_sync);
 }
 
-static void _wifi_disconnect_cb(void *netif, const wifi_disconnect_result_t *result)
-{
+static void _wifi_disconnect_cb(void *netif, const wifi_disconnect_result_t *result) {
     (void)netif;
     if (result) {
         printf("could not connect to %s\n", result->ssid);
@@ -124,17 +114,16 @@ static void _wifi_disconnect_cb(void *netif, const wifi_disconnect_result_t *res
     mutex_unlock(&_sync);
 }
 
-static int _iw_probe(netif_t *iface)
-{
+static int _iw_probe(netif_t *iface) {
     long ret;
     uint16_t val16;
     if ((ret = netif_get_opt(iface, NETOPT_IS_WIRED, 0, &val16, sizeof(val16))) < 0) {
-        if (ret != -ENOTSUP) {  /* -ENOTSUP means wireless */
+        if (ret != -ENOTSUP) {  // -ENOTSUP means wireless
             return -EIO;
         }
     }
     else {
-        return -ENOTSUP;        /* wired */
+        return -ENOTSUP;        // wired
     }
     if ((ret = netif_get_opt(iface, NETOPT_DEVICE_TYPE, 0, &val16, sizeof(val16))) < 0) {
         return -EIO;
@@ -145,8 +134,7 @@ static int _iw_probe(netif_t *iface)
     return 0;
 }
 
-static int _iw_disconnect(netif_t *iface)
-{
+static int _iw_disconnect(netif_t *iface) {
     long ret;
     wifi_disconnect_request_t request = WIFI_DISCONNECT_REQUEST_INITIALIZER(NULL);
     if ((ret = netif_set_opt(iface, NETOPT_DISCONNECT, 0, &request, sizeof(request))) < 0) {
@@ -155,29 +143,26 @@ static int _iw_disconnect(netif_t *iface)
     return 0;
 }
 
-static int _iw_cmd_disconnect(netif_t *iface, int argc, char **argv)
-{
+static int _iw_cmd_disconnect(netif_t *iface, int argc, char **argv) {
     (void)argc; (void)argv;
     return _iw_disconnect(iface);
 }
 
-static int _iw_connect(netif_t *iface, wifi_connect_request_t *request)
-{
+static int _iw_connect(netif_t *iface, wifi_connect_request_t *request) {
     long ret;
-    /* this should not block! */
+    // this should not block!
     mutex_lock(&_sync);
     if ((ret = netif_set_opt(iface, NETOPT_CONNECT, 0, request, sizeof(*request))) < 0) {
         mutex_unlock(&_sync);
         return ret;
     }
-    /* callback unlocks mutex */
+    // callback unlocks mutex
     ztimer_mutex_lock_timeout(ZTIMER_SEC, &_sync, SC_IW_AP_CONNECT_TIMEOUT_SEC_MAX);
     mutex_unlock(&_sync);
     return 0;
 }
 
-static int _iw_cmd_connect(netif_t *iface, int argc, char **argv)
-{
+static int _iw_cmd_connect(netif_t *iface, int argc, char **argv) {
     (void)iface; (void)argc; (void)argv;
     if (argc < 1) {
         return -EINVAL;
@@ -259,7 +244,7 @@ static int _iw_cmd_connect(netif_t *iface, int argc, char **argv)
             printf("Key too long\n");
             return -EINVAL;
         }
-        /* also copies to WEP key */
+        // also copies to WEP key
         strcpy(_cred.wpa.psk, psk);
         if (wep) {
             _cred.wep.sec = WIFI_SECURITY_MODE_WEP_PSK;
@@ -290,23 +275,21 @@ static int _iw_cmd_connect(netif_t *iface, int argc, char **argv)
     return _iw_connect(iface, &request);
 }
 
-static int _iw_scan(netif_t *iface, wifi_scan_request_t *request)
-{
+static int _iw_scan(netif_t *iface, wifi_scan_request_t *request) {
     int ret;
-    /* this should not block! */
+    // this should not block!
     mutex_lock(&_sync);
     if ((ret = netif_set_opt(iface, NETOPT_SCAN, 0, request, sizeof(*request))) < 0) {
         mutex_unlock(&_sync);
         return ret;
     }
-    /* callback unlocks mutex */
+    // callback unlocks mutex
     ztimer_mutex_lock_timeout(ZTIMER_SEC, &_sync, SC_IW_AP_SCAN_TIMEOUT_SEC_MAX);
     mutex_unlock(&_sync);
     return 0;
 }
 
-static int _iw_cmd_scan(netif_t *iface, int argc, char **argv)
-{
+static int _iw_cmd_scan(netif_t *iface, int argc, char **argv) {
     long ret;
     netopt_channel_t ch = NETOPT_SCAN_REQ_ALL_CH;
     uint32_t timeout_ms = 0;
@@ -347,8 +330,7 @@ static int _iw_cmd_scan(netif_t *iface, int argc, char **argv)
     return _iw_scan(iface, &request);
 }
 
-static void _iw_usage(const char *cmd)
-{
+static void _iw_usage(const char *cmd) {
     printf("usage: %s <if_id> <command>\n", cmd);
     printf("commands:\n"
            "    scan [-c <channel>] [-t <channel timeout ms>]\n"
@@ -357,13 +339,11 @@ static void _iw_usage(const char *cmd)
           );
 }
 
-static void _iw_error(const char *cmd, int error)
-{
+static void _iw_error(const char *cmd, int error) {
     printf("%s: error (%d) %s\n", cmd, error, strerror(error));
 }
 
-int _iw_cmd(int argc, char **argv)
-{
+int _iw_cmd(int argc, char **argv) {
     if (argc < 3) {
         goto exit_help;
     }

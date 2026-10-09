@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 SSV Software Systems GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_hwrng
- * @{
- *
- * @file
- * @brief       Hardware random generator implementation.
- *
- * @author      Juergen Fitschen <me@jue.yt>
- * @}
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_hwrng
+/// @{
+///
+/// @file
+/// @brief       Hardware random generator implementation.
+///
+/// @author      Juergen Fitschen <me@jue.yt>
+/// @}
 
 #include <assert.h>
 
@@ -28,16 +24,14 @@
 
 #include <string.h>
 
-void hwrng_init(void)
-{
-    /* enable clock */
+void hwrng_init(void) {
+    // enable clock
 #if (_SILICON_LABS_32B_SERIES_2_CONFIG > 2)
     CMU_ClockEnable(cmuClock_SEMAILBOX, true);
 #endif
 }
 
-static void _get_random(uint8_t *buf, unsigned int num)
-{
+static void _get_random(uint8_t *buf, unsigned int num) {
     assert(num % 4 == 0);
 
     static mutex_t mtx = MUTEX_INIT;
@@ -46,11 +40,11 @@ static void _get_random(uint8_t *buf, unsigned int num)
     SE_DataTransfer_t data_out = SE_DATATRANSFER_DEFAULT(buf, num);
     SE_Response_t cmd_rsp;
 
-    /* prepare command */
+    // prepare command
     SE_addDataOutput(&cmd, &data_out);
     SE_addParameter(&cmd, num);
 
-    /* exec command */
+    // exec command
     mutex_lock(&mtx);
     SE_executeCommand(&cmd);
     SE_waitCommandCompletion();
@@ -61,8 +55,7 @@ static void _get_random(uint8_t *buf, unsigned int num)
     assert(cmd_rsp == SE_RESPONSE_OK);
 }
 
-void hwrng_read(void *buf, unsigned int num)
-{
+void hwrng_read(void *buf, unsigned int num) {
     uint8_t *data = buf;
     unsigned int num_extra = num & 0x3U;
     num &= ~0x3U;

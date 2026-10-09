@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_atmega1284p
- * @{
- *
- * @file
- * @brief           Default timer configuration
- *
- * @author          Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- */
+/// @ingroup         cpu_atmega1284p
+/// @{
+///
+/// @file
+/// @brief           Default timer configuration
+///
+/// @author          Marian Buschsieweke <marian.buschsieweke@ovgu.de>
 
 #include "periph_cpu_common.h"
-#include "periph_conf.h" /* <- Allow overwriting timer config from board */
+#include "periph_conf.h" // <- Allow overwriting timer config from board
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,10 +33,10 @@ extern "C" {
 #define TIMER_1_FLAG        &TIFR3
 #define TIMER_1_ISRA        TIMER3_COMPA_vect
 #define TIMER_1_ISRB        TIMER3_COMPB_vect
-#endif /* TIMER_NUMOF */
+#endif // TIMER_NUMOF
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

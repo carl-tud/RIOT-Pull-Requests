@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_flashpage
- * @brief   Low-level flashpage driver emulation
- * @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_flashpage
+/// @brief   Low-level flashpage driver emulation
+/// @author  Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include <assert.h>
 #include <string.h>
@@ -23,8 +19,7 @@
 __attribute__((aligned(FLASHPAGE_SIZE * FLASHPAGE_NUMOF)))
 char _native_flash[FLASHPAGE_SIZE * FLASHPAGE_NUMOF];
 
-void flashpage_erase(unsigned page)
-{
+void flashpage_erase(unsigned page) {
     assert(page < FLASHPAGE_NUMOF);
 
     DEBUG("%p: erase %u bytes\n", flashpage_addr(page), FLASHPAGE_SIZE);
@@ -32,8 +27,7 @@ void flashpage_erase(unsigned page)
     memset(flashpage_addr(page), FLASHPAGE_ERASE_STATE, FLASHPAGE_SIZE);
 }
 
-static void _flash_write(uint8_t *dst, const char *src, size_t len)
-{
+static void _flash_write(uint8_t *dst, const char *src, size_t len) {
     while (len--) {
 #if FLASHPAGE_ERASE_STATE == 0x0
         *dst++ |= *src++;
@@ -43,8 +37,7 @@ static void _flash_write(uint8_t *dst, const char *src, size_t len)
     }
 }
 
-void flashpage_write(void *target_addr, const void *data, size_t len)
-{
+void flashpage_write(void *target_addr, const void *data, size_t len) {
     assert((uintptr_t)target_addr >= (uintptr_t)_native_flash);
     assert((uintptr_t)target_addr + len <= (uintptr_t)_native_flash + sizeof(_native_flash));
     assert(!(len % FLASHPAGE_WRITE_BLOCK_SIZE));

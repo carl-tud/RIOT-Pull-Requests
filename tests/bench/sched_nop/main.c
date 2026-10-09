@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Scheduler benchmark test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Scheduler benchmark test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 #include "macros/units.h"
@@ -28,15 +24,13 @@
 
 volatile unsigned _flag = 0;
 
-static void _timer_callback(void*arg)
-{
+static void _timer_callback(void*arg) {
     (void)arg;
 
     _flag = 1;
 }
 
-int main(void)
-{
+int main(void) {
     printf("main starting\n");
 
     xtimer_t timer;

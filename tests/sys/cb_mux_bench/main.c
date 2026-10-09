@@ -1,58 +1,52 @@
-/*
- * SPDX-FileCopyrightText: 2018 Acutam Automation, LLC
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Acutam Automation, LLC
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       cb_mux benchmark application
- *
- * @author      Matthew Blue <matthew.blue.neuro@gmail.com>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       cb_mux benchmark application
+///
+/// @author      Matthew Blue <matthew.blue.neuro@gmail.com>
+/// @}
 
 #include <stdio.h>
 
 #include "cb_mux.h"
 #include "xtimer.h"
 
-/* Number of entries in the cb_mux list */
+// Number of entries in the cb_mux list
 #define NUM_ENTRIES (20U)
 
-/* Fail if us greater than threshold */
+// Fail if us greater than threshold
 #define FAIL_THRESH (200UL)
 
-/* Head of cb_mux list */
+// Head of cb_mux list
 cb_mux_t *cb_mux_head;
 
-/* cb_mux list entries */
+// cb_mux list entries
 cb_mux_t entries[NUM_ENTRIES];
 
-/* Timing */
+// Timing
 unsigned long time_prev, time_curr;
 
-void cb(void *arg)
-{
+void cb(void *arg) {
     (void)arg;
     time_curr = xtimer_now_usec();
 }
 
-int main(void)
-{
+int main(void) {
     unsigned long xtimer_delay, time_diff;
     uint8_t num;
     cb_mux_t *entry;
 
     puts("cb_mux benchmark application");
 
-    /* Delay due to fetching timer with xtimer */
+    // Delay due to fetching timer with xtimer
     time_prev = xtimer_now_usec();
     xtimer_delay = time_prev - xtimer_now_usec();
 
-    /* Test for worst case: finding last entry */
+    // Test for worst case: finding last entry
     entries[NUM_ENTRIES - 1].cbid = 1;
 
     printf("Populating cb_mux list with %u items\n", NUM_ENTRIES);

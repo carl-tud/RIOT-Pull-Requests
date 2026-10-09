@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_vcnl40x0
- * @{
- *
- * @file
- * @brief       SAUL adaption for VCNL40X0 devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_vcnl40x0
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption for VCNL40X0 devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <string.h>
 
@@ -22,8 +18,7 @@
 #include "vcnl40x0.h"
 #include "vcnl40x0_params.h"
 
-static int read_proximity(const void *dev, phydat_t *res)
-{
+static int read_proximity(const void *dev, phydat_t *res) {
     const vcnl40x0_t *d = (vcnl40x0_t *)dev;
 
     res->val[0] = (int16_t)vcnl40x0_read_proximity(d);
@@ -32,8 +27,7 @@ static int read_proximity(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int read_illuminance(const void *dev, phydat_t *res)
-{
+static int read_illuminance(const void *dev, phydat_t *res) {
     const vcnl40x0_t *d = (vcnl40x0_t *)dev;
 
     res->val[0] = (int16_t)vcnl40x0_read_illuminance(d);

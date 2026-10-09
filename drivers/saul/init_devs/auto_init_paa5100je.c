@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2025 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2025 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_paa5100je
- * @{
- *
- * @file
- * @brief       Auto initialization for PAA5100JE/PMW3901 Optical Flow Sensors
- *
- * @author      Leonard Herbst <leonard.herbst@tu-dresden.de>
- *
- * @}
- */
+/// @ingroup     drivers_paa5100je
+/// @{
+///
+/// @file
+/// @brief       Auto initialization for PAA5100JE/PMW3901 Optical Flow Sensors
+///
+/// @author      Leonard Herbst <leonard.herbst@tu-dresden.de>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,34 +17,23 @@
 #include "paa5100je.h"
 #include "paa5100je_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define PAA5100JE_NUM     ARRAY_SIZE(paa5100je_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static paa5100je_t paa5100je_devs[PAA5100JE_NUM];
 
-/**
- * @brief   Allocate Memory for the SAUL registry entry
- */
+/// @brief   Allocate Memory for the SAUL registry entry
 static saul_reg_t saul_entries[PAA5100JE_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define PAA5100JE_INFO_NUM ARRAY_SIZE(paa5100je_saul_info)
 
-/**
- * @name    Import SAUL endpoint
- * @{
- */
+/// @name    Import SAUL endpoint
+/// @{
 extern const saul_driver_t paa5100je_saul_driver;
 
-void auto_init_paa5100je(void)
-{
+void auto_init_paa5100je(void) {
     assert(PAA5100JE_INFO_NUM == PAA5100JE_NUM);
 
     for (unsigned int i = 0; i < PAA5100JE_NUM; i++) {

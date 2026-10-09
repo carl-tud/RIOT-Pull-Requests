@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nrf52840-mdk
- * @{
- *
- * @file
- * @brief       Board specific configuration for the nRF52840-MDK
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_nrf52840-mdk
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration for the nRF52840-MDK
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "cpu.h"
 #include "board_common.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin configuration
- * @{
- */
+/// @name    LED pin configuration
+/// @{
 #define LED0_PIN            GPIO_PIN(0, 23)
 #define LED1_PIN            GPIO_PIN(0, 22)
 #define LED2_PIN            GPIO_PIN(0, 24)
@@ -47,18 +41,16 @@ extern "C" {
 #define LED2_ON             (LED_PORT->OUTCLR = LED2_MASK)
 #define LED2_OFF            (LED_PORT->OUTSET = LED2_MASK)
 #define LED2_TOGGLE         (LED_PORT->OUT   ^= LED2_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    Button pin configuration
- * @{
- */
+/// @name    Button pin configuration
+/// @{
 #define BTN0_PIN            GPIO_PIN(1, 0)
 #define BTN0_MODE           GPIO_IN_PU
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2019 Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Alexandre Abadie <alexandre.abadie@inria.fr>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Trigger a firmware update from the shell
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Trigger a firmware update from the shell
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -31,8 +27,7 @@
 #include "periph/pm.h"
 #endif
 
-static void _print_usage(char **argv)
-{
+static void _print_usage(char **argv) {
     printf("Usage: %s fetch <manifest url>\n", argv[0]);
     printf("       %s seq_no\n", argv[0]);
     if (IS_USED(MODULE_SUIT_STORAGE_FLASHWRITE)) {
@@ -40,8 +35,7 @@ static void _print_usage(char **argv)
     }
 }
 
-static int _suit_handler(int argc, char **argv)
-{
+static int _suit_handler(int argc, char **argv) {
     if (argc < 2) {
         _print_usage(argv);
         return 1;

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2016 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdint.h>
 
@@ -12,8 +10,7 @@
 #include "tests-checksum.h"
 
 static int calc_and_compare_crc16_ccitt_aug_with_update(const unsigned char *buf,
-                                                        size_t len, size_t split, uint16_t expected)
-{
+                                                        size_t len, size_t split, uint16_t expected) {
     uint16_t result = crc16_ccitt_aug_calc(buf, split);
 
     result = crc16_ccitt_aug_update(result, buf + split, len - split);
@@ -22,15 +19,13 @@ static int calc_and_compare_crc16_ccitt_aug_with_update(const unsigned char *buf
 }
 
 static int calc_and_compare_crc16_ccitt_aug(const unsigned char *buf, size_t len,
-                                            uint16_t expected)
-{
+                                            uint16_t expected) {
     uint16_t result = crc16_ccitt_aug_calc(buf, len);
 
     return result == expected;
 }
 
-static void test_checksum_crc16_ccitt_aug_sequence_empty(void)
-{
+static void test_checksum_crc16_ccitt_aug_sequence_empty(void) {
     unsigned char buf[] = "";
     uint16_t expect = 0x1D0F;
 
@@ -39,8 +34,7 @@ static void test_checksum_crc16_ccitt_aug_sequence_empty(void)
                                                              (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_crc16_ccitt_aug_sequence_1a(void)
-{
+static void test_checksum_crc16_ccitt_aug_sequence_1a(void) {
     unsigned char buf[] = "A";
     uint16_t expect = 0x9479;
 
@@ -49,8 +43,7 @@ static void test_checksum_crc16_ccitt_aug_sequence_1a(void)
                                                              (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_crc16_ccitt_aug_sequence_256a(void)
-{
+static void test_checksum_crc16_ccitt_aug_sequence_256a(void) {
     unsigned char buf[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                           "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                           "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -65,8 +58,7 @@ static void test_checksum_crc16_ccitt_aug_sequence_256a(void)
                                                              (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_crc16_ccitt_aug_sequence_1to9(void)
-{
+static void test_checksum_crc16_ccitt_aug_sequence_1to9(void) {
     unsigned char buf[] = "123456789";
     uint16_t expect = 0xE5CC;
 
@@ -75,8 +67,7 @@ static void test_checksum_crc16_ccitt_aug_sequence_1to9(void)
                                                              - 1, (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_crc16_ccitt_aug_sequence_4bytes(void)
-{
+static void test_checksum_crc16_ccitt_aug_sequence_4bytes(void) {
     unsigned char buf[] = { 0x12, 0x34, 0x56, 0x78 };
     uint16_t expect = 0xBA3C;
 
@@ -85,11 +76,10 @@ static void test_checksum_crc16_ccitt_aug_sequence_4bytes(void)
                                                              sizeof(buf) / 2, expect));
 }
 
-Test *tests_checksum_crc16_ccitt_aug_tests(void)
-{
+Test *tests_checksum_crc16_ccitt_aug_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
-        /* Reference values according to
-         * http://srecord.sourceforge.net/crc16-ccitt.html */
+        // Reference values according to
+        // http://srecord.sourceforge.net/crc16-ccitt.html
         new_TestFixture(test_checksum_crc16_ccitt_aug_sequence_empty),
         new_TestFixture(test_checksum_crc16_ccitt_aug_sequence_1a),
         new_TestFixture(test_checksum_crc16_ccitt_aug_sequence_256a),

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       testing ztimer_mbox_get_timeout function
- *
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
- *
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       testing ztimer_mbox_get_timeout function
+///
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
+///
 
 #include <errno.h>
 #include <stdio.h>
@@ -29,48 +25,44 @@
 static msg_t queue[4];
 static mbox_t mbox = MBOX_INIT(queue, ARRAY_SIZE(queue));
 
-static void cb_mbox_put(void *arg)
-{
+static void cb_mbox_put(void *arg) {
     expect(mbox_try_put(&mbox, arg) == 1);
 }
 
-static void test_mbox_already_full(void)
-{
+static void test_mbox_already_full(void) {
     printf("testing mbox already full prior call: ");
     msg_t msg = { .type = MSG_TYPE, .content.value = MSG_VAL };
     mbox_put(&mbox, &msg);
     uint32_t start = ztimer_now(ZTIMER_USEC);
     expect(ztimer_mbox_get_timeout(ZTIMER_USEC, &mbox, &msg, US_PER_SEC) == 0);
     uint32_t stop = ztimer_now(ZTIMER_USEC);
-    /* Returning immediately should with nothing else running in this test app
-     * should not take more than a millisecond */
+    // Returning immediately should with nothing else running in this test app
+    // should not take more than a millisecond
     expect(stop - start < US_PER_MS);
     printf("OK\n");
 }
 
-static void test_timeout_reached(void)
-{
+static void test_timeout_reached(void) {
     const uint32_t timeout_us = 10 * US_PER_MS;
     printf("testing timeout is reached: ");
     msg_t msg = { .type = MSG_TYPE - 1, .content.value = MSG_VAL - 1 };
     uint32_t start = ztimer_now(ZTIMER_USEC);
     expect(ztimer_mbox_get_timeout(ZTIMER_USEC, &mbox, &msg, timeout_us) == -ETIMEDOUT);
     uint32_t stop = ztimer_now(ZTIMER_USEC);
-    /* This may take longer than the timeout due to overhead, background tasks,
-     * etc. But it MUST NOT return early. */
+    // This may take longer than the timeout due to overhead, background tasks,
+    // etc. But it MUST NOT return early.
     expect(stop - start >= timeout_us);
-    /* But it should also not take way too long */
+    // But it should also not take way too long
     expect(stop - start < 2 * timeout_us);
-    /* msg must not be changed */
+    // msg must not be changed
     expect((msg.type == MSG_TYPE - 1) && (msg.content.value == MSG_VAL - 1));
     printf("OK\n");
 }
 
-static void test_msg_prior_timeout(void)
-{
+static void test_msg_prior_timeout(void) {
     const uint32_t msg_timeout_us = 1 * US_PER_MS;
 #if defined(CPU_NATIVE)
-    /* relax timing on native, as background load can mess with timing */
+    // relax timing on native, as background load can mess with timing
     const uint32_t wait_timeout_us = 1000 * US_PER_MS;
 #else
     const uint32_t wait_timeout_us = 2 * US_PER_MS;
@@ -88,22 +80,21 @@ static void test_msg_prior_timeout(void)
     expect(ztimer_mbox_get_timeout(ZTIMER_USEC, &mbox, &got, wait_timeout_us) == 0);
     uint32_t stop = ztimer_now(ZTIMER_USEC);
 
-    /* the function should return BEFORE the timeout was triggered */
+    // the function should return BEFORE the timeout was triggered
     expect(stop - start < wait_timeout_us);
 
 #if !defined(CPU_NATIVE)
-    /* The function should return AFTER the message was send.
-     * This test is flaky on native, at least with LLVM. */
+    // The function should return AFTER the message was send.
+    // This test is flaky on native, at least with LLVM.
     expect(stop - start >= msg_timeout_us);
 #endif
 
-    /* we should have gotten the correct message */
+    // we should have gotten the correct message
     expect((got.type == msg.type) && (got.content.value == msg.content.value));
 }
 
 static WORD_ALIGNED char stack_high_prio_thread[THREAD_STACKSIZE_TINY];
-static void * high_prio_thread(void *arg)
-{
+static void * high_prio_thread(void *arg) {
     uint32_t timeout = (uintptr_t)arg;
 
     {
@@ -115,8 +106,7 @@ static void * high_prio_thread(void *arg)
     return NULL;
 }
 
-static void test_msg_race(void)
-{
+static void test_msg_race(void) {
     printf("testing timeout is reached despite message received (race): ");
     const uint32_t wait_timeout_us = 2 * US_PER_MS;
     const uintptr_t spin_timeout_us = 2 * wait_timeout_us;
@@ -131,19 +121,18 @@ static void test_msg_race(void)
     expect(ztimer_mbox_get_timeout(ZTIMER_USEC, &mbox, &got, wait_timeout_us) == 0);
     uint32_t stop = ztimer_now(ZTIMER_USEC);
 
-    /* the high prio thread should prevent us from running while it spins. It
-     * will even prevent us from cancelling the timeout. We should still receive
-     * the message (which was received prior to the timeout), even though
-     * we get CPU time only way after the timeout. */
+    // the high prio thread should prevent us from running while it spins. It
+    // will even prevent us from cancelling the timeout. We should still receive
+    // the message (which was received prior to the timeout), even though
+    // we get CPU time only way after the timeout.
     expect(stop - start > wait_timeout_us);
 
-    /* we should have gotten the correct message */
+    // we should have gotten the correct message
     expect((got.type == msg.type) && (got.content.value == msg.content.value));
     printf("OK\n");
 }
 
-int main(void)
-{
+int main(void) {
     const unsigned repetitions = 1000;
     printf("Testing ztimer_mbox_get_timeout()\n"
            "=================================\n");

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Silke Hofstra
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Silke Hofstra
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       SenML Phydat tests
- *
- * @author      Silke Hofstra <silke@slxh.eu>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       SenML Phydat tests
+///
+/// @author      Silke Hofstra <silke@slxh.eu>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -103,8 +99,7 @@ static value_test_t value_tests[] = {
     }
 };
 
-void test_phydat_to_senml_float(void)
-{
+void test_phydat_to_senml_float(void) {
     senml_value_t res;
     char unit_buf[10];
     size_t size = 0;
@@ -130,8 +125,7 @@ void test_phydat_to_senml_float(void)
     }
 }
 
-void test_phydat_to_senml_decimal(void)
-{
+void test_phydat_to_senml_decimal(void) {
     senml_value_t res;
     char unit_buf[10];
     size_t size = 0;
@@ -158,10 +152,9 @@ void test_phydat_to_senml_decimal(void)
     }
 }
 
-Test *tests_senml(void)
-{
+Test *tests_senml(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
-/* Don't run this test on CPUs with unpredictable rounding */
+// Don't run this test on CPUs with unpredictable rounding
 #if !defined(__AVR__) && !defined(__MSP430__)
         new_TestFixture(test_phydat_to_senml_float),
 #endif
@@ -171,8 +164,7 @@ Test *tests_senml(void)
     return (Test *)&senml_tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_senml());
     TESTS_END();

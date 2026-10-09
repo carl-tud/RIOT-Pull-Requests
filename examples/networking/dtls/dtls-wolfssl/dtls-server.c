@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Daniele Lacamera
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Daniele Lacamera
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Demonstrating DTLS 1.2 server using wolfSSL
- *
- * @author      Daniele Lacamera <daniele@wolfssl.com>
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Demonstrating DTLS 1.2 server using wolfSSL
+///
+/// @author      Daniele Lacamera <daniele@wolfssl.com>
+/// @}
 
 #include <wolfssl/ssl.h>
 #include <sock_tls.h>
@@ -41,29 +37,28 @@ static sock_tls_t *sk = &skv;
 static const char Test_dtls_string[] = "DTLS OK!";
 
 #ifdef MODULE_WOLFSSL_PSK
-/* identity is OpenSSL testing default for openssl s_client, keep same */
+// identity is OpenSSL testing default for openssl s_client, keep same
 static const char* kIdentityStr = "Client_identity";
 
 static inline unsigned int my_psk_server_cb(WOLFSSL* ssl, const char* identity,
-        unsigned char* key, unsigned int key_max_len)
-{
+        unsigned char* key, unsigned int key_max_len) {
     (void)ssl;
     (void)key_max_len;
 
-    /* see internal.h MAX_PSK_ID_LEN for PSK identity limit */
+    // see internal.h MAX_PSK_ID_LEN for PSK identity limit
     if (strncmp(identity, kIdentityStr, strlen(kIdentityStr)) != 0) {
         return 0;
     }
 
     if (wolfSSL_GetVersion(ssl) < WOLFSSL_TLSV1_3) {
-        /* test key in hex is 0x1a2b3c4d , in decimal 439,041,101 , we're using
-           unsigned binary */
+        // test key in hex is 0x1a2b3c4d , in decimal 439,041,101 , we're using
+        //    unsigned binary
         key[0] = 0x1a;
         key[1] = 0x2b;
         key[2] = 0x3c;
         key[3] = 0x4d;
 
-        return 4;   /* length of key in octets or 0 for error */
+        return 4;   // length of key in octets or 0 for error
     }
     else {
         int i;
@@ -76,15 +71,14 @@ static inline unsigned int my_psk_server_cb(WOLFSSL* ssl, const char* identity,
             key[i] = b;
         }
 
-        return 32;   /* length of key in octets or 0 for error */
+        return 32;   // length of key in octets or 0 for error
     }
 }
-#endif /* MODULE_WOLFSSL_PSK */
+#endif // MODULE_WOLFSSL_PSK
 
 #define APP_DTLS_BUF_SIZE 64
 
-static int _server_cmd(int argc, char **argv)
-{
+static int _server_cmd(int argc, char **argv) {
     char buf[APP_DTLS_BUF_SIZE];
     int ret;
     sock_udp_ep_t local = SOCK_IPV6_EP_ANY;
@@ -99,37 +93,34 @@ static int _server_cmd(int argc, char **argv)
     }
 
 #ifndef MODULE_WOLFSSL_PSK
-    /* Load certificate file for the DTLS server */
+    // Load certificate file for the DTLS server
     if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cert,
-                server_cert_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
-    {
+                server_cert_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS) {
         LOG(LOG_ERROR, "Failed to load certificate from memory.\n");
         return -1;
     }
 
-    /* Load the private key */
+    // Load the private key
     if (wolfSSL_CTX_use_PrivateKey_buffer(sk->ctx, server_key,
-                server_key_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
-    {
+                server_key_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS) {
         LOG(LOG_ERROR, "Failed to load private key from memory.\n");
         return -1;
     }
 #else
     wolfSSL_CTX_set_psk_server_callback(sk->ctx, my_psk_server_cb);
     wolfSSL_CTX_use_psk_identity_hint(sk->ctx, "hint");
-#endif /* MODULE_WOLFSSL_PSK */
+#endif // MODULE_WOLFSSL_PSK
 
-    /* Create the DTLS session */
+    // Create the DTLS session
     ret = sock_dtls_session_create(sk);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         LOG(LOG_ERROR, "Failed to create DTLS session (err: %s)\n", strerror(-ret));
         return -1;
     }
 
     LOG(LOG_INFO, "Listening on %d\n", SERVER_PORT);
     while (1) {
-        /* Wait until a new client connects */
+        // Wait until a new client connects
         ret = wolfSSL_accept(sk->ssl);
         if (ret != SSL_SUCCESS) {
             if (wolfSSL_get_error(sk->ssl, ret) != WOLFSSL_ERROR_WANT_READ) {
@@ -141,7 +132,7 @@ static int _server_cmd(int argc, char **argv)
             continue;
         }
 
-        /* Wait until data is received */
+        // Wait until data is received
         LOG(LOG_INFO, "Connection accepted\n");
         ret = wolfSSL_read(sk->ssl, buf, APP_DTLS_BUF_SIZE);
         if (ret > 0) {
@@ -149,11 +140,11 @@ static int _server_cmd(int argc, char **argv)
             LOG(LOG_INFO, "Received '%s'\n", buf);
         }
 
-        /* Send reply */
+        // Send reply
         LOG(LOG_INFO, "Sending 'DTLS OK'...\n");
         wolfSSL_write(sk->ssl, Test_dtls_string, sizeof(Test_dtls_string));
 
-        /* Cleanup/shutdown */
+        // Cleanup/shutdown
         LOG(LOG_INFO, "Closing connection.\n");
         sock_dtls_session_destroy(sk);
         sock_dtls_close(sk);

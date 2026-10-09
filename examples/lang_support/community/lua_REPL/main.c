@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Freie Universität Berlin.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Freie Universität Berlin.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Lua shell in RIOT
- *
- * @author      Juan Carrano <j.carrano@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Lua shell in RIOT
+///
+/// @author      Juan Carrano <j.carrano@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -23,9 +19,8 @@
 #include "lua_builtin.h"
 #include "blob/repl.lua.h"
 
-/* The basic interpreter+repl needs about 13k ram AT Minimum but we need more
- * memory in order to do interesting stuff.
- */
+// The basic interpreter+repl needs about 13k ram AT Minimum but we need more
+// memory in order to do interesting stuff.
 #define MAIN_LUA_MEM_SIZE (40000)
 
 static char lua_memory[MAIN_LUA_MEM_SIZE] __attribute__ ((aligned(__BIGGEST_ALIGNMENT__)));
@@ -40,8 +35,7 @@ const struct lua_riot_builtin_lua *const lua_riot_builtin_lua_table = _lua_riot_
 
 const size_t lua_riot_builtin_lua_table_len = 1;
 
-int main(void)
-{
+int main(void) {
     printf("Using memory range for Lua heap: %p - %p, %" PRIuSIZE " bytes\n",
            (void *)lua_memory, (void *)(lua_memory + MAIN_LUA_MEM_SIZE), sizeof(void *));
 

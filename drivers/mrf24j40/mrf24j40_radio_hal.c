@@ -9,24 +9,23 @@
 
 static const ieee802154_radio_ops_t mrf24j40_ops;
 
-void mrf24j40_radio_irq_handler(void *ctx)
-{
+void mrf24j40_radio_irq_handler(void *ctx) {
     ieee802154_dev_t *hal = ctx;
     mrf24j40_t *dev = hal->priv;
 
-    /* update pending bits */
+    // update pending bits
     mrf24j40_update_tasks(dev);
     DEBUG("[mrf24j40] INTERRUPT (pending: %x),\n", dev->pending);
-    /* Transmit interrupt occurred */
+    // Transmit interrupt occurred
     if (dev->pending & MRF24J40_TASK_TX_READY) {
         hal->cb(hal, IEEE802154_RADIO_CONFIRM_TX_DONE);
     }
 
-    /* Receive interrupt occurred */
+    // Receive interrupt occurred
     if (dev->pending & MRF24J40_TASK_RX_READY) {
         DEBUG("[mrf24j40] EVT - RX_END\n");
         dev->pending &= ~(MRF24J40_TASK_RX_READY);
-        /* Prevent race condition if there is an ongoing transmission */
+        // Prevent race condition if there is an ongoing transmission
         if (dev->tx_pending) {
             mrf24j40_flush_rx(dev);
         }
@@ -37,56 +36,53 @@ void mrf24j40_radio_irq_handler(void *ctx)
     DEBUG("[mrf24j40] END IRQ\n");
 }
 
-static int _write(ieee802154_dev_t *hal, const iolist_t *iolist)
-{
+static int _write(ieee802154_dev_t *hal, const iolist_t *iolist) {
     uint8_t len = 0;
     mrf24j40_t *dev = hal->priv;
-    /* load packet data into FIFO */
+    // load packet data into FIFO
     for (const iolist_t *iol = iolist; iol; iol = iol->iol_next) {
-        /* Check if there is data to copy, prevents assertion failure in the
-         * SPI peripheral if there is no data to copy */
+        // Check if there is data to copy, prevents assertion failure in the
+        // SPI peripheral if there is no data to copy
         if (iol->iol_len) {
-            /* current packet data + FCS too long */
+            // current packet data + FCS too long
             len = mrf24j40_tx_load(dev, iol->iol_base, iol->iol_len, len);
         }
-        /* only on first iteration: */
+        // only on first iteration:
         if (iol == iolist) {
-            /* Grab the FCF bits from the frame header */
+            // Grab the FCF bits from the frame header
             dev->fcf_low = *(uint8_t*)(iol->iol_base);
         }
     }
 
-    /* write frame length field in FIFO */
+    // write frame length field in FIFO
     mrf24j40_tx_normal_fifo_write(dev, MRF24J40_TX_NORMAL_FIFO + 1, &len, 1);
 
     return 0;
 }
 
 int mrf24j40_init(mrf24j40_t *dev, const mrf24j40_params_t *params, ieee802154_dev_t *hal,
-                   gpio_cb_t cb, void *ctx)
-{
+                   gpio_cb_t cb, void *ctx) {
     hal->driver = &mrf24j40_ops;
     hal->priv = dev;
     dev->params = params;
 
-    /* initialize GPIOs */
+    // initialize GPIOs
     spi_init_cs(dev->params->spi, dev->params->cs_pin);
     gpio_init(dev->params->reset_pin, GPIO_OUT);
     gpio_set(dev->params->reset_pin);
     gpio_init_int(dev->params->int_pin, GPIO_IN, GPIO_RISING, cb, ctx);
 
-    /* reset device to default values */
+    // reset device to default values
     if (mrf24j40_reset(dev)) {
         return -ENODEV;
     }
 
-    /* Set device to SLEEP */
+    // Set device to SLEEP
     mrf24j40_sleep(dev);
     return 0;
 }
 
-static int _read(ieee802154_dev_t *hal, void *buf, size_t size, ieee802154_rx_info_t *info)
-{
+static int _read(ieee802154_dev_t *hal, void *buf, size_t size, ieee802154_rx_info_t *info) {
     uint8_t phr;
     size_t pkt_len;
     int res = -ENOBUFS;
@@ -103,7 +99,7 @@ static int _read(ieee802154_dev_t *hal, void *buf, size_t size, ieee802154_rx_in
 
         if (info != NULL) {
             uint8_t rssi_scalar = 0;
-            /* Read LQI and RSSI values from the RX fifo */
+            // Read LQI and RSSI values from the RX fifo
             mrf24j40_rx_fifo_read(dev, phr + 1, &(info->lqi), 1);
             mrf24j40_rx_fifo_read(dev, phr + 2, &(rssi_scalar), 1);
             info->rssi = mrf24j40_dbm_from_reg(rssi_scalar);
@@ -114,40 +110,35 @@ static int _read(ieee802154_dev_t *hal, void *buf, size_t size, ieee802154_rx_in
         mrf24j40_flush_rx(dev);
     }
 
-    /* Return -ENOBUFS if a too small buffer is supplied. Return packet size
-     * otherwise */
+    // Return -ENOBUFS if a too small buffer is supplied. Return packet size
+    // otherwise
     return res;
 }
 
-static int _len(ieee802154_dev_t *hal)
-{
+static int _len(ieee802154_dev_t *hal) {
     mrf24j40_t *dev = hal->priv;
     return (mrf24j40_reg_read_long(dev, MRF24J40_RX_FIFO) & 0x7f) - IEEE802154_FCS_LEN;
 }
 
-static int _off(ieee802154_dev_t *hal)
-{
+static int _off(ieee802154_dev_t *hal) {
     mrf24j40_t *dev = hal->priv;
     mrf24j40_sleep(dev);
     return -ENOTSUP;
 }
 
-static int _request_on(ieee802154_dev_t *hal)
-{
+static int _request_on(ieee802154_dev_t *hal) {
     mrf24j40_t *dev = hal->priv;
     mrf24j40_wake_up(dev);
     return 0;
 }
 
-static int _confirm_on(ieee802154_dev_t *hal)
-{
+static int _confirm_on(ieee802154_dev_t *hal) {
     (void) hal;
-    /* Nothing to do here */
+    // Nothing to do here
     return 0;
 }
 
-static int _request_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx)
-{
+static int _request_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx) {
     int res = -EBUSY;
     mrf24j40_t *dev = hal->priv;
     (void) ctx;
@@ -184,8 +175,7 @@ static int _request_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx)
     return res;
 }
 
-static int _confirm_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx)
-{
+static int _confirm_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx) {
     int res = -EAGAIN;
     mrf24j40_t *dev = hal->priv;
     uint8_t tmp_ccaedth;
@@ -219,7 +209,7 @@ static int _confirm_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx)
         break;
     case IEEE802154_HAL_OP_CCA:
         if ((mrf24j40_reg_read_short(dev, MRF24J40_REG_BBREG6) & MRF24J40_BBREG2_RSSIRDY)) {
-            tmp_ccaedth = mrf24j40_reg_read_short(dev, MRF24J40_REG_CCAEDTH);       /* Energy detection threshold */
+            tmp_ccaedth = mrf24j40_reg_read_short(dev, MRF24J40_REG_CCAEDTH);       // Energy detection threshold
             tmp_rssi = mrf24j40_reg_read_long(dev, MRF24J40_REG_RSSI);
             mrf24j40_enable_auto_pa_lna(dev);
 
@@ -232,15 +222,13 @@ static int _confirm_op(ieee802154_dev_t *hal, ieee802154_hal_op_t op, void *ctx)
     return res;
 }
 
-static int _set_cca_threshold(ieee802154_dev_t *hal, int8_t threshold)
-{
+static int _set_cca_threshold(ieee802154_dev_t *hal, int8_t threshold) {
     mrf24j40_t *dev = hal->priv;
     mrf24j40_set_cca_threshold(dev, threshold);
     return 0;
 }
 
-static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
-{
+static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode) {
     (void) dev;
     (void) mode;
     if (mode != IEEE802154_CCA_MODE_ED_THRESHOLD) {
@@ -249,8 +237,7 @@ static int _set_cca_mode(ieee802154_dev_t *dev, ieee802154_cca_mode_t mode)
     return 0;
 }
 
-static int _config_phy(ieee802154_dev_t *hal, const ieee802154_phy_conf_t *conf)
-{
+static int _config_phy(ieee802154_dev_t *hal, const ieee802154_phy_conf_t *conf) {
     mrf24j40_t *dev = hal->priv;
     int8_t pow = conf->pow;
     uint8_t channel = conf->channel;
@@ -262,21 +249,19 @@ static int _config_phy(ieee802154_dev_t *hal, const ieee802154_phy_conf_t *conf)
     return 0;
 }
 
-static int _set_csma_params(ieee802154_dev_t *hal, const ieee802154_csma_be_t *bd, int8_t retries)
-{
+static int _set_csma_params(ieee802154_dev_t *hal, const ieee802154_csma_be_t *bd, int8_t retries) {
     mrf24j40_t *dev = hal->priv;
 
     if (bd->min > MRF24J40_MAX_MINBE) {
         return -EINVAL;
     }
 
-    /* This radio ignores max_be */
+    // This radio ignores max_be
     mrf24j40_set_csma_max_retries(dev, retries);
     return 0;
 }
 
-static int _config_addr_filter(ieee802154_dev_t *hal, ieee802154_af_cmd_t cmd, const void *value)
-{
+static int _config_addr_filter(ieee802154_dev_t *hal, ieee802154_af_cmd_t cmd, const void *value) {
     mrf24j40_t *dev = hal->priv;
     switch (cmd) {
         case IEEE802154_AF_SHORT_ADDR:
@@ -295,8 +280,7 @@ static int _config_addr_filter(ieee802154_dev_t *hal, ieee802154_af_cmd_t cmd, c
     return 0;
 }
 
-static int _config_src_addr_match(ieee802154_dev_t *hal, ieee802154_src_match_t cmd, const void *value)
-{
+static int _config_src_addr_match(ieee802154_dev_t *hal, ieee802154_src_match_t cmd, const void *value) {
     mrf24j40_t *dev = hal->priv;
     uint8_t tmp = mrf24j40_reg_read_short(dev, MRF24J40_REG_ACKTMOUT) & ~MRF24J40_ACKTMOUT_DRPACK;
     bool en;
@@ -311,8 +295,7 @@ static int _config_src_addr_match(ieee802154_dev_t *hal, ieee802154_src_match_t 
     }
 }
 
-static int _set_frame_filter_mode(ieee802154_dev_t *hal, ieee802154_filter_mode_t mode)
-{
+static int _set_frame_filter_mode(ieee802154_dev_t *hal, ieee802154_filter_mode_t mode) {
     mrf24j40_t *dev = hal->priv;
     switch (mode) {
         case IEEE802154_FILTER_ACCEPT:
@@ -329,14 +312,13 @@ static int _set_frame_filter_mode(ieee802154_dev_t *hal, ieee802154_filter_mode_
     return 0;
 }
 
-int _set_frame_retrans(ieee802154_dev_t *hal, uint8_t retrans)
-{
+int _set_frame_retrans(ieee802154_dev_t *hal, uint8_t retrans) {
     (void) hal;
     (void) retrans;
 
-    /* This radio does not allow to set the number of retransmission, but this
-     * must still be defined because this radio declares
-     * IEEE802154_CAP_FRAME_RETRANS */
+    // This radio does not allow to set the number of retransmission, but this
+    // must still be defined because this radio declares
+    // IEEE802154_CAP_FRAME_RETRANS
 
     return -ENOTSUP;
 }

@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_pcf857x
- * @brief       Default configuration for Texas Instruments PCF857X I2C I/O expanders
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_pcf857x
+/// @brief       Default configuration for Texas Instruments PCF857X I2C I/O expanders
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include "board.h"
 #include "pcf857x.h"
@@ -22,22 +18,20 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef PCF857X_PARAM_DEV
-/** device is I2C_DEV(0) */
+/// device is I2C_DEV(0)
 #define PCF857X_PARAM_DEV       I2C_DEV(0)
 #endif
 
 #ifndef PCF857X_PARAM_ADDR
-/** I2C slave address offset is 0 */
+/// I2C slave address offset is 0
 #define PCF857X_PARAM_ADDR      (0)
 #endif
 
 #ifndef PCF857X_PARAM_EXP
-/** PCF857X expander variant used depends on enabled pseudomodules*/
+/// PCF857X expander variant used depends on enabled pseudomodules
 #if IS_USED(MODULE_PCF8575) || DOXYGEN
 #define PCF857X_PARAM_EXP       (PCF857X_EXP_PCF8575)
 #elif IS_USED(MODULE_PCF8574)
@@ -45,16 +39,16 @@ extern "C" {
 #elif IS_USED(MODULE_PCF8574A)
 #define PCF857X_PARAM_EXP       (PCF857X_EXP_PCF8574A)
 #endif
-#endif /* PCF857X_PARAM_EXP */
+#endif // PCF857X_PARAM_EXP
 
 #ifndef PCF857X_PARAM_INT_PIN
-/** MCU interrupt pin */
+/// MCU interrupt pin
 #define PCF857X_PARAM_INT_PIN   (GPIO_UNDEF)
 #endif
 
 #ifndef PCF857X_PARAMS
 #if IS_USED(MODULE_PCF857X_IRQ) || DOXYGEN
-/** Default configuration parameter set */
+/// Default configuration parameter set
 #define PCF857X_PARAMS { \
                             .dev = PCF857X_PARAM_DEV, \
                             .addr = PCF857X_PARAM_ADDR, \
@@ -68,10 +62,10 @@ extern "C" {
                             .exp = PCF857X_PARAM_EXP, \
                         },
 #endif
-#endif /* PCF857X_PARAMS */
+#endif // PCF857X_PARAMS
 
 #ifndef PCF857X_SAUL_GPIO_PARAMS
-/** Example for mapping expander pins to SAUL */
+/// Example for mapping expander pins to SAUL
 #define PCF857X_SAUL_GPIO_PARAMS { \
                                         .dev = 0, \
                                         .gpio = { \
@@ -91,28 +85,24 @@ extern "C" {
                                         } \
                                  },
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const pcf857x_params_t pcf857x_params[] =
 {
     PCF857X_PARAMS
 };
 
 #if IS_USED(MODULE_SAUL_GPIO) || DOXYGEN
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const  pcf857x_saul_gpio_params_t pcf857x_saul_gpio_params[] =
 {
     PCF857X_SAUL_GPIO_PARAMS
 };
-#endif /* MODULE_SAUL_GPIO || DOXYGEN */
+#endif // MODULE_SAUL_GPIO || DOXYGEN
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

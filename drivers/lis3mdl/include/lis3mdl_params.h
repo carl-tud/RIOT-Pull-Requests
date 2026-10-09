@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_lis3mdl
- *
- * @{
- * @file
- * @brief       Default configuration for LIS3MDL devices
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_lis3mdl
+///
+/// @{
+/// @file
+/// @brief       Default configuration for LIS3MDL devices
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "lis3mdl.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef LIS3MDL_PARAM_I2C
 #define LIS3MDL_PARAM_I2C           (I2C_DEV(0))
 #endif
@@ -61,19 +55,15 @@ extern "C" {
 #ifndef LIS3MDL_SAUL_INFO
 #define LIS3MDL_SAUL_INFO            { .name = "lis3mdl" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const lis3mdl_params_t lis3mdl_params[] =
 {
     LIS3MDL_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t lis3mdl_saul_info[] =
 {
     LIS3MDL_SAUL_INFO
@@ -83,4 +73,4 @@ static const saul_reg_info_t lis3mdl_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

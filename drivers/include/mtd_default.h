@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2023 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_mtd
- * @{
- * @brief       Default MTD device configuration
- *
- * Helpers for generic MTD use.
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- */
+/// @ingroup     drivers_mtd
+/// @{
+/// @brief       Default MTD device configuration
+///
+/// Helpers for generic MTD use.
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
 
 #include "board.h"
 #include "modules.h"
@@ -43,4 +39,4 @@ extern mtd_emulated_t mtd_emulated_dev0;
 }
 #endif
 
-/** @} */
+/// @}

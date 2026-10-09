@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_stmpe811
- *
- * @{
- * @file
- * @brief       Default configuration for STMPE811
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_stmpe811
+///
+/// @{
+/// @file
+/// @brief       Default configuration for STMPE811
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "kernel_defines.h"
 #include "board.h"
@@ -24,14 +20,12 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the STMPE811
- * @{
- *
- * These default values are adapted for the @ref boards_stm32f429i-disc1 board
- */
+/// @name    Set default configuration parameters for the STMPE811
+/// @{
+///
+/// These default values are adapted for the @ref boards_stm32f429i-disc1 board
 #if IS_USED(MODULE_STMPE811_SPI)
-/* SPI configuration */
+// SPI configuration
 #ifndef STMPE811_PARAM_SPI_DEV
 #define STMPE811_PARAM_SPI_DEV        SPI_DEV(0)
 #endif
@@ -42,7 +36,7 @@ extern "C" {
 #define STMPE811_PARAM_CS             GPIO_PIN(0, 0)
 #endif
 #else
-/* I2C configuration */
+// I2C configuration
 #ifndef STMPE811_PARAM_I2C_DEV
 #define STMPE811_PARAM_I2C_DEV          I2C_DEV(0)
 #endif
@@ -84,26 +78,20 @@ extern "C" {
                                        }
 #endif
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Configure STMPE811
- */
+/// @brief   Configure STMPE811
 static const stmpe811_params_t stmpe811_params[] =
 {
     STMPE811_PARAMS
 };
 
-/**
- * @brief   Default screen identifiers
- */
+/// @brief   Default screen identifiers
 #ifndef STMPE811_PARAM_SCREEN_IDS
 #define STMPE811_PARAM_SCREEN_IDS       0
 #endif
 
-/**
- * @brief   Configure screen identifiers
- */
+/// @brief   Configure screen identifiers
 static const uint8_t stmpe811_screen_ids[] =
 {
     STMPE811_PARAM_SCREEN_IDS,
@@ -113,4 +101,4 @@ static const uint8_t stmpe811_screen_ids[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2020 LAAS-CNRS
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 LAAS-CNRS
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @ingroup     drivers_periph_adc
- * @{
- *
- * @file
- * @brief       Low-level ADC driver implementation
- *
- * @author      Hugues Larrive <hugues.larrive@pm.me>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @ingroup     drivers_periph_adc
+/// @{
+///
+/// @file
+/// @brief       Low-level ADC driver implementation
+///
+/// @author      Hugues Larrive <hugues.larrive@pm.me>
+///
+/// @}
 
 #include "busy_wait.h"
 #include "cpu.h"
@@ -34,11 +30,11 @@
                                       is read (0x5 = 61.5 ADC clock cycles) */
 #endif
 
-/* The sampling time width is 3 bit */
+// The sampling time width is 3 bit
 #define ADC_SMP_BIT_WIDTH    (3)
 
-/* The sampling time can be specified for each channel over SMPR1 and SMPR2.
-   This specifies the first channel that goes to SMPR2 instead of SMPR1. */
+// The sampling time can be specified for each channel over SMPR1 and SMPR2.
+//    This specifies the first channel that goes to SMPR2 instead of SMPR1.
 #define ADC_SMPR2_FIRST_CHAN (10)
 
 #ifdef ADC1_COMMON
@@ -47,20 +43,15 @@
 #  define ADC_INSTANCE  ADC12_COMMON
 #endif
 
-/**
- * @brief   Default VBAT undefined value
- */
+/// @brief   Default VBAT undefined value
 #ifndef VBAT_ADC
 #  define VBAT_ADC  ADC_UNDEF
 #endif
 
-/**
- * @brief   Allocate locks for all available ADC devices
- */
+/// @brief   Allocate locks for all available ADC devices
 static mutex_t locks[ADC_DEVS];
 
-static inline ADC_TypeDef *dev(adc_t line)
-{
+static inline ADC_TypeDef *dev(adc_t line) {
     switch (adc_config[line].dev) {
 #ifdef ADC1_BASE
         case 0:
@@ -88,42 +79,39 @@ static inline ADC_TypeDef *dev(adc_t line)
     }
 }
 
-static inline void prep(adc_t line)
-{
+static inline void prep(adc_t line) {
     mutex_lock(&locks[adc_config[line].dev]);
-    /* Enable the clock here only if it will be disabled by done, else just
-     * enable it once in adc_init() */
+    // Enable the clock here only if it will be disabled by done, else just
+    // enable it once in adc_init()
 #if defined(RCC_AHBENR_ADC1EN)
     periph_clk_en(AHB, RCC_AHBENR_ADC1EN);
 #endif
 }
 
-static inline void done(adc_t line)
-{
-    /* On some STM32F3 ADC are grouped by paire (ADC12EN or ADC34EN) so
-     * don't disable the clock as the other device may still use it. */
+static inline void done(adc_t line) {
+    // On some STM32F3 ADC are grouped by paire (ADC12EN or ADC34EN) so
+    // don't disable the clock as the other device may still use it.
 #if defined(RCC_AHBENR_ADC1EN)
     periph_clk_dis(AHB, RCC_AHBENR_ADC1EN);
 #endif
     mutex_unlock(&locks[adc_config[line].dev]);
 }
 
-int adc_init(adc_t line)
-{
-    /* Check if the line is valid */
+int adc_init(adc_t line) {
+    // Check if the line is valid
     if (line >= ADC_NUMOF) {
         return -1;
     }
 
 #if CPU_FAM_STM32H7
-    /* Set per_ck (HSI - 64MHz) as ADC kernel peripheral clock */
+    // Set per_ck (HSI - 64MHz) as ADC kernel peripheral clock
     RCC->D3CCIPR |= RCC_D3CCIPR_ADCSEL_1;
 #endif
 
-    /* Lock device and enable its peripheral clock */
+    // Lock device and enable its peripheral clock
     prep(line);
-/* On some STM32F3 ADC are grouped by paire (ADC12EN or ADC34EN) so
- * enable the clock only once here. */
+// On some STM32F3 ADC are grouped by paire (ADC12EN or ADC34EN) so
+// enable the clock only once here.
 #if defined(RCC_AHBENR_ADC12EN)
     if (adc_config[line].dev <= 1) {
         periph_clk_en(AHB, RCC_AHBENR_ADC12EN);
@@ -134,25 +122,25 @@ int adc_init(adc_t line)
         periph_clk_en(AHB, RCC_AHBENR_ADC34EN);
     }
 #endif
-#if defined(RCC_AHB1ENR_ADC12EN) /* STM32H7 */
+#if defined(RCC_AHB1ENR_ADC12EN) // STM32H7
     if (adc_config[line].dev <= 1) {
         periph_clk_en(AHB1, RCC_AHB1ENR_ADC12EN);
     }
 #endif
-#if defined(RCC_AHB4ENR_ADC3EN) /* STM32H7 */
+#if defined(RCC_AHB4ENR_ADC3EN) // STM32H7
     if (adc_config[line].dev >= 2) {
         periph_clk_en(AHB4, RCC_AHB4ENR_ADC3EN);
     }
 #endif
 
-    /* Setting ADC clock to HCLK/1 is only allowed if AHB clock
-     * prescaler is 1 */
+    // Setting ADC clock to HCLK/1 is only allowed if AHB clock
+    // prescaler is 1
 #ifdef RCC_D1CFGR_HPRE
     if (!(RCC->D1CFGR & RCC_D1CFGR_HPRE_3)) {
 #else
     if (!(RCC->CFGR & RCC_CFGR_HPRE_3)) {
 #endif
-        /* set ADC clock to HCLK/1 */
+        // set ADC clock to HCLK/1
         if (adc_config[line].dev <= 1) {
             ADC_INSTANCE->CCR |= ADC_CCR_CKMODE_0;
         }
@@ -165,7 +153,7 @@ int adc_init(adc_t line)
         }
     }
     else {
-        /* set ADC clock to HCLK/2 otherwise */
+        // set ADC clock to HCLK/2 otherwise
         if (adc_config[line].dev <= 1) {
             ADC_INSTANCE->CCR |= ADC_CCR_CKMODE_1;
         }
@@ -178,49 +166,49 @@ int adc_init(adc_t line)
         }
     }
 
-    /* Configure the pin */
+    // Configure the pin
     if (adc_config[line].pin != GPIO_UNDEF) {
         gpio_init_analog(adc_config[line].pin);
     }
-    /* Init ADC line only if it wasn't already initialized */
+    // Init ADC line only if it wasn't already initialized
     if (!(dev(line)->CR & ADC_CR_ADEN)) {
 
 #if CPU_FAM_STM32H7
-        /* take ADC out of deep sleep */
+        // take ADC out of deep sleep
         dev(line)->CR &= ~(ADC_CR_DEEPPWD);
 #endif
-        /* Enable ADC internal voltage regulator and wait for startup period */
+        // Enable ADC internal voltage regulator and wait for startup period
         dev(line)->CR |= ADC_CR_ADVREGEN;
         busy_wait_us(ADC_T_ADCVREG_STUP_US * 2);
 
         if (dev(line)->DIFSEL & (1 << adc_config[line].chan)) {
-            /* Configure calibration for differential inputs */
+            // Configure calibration for differential inputs
             dev(line)->CR |= ADC_CR_ADCALDIF;
         }
         else {
-            /* Configure calibration for single ended inputs */
+            // Configure calibration for single ended inputs
             dev(line)->CR &= ~ADC_CR_ADCALDIF;
         }
 
 #if CPU_FAM_STM32H7
-        /* enable linearity cal, and turn on boost supply */
+        // enable linearity cal, and turn on boost supply
         if (adc_config[line].dev <= 2) {
             dev(line)->CR |= ADC_CR_ADCALLIN | ADC_CR_BOOST;
         }
 #endif
 
-        /* Start automatic calibration and wait for it to complete */
+        // Start automatic calibration and wait for it to complete
         dev(line)->CR |= ADC_CR_ADCAL;
         while (dev(line)->CR & ADC_CR_ADCAL) {}
 
-        /* Clear ADRDY by writing it */
+        // Clear ADRDY by writing it
         dev(line)->ISR |= ADC_ISR_ADRDY;
 
-        /* Enable ADC and wait for it to be ready */
+        // Enable ADC and wait for it to be ready
         dev(line)->CR |= ADC_CR_ADEN;
         while ((dev(line)->ISR & ADC_ISR_ADRDY) == 0) {}
 
-        /* Set sequence length to 1 conversion */
+        // Set sequence length to 1 conversion
         dev(line)->SQR1 |= (0 & ADC_SQR1_L);
     }
 
@@ -230,11 +218,11 @@ int adc_init(adc_t line)
     }
 
 #if CPU_FAM_STM32H7
-    /* Enable the ADC channel's analog switch */
+    // Enable the ADC channel's analog switch
     dev(line)->PCSEL |= ADC_PCSEL_PCSEL_0 << adc_config[line].chan;
 #endif
 
-    /* Configure sampling time for the given channel */
+    // Configure sampling time for the given channel
     if (adc_config[line].chan < 10) {
         uint8_t shift = adc_config[line].chan * ADC_SMP_BIT_WIDTH;
         uint32_t mask = ~(ADC_SMPR1_SMP0 << shift);
@@ -247,50 +235,49 @@ int adc_init(adc_t line)
         dev(line)->SMPR2 = (dev(line)->SMPR2 & mask) | (smp_time << shift);
     }
 
-    /* Power off and unlock device again */
+    // Power off and unlock device again
     done(line);
 
     return 0;
 }
 
-int32_t adc_sample(adc_t line, adc_res_t res)
-{
+int32_t adc_sample(adc_t line, adc_res_t res) {
     int sample;
 
-    /* Check if resolution is applicable */
+    // Check if resolution is applicable
     if ((res & ADC_CFGR_RES) != res) {
         return -1;
     }
 
-    /* Lock and power on the ADC device */
+    // Lock and power on the ADC device
     prep(line);
 
-    /* check if this is the VBAT line */
+    // check if this is the VBAT line
     if (IS_USED(MODULE_PERIPH_VBAT) && line == VBAT_ADC) {
         vbat_enable();
     }
 
-    /* Set resolution */
+    // Set resolution
     dev(line)->CFGR &= ~ADC_CFGR_RES;
     dev(line)->CFGR |= res;
 
-    /* Specify channel for regular conversion */
+    // Specify channel for regular conversion
     dev(line)->SQR1 = adc_config[line].chan << ADC_SQR1_SQ1_Pos;
 
-    /* Start conversion and wait for it to complete */
+    // Start conversion and wait for it to complete
     dev(line)->ISR |= ADC_ISR_EOC;
     dev(line)->CR |= ADC_CR_ADSTART;
     while (!(dev(line)->ISR & ADC_ISR_EOC)) {}
 
-    /* Read the sample */
+    // Read the sample
     sample = (int)dev(line)->DR;
 
-    /* check if this is the VBAT line */
+    // check if this is the VBAT line
     if (IS_USED(MODULE_PERIPH_VBAT) && line == VBAT_ADC) {
         vbat_disable();
     }
 
-    /* Power off and unlock device again */
+    // Power off and unlock device again
     done(line);
 
     return sample;

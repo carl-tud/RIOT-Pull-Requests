@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_phynode-kw41z
- * @{
- *
- * @file
- * @brief       Board specific definitions for the USB-KW41Z
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author      José Alamos <jose.alamos@haw-hamburg.de>
- */
+/// @ingroup     boards_phynode-kw41z
+/// @{
+///
+/// @file
+/// @brief       Board specific definitions for the USB-KW41Z
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author      José Alamos <jose.alamos@haw-hamburg.de>
 
 #include "cpu.h"
 #include "periph_conf.h"
@@ -25,14 +21,12 @@ extern "C"
 {
 #endif
 
-/* Set the FOPT bit to disable NMI so that we can use it as a GPIO pin for
- * the LED (PTB18) */
+// Set the FOPT bit to disable NMI so that we can use it as a GPIO pin for
+// the LED (PTB18)
 #define KINETIS_FOPT (0xff & ~(NV_FOPT_NMI_DIS_MASK))
 
-/**
- * @name    LED pin definitions and handlers
- * @{
- */
+/// @name    LED pin definitions and handlers
+/// @{
 #define LED0_PIN            GPIO_PIN(PORT_B,  3)
 #define LED0_MASK           (1 << 3)
 #define LED0_ON             (GPIOB->PCOR = LED0_MASK)
@@ -56,88 +50,74 @@ extern "C"
 #define LED3_ON             (GPIOB->PCOR = LED3_MASK)
 #define LED3_OFF            (GPIOB->PSOR = LED3_MASK)
 #define LED3_TOGGLE         (GPIOB->PTOR = LED3_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    Button pin definitions
- * @{
- */
-/* Pressing SW1 will short this pin to ground but there are no external pull
- * resistors, use internal pull-up on the pin */
-/* BTN0 is mapped to SW1 */
+/// @name    Button pin definitions
+/// @{
+// Pressing SW1 will short this pin to ground but there are no external pull
+// resistors, use internal pull-up on the pin
+// BTN0 is mapped to SW1
 #define BTN0_PIN            GPIO_PIN(PORT_C,  5)
 #define BTN0_MODE           GPIO_IN_PU
-/** @} */
+/// @}
 
-/**
- * @name    Sensors voltage pin definitions (V_PERIPH)
- * @{
- */
+/// @name    Sensors voltage pin definitions (V_PERIPH)
+/// @{
 #define V_PERIPH_PIN        GPIO_PIN(PORT_C, 19)
 #define V_PERIPH_MASK       (1 << 19)
 #define V_PERIPH_ON         (GPIOC->PSOR = V_PERIPH_MASK)
 #define V_PERIPH_OFF        (GPIOC->PCOR = V_PERIPH_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    xtimer configuration
- * @{
- */
+/// @name    xtimer configuration
+/// @{
 #if IS_ACTIVE(KINETIS_XTIMER_SOURCE_PIT)
-/* PIT xtimer configuration */
+// PIT xtimer configuration
 #define XTIMER_DEV                  (TIMER_PIT_DEV(0))
 #define XTIMER_CHAN                 (0)
-/* Default xtimer settings should work on the PIT */
+// Default xtimer settings should work on the PIT
 #else
-/* LPTMR xtimer configuration */
+// LPTMR xtimer configuration
 #define XTIMER_DEV                  (TIMER_LPTMR_DEV(0))
 #define XTIMER_CHAN                 (0)
-/* LPTMR is 16 bits wide and runs at 32768 Hz (clocked by the RTC) */
+// LPTMR is 16 bits wide and runs at 32768 Hz (clocked by the RTC)
 #define XTIMER_WIDTH                (16)
 #define XTIMER_BACKOFF              (5)
 #define XTIMER_ISR_BACKOFF          (5)
 #define XTIMER_HZ                   (32768ul)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    ztimer configuration
- * @{
- */
+/// @name    ztimer configuration
+/// @{
 #define CONFIG_ZTIMER_USEC_TYPE     ZTIMER_TYPE_PERIPH_TIMER
 #define CONFIG_ZTIMER_USEC_DEV      (TIMER_PIT_DEV(0))
-/** @} */
+/// @}
 
-/**
- * @name Define the interface for the CCS811 gas sensors
- * @{
- */
+/// @name Define the interface for the CCS811 gas sensors
+/// @{
 #define CCS811_PARAM_I2C_DEV        (I2C_DEV(0))
 #define CCS811_PARAM_I2C_ADDR       (0x5A)
 #define CCS811_PARAM_RESET_PIN      (GPIO_UNDEF)
 #define CCS811_PARAM_WAKE_PIN       (GPIO_PIN(1, 2))
 #define CCS811_PARAM_INT_PIN        (GPIO_PIN(1, 3))
 #define CCS811_PARAM_INT_MODE       (CCS811_INT_NONE)
-/** @} */
+/// @}
 
-/**
- * @name Define the interface for the TCS37727 RGB light sensor
- * @{
- */
+/// @name Define the interface for the TCS37727 RGB light sensor
+/// @{
 #define TCS37727_PARAM_I2C          (I2C_DEV(0))
 #define TCS37727_PARAM_ADDR         (0x29)
-/** @} */
+/// @}
 
-/**
- * @name Define the interface for the MMA8X5X accelerometer
- * @{
- */
+/// @name Define the interface for the MMA8X5X accelerometer
+/// @{
 #define MMA8X5X_PARAM_I2C           (I2C_DEV(0))
 #define MMA8X5X_PARAM_ADDR          (0x1D)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

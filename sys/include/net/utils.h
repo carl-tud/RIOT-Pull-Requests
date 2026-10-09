@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @defgroup    net_utils   Network helper functions
- * @ingroup     net
- * @brief       Common network helper functions
- * @{
- *
- * @file
- * @brief       Common network interface API definitions
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- * @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
- */
+/// @defgroup    net_utils   Network helper functions
+/// @ingroup     net
+/// @brief       Common network helper functions
+/// @{
+///
+/// @file
+/// @brief       Common network interface API definitions
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+/// @author      Hendrik van Essen <hendrik.ve@fu-berlin.de>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -29,33 +25,29 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Parse an IPv4 address / hostname string.
- *          If the @ref net_sock_dns module is used, this will
- *          attempt to resolve hostnames via DNS to IPv4 addresses.
- *
- * @param[out]  addr        IPv4 address of the host
- * @param[in]   hostname    IPv4 address string or hostname
- *
- * @return  0 on success, error otherwise
- */
+/// @brief   Parse an IPv4 address / hostname string.
+///          If the @ref net_sock_dns module is used, this will
+///          attempt to resolve hostnames via DNS to IPv4 addresses.
+///
+/// @param[out]  addr        IPv4 address of the host
+/// @param[in]   hostname    IPv4 address string or hostname
+///
+/// @return  0 on success, error otherwise
 int netutils_get_ipv4(ipv4_addr_t *addr, const char *hostname);
 
-/**
- * @brief   Parse an IPv6 address / hostname string.
- *          If the @ref net_sock_dns module is used, this will
- *          attempt to resolve hostnames via DNS to IPv6 addresses.
- *
- * @param[out]  addr        IPv6 address of the host
- * @param[out]  netif       Interface if address is link-local
- * @param[in]   hostname    IPv6 address string or hostname
- *
- * @return  0 on success, error otherwise
- */
+/// @brief   Parse an IPv6 address / hostname string.
+///          If the @ref net_sock_dns module is used, this will
+///          attempt to resolve hostnames via DNS to IPv6 addresses.
+///
+/// @param[out]  addr        IPv6 address of the host
+/// @param[out]  netif       Interface if address is link-local
+/// @param[in]   hostname    IPv6 address string or hostname
+///
+/// @return  0 on success, error otherwise
 int netutils_get_ipv6(ipv6_addr_t *addr, netif_t **netif, const char *hostname);
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

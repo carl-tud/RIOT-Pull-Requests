@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_waveshare_nrf52840_eval_kit
- * @{
- *
- * @file
- * @brief       Board specific configuration for the Waveshare nRF52840 Eval Kit
- *
- * @author     Gunar Schorcht <gunar@schorcht.net>
- */
+/// @ingroup     boards_waveshare_nrf52840_eval_kit
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration for the Waveshare nRF52840 Eval Kit
+///
+/// @author     Gunar Schorcht <gunar@schorcht.net>
 
 #include "board_common.h"
 
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    LED pin configuration
- * @{
- */
+/// @name    LED pin configuration
+/// @{
 #define LED0_PIN            GPIO_PIN(0, 13)
 #define LED1_PIN            GPIO_PIN(0, 14)
 #define LED2_PIN            GPIO_PIN(1, 9)
@@ -55,38 +49,32 @@ extern "C" {
 #define LED3_ON             (LED3_PORT->OUTCLR = LED3_MASK)
 #define LED3_OFF            (LED3_PORT->OUTSET = LED3_MASK)
 #define LED3_TOGGLE         (LED3_PORT->OUT   ^= LED3_MASK)
-/** @} */
+/// @}
 
-/**
- * @name    Button pin configuration
- * @{
- */
+/// @name    Button pin configuration
+/// @{
 #define BTN0_PIN            GPIO_PIN(0, 11)
 #define BTN0_MODE           GPIO_IN_PU
 #define BTN1_PIN            GPIO_PIN(0, 18)
 #define BTN1_MODE           GPIO_IN_PU
-/** @} */
+/// @}
 
-/**
- * @name    SD Card configuration
- * @{
- */
+/// @name    SD Card configuration
+/// @{
 #define SDCARD_SPI_PARAM_SPI         SPI_DEV(1)
 #define SDCARD_SPI_PARAM_CS          GPIO_PIN(0, 12)
 #define SDCARD_SPI_PARAM_CLK         GPIO_PIN(0, 17)
 #define SDCARD_SPI_PARAM_MOSI        GPIO_PIN(0, 24)
 #define SDCARD_SPI_PARAM_MISO        GPIO_PIN(0, 20)
-/** @} */
+/// @}
 
-/**
- * @name MTD configuration
- * @{
- */
-#define MTD_0 mtd_dev_get(0)          /**< MTD device for the SD Card */
-/** @} */
+/// @name MTD configuration
+/// @{
+#define MTD_0 mtd_dev_get(0)          ///< MTD device for the SD Card
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

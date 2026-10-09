@@ -1,25 +1,21 @@
-/*
- * Copyright (C) 2021 Google LLC
- *               2024 Krzysztof Cabaj <kcabaj@gmail.com>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2021 Google LLC
+//               2024 Krzysztof Cabaj <kcabaj@gmail.com>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Shell command for printing lwIP network interface status
- *              and configuration of IPv4 address
- *
- * @author      Erik Ekman <eekman@google.com>
- *              Krzysztof Cabaj <kcabaj@gmail.com>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Shell command for printing lwIP network interface status
+///              and configuration of IPv4 address
+///
+/// @author      Erik Ekman <eekman@google.com>
+///              Krzysztof Cabaj <kcabaj@gmail.com>
+///
+/// @}
 
 #include <kernel_defines.h>
 #include <stdio.h>
@@ -35,8 +31,7 @@
 #include "net/netif.h"
 
 #ifdef MODULE_LWIP_IPV6
-static void _netif_list_ipv6(struct netif *netif, int addr_index, uint8_t state)
-{
+static void _netif_list_ipv6(struct netif *netif, int addr_index, uint8_t state) {
     printf("        inet6 addr: ");
     ip_addr_debug_print(LWIP_DBG_ON, netif_ip_addr6(netif, addr_index));
     printf(" scope: ");
@@ -70,8 +65,7 @@ static void _netif_list_ipv6(struct netif *netif, int addr_index, uint8_t state)
 }
 #endif
 
-static void _netif_list(struct netif *netif)
-{
+static void _netif_list(struct netif *netif) {
     int i;
     char name[CONFIG_NETIF_NAMELENMAX];
     struct netdev *dev = netif->state;
@@ -104,12 +98,12 @@ static void _netif_list(struct netif *netif)
 #ifdef MODULE_LWIP_IPV6
     for (i = 0; i < LWIP_IPV6_NUM_ADDRESSES; i++) {
         uint8_t state = netif_ip6_addr_state(netif, i);
-        /* Note: !ip_addr_isinvalid() also matches tentative addresses,
-         * ip_addr_isvalid() would filter them out. We want both valid and
-         * tentative addresses to aid debugging when an address gets stuck in
-         * tentative state. _netif_list_ipv6() prints the state (e.g. valid or
-         * tentative), so users will not confuse tentative addresses with
-         * valid ones. */
+        // Note: !ip_addr_isinvalid() also matches tentative addresses,
+        // ip_addr_isvalid() would filter them out. We want both valid and
+        // tentative addresses to aid debugging when an address gets stuck in
+        // tentative state. _netif_list_ipv6() prints the state (e.g. valid or
+        // tentative), so users will not confuse tentative addresses with
+        // valid ones.
         if (!ip6_addr_isinvalid(state)) {
             _netif_list_ipv6(netif, i, state);
         }
@@ -118,14 +112,12 @@ static void _netif_list(struct netif *netif)
 }
 
 #ifdef MODULE_LWIP_IPV4
-static void _usage_add4(char *cmd)
-{
+static void _usage_add4(char *cmd) {
     printf("usage: %s add <interface> <IPv4>/<prefix>\n", cmd);
     printf("usage: %s add <interface> <IPv4>/<prefix> gw <IPv4>\n", cmd);
 }
 
-static void _lwip_prefix_to_subnet(int prefix, ip4_addr_t *subnet)
-{
+static void _lwip_prefix_to_subnet(int prefix, ip4_addr_t *subnet) {
     uint32_t value = 0;
     uint32_t tmp = 0x80000000;
 
@@ -136,8 +128,7 @@ static void _lwip_prefix_to_subnet(int prefix, ip4_addr_t *subnet)
     subnet->addr = htonl(value);
 }
 
-static int _lwip_netif_add4(int argc, char **argv)
-{
+static int _lwip_netif_add4(int argc, char **argv) {
     struct netif *iface;
     char *ip_ptr, *prefix_ptr = NULL;
     ip4_addr_t ip, subnet, gw;
@@ -217,13 +208,11 @@ static int _lwip_netif_add4(int argc, char **argv)
 #endif
 
 #ifdef MODULE_LWIP_IPV6
-static void _usage_add6(char *cmd)
-{
+static void _usage_add6(char *cmd) {
     printf("usage: %s add for LWIP IPv6 currently not implemented\n", cmd);
 }
 
-static int _lwip_netif_add6(int argc, char **argv)
-{
+static int _lwip_netif_add6(int argc, char **argv) {
     (void)argc;
     (void)argv;
     printf("error: LWIP IPv6 configuration currently not implemented\n");
@@ -232,8 +221,7 @@ static int _lwip_netif_add6(int argc, char **argv)
 }
 #endif
 
-static void _lwip_netif_help(char *cmd)
-{
+static void _lwip_netif_help(char *cmd) {
     printf("usage: %s\n", cmd);
     printf("usage: %s help\n", cmd);
 #ifdef MODULE_LWIP_IPV4
@@ -244,10 +232,9 @@ static void _lwip_netif_help(char *cmd)
 #endif
 }
 
-static int _lwip_netif_config(int argc, char **argv)
-{
+static int _lwip_netif_config(int argc, char **argv) {
     if (argc < 2) {
-        /* List in interface order, which is normally reverse of list order */
+        // List in interface order, which is normally reverse of list order
         struct netif *netif;
         int netifs = 0;
         int listed = 0;

@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Martine Lenders <mlenders@inf.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test msg_send_receive().
- *
- * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
- * @author      René Kijewski <rene.kijewski@fu-berlin.de>
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test msg_send_receive().
+///
+/// @author      Martine Lenders <mlenders@inf.fu-berlin.de>
+/// @author      René Kijewski <rene.kijewski@fu-berlin.de>
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -40,8 +36,7 @@ static int counter2 = 0;
 
 static mutex_t _mtx = MUTEX_INIT_LOCKED;
 
-static void *thread1(void *args)
-{
+static void *thread1(void *args) {
     (void)args;
 
     msg_t msg_req, msg_resp;
@@ -72,8 +67,7 @@ static void *thread1(void *args)
     return NULL;
 }
 
-static void *thread2(void *args)
-{
+static void *thread2(void *args) {
     (void)args;
 
     msg_t msg_req, msg_resp;
@@ -94,25 +88,24 @@ static void *thread2(void *args)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     msg_t msg = { 0 };
 
-    /* Test lower PID boundary */
+    // Test lower PID boundary
     int res = msg_send_receive(&msg, &msg, KERNEL_PID_FIRST - 1);
     if (res != -1) {
         puts("msg_send_receive() did not return -1 for invalid PID.");
         return -1;
     }
 
-    /* Test upper PID boundary */
+    // Test upper PID boundary
     res = msg_send_receive(&msg, &msg, KERNEL_PID_LAST + 1);
     if (res != -1) {
         puts("msg_send_receive() did not return -1 for invalid PID.");
         return -1;
     }
 
-    /* Check that this thread was not put to @ref STATUS_REPLY_BLOCKED by accident */
+    // Check that this thread was not put to @ref STATUS_REPLY_BLOCKED by accident
     thread_yield();
 
     thread2_pid = thread_create(thread2_stack, THREAD2_STACKSIZE, THREAD_PRIORITY_MAIN - 2,
@@ -120,17 +113,17 @@ int main(void)
     thread1_pid = thread_create(thread1_stack, THREAD1_STACKSIZE, THREAD_PRIORITY_MAIN - 1,
                                 0, thread1, NULL, "thread1");
 
-    /* Wait for thread1 to unlock the mutex on success */
+    // Wait for thread1 to unlock the mutex on success
     mutex_lock(&_mtx);
 
-    /* Test PID of stopped thread */
+    // Test PID of stopped thread
     res = msg_send_receive(&msg, &msg, thread1_pid);
     if (res != -1) {
         puts("msg_send_receive() did not return -1 for invalid PID.");
         return -1;
     }
 
-    /* Check that this thread was not put to @ref STATUS_REPLY_BLOCKED by accident */
+    // Check that this thread was not put to @ref STATUS_REPLY_BLOCKED by accident
     thread_yield();
 
     puts("Test successful.");

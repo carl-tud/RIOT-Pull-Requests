@@ -1,11 +1,7 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * FreeRTOS to RIOT-OS adaption module for source code compatibility
- */
+// FreeRTOS to RIOT-OS adaption module for source code compatibility
 
 #pragma once
 
@@ -42,20 +38,18 @@ TaskHandle_t xSemaphoreGetMutexHolder(SemaphoreHandle_t xMutex);
 void vPortCPUAcquireMutex (portMUX_TYPE *mux);
 void vPortCPUReleaseMutex (portMUX_TYPE *mux);
 
-/*
- * PLEASE NOTE: Following definitions were copied directly from the FreeRTOS
- * distribution and are under the following copyright:
- *
- * FreeRTOS V8.2.0 - Copyright (C) 2015 Real Time Engineers Ltd.
- * All rights reserved
- *
- * FreeRTOS is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License (version 2) as published by the
- * Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
- *
- * Full license text is available on the following
- * link: http://www.freertos.org/a00114.html
- */
+// PLEASE NOTE: Following definitions were copied directly from the FreeRTOS
+// distribution and are under the following copyright:
+//
+// FreeRTOS V8.2.0 - Copyright (C) 2015 Real Time Engineers Ltd.
+// All rights reserved
+//
+// FreeRTOS is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License (version 2) as published by the
+// Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+//
+// Full license text is available on the following
+// link: http://www.freertos.org/a00114.html
 
 #define semSEMAPHORE_QUEUE_ITEM_LENGTH        ( ( uint8_t ) 0U )
 
@@ -85,4 +79,4 @@ void vPortCPUReleaseMutex (portMUX_TYPE *mux);
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2022 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <assert.h>
 #include <stdlib.h>
@@ -21,13 +19,12 @@ typedef struct {
     char *buf;
 } rbuf_handle_t;
 
-RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferType)
-{
-    /* only byte and no split buffers are supported for now */
+RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferType) {
+    // only byte and no split buffers are supported for now
     assert((xBufferType == RINGBUF_TYPE_BYTEBUF) ||
            (xBufferType == RINGBUF_TYPE_NOSPLIT));
 
-    /* allocate the space for rbuf_handle_t including the buffer */
+    // allocate the space for rbuf_handle_t including the buffer
     rbuf_handle_t *handle = malloc(xBufferSize + sizeof(uint16_t) + sizeof(ringbuffer_t));
     if (handle == NULL) {
         return NULL;
@@ -39,26 +36,24 @@ RingbufHandle_t xRingbufferCreate(size_t xBufferSize, RingbufferType_t xBufferTy
     return handle;
 }
 
-void vRingbufferDelete(RingbufHandle_t xRingbuffer)
-{
+void vRingbufferDelete(RingbufHandle_t xRingbuffer) {
     assert(xRingbuffer != NULL);
     free(xRingbuffer);
 }
 
 void *xRingbufferReceiveUpToFromISR(RingbufHandle_t xRingbuffer,
-                                    size_t *pxItemSize, size_t xMaxSize)
-{
+                                    size_t *pxItemSize, size_t xMaxSize) {
     rbuf_handle_t *handle = xRingbuffer;
     size_t data_len = 0;
 
     assert(handle != NULL);
 
-    /* determine the number of bytes to be read */
+    // determine the number of bytes to be read
     if (handle->rbuf.avail) {
         data_len = ((xMaxSize == 0) || (handle->rbuf.avail < xMaxSize)) ? handle->rbuf.avail
                                                                         : xMaxSize;
     }
-    /* ESP-IDF ring buffers require two read operation if the data wrap around */
+    // ESP-IDF ring buffers require two read operation if the data wrap around
     if (data_len > (handle->rbuf.size - handle->rbuf.start)) {
         data_len = handle->rbuf.size - handle->rbuf.start;
     }
@@ -68,14 +63,12 @@ void *xRingbufferReceiveUpToFromISR(RingbufHandle_t xRingbuffer,
     return handle->rbuf.buf + handle->rbuf.start;
 }
 
-void *xRingbufferReceiveFromISR(RingbufHandle_t xRingbuffer, size_t *pxItemSize)
-{
+void *xRingbufferReceiveFromISR(RingbufHandle_t xRingbuffer, size_t *pxItemSize) {
     return xRingbufferReceiveUpToFromISR(xRingbuffer, pxItemSize, 0);
 }
 
 void vRingbufferReturnItemFromISR(RingbufHandle_t xRingbuffer, void *pvItem,
-                                  BaseType_t *pxHigherPriorityTaskWoken)
-{
+                                  BaseType_t *pxHigherPriorityTaskWoken) {
     rbuf_handle_t *handle = xRingbuffer;
     if (handle->item_size) {
         ringbuffer_remove(&handle->rbuf, handle->item_size);
@@ -85,17 +78,16 @@ void vRingbufferReturnItemFromISR(RingbufHandle_t xRingbuffer, void *pvItem,
 BaseType_t xRingbufferSendFromISR(RingbufHandle_t xRingbuffer,
                                   const void *pvItem,
                                   size_t xItemSize,
-                                  BaseType_t *pxHigherPriorityTaskWoken)
-{
+                                  BaseType_t *pxHigherPriorityTaskWoken) {
     rbuf_handle_t *handle = xRingbuffer;
 
     assert(handle != NULL);
 
-    /* return immediately if there is not enough space in the ring buffer */
+    // return immediately if there is not enough space in the ring buffer
     if (ringbuffer_get_free(&handle->rbuf) < xItemSize) {
         return pdFALSE;
     }
 
-    /* add data to the ringbuffer */
+    // add data to the ringbuffer
     return ringbuffer_add(&handle->rbuf, pvItem, xItemSize) == xItemSize;
 }

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 FU Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 FU Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Basic lua example application
- *
- * @author      Daniel Petry <daniel.petry@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Basic lua example application
+///
+/// @author      Daniel Petry <daniel.petry@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <errno.h>
@@ -31,8 +27,7 @@
 #endif
 static char lua_mem[LUA_MEM_SIZE] __attribute__ ((aligned(__BIGGEST_ALIGNMENT__)));
 
-int lua_run_script(const uint8_t *buffer, size_t buffer_len)
-{
+int lua_run_script(const uint8_t *buffer, size_t buffer_len) {
     lua_State *L = lua_riot_newstate(lua_mem, sizeof(lua_mem), NULL);
 
     if (L == NULL) {
@@ -52,8 +47,7 @@ int lua_run_script(const uint8_t *buffer, size_t buffer_len)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     puts("Lua RIOT build");
     lua_run_script(main_lua, main_lua_len);
     puts("Lua interpreter exited");

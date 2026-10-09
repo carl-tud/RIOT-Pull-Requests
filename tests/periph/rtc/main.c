@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2015 Lari Lehtomäki
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Lari Lehtomäki
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test for low-level Real Time clock drivers
- *
- * This test will initialize the real-time timer and trigger an alarm printing
- * 'Hello' every 10 seconds
- *
- * @author      Lari Lehtomäki <lari@lehtomaki.fi>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test for low-level Real Time clock drivers
+///
+/// This test will initialize the real-time timer and trigger an alarm printing
+/// 'Hello' every 10 seconds
+///
+/// @author      Lari Lehtomäki <lari@lehtomaki.fi>
+///
+/// @}
 
 #include <stdio.h>
 #include <time.h>
@@ -34,47 +30,41 @@
 
 static unsigned cnt = 0;
 
-static void print_time(const char *label, const struct tm *time)
-{
+static void print_time(const char *label, const struct tm *time) {
     char tm_buf[20];
     fmt_time_tm_iso8601(tm_buf, time, ' ');
     printf("%s  %s\n", label, tm_buf);
 }
 
-static void print_time_ms(const char *label, const struct tm *time, uint16_t ms)
-{
+static void print_time_ms(const char *label, const struct tm *time, uint16_t ms) {
     char tm_buf[20];
     fmt_time_tm_iso8601(tm_buf, time, ' ');
     printf("%s  %s.%03d\n", label, tm_buf, ms);
 }
 
-static void inc_secs(struct tm *time, unsigned val)
-{
+static void inc_secs(struct tm *time, unsigned val) {
     time->tm_sec += val;
 }
 
-static void cb(void *arg)
-{
+static void cb(void *arg) {
     mutex_unlock(arg);
 }
 
 #ifdef MODULE_PERIPH_RTC_MEM
 static const uint8_t riot_msg_offset = 1;
 static const char riot_msg[] = "RIOT";
-static void _set_rtc_mem(void)
-{
-    /* first fill the whole memory */
+static void _set_rtc_mem(void) {
+    // first fill the whole memory
     uint8_t size = rtc_mem_size();
     while (size--) {
         rtc_mem_write(size, &size, sizeof(size));
     }
 
-    /* write test data */
+    // write test data
     rtc_mem_write(riot_msg_offset, riot_msg, sizeof(riot_msg) - 1);
 }
 
-static void _get_rtc_mem(void)
-{
+static void _get_rtc_mem(void) {
     char buf[4];
     rtc_mem_read(riot_msg_offset, buf, sizeof(buf));
 
@@ -109,8 +99,7 @@ static inline void _set_rtc_mem(void) {}
 static inline void _get_rtc_mem(void) {}
 #endif
 
-int main(void)
-{
+int main(void) {
     struct tm time = (struct tm){0};
     uint16_t ms;
 
@@ -125,7 +114,7 @@ int main(void)
     _set_rtc_mem();
     _get_rtc_mem();
 
-    /* read RTC to retrieve initial */
+    // read RTC to retrieve initial
     if (IS_USED(MODULE_PERIPH_RTC_MS)) {
         rtc_get_time_ms(&time, &ms);
         print_time_ms("Clock value is now ", &time, ms);
@@ -135,22 +124,22 @@ int main(void)
     }
 
     time = (struct tm){
-        .tm_year = 2025 - 1900,   /* years are counted from 1900 */
-        .tm_mon  =  1,            /* 0 = January, 11 = December */
+        .tm_year = 2025 - 1900,   // years are counted from 1900
+        .tm_mon  =  1,            // 0 = January, 11 = December
         .tm_mday = 28,
         .tm_hour = 23,
         .tm_min  = 59,
         .tm_sec  = 57
     };
 
-    /* set RTC */
+    // set RTC
     print_time("  Setting clock to ", &time);
     rtc_set_time(&time);
 
     time = (struct tm){0};
     ms = 0;
 
-    /* read RTC to confirm value */
+    // read RTC to confirm value
     if (IS_USED(MODULE_PERIPH_RTC_MS)) {
         rtc_get_time_ms(&time, &ms);
         print_time_ms("Clock value is now ", &time, ms);
@@ -159,7 +148,7 @@ int main(void)
         print_time("Clock value is now ", &time);
     }
 
-    /* set initial alarm */
+    // set initial alarm
     inc_secs(&time, PERIOD);
     print_time("  Setting alarm to ", &time);
     rtc_set_alarm(&time, cb, &rtc_mtx);
@@ -167,14 +156,14 @@ int main(void)
     time = (struct tm){0};
     ms = 0;
 
-    /* verify alarm */
+    // verify alarm
     rtc_get_alarm(&time);
     print_time("   Alarm is set to ", &time);
 
     time = (struct tm){0};
     ms = 0;
 
-    /* clear alarm */
+    // clear alarm
     rtc_clear_alarm();
     if (IS_USED(MODULE_PERIPH_RTC_MS)) {
         rtc_get_time_ms(&time, &ms);
@@ -184,7 +173,7 @@ int main(void)
         print_time("  Alarm cleared at ", &time);
     }
 
-    /* verify alarm has been cleared */
+    // verify alarm has been cleared
     xtimer_sleep(PERIOD);
 
     const char *message;
@@ -208,14 +197,14 @@ int main(void)
     time = (struct tm){0};
     ms = 0;
 
-    /* set alarm */
+    // set alarm
     rtc_get_time(&time);
-    inc_secs(&time, PERIOD); /* note that this increments the seconds above 60! */
+    inc_secs(&time, PERIOD); // note that this increments the seconds above 60!
     rtc_set_alarm(&time, cb, &rtc_mtx);
     print_time("  Setting alarm to ", &time);
     puts("");
 
-    /* loop over a few alarm cycles */
+    // loop over a few alarm cycles
     do {
         mutex_lock(&rtc_mtx);
         puts("Alarm!");

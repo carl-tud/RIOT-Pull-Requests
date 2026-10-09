@@ -1,28 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
- * SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2016-2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2025 Technische Universität Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
+// SPDX-FileCopyrightText: 2014-2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2016-2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2025 Technische Universität Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @ingroup     drivers_periph_spi
- * @{
- *
- * @file
- * @brief       Low-level SPI driver implementation
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- * @author      Fabian Nack <nack@inf.fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
- * @author      Jay R Vaghela <jay.vaghela@tuhh.de>
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @ingroup     drivers_periph_spi
+/// @{
+///
+/// @file
+/// @brief       Low-level SPI driver implementation
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+/// @author      Fabian Nack <nack@inf.fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+/// @author      Jay R Vaghela <jay.vaghela@tuhh.de>
+/// @}
 
 #include <assert.h>
 
@@ -35,14 +31,12 @@
 #define ENABLE_DEBUG        0
 #include "debug.h"
 
-/**
- * @brief   Number of bits to shift the BR value in the CR1 register
- */
+/// @brief   Number of bits to shift the BR value in the CR1 register
 #define BR_SHIFT            (3U)
 #define BR_MAX              (7U)
 
 #ifdef SPI_CR2_FRXTH
-/* configure SPI for 8-bit data width */
+// configure SPI for 8-bit data width
 #define SPI_CR2_SETTINGS    (SPI_CR2_FRXTH |\
                              SPI_CR2_DS_0 |\
                              SPI_CR2_DS_1 |\
@@ -51,35 +45,26 @@
 #define SPI_CR2_SETTINGS    0
 #endif
 
-/**
- * @brief   Allocate one lock per SPI device
- */
+/// @brief   Allocate one lock per SPI device
 static mutex_t locks[SPI_NUMOF];
 
-/**
- * @brief   Clock configuration cache
- */
+/// @brief   Clock configuration cache
 static uint32_t clocks[SPI_NUMOF];
 
-/**
- * @brief   Clock prescaler cache
- */
+/// @brief   Clock prescaler cache
 static uint8_t prescalers[SPI_NUMOF];
 
-static inline SPI_TypeDef *dev(spi_t bus)
-{
+static inline SPI_TypeDef *dev(spi_t bus) {
     return spi_config[bus].dev;
 }
 
 #ifdef MODULE_PERIPH_DMA
-static inline bool _use_dma(const spi_conf_t *conf)
-{
+static inline bool _use_dma(const spi_conf_t *conf) {
     return conf->tx_dma != DMA_STREAM_UNDEF && conf->rx_dma != DMA_STREAM_UNDEF;
 }
 #endif
 
-static uint8_t _get_prescaler(const spi_conf_t *conf, uint32_t clock)
-{
+static uint8_t _get_prescaler(const spi_conf_t *conf, uint32_t clock) {
     uint32_t bus_clock = periph_apb_clk(conf->apbbus);
 
     uint8_t prescaler = 0;
@@ -93,26 +78,25 @@ static uint8_t _get_prescaler(const spi_conf_t *conf, uint32_t clock)
         prescaled_clock >>= 1;
     }
 
-    /* If the callers asks for an SPI frequency of at most x, bad things will
-     * happen if this cannot be met. So let's have a blown assertion
-     * rather than runtime failures that require a logic analyzer to
-     * debug. */
+    // If the callers asks for an SPI frequency of at most x, bad things will
+    // happen if this cannot be met. So let's have a blown assertion
+    // rather than runtime failures that require a logic analyzer to
+    // debug.
     assume(prescaled_clock <= clock);
 
     return prescaler;
 }
 
-void spi_init(spi_t bus)
-{
+void spi_init(spi_t bus) {
     assume(bus < SPI_NUMOF);
 
-    /* initialize device lock (as locked, spi_init_pins() will unlock it */
+    // initialize device lock (as locked, spi_init_pins() will unlock it
     locks[bus] = (mutex_t)MUTEX_INIT_LOCKED;
-    /* trigger pin initialization */
+    // trigger pin initialization
     spi_init_pins(bus);
 
     periph_clk_en(spi_config[bus].apbbus, spi_config[bus].rccmask);
-    /* reset configuration */
+    // reset configuration
     dev(bus)->CR1 = 0;
 #if defined(SPI_I2SCFGR_I2SE) || defined(CPU_FAM_STM32H7)
     dev(bus)->I2SCFGR = 0;
@@ -121,8 +105,7 @@ void spi_init(spi_t bus)
     periph_clk_dis(spi_config[bus].apbbus, spi_config[bus].rccmask);
 }
 
-void spi_init_pins(spi_t bus)
-{
+void spi_init_pins(spi_t bus) {
     assume(bus < SPI_NUMOF);
 #ifdef CPU_FAM_STM32F1
 
@@ -156,8 +139,7 @@ void spi_init_pins(spi_t bus)
     mutex_unlock(&locks[bus]);
 }
 
-void spi_deinit_pins(spi_t bus)
-{
+void spi_deinit_pins(spi_t bus) {
     assume(bus < SPI_NUMOF);
     mutex_lock(&locks[bus]);
 
@@ -174,26 +156,22 @@ void spi_deinit_pins(spi_t bus)
     }
 }
 
-gpio_t spi_pin_miso(spi_t bus)
-{
+gpio_t spi_pin_miso(spi_t bus) {
     assume(bus < SPI_NUMOF);
     return spi_config[bus].miso_pin;
 }
 
-gpio_t spi_pin_mosi(spi_t bus)
-{
+gpio_t spi_pin_mosi(spi_t bus) {
     assume(bus < SPI_NUMOF);
     return spi_config[bus].mosi_pin;
 }
 
-gpio_t spi_pin_clk(spi_t bus)
-{
+gpio_t spi_pin_clk(spi_t bus) {
     assume(bus < SPI_NUMOF);
     return spi_config[bus].sclk_pin;
 }
 
-int spi_init_cs(spi_t bus, spi_cs_t cs)
-{
+int spi_init_cs(spi_t bus, spi_cs_t cs) {
     if (bus >= SPI_NUMOF) {
         return SPI_NODEV;
     }
@@ -222,14 +200,13 @@ int spi_init_cs(spi_t bus, spi_cs_t cs)
 }
 
 #ifdef MODULE_PERIPH_SPI_GPIO_MODE
-int spi_init_with_gpio_mode(spi_t bus, const spi_gpio_mode_t* mode)
-{
+int spi_init_with_gpio_mode(spi_t bus, const spi_gpio_mode_t* mode) {
     assume(bus < SPI_NUMOF);
 
     int ret = 0;
 
 #ifdef CPU_FAM_STM32F1
-    /* This has no effect on STM32F1 */
+    // This has no effect on STM32F1
     return ret;
 #else
     if (gpio_is_valid(spi_config[bus].mosi_pin)) {
@@ -251,19 +228,18 @@ int spi_init_with_gpio_mode(spi_t bus, const spi_gpio_mode_t* mode)
 }
 #endif
 
-void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
-{
+void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk) {
     assume((unsigned)bus < SPI_NUMOF);
 
-    /* lock bus */
+    // lock bus
     mutex_lock(&locks[bus]);
 #ifdef STM32_PM_STOP
-    /* block STOP mode */
+    // block STOP mode
     pm_block(STM32_PM_STOP);
 #endif
-    /* enable SPI device clock */
+    // enable SPI device clock
     periph_clk_en(spi_config[bus].apbbus, spi_config[bus].rccmask);
-    /* enable device */
+    // enable device
     if (clk != clocks[bus]) {
         prescalers[bus] = _get_prescaler(&spi_config[bus], clk);
         clocks[bus] = clk;
@@ -280,22 +256,22 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
 
     uint32_t cr1 = 0;
     if (cs != SPI_HWCS_MASK) {
-        cr1 |= SPI_CR1_SSI;    /* internal SS high when SSM=1 */
+        cr1 |= SPI_CR1_SSI;    // internal SS high when SSM=1
     }
-    dev(bus)->CR1 = cr1;   /* write SSI (do not set SPE yet) */
+    dev(bus)->CR1 = cr1;   // write SSI (do not set SPE yet)
 
-    /* Build CFG1 */
+    // Build CFG1
     uint32_t cfg1 = 0;
-    cfg1 |= ((br << SPI_CFG1_MBR_Pos) & SPI_CFG1_MBR_Msk); /* Set master baud rate */
-    cfg1 |= (SPI_CFG1_DSIZE_0 | SPI_CFG1_DSIZE_1 | SPI_CFG1_DSIZE_2); /* DSIZE = 8-bit */
+    cfg1 |= ((br << SPI_CFG1_MBR_Pos) & SPI_CFG1_MBR_Msk); // Set master baud rate
+    cfg1 |= (SPI_CFG1_DSIZE_0 | SPI_CFG1_DSIZE_1 | SPI_CFG1_DSIZE_2); // DSIZE = 8-bit
 
-    /* Build CFG2 fully before any write */
+    // Build CFG2 fully before any write
     uint32_t cfg2 = 0;
     cfg2 |= SPI_CFG2_SSOM;
     if (cs != SPI_HWCS_MASK) {
-        cfg2 |= SPI_CFG2_SSM; /* software NSS management (use GPIO as CS) */
+        cfg2 |= SPI_CFG2_SSM; // software NSS management (use GPIO as CS)
     } else {
-        /* hardware CS: set SSOE so peripheral drives NSS */
+        // hardware CS: set SSOE so peripheral drives NSS
         cfg2 |= SPI_CFG2_SSOE;
     }
     switch (mode) {
@@ -304,8 +280,8 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
         case SPI_MODE_2: cfg2 = (cfg2 & ~SPI_CFG2_CPHA) | SPI_CFG2_CPOL; break;
         case SPI_MODE_3: cfg2 |= SPI_CFG2_CPOL | SPI_CFG2_CPHA; break;
     }
-    cfg2 |= SPI_CFG2_MASTER; /* Master Mode */
-    /* Write CFG1 and CFG2 */
+    cfg2 |= SPI_CFG2_MASTER; // Master Mode
+    // Write CFG1 and CFG2
     dev(bus)->CFG1 = cfg1;
     dev(bus)->CFG2 = cfg2;
 
@@ -318,7 +294,7 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
 #  endif
 #else
     uint16_t cr1 = ((br << BR_SHIFT) | mode | SPI_CR1_MSTR | SPI_CR1_SPE);
-    /* Settings to add to CR2 in addition to SPI_CR2_SETTINGS */
+    // Settings to add to CR2 in addition to SPI_CR2_SETTINGS
     uint16_t cr2 = SPI_CR2_SETTINGS;
     if (cs != SPI_HWCS_MASK) {
         cr1 |= (SPI_CR1_SSM | SPI_CR1_SSI);
@@ -353,53 +329,50 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
 #endif
 }
 
-void spi_release(spi_t bus)
-{
+void spi_release(spi_t bus) {
 #ifdef MODULE_PERIPH_DMA
     if (_use_dma(&spi_config[bus])) {
         dma_release(spi_config[bus].tx_dma);
         dma_release(spi_config[bus].rx_dma);
     }
 #endif
-    /* disable device and release lock */
+    // disable device and release lock
     dev(bus)->CR1 = 0;
-    dev(bus)->CR2 = SPI_CR2_SETTINGS; /* Clear the DMA and SSOE flags */
+    dev(bus)->CR2 = SPI_CR2_SETTINGS; // Clear the DMA and SSOE flags
 #if CPU_FAM_STM32H7
     dev(bus)->CFG1 = 0;
     dev(bus)->CFG2 = 0;
 #endif
     periph_clk_dis(spi_config[bus].apbbus, spi_config[bus].rccmask);
 #ifdef STM32_PM_STOP
-    /* unblock STOP mode */
+    // unblock STOP mode
     pm_unblock(STM32_PM_STOP);
 #endif
     mutex_unlock(&locks[bus]);
 }
 
-static inline void _wait_for_end(spi_t bus)
-{
+static inline void _wait_for_end(spi_t bus) {
 #if CPU_FAM_STM32H7
-    /* Wait until End Of Transfer */
+    // Wait until End Of Transfer
     while (!(dev(bus)->SR & SPI_SR_EOT)) {}
-    /* Clear EOT by writing 1 to IFC register */
+    // Clear EOT by writing 1 to IFC register
     dev(bus)->IFCR = SPI_IFCR_EOTC;
 
     while (!(dev(bus)->SR & SPI_SR_TXTF)) {}
-    /* Clear TXTF */
+    // Clear TXTF
     dev(bus)->IFCR = SPI_IFCR_TXTFC;
 
     dev(bus)->CR1 &= ~SPI_CR1_SPE;
 #else
-    /* make sure the transfer is completed before continuing, see reference
-     * manual(s) -> section 'Disabling the SPI' */
+    // make sure the transfer is completed before continuing, see reference
+    // manual(s) -> section 'Disabling the SPI'
     while (!(dev(bus)->SR & SPI_SR_TXE)) {}
     while (dev(bus)->SR & SPI_SR_BSY) {}
 #endif
 }
 
 #ifdef MODULE_PERIPH_DMA
-static void _transfer_dma(spi_t bus, const void *out, void *in, size_t len)
-{
+static void _transfer_dma(spi_t bus, const void *out, void *in, size_t len) {
     uint8_t tmp = 0;
 #if CPU_FAM_STM32H7
 
@@ -446,8 +419,8 @@ static void _transfer_dma(spi_t bus, const void *out, void *in, size_t len)
         dma_prepare(spi_config[bus].rx_dma, &tmp, len, 0);
     }
 #endif
-    /* Start RX first to ensure it is active before the SPI transfers are
-     * triggered by the TX dma activity */
+    // Start RX first to ensure it is active before the SPI transfers are
+    // triggered by the TX dma activity
     dma_start(spi_config[bus].rx_dma);
     dma_start(spi_config[bus].tx_dma);
 
@@ -467,8 +440,7 @@ static void _transfer_dma(spi_t bus, const void *out, void *in, size_t len)
 }
 #endif
 
-static void _transfer_no_dma(spi_t bus, const void *out, void *in, size_t len)
-{
+static void _transfer_no_dma(spi_t bus, const void *out, void *in, size_t len) {
     const uint8_t *outbuf = out;
     uint8_t *inbuf = in;
 
@@ -476,20 +448,20 @@ static void _transfer_no_dma(spi_t bus, const void *out, void *in, size_t len)
 
     dev(bus)->IFCR = 0xFFFFFFFF;
 
-    /* drain RX FIFO (read any stale bytes) */
+    // drain RX FIFO (read any stale bytes)
     while (dev(bus)->SR & SPI_SR_RXP) {
         (void)*(volatile uint8_t*)&(dev(bus)->RXDR);
     }
 
-    /* we need to recast the data register to uint_8 to force 8-bit access */
+    // we need to recast the data register to uint_8 to force 8-bit access
     volatile uint8_t *TXDR = (volatile uint8_t*)&(dev(bus)->TXDR);
     volatile uint8_t *RXDR = (volatile uint8_t*)&(dev(bus)->RXDR);
 
     dev(bus)->CR2 = (len << SPI_CR2_TSIZE_Pos) & SPI_CR2_TSIZE_Msk;
     dev(bus)->CR1 |= SPI_CR1_SPE;
-    dev(bus)->CR1 |= SPI_CR1_CSTART;  /* Start transfer */
+    dev(bus)->CR1 |= SPI_CR1_CSTART;  // Start transfer
 
-    /* transfer data, use shortpath if only sending data */
+    // transfer data, use shortpath if only sending data
     if (!inbuf) {
         for (size_t i = 0; i < len; i++) {
             while (!(dev(bus)->SR & SPI_SR_TXP)) {}
@@ -513,19 +485,19 @@ static void _transfer_no_dma(spi_t bus, const void *out, void *in, size_t len)
         }
     }
 
-    /* wait for transmitter to fully finish */
+    // wait for transmitter to fully finish
     while (!(dev(bus)->SR & SPI_SR_TXC)) {}
 
-    /* drain remaining RX FIFO */
+    // drain remaining RX FIFO
     while (dev(bus)->SR & SPI_SR_RXP) {
         (void)*RXDR;
     }
     _wait_for_end(bus);
 #else
-    /* we need to recast the data register to uint_8 to force 8-bit access */
+    // we need to recast the data register to uint_8 to force 8-bit access
     volatile uint8_t *DR = (volatile uint8_t*)&(dev(bus)->DR);
 
-    /* transfer data, use shortpath if only sending data */
+    // transfer data, use shortpath if only sending data
     if (!inbuf) {
         for (size_t i = 0; i < len; i++) {
             while (!(dev(bus)->SR & SPI_SR_TXE)) {}
@@ -549,12 +521,12 @@ static void _transfer_no_dma(spi_t bus, const void *out, void *in, size_t len)
         }
     }
 
-    /* wait until everything is finished and empty the receive buffer */
+    // wait until everything is finished and empty the receive buffer
     while (!(dev(bus)->SR & SPI_SR_TXE)) {}
     while (dev(bus)->SR & SPI_SR_BSY) {}
     while (dev(bus)->SR & SPI_SR_RXNE) {
-        /* make sure to "read" any data, so the RXNE is indeed clear.
-         * Otherwise we risk reading stale data in the next transfer */
+        // make sure to "read" any data, so the RXNE is indeed clear.
+        // Otherwise we risk reading stale data in the next transfer
         (void)*DR;
     }
 
@@ -563,12 +535,11 @@ static void _transfer_no_dma(spi_t bus, const void *out, void *in, size_t len)
 }
 
 void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
-                        const void *out, void *in, size_t len)
-{
-    /* make sure at least one input or one output buffer is given */
+                        const void *out, void *in, size_t len) {
+    // make sure at least one input or one output buffer is given
     assume(out || in);
 
-    /* active the given chip select line */
+    // active the given chip select line
     if ((cs != SPI_HWCS_MASK) && gpio_is_valid(cs)) {
         gpio_clear((gpio_t)cs);
     }
@@ -591,7 +562,7 @@ void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
     }
 #endif
 
-    /* release the chip select if not specified differently */
+    // release the chip select if not specified differently
     if ((!cont) && gpio_is_valid(cs)) {
         if (cs != SPI_HWCS_MASK) {
             gpio_set((gpio_t)cs);

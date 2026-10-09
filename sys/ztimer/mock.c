@@ -1,25 +1,21 @@
-/*
- * Copyright (C) 2018 Eistec AB
- *               2020 Kaspar Schleiser <kaspar@schleiser.de>
- *               2020 Freie Universität Berlin
- *               2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
- */
+// Copyright (C) 2018 Eistec AB
+//               2020 Kaspar Schleiser <kaspar@schleiser.de>
+//               2020 Freie Universität Berlin
+//               2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for more
+// details.
 
-/**
- * @ingroup     sys_ztimer_mock
- *
- * @{
- *
- * @file
- * @brief       ztimer mock implementation
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @}
- */
+/// @ingroup     sys_ztimer_mock
+///
+/// @{
+///
+/// @file
+/// @brief       ztimer mock implementation
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @}
 
 #include <stdint.h>
 #include <inttypes.h>
@@ -29,10 +25,9 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* Functions for controlling the mock clock below */
+// Functions for controlling the mock clock below
 
-void ztimer_mock_advance(ztimer_mock_t *self, uint32_t val)
-{
+void ztimer_mock_advance(ztimer_mock_t *self, uint32_t val) {
     DEBUG(
         "zmock_advance: start now=0x%08" PRIx32 " + 0x%08" PRIx32 ", target=0x%08" PRIx32 " (%u)\n",
         self->now, val, self->target, self->armed);
@@ -45,9 +40,9 @@ void ztimer_mock_advance(ztimer_mock_t *self, uint32_t val)
 
         self->now = (self->now + step) & self->mask;
         if (self->armed) {
-            /* Update target */
+            // Update target
             if (step >= self->target) {
-                /* Target was hit */
+                // Target was hit
                 ztimer_mock_fire(self);
             }
             else {
@@ -61,28 +56,25 @@ void ztimer_mock_advance(ztimer_mock_t *self, uint32_t val)
         self->now, val, self->target, self->armed);
 }
 
-void ztimer_mock_jump(ztimer_mock_t *self, uint32_t target)
-{
+void ztimer_mock_jump(ztimer_mock_t *self, uint32_t target) {
     self->now = target & self->mask;
     DEBUG("zmock_jump: now=0x%08" PRIx32 ", target=0x%08" PRIx32 " (%u)\n",
           self->now, self->target, self->armed);
-    /* Do not touch target */
+    // Do not touch target
 }
 
-void ztimer_mock_fire(ztimer_mock_t *self)
-{
+void ztimer_mock_fire(ztimer_mock_t *self) {
     DEBUG("zmock_fire: now=0x%08" PRIx32 ", target=0x%08" PRIx32 " (%u)\n",
           self->now, self->target, self->armed);
     self->target = 0;
     self->armed = 0;
-    /* Execute ztimer core interrupt handler */
+    // Execute ztimer core interrupt handler
     ztimer_handler(&self->super);
 }
 
-/* Implementations for the standard ztimer operations below */
+// Implementations for the standard ztimer operations below
 
-static void ztimer_mock_op_set(ztimer_clock_t *clock, uint32_t val)
-{
+static void ztimer_mock_op_set(ztimer_clock_t *clock, uint32_t val) {
     ztimer_mock_t *self = (ztimer_mock_t *)clock;
 
     assert(self->running == 1);
@@ -95,8 +87,7 @@ static void ztimer_mock_op_set(ztimer_clock_t *clock, uint32_t val)
         self->calls.set, self->now, self->target, self->armed);
 }
 
-static uint32_t ztimer_mock_op_now(ztimer_clock_t *clock)
-{
+static uint32_t ztimer_mock_op_now(ztimer_clock_t *clock) {
     ztimer_mock_t *self = (ztimer_mock_t *)clock;
 
     ++self->calls.now;
@@ -106,8 +97,7 @@ static uint32_t ztimer_mock_op_now(ztimer_clock_t *clock)
     return self->now;
 }
 
-static void ztimer_mock_op_cancel(ztimer_clock_t *clock)
-{
+static void ztimer_mock_op_cancel(ztimer_clock_t *clock) {
     ztimer_mock_t *self = (ztimer_mock_t *)clock;
 
     assert(self->running == 1);
@@ -120,8 +110,7 @@ static void ztimer_mock_op_cancel(ztimer_clock_t *clock)
 }
 
 #if MODULE_ZTIMER_ONDEMAND
-static void ztimer_mock_op_start(ztimer_clock_t *clock)
-{
+static void ztimer_mock_op_start(ztimer_clock_t *clock) {
     ztimer_mock_t *self = (ztimer_mock_t *)clock;
 
     ++self->calls.start;
@@ -129,8 +118,7 @@ static void ztimer_mock_op_start(ztimer_clock_t *clock)
     self->running = 1;
 }
 
-static void ztimer_mock_op_stop(ztimer_clock_t *clock)
-{
+static void ztimer_mock_op_stop(ztimer_clock_t *clock) {
     ztimer_mock_t *self = (ztimer_mock_t *)clock;
 
     assert(self->armed == 0);
@@ -151,8 +139,7 @@ static const ztimer_ops_t ztimer_mock_ops = {
 #endif
 };
 
-void ztimer_mock_init(ztimer_mock_t *self, unsigned width)
-{
+void ztimer_mock_init(ztimer_mock_t *self, unsigned width) {
     uint32_t max_value = (~((uint32_t)0ul)) >> (32 - width);
 
     *self = (ztimer_mock_t){
@@ -161,7 +148,7 @@ void ztimer_mock_init(ztimer_mock_t *self, unsigned width)
     };
 
 #if !MODULE_ZTIMER_ONDEMAND
-    /* turn the timer on by default if ondemand feature is not used */
+    // turn the timer on by default if ondemand feature is not used
     self->running = 1;
 #endif
 

@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2022-2023 Gerson Fernando Budke <nandojve@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022-2023 Gerson Fernando Budke <nandojve@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_avr8_common
- * @ingroup     cpu_avr8_common_periph
- * @{
- *
- * @file
- * @brief       Low-level PM driver implementation
- *
- * @author      Gerson Fernando Budke <nandojve@gmail.com>
- *
- * @}
- */
+/// @ingroup     cpu_avr8_common
+/// @ingroup     cpu_avr8_common_periph
+/// @{
+///
+/// @file
+/// @brief       Low-level PM driver implementation
+///
+/// @author      Gerson Fernando Budke <nandojve@gmail.com>
+///
+/// @}
 
 #include <avr/sleep.h>
 
@@ -24,14 +20,11 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @note  The pm_set assumes that interrupts are disable and there is no reason
- *        to save SREG here.
- *
- * @note  DEBUG affects this routine.
- */
-void pm_set(unsigned mode)
-{
+/// @note  The pm_set assumes that interrupts are disable and there is no reason
+///        to save SREG here.
+///
+/// @note  DEBUG affects this routine.
+void pm_set(unsigned mode) {
     DEBUG("pm_set(%d)\n", mode);
 
     if (avr8_is_uart_tx_pending()) {
@@ -64,9 +57,7 @@ void pm_set(unsigned mode)
 
     DEBUG("mode selected: %d\n", mode);
 
-/*
- * Critical Section to correct enable SLEEP instruction on RIOT-OS
- */
+// Critical Section to correct enable SLEEP instruction on RIOT-OS
 #if (AVR8_PM_DISABLE_BOD_ON_SLEEP == 1)
 #ifdef sleep_bod_disable
     sleep_bod_disable();

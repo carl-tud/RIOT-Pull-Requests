@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_mag3110
- * @{
- *
- * @file
- * @brief       Default configuration for MAG3110 devices
- *
- * @author      Sebastian Meiling <s@mlng.net>
- */
+/// @ingroup     drivers_mag3110
+/// @{
+///
+/// @file
+/// @brief       Default configuration for MAG3110 devices
+///
+/// @author      Sebastian Meiling <s@mlng.net>
 
 #include "board.h"
 #include "saul_reg.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name   Default configuration parameters for the MAG3110 driver
- * @{
- */
+/// @name   Default configuration parameters for the MAG3110 driver
+/// @{
 #ifndef MAG3110_PARAM_I2C
 #define MAG3110_PARAM_I2C       (I2C_DEV(0))
 #endif
@@ -47,19 +41,15 @@ extern "C" {
 #ifndef MAG3110_SAUL_INFO
 #define MAG3110_SAUL_INFO       { .name = "mag3110" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   MAG3110 configuration
- */
+/// @brief   MAG3110 configuration
 static const mag3110_params_t mag3110_params[] =
 {
     MAG3110_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t mag3110_saul_info[] =
 {
     MAG3110_SAUL_INFO
@@ -69,4 +59,4 @@ static const saul_reg_info_t mag3110_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

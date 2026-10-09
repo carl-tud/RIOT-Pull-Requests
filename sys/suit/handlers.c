@@ -1,22 +1,18 @@
-/*
- * Copyright (C) 2019 Koen Zandberg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Koen Zandberg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_suit
- * @{
- *
- * @file
- * @brief       SUIT content handler helper functions
- *
- * @author      Koen Zandberg <koen@bergzand.net>
- *
- * @}
- */
+/// @ingroup     sys_suit
+/// @{
+///
+/// @file
+/// @brief       SUIT content handler helper functions
+///
+/// @author      Koen Zandberg <koen@bergzand.net>
+///
+/// @}
 
 #include <inttypes.h>
 #include <nanocbor/nanocbor.h>
@@ -29,8 +25,7 @@
 
 static suit_manifest_handler_t _get_handler(int key,
                                             const suit_manifest_handler_t *map,
-                                            size_t len)
-{
+                                            size_t len) {
     if (key < 0 || (size_t)key >= len) {
         return NULL;
     }
@@ -39,8 +34,7 @@ static suit_manifest_handler_t _get_handler(int key,
 
 uint16_t suit_param_ref_to_cbor(const suit_manifest_t *manifest,
                                 const suit_param_ref_t *ref,
-                                nanocbor_value_t *val)
-{
+                                nanocbor_value_t *val) {
     size_t len = manifest->len - ref->offset;
     const uint8_t *start = manifest->buf + ref->offset;
     nanocbor_decoder_init(val, start, len);
@@ -49,16 +43,14 @@ uint16_t suit_param_ref_to_cbor(const suit_manifest_t *manifest,
 
 void suit_param_cbor_to_ref(const suit_manifest_t *manifest,
                             suit_param_ref_t *ref,
-                            const nanocbor_value_t *val)
-{
+                            const nanocbor_value_t *val) {
     assert(val->cur >= manifest->buf);
     ref->offset = val->cur - manifest->buf;
 }
 
 int suit_component_name_to_string(const suit_manifest_t *manifest,
                                   const suit_component_t *component,
-                                  char separator, char *buf, size_t buf_len)
-{
+                                  char separator, char *buf, size_t buf_len) {
     assert(buf_len);
     nanocbor_value_t comp_id, arr;
     suit_param_ref_to_cbor(manifest, &component->identifier, &comp_id);
@@ -81,7 +73,7 @@ int suit_component_name_to_string(const suit_manifest_t *manifest,
         }
 
         if ((buf_len - pos - 1) < bstr_len) {
-            /* No space */
+            // No space
             return SUIT_ERR_NO_MEM;
         }
 
@@ -100,8 +92,7 @@ int suit_component_name_to_string(const suit_manifest_t *manifest,
 int suit_handle_manifest_structure(suit_manifest_t *manifest,
                                    nanocbor_value_t *it,
                                    const suit_manifest_handler_t *handlers,
-                                   size_t handlers_len)
-{
+                                   size_t handlers_len) {
     LOG_DEBUG("Handling command sequence\n");
     nanocbor_value_t container;
 
@@ -140,8 +131,7 @@ int suit_handle_manifest_structure(suit_manifest_t *manifest,
 int suit_handle_manifest_structure_bstr(suit_manifest_t *manifest,
                                         nanocbor_value_t *bseq,
                                         const suit_manifest_handler_t *handlers,
-                                        size_t handlers_len)
-{
+                                        size_t handlers_len) {
     const uint8_t *buf;
     size_t len;
 

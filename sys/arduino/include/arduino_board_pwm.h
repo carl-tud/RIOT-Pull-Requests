@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     sys_arduino
- * @{
- *
- * @file
- * @brief       Mapping of Arduino digital pin numbers to PWM settings
- *
- * @note        The contents of this file are mostly generated using the
- *              python snippets documented. Do not edit these parts by hand,
- *              but rather adjust the python snippets and regenerate.
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- */
+/// @ingroup     sys_arduino
+/// @{
+///
+/// @file
+/// @brief       Mapping of Arduino digital pin numbers to PWM settings
+///
+/// @note        The contents of this file are mostly generated using the
+///              python snippets documented. Do not edit these parts by hand,
+///              but rather adjust the python snippets and regenerate.
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
 
 #include "arduino_iomap.h"
 #include "periph/pwm.h"
@@ -27,32 +23,28 @@ extern "C" {
 #endif
 
 #ifdef DOXYGEN
-/**
- * @brief   PWM frequency
- */
-#define ARDUINO_PWM_FREQU       /* implementation defined */
+/// @brief   PWM frequency
+#define ARDUINO_PWM_FREQU       // implementation defined
 #else
 #  ifndef ARDUINO_PWM_FREQU
 #    define ARDUINO_PWM_FREQU   (490U)
 #  endif
 #endif
 
-/**
- * @brief   List of PWM GPIO mappings
- *
- * Generate using
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.py}
- * format = """#ifdef ARDUINO_PIN_{0:}_PWM_DEV
- *     {{ .dev = ARDUINO_PIN_{0:}_PWM_DEV, .chan = ARDUINO_PIN_{0:}_PWM_CHAN, .pin = {0:} }},
- * #endif"""
- * for i in range(32):
- *     print(format.format(i))
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- * We assume D0..D31 are the only candidates for PWM pins as a wild guess. Once
- * this no longer holds, the list needs to be extended.
- */
+/// @brief   List of PWM GPIO mappings
+///
+/// Generate using
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.py}
+/// format = """#ifdef ARDUINO_PIN_{0:}_PWM_DEV
+///     {{ .dev = ARDUINO_PIN_{0:}_PWM_DEV, .chan = ARDUINO_PIN_{0:}_PWM_CHAN, .pin = {0:} }},
+/// #endif"""
+/// for i in range(32):
+///     print(format.format(i))
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// We assume D0..D31 are the only candidates for PWM pins as a wild guess. Once
+/// this no longer holds, the list needs to be extended.
 static const arduino_pwm_t arduino_pwm_list[] = {
 #ifdef ARDUINO_PIN_0_PWM_DEV
     { .dev = ARDUINO_PIN_0_PWM_DEV, .chan = ARDUINO_PIN_0_PWM_CHAN, .pin = 0 },
@@ -156,4 +148,4 @@ static const arduino_pwm_t arduino_pwm_list[] = {
 }
 #endif
 
-/** @} */
+/// @}

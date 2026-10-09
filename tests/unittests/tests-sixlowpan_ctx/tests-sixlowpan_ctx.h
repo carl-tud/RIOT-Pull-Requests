@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2015 Martine Lenders
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Martine Lenders
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @addtogroup  unittests
- * @{
- *
- * @file
- * @brief       Unittests for the ``sixlowpan_ctx`` module
- *
- * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @addtogroup  unittests
+/// @{
+///
+/// @file
+/// @brief       Unittests for the ``sixlowpan_ctx`` module
+///
+/// @author      Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include "embUnit.h"
 
@@ -21,13 +17,11 @@
 extern "C" {
 #endif
 
-/**
- * @brief   The entry point of this test suite.
- */
+/// @brief   The entry point of this test suite.
 void tests_sixlowpan_ctx(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

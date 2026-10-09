@@ -1,26 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2016-2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016-2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_si114x
- * @{
- *
- * @file
- * @brief       SAUL adaption for Si114x devices family
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *              Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_si114x
+/// @{
+///
+/// @file
+/// @brief       SAUL adaption for Si114x devices family
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///              Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include "saul.h"
 #include "si114x.h"
 
-static int read_uv(const void *dev, phydat_t *res)
-{
+static int read_uv(const void *dev, phydat_t *res) {
     si114x_t *d = (si114x_t *)dev;
 
     res->val[0] = si114x_read_uv(d);
@@ -29,8 +24,7 @@ static int read_uv(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int read_ir(const void *dev, phydat_t *res)
-{
+static int read_ir(const void *dev, phydat_t *res) {
     si114x_t *d = (si114x_t *)dev;
 
     res->val[0] = si114x_read_ir(d);
@@ -39,8 +33,7 @@ static int read_ir(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int read_visible(const void *dev, phydat_t *res)
-{
+static int read_visible(const void *dev, phydat_t *res) {
     si114x_t *d = (si114x_t *)dev;
 
     res->val[0] = si114x_read_visible(d);
@@ -49,8 +42,7 @@ static int read_visible(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int read_distance(const void *dev, phydat_t *res)
-{
+static int read_distance(const void *dev, phydat_t *res) {
     si114x_t *d = (si114x_t *)dev;
 
     res->val[0] = si114x_read_distance(d);

@@ -1,28 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kees Bakker, SODAQ
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_bmx280
- * @{
- *
- * @file
- * @brief       SAUL adoption for BMX280 sensors (BME280 and BMP280).
- *
- * @author      Kees Bakker <kees@sodaq.com>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     drivers_bmx280
+/// @{
+///
+/// @file
+/// @brief       SAUL adoption for BMX280 sensors (BME280 and BMP280).
+///
+/// @author      Kees Bakker <kees@sodaq.com>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include "saul.h"
 
 #include "bmx280.h"
 
-static int read_temperature(const void *dev, phydat_t *res)
-{
+static int read_temperature(const void *dev, phydat_t *res) {
     res->val[0] = bmx280_read_temperature((bmx280_t *)dev);
     res->unit = UNIT_TEMP_C;
     res->scale = -2;
@@ -30,8 +25,7 @@ static int read_temperature(const void *dev, phydat_t *res)
     return 1;
 }
 
-static int read_pressure(const void *dev, phydat_t *res)
-{
+static int read_pressure(const void *dev, phydat_t *res) {
     res->unit = UNIT_PA;
     res->scale = 0;
 
@@ -42,8 +36,7 @@ static int read_pressure(const void *dev, phydat_t *res)
 }
 
 #if defined(MODULE_BME280_SPI) || defined(MODULE_BME280_I2C)
-static int read_relative_humidity(const void *dev, phydat_t *res)
-{
+static int read_relative_humidity(const void *dev, phydat_t *res) {
     res->val[0] = bme280_read_humidity((bmx280_t *)dev);
     res->unit = UNIT_PERCENT;
     res->scale = -2;

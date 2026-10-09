@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests 6LoWPAN fragmentation handling of gnrc stack.
- *
- * @author      Martine S. Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests 6LoWPAN fragmentation handling of gnrc stack.
+///
+/// @author      Martine S. Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include "embUnit.h"
 #include "net/gnrc.h"
@@ -101,21 +97,18 @@ static netdev_test_t _mock_dev;
 static gnrc_netif_t _netif;
 static gnrc_netif_t *_mock_netif;
 
-void _set_up(void)
-{
-    /* Add default route for the VRB entry created from */
+void _set_up(void) {
+    // Add default route for the VRB entry created from
     gnrc_ipv6_nib_ft_add(NULL, 0, &_test_tgt_ipv6, _mock_netif->pid, 0);
 }
 
-void _tear_down(void)
-{
+void _tear_down(void) {
     gnrc_ipv6_nib_ft_del(NULL, 0);
     gnrc_sixlowpan_frag_rb_reset();
     gnrc_sixlowpan_frag_vrb_reset();
 }
 
-gnrc_pktsnip_t *_create_fragment(void)
-{
+gnrc_pktsnip_t *_create_fragment(void) {
     gnrc_pktsnip_t *res = gnrc_netif_hdr_build(_test_src, sizeof(_test_src),
                                                _test_dst, sizeof(_test_dst));
     if (res == NULL) {
@@ -127,8 +120,7 @@ gnrc_pktsnip_t *_create_fragment(void)
     return res;
 }
 
-static unsigned _dispatch_to_6lowpan(gnrc_pktsnip_t *pkt)
-{
+static unsigned _dispatch_to_6lowpan(gnrc_pktsnip_t *pkt) {
     unsigned res = gnrc_netapi_dispatch_receive(GNRC_NETTYPE_SIXLOWPAN,
                                                 GNRC_NETREG_DEMUX_CTX_ALL,
                                                 pkt);
@@ -136,8 +128,7 @@ static unsigned _dispatch_to_6lowpan(gnrc_pktsnip_t *pkt)
     return res;
 }
 
-static bool _rb_is_empty(void)
-{
+static bool _rb_is_empty(void) {
     const gnrc_sixlowpan_frag_rb_t *rb = gnrc_sixlowpan_frag_rb_array();
     unsigned res = 0;
 
@@ -147,16 +138,15 @@ static bool _rb_is_empty(void)
     return res;
 }
 
-static void _test_no_vrbe_but_rbe_exists(void)
-{
+static void _test_no_vrbe_but_rbe_exists(void) {
     const gnrc_sixlowpan_frag_rb_t *rb = gnrc_sixlowpan_frag_rb_array();
     unsigned rbs = 0;
 
-    /* VRB entry does not exist */
+    // VRB entry does not exist
     TEST_ASSERT_NULL(gnrc_sixlowpan_frag_vrb_get(_test_src,
                                                  sizeof(_test_src),
                                                  TEST_TAG));
-    /* and one reassembly buffer entry exists with the source and tag exists */
+    // and one reassembly buffer entry exists with the source and tag exists
     for (unsigned i = 0; i < CONFIG_GNRC_SIXLOWPAN_FRAG_RBUF_SIZE; i++) {
         if (!gnrc_sixlowpan_frag_rb_entry_empty(&rb[i])) {
             rbs++;
@@ -164,7 +154,7 @@ static void _test_no_vrbe_but_rbe_exists(void)
             TEST_ASSERT_EQUAL_INT(0, memcmp(rb[i].super.src, _test_src,
                                             rb[i].super.src_len));
             TEST_ASSERT_EQUAL_INT(TEST_TAG, rb[i].super.tag);
-            /* release packet for packet buffer check */
+            // release packet for packet buffer check
             gnrc_pktbuf_release(rb[i].pkt);
 
         }
@@ -172,21 +162,19 @@ static void _test_no_vrbe_but_rbe_exists(void)
     TEST_ASSERT_EQUAL_INT(1, rbs);
 }
 
-static void test_recv__success(void)
-{
+static void test_recv__success(void) {
     gnrc_pktsnip_t *pkt = _create_fragment();
 
     TEST_ASSERT_NOT_NULL(pkt);
     TEST_ASSERT_EQUAL_INT(1, _dispatch_to_6lowpan(pkt));
-    /* A VRB entry exists was created but deleted due to -ENOTSUP being
-     * returned by gnrc_sixlowpan_iphc.c:_forward_frag()
-     * but the reassembly buffer is empty */
+    // A VRB entry exists was created but deleted due to -ENOTSUP being
+    // returned by gnrc_sixlowpan_iphc.c:_forward_frag()
+    // but the reassembly buffer is empty
     TEST_ASSERT(_rb_is_empty());
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_recv__no_route(void)
-{
+static void test_recv__no_route(void) {
     gnrc_pktsnip_t *pkt = _create_fragment();
 
     gnrc_ipv6_nib_ft_del(NULL, 0);
@@ -196,8 +184,7 @@ static void test_recv__no_route(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_recv__vrb_full(void)
-{
+static void test_recv__vrb_full(void) {
     gnrc_pktsnip_t *pkt = _create_fragment();
     gnrc_sixlowpan_frag_rb_base_t base = {
         .src = TEST_SRC,
@@ -206,7 +193,7 @@ static void test_recv__vrb_full(void)
     };
 
     TEST_ASSERT_NOT_NULL(pkt);
-    /* Fill up VRB */
+    // Fill up VRB
     for (unsigned i = 0; i < CONFIG_GNRC_SIXLOWPAN_FRAG_VRB_SIZE; i++) {
         base.tag++;
         base.arrival = xtimer_now_usec();
@@ -219,23 +206,21 @@ static void test_recv__vrb_full(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_recv__pkt_held(void)
-{
+static void test_recv__pkt_held(void) {
     gnrc_pktsnip_t *pkt = _create_fragment();
 
     TEST_ASSERT_NOT_NULL(pkt);
     gnrc_pktbuf_hold(pkt, 1);
     TEST_ASSERT_EQUAL_INT(1, _dispatch_to_6lowpan(pkt));
-    /* A VRB entry exists was created but deleted due to -ENOTSUP being
-     * returned by gnrc_sixlowpan_iphc.c:_forward_frag()
-     * but the reassembly buffer is empty */
+    // A VRB entry exists was created but deleted due to -ENOTSUP being
+    // returned by gnrc_sixlowpan_iphc.c:_forward_frag()
+    // but the reassembly buffer is empty
     TEST_ASSERT(_rb_is_empty());
     gnrc_pktbuf_release(pkt);
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void run_unittests(void)
-{
+static void run_unittests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_recv__success),
         new_TestFixture(test_recv__no_route),
@@ -249,8 +234,7 @@ static void run_unittests(void)
     TESTS_END();
 }
 
-static int _get_netdev_device_type(netdev_t *netdev, void *value, size_t max_len)
-{
+static int _get_netdev_device_type(netdev_t *netdev, void *value, size_t max_len) {
     expect(max_len == sizeof(uint16_t));
     (void)netdev;
 
@@ -258,8 +242,7 @@ static int _get_netdev_device_type(netdev_t *netdev, void *value, size_t max_len
     return sizeof(uint16_t);
 }
 
-static int _get_netdev_proto(netdev_t *netdev, void *value, size_t max_len)
-{
+static int _get_netdev_proto(netdev_t *netdev, void *value, size_t max_len) {
     expect(max_len == sizeof(gnrc_nettype_t));
     (void)netdev;
 
@@ -268,8 +251,7 @@ static int _get_netdev_proto(netdev_t *netdev, void *value, size_t max_len)
 }
 
 static int _get_netdev_max_pdu_size(netdev_t *netdev, void *value,
-                                    size_t max_len)
-{
+                                    size_t max_len) {
     expect(max_len == sizeof(uint16_t));
     (void)netdev;
 
@@ -277,24 +259,21 @@ static int _get_netdev_max_pdu_size(netdev_t *netdev, void *value,
     return sizeof(uint16_t);
 }
 
-static int _get_netdev_src_len(netdev_t *netdev, void *value, size_t max_len)
-{
+static int _get_netdev_src_len(netdev_t *netdev, void *value, size_t max_len) {
     (void)netdev;
     expect(max_len == sizeof(uint16_t));
     *((uint16_t *)value) = sizeof(_test_dst);
     return sizeof(uint16_t);
 }
 
-static int _get_netdev_addr_long(netdev_t *netdev, void *value, size_t max_len)
-{
+static int _get_netdev_addr_long(netdev_t *netdev, void *value, size_t max_len) {
     (void)netdev;
     expect(max_len >= sizeof(_test_dst));
     memcpy(value, _test_dst, sizeof(_test_dst));
     return sizeof(_test_dst);
 }
 
-static void _init_mock_netif(void)
-{
+static void _init_mock_netif(void) {
     netdev_test_setup(&_mock_dev, NULL);
     netdev_test_set_get_cb(&_mock_dev, NETOPT_DEVICE_TYPE,
                            _get_netdev_device_type);
@@ -313,8 +292,7 @@ static void _init_mock_netif(void)
     thread_yield_higher();
 }
 
-int main(void)
-{
+int main(void) {
     _init_mock_netif();
     run_unittests();
     return 0;

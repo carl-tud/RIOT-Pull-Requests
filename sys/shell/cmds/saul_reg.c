@@ -1,23 +1,19 @@
-/*
- * Copyright (C) 2015 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- *
- */
+// Copyright (C) 2015 Freie Universität Berlin
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
+//
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       SAUL registry shell commands
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       SAUL registry shell commands
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stddef.h>
 #include <stdio.h>
@@ -36,9 +32,8 @@ static const char *_devname(saul_reg_t *dev) {
     }
 }
 
-/* this function does not check, if the given device is valid */
-static void probe(int num, saul_reg_t *dev)
-{
+// this function does not check, if the given device is valid
+static void probe(int num, saul_reg_t *dev) {
     int dim;
     phydat_t res;
 
@@ -47,15 +42,14 @@ static void probe(int num, saul_reg_t *dev)
         printf("error: failed to read from device #%i\n", num);
         return;
     }
-    /* print results */
+    // print results
     printf("Reading from #%i (%s|", num, _devname(dev));
     saul_class_print(dev->driver->type);
     printf(")\n");
     phydat_dump(&res, dim);
 }
 
-static void probe_all(void)
-{
+static void probe_all(void) {
     saul_reg_t *dev = saul_reg;
     int i = 0;
 
@@ -66,8 +60,7 @@ static void probe_all(void)
     }
 }
 
-static void list(void)
-{
+static void list(void) {
     saul_reg_t *dev = saul_reg;
     int i = 0;
 
@@ -85,8 +78,7 @@ static void list(void)
     }
 }
 
-static void _reg_read(int argc, char **argv)
-{
+static void _reg_read(int argc, char **argv) {
     int num;
     saul_reg_t *dev;
 
@@ -99,7 +91,7 @@ static void _reg_read(int argc, char **argv)
         probe_all();
         return;
     }
-    /* get device id */
+    // get device id
     num = atoi(argv[2]);
     dev = saul_reg_find_nth(num);
     if (dev == NULL) {
@@ -109,8 +101,7 @@ static void _reg_read(int argc, char **argv)
     probe(num, dev);
 }
 
-static void _reg_write(int argc, char **argv)
-{
+static void _reg_write(int argc, char **argv) {
     int num, dim;
     saul_reg_t *dev;
     phydat_t data;
@@ -126,16 +117,16 @@ static void _reg_write(int argc, char **argv)
         printf("error: undefined device given\n");
         return;
     }
-    /* parse value(s) */
+    // parse value(s)
     memset(&data, 0, sizeof(data));
     dim = ((argc - 3) > (int)PHYDAT_DIM) ? (int)PHYDAT_DIM : (argc - 3);
     for (int i = 0; i < dim; i++) {
         data.val[i] = atoi(argv[i + 3]);
     }
-    /* print values before writing */
+    // print values before writing
     printf("Writing to device #%i - %s\n", num, _devname(dev));
     phydat_dump(&data, dim);
-    /* write values to device */
+    // write values to device
     dim = saul_reg_write(dev, &data);
     if (dim <= 0) {
         if (dim == -ENOTSUP) {
@@ -149,8 +140,7 @@ static void _reg_write(int argc, char **argv)
     printf("data successfully written to device #%i\n", num);
 }
 
-static int _saul(int argc, char **argv)
-{
+static int _saul(int argc, char **argv) {
     if (argc < 2) {
         list();
     }

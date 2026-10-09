@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Marc Poulhiès
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Marc Poulhiès
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_lm4f120
- * @ingroup     drivers_periph_gpio
- * @{
- *
- * @file
- * @brief       Low-level GPIO driver implementation
- *
- * @author      Marc Poulhiès <dkm@kataplop.net>
- *
- * @}
- */
+/// @ingroup     cpu_lm4f120
+/// @ingroup     drivers_periph_gpio
+/// @{
+///
+/// @file
+/// @brief       Low-level GPIO driver implementation
+///
+/// @author      Marc Poulhiès <dkm@kataplop.net>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -29,29 +25,19 @@
 #define NUM_OF_PORT 6
 #define NUM_OF_PINS 8
 
-/**
- * @brief   Mask out the pin type from the gpio_mode_t value
- */
+/// @brief   Mask out the pin type from the gpio_mode_t value
 #define TYPE(mode)          (mode >> 4)
 
-/**
- * @brief   Mask out the pin mode from the gpio_mode_t value
- */
+/// @brief   Mask out the pin mode from the gpio_mode_t value
 #define MODE(mode)          (mode & 0x0f)
 
-/**
- * @brief     Extract the pin number of the given pin
- */
-static inline uint8_t _pin_num(gpio_t pin)
-{
+/// @brief     Extract the pin number of the given pin
+static inline uint8_t _pin_num(gpio_t pin) {
     return (pin & 0x0f);
 }
 
-/**
- * @brief     Extract the port number of the given pin
- */
-static inline uint8_t _port_num(gpio_t pin)
-{
+/// @brief     Extract the port number of the given pin
+static inline uint8_t _port_num(gpio_t pin) {
     return (pin >> 4);
 }
 
@@ -84,15 +70,14 @@ static const uint32_t _int_assign[] = {
 };
 
 typedef struct {
-    gpio_cb_t cb;       /**< callback called from GPIO interrupt */
-    void *arg;          /**< argument passed to the callback */
+    gpio_cb_t cb;       ///< callback called from GPIO interrupt
+    void *arg;          ///< argument passed to the callback
 } gpio_state_t;
 
 static gpio_state_t gpio_config[NUM_OF_PORT][NUM_OF_PINS];
-#endif /* MODULE_PERIPH_GPIO_IRQ */
+#endif // MODULE_PERIPH_GPIO_IRQ
 
-int gpio_init(gpio_t pin, gpio_mode_t mode)
-{
+int gpio_init(gpio_t pin, gpio_mode_t mode) {
     const uint8_t port_num = _port_num(pin);
     const uint32_t port_addr = _port_base[port_num];
     const uint8_t pin_num = _pin_num(pin);
@@ -116,8 +101,7 @@ int gpio_init(gpio_t pin, gpio_mode_t mode)
     return 0;
 }
 
-bool gpio_read(gpio_t pin)
-{
+bool gpio_read(gpio_t pin) {
     const uint8_t port_num = _port_num(pin);
     const uint32_t port_addr = _port_base[port_num];
     const uint8_t pin_num = _pin_num(pin);
@@ -125,8 +109,7 @@ bool gpio_read(gpio_t pin)
     return HWREG(port_addr + ((1<<pin_num) << 2)) != 0;
 }
 
-void gpio_set(gpio_t pin)
-{
+void gpio_set(gpio_t pin) {
     const uint8_t port_num = _port_num(pin);
     const uint32_t port_addr = _port_base[port_num];
     const uint8_t pin_num = _pin_num(pin);
@@ -135,8 +118,7 @@ void gpio_set(gpio_t pin)
     ROM_GPIOPinWrite(port_addr, 1<<pin_num, 1<<pin_num);
 }
 
-void gpio_clear(gpio_t pin)
-{
+void gpio_clear(gpio_t pin) {
     const uint8_t port_num = _port_num(pin);
     const uint32_t port_addr = _port_base[port_num];
     const uint8_t pin_num = _pin_num(pin);
@@ -144,8 +126,7 @@ void gpio_clear(gpio_t pin)
     HWREG(port_addr + ((1<<pin_num) << 2)) = 0;
 }
 
-void gpio_toggle(gpio_t pin)
-{
+void gpio_toggle(gpio_t pin) {
     if (gpio_read(pin)) {
         gpio_clear(pin);
     }
@@ -154,8 +135,7 @@ void gpio_toggle(gpio_t pin)
     }
 }
 
-void gpio_write(gpio_t pin, bool value)
-{
+void gpio_write(gpio_t pin, bool value) {
     if (value) {
         gpio_set(pin);
     }
@@ -209,8 +189,7 @@ void isr_gpio_portf(void){
 }
 
 int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
-                  gpio_cb_t cb, void *arg)
-{
+                  gpio_cb_t cb, void *arg) {
     const uint8_t port_num = _port_num(pin);
     const uint32_t port_addr = _port_base[port_num];
     const uint32_t icr_reg_addr = port_addr + GPIO_ICR_R_OFF;
@@ -249,23 +228,21 @@ int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
     return 0;
 }
 
-void gpio_irq_enable(gpio_t pin)
-{
+void gpio_irq_enable(gpio_t pin) {
     const uint8_t port_num = _port_num(pin);
     const uint32_t port_addr = _port_base[port_num];
     const uint32_t im_reg_addr =  port_addr + GPIO_IM_R_OFF;
     const uint8_t pin_num = _pin_num(pin);
     const uint8_t pin_bit = 1<<pin_num;
 
-    /* clear stale interrupt */
+    // clear stale interrupt
     ROM_GPIOPinIntClear(port_addr, pin_bit);
 
-    /* enable interrupt */
+    // enable interrupt
     HWREG(im_reg_addr) |= pin_bit;
 }
 
-void gpio_irq_disable(gpio_t pin)
-{
+void gpio_irq_disable(gpio_t pin) {
     const uint8_t port_num = _port_num(pin);
     const uint32_t port_addr = _port_base[port_num];
     const uint32_t im_reg_addr =  port_addr + GPIO_IM_R_OFF;
@@ -274,4 +251,4 @@ void gpio_irq_disable(gpio_t pin)
 
     HWREG(im_reg_addr) &= ~(pin_bit);
 }
-#endif /* MODULE_PERIPH_GPIO_IRQ */
+#endif // MODULE_PERIPH_GPIO_IRQ

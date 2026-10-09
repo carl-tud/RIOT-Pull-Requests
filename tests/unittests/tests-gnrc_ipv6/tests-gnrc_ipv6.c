@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2016 INRIA
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 INRIA
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @file
- */
+/// @{
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @file
 
 #include "embUnit.h"
 
@@ -39,8 +35,7 @@
 
 static gnrc_pktsnip_t *_pkt_w_ip_hdr, *_pkt_no_ip_hdr;
 
-static void set_up(void)
-{
+static void set_up(void) {
     ipv6_hdr_t ip = (ipv6_hdr_t) {
         .v_tc_fl    = byteorder_htonl(DEFAULT_TEST_V_TC_FL),
         .len        = byteorder_htons(DEFAULT_TEST_LEN),
@@ -66,68 +61,58 @@ static void set_up(void)
     expect(_pkt_no_ip_hdr);
 }
 
-static void tear_down(void)
-{
+static void tear_down(void) {
     gnrc_pktbuf_release(_pkt_w_ip_hdr->next->next);
     gnrc_pktbuf_release(_pkt_no_ip_hdr->next);
 }
 
-static void test_gnrc_ipv6_get_header(void)
-{
+static void test_gnrc_ipv6_get_header(void) {
     TEST_ASSERT_NOT_NULL(gnrc_ipv6_get_header(_pkt_w_ip_hdr));
 }
 
-static void test_gnrc_ipv6_get_header_no_header(void)
-{
+static void test_gnrc_ipv6_get_header_no_header(void) {
     TEST_ASSERT_NULL(gnrc_ipv6_get_header(_pkt_no_ip_hdr));
 }
 
-static void test_gnrc_ipv6_get_header_check_version(void)
-{
+static void test_gnrc_ipv6_get_header_check_version(void) {
     ipv6_hdr_t *hdr = gnrc_ipv6_get_header(_pkt_w_ip_hdr);
 
     TEST_ASSERT(ipv6_hdr_get_version(hdr) == 0x06);
 }
 
-static void test_gnrc_ipv6_get_header_check_len(void)
-{
+static void test_gnrc_ipv6_get_header_check_len(void) {
     ipv6_hdr_t *hdr = gnrc_ipv6_get_header(_pkt_w_ip_hdr);
 
     TEST_ASSERT(byteorder_ntohs(hdr->len) == DEFAULT_TEST_LEN);
 }
 
-static void test_gnrc_ipv6_get_header_check_nh(void)
-{
+static void test_gnrc_ipv6_get_header_check_nh(void) {
     ipv6_hdr_t *hdr = gnrc_ipv6_get_header(_pkt_w_ip_hdr);
 
     TEST_ASSERT(hdr->nh == DEFAULT_TEST_NH);
 }
 
-static void test_gnrc_ipv6_get_header_check_hl(void)
-{
+static void test_gnrc_ipv6_get_header_check_hl(void) {
     ipv6_hdr_t *hdr = gnrc_ipv6_get_header(_pkt_w_ip_hdr);
 
     TEST_ASSERT(hdr->hl == DEFAULT_TEST_HL);
 }
 
-static void test_gnrc_ipv6_get_header_check_src(void)
-{
+static void test_gnrc_ipv6_get_header_check_src(void) {
     ipv6_hdr_t *hdr = gnrc_ipv6_get_header(_pkt_w_ip_hdr);
     ipv6_addr_t addr = DEFAULT_TEST_SRC;
 
     TEST_ASSERT(ipv6_addr_equal(&(hdr->src), &addr));
 }
 
-static void test_gnrc_ipv6_get_header_check_dst(void)
-{
+static void test_gnrc_ipv6_get_header_check_dst(void) {
     ipv6_hdr_t *hdr = gnrc_ipv6_get_header(_pkt_w_ip_hdr);
     ipv6_addr_t addr = DEFAULT_TEST_DST;
 
     TEST_ASSERT(ipv6_addr_equal(&(hdr->dst), &addr));
 }
 
-Test *tests_gnrc_ipv6_tests(void)
-{
+Test *tests_gnrc_ipv6_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_gnrc_ipv6_get_header),
         new_TestFixture(test_gnrc_ipv6_get_header_no_header),
@@ -144,8 +129,7 @@ Test *tests_gnrc_ipv6_tests(void)
     return (Test *)&gnrc_ipv6_tests;
 }
 
-void tests_gnrc_ipv6(void)
-{
+void tests_gnrc_ipv6(void) {
     TESTS_RUN(tests_gnrc_ipv6_tests());
 }
-/** @} */
+/// @}

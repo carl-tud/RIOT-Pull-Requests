@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test for Kconfig configuration
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test for Kconfig configuration
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -24,8 +20,7 @@
 #include "external_pkg_1.h"
 #include "external_pkg_2.h"
 
-int main(void)
-{
+int main(void) {
     puts(CONFIG_APP_MSG_1_TEXT);
 
     if (IS_ACTIVE(CONFIG_APP_MSG_2)) {

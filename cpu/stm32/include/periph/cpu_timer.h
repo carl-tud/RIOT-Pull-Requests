@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_stm32
- * @{
- *
- * @file
- * @brief           Timer CPU specific definitions for the STM32 family
- *
- * @author          Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author          Vincent Dupont <vincent@otakeys.com>
- */
+/// @ingroup         cpu_stm32
+/// @{
+///
+/// @file
+/// @brief           Timer CPU specific definitions for the STM32 family
+///
+/// @author          Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author          Vincent Dupont <vincent@otakeys.com>
 
 #include <stdint.h>
 
@@ -25,30 +21,22 @@
 extern "C" {
 #endif
 
-/**
- * @brief   All STM timers have at most 4 capture-compare channels
- */
+/// @brief   All STM timers have at most 4 capture-compare channels
 #define TIMER_CHANNEL_NUMOF (4U)
 
-/**
- * @brief   The driver provides a relative set function
- */
+/// @brief   The driver provides a relative set function
 #define PERIPH_TIMER_PROVIDES_SET
 
-/**
- * @brief   Define a macro for accessing a timer channel
- */
+/// @brief   Define a macro for accessing a timer channel
 #define TIM_CHAN(tim, chan) *(&dev(tim)->CCR1 + chan)
 
-/**
- * @brief   Timer configuration
- */
+/// @brief   Timer configuration
 typedef struct {
-    TIM_TypeDef *dev;       /**< timer device */
-    uint32_t max;           /**< maximum value to count to (16/32 bit) */
-    uint32_t rcc_mask;      /**< corresponding bit in the RCC register */
-    uint8_t bus;            /**< APBx bus the timer is clock from */
-    uint8_t irqn;           /**< global IRQ channel */
+    TIM_TypeDef *dev;       ///< timer device
+    uint32_t max;           ///< maximum value to count to (16/32 bit)
+    uint32_t rcc_mask;      ///< corresponding bit in the RCC register
+    uint8_t bus;            ///< APBx bus the timer is clock from
+    uint8_t irqn;           ///< global IRQ channel
     uint8_t channel_numof;  /**< number of channels, 0 is alias for
                                  @ref TIMER_CHANNEL_NUMOF */
 } timer_conf_t;
@@ -57,4 +45,4 @@ typedef struct {
 }
 #endif
 
-/** @} */
+/// @}

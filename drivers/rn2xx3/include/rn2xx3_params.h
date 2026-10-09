@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_rn2xx3
- * @{
- *
- * @file
- * @brief       Default configuration for RN2483/RN2903 devices
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     drivers_rn2xx3
+/// @{
+///
+/// @file
+/// @brief       Default configuration for RN2483/RN2903 devices
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "board.h"
 #include "rn2xx3.h"
@@ -22,10 +18,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters for the RN2483/RN2903 driver
- * @{
- */
+/// @name    Set default configuration parameters for the RN2483/RN2903 driver
+/// @{
 #ifndef RN2XX3_PARAM_UART
 #define RN2XX3_PARAM_UART         UART_DEV(1)
 #endif
@@ -41,11 +35,9 @@ extern "C" {
                                     .baudrate  = RN2XX3_PARAM_BAUDRATE, \
                                     .pin_reset = RN2XX3_PARAM_PIN_RESET }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   RN2483/RN2903 configuration
- */
+/// @brief   RN2483/RN2903 configuration
 static const rn2xx3_params_t rn2xx3_params[] =
 {
     RN2XX3_PARAMS
@@ -55,4 +47,4 @@ static const rn2xx3_params_t rn2xx3_params[] =
 }
 #endif
 
-/** @} */
+/// @}

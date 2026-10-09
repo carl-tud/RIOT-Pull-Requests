@@ -1,23 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2021 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup    tests
- * @{
- *
- * @file
- * @brief      Unit tests for test_utils_result_output module
- *
- * @author     Kevin Weiss <kevin.weiss@haw-hamburg.de>
- */
+/// @ingroup    tests
+/// @{
+///
+/// @file
+/// @brief      Unit tests for test_utils_result_output module
+///
+/// @author     Kevin Weiss <kevin.weiss@haw-hamburg.de>
 #include "embUnit.h"
 #include "kernel_defines.h"
 #include "test_utils/result_output.h"
 
-void test_turo_impl(void)
-{
+void test_turo_impl(void) {
     turo_t ctx;
     turo_init(&ctx);
     turo_container_open(&ctx);
@@ -38,8 +33,7 @@ void test_turo_impl(void)
     turo_container_close(&ctx, 0);
 }
 
-void test_turo_helpers(void)
-{
+void test_turo_helpers(void) {
     turo_t ctx;
     turo_init(&ctx);
     turo_container_open(&ctx);
@@ -52,8 +46,7 @@ void test_turo_helpers(void)
     turo_container_close(&ctx, 0);
 }
 
-void test_turo_simple(void)
-{
+void test_turo_simple(void) {
     turo_t ctx;
     turo_init(&ctx);
     turo_simple_s32(&ctx, 42);
@@ -66,8 +59,7 @@ void test_turo_simple(void)
     turo_simple_exit_status(&ctx, -1);
 }
 
-Test *tests_turo_all(void)
-{
+Test *tests_turo_all(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_turo_impl),
         new_TestFixture(test_turo_helpers),
@@ -78,7 +70,6 @@ Test *tests_turo_all(void)
     return (Test *)&turo_tests;
 }
 
-void tests_turo(void)
-{
+void tests_turo(void) {
     TESTS_RUN(tests_turo_all());
 }

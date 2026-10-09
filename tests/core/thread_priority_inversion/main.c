@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Technische Universität Berlin
- * SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Technische Universität Berlin
+// SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Thread test application for priority inversion problem
- *
- * @author      Thomas Geithner <thomas.geithner@dai-labor.de>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Thread test application for priority inversion problem
+///
+/// @author      Thomas Geithner <thomas.geithner@dai-labor.de>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <string.h>
 
@@ -31,9 +27,9 @@
 #define FANCY 0
 #endif
 
-/* Fallback in case core clock isn't define - should only be the case on native.
- * We don't need a correct value here any, it is only used for the fancy busy delay to make the
- * problem more approachable to human beings. */
+// Fallback in case core clock isn't define - should only be the case on native.
+// We don't need a correct value here any, it is only used for the fancy busy delay to make the
+// problem more approachable to human beings.
 #ifndef CLOCK_CORECLOCK
 #define CLOCK_CORECLOCK GHZ(1)
 #endif
@@ -50,15 +46,13 @@ static char stack_low[THREAD_STACKSIZE_SMALL];
 static char run_order[16] = "";
 static size_t run_order_pos = 0;
 
-static void busy_delay(void)
-{
-    /* About 1 second if assuming one loop iteration takes ~20 CPU cycles. Actual duration doesn't
-     * matter at all, but this delay has to be busy (not yielding during wait). */
+static void busy_delay(void) {
+    // About 1 second if assuming one loop iteration takes ~20 CPU cycles. Actual duration doesn't
+    // matter at all, but this delay has to be busy (not yielding during wait).
     for (volatile uint32_t i = 0; i < CLOCK_CORECLOCK / 20; i++) { }
 }
 
-static void record_thread_started(const char *priority)
-{
+static void record_thread_started(const char *priority) {
     print_str(priority);
     print_str(" priority thread (pid = ");
     print_u32_dec(thread_getpid());
@@ -67,26 +61,23 @@ static void record_thread_started(const char *priority)
     print_str(") has started\n");
 }
 
-static void record_thread_working(const char *priority)
-{
+static void record_thread_working(const char *priority) {
     print_str(priority);
     print_str(" priority thread started to work on its task\n");
 
-    /* make recording of running thread atomic by disabling IRQs. We could have used a mutex here
-     * as well, but for something so short just disabling IRQs is more sensible */
+    // make recording of running thread atomic by disabling IRQs. We could have used a mutex here
+    // as well, but for something so short just disabling IRQs is more sensible
     unsigned irq_state = irq_disable();
     run_order[run_order_pos++] = priority[0];
     irq_restore(irq_state);
 }
 
-static void record_thread_done(const char *priority)
-{
+static void record_thread_done(const char *priority) {
     print_str(priority);
     print_str(" priority thread is done\n");
 }
 
-static void *low_handler(void *arg)
-{
+static void *low_handler(void *arg) {
     (void)arg;
     mutex_lock(&mtx_start_low);
     record_thread_started("low");
@@ -94,7 +85,7 @@ static void *low_handler(void *arg)
     mutex_lock(&mtx_res);
     record_thread_working("low");
 
-    /* launch mid and high priority thread now */
+    // launch mid and high priority thread now
     mutex_unlock(&mtx_start_high);
     mutex_unlock(&mtx_start_mid);
 
@@ -104,8 +95,7 @@ static void *low_handler(void *arg)
     return NULL;
 }
 
-static void *mid_handler(void *arg)
-{
+static void *mid_handler(void *arg) {
     (void)arg;
     mutex_lock(&mtx_start_mid);
     record_thread_started("mid");
@@ -130,8 +120,7 @@ static void *mid_handler(void *arg)
     return NULL;
 }
 
-static void *high_handler(void *arg)
-{
+static void *high_handler(void *arg) {
     (void)arg;
     mutex_lock(&mtx_start_high);
     record_thread_started("high");
@@ -144,8 +133,7 @@ static void *high_handler(void *arg)
     return NULL;
 }
 
-int main(void)
-{
+int main(void) {
     thread_create(stack_low, sizeof(stack_low),
                   THREAD_PRIORITY_MAIN - 1, 0,
                   low_handler, NULL, "low");
@@ -158,8 +146,8 @@ int main(void)
                   THREAD_PRIORITY_MAIN - 3, 0,
                   high_handler, NULL, "high");
 
-    /* Start low priority thread first, which will start high and mid priority ones after the
-     * shared resource is obtained */
+    // Start low priority thread first, which will start high and mid priority ones after the
+    // shared resource is obtained
     mutex_unlock(&mtx_start_low);
 
     if (strcmp("lhm", run_order) == 0) {
@@ -170,7 +158,7 @@ int main(void)
         print_str("==> Priority inversion occurred\n");
     }
     else {
-        /* This should occur neither with nor without priority inversion! */
+        // This should occur neither with nor without priority inversion!
         print_str("BUG: \"");
         print_str(run_order);
         print_str("\"\n");

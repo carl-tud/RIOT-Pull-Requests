@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       SGP30 driver test application
- *
- * @author      Francisco Molina <francois-xavier.molina@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       SGP30 driver test application
+///
+/// @author      Francisco Molina <francois-xavier.molina@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -22,15 +18,14 @@
 
 #include "ztimer.h"
 
-int main(void)
-{
+int main(void) {
     sgp30_t sensor;
 
     puts("SGP30 test application\n");
 
     printf("+------------Initializing------------+\n");
 
-    /* initialize the sensor with default configuration parameters */
+    // initialize the sensor with default configuration parameters
     if (sgp30_init(&sensor, &sgp30_params[0]) != 0) {
         puts("Initialization failed\n");
         return 1;
@@ -41,7 +36,7 @@ int main(void)
     while (1) {
         sgp30_data_t data;
 
-        /* read the data and print them on success */
+        // read the data and print them on success
         int ret = sgp30_read_measurements(&sensor, &data);
         if (ret == 0) {
             printf("TVOC [ppb]: %d\neCO2 [ppm]: %d\n", data.tvoc, data.eco2);

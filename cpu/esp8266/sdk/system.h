@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp8266_sdk
- * @{
- *
- * @file
- * @brief       ESP8266 user defined SDK function prototypes
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp8266_sdk
+/// @{
+///
+/// @file
+/// @brief       ESP8266 user defined SDK function prototypes
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #ifndef DOXYGEN
 
@@ -28,11 +24,9 @@
 extern "C" {
 #endif
 
-/**
- * @name    Functions for NONOS SDK compatibility
- *
- * @{
- */
+/// @name    Functions for NONOS SDK compatibility
+///
+/// @{
 extern uint8_t system_get_cpu_freq(void);
 extern void system_update_cpu_freq(uint8_t);
 extern uint32_t system_get_chip_id(void);
@@ -44,10 +38,10 @@ extern void system_restart(void);
 #define system_wdt_init    esp_task_wdt_init
 #define system_wdt_feed    esp_task_wdt_reset
 
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

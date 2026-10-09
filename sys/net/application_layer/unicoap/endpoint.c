@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2026 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2026 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2026 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup net_unicoap_transport
- * @brief   Endpoint abstraction and URI support implementation
- * @author  Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @ingroup net_unicoap_transport
+/// @brief   Endpoint abstraction and URI support implementation
+/// @author  Carl Seifert <carl.seifert@tu-dresden.de>
 
 #include <string.h>
 #include <stdio.h>
@@ -45,7 +41,7 @@ void unicoap_print_sock_tl_ep(const struct _sock_tl_ep* ep) {
 #  else
         UNICOAP_DEBUG("SOCK_HAS_IPV6: v6 support missing, cannot print\n");
         printf("?");
-#  endif /* SOCK_HAS_IPV6 && IS_USED(MODULE_IPV6_ADDR) */
+#  endif // SOCK_HAS_IPV6 && IS_USED(MODULE_IPV6_ADDR)
         break;
     case AF_INET:
         printf("ipv4=");
@@ -54,7 +50,7 @@ void unicoap_print_sock_tl_ep(const struct _sock_tl_ep* ep) {
 #  else
         UNICOAP_DEBUG("SOCK_HAS_IPV4: v4 support missing, cannot print\n");
         printf("?");
-#  endif /* SOCK_HAS_IPV6 && IS_USED(MODULE_IPV4_ADDR) */
+#  endif // SOCK_HAS_IPV6 && IS_USED(MODULE_IPV4_ADDR)
         break;
 
     default:
@@ -63,7 +59,7 @@ void unicoap_print_sock_tl_ep(const struct _sock_tl_ep* ep) {
     }
     printf(">");
 }
-#endif /* IS_USED(MODULE_UNICOAP_SOCK_SUPPORT) */
+#endif // IS_USED(MODULE_UNICOAP_SOCK_SUPPORT)
 
 void unicoap_print_endpoint(const unicoap_endpoint_t* endpoint) {
     printf("%s ", unicoap_string_from_proto(endpoint->proto));
@@ -73,7 +69,7 @@ void unicoap_print_endpoint(const unicoap_endpoint_t* endpoint) {
         unicoap_print_sock_tl_ep(&endpoint->_tl_ep);
         return;
     }
-#endif /* IS_USED(MODULE_UNICOAP_SOCK_SUPPORT) */
+#endif // IS_USED(MODULE_UNICOAP_SOCK_SUPPORT)
 #if IS_USED(MODULE_UNICOAP_DRIVER_SLIPMUX)
     if (endpoint->proto == UNICOAP_PROTO_SLIPMUX) {
         printf("<uart(%d)>", endpoint->slipmux_ep->config.uart);
@@ -91,7 +87,7 @@ const char* unicoap_string_from_proto(unicoap_proto_t proto) {
         return "DTLS";
     case UNICOAP_PROTO_SLIPMUX:
         return "SLIPMUX";
-        /* MARK: unicoap_driver_extension_point */
+        // MARK: unicoap_driver_extension_point
     default:
         return "?";
     }
@@ -109,12 +105,12 @@ bool unicoap_endpoint_is_equal(const unicoap_endpoint_t* lhs,
     case UNICOAP_PROTO_UDP:
     case UNICOAP_PROTO_DTLS:
         return sock_tl_ep_equal(&lhs->_tl_ep, &rhs->_tl_ep);
-#endif /* IS_USED(MODULE_UNICOAP_SOCK_SUPPORT) */
+#endif // IS_USED(MODULE_UNICOAP_SOCK_SUPPORT)
 #if IS_USED(MODULE_UNICOAP_DRIVER_SLIPMUX)
     case UNICOAP_PROTO_SLIPMUX:
         return lhs->slipmux_ep->config.uart == rhs->slipmux_ep->config.uart;
-#endif /* IS_USED(MODULE_UNICOAP_DRIVER_SLIPMUX) */
-    /* MARK: unicoap_driver_extension_point */
+#endif // IS_USED(MODULE_UNICOAP_DRIVER_SLIPMUX)
+    // MARK: unicoap_driver_extension_point
     default:
         assert(false);
         return false;
@@ -133,11 +129,11 @@ bool unicoap_endpoint_is_multicast(const unicoap_endpoint_t* endpoint) {
 #endif
     case UNICOAP_PROTO_SLIPMUX:
         return false;
-    /* MARK: unicoap_driver_extension_point */
+    // MARK: unicoap_driver_extension_point
     default:
         assert(false);
         return false;
     }
 }
 
-/* TODO: Client: URI */
+// TODO: Client: URI

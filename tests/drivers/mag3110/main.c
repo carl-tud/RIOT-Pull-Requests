@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
- * SPDX-FileCopyrightText: 2017 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
+// SPDX-FileCopyrightText: 2017 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the MPL3115A2 magnetometer driver.
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Johann Fischer <j.fischer@phytec.de>
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the MPL3115A2 magnetometer driver.
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Johann Fischer <j.fischer@phytec.de>
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -31,8 +27,7 @@
 
 static mag3110_t dev;
 
-int main(void)
-{
+int main(void) {
     mag3110_data_t data;
     int8_t temp;
 

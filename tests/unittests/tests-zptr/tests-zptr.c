@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 #include <stdint.h>
 #include <string.h>
@@ -17,14 +13,12 @@
 #include "zptr.h"
 #include "tests-zptr.h"
 
-static void test_zptr_basic(void)
-{
+static void test_zptr_basic(void) {
     uint32_t val;
     TEST_ASSERT(&val == zptrd(zptrc(&val)));
 }
 
-Test *tests_zptr_tests(void)
-{
+Test *tests_zptr_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_zptr_basic),
     };
@@ -34,8 +28,7 @@ Test *tests_zptr_tests(void)
     return (Test *)&zptr_tests;
 }
 
-void tests_zptr(void)
-{
+void tests_zptr(void) {
     TESTS_RUN(tests_zptr_tests());
 }
-/** @} */
+/// @}

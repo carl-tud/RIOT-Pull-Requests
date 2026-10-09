@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-FileCopyrightText: 2013 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-FileCopyrightText: 2013 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     core_internal
- * @{
- *
- * @file
- * @brief       Platform-independent kernel initialization
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     core_internal
+/// @{
+///
+/// @file
+/// @brief       Platform-independent kernel initialization
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdbool.h>
@@ -45,8 +41,7 @@ extern int main(void);
 static char main_stack[THREAD_STACKSIZE_MAIN];
 static char idle_stack[THREAD_STACKSIZE_IDLE];
 
-static void *main_trampoline(void *arg)
-{
+static void *main_trampoline(void *arg) {
     (void)arg;
 
 #if MODULE_VFS
@@ -89,8 +84,7 @@ static void *main_trampoline(void *arg)
     return NULL;
 }
 
-static void *idle_thread(void *arg)
-{
+static void *idle_thread(void *arg) {
     (void)arg;
 
     while (1) {
@@ -102,10 +96,9 @@ static void *idle_thread(void *arg)
     return NULL;
 }
 
-void kernel_init(void)
-{
+void kernel_init(void) {
     if (!IS_USED(MODULE_CORE_THREAD)) {
-        /* RIOT without threads */
+        // RIOT without threads
         main_trampoline(NULL);
         while (1) {}
         return;
@@ -128,9 +121,8 @@ void kernel_init(void)
     cpu_switch_context_exit();
 }
 
-void early_init(void)
-{
-    /* initialize leds */
+void early_init(void) {
+    // initialize leds
     if (IS_USED(MODULE_PERIPH_INIT_LEDS)) {
         extern void led_init(void);
         led_init();

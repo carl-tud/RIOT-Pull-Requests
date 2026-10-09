@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Example for using NimBLE as a BLE scanner
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Example for using NimBLE as a BLE scanner
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,14 +22,13 @@
 #include "nimble_scanner.h"
 #include "nimble_scanlist.h"
 
-/* default scan interval */
+// default scan interval
 #define DEFAULT_SCAN_INTERVAL_MS    30
 
-/* default scan duration (1s) */
+// default scan duration (1s)
 #define DEFAULT_DURATION_MS        (1 * MS_PER_SEC)
 
-int _cmd_scan(int argc, char **argv)
-{
+int _cmd_scan(int argc, char **argv) {
     uint32_t timeout = DEFAULT_DURATION_MS;
 
     if ((argc == 2) && (memcmp(argv[1], "help", 4) == 0)) {
@@ -59,13 +54,12 @@ int _cmd_scan(int argc, char **argv)
 
 SHELL_COMMAND(scan, "trigger a BLE scan", _cmd_scan);
 
-int main(void)
-{
+int main(void) {
     puts("NimBLE Scanner Example Application");
     puts("Type `scan help` for more information");
 
-    /* in this example, we want Nimble to scan 'full time', so we set the
-     * window equal the interval */
+    // in this example, we want Nimble to scan 'full time', so we set the
+    // window equal the interval
     nimble_scanner_cfg_t params = {
         .itvl_ms = DEFAULT_SCAN_INTERVAL_MS,
         .win_ms = DEFAULT_SCAN_INTERVAL_MS,
@@ -76,11 +70,11 @@ int main(void)
 #endif
     };
 
-    /* initialize the nimble scanner */
+    // initialize the nimble scanner
     nimble_scanlist_init();
     nimble_scanner_init(&params, nimble_scanlist_update);
 
-    /* start shell */
+    // start shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 

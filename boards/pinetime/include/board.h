@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2019 Inria
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Inria
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_pinetime
- * @{
- *
- * @file
- * @brief       Board specific configuration for the PineTime
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- */
+/// @ingroup     boards_pinetime
+/// @{
+///
+/// @file
+/// @brief       Board specific configuration for the PineTime
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
 
 #include "cpu.h"
 #include "board_common.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name GPIO pin defines
- * @{
- */
+/// @name GPIO pin defines
+/// @{
 #define LCD_RS                      GPIO_PIN(0, 18)
 #define LCD_DET                     GPIO_PIN(0, 9)
 #define LCD_CS                      GPIO_PIN(0, 25)
@@ -45,23 +39,19 @@ extern "C" {
 #define POWER_PRESENCE              GPIO_PIN(0, 19)
 #define CHARGING_ACTIVE             GPIO_PIN(0, 12)
 #define BATTERY_ADC                 NRF52_AIN7
-/** @} */
+/// @}
 
-/**
- * @name    Backlight control defines, default uses LCD_BACKLIGHT_LOW values
- * @{
- */
+/// @name    Backlight control defines, default uses LCD_BACKLIGHT_LOW values
+/// @{
 #ifndef BACKLIGHT_MASK
 #define BACKLIGHT_MASK              (1 << 14)
 #endif
 #define BACKLIGHT_ON                (NRF_P0->OUTCLR = BACKLIGHT_MASK)
 #define BACKLIGHT_OFF               (NRF_P0->OUTSET = BACKLIGHT_MASK)
-/** @} */
+/// @}
 
-/**
- * @name LCD configuration
- * @{
- */
+/// @name LCD configuration
+/// @{
 #define ILI9341_PARAM_SPI          SPI_DEV(0)
 #define ILI9341_PARAM_SPI_CLK      SPI_CLK_10MHZ
 #define ILI9341_PARAM_SPI_MODE     SPI_MODE_3
@@ -72,12 +62,10 @@ extern "C" {
 #define ILI9341_PARAM_INVERTED     1
 #define ILI9341_PARAM_NUM_LINES    240U
 #define ILI9341_PARAM_ROTATION     ILI9341_ROTATION_HORZ_FLIP
-/** @} */
+/// @}
 
-/**
- * @name PineTime NOR flash hardware configuration
- * @{
- */
+/// @name PineTime NOR flash hardware configuration
+/// @{
 #define PINETIME_NOR_PAGE_SIZE          (256)
 #define PINETIME_NOR_PAGES_PER_SECTOR   (16)
 #define PINETIME_NOR_SECTOR_COUNT       (2048)
@@ -86,28 +74,24 @@ extern "C" {
 #define PINETIME_NOR_SPI_CLK            SPI_CLK_10MHZ
 #define PINETIME_NOR_SPI_CS             GPIO_PIN(0, 5)
 #define PINETIME_NOR_SPI_MODE           SPI_MODE_3
-/** @} */
+/// @}
 
-/**
- * @name MTD configuration
- * @{
- */
+/// @name MTD configuration
+/// @{
 #define MTD_0 mtd_dev_get(0)
-/** @} */
+/// @}
 
-/**
- * @name Touch screen configuration
- * @{
- */
+/// @name Touch screen configuration
+/// @{
 #define CST816S_PARAM_I2C_DEV        I2C_DEV(0)
 #define CST816S_PARAM_I2C_ADDR       (0x15)
 #define CST816S_PARAM_IRQ            GPIO_PIN(0, 28)
 #define CST816S_PARAM_IRQ_FLANK      GPIO_FALLING
 #define CST816S_PARAM_RESET          GPIO_PIN(0, 10)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

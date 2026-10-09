@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -9,24 +7,19 @@
 extern "C" {
 #endif
 
-/**
- * @brief mockup flashwrite context
- */
+/// @brief mockup flashwrite context
 typedef struct {
-    unsigned target_slot;   /**< Mockup slot */
+    unsigned target_slot;   ///< Mockup slot
 } riotboot_flashwrite_t;
 
-/**
- * @brief Mockup flashwrite initialization function
- *
- * @param   state       flashwrite state
- * @param   target_slot Target slot
- *
- * @return              Always returns 0
- */
+/// @brief Mockup flashwrite initialization function
+///
+/// @param   state       flashwrite state
+/// @param   target_slot Target slot
+///
+/// @return              Always returns 0
 static inline int riotboot_flashwrite_init(riotboot_flashwrite_t *state,
-                                           int target_slot)
-{
+                                           int target_slot) {
     (void)state;
     (void)target_slot;
     return 0;

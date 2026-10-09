@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2018 Eistec AB
- * SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Eistec AB
+// SPDX-FileCopyrightText: 2018 Otto-von-Guericke-Universität Magdeburg
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief       Unittests for the phydat module
- *
- * @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @{
+///
+/// @file
+/// @brief       Unittests for the phydat module
+///
+/// @author      Joakim Nohlgård <joakim.nohlgard@eistec.se>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <errno.h>
 #include <string.h>
@@ -28,7 +24,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/* Default is smaller implementation */
+// Default is smaller implementation
 #ifndef PHYDAT_FIT_TRADE_PRECISION_FOR_ROM
 #define PHYDAT_FIT_TRADE_PRECISION_FOR_ROM 1
 #endif
@@ -47,7 +43,7 @@ typedef struct {
     const char *json;
 } tdat_t;
 
-/* define test data */
+// define test data
 static tdat_t data[] = {
     {
         .dim  = 1,
@@ -92,9 +88,8 @@ static tdat_t data[] = {
 
 };
 
-static void test_phydat_fit(void)
-{
-    /* Input values for each test: */
+static void test_phydat_fit(void) {
+    // Input values for each test:
     static const int32_t values[][3] = {
         { 100445, -1, -1 },
         { -5, 2000954, 3 },
@@ -151,7 +146,7 @@ static void test_phydat_fit(void)
         UNIT_NONE,
         UNIT_NONE,
     };
-    /* Expected output values for each test: */
+    // Expected output values for each test:
     static const phydat_t expected[] = {
         { .val = {  10045,     -1,     -1 }, .unit = UNIT_V,    .scale = -5 },
         { .val = {      0,  20010,     -1 }, .unit = UNIT_A,    .scale = 44 },
@@ -186,32 +181,30 @@ static void test_phydat_fit(void)
     }
 }
 
-static void test_phydat_unit_write(void)
-{
+static void test_phydat_unit_write(void) {
     char buffer[] = {'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', '\0'};
 
-    /* Regular write, "none" is 4 bytes long */
+    // Regular write, "none" is 4 bytes long
     TEST_ASSERT_EQUAL_INT(4, phydat_unit_write(buffer, ARRAY_SIZE(buffer), UNIT_NONE));
 
-    /* Buffer is too small, "none" is 4 bytes long */
+    // Buffer is too small, "none" is 4 bytes long
     TEST_ASSERT_EQUAL_INT(-EOVERFLOW, phydat_unit_write(buffer, 2, UNIT_NONE));
 
-    /* Write but no buffer, ignores buffer size, "time" is 4 bytes long */
+    // Write but no buffer, ignores buffer size, "time" is 4 bytes long
     TEST_ASSERT_EQUAL_INT(4, phydat_unit_write(NULL, 2, UNIT_TIME));
 
-    /* Invalid unit */
+    // Invalid unit
     TEST_ASSERT_EQUAL_INT(-EINVAL, phydat_unit_write(buffer, ARRAY_SIZE(buffer), 0xff));
 
-    /* Should not write null terminator */
+    // Should not write null terminator
     TEST_ASSERT_EQUAL_STRING("noneAAAAA", buffer);
 }
 
-static void test_unitstr__success(void)
-{
+static void test_unitstr__success(void) {
     char buffer[10];
     size_t size = 0;
 
-    /* test the verbose cases */
+    // test the verbose cases
     size = phydat_unit_write(buffer, ARRAY_SIZE(buffer), UNIT_UNDEF);
     buffer[size] = 0;
     TEST_ASSERT_EQUAL_STRING("undefined", buffer);
@@ -319,8 +312,7 @@ static void test_unitstr__success(void)
     TEST_ASSERT_EQUAL_STRING("ohm", buffer);
 }
 
-static void test_json__success(void)
-{
+static void test_json__success(void) {
     size_t len;
 
     len = phydat_to_json(&data[0].dat, data[0].dim, NULL);
@@ -360,8 +352,7 @@ static void test_json__success(void)
     TEST_ASSERT_EQUAL_STRING(data[5].json, (const char *)test);
 }
 
-Test *tests_phydat_tests(void)
-{
+Test *tests_phydat_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_phydat_fit),
         new_TestFixture(test_phydat_unit_write),
@@ -374,7 +365,6 @@ Test *tests_phydat_tests(void)
     return (Test *)&phydat_tests;
 }
 
-void tests_phydat(void)
-{
+void tests_phydat(void) {
     TESTS_RUN(tests_phydat_tests());
 }

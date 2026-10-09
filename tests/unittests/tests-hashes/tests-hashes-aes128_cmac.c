@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Fundación Inria Chile
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Fundación Inria Chile
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     unittests
- * @{
- *
- * @file
- * @brief       Test cases for the AES128-CMAC hash implementation
- *
- * @author      José Ignacio Alamos <jose.alamos@inria.cl>
- *
- * @}
- */
+/// @ingroup     unittests
+/// @{
+///
+/// @file
+/// @brief       Test cases for the AES128-CMAC hash implementation
+///
+/// @author      José Ignacio Alamos <jose.alamos@inria.cl>
+///
+/// @}
 
 #include <inttypes.h>
 #include <string.h>
@@ -72,8 +68,7 @@ static const uint8_t TEST_3_EXP[16] = {
     0xfc, 0x49, 0x74, 0x17, 0x79, 0x36, 0x3c, 0xfe
 };
 
-static int calc_and_compare_hash(const uint8_t *hash, size_t size, const uint8_t *expected)
-{
+static int calc_and_compare_hash(const uint8_t *hash, size_t size, const uint8_t *expected) {
     uint8_t digest[16];
     aes128_cmac_context_t ctx;
 
@@ -83,16 +78,14 @@ static int calc_and_compare_hash(const uint8_t *hash, size_t size, const uint8_t
     return memcmp(digest, expected, 16);
 }
 
-static void test_hashes_cmac(void)
-{
+static void test_hashes_cmac(void) {
     TEST_ASSERT_EQUAL_INT(calc_and_compare_hash(NULL, 0, TEST_EMPTY_EXP), 0);
     TEST_ASSERT_EQUAL_INT(calc_and_compare_hash(TEST_1_INP, 16, TEST_1_EXP), 0);
     TEST_ASSERT_EQUAL_INT(calc_and_compare_hash(TEST_2_INP, 40, TEST_2_EXP), 0);
     TEST_ASSERT_EQUAL_INT(calc_and_compare_hash(TEST_3_INP, 64, TEST_3_EXP), 0);
 }
 
-static void test_hashes_cmac_keysize(void)
-{
+static void test_hashes_cmac_keysize(void) {
     aes128_cmac_context_t ctx;
 
     TEST_ASSERT_EQUAL_INT(aes128_cmac_init(&ctx, AES128_CMAC_KEY, 15),
@@ -101,8 +94,7 @@ static void test_hashes_cmac_keysize(void)
                           CIPHER_INIT_SUCCESS);
 }
 
-static void test_hashes_cmac_wipe(void)
-{
+static void test_hashes_cmac_wipe(void) {
     aes128_cmac_context_t ctx;
     uint8_t digest[AES128_CMAC_BLOCK_SIZE];
     uint8_t zeros_block[AES128_CMAC_BLOCK_SIZE];
@@ -120,8 +112,7 @@ static void test_hashes_cmac_wipe(void)
     TEST_ASSERT(memcmp(&ctx.aes128_ctx, zeros_cipher, sizeof(ctx.aes128_ctx)) == 0);
 }
 
-Test *tests_hashes_cmac_tests(void)
-{
+Test *tests_hashes_cmac_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_hashes_cmac),
         new_TestFixture(test_hashes_cmac_keysize),

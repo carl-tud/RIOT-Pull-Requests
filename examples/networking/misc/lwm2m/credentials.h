@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2021 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       PSK and RPK credentials for the LwM2M example.
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       PSK and RPK credentials for the LwM2M example.
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+///
+/// @}
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,16 +19,12 @@ extern "C" {
 
 #include <stdint.h>
 
-/**
- * @brief Default PSK key ID.
- */
+/// @brief Default PSK key ID.
 #ifndef CONFIG_LWM2M_PSK_ID
 #define CONFIG_LWM2M_PSK_ID "Client_Identity"
 #endif
 
-/**
- * @brief Default PSK secret.
- */
+/// @brief Default PSK secret.
 #ifndef CONFIG_LWM2M_PSK_KEY
 #define CONFIG_LWM2M_PSK_KEY "ThisIsRIOT!"
 #endif
@@ -40,7 +32,7 @@ extern "C" {
 static const uint8_t psk_id[] = CONFIG_LWM2M_PSK_ID;
 static const uint8_t psk_key[] = CONFIG_LWM2M_PSK_KEY;
 
-/* openssl ec -in keys.der -inform DER -pubout -outform DER | xxd -i */
+// openssl ec -in keys.der -inform DER -pubout -outform DER | xxd -i
 static const uint8_t rpk_pub[] = {
     0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
     0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03, 0x42, 0x00, 0x04, 0xa0, 0xc3, 0x8e, 0xcb, 0xa1,
@@ -50,7 +42,7 @@ static const uint8_t rpk_pub[] = {
     0x02, 0xe4, 0x32, 0x8d, 0x6b, 0x22, 0x67, 0x83, 0x0d, 0x7c, 0xb2
 };
 
-/* openssl ec -in keys.der -inform DER -no_public -outform DER | xxd -i */
+// openssl ec -in keys.der -inform DER -no_public -outform DER | xxd -i
 static const uint8_t rpk_priv[] = {
     0x30, 0x31, 0x02, 0x01, 0x01, 0x04, 0x20, 0xf9, 0x00, 0xb7, 0x31, 0xc4, 0xa7, 0x09, 0xcd, 0x90,
     0x69, 0xc8, 0xac, 0x60, 0xc4, 0x70, 0x58, 0x12, 0xe9, 0xb8, 0x2e, 0x29, 0x12, 0x3c, 0xd1, 0x74,
@@ -58,7 +50,7 @@ static const uint8_t rpk_priv[] = {
     0x03, 0x01, 0x07
 };
 
-/* provided by server */
+// provided by server
 static const uint8_t server_rpk_pub[] = {
     0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
     0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03, 0x42, 0x00, 0x04, 0x8b, 0xd5, 0x0f, 0x73, 0xe2,

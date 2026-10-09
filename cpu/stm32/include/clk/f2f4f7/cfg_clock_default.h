@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_stm32
- * @{
- *
- * @file
- * @brief           Main header for STM32F2/F4/F7 clock configuration
- *
- * @author          Alexandre Abadie <alexandre.abadie@inria.fr>
-*/
+/// @ingroup         cpu_stm32
+/// @{
+///
+/// @file
+/// @brief           Main header for STM32F2/F4/F7 clock configuration
+///
+/// @author          Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "cfg_clock_common_fx_gx_mp1_c0.h"
 #include "kernel_defines.h"
@@ -45,13 +41,11 @@
 #error "No clock configuration available for this family"
 #endif
 
-/**
- * @name    Clock values
- * @{
- */
+/// @name    Clock values
+/// @{
 #if IS_ACTIVE(CONFIG_BOARD_HAS_HSE)
 #define CLOCK_PLL_SRC                   (CONFIG_CLOCK_HSE)
-#else /* CONFIG_CLOCK_HSI */
+#else // CONFIG_CLOCK_HSI
 #define CLOCK_PLL_SRC                   (CONFIG_CLOCK_HSI)
 #endif
 
@@ -66,14 +60,14 @@
 
 #elif IS_ACTIVE(CONFIG_USE_CLOCK_PLL)
 #define CLOCK_CORECLOCK                 (((CLOCK_PLL_SRC / CONFIG_CLOCK_PLL_M) * CONFIG_CLOCK_PLL_N) / CONFIG_CLOCK_PLL_P)
-#endif /* CONFIG_USE_CLOCK_PLL */
+#endif // CONFIG_USE_CLOCK_PLL
 
 #define CLOCK_PLLQ                      (((CLOCK_PLL_SRC / CONFIG_CLOCK_PLL_M) * CONFIG_CLOCK_PLL_N) / CONFIG_CLOCK_PLL_Q)
 
 #define CLOCK_AHB                       CLOCK_CORECLOCK
 #define CLOCK_APB1                      (CLOCK_CORECLOCK / CONFIG_CLOCK_APB1_DIV)
 #define CLOCK_APB2                      (CLOCK_CORECLOCK / CONFIG_CLOCK_APB2_DIV)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 extern "C" {
@@ -83,4 +77,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

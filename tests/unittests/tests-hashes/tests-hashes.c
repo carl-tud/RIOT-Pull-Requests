@@ -1,24 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     unittests
- * @{
- *
- * @file
- * @brief       Central test setup file for the hashing module
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     unittests
+/// @{
+///
+/// @file
+/// @brief       Central test setup file for the hashing module
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include "tests-hashes.h"
 
-void tests_hashes(void)
-{
+void tests_hashes(void) {
     TESTS_RUN(tests_hashes_md5_tests());
     TESTS_RUN(tests_hashes_cmac_tests());
     TESTS_RUN(tests_hashes_sha1_tests());

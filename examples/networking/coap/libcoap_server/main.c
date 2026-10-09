@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Example application for libcoap server
- *
- * @author      Raul Fuentes <> <raul.fuentes-samaniego@inria.fr>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       Example application for libcoap server
+///
+/// @author      Raul Fuentes <> <raul.fuentes-samaniego@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -30,19 +26,18 @@ extern int server_coap_init(int argc, char **argv);
 
 SHELL_COMMAND(coaps, "Start a libcoap server", server_coap_init);
 
-int main(void)
-{
-    /* we need a message queue for the thread running the shell in order to
-     * receive potentially fast incoming networking packets */
+int main(void) {
+    // we need a message queue for the thread running the shell in order to
+    // receive potentially fast incoming networking packets
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
     puts("RIOT libcoap server testing implementation");
 
-    /* start shell */
+    // start shell
     puts("All up, running the shell now");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
 
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should be never reached */
+    // should be never reached
     return 0;
 }

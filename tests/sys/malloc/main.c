@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2013 Benjamin Valentin <benpicco@zedat.fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Benjamin Valentin <benpicco@zedat.fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief   Simple malloc/free test
- *
- *
- * @author  Benjamin Valentin <benpicco@zedat.fu-berlin.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief   Simple malloc/free test
+///
+///
+/// @author  Benjamin Valentin <benpicco@zedat.fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,8 +43,7 @@ struct node {
 
 static uint32_t total = 0;
 
-static uint32_t fill_memory(struct node *head)
-{
+static uint32_t fill_memory(struct node *head) {
     uint32_t allocations = 0;
 
     if (head) {
@@ -74,8 +69,7 @@ static uint32_t fill_memory(struct node *head)
     return allocations;
 }
 
-static void free_memory(struct node *head)
-{
+static void free_memory(struct node *head) {
     struct node *old_head;
 
     uint32_t freed = 0;
@@ -107,32 +101,30 @@ static void free_memory(struct node *head)
     printf("Free count: %"PRIu32"\n", freed);
 }
 
-static void check_calloc_returns_null_on_overflow(void)
-{
-    /* modern compilers warn about nonsense calls to calloc, but this is exactly what we want to
-     * test */
+static void check_calloc_returns_null_on_overflow(void) {
+    // modern compilers warn about nonsense calls to calloc, but this is exactly what we want to
+    // test
 #pragma GCC diagnostic push
 #if !defined(__clang__) && (__GNUC__ > 6)
 #pragma GCC diagnostic ignored "-Walloc-size-larger-than="
 #endif
-    /* test if an overflow is correctly detected by calloc(): the size below overflows by 1 byte */
-    /* cppcheck-suppress leakReturnValNotUsed; (should return NULL, so nothing to free anyway) */
+    // test if an overflow is correctly detected by calloc(): the size below overflows by 1 byte
+    // cppcheck-suppress leakReturnValNotUsed; (should return NULL, so nothing to free anyway)
     size_t nmemb = SIZE_MAX / 16 + 1;
     size_t size = 16;
     void *p = calloc(nmemb, size);
 
-    /* When clang detects that the memory allocated is not actually used, it
-     * will optimize out the call to `calloc()` and just assume that the
-     * allocation succeeded. It then optimized out the test `NULL == p` and
-     * assumes it to always be false. We just print the address to prevent
-     * that from happening */
+    // When clang detects that the memory allocated is not actually used, it
+    // will optimize out the call to `calloc()` and just assume that the
+    // allocation succeeded. It then optimized out the test `NULL == p` and
+    // assumes it to always be false. We just print the address to prevent
+    // that from happening
     printf("calloc(%" PRIuSIZE ", %" PRIuSIZE ") = %p\n", nmemb, size, p);
     expect(NULL == p);
 #pragma GCC diagnostic pop
 }
 
-int main(void)
-{
+int main(void) {
     uint32_t allocations = 0;
     check_calloc_returns_null_on_overflow();
 
@@ -147,7 +139,7 @@ int main(void)
         uint32_t new_allocations = fill_memory(head);
         free_memory(head);
 
-        /* test if all memory was freed/can be allocated again */
+        // test if all memory was freed/can be allocated again
         if (allocations == 0) {
             allocations = new_allocations;
         } else if (allocations != new_allocations) {

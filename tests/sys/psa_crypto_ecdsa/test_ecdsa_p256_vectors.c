@@ -1,30 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2024 Lars Pfau <lars.pfau@haw-hamburg.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Lars Pfau <lars.pfau@haw-hamburg.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests PSA ECDSA with test vectors
- *
- * @author      Lars Pfau <lars.pfau@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests PSA ECDSA with test vectors
+///
+/// @author      Lars Pfau <lars.pfau@haw-hamburg.de>
+///
+/// @}
 #include <stdio.h>
 #include <stdint.h>
 
 #include "compiler_hints.h"
 #include "psa/crypto.h"
 
-/*
- * RFC6979 test vector for P-256, SHA256 [1].
- *
- * [1] https://www.rfc-editor.org/rfc/rfc6979#appendix-A.2.5
- */
+// RFC6979 test vector for P-256, SHA256 [1].
+//
+// [1] https://www.rfc-editor.org/rfc/rfc6979#appendix-A.2.5
 static const psa_algorithm_t algo = PSA_ALG_ECDSA(PSA_ALG_SHA_256);
 static const psa_key_type_t type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1);
 
@@ -38,8 +32,8 @@ static const uint8_t public_key[] = {0x04, 0x60, 0xFE, 0xD4, 0xBA, 0x25, 0x5A, 0
     0x1A, 0xE9, 0xE9, 0x56, 0x28, 0xBC, 0x64, 0xF2, 0xF1, 0xB2, 0x0C, 0x2D, 0x7E, 0x9F, 0x51, 0x77,
     0xA3, 0xC2, 0x94, 0xD4, 0x46, 0x22, 0x99};
 
-/* certain PSA backends require the data to be in RAM rather than ROM
- * so these values cannot be `const` */
+// certain PSA backends require the data to be in RAM rather than ROM
+// so these values cannot be `const`
 NONSTRING
 static uint8_t message[6] = "sample";
 static uint8_t signature[] = {0xEF, 0xD4, 0x8B, 0x2A, 0xAC, 0xB6, 0xA8, 0xFD, 0x11, 0x40,
@@ -48,11 +42,9 @@ static uint8_t signature[] = {0xEF, 0xD4, 0x8B, 0x2A, 0xAC, 0xB6, 0xA8, 0xFD, 0x
     0xC7, 0xA1, 0xB6, 0xE2, 0x9F, 0x65, 0xF3, 0xE9, 0x00, 0xDB, 0xB9, 0xAF, 0xF4, 0x06, 0x4D, 0xC4,
     0xAB, 0x2F, 0x84, 0x3A, 0xCD, 0xA8};
 
-/**
- * @brief Verify a sample NIST P-256 signature from a message using SHA256
- *
- * @return psa_status_t
- */
+/// @brief Verify a sample NIST P-256 signature from a message using SHA256
+///
+/// @return psa_status_t
 psa_status_t test_ecdsa_p256_vectors(void) {
     psa_key_attributes_t key_attr = psa_key_attributes_init();
     psa_key_id_t key_id;
@@ -68,7 +60,7 @@ psa_status_t test_ecdsa_p256_vectors(void) {
         return status;
     }
 
-    /* testing public key derivation */
+    // testing public key derivation
     uint8_t exp_public_key[sizeof(public_key)];
     size_t length;
     status = psa_export_public_key(key_id, exp_public_key, sizeof(public_key), &length);

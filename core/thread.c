@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2013 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2013 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     core_thread
- * @{
- *
- * @file
- * @brief       Threading implementation
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     core_thread
+/// @{
+///
+/// @file
+/// @brief       Threading implementation
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdalign.h>
@@ -33,8 +29,8 @@
 #include "debug.h"
 
 #if defined(HAVE_VALGRIND)
-/* __has_include() will only be reached on native and only when valgrind is
- * enabled, so we do not limit compatibility with embedded toolchains here */
+// __has_include() will only be reached on native and only when valgrind is
+// enabled, so we do not limit compatibility with embedded toolchains here
 #  if __has_include(<valgrind/valgrind.h>)
 #    include <valgrind/valgrind.h>
 #  else
@@ -45,15 +41,13 @@
 #  define   VALGRIND_ENABLE_ERROR_REPORTING     (void)0
 #endif
 
-thread_status_t thread_getstatus(kernel_pid_t pid)
-{
+thread_status_t thread_getstatus(kernel_pid_t pid) {
     thread_t *thread = thread_get(pid);
 
     return thread ? thread->status : STATUS_NOT_FOUND;
 }
 
-const char *thread_getname(kernel_pid_t pid)
-{
+const char *thread_getname(kernel_pid_t pid) {
 #ifdef CONFIG_THREAD_NAMES
     thread_t *thread = thread_get(pid);
     return thread ? thread->name : NULL;
@@ -63,8 +57,7 @@ const char *thread_getname(kernel_pid_t pid)
 #endif
 }
 
-void thread_zombify(void)
-{
+void thread_zombify(void) {
     if (irq_is_in()) {
         return;
     }
@@ -74,12 +67,11 @@ void thread_zombify(void)
     irq_enable();
     thread_yield_higher();
 
-    /* this line should never be reached */
+    // this line should never be reached
     UNREACHABLE();
 }
 
-int thread_kill_zombie(kernel_pid_t pid)
-{
+int thread_kill_zombie(kernel_pid_t pid) {
     DEBUG("thread_kill: Trying to kill PID %" PRIkernel_pid "...\n", pid);
     unsigned state = irq_disable();
 
@@ -106,8 +98,7 @@ int thread_kill_zombie(kernel_pid_t pid)
     return result;
 }
 
-void thread_sleep(void)
-{
+void thread_sleep(void) {
     if (irq_is_in()) {
         return;
     }
@@ -119,8 +110,7 @@ void thread_sleep(void)
     thread_yield_higher();
 }
 
-int thread_wakeup(kernel_pid_t pid)
-{
+int thread_wakeup(kernel_pid_t pid) {
     DEBUG("thread_wakeup: Trying to wakeup PID %" PRIkernel_pid "...\n", pid);
 
     unsigned old_state = irq_disable();
@@ -148,8 +138,7 @@ int thread_wakeup(kernel_pid_t pid)
     return (int)STATUS_NOT_FOUND;
 }
 
-void thread_yield(void)
-{
+void thread_yield(void) {
     unsigned old_state = irq_disable();
     thread_t *me = thread_get_active();
 
@@ -184,8 +173,7 @@ void thread_yield(void)
  *  +----|-+   +----|-+   +----|-+
  *       +-----/\   +-----/\   +-->NULL
  */
-void thread_add_to_list(list_node_t *list, thread_t *thread)
-{
+void thread_add_to_list(list_node_t *list, thread_t *thread) {
     assert(thread->status < STATUS_ON_RUNQUEUE);
 
     uint16_t my_prio = thread->priority;
@@ -204,24 +192,23 @@ void thread_add_to_list(list_node_t *list, thread_t *thread)
     list->next = new_node;
 }
 
-uintptr_t measure_stack_free_internal(const char *stack, size_t size)
-{
-    /* Alignment of stack has been fixed (if needed) by thread_create(), so
-     * we can silence -Wcast-align here */
+uintptr_t measure_stack_free_internal(const char *stack, size_t size) {
+    // Alignment of stack has been fixed (if needed) by thread_create(), so
+    // we can silence -Wcast-align here
     uintptr_t *stackp = (uintptr_t *)(uintptr_t)stack;
     uintptr_t end = (uintptr_t)stack + size;
 
-    /* HACK: This will affect native32/native64 only.
-     *
-     * The dark magic used here is frowned upon by valgrind. E.g. valgrind may
-     * deduce that a specific value was at some point allocated on the stack,
-     * but has gone out of scope. When that value is now read again to
-     * estimate stack usage, it does look a lot like someone passed a pointer
-     * to a stack allocated value, and that pointer is referenced after that
-     * value has gone out of scope. */
+    // HACK: This will affect native32/native64 only.
+    //
+    // The dark magic used here is frowned upon by valgrind. E.g. valgrind may
+    // deduce that a specific value was at some point allocated on the stack,
+    // but has gone out of scope. When that value is now read again to
+    // estimate stack usage, it does look a lot like someone passed a pointer
+    // to a stack allocated value, and that pointer is referenced after that
+    // value has gone out of scope.
     VALGRIND_DISABLE_ERROR_REPORTING;
 
-    /* assume that the stack grows "downwards" */
+    // assume that the stack grows "downwards"
     while (((uintptr_t)stackp < end) && (*stackp == (uintptr_t)stackp)) {
         stackp++;
     }
@@ -235,8 +222,7 @@ uintptr_t measure_stack_free_internal(const char *stack, size_t size)
 
 kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
                            int flags, thread_task_func_t function, void *arg,
-                           const char *name)
-{
+                           const char *name) {
     if (priority >= SCHED_PRIO_LEVELS) {
         return -EINVAL;
     }
@@ -248,7 +234,7 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
     (void)name;
 #endif
 
-    /* align the stack on a 16/32bit boundary */
+    // align the stack on a 16/32bit boundary
     uintptr_t misalignment = (uintptr_t)stack % alignof(void *);
     if (misalignment) {
         misalignment = alignof(void *) - misalignment;
@@ -256,19 +242,19 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
         stacksize -= misalignment;
     }
 
-    /* make room for the thread control block */
+    // make room for the thread control block
     stacksize -= sizeof(thread_t);
 
-    /* round down the stacksize to a multiple of thread_t alignments (usually 16/32bit) */
+    // round down the stacksize to a multiple of thread_t alignments (usually 16/32bit)
     stacksize -= stacksize % alignof(thread_t);
 
     if (stacksize < 0) {
         DEBUG("thread_create: stacksize is too small!\n");
         return -EINVAL;
     }
-    /* allocate our thread control block at the top of our stackspace. Cast to
-     * (uintptr_t) intermediately to silence -Wcast-align. (We manually made
-     * sure alignment is correct above.) */
+    // allocate our thread control block at the top of our stackspace. Cast to
+    // (uintptr_t) intermediately to silence -Wcast-align. (We manually made
+    // sure alignment is correct above.)
     thread_t *thread = (thread_t *)(uintptr_t)(stack + stacksize);
 
 #ifdef PICOLIBC_TLS
@@ -278,10 +264,8 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
 #define TLS_ALIGN       alignof(thread_t)
 #endif
     char *tls = stack + stacksize - _tls_size();
-    /*
-     * Make sure the TLS area is aligned as required and that the
-     * resulting stack will also be aligned as required
-     */
+    // Make sure the TLS area is aligned as required and that the
+    // resulting stack will also be aligned as required
     thread->tls = (void *) ((uintptr_t) tls & ~ (TLS_ALIGN - 1));
     stacksize = (char *) thread->tls - stack;
 
@@ -291,13 +275,13 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
 #if defined(DEVELHELP) || defined(SCHED_TEST_STACK) \
     || defined(MODULE_TEST_UTILS_PRINT_STACK_USAGE)
     if (flags & THREAD_CREATE_NO_STACKTEST) {
-        /* create stack guard. Alignment has been handled above, so silence
-         * -Wcast-align */
+        // create stack guard. Alignment has been handled above, so silence
+        // -Wcast-align
         *(uintptr_t *)(uintptr_t)stack = (uintptr_t)stack;
     }
     else {
-        /* assign each int of the stack the value of it's address. Alignment
-         * has been handled above, so silence -Wcast-align */
+        // assign each int of the stack the value of it's address. Alignment
+        // has been handled above, so silence -Wcast-align
         uintptr_t *stackmax = (uintptr_t *)(uintptr_t)(stack + stacksize);
         uintptr_t *stackp = (uintptr_t *)(uintptr_t)stack;
 
@@ -395,15 +379,14 @@ static const char *state_names[STATUS_NUMOF] = {
 
 #define STATE_NAME_UNKNOWN "unknown"
 
-const char *thread_state_to_string(thread_status_t state)
-{
+const char *thread_state_to_string(thread_status_t state) {
     const char *name =  NULL;
     if (state < STATUS_NUMOF) {
         name = state_names[state];
     }
 
-    /* if compiling with assertions, this is an error
-     * that indicates that the table above is incomplete */
+    // if compiling with assertions, this is an error
+    // that indicates that the table above is incomplete
     assert(name != NULL);
 
     return (name != NULL) ? name : STATE_NAME_UNKNOWN;

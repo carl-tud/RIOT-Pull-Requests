@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include <stdint.h>
 
@@ -20,10 +16,9 @@
 
 #define CRC16_CCITT_SEED    (0x1d0f)
 
-/* equivalent to crc16-ccitt version */
+// equivalent to crc16-ccitt version
 static int calc_and_compare_crc_be_with_update(const uint8_t *buf,
-        size_t len, size_t split, uint16_t expected)
-{
+        size_t len, size_t split, uint16_t expected) {
     uint16_t result = ucrc16_calc_be(buf, split, UCRC16_CCITT_POLY_BE,
                                      CRC16_CCITT_SEED);
 
@@ -34,16 +29,14 @@ static int calc_and_compare_crc_be_with_update(const uint8_t *buf,
 }
 
 static int calc_and_compare_crc_be(const uint8_t *buf, size_t len,
-        uint16_t expected)
-{
+        uint16_t expected) {
     uint16_t result = ucrc16_calc_be(buf, len, UCRC16_CCITT_POLY_BE,
                                      CRC16_CCITT_SEED);
 
     return result == expected;
 }
 
-static void test_checksum_ucrc16_be_sequence_empty(void)
-{
+static void test_checksum_ucrc16_be_sequence_empty(void) {
     uint8_t buf[] = "";
     uint16_t expect = CRC16_CCITT_SEED;
 
@@ -52,8 +45,7 @@ static void test_checksum_ucrc16_be_sequence_empty(void)
                 (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_ucrc16_be_sequence_1a(void)
-{
+static void test_checksum_ucrc16_be_sequence_1a(void) {
     uint8_t buf[] = "A";
     uint16_t expect = 0x9479;
 
@@ -62,8 +54,7 @@ static void test_checksum_ucrc16_be_sequence_1a(void)
                 (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_ucrc16_be_sequence_256a(void)
-{
+static void test_checksum_ucrc16_be_sequence_256a(void) {
     uint8_t buf[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -79,8 +70,7 @@ static void test_checksum_ucrc16_be_sequence_256a(void)
                 (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_ucrc16_be_sequence_1to9(void)
-{
+static void test_checksum_ucrc16_be_sequence_1to9(void) {
     uint8_t buf[] = "123456789";
     uint16_t expect = 0xE5CC;
 
@@ -89,8 +79,7 @@ static void test_checksum_ucrc16_be_sequence_1to9(void)
                 - 1, (sizeof(buf) - 1) / 2, expect));
 }
 
-static void test_checksum_ucrc16_be_sequence_4bytes(void)
-{
+static void test_checksum_ucrc16_be_sequence_4bytes(void) {
     uint8_t buf[] = { 0x12, 0x34, 0x56, 0x78 };
     uint16_t expect = 0xBA3C;
 
@@ -99,10 +88,9 @@ static void test_checksum_ucrc16_be_sequence_4bytes(void)
                 sizeof(buf) / 2, expect));
 }
 
-static void test_checksum_ucrc16_le_ieee802164_frame(void)
-{
-    /* test data taken from first packet in
-     * https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=6LoWPAN.pcap.gz */
+static void test_checksum_ucrc16_le_ieee802164_frame(void) {
+    // test data taken from first packet in
+    // https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=6LoWPAN.pcap.gz
     uint8_t buf[] = { 0x41, 0xcc, 0xa4, 0xff, 0xff, 0x8a, 0x18, 0x00,
                       0xff, 0xff, 0xda, 0x1c, 0x00, 0x88, 0x18, 0x00,
                       0xff, 0xff, 0xda, 0x1c, 0x00, 0x41, 0x60, 0x00,
@@ -120,11 +108,10 @@ static void test_checksum_ucrc16_le_ieee802164_frame(void)
     TEST_ASSERT_EQUAL_INT(expect, result);
 }
 
-Test *tests_checksum_ucrc16_tests(void)
-{
+Test *tests_checksum_ucrc16_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
-        /* Reference values according to
-         * http://srecord.sourceforge.net/crc16-ccitt.html */
+        // Reference values according to
+        // http://srecord.sourceforge.net/crc16-ccitt.html
         new_TestFixture(test_checksum_ucrc16_be_sequence_empty),
         new_TestFixture(test_checksum_ucrc16_be_sequence_1a),
         new_TestFixture(test_checksum_ucrc16_be_sequence_256a),

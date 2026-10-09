@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_hmc5883l
- * @brief       Default configuration for the Honeywell HMC5883L 3-axis digital compass
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- * @{
- */
+/// @ingroup     drivers_hmc5883l
+/// @brief       Default configuration for the Honeywell HMC5883L 3-axis digital compass
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @file
+/// @{
 
 #include "board.h"
 #include "hmc5883l.h"
@@ -21,10 +17,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Set default configuration parameters
- * @{
- */
+/// @name    Set default configuration parameters
+/// @{
 #ifndef HMC5883L_PARAM_DEV
 #define HMC5883L_PARAM_DEV          I2C_DEV(0)
 #endif
@@ -58,8 +52,8 @@ extern "C" {
                                      .meas_avg  = HMC5883L_PARAM_MEAS_AVG,  \
                                      .op_mode   = HMC5883L_PARAM_OP_MODE,   \
                                    }
-#endif /* HMC5883L_PARAMS */
-#else /* MODULE_HMC5883L_INT */
+#endif // HMC5883L_PARAMS
+#else // MODULE_HMC5883L_INT
 #define HMC5883L_PARAMS             { \
                                      .dev  = HMC5883L_PARAM_DEV,  \
                                      .dor  = HMC5883L_PARAM_DOR,  \
@@ -68,24 +62,20 @@ extern "C" {
                                      .meas_avg  = HMC5883L_PARAM_MEAS_AVG,  \
                                      .op_mode   = HMC5883L_PARAM_OP_MODE,   \
                                    }
-#endif /* MODULE_HMC5883L_INT */
+#endif // MODULE_HMC5883L_INT
 
 #ifndef HMC5883L_SAUL_INFO
 #define HMC5883L_SAUL_INFO          { .name = "hmc5883l" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const hmc5883l_params_t hmc5883l_params[] =
 {
     HMC5883L_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t hmc5883l_saul_info[] =
 {
     HMC5883L_SAUL_INFO
@@ -95,4 +85,4 @@ static const saul_reg_info_t hmc5883l_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_common_nucleo32
- * @{
- *
- * @file
- * @brief       Mapping from MCU pins to Arduino pins
- *
- * You can use the defines in this file for simplified interaction with the
- * Arduino specific pin numbers.
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
+/// @ingroup     boards_common_nucleo32
+/// @{
+///
+/// @file
+/// @brief       Mapping from MCU pins to Arduino pins
+///
+/// You can use the defines in this file for simplified interaction with the
+/// Arduino specific pin numbers.
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
 
 #include "periph/gpio.h"
 #include "periph/adc.h"
@@ -24,10 +20,8 @@
 extern "C" {
 #endif
 
-/**
- * @name    Mapping of MCU pins to Arduino pins
- * @{
- */
+/// @name    Mapping of MCU pins to Arduino pins
+/// @{
 #define ARDUINO_PIN_0           GPIO_PIN(PORT_A, 10)
 #define ARDUINO_PIN_1           GPIO_PIN(PORT_A, 9)
 #define ARDUINO_PIN_2           GPIO_PIN(PORT_A, 12)
@@ -48,9 +42,9 @@ extern "C" {
 #define ARDUINO_PIN_10          GPIO_PIN(PORT_A, 11)
 #define ARDUINO_PIN_11          GPIO_PIN(PORT_B, 5)
 #define ARDUINO_PIN_12          GPIO_PIN(PORT_B, 4)
-#define ARDUINO_PIN_13          GPIO_PIN(PORT_B, 3) /* on-board LED */
+#define ARDUINO_PIN_13          GPIO_PIN(PORT_B, 3) // on-board LED
 
-/* analog pins as digital pin: */
+// analog pins as digital pin:
 #define ARDUINO_PIN_14          GPIO_PIN(PORT_A, 0)
 #define ARDUINO_PIN_15          GPIO_PIN(PORT_A, 1)
 #define ARDUINO_PIN_16          GPIO_PIN(PORT_A, 3)
@@ -61,12 +55,10 @@ extern "C" {
 #define ARDUINO_PIN_21          GPIO_PIN(PORT_A, 2)
 
 #define ARDUINO_PIN_LAST        21
-/** @} */
+/// @}
 
-/**
- * @name    Aliases for analog pins
- * @{
- */
+/// @name    Aliases for analog pins
+/// @{
 #define ARDUINO_PIN_A0          ARDUINO_PIN_14
 #define ARDUINO_PIN_A1          ARDUINO_PIN_15
 #define ARDUINO_PIN_A2          ARDUINO_PIN_16
@@ -75,12 +67,10 @@ extern "C" {
 #define ARDUINO_PIN_A5          ARDUINO_PIN_19
 #define ARDUINO_PIN_A6          ARDUINO_PIN_20
 #define ARDUINO_PIN_A7          ARDUINO_PIN_21
-/** @} */
+/// @}
 
-/**
- * @name    Mapping of Arduino analog pins to RIOT ADC lines
- * @{
- */
+/// @name    Mapping of Arduino analog pins to RIOT ADC lines
+/// @{
 #define ARDUINO_A0              ADC_LINE(0)
 #define ARDUINO_A1              ADC_LINE(1)
 #define ARDUINO_A2              ADC_LINE(2)
@@ -91,10 +81,10 @@ extern "C" {
 #define ARDUINO_A7              ADC_LINE(7)
 
 #define ARDUINO_ANALOG_PIN_LAST 7
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_atwinc15x0
- * @{
- *
- * @file
- * @brief       RIOT BSP API implementation
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- * @}
- */
+/// @ingroup     drivers_atwinc15x0
+/// @{
+///
+/// @file
+/// @brief       RIOT BSP API implementation
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
+/// @}
 
 #include <assert.h>
 
@@ -25,8 +21,7 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-void atwinc15x0_isr(void *arg)
-{
+void atwinc15x0_isr(void *arg) {
     (void)arg;
     if (atwinc15x0->bsp_isr != NULL && atwinc15x0->bsp_irq_enabled) {
         atwinc15x0->bsp_isr();
@@ -34,8 +29,7 @@ void atwinc15x0_isr(void *arg)
     atwinc15x0_irq();
 }
 
-sint8 nm_bsp_init(void)
-{
+sint8 nm_bsp_init(void) {
     assert(atwinc15x0);
     assert(gpio_is_valid(atwinc15x0->params.reset_pin));
     assert(gpio_is_valid(atwinc15x0->params.irq_pin));
@@ -59,13 +53,11 @@ sint8 nm_bsp_init(void)
     return 0;
 }
 
-sint8 nm_bsp_deinit(void)
-{
+sint8 nm_bsp_deinit(void) {
     return 0;
 }
 
-void nm_bsp_reset(void)
-{
+void nm_bsp_reset(void) {
     assert(atwinc15x0);
     gpio_clear(atwinc15x0->params.reset_pin);
     nm_bsp_sleep(100);
@@ -73,13 +65,11 @@ void nm_bsp_reset(void)
     nm_bsp_sleep(100);
 }
 
-void nm_bsp_sleep(uint32 u32TimeMsec)
-{
+void nm_bsp_sleep(uint32 u32TimeMsec) {
     ztimer_sleep(ZTIMER_MSEC, u32TimeMsec);
 }
 
-void nm_bsp_register_isr(tpfNmBspIsr pfIsr)
-{
+void nm_bsp_register_isr(tpfNmBspIsr pfIsr) {
     assert(atwinc15x0);
 
     DEBUG("%s %p\n", __func__, (void *)(uintptr_t)pfIsr);
@@ -87,8 +77,7 @@ void nm_bsp_register_isr(tpfNmBspIsr pfIsr)
     atwinc15x0->bsp_isr = pfIsr;
 }
 
-void nm_bsp_interrupt_ctrl(uint8 u8Enable)
-{
+void nm_bsp_interrupt_ctrl(uint8 u8Enable) {
     assert(atwinc15x0);
 
     DEBUG("%s %u\n", __func__, u8Enable);

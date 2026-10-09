@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017,2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017,2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of TMP00X temperature sensor
- *
- * @author      Sebastian Meiling <s@mlng.net>
- *
- * @}
- */
+/// @ingroup     sys_auto_init_saul
+/// @{
+///
+/// @file
+/// @brief       Auto initialization of TMP00X temperature sensor
+///
+/// @author      Sebastian Meiling <s@mlng.net>
+///
+/// @}
 
 #include "assert.h"
 #include "log.h"
@@ -23,33 +19,22 @@
 #include "tmp00x_params.h"
 #include "kernel_defines.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define TMP00X_NUM     ARRAY_SIZE(tmp00x_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static tmp00x_t tmp00x_devs[TMP00X_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[TMP00X_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define TMP00X_INFO_NUM    ARRAY_SIZE(tmp00x_saul_info)
 
-/**
- * @brief   Reference the driver struct
- */
+/// @brief   Reference the driver struct
 extern const saul_driver_t tmp00x_saul_driver;
 
-void auto_init_tmp00x(void)
-{
+void auto_init_tmp00x(void) {
     assert(TMP00X_NUM == TMP00X_INFO_NUM);
 
     for (unsigned i = 0; i < TMP00X_NUM; i++) {

@@ -1,9 +1,7 @@
-/*
- * Copyright (C) 2021 Benjamin Valentin
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License v2. See the file LICENSE for more details.
- */
+// Copyright (C) 2021 Benjamin Valentin
+//
+// This file is subject to the terms and conditions of the GNU General Public
+// License v2. See the file LICENSE for more details.
 
 #include <string.h>
 
@@ -13,8 +11,7 @@
 
 #define SOCKET_ZEP_V2_TYPE_HELLO   (255)
 
-const void *zep_get_payload(const void *buffer, size_t *len)
-{
+const void *zep_get_payload(const void *buffer, size_t *len) {
     const void *payload;
     const zep_v2_data_hdr_t *zep = buffer;
 
@@ -46,8 +43,7 @@ const void *zep_get_payload(const void *buffer, size_t *len)
     return payload;
 }
 
-bool zep_parse_mac(const void *buffer, size_t len, void *out, uint8_t *out_len)
-{
+bool zep_parse_mac(const void *buffer, size_t len, void *out, uint8_t *out_len) {
     const void *payload;
     const zep_v2_data_hdr_t *zep = buffer;
 
@@ -71,7 +67,7 @@ bool zep_parse_mac(const void *buffer, size_t len, void *out, uint8_t *out_len)
         payload = (zep_v2_ack_hdr_t *)zep + 1;
         break;
     case SOCKET_ZEP_V2_TYPE_HELLO:
-        /* HELLO packet only contains HW addr as payload */
+        // HELLO packet only contains HW addr as payload
         payload = (zep_v2_data_hdr_t *)zep + 1;
         *out_len = zep->length;
 
@@ -95,12 +91,11 @@ bool zep_parse_mac(const void *buffer, size_t len, void *out, uint8_t *out_len)
 
     *out_len = res;
 
-    /* check that we are not out of bounds */
+    // check that we are not out of bounds
     return (uintptr_t)payload + *out_len < (uintptr_t)buffer + len;
 }
 
-void zep_set_lqi(void *buffer, uint8_t lqi)
-{
+void zep_set_lqi(void *buffer, uint8_t lqi) {
     zep_v2_data_hdr_t *zep = buffer;
 
     if (zep->type != ZEP_V2_TYPE_DATA) {

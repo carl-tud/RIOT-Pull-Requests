@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 Benjamin Valentin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 Benjamin Valentin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_mtd
- * @{
- *
- * @file
- * @brief       Driver for using sam0 SDHC controller via mtd interface
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     drivers_mtd
+/// @{
+///
+/// @file
+/// @brief       Driver for using sam0 SDHC controller via mtd interface
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <errno.h>
 #include <string.h>
@@ -26,8 +22,7 @@
 
 #define min(a, b) ((a) > (b) ? (b) : (a))
 
-static int _init(mtd_dev_t *dev)
-{
+static int _init(mtd_dev_t *dev) {
     mtd_sam0_sdhc_t *ctx = container_of(dev, mtd_sam0_sdhc_t, base);
 
     if (sdhc_init(&ctx->state)) {
@@ -41,7 +36,7 @@ static int _init(mtd_dev_t *dev)
     dev->write_size = SD_MMC_BLOCK_SIZE;
 
 #if IS_USED(MODULE_MTD_WRITE_PAGE)
-    /* TODO: move to MTD layer */
+    // TODO: move to MTD layer
     if (!dev->work_area) {
         dev->work_area = malloc(SD_MMC_BLOCK_SIZE);
         if (dev->work_area == NULL) {
@@ -59,14 +54,13 @@ static int _init(mtd_dev_t *dev)
 }
 
 static int _read_page(mtd_dev_t *dev, void *buff, uint32_t page,
-                      uint32_t offset, uint32_t size)
-{
+                      uint32_t offset, uint32_t size) {
     mtd_sam0_sdhc_t *ctx = container_of(dev, mtd_sam0_sdhc_t, base);
     uint16_t pages = size / SD_MMC_BLOCK_SIZE;
 
     DEBUG("%s(%lu, %lu, %lu)\n", __func__, page, offset, size);
 
-    /* emulate unaligned / sub-page read */
+    // emulate unaligned / sub-page read
     if (pages == 0 || offset || ((uintptr_t)buff & 0x3)) {
 #if IS_USED(MODULE_MTD_WRITE_PAGE)
         if (dev->work_area == NULL) {
@@ -95,14 +89,13 @@ static int _read_page(mtd_dev_t *dev, void *buff, uint32_t page,
 }
 
 static int _write_page(mtd_dev_t *dev, const void *buff, uint32_t page,
-                              uint32_t offset, uint32_t size)
-{
+                              uint32_t offset, uint32_t size) {
     mtd_sam0_sdhc_t *ctx = container_of(dev, mtd_sam0_sdhc_t, base);
     uint16_t pages = size / SD_MMC_BLOCK_SIZE;
 
     DEBUG("%s(%lu, %lu, %lu)\n", __func__, page, offset, size);
 
-    /* emulate unaligned / sub-page write */
+    // emulate unaligned / sub-page write
     if (pages == 0 || offset || ((uintptr_t)buff & 0x3)) {
 #if IS_USED(MODULE_MTD_WRITE_PAGE)
         if (dev->work_area == NULL) {
@@ -132,8 +125,7 @@ static int _write_page(mtd_dev_t *dev, const void *buff, uint32_t page,
     return min(size, pages * SD_MMC_BLOCK_SIZE);
 }
 
-static int _erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t count)
-{
+static int _erase_sector(mtd_dev_t *dev, uint32_t sector, uint32_t count) {
     mtd_sam0_sdhc_t *ctx = container_of(dev, mtd_sam0_sdhc_t, base);
 
     if (sdhc_erase_blocks(&ctx->state, sector, count)) {

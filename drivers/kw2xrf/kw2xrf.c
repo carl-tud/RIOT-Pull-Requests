@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2016 PHYTEC Messtechnik GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 PHYTEC Messtechnik GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_kw2xrf
- * @{
- * @file
- * @brief       Basic functionality of kw2xrf driver
- *
- * @author      Johann Fischer <j.fischer@phytec.de>
- * @author      Jonas Remmert <j.remmert@phytec.de>
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @author      Sebastian Meiling <s@mlng.net>
- * @}
- */
+/// @ingroup     drivers_kw2xrf
+/// @{
+/// @file
+/// @brief       Basic functionality of kw2xrf driver
+///
+/// @author      Johann Fischer <j.fischer@phytec.de>
+/// @author      Jonas Remmert <j.remmert@phytec.de>
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @author      Sebastian Meiling <s@mlng.net>
+/// @}
 #include <stdint.h>
 #include <string.h>
 
@@ -37,22 +33,20 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static void kw2xrf_set_address(kw2xrf_t *dev)
-{
+static void kw2xrf_set_address(kw2xrf_t *dev) {
     DEBUG("[kw2xrf] set MAC addresses\n");
     eui64_t addr_long;
-    /* get an 8-byte unique ID to use as hardware address */
+    // get an 8-byte unique ID to use as hardware address
     luid_get(addr_long.uint8, IEEE802154_LONG_ADDRESS_LEN);
-    /* make sure we mark the address as non-multicast and not globally unique */
+    // make sure we mark the address as non-multicast and not globally unique
     addr_long.uint8[0] &= ~(0x01);
     addr_long.uint8[0] |=  (0x02);
-    /* set short and long address */
+    // set short and long address
     kw2xrf_set_addr_long(dev, ntohll(addr_long.uint64.u64));
     kw2xrf_set_addr_short(dev, ntohs(addr_long.uint16[0].u16));
 }
 
-void kw2xrf_reset_phy(kw2xrf_t *dev)
-{
+void kw2xrf_reset_phy(kw2xrf_t *dev) {
     dev->tx_power = KW2XRF_DEFAULT_TX_POWER;
     kw2xrf_set_tx_power(dev, dev->tx_power);
 

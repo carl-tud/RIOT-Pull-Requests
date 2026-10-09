@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_lsm303dlhc
- *
- * @{
- * @file
- * @brief       Default configuration for LSM303DLHC devices
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- */
+/// @ingroup     drivers_lsm303dlhc
+///
+/// @{
+/// @file
+/// @brief       Default configuration for LSM303DLHC devices
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
 
 #include "board.h"
 #include "lsm303dlhc.h"
@@ -23,10 +19,8 @@
 extern "C" {
 #endif
 
-/**
- * @brief   Set default configuration parameters
- * @{
- */
+/// @brief   Set default configuration parameters
+/// @{
 #ifndef LSM303DLHC_PARAM_I2C
 #define LSM303DLHC_PARAM_I2C            I2C_DEV(0)
 #endif
@@ -69,19 +63,15 @@ extern "C" {
 #ifndef LSM303DLHC_SAUL_INFO
 #define LSM303DLHC_SAUL_INFO            { .name = "lsm303dlhc" }
 #endif
-/**@}*/
+/// @}
 
-/**
- * @brief   Allocate some memory to store the actual configuration
- */
+/// @brief   Allocate some memory to store the actual configuration
 static const lsm303dlhc_params_t lsm303dlhc_params[] =
 {
     LSM303DLHC_PARAMS
 };
 
-/**
- * @brief   Additional meta information to keep in the SAUL registry
- */
+/// @brief   Additional meta information to keep in the SAUL registry
 static const saul_reg_info_t lsm303dlhc_saul_info[] =
 {
     LSM303DLHC_SAUL_INFO
@@ -91,4 +81,4 @@ static const saul_reg_info_t lsm303dlhc_saul_info[] =
 }
 #endif
 
-/** @} */
+/// @}

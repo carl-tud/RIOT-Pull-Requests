@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2017 Frits Kuipers
- * SPDX-FileCopyrightText: 2018 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Frits Kuipers
+// SPDX-FileCopyrightText: 2018 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_ds18
- * @{
- *
- * @file
- * @brief       Device driver implementation for the Maxim Integrated DS1822 and
- *              DS18B20 temperature sensors.
- *
- * @author      Frits Kuipers <frits.kuipers@gmail.com>
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- * @}
- */
+/// @ingroup     drivers_ds18
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the Maxim Integrated DS1822 and
+///              DS18B20 temperature sensors.
+///
+/// @author      Frits Kuipers <frits.kuipers@gmail.com>
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+/// @}
 
 #include "ds18.h"
 #include "ds18_internal.h"
@@ -27,38 +23,34 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-static void ds18_low(const ds18_t *dev)
-{
-    /* Set gpio as output and clear pin */
+static void ds18_low(const ds18_t *dev) {
+    // Set gpio as output and clear pin
     gpio_init(dev->params.pin, GPIO_OUT);
     gpio_clear(dev->params.pin);
 }
 
-static void ds18_release(const ds18_t *dev)
-{
-    /* Init pin as input */
+static void ds18_release(const ds18_t *dev) {
+    // Init pin as input
     gpio_init(dev->params.pin, dev->params.in_mode);
 }
 
-static void ds18_write_bit(const ds18_t *dev, uint8_t bit)
-{
-    /* Initiate write slot */
+static void ds18_write_bit(const ds18_t *dev, uint8_t bit) {
+    // Initiate write slot
     ds18_low(dev);
 
-    /* Release pin when bit==1 */
+    // Release pin when bit==1
     if (bit) {
         ds18_release(dev);
     }
 
-    /* Wait for slot to end */
+    // Wait for slot to end
     ztimer_sleep(ZTIMER_USEC, DS18_DELAY_SLOT);
     ds18_release(dev);
     ztimer_sleep(ZTIMER_USEC, 1);
 }
 
-static int ds18_read_bit(const ds18_t *dev, uint8_t *bit)
-{
-    /* Initiate read slot */
+static int ds18_read_bit(const ds18_t *dev, uint8_t *bit) {
+    // Initiate read slot
     ds18_low(dev);
     ds18_release(dev);
 
@@ -70,29 +62,28 @@ static int ds18_read_bit(const ds18_t *dev, uint8_t *bit)
 #else
     uint32_t start, measurement = 0;
 
-    /* Measure time low of device pin, timeout after slot time*/
+    // Measure time low of device pin, timeout after slot time
     start = ztimer_now(ZTIMER_USEC);
     while (!gpio_read(dev->params.pin) && measurement < DS18_DELAY_SLOT) {
         measurement = ztimer_now(ZTIMER_USEC) - start;
     }
 
-    /* If there was a timeout return error */
+    // If there was a timeout return error
     if (measurement >= DS18_DELAY_SLOT) {
         return DS18_ERROR;
     }
 
-    /* When gpio was low for less than the sample time, bit is high*/
+    // When gpio was low for less than the sample time, bit is high
     *bit = measurement < DS18_SAMPLE_TIME;
 
-    /* Wait for slot to end */
+    // Wait for slot to end
     ztimer_sleep(ZTIMER_USEC, DS18_DELAY_SLOT - measurement);
 
     return DS18_OK;
 #endif
 }
 
-static int ds18_read_byte(const ds18_t *dev, uint8_t *byte)
-{
+static int ds18_read_byte(const ds18_t *dev, uint8_t *byte) {
     uint8_t bit = 0;
     *byte = 0;
 
@@ -108,36 +99,33 @@ static int ds18_read_byte(const ds18_t *dev, uint8_t *byte)
     return DS18_OK;
 }
 
-static void ds18_write_byte(const ds18_t *dev, uint8_t byte)
-{
+static void ds18_write_byte(const ds18_t *dev, uint8_t byte) {
     for (int i = 0; i < 8; i++) {
         ds18_write_bit(dev, byte & (0x01 << i));
     }
 }
 
-static int ds18_reset(const ds18_t *dev)
-{
+static int ds18_reset(const ds18_t *dev) {
     int res;
 
-    /* Line low and sleep the reset delay */
+    // Line low and sleep the reset delay
     ds18_low(dev);
     ztimer_sleep(ZTIMER_USEC, DS18_DELAY_RESET);
 
-    /* Release and wait for the presence response */
+    // Release and wait for the presence response
     ds18_release(dev);
     ztimer_sleep(ZTIMER_USEC, DS18_DELAY_PRESENCE);
 
-    /* Check device presence */
+    // Check device presence
     res = gpio_read(dev->params.pin);
 
-    /* Sleep for reset delay */
+    // Sleep for reset delay
     ztimer_sleep(ZTIMER_USEC, DS18_DELAY_RESET);
 
     return res;
 }
 
-int ds18_trigger(const ds18_t *dev)
-{
+int ds18_trigger(const ds18_t *dev) {
     int res;
 
     res = ds18_reset(dev);
@@ -145,16 +133,15 @@ int ds18_trigger(const ds18_t *dev)
         return DS18_ERROR;
     }
 
-    /* Please note that this command triggers a conversion on all devices
-     * connected to the bus. */
+    // Please note that this command triggers a conversion on all devices
+    // connected to the bus.
     ds18_write_byte(dev, DS18_CMD_SKIPROM);
     ds18_write_byte(dev, DS18_CMD_CONVERT);
 
     return DS18_OK;
 }
 
-int ds18_read(const ds18_t *dev, int16_t *temperature)
-{
+int ds18_read(const ds18_t *dev, int16_t *temperature) {
     int res;
     uint8_t b1 = 0, b2 = 0;
 
@@ -187,8 +174,7 @@ int ds18_read(const ds18_t *dev, int16_t *temperature)
     return DS18_OK;
 }
 
-int ds18_get_temperature(const ds18_t *dev, int16_t *temperature)
-{
+int ds18_get_temperature(const ds18_t *dev, int16_t *temperature) {
 
     DEBUG("[DS18] Convert T\n");
     if (ds18_trigger(dev)) {
@@ -201,17 +187,16 @@ int ds18_get_temperature(const ds18_t *dev, int16_t *temperature)
     return ds18_read(dev, temperature);
 }
 
-int ds18_init(ds18_t *dev, const ds18_params_t *params)
-{
+int ds18_init(ds18_t *dev, const ds18_params_t *params) {
     int res;
 
     dev->params = *params;
 
-    /* Deduct the input mode from the output mode. If pull-up resistors are
-     * used for output then will be used for input as well. */
+    // Deduct the input mode from the output mode. If pull-up resistors are
+    // used for output then will be used for input as well.
     dev->params.in_mode = (dev->params.out_mode == GPIO_OD_PU) ? GPIO_IN_PU : GPIO_IN;
 
-    /* Initialize the device and the pin */
+    // Initialize the device and the pin
     res = gpio_init(dev->params.pin, dev->params.in_mode) == 0 ? DS18_OK : DS18_ERROR;
 
     return res;

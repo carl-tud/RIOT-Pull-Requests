@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2024 Marian Buschsieweke
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 Marian Buschsieweke
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_gd32vf103c_start
- * @{
- *
- * @file
- * @brief       Configuration of SAUL mapped GPIO pins
- *
- * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
- */
+/// @ingroup     boards_gd32vf103c_start
+/// @{
+///
+/// @file
+/// @brief       Configuration of SAUL mapped GPIO pins
+///
+/// @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
 
 #include "board.h"
 #include "saul/periph.h"
@@ -22,9 +18,7 @@
 extern "C" {
 #endif
 
-/**
- * @brief    LED/Button SAUL configuration
- */
+/// @brief    LED/Button SAUL configuration
 static const  saul_gpio_params_t saul_gpio_params[] =
 {
     {
@@ -44,4 +38,4 @@ static const  saul_gpio_params_t saul_gpio_params[] =
 }
 #endif
 
-/** @} */
+/// @}

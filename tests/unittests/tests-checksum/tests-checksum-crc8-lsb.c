@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 Benjamin Valentin <benpicco@googlemail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Benjamin Valentin <benpicco@googlemail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include <stdint.h>
 
@@ -14,24 +12,21 @@
 #define CRC8_POLY   0x31
 #define CRC8_INIT   0xff
 
-static void test_checksum_crc8_lsb_sequence_empty(void)
-{
+static void test_checksum_crc8_lsb_sequence_empty(void) {
     unsigned char buf[] = "";
     uint8_t expect = 0xFF;
 
     TEST_ASSERT_EQUAL_INT(expect, crc8_lsb(buf, sizeof(buf) - 1, CRC8_POLY, CRC8_INIT));
 }
 
-static void test_checksum_crc8_lsb_sequence_1a(void)
-{
+static void test_checksum_crc8_lsb_sequence_1a(void) {
     unsigned char buf[] = "A";
     uint8_t expect = 0x0F;
 
     TEST_ASSERT_EQUAL_INT(expect, crc8_lsb(buf, sizeof(buf) - 1, CRC8_POLY, CRC8_INIT));
 }
 
-static void test_checksum_crc8_lsb_sequence_256a(void)
-{
+static void test_checksum_crc8_lsb_sequence_256a(void) {
     unsigned char buf[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                           "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                           "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -45,35 +40,31 @@ static void test_checksum_crc8_lsb_sequence_256a(void)
     TEST_ASSERT_EQUAL_INT(expect, crc8_lsb(buf, sizeof(buf) - 1, CRC8_POLY, CRC8_INIT));
 }
 
-static void test_checksum_crc8_lsb_sequence_1to9(void)
-{
+static void test_checksum_crc8_lsb_sequence_1to9(void) {
     unsigned char buf[] = "123456789";
     uint8_t expect = 0x20;
 
     TEST_ASSERT_EQUAL_INT(expect, crc8_lsb(buf, sizeof(buf) - 1, CRC8_POLY, CRC8_INIT));
 }
 
-static void test_checksum_crc8_lsb_sequence_4bytes(void)
-{
+static void test_checksum_crc8_lsb_sequence_4bytes(void) {
     unsigned char buf[] = { 0x12, 0x34, 0x56, 0x78 };
     uint8_t expect = 0x1C;
 
     TEST_ASSERT_EQUAL_INT(expect, crc8_lsb(buf, sizeof(buf), CRC8_POLY, CRC8_INIT));
 }
 
-static void test_checksum_crc8_lsb_onewire_params(void)
-{
+static void test_checksum_crc8_lsb_onewire_params(void) {
     unsigned char buf[] = { 0x2A };
     uint8_t expect = 0x5D;
 
     TEST_ASSERT_EQUAL_INT(expect, crc8_lsb(buf, sizeof(buf), 0x8C, 0x00));
 }
 
-Test *tests_checksum_crc8_lsb_tests(void)
-{
+Test *tests_checksum_crc8_lsb_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
-        /* Reference values according to
-         * http://srecord.sourceforge.net/crc16-ccitt.html */
+        // Reference values according to
+        // http://srecord.sourceforge.net/crc16-ccitt.html
         new_TestFixture(test_checksum_crc8_lsb_sequence_empty),
         new_TestFixture(test_checksum_crc8_lsb_sequence_1a),
         new_TestFixture(test_checksum_crc8_lsb_sequence_256a),

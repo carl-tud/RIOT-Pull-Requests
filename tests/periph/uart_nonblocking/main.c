@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Benjamin Valentin <benpicco@googlemail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Benjamin Valentin <benpicco@googlemail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Simple test application for non-blocking UART functionality
- *
- * @author      Benjamin Valentin <benpicco@googlemail.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Simple test application for non-blocking UART functionality
+///
+/// @author      Benjamin Valentin <benpicco@googlemail.com>
+///
+/// @}
 
 #include <stdio.h>
 #include "ztimer.h"
@@ -21,17 +17,15 @@
 
 #define LINE_DELAY_MS   100
 
-static inline uint32_t puts_delay(const char* str)
-{
+static inline uint32_t puts_delay(const char* str) {
     puts(str);
     ztimer_sleep(ZTIMER_USEC, LINE_DELAY_MS * 1000);
     return LINE_DELAY_MS * 1000;
 }
 
-static void _irq_disabled_print(void)
-{
+static void _irq_disabled_print(void) {
     unsigned state = irq_disable();
-    /* fill the transmit buffer */
+    // fill the transmit buffer
     for (uint8_t i = 0; i < UART_TXBUF_SIZE; i++) {
         printf(" ");
     }
@@ -39,15 +33,14 @@ static void _irq_disabled_print(void)
     irq_restore(state);
 }
 
-int main(void)
-{
+int main(void) {
     _irq_disabled_print();
 
     uint32_t total_us = 0;
     uint32_t counter = ztimer_now(ZTIMER_USEC);
 
-    /* Richard Stallman and the Free Software Foundation
-       claim no copyright on this song. */
+    // Richard Stallman and the Free Software Foundation
+    //    claim no copyright on this song.
     total_us += puts_delay("");
     total_us += puts_delay("Join us now and share the software;");
     total_us += puts_delay("You'll be free, hackers, you'll be free.");

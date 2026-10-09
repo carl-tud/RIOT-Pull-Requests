@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <mlenders@inf.fu-berlin.de>
 
 #include <assert.h>
 #include <kernel_defines.h>
@@ -28,8 +24,7 @@ static char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
 static uint8_t _update_nce_ar_state(gnrc_netif_t *netif,
                                     const sixlowpan_nd_opt_ar_t *aro,
-                                    _nib_onl_entry_t *nce)
-{
+                                    _nib_onl_entry_t *nce) {
     if (nce != NULL) {
         memcpy(&nce->eui64, &aro->eui64, sizeof(aro->eui64));
         _evtimer_add(nce, GNRC_IPV6_NIB_ADDR_REG_TIMEOUT,
@@ -39,7 +34,7 @@ static uint8_t _update_nce_ar_state(gnrc_netif_t *netif,
             switch (_get_nud_state(nce)) {
             case GNRC_IPV6_NIB_NC_INFO_NUD_STATE_UNMANAGED:
             case GNRC_IPV6_NIB_NC_INFO_NUD_STATE_REACHABLE:
-                /* nothing to do */
+                // nothing to do
                 break;
             default:
                 assert(netif != NULL);
@@ -65,8 +60,7 @@ static uint8_t _update_nce_ar_state(gnrc_netif_t *netif,
 uint8_t _reg_addr_upstream(gnrc_netif_t *netif, const ipv6_hdr_t *ipv6,
                            const icmpv6_hdr_t *icmpv6,
                            const sixlowpan_nd_opt_ar_t *aro,
-                           const ndp_opt_t *sl2ao, _nib_onl_entry_t *nce)
-{
+                           const ndp_opt_t *sl2ao, _nib_onl_entry_t *nce) {
     if (!ipv6_addr_is_unspecified(&ipv6->src) && (sl2ao != NULL)) {
         DEBUG("nib: Trying to register %s with EUI-64 "
               "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -77,24 +71,24 @@ uint8_t _reg_addr_upstream(gnrc_netif_t *netif, const ipv6_hdr_t *ipv6,
         if ((nce == NULL) || !(nce->mode & _NC) ||
             (memcmp(&nce->eui64, &aro->eui64, sizeof(aro->eui64)) == 0)) {
 #if IS_ACTIVE(CONFIG_GNRC_IPV6_NIB_MULTIHOP_DAD)
-            /* TODO */
-#endif  /* CONFIG_GNRC_IPV6_NIB_MULTIHOP_DAD */
+            // TODO
+#endif  // CONFIG_GNRC_IPV6_NIB_MULTIHOP_DAD
             if (aro->ltime.u16 != 0) {
                 _handle_sl2ao(netif, ipv6, icmpv6, sl2ao);
 
-                /* re-get NCE in case it was updated */
+                // re-get NCE in case it was updated
                 nce = _nib_onl_get(&ipv6->src, netif->pid);
 
-                /* NIB is full */
+                // NIB is full
                 if (nce == NULL) {
                     return SIXLOWPAN_ND_STATUS_NC_FULL;
                 }
 
-                /* and re-check EUI-64 in case nce was not an NC before */
+                // and re-check EUI-64 in case nce was not an NC before
                 if ((memcmp(&nce->eui64, &aro->eui64,
                             sizeof(aro->eui64)) != 0) &&
                     (_get_ar_state(nce) != GNRC_IPV6_NIB_NC_INFO_AR_STATE_GC)) {
-                    /* ignore address registration requests from upstream */
+                    // ignore address registration requests from upstream
                     DEBUG("nib: Could not register %s, duplicate entry with "
                           "EUI-64 %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
                           ipv6_addr_to_str(addr_str, &ipv6->src,
@@ -113,7 +107,7 @@ uint8_t _reg_addr_upstream(gnrc_netif_t *netif, const ipv6_hdr_t *ipv6,
             }
         }
         else if (_get_ar_state(nce) != GNRC_IPV6_NIB_NC_INFO_AR_STATE_GC) {
-            /* ignore address registration requests from upstream */
+            // ignore address registration requests from upstream
             DEBUG("nib: Could not register %s, duplicate entry with EUI-64 "
                   "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
                   ipv6_addr_to_str(addr_str, &ipv6->src, sizeof(addr_str)),
@@ -130,8 +124,7 @@ gnrc_pktsnip_t *_copy_and_handle_aro(gnrc_netif_t *netif,
                                      const ipv6_hdr_t *ipv6,
                                      const ndp_nbr_sol_t *nbr_sol,
                                      const sixlowpan_nd_opt_ar_t *aro,
-                                     const ndp_opt_t *sl2ao)
-{
+                                     const ndp_opt_t *sl2ao) {
     gnrc_pktsnip_t *reply_aro = NULL;
     assert(aro);
     uint8_t status = _handle_aro(netif, ipv6, (icmpv6_hdr_t *)nbr_sol, aro,
@@ -152,11 +145,11 @@ gnrc_pktsnip_t *_copy_and_handle_aro(gnrc_netif_t *netif,
         DEBUG("nib: Address was marked TENTATIVE => not replying NS, "
               "waiting for DAC\n");
     }
-#endif  /* CONFIG_GNRC_IPV6_NIB_MULTIHOP_DAD */
+#endif  // CONFIG_GNRC_IPV6_NIB_MULTIHOP_DAD
     return reply_aro;
 }
-#else  /* CONFIG_GNRC_IPV6_NIB_6LR */
+#else  // CONFIG_GNRC_IPV6_NIB_6LR
 typedef int dont_be_pedantic;
-#endif /* CONFIG_GNRC_IPV6_NIB_6LR */
+#endif // CONFIG_GNRC_IPV6_NIB_6LR
 
-/** @} */
+/// @}

@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "embUnit.h"
 #include "tests-bluetil.h"
@@ -18,8 +16,7 @@ const uint8_t addr[][6] = {
     { 0, 0, 0, 0, 0, 0 },
 };
 
-static void test_bluetil_addr(void)
-{
+static void test_bluetil_addr(void) {
     char astr[BLUETIL_ADDR_STRLEN];
     char istr[BLUETIL_IPV6_IID_STRLEN];
 
@@ -44,8 +41,7 @@ static void test_bluetil_addr(void)
     TEST_ASSERT_EQUAL_STRING("[FE80::0000:00FF:FE00:0000]", istr);
 }
 
-Test *tests_bluetil_tests(void)
-{
+Test *tests_bluetil_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_bluetil_addr),
     };
@@ -55,7 +51,6 @@ Test *tests_bluetil_tests(void)
     return (Test *)&bluetil_tests;
 }
 
-void tests_bluetil(void)
-{
+void tests_bluetil(void) {
     TESTS_RUN(tests_bluetil_tests());
 }

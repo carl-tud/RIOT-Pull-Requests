@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <string.h>
 #include <errno.h>
 
@@ -17,8 +13,7 @@
 #include "time_units.h"
 #include "tm.h"
 
-static void _test_equal_tm(const struct tm *a, const struct tm *b)
-{
+static void _test_equal_tm(const struct tm *a, const struct tm *b) {
     TEST_ASSERT_EQUAL_INT((a)->tm_sec,  (b)->tm_sec);
     TEST_ASSERT_EQUAL_INT((a)->tm_min,  (b)->tm_min);
     TEST_ASSERT_EQUAL_INT((a)->tm_hour, (b)->tm_hour);
@@ -30,8 +25,7 @@ static void _test_equal_tm(const struct tm *a, const struct tm *b)
     TEST_ASSERT_EQUAL_INT(0, rtc_tm_compare(a, b));
 }
 
-static void test_rtc_compat(void)
-{
+static void test_rtc_compat(void) {
     struct tm t1 = {
         .tm_sec  = 42,
         .tm_min  = 37,
@@ -51,8 +45,7 @@ static void test_rtc_compat(void)
     _test_equal_tm(&t1, &t2);
 }
 
-static void test_rtc_sec_wrap(void)
-{
+static void test_rtc_sec_wrap(void) {
     struct tm t1 = {
         .tm_sec  = 360,
         .tm_min  =  58,
@@ -72,8 +65,7 @@ static void test_rtc_sec_wrap(void)
     _test_equal_tm(&t1, &t2);
 }
 
-static void test_rtc_lyear(void)
-{
+static void test_rtc_lyear(void) {
     struct tm t1 = {
         .tm_sec  = 360,
         .tm_min  =  58,
@@ -93,8 +85,7 @@ static void test_rtc_lyear(void)
     _test_equal_tm(&t1, &t2);
 }
 
-static void test_rtc_nyear(void)
-{
+static void test_rtc_nyear(void) {
     struct tm t1 = {
         .tm_sec  = 360,
         .tm_min  =  58,
@@ -114,8 +105,7 @@ static void test_rtc_nyear(void)
     _test_equal_tm(&t1, &t2);
 }
 
-static void test_rtc_ywrap(void)
-{
+static void test_rtc_ywrap(void) {
     struct tm t1 = {
         .tm_sec  = 360,
         .tm_min  =  58,
@@ -135,8 +125,7 @@ static void test_rtc_ywrap(void)
     _test_equal_tm(&t1, &t2);
 }
 
-static void test_rtc_year(void)
-{
+static void test_rtc_year(void) {
     struct tm t1 = {
         .tm_sec  = 360,
         .tm_min  =  58,
@@ -156,7 +145,7 @@ static void test_rtc_year(void)
 
         mktime(&t1);
 
-        /* rtc_tm_normalize does not handle DST */
+        // rtc_tm_normalize does not handle DST
         if (t1.tm_isdst && !t2.tm_isdst) {
             t2.tm_hour++;
             t2.tm_isdst = 1;
@@ -170,8 +159,7 @@ static void test_rtc_year(void)
     }
 }
 
-static void test_rtc_compare(void)
-{
+static void test_rtc_compare(void) {
     struct tm t1 = {
         .tm_sec  =  10,
         .tm_min  =  58,
@@ -198,8 +186,7 @@ static void test_rtc_compare(void)
     TEST_ASSERT(rtc_tm_compare(&t1, &t2) < 0);
 }
 
-static void test_rtc_mktime(void)
-{
+static void test_rtc_mktime(void) {
     struct tm t  = {
         .tm_sec  =  11,
         .tm_min  =  12,
@@ -223,9 +210,8 @@ static void test_rtc_mktime(void)
     TEST_ASSERT_EQUAL_INT(98197931, rtc_mktime(&t));
 }
 
-static void test_mktime(void)
-{
-    /* second 1 of 1970 is defined 1 second of unixtime */
+static void test_mktime(void) {
+    // second 1 of 1970 is defined 1 second of unixtime
     struct tm t  = {
         .tm_sec  =  1,
         .tm_min  =  0,
@@ -236,10 +222,10 @@ static void test_mktime(void)
         .tm_wday =   0,
         .tm_yday =   1,
     };
-    /* This test will fail if mktime is applying timezone information
-     * that is not 0 seconds offset from UTC (GMT) and therefore returning unixtime.
-     * A usual reason for failure might be that nativ is run in a local not "UTC" timezone,
-     * a "Fix" for this failure is setting the environment variable TZ to "UTC" */
+    // This test will fail if mktime is applying timezone information
+    // that is not 0 seconds offset from UTC (GMT) and therefore returning unixtime.
+    // A usual reason for failure might be that nativ is run in a local not "UTC" timezone,
+    // a "Fix" for this failure is setting the environment variable TZ to "UTC"
     TEST_ASSERT_EQUAL_INT(1, mktime(&t));
 
     t  = (struct tm){
@@ -256,8 +242,7 @@ static void test_mktime(void)
     TEST_ASSERT_EQUAL_INT(1577884331, mktime(&t));
 }
 
-static void test_rtc_localtime(void)
-{
+static void test_rtc_localtime(void) {
     struct tm t;
 
     const struct tm t1  = {
@@ -308,10 +293,9 @@ static void test_rtc_localtime(void)
     _test_equal_tm(&t3, &t);
 }
 
-static void test_rtc_rollunder_mday_zero(void)
-{
-    /* The range of mday is given as [1 to 31], so it should roll under
-     * to the previous month on 0. */
+static void test_rtc_rollunder_mday_zero(void) {
+    // The range of mday is given as [1 to 31], so it should roll under
+    // to the previous month on 0.
     struct tm tm_source = {
         .tm_sec  = 0,
         .tm_min  = 0,
@@ -322,7 +306,7 @@ static void test_rtc_rollunder_mday_zero(void)
     };
     rtc_tm_normalize(&tm_source);
 
-    /* 31st December 2019 */
+    // 31st December 2019
     struct tm tm_target = {
         .tm_sec  = 0,
         .tm_min  = 0,
@@ -338,9 +322,8 @@ static void test_rtc_rollunder_mday_zero(void)
     _test_equal_tm(&tm_target, &tm_source);
 }
 
-static void test_rtc_rollunder_mday_neg(void)
-{
-    /* A negative mday should roll under to the previous month. */
+static void test_rtc_rollunder_mday_neg(void) {
+    // A negative mday should roll under to the previous month.
     struct tm tm_source = {
         .tm_sec  = 0,
         .tm_min  = 0,
@@ -351,7 +334,7 @@ static void test_rtc_rollunder_mday_neg(void)
     };
     rtc_tm_normalize(&tm_source);
 
-    /* 20th December 2019 */
+    // 20th December 2019
     struct tm tm_target = {
         .tm_sec  = 0,
         .tm_min  = 0,
@@ -367,21 +350,20 @@ static void test_rtc_rollunder_mday_neg(void)
     _test_equal_tm(&tm_target, &tm_source);
 }
 
-static void test_rtc_rollunder_chained(void)
-{
-    /* Negative values for the basic tm fields (sec, min, hour, mday, mon)
-     * should lead to a chain of roll under events. */
+static void test_rtc_rollunder_chained(void) {
+    // Negative values for the basic tm fields (sec, min, hour, mday, mon)
+    // should lead to a chain of roll under events.
     struct tm tm_source = {
-        .tm_sec  = -15, /* roll under -1 minute */
-        .tm_min  = -15, /* roll under -1 hour */
-        .tm_hour = -6,  /* roll under -1 day */
-        .tm_mday = -15, /* roll under -1 month */
-        .tm_mon  = -6,  /* roll under -1 year */
+        .tm_sec  = -15, // roll under -1 minute
+        .tm_min  = -15, // roll under -1 hour
+        .tm_hour = -6,  // roll under -1 day
+        .tm_mday = -15, // roll under -1 month
+        .tm_mon  = -6,  // roll under -1 year
         .tm_year = 120
     };
     rtc_tm_normalize(&tm_source);
 
-    /* 14th June 2019 */
+    // 14th June 2019
     struct tm tm_target = {
         .tm_sec  = SEC_PER_MIN - 15,
         .tm_min  = (MIN_PER_HOUR - 15) - 1,
@@ -397,8 +379,7 @@ static void test_rtc_rollunder_chained(void)
     _test_equal_tm(&tm_target, &tm_source);
 }
 
-Test *tests_rtc_tests(void)
-{
+Test *tests_rtc_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_rtc_compat),
         new_TestFixture(test_rtc_sec_wrap),
@@ -420,8 +401,7 @@ Test *tests_rtc_tests(void)
     return (Test *)&rtc_tests;
 }
 
-void tests_rtc(void)
-{
+void tests_rtc(void) {
     TESTS_RUN(tests_rtc_tests());
 }
-/** @} */
+/// @}

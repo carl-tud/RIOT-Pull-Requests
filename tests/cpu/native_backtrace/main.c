@@ -1,26 +1,21 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests backtrace module.
- *
- * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests backtrace module.
+///
+/// @author      Martine Lenders <mlenders@inf.fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 
 #include "backtrace.h"
 
-int main(void)
-{
+int main(void) {
     printf("BACKTRACE_SIZE: %d\n", backtrace_len());
     printf("\n## backtrace_print: print addresses\n");
     backtrace_print();

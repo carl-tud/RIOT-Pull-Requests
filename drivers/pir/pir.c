@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2018 UC Berkeley
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2018 UC Berkeley
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_pir
- * @{
- *
- * @file
- * @brief       Device driver implementation for the PIR motion sensor
- *
- * @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
- * @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
- *
- * @}
- */
+/// @ingroup     drivers_pir
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the PIR motion sensor
+///
+/// @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
+/// @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
+///
+/// @}
 
 #include "pir.h"
 #include "irq.h"
@@ -38,8 +34,7 @@ static void pir_send_msg(pir_t *dev, pir_event_t event);
  * public API implementation
  **********************************************************************/
 
-int pir_init(pir_t *dev, const pir_params_t *params)
-{
+int pir_init(pir_t *dev, const pir_params_t *params) {
     dev->p.gpio = params->gpio;
     dev->p.active_high = params->active_high;
     dev->msg_thread_pid = KERNEL_PID_UNDEF;
@@ -63,8 +58,7 @@ int pir_init(pir_t *dev, const pir_params_t *params)
     return PIR_OK;
 }
 
-pir_event_t pir_get_status(const pir_t *dev)
-{
+pir_event_t pir_get_status(const pir_t *dev) {
     return (((gpio_read(dev->p.gpio) > 0) == dev->p.active_high) ?
             PIR_STATUS_ACTIVE : PIR_STATUS_INACTIVE);
 }
@@ -78,7 +72,7 @@ int pir_get_occupancy(pir_t *dev, int16_t *occup) {
         return PIR_TIMEERR;
     }
 
-    /* We were busy counting */
+    // We were busy counting
     if (dev->active) {
         dev->accum_active_time += (now - dev->start_active_time);
         dev->start_active_time = now;
@@ -90,8 +84,7 @@ int pir_get_occupancy(pir_t *dev, int16_t *occup) {
     return PIR_OK;
 }
 
-int pir_register_thread(pir_t *dev)
-{
+int pir_register_thread(pir_t *dev) {
     if (dev->msg_thread_pid != KERNEL_PID_UNDEF) {
         if (dev->msg_thread_pid != thread_getpid()) {
             DEBUG("pir_register_thread: already registered to another thread\n");
@@ -115,8 +108,7 @@ int pir_register_thread(pir_t *dev)
  * internal API implementation
  **********************************************************************/
 
-static void pir_send_msg(pir_t *dev, pir_event_t event)
-{
+static void pir_send_msg(pir_t *dev, pir_event_t event) {
     DEBUG("pir_send_msg\n");
     msg_t m = { .type = event, .content.ptr = dev, };
 
@@ -137,23 +129,22 @@ static void pir_send_msg(pir_t *dev, pir_event_t event)
     DEBUG("\n");
 }
 
-static void pir_callback(void *arg)
-{
+static void pir_callback(void *arg) {
     DEBUG("pir_callback: %p\n", arg);
     pir_t *dev = (pir_t*) arg;
     bool pin_now = gpio_read(dev->p.gpio);
     uint64_t now = ztimer64_now(ZTIMER64_USEC);
 
-    /* We were busy counting */
+    // We were busy counting
     if (dev->active) {
-        /* Add into accumulation */
+        // Add into accumulation
         dev->accum_active_time += (now - dev->start_active_time);
     }
-    /* Pin is rising */
+    // Pin is rising
     if (pin_now == dev->p.active_high) {
         dev->start_active_time = now;
         dev->active = true;
-    /* Pin is falling */
+    // Pin is falling
     } else {
         dev->active = false;
     }
@@ -163,8 +154,7 @@ static void pir_callback(void *arg)
     }
 }
 
-static int pir_activate_int(pir_t *dev)
-{
+static int pir_activate_int(pir_t *dev) {
     gpio_mode_t gpio_mode;
     if (dev->p.active_high) {
         gpio_mode = GPIO_IN_PD;

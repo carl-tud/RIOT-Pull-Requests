@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the OPT3001 sensor driver.
- *
- * @author      Jannes Volkens <jannes.volkens@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the OPT3001 sensor driver.
+///
+/// @author      Jannes Volkens <jannes.volkens@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>

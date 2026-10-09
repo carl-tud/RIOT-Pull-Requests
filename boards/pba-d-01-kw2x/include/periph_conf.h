@@ -1,22 +1,18 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2014 PHYTEC Messtechnik GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_pba-d-01-kw2x
- * @{
- *
- * @file
- * @name        Peripheral MCU configuration for the phyWAVE-KW22 Board
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Johann Fischer <j.fischer@phytec.de>
- * @author      Jonas Remmert <j.remmert@phytec.de>
- */
+/// @ingroup     boards_pba-d-01-kw2x
+/// @{
+///
+/// @file
+/// @name        Peripheral MCU configuration for the phyWAVE-KW22 Board
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Johann Fischer <j.fischer@phytec.de>
+/// @author      Jonas Remmert <j.remmert@phytec.de>
 
 #include "periph_cpu.h"
 
@@ -25,47 +21,41 @@ extern "C"
 {
 #endif
 
-/**
- * @name Clock system configuration
- * @{
- */
+/// @name Clock system configuration
+/// @{
 static const clock_config_t clock_config = {
-    /*
-     * This configuration results in the system running from the PLL output with
-     * the following clock frequencies:
-     * Core:  48 MHz
-     * Bus:   48 MHz
-     * Flash: 24 MHz
-     */
+    // This configuration results in the system running from the PLL output with
+    // the following clock frequencies:
+    // Core:  48 MHz
+    // Bus:   48 MHz
+    // Flash: 24 MHz
     .clkdiv1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(0) |
                SIM_CLKDIV1_OUTDIV4(1),
-    .rtc_clc = 0, /* External load caps on the FRDM-K22F board */
+    .rtc_clc = 0, // External load caps on the FRDM-K22F board
     .osc32ksel = SIM_SOPT1_OSC32KSEL(2),
     .clock_flags =
-        /* No OSC0_EN, use modem clock from EXTAL0 */
+        // No OSC0_EN, use modem clock from EXTAL0
         KINETIS_CLOCK_RTCOSC_EN |
         KINETIS_CLOCK_USE_FAST_IRC |
         0,
     .default_mode = KINETIS_MCG_MODE_PEE,
-    /* The modem generates a 4 MHz clock signal */
+    // The modem generates a 4 MHz clock signal
     .erc_range = KINETIS_MCG_ERC_RANGE_HIGH,
-    .osc_clc = 0, /* OSC0 is unused*/
-    .oscsel = MCG_C7_OSCSEL(0), /* Use EXTAL0 for external clock */
-    .fcrdiv = MCG_SC_FCRDIV(0), /* Fast IRC divide by 1 => 4 MHz */
-    .fll_frdiv = MCG_C1_FRDIV(0b010), /* Divide by 128 */
-    .fll_factor_fei = KINETIS_MCG_FLL_FACTOR_1464, /* FLL freq = 48 MHz */
-    .fll_factor_fee = KINETIS_MCG_FLL_FACTOR_1280, /* FLL freq = 40 MHz */
-    .pll_prdiv = MCG_C5_PRDIV0(0b00001), /* Divide by 2 */
-    .pll_vdiv = MCG_C6_VDIV0(0b00000), /* Multiply by 24 => PLL freq = 48 MHz */
+    .osc_clc = 0, // OSC0 is unused
+    .oscsel = MCG_C7_OSCSEL(0), // Use EXTAL0 for external clock
+    .fcrdiv = MCG_SC_FCRDIV(0), // Fast IRC divide by 1 => 4 MHz
+    .fll_frdiv = MCG_C1_FRDIV(0b010), // Divide by 128
+    .fll_factor_fei = KINETIS_MCG_FLL_FACTOR_1464, // FLL freq = 48 MHz
+    .fll_factor_fee = KINETIS_MCG_FLL_FACTOR_1280, // FLL freq = 40 MHz
+    .pll_prdiv = MCG_C5_PRDIV0(0b00001), // Divide by 2
+    .pll_vdiv = MCG_C6_VDIV0(0b00000), // Multiply by 24 => PLL freq = 48 MHz
 };
 #define CLOCK_CORECLOCK              (48000000ul)
 #define CLOCK_BUSCLOCK               (CLOCK_CORECLOCK / 1)
-/** @} */
+/// @}
 
-/**
- * @name Timer configuration
- * @{
- */
+/// @name Timer configuration
+/// @{
 #define PIT_NUMOF               (2U)
 #define PIT_CONFIG {                 \
         {                            \
@@ -84,12 +74,10 @@ static const clock_config_t clock_config = {
 #define PIT_BASECLOCK           (CLOCK_BUSCLOCK)
 #define PIT_ISR_0               isr_pit1
 #define PIT_ISR_1               isr_pit3
-/** @} */
+/// @}
 
-/**
- * @name UART configuration
- * @{
- */
+/// @name UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev    = UART2,
@@ -123,12 +111,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_uart0_rx_tx)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    ADC configuration
- * @{
- */
+/// @name    ADC configuration
+/// @{
 static const adc_conf_t adc_config[] = {
     [ 0] = { .dev = ADC0, .pin = GPIO_PIN(PORT_E, 2), .chan =  1, .avg = ADC_AVG_MAX },
     [ 1] = { .dev = ADC0, .pin = GPIO_PIN(PORT_E, 3), .chan =  1, .avg = ADC_AVG_MAX },
@@ -139,18 +125,14 @@ static const adc_conf_t adc_config[] = {
 };
 
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
-/*
- * KW2xD ADC reference settings:
- * 0: VREFH/VREFL external pin pair
- * 1-3: reserved
- */
+// KW2xD ADC reference settings:
+// 0: VREFH/VREFL external pin pair
+// 1-3: reserved
 #define ADC_REF_SETTING     0
-/** @} */
+/// @}
 
-/**
- * @name    PWM configuration
- * @{
- */
+/// @name    PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .ftm        = FTM0,
@@ -166,45 +148,43 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI device configuration
- *
- * Clock configuration values based on the configured 48Mhz module clock.
- *
- * Auto-generated by:
- * cpu/kinetis/dist/calc_spi_scalers/calc_spi_scalers.c
- *
- * @{
- */
+/// @name    SPI device configuration
+///
+/// Clock configuration values based on the configured 48Mhz module clock.
+///
+/// Auto-generated by:
+/// cpu/kinetis/dist/calc_spi_scalers/calc_spi_scalers.c
+///
+/// @{
 static const uint32_t spi_clk_config[] = {
     (
-        SPI_CTAR_PBR(0) | SPI_CTAR_BR(8) |          /* -> 93750Hz */
+        SPI_CTAR_PBR(0) | SPI_CTAR_BR(8) |          // -> 93750Hz
         SPI_CTAR_PCSSCK(0) | SPI_CTAR_CSSCK(8) |
         SPI_CTAR_PASC(0) | SPI_CTAR_ASC(8) |
         SPI_CTAR_PDT(0) | SPI_CTAR_DT(8)
     ),
     (
-        SPI_CTAR_PBR(0) | SPI_CTAR_BR(6) |          /* -> 375000Hz */
+        SPI_CTAR_PBR(0) | SPI_CTAR_BR(6) |          // -> 375000Hz
         SPI_CTAR_PCSSCK(0) | SPI_CTAR_CSSCK(6) |
         SPI_CTAR_PASC(0) | SPI_CTAR_ASC(6) |
         SPI_CTAR_PDT(0) | SPI_CTAR_DT(6)
     ),
     (
-        SPI_CTAR_PBR(1) | SPI_CTAR_BR(4) |          /* -> 1000000Hz */
+        SPI_CTAR_PBR(1) | SPI_CTAR_BR(4) |          // -> 1000000Hz
         SPI_CTAR_PCSSCK(1) | SPI_CTAR_CSSCK(3) |
         SPI_CTAR_PASC(1) | SPI_CTAR_ASC(3) |
         SPI_CTAR_PDT(1) | SPI_CTAR_DT(3)
     ),
     (
-        SPI_CTAR_PBR(2) | SPI_CTAR_BR(0) |          /* -> 4800000Hz */
+        SPI_CTAR_PBR(2) | SPI_CTAR_BR(0) |          // -> 4800000Hz
         SPI_CTAR_PCSSCK(2) | SPI_CTAR_CSSCK(0) |
         SPI_CTAR_PASC(2) | SPI_CTAR_ASC(0) |
         SPI_CTAR_PDT(2) | SPI_CTAR_DT(0)
     ),
     (
-        SPI_CTAR_PBR(1) | SPI_CTAR_BR(0) |          /* -> 8000000Hz */
+        SPI_CTAR_PBR(1) | SPI_CTAR_BR(0) |          // -> 8000000Hz
         SPI_CTAR_PCSSCK(1) | SPI_CTAR_CSSCK(0) |
         SPI_CTAR_PASC(1) | SPI_CTAR_ASC(0) |
         SPI_CTAR_PDT(1) | SPI_CTAR_DT(0)
@@ -245,12 +225,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name I2C configuration
- * @{
- */
+/// @name I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
     {
         .i2c = I2C1,
@@ -265,10 +243,10 @@ static const i2c_conf_t i2c_config[] = {
 };
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
 #define I2C_0_ISR           (isr_i2c1)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

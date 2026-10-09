@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2015-2017 Ken Bannister
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015-2017 Ken Bannister
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       gcoap CLI support
- *
- * @author      Ken Bannister <kb2ma@runbox.com>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     examples
+/// @{
+///
+/// @file
+/// @brief       gcoap CLI support
+///
+/// @author      Ken Bannister <kb2ma@runbox.com>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdint.h>
 #include <stdio.h>
@@ -41,7 +37,7 @@
 #include "net/dsm.h"
 #include "tinydtls_keys.h"
 
-/* Example credential tag for credman. Tag together with the credential type needs to be unique. */
+// Example credential tag for credman. Tag together with the credential type needs to be unique.
 #define GCOAP_DTLS_CREDENTIAL_TAG 10
 
 static const uint8_t psk_id_0[] = PSK_DEFAULT_IDENTITY;
@@ -67,7 +63,7 @@ static ssize_t _riot_board_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len,
 static ssize_t _rtc_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 #endif
 
-/* CoAP resources. Must be sorted by path (ASCII order). */
+// CoAP resources. Must be sorted by path (ASCII order).
 static const coap_resource_t _resources[] = {
     { "/cli/stats", COAP_GET | COAP_PUT, _stats_handler, NULL },
     { "/riot/board", COAP_GET, _riot_board_handler, NULL },
@@ -90,7 +86,7 @@ static gcoap_listener_t _listener = {
     NULL
 };
 
-/* Adds link format params to resource list */
+// Adds link format params to resource list
 static ssize_t _encode_link(const coap_resource_t *resource, char *buf,
                             size_t maxlen, coap_link_encoder_ctx_t *context) {
     ssize_t res = gcoap_encode_link(resource, buf, maxlen, context);
@@ -109,8 +105,7 @@ static ssize_t _encode_link(const coap_resource_t *resource, char *buf,
 }
 
 #if IS_USED(MODULE_PERIPH_RTC)
-static void _rtc_notify_observers(void *arg)
-{
+static void _rtc_notify_observers(void *arg) {
     (void)arg;
     struct tm tm_now;
     if (rtc_get_time(&tm_now)) {
@@ -125,7 +120,7 @@ static void _rtc_notify_observers(void *arg)
     const gcoap_listener_t *listener = NULL;
     while ((rtc_resource = gcoap_get_resource_by_path_iterator(&listener, rtc_resource, "/rtc"))) {
         if (!strcmp(rtc_resource->path, "/rtc")) {
-            break; /* exact match */
+            break; // exact match
         }
     }
     if (rtc_resource) {
@@ -149,8 +144,7 @@ static void _rtc_notify_observers(void *arg)
     }
 }
 
-static ssize_t _rtc_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
-{
+static ssize_t _rtc_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx) {
     (void)ctx;
     struct tm tm_now;
     rtc_get_time(&tm_now);
@@ -164,19 +158,16 @@ static ssize_t _rtc_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_requ
 }
 #endif
 
-/*
- * Server callback for /cli/stats. Accepts either a GET or a PUT.
- *
- * GET: Returns the count of packets sent by the CLI.
- * PUT: Updates the count of packets. Rejects an obviously bad request, but
- *      allows any two byte value for example purposes. Semantically, the only
- *      valid action is to set the value to 0.
- */
-static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
-{
+// Server callback for /cli/stats. Accepts either a GET or a PUT.
+//
+// GET: Returns the count of packets sent by the CLI.
+// PUT: Updates the count of packets. Rejects an obviously bad request, but
+//      allows any two byte value for example purposes. Semantically, the only
+//      valid action is to set the value to 0.
+static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx) {
     (void)ctx;
 
-    /* read coap method type in packet */
+    // read coap method type in packet
     unsigned method_flag = coap_method2flag(coap_get_code_detail(pdu));
 
     switch (method_flag) {
@@ -185,13 +176,13 @@ static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_re
             coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
             size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
 
-            /* write the response buffer with the request count value */
+            // write the response buffer with the request count value
             resp_len += fmt_u16_dec((char *)pdu->payload, req_count);
             return resp_len;
 
         case COAP_PUT:
-            /* convert the payload to an integer and update the internal
-               value */
+            // convert the payload to an integer and update the internal
+            //    value
             if (pdu->payload_len <= 5) {
                 char payload[6] = { 0 };
                 memcpy(payload, (char *)pdu->payload, pdu->payload_len);
@@ -207,14 +198,13 @@ static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_re
 }
 
 static ssize_t _riot_board_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len,
-                                   coap_request_ctx_t *ctx)
-{
+                                   coap_request_ctx_t *ctx) {
     (void)ctx;
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
     coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
     size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
 
-    /* write the RIOT board name in the response buffer */
+    // write the RIOT board name in the response buffer
     if (pdu->payload_len >= strlen(RIOT_BOARD)) {
         memcpy(pdu->payload, RIOT_BOARD, strlen(RIOT_BOARD));
         return resp_len + strlen(RIOT_BOARD);
@@ -225,13 +215,12 @@ static ssize_t _riot_board_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len,
     }
 }
 
-void notify_observers(void)
-{
+void notify_observers(void) {
     size_t len;
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
 
-    /* send Observe notification for /cli/stats */
+    // send Observe notification for /cli/stats
     switch (gcoap_obs_init(&pdu, &buf[0], CONFIG_GCOAP_PDU_BUF_SIZE,
             &_resources[0])) {
     case GCOAP_OBS_INIT_OK:
@@ -250,12 +239,11 @@ void notify_observers(void)
     }
 }
 
-void server_init(void)
-{
+void server_init(void) {
 #if IS_USED(MODULE_GCOAP_DTLS)
     int res = credman_add(&credential);
     if (res < 0 && res != CREDMAN_EXIST) {
-        /* ignore duplicate credentials */
+        // ignore duplicate credentials
         printf("gcoap: cannot add credential to system: %d\n", res);
         return;
     }

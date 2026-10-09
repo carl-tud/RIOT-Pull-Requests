@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     cpu_esp32_esp_can
- * @{
- *
- * @file
- * @brief       ESP32 CAN controller driver (esp_can) default parameters
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- *
- */
+/// @ingroup     cpu_esp32_esp_can
+/// @{
+///
+/// @file
+/// @brief       ESP32 CAN controller driver (esp_can) default parameters
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+///
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,28 +21,28 @@ extern "C" {
 #include "periph/can.h"
 
 #ifndef CAN_TX
-/** Default CAN tranveiver TX pin if not defined in board configuration */
+/// Default CAN tranveiver TX pin if not defined in board configuration
 #define CAN_TX  GPIO5
 #endif
 
 #ifndef CAN_RX
-/** Default CAN transceiver RX pin if not defined in board configuration */
+/// Default CAN transceiver RX pin if not defined in board configuration
 #define CAN_RX  GPIO35
 #endif
 
 #ifndef CAN_BITRATE
-/** Default CAN Bitrate */
+/// Default CAN Bitrate
 #define CAN_BITRATE (500000)
 #endif
 
-/** Default ESP CAN devices parameters */
+/// Default ESP CAN devices parameters
 static const candev_params_t candev_params[] = {
     {
         .name = "esp-can",
     },
 };
 
-/** Default ESP CAN devices config */
+/// Default ESP CAN devices config
 static const can_conf_t candev_conf[] = {
     {
         .bitrate = CAN_BITRATE,
@@ -65,4 +61,4 @@ static const can_conf_t candev_conf[] = {
 }
 #endif
 
-/** @} */
+/// @}

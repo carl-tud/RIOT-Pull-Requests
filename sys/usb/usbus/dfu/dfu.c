@@ -1,20 +1,16 @@
-/*
- * Copyright (C) 2020 Mesotic SAS
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2020 Mesotic SAS
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup usbus_dfu
- * @{
- * @file USBUS implementation for device firmware upgrade
- *
- *
- * @author  Dylan Laduranty <dylan.laduranty@mesotic.com>
- * @}
- */
+/// @ingroup usbus_dfu
+/// @{
+/// @file USBUS implementation for device firmware upgrade
+///
+///
+/// @author  Dylan Laduranty <dylan.laduranty@mesotic.com>
+/// @}
 
 #define USB_H_USER_IS_RIOT_INTERNAL
 
@@ -54,12 +50,11 @@ static ztimer_t scheduled_reboot = { .callback=_reboot };
 
 #define DEFAULT_XFER_SIZE 64
 
-static size_t _gen_dfu_descriptor(usbus_t *usbus, void *arg)
-{
+static size_t _gen_dfu_descriptor(usbus_t *usbus, void *arg) {
     (void)arg;
     usb_desc_if_dfu_t if_desc;
 
-    /* functional dfu descriptor */
+    // functional dfu descriptor
     if_desc.length = sizeof(usb_desc_if_dfu_t);
     if_desc.type = USB_IF_DESCRIPTOR_DFU;
     if_desc.attribute = USB_DFU_WILL_DETACH | USB_DFU_CAN_DOWNLOAD;
@@ -78,7 +73,7 @@ static const usbus_handler_driver_t dfu_driver = {
     .control_handler = _control_handler,
 };
 
-/* Descriptors */
+// Descriptors
 static const usbus_descr_gen_funcs_t _dfu_descriptor = {
     .fmt_post_descriptor = _gen_dfu_descriptor,
     .fmt_pre_descriptor = NULL,
@@ -89,15 +84,13 @@ static const usbus_descr_gen_funcs_t _dfu_descriptor = {
 };
 
 #ifdef MODULE_RIOTBOOT_USB_DFU
-static void _reboot(void *arg)
-{
+static void _reboot(void *arg) {
     (void)arg;
     pm_reboot();
 }
 #endif
 
-void usbus_dfu_init(usbus_t *usbus, usbus_dfu_device_t *handler, unsigned mode)
-{
+void usbus_dfu_init(usbus_t *usbus, usbus_dfu_device_t *handler, unsigned mode) {
     DEBUG("DFU: initialization\n");
     assert(usbus);
     assert(handler);
@@ -105,10 +98,10 @@ void usbus_dfu_init(usbus_t *usbus, usbus_dfu_device_t *handler, unsigned mode)
     static_assert((SLOT0_OFFSET % FLASHPAGE_SIZE) == 0,
                   "SLOT0_OFFSET has to be a multiple of FLASHPAGE_SIZE");
 #elif defined(FLASHPAGE_MIN_SECTOR_SIZE)
-    /* STM32F2/4/7 MCUs use sectors instead of pages, where the minimum sector
-     * size is defined by FLASHPAGE_MIN_SECTOR_SIZE, which is 16KB or 32KB
-     * (the first sector) depending on the CPU_MODEL. In this case SLOT0_OFFSET
-     * must be a multiple of the minimum sector size to cover a whole sector. */
+    // STM32F2/4/7 MCUs use sectors instead of pages, where the minimum sector
+    // size is defined by FLASHPAGE_MIN_SECTOR_SIZE, which is 16KB or 32KB
+    // (the first sector) depending on the CPU_MODEL. In this case SLOT0_OFFSET
+    // must be a multiple of the minimum sector size to cover a whole sector.
     static_assert((SLOT0_OFFSET % FLASHPAGE_MIN_SECTOR_SIZE) == 0,
                   "SLOT0_OFFSET has to be a multiple of FLASHPAGE_MIN_SECTOR_SIZE");
 #endif
@@ -124,15 +117,14 @@ void usbus_dfu_init(usbus_t *usbus, usbus_dfu_device_t *handler, unsigned mode)
     usbus_register_event_handler(usbus, (usbus_handler_t *)handler);
 }
 
-static void _init(usbus_t *usbus, usbus_handler_t *handler)
-{
+static void _init(usbus_t *usbus, usbus_handler_t *handler) {
     usbus_dfu_device_t *dfu = container_of(handler, usbus_dfu_device_t, handler_ctrl);
-    /* Set up descriptor generators */
+    // Set up descriptor generators
     dfu->dfu_descr.next = NULL;
     dfu->dfu_descr.funcs = &_dfu_descriptor;
     dfu->dfu_descr.arg = dfu;
 
-    /* Configure Interface 0 as control interface */
+    // Configure Interface 0 as control interface
     dfu->iface.class = USB_DFU_INTERFACE;
     dfu->iface.subclass = USB_DFU_SUBCLASS_DFU;
 
@@ -141,7 +133,7 @@ static void _init(usbus_t *usbus, usbus_handler_t *handler)
     dfu->iface.descr_gen = &dfu->dfu_descr;
     dfu->iface.handler = handler;
 
-    /* Create needed string descriptor for the interface and its alternate settings */
+    // Create needed string descriptor for the interface and its alternate settings
     if (IS_ACTIVE(MODULE_RIOTBOOT_USB_DFU)) {
         usbus_add_string_descriptor(usbus, &dfu->slot0_str, USB_DFU_MODE_SLOT0_NAME);
     }
@@ -149,42 +141,41 @@ static void _init(usbus_t *usbus, usbus_handler_t *handler)
         usbus_add_string_descriptor(usbus, &dfu->slot0_str, USB_APP_MODE_SLOT_NAME);
     }
 
-    /* Add string descriptor to the interface */
+    // Add string descriptor to the interface
     dfu->iface.descr = &dfu->slot0_str;
 
 #if defined (MODULE_RIOTBOOT_USB_DFU) && NUM_SLOTS == 2
-    /* Create needed string descriptor for the alternate settings */
+    // Create needed string descriptor for the alternate settings
     usbus_add_string_descriptor(usbus, &dfu->slot1_str, USB_DFU_MODE_SLOT1_NAME);
 
-    /* Add string descriptor to the alternate settings */
+    // Add string descriptor to the alternate settings
     dfu->iface_alt_slot1.descr = &dfu->slot1_str;
 
-    /* attached alternate settings to their interface */
+    // attached alternate settings to their interface
     usbus_add_interface_alt(&dfu->iface, &dfu->iface_alt_slot1);
 #endif
-    /* Add interface to the stack */
+    // Add interface to the stack
     usbus_add_interface(usbus, &dfu->iface);
     usbus_handler_set_flag(handler, USBUS_HANDLER_FLAG_RESET);
 }
 
-static int _dfu_class_control_req(usbus_t *usbus, usbus_dfu_device_t *dfu, usb_setup_t *pkt)
-{
+static int _dfu_class_control_req(usbus_t *usbus, usbus_dfu_device_t *dfu, usb_setup_t *pkt) {
     static const usbopt_enable_t disable = USBOPT_DISABLE;
     DEBUG("DFU control request:%x\n", pkt->request);
     switch (pkt->request) {
         case DFU_DETACH:
-            /* Detach USB bus */
+            // Detach USB bus
             usbdev_set(usbus->dev, USBOPT_ATTACH, &disable, sizeof(usbopt_enable_t));
-            /* Restart and jump into the bootloader */
+            // Restart and jump into the bootloader
             uint32_t *reset_addr = (uint32_t *)RIOTBOOT_MAGIC_ADDR;
             *reset_addr = RIOTBOOT_MAGIC_NUMBER;
             pm_reboot();
             break;
 #ifdef MODULE_RIOTBOOT_USB_DFU
         case DFU_DOWNLOAD:
-            /* Host indicates end of firmware download */
+            // Host indicates end of firmware download
             if (pkt->length == 0) {
-                /* Set DFU to manifest sync */
+                // Set DFU to manifest sync
                 dfu->dfu_state = USB_DFU_STATE_DFU_MANIFEST_SYNC;
                 riotboot_flashwrite_flush(&dfu->writer);
                 riotboot_flashwrite_finish(&dfu->writer);
@@ -193,13 +184,13 @@ static int _dfu_class_control_req(usbus_t *usbus, usbus_dfu_device_t *dfu, usb_s
                 dfu->dfu_state = USB_DFU_STATE_DFU_DL_SYNC;
             }
             else {
-                /* Retrieve firmware data */
+                // Retrieve firmware data
                 size_t len = 0;
                 int ret = 0;
                 uint8_t *data = usbus_control_get_out_data(usbus, &len);
-                 /* skip writing the riotboot signature */
+                 // skip writing the riotboot signature
                 if (dfu->skip_signature) {
-                    /* Avoid underflow condition */
+                    // Avoid underflow condition
                     if (len < RIOTBOOT_FLASHWRITE_SKIPLEN) {
                         dfu->dfu_state = USB_DFU_STATE_DFU_ERROR;
                         return -1;
@@ -215,7 +206,7 @@ static int _dfu_class_control_req(usbus_t *usbus, usbus_dfu_device_t *dfu, usb_s
                     ret = riotboot_flashwrite_putbytes(&dfu->writer, data, len, true);
                 }
                 if (ret < 0) {
-                    /* Error occurs, stall the current transfer */
+                    // Error occurs, stall the current transfer
                     dfu->dfu_state = USB_DFU_STATE_DFU_ERROR;
                     return -1;
                 }
@@ -231,7 +222,7 @@ static int _dfu_class_control_req(usbus_t *usbus, usbus_dfu_device_t *dfu, usb_s
                 DEBUG("GET STATUS GO TO IDLE\n");
             }
             else if (dfu->dfu_state == USB_DFU_STATE_DFU_MANIFEST_SYNC) {
-                /* Scheduled reboot, so we can answer back dfu-util before rebooting */
+                // Scheduled reboot, so we can answer back dfu-util before rebooting
                 dfu->dfu_state = USB_DFU_STATE_DFU_DL_IDLE;
 #ifdef MODULE_RIOTBOOT_USB_DFU
                 ztimer_set(ZTIMER_SEC, &scheduled_reboot, 1);
@@ -241,7 +232,7 @@ static int _dfu_class_control_req(usbus_t *usbus, usbus_dfu_device_t *dfu, usb_s
             buf.status = 0;
             buf.timeout = USB_DFU_DETACH_TIMEOUT_MS;
             buf.state = dfu->dfu_state;
-            /* Send answer to host */
+            // Send answer to host
             usbus_control_slicer_put_bytes(usbus, (uint8_t*)&buf, sizeof(buf));
             DEBUG("send answer\n");
             break;
@@ -262,15 +253,14 @@ static int _dfu_class_control_req(usbus_t *usbus, usbus_dfu_device_t *dfu, usb_s
 
 static int _control_handler(usbus_t *usbus, usbus_handler_t *handler,
                           usbus_control_request_state_t state,
-                          usb_setup_t *setup)
-{
+                          usb_setup_t *setup) {
     (void)usbus;
     (void)state;
 
     usbus_dfu_device_t *dfu = container_of(handler, usbus_dfu_device_t, handler_ctrl);
     DEBUG("DFU: Request: 0x%x\n", setup->request);
 
-    /* Process DFU class request */
+    // Process DFU class request
     if (setup->type & USB_SETUP_REQUEST_TYPE_CLASS) {
         if (_dfu_class_control_req(usbus, dfu, setup) < 0) {
             DEBUG("DFU: control request %u failed\n", setup->request);
@@ -292,8 +282,7 @@ static int _control_handler(usbus_t *usbus, usbus_handler_t *handler,
 }
 
 static void _transfer_handler(usbus_t *usbus, usbus_handler_t *handler,
-                             usbdev_ep_t *ep, usbus_event_transfer_t event)
-{
+                             usbdev_ep_t *ep, usbus_event_transfer_t event) {
     (void)event;
     (void)usbus;
     (void)handler;
@@ -301,8 +290,7 @@ static void _transfer_handler(usbus_t *usbus, usbus_handler_t *handler,
 }
 
 static void _event_handler(usbus_t *usbus, usbus_handler_t *handler,
-                          usbus_event_usb_t event)
-{
+                          usbus_event_usb_t event) {
     (void) usbus;
     (void) handler;
     switch (event) {

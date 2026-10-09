@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief   Device-specific test header file W5100 ethernet device driver
- *
- * @author  Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief   Device-specific test header file W5100 ethernet device driver
+///
+/// @author  Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
 
 #include <stdint.h>
 
@@ -30,12 +26,10 @@ extern "C" {
 #define W5100_NUM   ARRAY_SIZE(w5100_params)
 #define NETDEV_ETH_MINIMAL_NUMOF      W5100_NUM
 
-/**
- * @}
- */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-FileCopyrightText: 2017 OTA keys
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-FileCopyrightText: 2017 OTA keys
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-l432kc
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the nucleo-l432kc board
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Vincent Dupont <vincent@otakeys.com>
- */
+/// @ingroup     boards_nucleo-l432kc
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the nucleo-l432kc board
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Vincent Dupont <vincent@otakeys.com>
 
-/* Add specific clock configuration (HSE, LSE) for this board here */
+// Add specific clock configuration (HSE, LSE) for this board here
 #ifndef CONFIG_BOARD_HAS_LSE
 #define CONFIG_BOARD_HAS_LSE            1
 #endif
@@ -32,10 +28,8 @@
 extern "C" {
 #endif
 
-/**
- * @name UART configuration
- * @{
- */
+/// @name UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
         .dev        = USART2,
@@ -47,7 +41,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB1,
         .irqn       = USART2_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
     {
         .dev        = USART1,
@@ -59,7 +53,7 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
 };
 
@@ -67,12 +61,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_1_ISR          (isr_usart1)
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name   PWM configuration
- * @{
- */
+/// @name   PWM configuration
+/// @{
 static const pwm_conf_t pwm_config[] = {
     {
         .dev      = TIM1,
@@ -87,12 +79,10 @@ static const pwm_conf_t pwm_config[] = {
 };
 
 #define PWM_NUMOF           ARRAY_SIZE(pwm_config)
-/** @} */
+/// @}
 
-/**
- * @name   SPI configuration
- * @{
- */
+/// @name   SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .dev      = SPI1,
@@ -110,48 +100,44 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @brief ADC configuration
- *
- * Note that we do not configure all ADC channels,
- * and not in the STM32L432KC order. Instead, we
- * just define 5 ADC channels, for the Nucleo
- * Arduino Nano header pins A0-A3 and A6 - all which are
- * enabled by default and without collision with other
- * features, for example, I2C or VCP_TX.
- *
- * To find appropriate device and channel find in the
- * board manual, table showing pin assignments and
- * information about ADC - a text similar to ADC[X]_IN[Y],
- * where:
- * [X] - describes used device - indexed from 0,
- * for example ADC1_IN10 is device 0,
- * [Y] - describes used channel - indexed from 1,
- * for example ADC1_IN10 is channel 10
- *
- * For Nucleo-L432KC this information is in board manual,
- * Table 16 or STM32L432KC MCU datasheet - Table 14.
- * @{
- */
+/// @brief ADC configuration
+///
+/// Note that we do not configure all ADC channels,
+/// and not in the STM32L432KC order. Instead, we
+/// just define 5 ADC channels, for the Nucleo
+/// Arduino Nano header pins A0-A3 and A6 - all which are
+/// enabled by default and without collision with other
+/// features, for example, I2C or VCP_TX.
+///
+/// To find appropriate device and channel find in the
+/// board manual, table showing pin assignments and
+/// information about ADC - a text similar to ADC[X]_IN[Y],
+/// where:
+/// [X] - describes used device - indexed from 0,
+/// for example ADC1_IN10 is device 0,
+/// [Y] - describes used channel - indexed from 1,
+/// for example ADC1_IN10 is channel 10
+///
+/// For Nucleo-L432KC this information is in board manual,
+/// Table 16 or STM32L432KC MCU datasheet - Table 14.
+/// @{
 static const adc_conf_t adc_config[] = {
-    {GPIO_PIN(PORT_A, 0),  .dev = 0, .chan = 5},  /* ADC12_IN5  */
-    {GPIO_PIN(PORT_A, 1),  .dev = 0, .chan = 6},  /* ADC12_IN6  */
-    {GPIO_PIN(PORT_A, 3),  .dev = 0, .chan = 8},  /* ADC12_IN8  */
-    {GPIO_PIN(PORT_A, 4),  .dev = 0, .chan = 9},  /* ADC12_IN9  */
-    {GPIO_PIN(PORT_A, 7),  .dev = 0, .chan = 12}, /* ADC12_IN12 */
+    {GPIO_PIN(PORT_A, 0),  .dev = 0, .chan = 5},  // ADC12_IN5
+    {GPIO_PIN(PORT_A, 1),  .dev = 0, .chan = 6},  // ADC12_IN6
+    {GPIO_PIN(PORT_A, 3),  .dev = 0, .chan = 8},  // ADC12_IN8
+    {GPIO_PIN(PORT_A, 4),  .dev = 0, .chan = 9},  // ADC12_IN9
+    {GPIO_PIN(PORT_A, 7),  .dev = 0, .chan = 12}, // ADC12_IN12
 };
 
-/**
- * @brief Number of ADC devices
- */
+/// @brief Number of ADC devices
 #define ADC_NUMOF           ARRAY_SIZE(adc_config)
 
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

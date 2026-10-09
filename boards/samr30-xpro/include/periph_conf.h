@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Baptiste Clenet <bapclenet@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Baptiste Clenet <bapclenet@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_samr30-xpro
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the Atmel SAM R30 Xplained Pro board
- *
- * @author      Baptiste Clenet <bapclenet@gmail.com>
- */
+/// @ingroup     boards_samr30-xpro
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the Atmel SAM R30 Xplained Pro board
+///
+/// @author      Baptiste Clenet <bapclenet@gmail.com>
 
 #include "periph_cpu.h"
 
@@ -21,17 +17,13 @@
 extern "C" {
 #endif
 
-/**
- * @brief   GCLK reference speed
- */
+/// @brief   GCLK reference speed
 #define CLOCK_CORECLOCK     (48000000U)
 
-/**
- * @name    Timer peripheral configuration
- * @{
- */
+/// @name    Timer peripheral configuration
+/// @{
 static const tc32_conf_t timer_config[] = {
-    {   /* Timer 0 - System Clock */
+    {   // Timer 0 - System Clock
         .dev            = TC0,
         .irq            = TC0_IRQn,
         .mclk           = &MCLK->APBCMASK.reg,
@@ -42,18 +34,16 @@ static const tc32_conf_t timer_config[] = {
     }
 };
 
-/* Timer 0 configuration */
+// Timer 0 configuration
 #define TIMER_0_CHANNELS    2
 #define TIMER_0_ISR         isr_tc0
 #define TIMER_NUMOF         ARRAY_SIZE(timer_config)
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
-    {    /* Virtual COM Port */
+    {    // Virtual COM Port
         .dev      = &SERCOM0->USART,
         .rx_pin   = GPIO_PIN(PA, 5),
         .tx_pin   = GPIO_PIN(PA, 4),
@@ -69,18 +59,16 @@ static const uart_conf_t uart_config[] = {
     }
 };
 
-/* interrupt function name mapping */
+// interrupt function name mapping
 #define UART_0_ISR          isr_sercom0
 
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
-/**
- * @name    SPI configuration
- * @{
- */
+/// @name    SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
-    {    /* Internal AT86RF212B */
+    {    // Internal AT86RF212B
         .dev      = &(SERCOM4->SPI),
         .miso_pin = GPIO_PIN(PC, 19),
         .mosi_pin = GPIO_PIN(PB, 30),
@@ -96,7 +84,7 @@ static const spi_conf_t spi_config[] = {
         .rx_trigger = SERCOM4_DMAC_ID_RX,
 #endif
     },
-    {    /* EXT1 & EXT3 Pin Header */
+    {    // EXT1 & EXT3 Pin Header
         .dev      = &(SERCOM5->SPI),
         .miso_pin = GPIO_PIN(PB, 2),
         .mosi_pin = GPIO_PIN(PB, 22),
@@ -108,7 +96,7 @@ static const spi_conf_t spi_config[] = {
         .mosi_pad = SPI_PAD_MOSI_2_SCK_3,
         .gclk_src = SAM0_GCLK_MAIN,
 #ifdef MODULE_PERIPH_DMA
-        /* The SAML21 doesn't support DMA triggers on SERCOM5 */
+        // The SAML21 doesn't support DMA triggers on SERCOM5
         .tx_trigger = DMA_TRIGGER_DISABLED,
         .rx_trigger = DMA_TRIGGER_DISABLED,
 #endif
@@ -116,14 +104,12 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
-/**
- * @name    I2C configuration
- * @{
- */
+/// @name    I2C configuration
+/// @{
 static const i2c_conf_t i2c_config[] = {
-    {    /* EXT1 & EXT3 Pin Header */
+    {    // EXT1 & EXT3 Pin Header
         .dev      = &(SERCOM1->I2CM),
         .speed    = I2C_SPEED_NORMAL,
         .scl_pin  = GPIO_PIN(PA, 17),
@@ -134,53 +120,45 @@ static const i2c_conf_t i2c_config[] = {
     }
 };
 #define I2C_NUMOF          ARRAY_SIZE(i2c_config)
-/** @} */
+/// @}
 
-/**
- * @name    RTC configuration
- * @{
- */
+/// @name    RTC configuration
+/// @{
 #define EXTERNAL_OSC32_SOURCE                   1
 #define INTERNAL_OSC32_SOURCE                   0
 #define ULTRA_LOW_POWER_INTERNAL_OSC_SOURCE     0
-/** @} */
+/// @}
 
-/**
- * @name    RTT configuration
- * @{
- */
+/// @name    RTT configuration
+/// @{
 #ifndef RTT_FREQUENCY
 #define RTT_FREQUENCY       (32768U)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name ADC Configuration
- * @{
- */
+/// @name ADC Configuration
+/// @{
 
-/* ADC Default values */
+// ADC Default values
 #define ADC_PRESCALER                           ADC_CTRLB_PRESCALER_DIV256
 
 #define ADC_NEG_INPUT                           ADC_INPUTCTRL_MUXNEG(0x18u)
 #define ADC_REF_DEFAULT                         ADC_REFCTRL_REFSEL_INTVCC2
 
 static const adc_conf_chan_t adc_channels[] = {
-    /* port, pin, muxpos */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA06 }, /* EXT1, pin 3 */
-    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA07 }, /* EXT1, pin 4 */
+    // port, pin, muxpos
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA06 }, // EXT1, pin 3
+    { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA07 }, // EXT1, pin 4
     { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA10 },
     { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA11 },
     { .inputctrl = ADC_INPUTCTRL_MUXPOS_PA02 }
 };
 
 #define ADC_NUMOF                               ARRAY_SIZE(adc_channels)
-/** @} */
+/// @}
 
-/**
- * @name USB peripheral configuration
- * @{
- */
+/// @name USB peripheral configuration
+/// @{
 static const sam0_common_usb_config_t sam_usbdev_config[] = {
     {
         .dm     = GPIO_PIN(PA, 24),
@@ -190,10 +168,10 @@ static const sam0_common_usb_config_t sam_usbdev_config[] = {
         .gclk_src = SAM0_GCLK_48MHZ,
     }
 };
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

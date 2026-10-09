@@ -1,30 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2020 Savoir-faire Linux
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Savoir-faire Linux
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_stm32
- * @{
- *
- * @file
- * @brief           Main header for STM32MP1 clock configuration
- *
- * @author          Gilles DOFFE <gilles.doffe@savoirfairelinux.com>
-*/
+/// @ingroup         cpu_stm32
+/// @{
+///
+/// @file
+/// @brief           Main header for STM32MP1 clock configuration
+///
+/// @author          Gilles DOFFE <gilles.doffe@savoirfairelinux.com>
 
 #include "cfg_clock_common_fx_gx_mp1_c0.h"
 #include "kernel_defines.h"
 #include "macros/units.h"
 
-/**
- * @name    MP1 clock PLL settings (208MHz)
- * @{
- */
-/* The following parameters configure a 208MHz system clock with HSE (24MHz)
- * or HSI (16MHz) as PLL input clock */
+/// @name    MP1 clock PLL settings (208MHz)
+/// @{
+// The following parameters configure a 208MHz system clock with HSE (24MHz)
+// or HSI (16MHz) as PLL input clock
 #ifndef CONFIG_CLOCK_PLL_M
 #define CONFIG_CLOCK_PLL_M              (2)
 #endif
@@ -32,7 +26,7 @@
 #ifndef CONFIG_CLOCK_PLL_N
 #define CONFIG_CLOCK_PLL_N              (52)
 #endif
-#else /* HSI */
+#else // HSI
 #ifndef CONFIG_CLOCK_PLL_N
 #define CONFIG_CLOCK_PLL_N              (78)
 #endif
@@ -46,37 +40,33 @@
 #ifndef CONFIG_CLOCK_PLL_R
 #define CONFIG_CLOCK_PLL_R              (3)
 #endif
-/** @} */
+/// @}
 
-/**
- * @name    MP1 clock bus settings (MCU, APB1, APB2 and APB3)
- * @{
- */
+/// @name    MP1 clock bus settings (MCU, APB1, APB2 and APB3)
+/// @{
 #ifndef CONFIG_CLOCK_MCU_DIV
-#define CONFIG_CLOCK_MCU_DIV            (1)         /* max 208MHz */
+#define CONFIG_CLOCK_MCU_DIV            (1)         // max 208MHz
 #endif
 #ifndef CONFIG_CLOCK_APB1_DIV
-#define CONFIG_CLOCK_APB1_DIV           (2)         /* max 104MHz */
+#define CONFIG_CLOCK_APB1_DIV           (2)         // max 104MHz
 #endif
 #ifndef CONFIG_CLOCK_APB2_DIV
-#define CONFIG_CLOCK_APB2_DIV           (2)         /* max 104MHz */
+#define CONFIG_CLOCK_APB2_DIV           (2)         // max 104MHz
 #endif
 #ifndef CONFIG_CLOCK_APB3_DIV
-#define CONFIG_CLOCK_APB3_DIV           (2)         /* max 104MHz */
+#define CONFIG_CLOCK_APB3_DIV           (2)         // max 104MHz
 #endif
-/** @} */
+/// @}
 
 #if CLOCK_CORECLOCK > MHZ(208)
 #error "SYSCLK cannot exceed 208MHz"
 #endif
 
-/**
- * @name    MP1 clock values
- * @{
- */
+/// @name    MP1 clock values
+/// @{
 #if IS_ACTIVE(CONFIG_BOARD_HAS_HSE)
 #define CLOCK_PLL_SRC                   (CONFIG_CLOCK_HSE)
-#else /* CONFIG_CLOCK_HSI */
+#else // CONFIG_CLOCK_HSI
 #define CLOCK_PLL_SRC                   (CONFIG_CLOCK_HSI)
 #endif
 
@@ -92,7 +82,7 @@
 #elif IS_ACTIVE(CONFIG_USE_CLOCK_PLL)
 #define CLOCK_CORECLOCK                 (((CLOCK_PLL_SRC / CONFIG_CLOCK_PLL_M) \
             * CONFIG_CLOCK_PLL_N) / CONFIG_CLOCK_PLL_P)
-#endif /* CONFIG_USE_CLOCK_PLL */
+#endif // CONFIG_USE_CLOCK_PLL
 
 #define CLOCK_PLLQ                      (((CLOCK_PLL_SRC / CONFIG_CLOCK_PLL_M) \
             * CONFIG_CLOCK_PLL_N) / CONFIG_CLOCK_PLL_Q)
@@ -101,7 +91,7 @@
         / CONFIG_CLOCK_APB1_DIV)
 #define CLOCK_APB2                      (CLOCK_CORECLOCK \
         / CONFIG_CLOCK_APB2_DIV)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 extern "C" {
@@ -111,4 +101,4 @@ extern "C" {
 }
 #endif
 
-/** @} */
+/// @}

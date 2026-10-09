@@ -1,24 +1,20 @@
-/*
- * Copyright (C) 2013 INRIA
- *               2018 Otto-von-Guericke-Universität Magdeburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2013 INRIA
+//               2018 Otto-von-Guericke-Universität Magdeburg
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_shell_commands
- * @{
- *
- * @file
- * @brief       Provides shell commands to access SHT10/SHT11/SHT15 sensors
- *
- * @author      Oliver Hahm <oliver.hahm@inria.fr>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     sys_shell_commands
+/// @{
+///
+/// @file
+/// @brief       Provides shell commands to access SHT10/SHT11/SHT15 sensors
+///
+/// @author      Oliver Hahm <oliver.hahm@inria.fr>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdint.h>
@@ -35,8 +31,7 @@
 
 extern sht1x_dev_t sht1x_devs[SHT1X_NUM];
 
-static sht1x_dev_t *get_dev(int argc, char **argv)
-{
+static sht1x_dev_t *get_dev(int argc, char **argv) {
     switch (argc) {
     case 1:
         return &sht1x_devs[0];
@@ -57,13 +52,11 @@ static sht1x_dev_t *get_dev(int argc, char **argv)
     return NULL;
 }
 
-static void error_msg(const char *msg)
-{
+static void error_msg(const char *msg) {
     printf("[sht1x] Operation failed: %s\n", msg);
 }
 
-static int read_sensor(int16_t *temp, int16_t *hum, int argc, char **argv)
-{
+static int read_sensor(int16_t *temp, int16_t *hum, int argc, char **argv) {
     const sht1x_dev_t *dev = get_dev(argc, argv);
 
     if (!dev) {
@@ -86,7 +79,7 @@ static int read_sensor(int16_t *temp, int16_t *hum, int argc, char **argv)
         error_msg("Sensor did not acknowledge command");
         return -1;
     default:
-        /* Should never happen, but better safe the sorry */
+        // Should never happen, but better safe the sorry
         error_msg("Unknown error");
         return -1;
     }
@@ -94,8 +87,7 @@ static int read_sensor(int16_t *temp, int16_t *hum, int argc, char **argv)
     return 0;
 }
 
-static int _get_humidity_handler(int argc, char **argv)
-{
+static int _get_humidity_handler(int argc, char **argv) {
     int16_t hum;
 
     if (read_sensor(NULL, &hum, argc, argv)) {
@@ -108,8 +100,7 @@ static int _get_humidity_handler(int argc, char **argv)
 
 SHELL_COMMAND(hum, "Prints measured humidity.", _get_humidity_handler);
 
-static int _get_temperature_handler(int argc, char **argv)
-{
+static int _get_temperature_handler(int argc, char **argv) {
     int16_t temp;
 
     if (read_sensor(&temp, NULL, argc, argv)) {
@@ -122,8 +113,7 @@ static int _get_temperature_handler(int argc, char **argv)
 
 SHELL_COMMAND(temp, "Prints measured temperature.", _get_temperature_handler);
 
-static int _get_weather_handler(int argc, char **argv)
-{
+static int _get_weather_handler(int argc, char **argv) {
     int16_t hum;
     int16_t temp;
 
@@ -138,8 +128,7 @@ static int _get_weather_handler(int argc, char **argv)
 
 SHELL_COMMAND(weather, "Prints measured humidity and temperature.", _get_weather_handler);
 
-static void print_config(const sht1x_dev_t *dev)
-{
+static void print_config(const sht1x_dev_t *dev) {
     const char *vdds[] = { "5.0", "4.0", "3.5", "3.0", "2.5" };
 
     printf("Sensor VDD = %s\n", vdds[dev->vdd]);
@@ -155,29 +144,25 @@ static void print_config(const sht1x_dev_t *dev)
            (dev->conf & SHT1X_CONF_SKIP_CRC) ? "off" : "on");
 }
 
-static void unknown_parameter(int index, char **argv)
-{
+static void unknown_parameter(int index, char **argv) {
     printf("Unknown parameter \"%s\"\n"
            "Usage: \"%s [PARAMS]\", run \"%s --help\" for help\n",
            argv[index], argv[0], argv[0]);
 }
 
-static void missing_argument(int index, char **argv)
-{
+static void missing_argument(int index, char **argv) {
     printf("Missing argument for parameter \"%s\"\n"
            "Usage: \"%s [%s <ARG>][PARAMS]\", run \"%s --help\" for help\n",
            argv[index], argv[0], argv[index], argv[0]);
 }
 
-static void invalid_argument(int index, char **argv, const char *valid)
-{
+static void invalid_argument(int index, char **argv, const char *valid) {
     printf("Invalid argument \"%s\" for parameter \"%s\"\n"
            "Valid arguments are: \"%s\", run \"%s --help\" for help\n",
            argv[index + 1], argv[index], valid, argv[0]);
 }
 
-static int _sht_config_handler(int argc, char **argv)
-{
+static int _sht_config_handler(int argc, char **argv) {
     uint8_t set_conf = 0;
     uint8_t unset_conf = 0;
     int16_t temp_off = INT16_MAX;
@@ -335,7 +320,7 @@ static int _sht_config_handler(int argc, char **argv)
     }
 
     if ((set_conf) || (unset_conf)) {
-        /* Apply new configuration */
+        // Apply new configuration
         uint8_t new_conf = sht1x_devs[dev_num].conf;
         new_conf &= ~(unset_conf);
         new_conf |= set_conf;
@@ -355,7 +340,7 @@ static int _sht_config_handler(int argc, char **argv)
             error_msg("Sensor did not acknowledge command");
             return -1;
         default:
-            /* Should never happen, but better safe the sorry */
+            // Should never happen, but better safe the sorry
             error_msg("Unknown error");
             return -1;
         }

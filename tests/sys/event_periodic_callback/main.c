@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2022 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Periodic Callback test application
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Periodic Callback test application
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include <stdio.h>
 
@@ -21,13 +17,11 @@
 #include "event/periodic_callback.h"
 #include "event/thread.h"
 
-static void _event_cb(void *ctx)
-{
+static void _event_cb(void *ctx) {
     puts(ctx);
 }
 
-int main(void)
-{
+int main(void) {
     event_callback_t oneshot;
     event_callback_oneshot(&oneshot, EVENT_PRIO_MEDIUM, _event_cb, "event 0");
 

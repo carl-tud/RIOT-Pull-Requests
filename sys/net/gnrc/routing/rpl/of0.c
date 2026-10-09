@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2014 Oliver Hahm <oliver.hahm@inria.fr>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Oliver Hahm <oliver.hahm@inria.fr>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     net_gnrc_rpl
- * @{
- * @file
- * @brief       Objective Function Zero.
- *
- * Implementation of Objective Function Zero.
- *
- * @author      Eric Engel <eric.engel@fu-berlin.de>
- * @}
- */
+/// @ingroup     net_gnrc_rpl
+/// @{
+/// @file
+/// @brief       Objective Function Zero.
+///
+/// Implementation of Objective Function Zero.
+///
+/// @author      Eric Engel <eric.engel@fu-berlin.de>
+/// @}
 
 #include <string.h>
 #include "of0.h"
@@ -36,19 +32,16 @@ static gnrc_rpl_of_t gnrc_rpl_of0 = {
     .process_dio = NULL
 };
 
-gnrc_rpl_of_t *gnrc_rpl_get_of0(void)
-{
+gnrc_rpl_of_t *gnrc_rpl_get_of0(void) {
     return &gnrc_rpl_of0;
 }
 
-void reset(gnrc_rpl_dodag_t *dodag)
-{
-    /* Nothing to do in OF0 */
+void reset(gnrc_rpl_dodag_t *dodag) {
+    // Nothing to do in OF0
     (void) dodag;
 }
 
-uint16_t calc_rank(gnrc_rpl_dodag_t *dodag, uint16_t base_rank)
-{
+uint16_t calc_rank(gnrc_rpl_dodag_t *dodag, uint16_t base_rank) {
     if (base_rank == 0) {
         if (dodag->parents == NULL) {
             return GNRC_RPL_INFINITE_RANK;
@@ -73,8 +66,7 @@ uint16_t calc_rank(gnrc_rpl_dodag_t *dodag, uint16_t base_rank)
     return base_rank + add;
 }
 
-int parent_cmp(gnrc_rpl_parent_t *parent1, gnrc_rpl_parent_t *parent2)
-{
+int parent_cmp(gnrc_rpl_parent_t *parent1, gnrc_rpl_parent_t *parent2) {
     if (parent1->rank < parent2->rank) {
         return -1;
     }
@@ -84,16 +76,15 @@ int parent_cmp(gnrc_rpl_parent_t *parent1, gnrc_rpl_parent_t *parent2)
     return 0;
 }
 
-int which_dodag(gnrc_rpl_dodag_t *d1, gnrc_rpl_dio_t *dio)
-{
-    /* RFC 6552, Section 4.2 */
+int which_dodag(gnrc_rpl_dodag_t *d1, gnrc_rpl_dio_t *dio) {
+    // RFC 6552, Section 4.2
 
-    /* parent set must not be empty */
+    // parent set must not be empty
     if ((d1->node_status != GNRC_RPL_ROOT_NODE) && !d1->parents) {
         return 1;
     }
 
-    /* prefer grounded dodag */
+    // prefer grounded dodag
     int dio_grounded = dio->g_mop_prf >> GNRC_RPL_GROUNDED_SHIFT;
     if (d1->grounded > dio_grounded) {
         return -1;
@@ -104,7 +95,7 @@ int which_dodag(gnrc_rpl_dodag_t *d1, gnrc_rpl_dio_t *dio)
 
     int dio_prf = dio->g_mop_prf & GNRC_RPL_PRF_MASK;
 
-    /* prefer dodag with more preferable root */
+    // prefer dodag with more preferable root
     if (d1->prf > dio_prf) {
         return -1;
     }
@@ -112,7 +103,7 @@ int which_dodag(gnrc_rpl_dodag_t *d1, gnrc_rpl_dio_t *dio)
         return 1;
     }
 
-    /* prefer DODAG with more recent version */
+    // prefer DODAG with more recent version
     if (ipv6_addr_equal(&d1->dodag_id, &dio->dodag_id)) {
         if (GNRC_RPL_COUNTER_GREATER_THAN(d1->version, dio->version_number)) {
             return -1;
@@ -122,8 +113,8 @@ int which_dodag(gnrc_rpl_dodag_t *d1, gnrc_rpl_dio_t *dio)
         }
     }
 
-    /* prefer dodag with lesser resulting rank */
-    /* TODO: calc rank properly */
+    // prefer dodag with lesser resulting rank
+    // TODO: calc rank properly
     int d1_rank = d1->parents->rank;
     int d2_rank = byteorder_ntohs(dio->rank);
     if (d1_rank < d2_rank) {
@@ -133,7 +124,7 @@ int which_dodag(gnrc_rpl_dodag_t *d1, gnrc_rpl_dio_t *dio)
         return 1;
     }
 
-    /* prefer DODAG for which there is an alternate parent */
+    // prefer DODAG for which there is an alternate parent
     if (d1->parents->next) {
         return -1;
     }

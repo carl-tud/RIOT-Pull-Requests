@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Otto-von-Guericke Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Otto-von-Guericke Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_rpx0xx
- * @{
- *
- * @file
- * @brief       rpx0xx interrupt vector definitions
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- *
- * @}
- */
+/// @ingroup     cpu_rpx0xx
+/// @{
+///
+/// @file
+/// @brief       rpx0xx interrupt vector definitions
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+///
+/// @}
 
 #include <stdint.h>
 

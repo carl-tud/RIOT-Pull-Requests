@@ -1,29 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2015 Hamburg University of Applied Sciences
- * SPDX-FileCopyrightText: 2017-2020 Inria
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2015 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2015 Hamburg University of Applied Sciences
+// SPDX-FileCopyrightText: 2017-2020 Inria
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-FileCopyrightText: 2021 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @ingroup     drivers_periph_gpio_ll_irq
- * @{
- *
- * @file
- * @brief       IRQ implementation of the GPIO Low-Level API for STM32
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Fabian Nack <nack@inf.fu-berlin.de>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- * @author      Katja Kirstein <katja.kirstein@haw-hamburg.de>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
- *
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @ingroup     drivers_periph_gpio_ll_irq
+/// @{
+///
+/// @file
+/// @brief       IRQ implementation of the GPIO Low-Level API for STM32
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Fabian Nack <nack@inf.fu-berlin.de>
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+/// @author      Katja Kirstein <katja.kirstein@haw-hamburg.de>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
+///
+/// @}
 
 #include <errno.h>
 
@@ -72,7 +68,7 @@
 #  define EXTI_REG_IMR          (EXTI->IMR1)
 #endif
 
-/* STM32U3: SYSCFG is on APB3, RCC_APB3ENR_SYSCFGEN in CMSIS (e.g. stm32u385xx.h) */
+// STM32U3: SYSCFG is on APB3, RCC_APB3ENR_SYSCFGEN in CMSIS (e.g. stm32u385xx.h)
 #if defined(CPU_FAM_STM32U3) && defined(RCC_APB3ENR_SYSCFGEN)
 #  define SYSFG_CLOCK           APB3
 #  define SYSFG_ENABLE_MASK     RCC_APB3ENR_SYSCFGEN
@@ -106,14 +102,12 @@
 #  define EXTICR_FIELD_SIZE     AFIO_EXTICR1_EXTI1_Pos
 #endif
 
-void gpio_ll_irq_mask(gpio_port_t port, uint8_t pin)
-{
+void gpio_ll_irq_mask(gpio_port_t port, uint8_t pin) {
     (void)port;
     EXTI_REG_IMR &= ~(1 << pin);
 }
 
-void gpio_ll_irq_unmask_and_clear(gpio_port_t port, uint8_t pin)
-{
+void gpio_ll_irq_unmask_and_clear(gpio_port_t port, uint8_t pin) {
     (void)port;
     EXTI_REG_IMR |= (1 << pin);
 }
@@ -126,10 +120,9 @@ struct isr_ctx {
 static struct isr_ctx isr_ctx[EXTI_NUMOF];
 static uint16_t level_triggered;
 
-static IRQn_Type get_irqn(uint8_t pin)
-{
-    /* TODO: Come up with a way that this doesn't need updates whenever a new
-     * MCU family gets added */
+static IRQn_Type get_irqn(uint8_t pin) {
+    // TODO: Come up with a way that this doesn't need updates whenever a new
+    // MCU family gets added
 #if defined(CPU_FAM_STM32L5) || defined(CPU_FAM_STM32U3) || \
     defined(CPU_FAM_STM32U5)
     return EXTI0_IRQn + pin;
@@ -182,51 +175,47 @@ static IRQn_Type get_irqn(uint8_t pin)
 #endif
 }
 
-static void clear_pending_irqs(uint8_t pin)
-{
+static void clear_pending_irqs(uint8_t pin) {
 #ifdef EXTI_REG_PR
-    /* same IRQ flag no matter if falling or rising edge detected */
+    // same IRQ flag no matter if falling or rising edge detected
     EXTI_REG_PR = (1U << pin);
 #else
-    /* distinct IRQ flags for falling and rising edge, clearing both */
+    // distinct IRQ flags for falling and rising edge, clearing both
     EXTI_REG_FPR = (1U << pin);
     EXTI_REG_RPR = (1U << pin);
 #endif
 }
 
-static void set_exti_port(uint8_t exti_num, uint8_t port_num)
-{
+static void set_exti_port(uint8_t exti_num, uint8_t port_num) {
     uint32_t tmp = EXTICR_REG(exti_num);
     tmp &= ~(0xf << ((exti_num & 0x03) * EXTICR_FIELD_SIZE));
     tmp |= (port_num << ((exti_num & 0x03) * EXTICR_FIELD_SIZE));
     EXTICR_REG(exti_num) = tmp;
 }
 
-static uint8_t get_exti_port(uint8_t exti_num)
-{
+static uint8_t get_exti_port(uint8_t exti_num) {
     uint32_t reg = EXTICR_REG(exti_num);
     reg >>= (exti_num & 0x03) * EXTICR_FIELD_SIZE;
     return reg & 0xf;
 }
 
-int gpio_ll_irq(gpio_port_t port, uint8_t pin, gpio_irq_trig_t trig, gpio_ll_cb_t cb, void *arg)
-{
+int gpio_ll_irq(gpio_port_t port, uint8_t pin, gpio_irq_trig_t trig, gpio_ll_cb_t cb, void *arg) {
     unsigned irq_state = irq_disable();
     int port_num = gpio_port_num(port);
 
-    /* set callback */
+    // set callback
     isr_ctx[pin].cb = cb;
     isr_ctx[pin].arg = arg;
 
-    /* enable clock of the SYSCFG module for EXTI configuration */
+    // enable clock of the SYSCFG module for EXTI configuration
 #ifdef SYSFG_CLOCK
     periph_clk_en(SYSFG_CLOCK, SYSFG_ENABLE_MASK);
 #endif
 
-    /* enable global pin interrupt */
+    // enable global pin interrupt
     NVIC_EnableIRQ(get_irqn(pin));
 
-    /* configure trigger */
+    // configure trigger
     if (trig & GPIO_TRIGGER_EDGE_RISING) {
         EXTI_REG_RTSR |= 1UL << pin;
     }
@@ -247,7 +236,7 @@ int gpio_ll_irq(gpio_port_t port, uint8_t pin, gpio_irq_trig_t trig, gpio_ll_cb_
 
     if (trig & GPIO_TRIGGER_LEVEL) {
         level_triggered |= 1UL << pin;
-        /* if input is already at trigger level there might be no flank, so issue soft IRQ */
+        // if input is already at trigger level there might be no flank, so issue soft IRQ
         uint32_t actual_level = gpio_ll_read(port) & (1UL << pin);
         uint32_t trigger_level = EXTI_REG_RTSR & (1UL << pin);
         if (actual_level == trigger_level) {
@@ -263,22 +252,21 @@ int gpio_ll_irq(gpio_port_t port, uint8_t pin, gpio_irq_trig_t trig, gpio_ll_cb_
     return 0;
 }
 
-static uint32_t get_and_clear_pending_irqs(void)
-{
+static uint32_t get_and_clear_pending_irqs(void) {
 #ifdef EXTI_REG_PR
-    /* only one pending IRQ flag register for both falling and rising flanks */
+    // only one pending IRQ flag register for both falling and rising flanks
     uint32_t pending_isr = (EXTI_REG_PR & EXTI_MASK);
 
-    /* clear by writing a 1 */
+    // clear by writing a 1
     EXTI_REG_PR = pending_isr;
     return pending_isr;
 #else
-    /* distinct registers for pending IRQ flags depending on rising or falling
-     * flank */
+    // distinct registers for pending IRQ flags depending on rising or falling
+    // flank
     uint32_t pending_rising_isr = (EXTI_REG_RPR & EXTI_MASK);
     uint32_t pending_falling_isr = (EXTI_REG_FPR & EXTI_MASK);
 
-    /* clear by writing a 1 */
+    // clear by writing a 1
     EXTI->RPR1 = pending_rising_isr;
     EXTI->FPR1 = pending_falling_isr;
 
@@ -286,22 +274,21 @@ static uint32_t get_and_clear_pending_irqs(void)
 #endif
 }
 
-void isr_exti(void)
-{
+void isr_exti(void) {
     uint32_t pending_isr = get_and_clear_pending_irqs();
 
-    /* only generate soft interrupts against lines which have their IMR set */
+    // only generate soft interrupts against lines which have their IMR set
     pending_isr &= EXTI_REG_IMR;
 
-    /* iterate over all set bits */
+    // iterate over all set bits
     uint8_t pin = 0;
     while (pending_isr) {
         pending_isr = bitarithm_test_and_clear(pending_isr, &pin);
         isr_ctx[pin].cb(isr_ctx[pin].arg);
-        /* emulate level triggered IRQs by asserting the IRQ again in software, if needed */
+        // emulate level triggered IRQs by asserting the IRQ again in software, if needed
         if (level_triggered & (1UL << pin)) {
-            /* Trading a couple of CPU cycles to not having to store port connected to EXTI in RAM.
-             * A simple look up table would save ~6 instructions for the cost 64 bytes of RAM. */
+            // Trading a couple of CPU cycles to not having to store port connected to EXTI in RAM.
+            // A simple look up table would save ~6 instructions for the cost 64 bytes of RAM.
             gpio_port_t port = gpio_port(get_exti_port(pin));
             uint32_t actual_level = gpio_ll_read(port) & (1UL << pin);
             uint32_t trigger_level = EXTI_REG_RTSR & (1UL << pin);

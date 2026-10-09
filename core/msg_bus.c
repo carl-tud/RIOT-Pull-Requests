@@ -1,35 +1,29 @@
-/*
- * SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 ML!PA Consulting GmbH
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     core_msg
- *
- * @{
- *
- * @file
- * @brief       Messaging Bus API for inter process message broadcast.
- *
- * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
- *
- * @}
- */
+/// @ingroup     core_msg
+///
+/// @{
+///
+/// @file
+/// @brief       Messaging Bus API for inter process message broadcast.
+///
+/// @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
+///
+/// @}
 
 #include "irq.h"
 #include "msg_bus.h"
 #include "thread.h"
 
-void msg_bus_init(msg_bus_t *bus)
-{
+void msg_bus_init(msg_bus_t *bus) {
     static uint16_t bus_count;
 
     bus->subs.next = NULL;
     bus->id = bus_count++;
 }
 
-void msg_bus_attach(msg_bus_t *bus, msg_bus_entry_t *entry)
-{
+void msg_bus_attach(msg_bus_t *bus, msg_bus_entry_t *entry) {
     unsigned state;
 
     entry->next.next = NULL;
@@ -41,8 +35,7 @@ void msg_bus_attach(msg_bus_t *bus, msg_bus_entry_t *entry)
     irq_restore(state);
 }
 
-void msg_bus_detach(msg_bus_t *bus, msg_bus_entry_t *entry)
-{
+void msg_bus_detach(msg_bus_t *bus, msg_bus_entry_t *entry) {
     unsigned state;
 
     state = irq_disable();
@@ -50,8 +43,7 @@ void msg_bus_detach(msg_bus_t *bus, msg_bus_entry_t *entry)
     irq_restore(state);
 }
 
-msg_bus_entry_t *msg_bus_get_entry(msg_bus_t *bus)
-{
+msg_bus_entry_t *msg_bus_get_entry(msg_bus_t *bus) {
     msg_bus_entry_t *s = NULL;
     unsigned state = irq_disable();
 

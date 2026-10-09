@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2015 Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup cpu_native
- * @ingroup drivers_periph_uart
- * @brief   UART implementation based on /dev/tty devices on host
- * @author  Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
- */
+/// @file
+/// @ingroup cpu_native
+/// @ingroup drivers_periph_uart
+/// @brief   UART implementation based on /dev/tty devices on host
+/// @author  Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
 
 #include <assert.h>
 #include <errno.h>
@@ -26,30 +22,22 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief callback function and its argument
- */
+/// @brief callback function and its argument
 static uart_isr_ctx_t uart_config[UART_NUMOF];
 
-/**
- * @brief filenames of /dev/tty
- */
+/// @brief filenames of /dev/tty
 static char *tty_device_filenames[UART_NUMOF];
 
-/**
- * @brief file descriptors of /dev/tty
- */
+/// @brief file descriptors of /dev/tty
 static int tty_fds[UART_NUMOF];
 
-void tty_uart_setup(uart_t uart, const char *filename)
-{
+void tty_uart_setup(uart_t uart, const char *filename) {
     assert(uart < UART_NUMOF);
 
     tty_device_filenames[uart] = strndup(filename, PATH_MAX - 1);
 }
 
-static void io_signal_handler(int fd, void *arg)
-{
+static void io_signal_handler(int fd, void *arg) {
     uart_t uart;
     (void) arg;
 
@@ -92,8 +80,7 @@ static void io_signal_handler(int fd, void *arg)
     native_async_read_continue(fd);
 }
 
-int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
-{
+int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg) {
     if (uart >= UART_NUMOF) {
         return UART_NODEV;
     }
@@ -164,8 +151,7 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
     return UART_OK;
 }
 
-void uart_write(uart_t uart, const uint8_t *data, size_t len)
-{
+void uart_write(uart_t uart, const uint8_t *data, size_t len) {
     assert(uart < UART_NUMOF);
 
     DEBUG("writing to serial port ");
@@ -186,17 +172,15 @@ void uart_write(uart_t uart, const uint8_t *data, size_t len)
     }
 }
 
-void uart_poweron(uart_t uart)
-{
+void uart_poweron(uart_t uart) {
     (void)uart;
 
     assert(uart < UART_NUMOF);
 
-    /* not implemented (yet) */
+    // not implemented (yet)
 }
 
-void uart_poweroff(uart_t uart)
-{
+void uart_poweroff(uart_t uart) {
     assert(uart < UART_NUMOF);
 
     if (tty_fds[uart] >= 0) {

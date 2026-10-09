@@ -1,24 +1,20 @@
-/*
- * Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
- *               2020 Freie Universität Berlin
- *               2020 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
- */
+// Copyright (C) 2020 Kaspar Schleiser <kaspar@schleiser.de>
+//               2020 Freie Universität Berlin
+//               2020 Inria
+//
+// This file is subject to the terms and conditions of the GNU Lesser General
+// Public License v2.1. See the file LICENSE in the top level directory for more
+// details.
 
-/**
- * @ingroup     sys_ztimer_convert_shift
- * @{
- *
- * @file
- * @brief       ztimer frequency conversion module using shifts
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     sys_ztimer_convert_shift
+/// @{
+///
+/// @file
+/// @brief       ztimer frequency conversion module using shifts
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -30,20 +26,18 @@
 #include "debug.h"
 
 static uint32_t _convert_shift_up_set(
-    ztimer_convert_shift_t *ztimer_convert_shift, uint32_t val)
-{
+    ztimer_convert_shift_t *ztimer_convert_shift, uint32_t val) {
     uint32_t res = val;
 
     res >>= ztimer_convert_shift->shift;
 
-    /* TODO: round up */
+    // TODO: round up
 
     return res;
 }
 
 static uint32_t _convert_shift_up_now(
-    ztimer_convert_shift_t *ztimer_convert_shift, uint32_t val)
-{
+    ztimer_convert_shift_t *ztimer_convert_shift, uint32_t val) {
     uint32_t res = val;
 
     res <<= ztimer_convert_shift->shift;
@@ -54,8 +48,7 @@ static uint32_t _convert_shift_up_now(
     return res;
 }
 
-static void _ztimer_convert_shift_up_set(ztimer_clock_t *ztimer, uint32_t val)
-{
+static void _ztimer_convert_shift_up_set(ztimer_clock_t *ztimer, uint32_t val) {
     ztimer_convert_shift_t *ztimer_convert_shift =
         (ztimer_convert_shift_t *)ztimer;
 
@@ -65,8 +58,7 @@ static void _ztimer_convert_shift_up_set(ztimer_clock_t *ztimer, uint32_t val)
                    val));
 }
 
-static uint32_t _ztimer_convert_shift_up_now(ztimer_clock_t *ztimer)
-{
+static uint32_t _ztimer_convert_shift_up_now(ztimer_clock_t *ztimer) {
     ztimer_convert_shift_t *ztimer_convert_shift =
         (ztimer_convert_shift_t *)ztimer;
 
@@ -85,8 +77,7 @@ static const ztimer_ops_t _ztimer_convert_shift_ops_up = {
 };
 
 void ztimer_convert_shift_up_init(ztimer_convert_shift_t *clock,
-                                  ztimer_clock_t *lower, unsigned shift)
-{
+                                  ztimer_clock_t *lower, unsigned shift) {
     uint32_t max_value = UINT32_MAX;
 
     DEBUG(

@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 Carl Seifert
- * SPDX-FileCopyrightText: 2024-2026 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024-2026 Carl Seifert
+// SPDX-FileCopyrightText: 2024-2026 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @ingroup net_unicoap_drivers_dtls
- * @brief   Transport implementation of CoAP over DTLS driver
- * @author  Carl Seifert <carl.seifert@tu-dresden.de>
- */
+/// @file
+/// @ingroup net_unicoap_drivers_dtls
+/// @brief   Transport implementation of CoAP over DTLS driver
+/// @author  Carl Seifert <carl.seifert@tu-dresden.de>
 
 #include <stdint.h>
 #include <errno.h>
@@ -40,9 +36,8 @@ unicoap_scheduled_event_t _dtls_session_triage_event = { 0 };
 extern int unicoap_messaging_process_rfc7252(const uint8_t* pdu, size_t size, bool truncated,
                                              unicoap_packet_t* packet);
 
-/* Timeout function to free a session when too many session slots are occupied */
-static void _dtls_session_triage(unicoap_scheduled_event_t* event)
-{
+// Timeout function to free a session when too many session slots are occupied
+static void _dtls_session_triage(unicoap_scheduled_event_t* event) {
     (void)event;
     sock_dtls_session_t session;
     if (dsm_get_num_available_slots() < CONFIG_UNICOAP_DTLS_MINIMUM_AVAILABLE_SESSION_SLOTS) {
@@ -54,8 +49,7 @@ static void _dtls_session_triage(unicoap_scheduled_event_t* event)
     }
 }
 
-static void _dtls_on_event(sock_dtls_t* sock, sock_async_flags_t type, void* arg)
-{
+static void _dtls_on_event(sock_dtls_t* sock, sock_async_flags_t type, void* arg) {
     (void)arg;
     sock_dtls_session_t session = { 0 };
 
@@ -73,22 +67,22 @@ static void _dtls_on_event(sock_dtls_t* sock, sock_async_flags_t type, void* arg
 
         dsm_state_t prev_state = dsm_store(sock, &session, SESSION_STATE_ESTABLISHED, false);
 
-        /* If session is already stored and the state was SESSION_STATE_HANDSHAKE
-         * before, the handshake has been initiated internally by a client request
-         * and another thread is waiting for the handshake. Send message to the
-         * waiting thread to inform about established session */
+        // If session is already stored and the state was SESSION_STATE_HANDSHAKE
+        // before, the handshake has been initiated internally by a client request
+        // and another thread is waiting for the handshake. Send message to the
+        // waiting thread to inform about established session
         if (prev_state == SESSION_STATE_HANDSHAKE) {
             msg_t msg = { .type = DTLS_EVENT_CONNECTED };
             msg_send(&msg, _dtls_auth_waiting_thread);
         }
         else if (prev_state == NO_SPACE) {
-            /* No space in session management. Should not happen. If it occurs,
-             * we lost track of sessions. */
+            // No space in session management. Should not happen. If it occurs,
+            // we lost track of sessions.
             _DTLS_DEBUG("no space in session management\n");
             goto error;
         }
 
-        /* If not enough session slots left: set timeout to free session. */
+        // If not enough session slots left: set timeout to free session.
         if (dsm_get_num_available_slots() < CONFIG_UNICOAP_DTLS_MINIMUM_AVAILABLE_SESSION_SLOTS) {
             _DTLS_DEBUG("session triage: fewer than %u session slots available in session mgmt,"
                        " limiting session lifespan to %" PRIu32 " ms\n",
@@ -134,18 +128,18 @@ static void _dtls_on_event(sock_dtls_t* sock, sock_async_flags_t type, void* arg
         }
 #endif
 
-        /* Truncated DTLS messages would already have gotten lost at verification */
+        // Truncated DTLS messages would already have gotten lost at verification
         unicoap_messaging_process_rfc7252((uint8_t*)pdu, received, false, &packet);
 
         received = sock_dtls_recv_buf_aux(sock, &session, &pdu, &buffer_ctx, 0, &aux_rx);
-        /* If the networking backends holds its zero-copy guarantee, then trying to read
-         * another chunk must not yield any more data. */
+        // If the networking backends holds its zero-copy guarantee, then trying to read
+        // another chunk must not yield any more data.
         assert(received == 0);
     }
 
     if (type & SOCK_ASYNC_CONN_FIN) {
         if (sock_dtls_get_event_session(sock, &session)) {
-            /* Session is already destroyed, only remove it from dsm */
+            // Session is already destroyed, only remove it from dsm
             dsm_remove(sock, &session);
         }
         else {
@@ -168,12 +162,11 @@ error:
 }
 
 static ssize_t _dtls_authenticate(const sock_udp_ep_t* remote, sock_dtls_session_t* session,
-                                  uint32_t timeout)
-{
+                                  uint32_t timeout) {
     assert(session);
     int res;
 
-    /* prepare session */
+    // prepare session
     sock_dtls_session_set_udp_ep(session, remote);
     dsm_state_t session_state = dsm_store(&_dtls_socket, session, SESSION_STATE_HANDSHAKE, true);
     if (session_state == SESSION_STATE_ESTABLISHED) {
@@ -185,11 +178,11 @@ static ssize_t _dtls_authenticate(const sock_udp_ep_t* remote, sock_dtls_session
         return -ENOBUFS;
     }
 
-    /* start handshake */
+    // start handshake
     _dtls_auth_waiting_thread = thread_getpid();
     res = sock_dtls_session_init(&_dtls_socket, remote, session);
     if (res == 0) {
-        /* session already exists */
+        // session already exists
         _dtls_auth_waiting_thread = -1;
         return res;
     }
@@ -200,8 +193,8 @@ static ssize_t _dtls_authenticate(const sock_udp_ep_t* remote, sock_dtls_session
         uint32_t start = ztimer_now(ZTIMER_MSEC);
         res = ztimer_msg_receive_timeout(ZTIMER_MSEC, &msg, timeout);
 
-        /* ensure whole timeout time for the case we receive other messages than
-         * DTLS_EVENT_CONNECTED */
+        // ensure whole timeout time for the case we receive other messages than
+        // DTLS_EVENT_CONNECTED
         if (timeout != SOCK_NO_TIMEOUT) {
             uint32_t diff = (ztimer_now(ZTIMER_MSEC) - start);
             timeout = (diff > timeout) ? 0 : timeout - diff;
@@ -219,8 +212,7 @@ static ssize_t _dtls_authenticate(const sock_udp_ep_t* remote, sock_dtls_session
 }
 
 int unicoap_transport_sendv_dtls(iolist_t* iolist, const sock_udp_ep_t* remote,
-                                 const sock_udp_ep_t* local, sock_dtls_session_t* session)
-{
+                                 const sock_udp_ep_t* local, sock_dtls_session_t* session) {
     assert(remote);
     ssize_t res = 0;
 
@@ -254,15 +246,14 @@ int unicoap_transport_sendv_dtls(iolist_t* iolist, const sock_udp_ep_t* remote,
         sock_dtls_session_destroy(&_dtls_socket, session);
         break;
     default:
-        /* Temporary error. Keeping the DTLS session */
+        // Temporary error. Keeping the DTLS session
         break;
     }
     return 0;
 }
 
 static int _add_socket(event_queue_t* queue, sock_dtls_t* socket, sock_udp_t* base_socket,
-                       sock_udp_ep_t* local)
-{
+                       sock_udp_ep_t* local) {
     _DTLS_DEBUG("creating DTLS sock, port=%" PRIu16 " if=%" PRIu16 " family=%s\n", local->port,
                local->netif,
                local->family == AF_INET6 ? "inet6" : (local->family == AF_INET ? "inet" : "?"));
@@ -282,11 +273,10 @@ static int _add_socket(event_queue_t* queue, sock_dtls_t* socket, sock_udp_t* ba
     return 0;
 }
 
-int unicoap_init_dtls(event_queue_t* queue)
-{
+int unicoap_init_dtls(event_queue_t* queue) {
     sock_udp_ep_t local = {
-    /* FIXME: Once the problems with IPv4/IPv6 dual stack use in RIOT are fixed, adapt these lines
-         *        (and e.g. use AF_UNSPEC) */
+    // FIXME: Once the problems with IPv4/IPv6 dual stack use in RIOT are fixed, adapt these lines
+    //        (and e.g. use AF_UNSPEC)
 #if defined(SOCK_HAS_IPV6)
         .family = AF_INET6,
 #elif defined(SOCK_HAS_IPV4)
@@ -299,8 +289,7 @@ int unicoap_init_dtls(event_queue_t* queue)
     return _add_socket(queue, &_dtls_socket, &_dtls_base_socket, &local);
 }
 
-sock_dtls_t* unicoap_transport_dtls_get_socket(void)
-{
+sock_dtls_t* unicoap_transport_dtls_get_socket(void) {
     return &_dtls_socket;
 }
 
@@ -317,8 +306,7 @@ int unicoap_transport_dtls_remove_socket(sock_dtls_t* socket) {
     return 0;
 }
 
-int unicoap_deinit_dtls(event_queue_t* queue)
-{
+int unicoap_deinit_dtls(event_queue_t* queue) {
     (void)queue;
     sock_dtls_close(&_dtls_socket);
     sock_udp_close(&_dtls_base_socket);

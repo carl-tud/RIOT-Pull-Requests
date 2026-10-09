@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Technische Universität Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_nucleo-u385rg-q
- * @{
- *
- * @file
- * @brief       Minimal peripheral configuration for STM32U385 (bring-up)
- *
- * @author      Adarsh Nair Mullachery <adarsh.mullachery@tuhh.de>
- */
+/// @ingroup     boards_nucleo-u385rg-q
+/// @{
+///
+/// @file
+/// @brief       Minimal peripheral configuration for STM32U385 (bring-up)
+///
+/// @author      Adarsh Nair Mullachery <adarsh.mullachery@tuhh.de>
 
-/* Nucleo board provides 32.768 kHz LSE for RTC (same as other Nucleo-U boards) */
+// Nucleo board provides 32.768 kHz LSE for RTC (same as other Nucleo-U boards)
 #ifndef CONFIG_BOARD_HAS_LSE
 #  define CONFIG_BOARD_HAS_LSE 1
 #endif
@@ -27,12 +23,10 @@
 extern "C" {
 #endif
 
-/**
- * @name    Timer configuration
- * @{
- * @note    TIM2 is reserved for PWM (User LED / TIM2_CH1 on PA5).
- *          TIM3 is used here as the RIOT timer backend (general-purpose timer).
- */
+/// @name    Timer configuration
+/// @{
+/// @note    TIM2 is reserved for PWM (User LED / TIM2_CH1 on PA5).
+///          TIM3 is used here as the RIOT timer backend (general-purpose timer).
 static const timer_conf_t timer_config[] = {
     {
         .dev = TIM3,
@@ -46,15 +40,13 @@ static const timer_conf_t timer_config[] = {
 #define TIMER_NUMOF        ARRAY_SIZE(timer_config)
 
 #define TIMER_0_ISR        isr_tim3
-/** @} */
+/// @}
 
-/**
- * @name    UART configuration
- * @{
- */
+/// @name    UART configuration
+/// @{
 static const uart_conf_t uart_config[] = {
     {
-        /* ST-Link Virtual COM Port (STDIO, UART_DEV(0)) — USART1 on PA9/PA10 */
+        // ST-Link Virtual COM Port (STDIO, UART_DEV(0)) — USART1 on PA9/PA10
         .dev        = USART1,
         .rcc_mask   = RCC_APB2ENR_USART1EN,
         .rx_pin     = GPIO_PIN(PORT_A, 10),
@@ -64,10 +56,10 @@ static const uart_conf_t uart_config[] = {
         .bus        = APB2,
         .irqn       = USART1_IRQn,
         .type       = STM32_USART,
-        .clk_src    = 0, /* Use APB clock */
+        .clk_src    = 0, // Use APB clock
     },
     {
-        /* LPUART1 on PA2/PA3 */
+        // LPUART1 on PA2/PA3
         .dev        = LPUART1,
         .rcc_mask   = RCC_APB3ENR_LPUART1EN,
         .rx_pin     = GPIO_PIN(PORT_A, 3),
@@ -84,10 +76,10 @@ static const uart_conf_t uart_config[] = {
 #define UART_0_ISR          (isr_usart1)
 #define UART_1_ISR          (isr_lpuart1)
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     sys_auto_init_saul
- * @{
- *
- * @file
- * @brief       Auto initialization of LIS3MDL magnetometer
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+// @ingroup     sys_auto_init_saul
+// @{
+//
+// @file
+// @brief       Auto initialization of LIS3MDL magnetometer
+//
+// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+//
+// @}
 
 #include "assert.h"
 #include "log.h"
@@ -21,33 +17,22 @@
 #include "lis3mdl.h"
 #include "lis3mdl_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define LIS3MDL_NUM    ARRAY_SIZE(lis3mdl_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static lis3mdl_t lis3mdl_devs[LIS3MDL_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[LIS3MDL_NUM];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define LIS3MDL_INFO_NUM    ARRAY_SIZE(lis3mdl_saul_info)
 
-/**
- * @brief   Reference the driver structs
- */
+/// @brief   Reference the driver structs
 extern saul_driver_t lis3mdl_saul_mag_driver;
 
-void auto_init_lis3mdl(void)
-{
+void auto_init_lis3mdl(void) {
     assert(LIS3MDL_NUM == LIS3MDL_INFO_NUM);
 
     for (unsigned int i = 0; i < LIS3MDL_NUM; i++) {

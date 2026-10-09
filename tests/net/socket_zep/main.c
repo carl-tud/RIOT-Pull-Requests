@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for socket_zep network device driver
- *
- * @author      Martine Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for socket_zep network device driver
+///
+/// @author      Martine Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <errno.h>
 #include <inttypes.h>
@@ -44,8 +40,7 @@ static kernel_pid_t _main_pid;
 static void _event_cb(netdev_t *dev, netdev_event_t event);
 static void _print_info(netdev_t *netdev);
 
-static void test_init(void)
-{
+static void test_init(void) {
     const socket_zep_params_t *p = &socket_zep_params[0];
     netdev_t *netdev = &_socket_zep_netdev.dev.netdev;
 
@@ -60,8 +55,7 @@ static void test_init(void)
     _print_info(netdev);
 }
 
-static void test_send__iolist_not_NULL(void)
-{
+static void test_send__iolist_not_NULL(void) {
     iolist_t iolist[] = { { .iol_base = "Hello", .iol_len = sizeof("Hello") },
                           { .iol_base = "World", .iol_len = sizeof("World") } };
 
@@ -77,8 +71,7 @@ static void test_send__iolist_not_NULL(void)
     }
 }
 
-static void test_recv(void)
-{
+static void test_recv(void) {
     puts("Waiting for an incoming message (use `make test`)");
     while (1) {
         netdev_t *netdev = &_socket_zep_netdev.dev.netdev;
@@ -94,21 +87,19 @@ static void test_recv(void)
     }
 }
 
-int main(void)
-{
+int main(void) {
     puts("Socket ZEP device driver test");
     msg_init_queue(_msg_queue, MSG_QUEUE_SIZE);
     _main_pid = thread_getpid();
 
     test_init();
     test_send__iolist_not_NULL();
-    test_recv();    /* does not return */
+    test_recv();    // does not return
     puts("ALL TESTS SUCCESSFUL");
     return 0;
 }
 
-static void _recv(netdev_t *dev)
-{
+static void _recv(netdev_t *dev) {
     netdev_ieee802154_rx_info_t rx_info;
     const int exp_len = dev->driver->recv(dev, NULL, 0, NULL);
     int data_len;
@@ -128,8 +119,7 @@ static void _recv(netdev_t *dev)
     }
 }
 
-static void _event_cb(netdev_t *dev, netdev_event_t event)
-{
+static void _event_cb(netdev_t *dev, netdev_event_t event) {
     if (event == NETDEV_EVENT_ISR) {
         msg_t msg;
 
@@ -153,8 +143,7 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
     }
 }
 
-static void _print_info(netdev_t *netdev)
-{
+static void _print_info(netdev_t *netdev) {
     uint64_t long_addr;
     uint16_t short_addr;
 
@@ -163,7 +152,7 @@ static void _print_info(netdev_t *netdev)
     expect(netdev->driver->get(netdev, NETOPT_ADDRESS_LONG, &long_addr,
                                sizeof(long_addr)) == sizeof(uint64_t));
 
-    /* we are on native, so using PRIu* is okay */
+    // we are on native, so using PRIu* is okay
     printf("(Hwaddrs: %04" PRIx16 ", %016" PRIx64 ")\n",
            byteorder_htons(short_addr).u16,
            byteorder_htonll(long_addr).u64);

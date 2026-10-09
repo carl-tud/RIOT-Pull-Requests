@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2019 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #ifndef DOXYGEN
 
@@ -21,16 +19,15 @@
 #include "freertos/timers.h"
 
 typedef struct {
-    ztimer_t    ztimer;         /* ztimer object */
-    const char* name;           /* FreeRTOS timer name */
-    uint32_t    period;         /* in us */
-    bool        autoreload;     /* FreeRTOS timer reload indicator */
-    const void* timerid;        /* FreeRTOS timer id */
-    TimerCallbackFunction_t cb; /* FreeRTOS callback function */
+    ztimer_t    ztimer;         // ztimer object
+    const char* name;           // FreeRTOS timer name
+    uint32_t    period;         // in us
+    bool        autoreload;     // FreeRTOS timer reload indicator
+    const void* timerid;        // FreeRTOS timer id
+    TimerCallbackFunction_t cb; // FreeRTOS callback function
 } freertos_ztimer_t;
 
-static void IRAM_ATTR _ztimer_callback (void *arg)
-{
+static void IRAM_ATTR _ztimer_callback (void *arg) {
     assert(arg != NULL);
 
     freertos_ztimer_t* timer = (freertos_ztimer_t*)arg;
@@ -48,21 +45,20 @@ TimerHandle_t xTimerCreate (const char * const pcTimerName,
                             const TickType_t xTimerPeriod,
                             const UBaseType_t uxAutoReload,
                             void * const pvTimerID,
-                            TimerCallbackFunction_t pxCallbackFunction)
-{
+                            TimerCallbackFunction_t pxCallbackFunction) {
     freertos_ztimer_t* timer = malloc(sizeof(freertos_ztimer_t));
     if (timer == NULL) {
         return NULL;
     }
 
-    /* FreeRTOS timer parameter */
+    // FreeRTOS timer parameter
     timer->name = pcTimerName;
     timer->period = xTimerPeriod * portTICK_PERIOD_MS;
     timer->autoreload = uxAutoReload;
     timer->timerid = pvTimerID;
     timer->cb = pxCallbackFunction;
 
-    /* ztimer parameter */
+    // ztimer parameter
     timer->ztimer.callback = _ztimer_callback;
     timer->ztimer.arg = timer;
 
@@ -71,8 +67,7 @@ TimerHandle_t xTimerCreate (const char * const pcTimerName,
     return timer;
 }
 
-BaseType_t xTimerDelete(TimerHandle_t xTimer, TickType_t xBlockTime)
-{
+BaseType_t xTimerDelete(TimerHandle_t xTimer, TickType_t xBlockTime) {
     DEBUG("%s %p %"PRIu32"\n", __func__, xTimer, xBlockTime);
     assert(xTimer != NULL);
 
@@ -83,8 +78,7 @@ BaseType_t xTimerDelete(TimerHandle_t xTimer, TickType_t xBlockTime)
     return pdTRUE;
 }
 
-BaseType_t xTimerStart (TimerHandle_t xTimer, TickType_t xBlockTime)
-{
+BaseType_t xTimerStart (TimerHandle_t xTimer, TickType_t xBlockTime) {
     DEBUG("%s %p %"PRIu32"\n", __func__, xTimer, xBlockTime);
     assert(xTimer != NULL);
 
@@ -94,8 +88,7 @@ BaseType_t xTimerStart (TimerHandle_t xTimer, TickType_t xBlockTime)
     return pdTRUE;
 }
 
-BaseType_t xTimerStop  (TimerHandle_t xTimer, TickType_t xBlockTime)
-{
+BaseType_t xTimerStop  (TimerHandle_t xTimer, TickType_t xBlockTime) {
     DEBUG("%s %p %"PRIu32"\n", __func__, xTimer, xBlockTime);
     assert(xTimer != NULL);
 
@@ -105,8 +98,7 @@ BaseType_t xTimerStop  (TimerHandle_t xTimer, TickType_t xBlockTime)
     return pdTRUE;
 }
 
-BaseType_t xTimerReset (TimerHandle_t xTimer, TickType_t xBlockTime)
-{
+BaseType_t xTimerReset (TimerHandle_t xTimer, TickType_t xBlockTime) {
     DEBUG("%s %p %"PRIu32"\n", __func__, xTimer, xBlockTime);
     assert(xTimer != NULL);
 
@@ -116,12 +108,11 @@ BaseType_t xTimerReset (TimerHandle_t xTimer, TickType_t xBlockTime)
     return pdTRUE;
 }
 
-void *pvTimerGetTimerID(const TimerHandle_t xTimer)
-{
+void *pvTimerGetTimerID(const TimerHandle_t xTimer) {
     assert(xTimer != NULL);
 
     freertos_ztimer_t* timer = (freertos_ztimer_t*)xTimer;
     return (void*)timer->timerid;
 }
 
-#endif /* DOXYGEN */
+#endif // DOXYGEN

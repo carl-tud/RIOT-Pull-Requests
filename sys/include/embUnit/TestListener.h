@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2003 Embedded Unit Project
- * SPDX-License-Identifier: ICU
- */
+// SPDX-FileCopyrightText: 2003 Embedded Unit Project
+// SPDX-License-Identifier: ICU
 #ifndef EMBUNIT_TESTLISTENER_H
 #define EMBUNIT_TESTLISTENER_H
 
@@ -10,7 +8,7 @@ extern "C" {
 #endif
 
 typedef struct __TestListnerImplement   TestListnerImplement;
-typedef struct __TestListnerImplement*  TestListnerImplementRef;/*downward compatible*/
+typedef struct __TestListnerImplement*  TestListnerImplementRef;// downward compatible
 
 typedef void(*TestListnerStartTestCallBack)(void*,void*);
 typedef void(*TestListnerEndTestCallBack)(void*,void*);
@@ -37,4 +35,4 @@ struct __TestListner {
 }
 #endif
 
-#endif /* EMBUNIT_TESTLISTENER_H */
+#endif // EMBUNIT_TESTLISTENER_H

@@ -1,23 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
- * SPDX-FileCopyrightText: 2015 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014 Hamburg University of Applied Sciences
+// SPDX-FileCopyrightText: 2015 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the SRF02 ultrasonic range sensor
- *
- * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- * @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the SRF02 ultrasonic range sensor
+///
+/// @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
+/// @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Kevin Weiss <kevin.weiss@haw-hamburg.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -35,12 +31,11 @@
 #error "TEST_MODE not defined"
 #endif
 
-#define SAMPLE_PERIOD       (100LU * US_PER_MS) /* 100 ms */
+#define SAMPLE_PERIOD       (100LU * US_PER_MS) // 100 ms
 
 static srf02_t dev;
 
-static void sample(void)
-{
+static void sample(void) {
     uint16_t distance = srf02_get_distance(&dev, TEST_MODE);
     if (distance != 0xFFFF) {
         printf("distance = %3i cm\n", distance);
@@ -50,8 +45,7 @@ static void sample(void)
     }
 }
 
-static int cmd_init(int argc, char **argv)
-{
+static int cmd_init(int argc, char **argv) {
     int res;
 
     if (argc < 2) {
@@ -74,8 +68,7 @@ static int cmd_init(int argc, char **argv)
     return 0;
 }
 
-static int cmd_sample(int argc, char **argv)
-{
+static int cmd_sample(int argc, char **argv) {
     (void)argc;
     (void)argv;
     xtimer_ticks32_t wakeup = xtimer_now();
@@ -88,8 +81,7 @@ static int cmd_sample(int argc, char **argv)
     return 0;
 }
 
-static int cmd_shoot(int argc, char **argv)
-{
+static int cmd_shoot(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -97,8 +89,7 @@ static int cmd_shoot(int argc, char **argv)
     return 0;
 }
 
-static int cmd_set_addr(int argc, char **argv)
-{
+static int cmd_set_addr(int argc, char **argv) {
     uint8_t new_addr;
 
     if (argc < 2) {
@@ -124,8 +115,7 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("\nSRF02 Ultrasonic Range Sensor Test\n");
     puts("Use the following flow to test your device/setup. First you need to\n"
          "initialize your device (e.g. 'init 224'). Next you can sample your \n"

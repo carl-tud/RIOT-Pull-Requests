@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2019 Silke Hofstra
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Silke Hofstra
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the black/white e-paper SPI display driver.
- *
- * @author      Silke Hofstra <silke@slxh.eu>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the black/white e-paper SPI display driver.
+///
+/// @author      Silke Hofstra <silke@slxh.eu>
+/// @}
 
 #include <string.h>
 #include <stdlib.h>
@@ -33,8 +29,7 @@ const uint16_t riot_32_height = ARRAY_SIZE(riot_logo_32);
 const uint8_t riot_200_width = 200;
 const uint8_t riot_200_height = 200;
 
-int main(void)
-{
+int main(void) {
     epd_bw_spi_t epd;
 
     int init = epd_bw_spi_init(&epd, epd_bw_spi_params);
@@ -55,11 +50,11 @@ int main(void)
     dev->driver = &epd_bw_spi_disp_dev_driver;
 
     while (1) {
-        /* Set both RAM buffers to the RIOT logo */
+        // Set both RAM buffers to the RIOT logo
         disp_dev_map(dev, &large_area, (void *)riot_icon_200);
         disp_dev_map(dev, &large_area, (void *)riot_icon_200);
 
-        /* Draw small RIOT logos on the display */
+        // Draw small RIOT logos on the display
         for (uint16_t y = 0; y < disp_dev_width(dev); y += riot_32_height) {
             for (uint16_t x = 0; x < disp_dev_height(dev); x += 32) {
                 disp_dev_area_t small_area = {

@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2018 UC Berkeley
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 UC Berkeley
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @file
- * @brief       Driver for the FXOS8700 3-axis accelerometer/magnetometer
- *
- * @author      Michael Andersen <m.andersen@cs.berkeley.edu>
- * @author      Hyung-Sin Kim <hs.kim@cs.berkeleyedu>
- */
+/// @file
+/// @brief       Driver for the FXOS8700 3-axis accelerometer/magnetometer
+///
+/// @author      Michael Andersen <m.andersen@cs.berkeley.edu>
+/// @author      Hyung-Sin Kim <hs.kim@cs.berkeleyedu>
 
 #include "periph/i2c.h"
 #include "xtimer.h"
@@ -23,8 +19,7 @@
 
 #define FXOS8700_FULLDATA_LENGTH (12)
 
-static int fxos8700_read_regs(const fxos8700_t* dev, uint8_t reg, uint8_t* data, size_t len)
-{
+static int fxos8700_read_regs(const fxos8700_t* dev, uint8_t reg, uint8_t* data, size_t len) {
     i2c_acquire(dev->p.i2c);
     if (i2c_read_regs(dev->p.i2c, dev->p.addr, reg, (char*) data, len, 0) < 0) {
         DEBUG("[fxos8700] Can't read register 0x%x\n", reg);
@@ -36,8 +31,7 @@ static int fxos8700_read_regs(const fxos8700_t* dev, uint8_t reg, uint8_t* data,
     return FXOS8700_OK;
 }
 
-static int fxos8700_write_regs(const fxos8700_t* dev, uint8_t reg, uint8_t* data, size_t len)
-{
+static int fxos8700_write_regs(const fxos8700_t* dev, uint8_t reg, uint8_t* data, size_t len) {
     i2c_acquire(dev->p.i2c);
     if (i2c_write_regs(dev->p.i2c, dev->p.addr, reg, (char*) data, len, 0) < 0) {
         DEBUG("[fxos8700] Can't write to register 0x%x\n", reg);
@@ -49,8 +43,7 @@ static int fxos8700_write_regs(const fxos8700_t* dev, uint8_t reg, uint8_t* data
     return FXOS8700_OK;
 }
 
-int fxos8700_init(fxos8700_t* dev, const fxos8700_params_t *params)
-{
+int fxos8700_init(fxos8700_t* dev, const fxos8700_params_t *params) {
     uint8_t config;
 
     if ((params->addr < 0x1C) || (params->addr > 0x1F)) {
@@ -76,23 +69,23 @@ int fxos8700_init(fxos8700_t* dev, const fxos8700_params_t *params)
     }
     i2c_release(dev->p.i2c);
 
-    /* Configure the ODR to maximum (400Hz in hybrid mode) */
+    // Configure the ODR to maximum (400Hz in hybrid mode)
     config = FXOS8700_REG_CTRL_REG1_ODR__400HZ & FXOS8700_REG_CTRL_REG1_MASK__ODR;
     if (fxos8700_write_regs(dev, FXOS8700_REG_CTRL_REG1, &config, 1) != FXOS8700_OK) {
         return FXOS8700_BUSERR;
     }
     dev->config = config;
-    /* Activate hybrid mode */
+    // Activate hybrid mode
     config = FXOS8700_REG_M_CTRL_REG1_HMS__HYBRID & FXOS8700_REG_M_CTRL_REG1_MASK__HMS;
     if (fxos8700_write_regs(dev, FXOS8700_REG_M_CTRL_REG1, &config, 1) != FXOS8700_OK) {
         return FXOS8700_BUSERR;
     }
-    /* Set burst read mode (accel + magnet together) */
+    // Set burst read mode (accel + magnet together)
     config = FXOS8700_REG_M_CTRL_REG2_MASK__HYB_AUTOINC_MODE;
     if (fxos8700_write_regs(dev, FXOS8700_REG_M_CTRL_REG2, &config, 1) != FXOS8700_OK) {
         return FXOS8700_BUSERR;
     }
-    /* Set accelerator's full-scale range */
+    // Set accelerator's full-scale range
     if (fxos8700_read_regs(dev, FXOS8700_REG_XYZ_DATA_CFG, &config, 1) != FXOS8700_OK) {
         return FXOS8700_BUSERR;
     }
@@ -102,7 +95,7 @@ int fxos8700_init(fxos8700_t* dev, const fxos8700_params_t *params)
         return FXOS8700_BUSERR;
     }
 
-    /* initial read for caching operation */
+    // initial read for caching operation
     if (fxos8700_read(dev, &dev->acc_cached, &dev->mag_cached) != FXOS8700_OK) {
         return FXOS8700_BUSERR;
     }
@@ -111,8 +104,7 @@ int fxos8700_init(fxos8700_t* dev, const fxos8700_params_t *params)
     return FXOS8700_OK;
 }
 
-int fxos8700_set_active(const fxos8700_t* dev)
-{
+int fxos8700_set_active(const fxos8700_t* dev) {
     uint8_t config = dev->config | FXOS8700_REG_CTRL_REG1_MASK__ACTIVE;
     if (fxos8700_write_regs(dev, FXOS8700_REG_CTRL_REG1, &config, 1) != FXOS8700_OK) {
         return FXOS8700_BUSERR;
@@ -120,8 +112,7 @@ int fxos8700_set_active(const fxos8700_t* dev)
     return FXOS8700_OK;
 }
 
-int fxos8700_set_idle(const fxos8700_t* dev)
-{
+int fxos8700_set_idle(const fxos8700_t* dev) {
     uint8_t config = dev->config & ~FXOS8700_REG_CTRL_REG1_MASK__ACTIVE;
     if (fxos8700_write_regs(dev, FXOS8700_REG_CTRL_REG1, &config, 1) != FXOS8700_OK) {
         return FXOS8700_BUSERR;
@@ -130,8 +121,7 @@ int fxos8700_set_idle(const fxos8700_t* dev)
 }
 
 int fxos8700_read(const fxos8700_t* dev, fxos8700_measurement_t* acc,
-                  fxos8700_measurement_t* mag)
-{
+                  fxos8700_measurement_t* mag) {
     uint8_t data[12];
     uint8_t ready = 0;
 
@@ -146,7 +136,7 @@ int fxos8700_read(const fxos8700_t* dev, fxos8700_measurement_t* acc,
         fxos8700_read_regs(dev, FXOS8700_REG_M_DR_STATUS, &ready, 1);
     }
 
-    /* Read all data at once */
+    // Read all data at once
     if (fxos8700_read_regs(dev, FXOS8700_REG_OUT_X_MSB, &data[0], FXOS8700_FULLDATA_LENGTH)) {
         return FXOS8700_BUSERR;
     }
@@ -155,7 +145,7 @@ int fxos8700_read(const fxos8700_t* dev, fxos8700_measurement_t* acc,
         return FXOS8700_BUSERR;
     }
 
-    /* Read accelerometer */
+    // Read accelerometer
     if (acc) {
         if (IS_ACTIVE(CONFIG_FXOS8700_USE_ACC_RAW_VALUES)) {
             acc->x = (int16_t) ((data[0] << 8) | data[1]) >> 2;
@@ -187,7 +177,7 @@ int fxos8700_read(const fxos8700_t* dev, fxos8700_measurement_t* acc,
              }
          }
     }
-    /* Read magnetometer */
+    // Read magnetometer
     if (mag) {
         mag->x = (int16_t) ((data[6] << 8) | data[7]);
         mag->y = (int16_t) ((data[8] << 8) | data[9]);
@@ -197,14 +187,13 @@ int fxos8700_read(const fxos8700_t* dev, fxos8700_measurement_t* acc,
 }
 
 int fxos8700_read_cached(const void *dev, fxos8700_measurement_t* acc,
-                         fxos8700_measurement_t* mag)
-{
+                         fxos8700_measurement_t* mag) {
     fxos8700_t* fxos_dev = (fxos8700_t *)dev;
     uint32_t now = xtimer_now_usec();
 
-    /* check if readings are outdated */
+    // check if readings are outdated
     if (now - fxos_dev->last_read_time > fxos_dev->p.renew_interval) {
-        /* refresh cache and update last_read_time */
+        // refresh cache and update last_read_time
         if (fxos8700_read(fxos_dev, &fxos_dev->acc_cached, &fxos_dev->mag_cached)
             != FXOS8700_OK) {
             return FXOS8700_BUSERR;
@@ -212,7 +201,7 @@ int fxos8700_read_cached(const void *dev, fxos8700_measurement_t* acc,
         fxos_dev->last_read_time = now;
     }
 
-    /* Read cached data */
+    // Read cached data
     if (acc) {
         acc->x = fxos_dev->acc_cached.x;
         acc->y = fxos_dev->acc_cached.y;

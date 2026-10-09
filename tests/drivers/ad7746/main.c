@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 HAW Hamburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 HAW Hamburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup tests
- * @{
- *
- * @file
- * @brief       Test application for the AD7746 capacitance-to-digital
- *              converter with temperature sensor.
- *
- * @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
- * @}
- */
+/// @ingroup tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the AD7746 capacitance-to-digital
+///              converter with temperature sensor.
+///
+/// @author      Leandro Lanzieri <leandro.lanzieri@haw-hamburg.de>
+/// @}
 
 #include <stdio.h>
 
@@ -26,8 +22,7 @@
 
 static ad7746_t dev;
 
-int main(void)
-{
+int main(void) {
     int data;
 
     puts("AD746 capacitance to digital driver test application\n");
@@ -42,7 +37,7 @@ int main(void)
         return -1;
     }
 
-    /* show that if changed mode data may not be available right away */
+    // show that if changed mode data may not be available right away
     if (ad7746_read_voltage_vdd(&dev, &data) == AD7746_OK) {
         printf("VDD : %d mV\n", data);
     }

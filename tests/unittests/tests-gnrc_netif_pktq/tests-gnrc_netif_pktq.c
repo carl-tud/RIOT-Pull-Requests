@@ -1,14 +1,10 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @author  Martine Lenders <m.lenders@fu-berlin.de>
- */
+/// @{
+///
+/// @file
+/// @author  Martine Lenders <m.lenders@fu-berlin.de>
 
 #include "embUnit.h"
 
@@ -19,23 +15,19 @@
 
 gnrc_netif_t _netif;
 
-static void set_up(void)
-{
+static void set_up(void) {
     while (gnrc_netif_pktq_get(&_netif)) { }
 }
 
-static void test_pktq_get__empty(void)
-{
+static void test_pktq_get__empty(void) {
     TEST_ASSERT_NULL(gnrc_netif_pktq_get(&_netif));
 }
 
-static void test_pktq_usage__empty(void)
-{
+static void test_pktq_usage__empty(void) {
     TEST_ASSERT_EQUAL_INT(0, gnrc_netif_pktq_usage());
 }
 
-static void test_pktq_put__full(void)
-{
+static void test_pktq_put__full(void) {
     gnrc_pktsnip_t pkt;
 
     for (unsigned i = 0; i < CONFIG_GNRC_NETIF_PKTQ_POOL_SIZE; i++) {
@@ -46,8 +38,7 @@ static void test_pktq_put__full(void)
                           gnrc_netif_pktq_usage());
 }
 
-static void test_pktq_put_get1(void)
-{
+static void test_pktq_put_get1(void) {
     gnrc_pktsnip_t pkt_in, *pkt_out;
 
     TEST_ASSERT_EQUAL_INT(0, gnrc_netif_pktq_put(&_netif, &pkt_in));
@@ -57,8 +48,7 @@ static void test_pktq_put_get1(void)
     TEST_ASSERT_EQUAL_INT(0, gnrc_netif_pktq_usage());
 }
 
-static void test_pktq_put_get3(void)
-{
+static void test_pktq_put_get3(void) {
     gnrc_pktsnip_t pkt_in[3];
 
     for (unsigned i = 0; i < 3; i++) {
@@ -74,8 +64,7 @@ static void test_pktq_put_get3(void)
     TEST_ASSERT_EQUAL_INT(0, gnrc_netif_pktq_usage());
 }
 
-static void test_pktq_push_back__full(void)
-{
+static void test_pktq_push_back__full(void) {
     gnrc_pktsnip_t pkt;
 
     for (unsigned i = 0; i < CONFIG_GNRC_NETIF_PKTQ_POOL_SIZE; i++) {
@@ -86,8 +75,7 @@ static void test_pktq_push_back__full(void)
                           gnrc_netif_pktq_usage());
 }
 
-static void test_pktq_push_back_get1(void)
-{
+static void test_pktq_push_back_get1(void) {
     gnrc_pktsnip_t pkt_in, *pkt_out;
 
     TEST_ASSERT_EQUAL_INT(0, gnrc_netif_pktq_push_back(&_netif, &pkt_in));
@@ -97,8 +85,7 @@ static void test_pktq_push_back_get1(void)
     TEST_ASSERT_EQUAL_INT(0, gnrc_netif_pktq_usage());
 }
 
-static void test_pktq_push_back_get3(void)
-{
+static void test_pktq_push_back_get3(void) {
     gnrc_pktsnip_t pkt_in[3];
 
     for (unsigned i = 0; i < 3; i++) {
@@ -114,8 +101,7 @@ static void test_pktq_push_back_get3(void)
     TEST_ASSERT_EQUAL_INT(0, gnrc_netif_pktq_usage());
 }
 
-static void test_pktq_empty(void)
-{
+static void test_pktq_empty(void) {
     gnrc_pktsnip_t pkt_in;
 
     TEST_ASSERT(gnrc_netif_pktq_empty(&_netif));
@@ -129,8 +115,7 @@ static void test_pktq_empty(void)
     TEST_ASSERT(gnrc_netif_pktq_empty(&_netif));
 }
 
-static Test *test_gnrc_netif_pktq(void)
-{
+static Test *test_gnrc_netif_pktq(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_pktq_get__empty),
         new_TestFixture(test_pktq_usage__empty),
@@ -148,9 +133,8 @@ static Test *test_gnrc_netif_pktq(void)
     return (Test *)&pktq_tests;
 }
 
-void tests_gnrc_netif_pktq(void)
-{
+void tests_gnrc_netif_pktq(void) {
     TESTS_RUN(test_gnrc_netif_pktq());
 }
 
-/** @} */
+/// @}

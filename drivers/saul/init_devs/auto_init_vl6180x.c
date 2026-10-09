@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2018 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/*
- * @ingroup     drivers_vl6180x
- * @ingroup     sys_auto_init_saul
- * @brief       Auto initialization of ST VL6180X Ranging and Ambient Light Sensor
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @file
- */
+// @ingroup     drivers_vl6180x
+// @ingroup     sys_auto_init_saul
+// @brief       Auto initialization of ST VL6180X Ranging and Ambient Light Sensor
+// @author      Gunar Schorcht <gunar@schorcht.net>
+// @file
 
 #ifdef MODULE_VL6180X
 
@@ -19,34 +15,23 @@
 #include "vl6180x.h"
 #include "vl6180x_params.h"
 
-/**
- * @brief   Define the number of configured sensors
- */
+/// @brief   Define the number of configured sensors
 #define VL6180X_NUM    ARRAY_SIZE(vl6180x_params)
 
-/**
- * @brief   Allocate memory for the device descriptors
- */
+/// @brief   Allocate memory for the device descriptors
 static vl6180x_t vl6180x_devs[VL6180X_NUM];
 
-/**
- * @brief   Memory for the SAUL registry entries
- */
+/// @brief   Memory for the SAUL registry entries
 static saul_reg_t saul_entries[VL6180X_NUM * 2];
 
-/**
- * @brief   Define the number of saul info
- */
+/// @brief   Define the number of saul info
 #define VL6180X_INFO_NUM ARRAY_SIZE(vl6180x_saul_info)
 
-/**
- * @brief   Reference the driver structs
- */
+/// @brief   Reference the driver structs
 extern saul_driver_t vl6180x_saul_als_driver;
 extern saul_driver_t vl6180x_saul_rng_driver;
 
-void auto_init_vl6180x(void)
-{
+void auto_init_vl6180x(void) {
     assert(VL6180X_INFO_NUM == VL6180X_NUM);
 
     for (unsigned i = 0; i < VL6180X_NUM; i++) {
@@ -71,4 +56,4 @@ void auto_init_vl6180x(void)
 
 #else
 typedef int dont_be_pedantic;
-#endif /* MODULE_VL6180X */
+#endif // MODULE_VL6180X

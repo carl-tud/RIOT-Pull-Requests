@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2005-2008 by Thomas Hillebrandt and Heiko Will
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2005-2008 by Thomas Hillebrandt and Heiko Will
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
@@ -11,10 +9,8 @@
 extern "C" {
 #endif
 
-/**
- * @ingroup         cpu_arm7_common
- * @{
- */
+/// @ingroup         cpu_arm7_common
+/// @{
 
 #define I_Bit           0x80
 #define F_Bit           0x40
@@ -25,19 +21,17 @@ extern "C" {
 
 #define INTMode         (FIQ32Mode | IRQ32Mode)
 
-/**
- * @name    IRQ Priority Mapping
- */
-/** @{ */
+/// @name    IRQ Priority Mapping
+/// @{
 #define HIGHEST_PRIORITY    0x01
-#define IRQP_RTIMER         1   /* FIQ_PRIORITY // TODO: investigate problems with rtimer and FIQ */
+#define IRQP_RTIMER         1   // FIQ_PRIORITY // TODO: investigate problems with rtimer and FIQ
 #define IRQP_TIMER1         1
 #define IRQP_WATCHDOG       1
 #define IRQP_CLOCK          3
 #define IRQP_GPIO           4
 #define IRQP_RTC            8
 #define LOWEST_PRIORITY     0x0F
-/** @} */
+/// @}
 
 #define WDT_INT         0
 #define SWI_INT         1
@@ -49,7 +43,7 @@ extern "C" {
 #define UART1_INT       7
 #define PWM0_1_INT      8
 #define I2C0_INT        9
-#define SPI0_INT        10          /* SPI and SSP0 share VIC slot */
+#define SPI0_INT        10          // SPI and SSP0 share VIC slot
 #define SSP0_INT        10
 #define SSP1_INT        11
 #define PLL_INT         12
@@ -82,4 +76,4 @@ bool cpu_install_irq(int IntNumber, void *HandlerAddr, int Priority);
 }
 #endif
 
-/** @} */
+/// @}

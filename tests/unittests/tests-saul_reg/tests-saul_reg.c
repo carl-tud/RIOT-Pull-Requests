@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @addtogroup  unittests
- * @{
- *
- * @file
- * @brief       Implementations of unit tests for the SAUL registry
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @}
- */
+/// @addtogroup  unittests
+/// @{
+///
+/// @file
+/// @brief       Implementations of unit tests for the SAUL registry
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @}
 
 #include <errno.h>
 #include <stdint.h>
@@ -31,12 +27,11 @@ static const saul_driver_t s3b_dri = { NULL, NULL, SAUL_ACT_SWITCH };
 static saul_reg_t s0 = { NULL, NULL, "S0", &s0_dri };
 static saul_reg_t s1 = { NULL, NULL, "S1", &s1_dri };
 static saul_reg_t s2 = { NULL, NULL, "S2", &s2_dri };
-/* both registrations use the same name intentionally */
+// both registrations use the same name intentionally
 static saul_reg_t s3a = { NULL, NULL, "S3", &s3a_dri };
 static saul_reg_t s3b = { NULL, NULL, "S3", &s3b_dri };
 
-static int count(void)
-{
+static int count(void) {
     int i = 0;
     saul_reg_t *cur = saul_reg;
 
@@ -48,8 +43,7 @@ static int count(void)
     return i;
 }
 
-static saul_reg_t *last(void)
-{
+static saul_reg_t *last(void) {
     saul_reg_t *cur = saul_reg;
 
     if (cur == NULL) {
@@ -62,14 +56,12 @@ static saul_reg_t *last(void)
     return cur;
 }
 
-static void test_reg_initial_size(void)
-{
+static void test_reg_initial_size(void) {
     TEST_ASSERT_NULL(saul_reg);
     TEST_ASSERT_EQUAL_INT(count(), 0);
 }
 
-static void test_reg_add(void)
-{
+static void test_reg_add(void) {
     int res;
 
     res = saul_reg_add(&s0);
@@ -107,8 +99,7 @@ static void test_reg_add(void)
     TEST_ASSERT_EQUAL_INT(count(), 5);
 }
 
-static void test_reg_find_nth(void)
-{
+static void test_reg_find_nth(void) {
     saul_reg_t *dev = saul_reg_find_nth(0);
     TEST_ASSERT_NOT_NULL(dev);
     TEST_ASSERT_EQUAL_STRING("S0", dev->name);
@@ -121,8 +112,7 @@ static void test_reg_find_nth(void)
     TEST_ASSERT_NULL(dev);
 }
 
-static void test_reg_find_type(void)
-{
+static void test_reg_find_type(void) {
     saul_reg_t *dev = saul_reg_find_type(SAUL_SENSE_TEMP);
     TEST_ASSERT_NOT_NULL(dev);
     TEST_ASSERT_EQUAL_STRING("S1", dev->name);
@@ -135,8 +125,7 @@ static void test_reg_find_type(void)
     TEST_ASSERT_NULL(dev);
 }
 
-static void test_reg_find_name(void)
-{
+static void test_reg_find_name(void) {
     saul_reg_t *dev = saul_reg_find_name("S1");
     TEST_ASSERT_NOT_NULL(dev);
     TEST_ASSERT_EQUAL_INT(SAUL_SENSE_TEMP, dev->driver->type);
@@ -149,8 +138,7 @@ static void test_reg_find_name(void)
     TEST_ASSERT_NULL(dev);
 }
 
-static void test_reg_find_type_and_name(void)
-{
+static void test_reg_find_type_and_name(void) {
     saul_reg_t *dev = saul_reg_find_type_and_name(SAUL_ACT_LED_RGB, "S3");
     TEST_ASSERT_NOT_NULL(dev);
     TEST_ASSERT_EQUAL_INT(SAUL_ACT_LED_RGB, dev->driver->type);
@@ -163,8 +151,7 @@ static void test_reg_find_type_and_name(void)
     TEST_ASSERT_NULL(dev);
 }
 
-Test *tests_saul_reg_tests(void)
-{
+Test *tests_saul_reg_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_reg_initial_size),
         new_TestFixture(test_reg_add),
@@ -179,7 +166,6 @@ Test *tests_saul_reg_tests(void)
     return (Test *)&pkt_tests;
 }
 
-void tests_saul_reg(void)
-{
+void tests_saul_reg(void) {
     TESTS_RUN(tests_saul_reg_tests());
 }

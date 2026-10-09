@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2015 René Kijewski <rene.kijewski@fu-berlin.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2015 René Kijewski <rene.kijewski@fu-berlin.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #include "embUnit/embUnit.h"
 #include "tests-crypto.h"
@@ -10,12 +8,10 @@
 
 #include <string.h>
 
-/*
- *  Test Vectors for the Stream Cipher ChaCha
- *  draft-strombergson-chacha-test-vectors-00
- *
- *   https://tools.ietf.org/html/draft-strombergson-chacha-test-vectors-00
- */
+//  Test Vectors for the Stream Cipher ChaCha
+//  draft-strombergson-chacha-test-vectors-00
+//
+//   https://tools.ietf.org/html/draft-strombergson-chacha-test-vectors-00
 
 static const uint8_t TC8_KEY[32] = {
     0xc4, 0x6e, 0xc1, 0xb1, 0x8c, 0xe8, 0xa8, 0x78,
@@ -102,8 +98,7 @@ static void _test_crypto_chacha(unsigned rounds, unsigned keylen,
                                 const uint8_t key[32], const uint8_t iv[8],
                                 const uint32_t after_init[16],
                                 const uint8_t block0[64],
-                                const uint8_t block1[64])
-{
+                                const uint8_t block1[64]) {
     chacha_ctx ctx;
     uint8_t block[64];
 
@@ -117,26 +112,22 @@ static void _test_crypto_chacha(unsigned rounds, unsigned keylen,
     TEST_ASSERT_EQUAL_INT(0, memcmp(block, block1, 64));
 }
 
-static void test_crypto_chacha8_tc8(void)
-{
+static void test_crypto_chacha8_tc8(void) {
     _test_crypto_chacha(8,  16, TC8_KEY, TC8_IV, TC8_AFTER_INIT,
                         TC8_CHACHA8_BLOCK0, TC8_CHACHA8_BLOCK1);
 }
 
-static void test_crypto_chacha12_tc8(void)
-{
+static void test_crypto_chacha12_tc8(void) {
     _test_crypto_chacha(12, 16, TC8_KEY, TC8_IV, TC8_AFTER_INIT,
                         TC8_CHACHA12_BLOCK0, TC8_CHACHA12_BLOCK1);
 }
 
-static void test_crypto_chacha20_tc8(void)
-{
+static void test_crypto_chacha20_tc8(void) {
     _test_crypto_chacha(20, 16, TC8_KEY, TC8_IV, TC8_AFTER_INIT,
                         TC8_CHACHA20_BLOCK0, TC8_CHACHA20_BLOCK1);
 }
 
-Test *tests_crypto_chacha_tests(void)
-{
+Test *tests_crypto_chacha_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_crypto_chacha8_tc8),
         new_TestFixture(test_crypto_chacha12_tc8),

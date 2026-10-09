@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2026 Bas Stottelaar <basstottelaar@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     drivers_amg88xx
- * @{
- *
- * @file
- * @brief       Device driver implementation for the AMG88xx infrared array sensor
- *
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- *
- * @}
- */
+/// @ingroup     drivers_amg88xx
+/// @{
+///
+/// @file
+/// @brief       Device driver implementation for the AMG88xx infrared array sensor
+///
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+///
+/// @}
 
 #include "periph/i2c.h"
 #include "periph/gpio.h"
@@ -29,11 +25,8 @@
 #define AMG88XX_I2C     (dev->params.i2c_dev)
 #define AMG88XX_ADDR    (dev->params.address)
 
-/**
- * @brief   Encode a signed value into 12-bit sign-magnitude format
- */
-static inline uint16_t _encode_12bit(int16_t val)
-{
+/// @brief   Encode a signed value into 12-bit sign-magnitude format
+static inline uint16_t _encode_12bit(int16_t val) {
     uint16_t raw;
 
     if (val < 0) {
@@ -47,11 +40,8 @@ static inline uint16_t _encode_12bit(int16_t val)
     return raw;
 }
 
-/**
- * @brief   Decode a raw 12-bit sign-magnitude value to a signed int16_t
- */
-static inline int16_t _decode_12bit(uint8_t low, uint8_t high)
-{
+/// @brief   Decode a raw 12-bit sign-magnitude value to a signed int16_t
+static inline int16_t _decode_12bit(uint8_t low, uint8_t high) {
     int16_t val = low | ((high & 0x07) << 8);
 
     if (high & 0x08) {
@@ -61,8 +51,7 @@ static inline int16_t _decode_12bit(uint8_t low, uint8_t high)
     return val;
 }
 
-int amg88xx_set_fps(const amg88xx_t *dev, amg88xx_fps_t fps)
-{
+int amg88xx_set_fps(const amg88xx_t *dev, amg88xx_fps_t fps) {
     i2c_acquire(AMG88XX_I2C);
 
     if (i2c_write_reg(AMG88XX_I2C, AMG88XX_ADDR, AMG88XX_REG_FPSC,
@@ -77,8 +66,7 @@ int amg88xx_set_fps(const amg88xx_t *dev, amg88xx_fps_t fps)
     return 0;
 }
 
-int amg88xx_get_fps(const amg88xx_t *dev, amg88xx_fps_t *fps)
-{
+int amg88xx_get_fps(const amg88xx_t *dev, amg88xx_fps_t *fps) {
     uint8_t val;
 
     i2c_acquire(AMG88XX_I2C);
@@ -97,11 +85,10 @@ int amg88xx_get_fps(const amg88xx_t *dev, amg88xx_fps_t *fps)
     return 0;
 }
 
-int amg88xx_set_mode(amg88xx_t *dev, amg88xx_mode_t mode)
-{
+int amg88xx_set_mode(amg88xx_t *dev, amg88xx_mode_t mode) {
     i2c_acquire(AMG88XX_I2C);
 
-    /* perform a wake-up sequence if the last mode set was sleep mode */
+    // perform a wake-up sequence if the last mode set was sleep mode
     if (dev->mode == AMG88XX_MODE_SLEEP) {
         if (i2c_write_reg(AMG88XX_I2C, AMG88XX_ADDR, AMG88XX_REG_PCTL,
                           (uint8_t)AMG88XX_MODE_NORMAL, 0) != 0) {
@@ -129,7 +116,7 @@ int amg88xx_set_mode(amg88xx_t *dev, amg88xx_mode_t mode)
         }
     }
 
-    /* set the desired mode */
+    // set the desired mode
     if (i2c_write_reg(AMG88XX_I2C, AMG88XX_ADDR, AMG88XX_REG_PCTL,
                       (uint8_t)mode, 0) != 0) {
         i2c_release(AMG88XX_I2C);
@@ -144,18 +131,17 @@ int amg88xx_set_mode(amg88xx_t *dev, amg88xx_mode_t mode)
     return 0;
 }
 
-int amg88xx_get_mode(const amg88xx_t *dev, amg88xx_mode_t *mode)
-{
+int amg88xx_get_mode(const amg88xx_t *dev, amg88xx_mode_t *mode) {
     uint8_t val;
 
-    /* when the sensor is asleep, the power control is volatile and unreliable,
-     * so return the last mode set by the driver */
+    // when the sensor is asleep, the power control is volatile and unreliable,
+    // so return the last mode set by the driver
     if (dev->mode == AMG88XX_MODE_SLEEP) {
         *mode = AMG88XX_MODE_SLEEP;
         return 0;
     }
 
-    /* read the actual mode */
+    // read the actual mode
     i2c_acquire(AMG88XX_I2C);
 
     if (i2c_read_regs(AMG88XX_I2C, AMG88XX_ADDR, AMG88XX_REG_PCTL,
@@ -172,8 +158,7 @@ int amg88xx_get_mode(const amg88xx_t *dev, amg88xx_mode_t *mode)
     return 0;
 }
 
-int amg88xx_set_averaging(const amg88xx_t *dev, bool enabled)
-{
+int amg88xx_set_averaging(const amg88xx_t *dev, bool enabled) {
     uint8_t val = enabled ? AMG88XX_AVE_MAMOD_BIT : 0;
 
     i2c_acquire(AMG88XX_I2C);
@@ -190,8 +175,7 @@ int amg88xx_set_averaging(const amg88xx_t *dev, bool enabled)
     return 0;
 }
 
-int amg88xx_get_averaging(const amg88xx_t *dev, bool *enabled)
-{
+int amg88xx_get_averaging(const amg88xx_t *dev, bool *enabled) {
     uint8_t val;
 
     i2c_acquire(AMG88XX_I2C);
@@ -210,8 +194,7 @@ int amg88xx_get_averaging(const amg88xx_t *dev, bool *enabled)
     return 0;
 }
 
-int amg88xx_get_temperature(const amg88xx_t *dev, int16_t *temp)
-{
+int amg88xx_get_temperature(const amg88xx_t *dev, int16_t *temp) {
     uint8_t data[2];
 
     i2c_acquire(AMG88XX_I2C);
@@ -227,14 +210,13 @@ int amg88xx_get_temperature(const amg88xx_t *dev, int16_t *temp)
 
     int16_t val = _decode_12bit(data[0], data[1]);
 
-    /* convert to centi-degrees: 0.0625 deg C per LSB * 100 = 6.25 */
+    // convert to centi-degrees: 0.0625 deg C per LSB * 100 = 6.25
     *temp = (val * 625) / 100;
 
     return 0;
 }
 
-int amg88xx_get_frame(const amg88xx_t *dev, int16_t pixels[AMG88XX_PIXELS_COUNT])
-{
+int amg88xx_get_frame(const amg88xx_t *dev, int16_t pixels[AMG88XX_PIXELS_COUNT]) {
     i2c_acquire(AMG88XX_I2C);
 
     if (i2c_read_regs(AMG88XX_I2C, AMG88XX_ADDR, AMG88XX_REG_T01L,
@@ -256,8 +238,7 @@ int amg88xx_get_frame(const amg88xx_t *dev, int16_t pixels[AMG88XX_PIXELS_COUNT]
 }
 
 #if IS_USED(MODULE_PERIPH_GPIO_IRQ)
-int amg88xx_init_int(amg88xx_t *dev, amg88xx_int_cb_t cb, void *arg)
-{
+int amg88xx_init_int(amg88xx_t *dev, amg88xx_int_cb_t cb, void *arg) {
     if (!gpio_is_valid(dev->params.int_pin)) {
         DEBUG("[amg88xx] amg88xx_init_int: invalid interrupt pin\n");
         return -ENODEV;
@@ -274,8 +255,7 @@ int amg88xx_init_int(amg88xx_t *dev, amg88xx_int_cb_t cb, void *arg)
 #endif
 
 int amg88xx_set_interrupt(const amg88xx_t *dev, amg88xx_interrupt_mode_t mode,
-                          bool enabled)
-{
+                          bool enabled) {
     uint8_t val = 0;
 
     if (enabled) {
@@ -301,8 +281,7 @@ int amg88xx_set_interrupt(const amg88xx_t *dev, amg88xx_interrupt_mode_t mode,
 }
 
 int amg88xx_get_interrupt(const amg88xx_t *dev, amg88xx_interrupt_mode_t *mode,
-                          bool *enabled)
-{
+                          bool *enabled) {
     uint8_t val;
 
     i2c_acquire(AMG88XX_I2C);
@@ -324,8 +303,7 @@ int amg88xx_get_interrupt(const amg88xx_t *dev, amg88xx_interrupt_mode_t *mode,
 }
 
 int amg88xx_set_interrupt_levels(const amg88xx_t *dev, int16_t upper,
-                                 int16_t lower, int16_t hysteresis)
-{
+                                 int16_t lower, int16_t hysteresis) {
     i2c_acquire(AMG88XX_I2C);
 
     uint16_t raw;
@@ -360,8 +338,7 @@ int amg88xx_set_interrupt_levels(const amg88xx_t *dev, int16_t upper,
 }
 
 int amg88xx_get_interrupt_levels(const amg88xx_t *dev, int16_t *upper,
-                                 int16_t *lower, int16_t *hysteresis)
-{
+                                 int16_t *lower, int16_t *hysteresis) {
     uint8_t data[6];
 
     i2c_acquire(AMG88XX_I2C);
@@ -382,8 +359,7 @@ int amg88xx_get_interrupt_levels(const amg88xx_t *dev, int16_t *upper,
     return 0;
 }
 
-int amg88xx_get_interrupt_table(const amg88xx_t *dev, uint8_t table[8])
-{
+int amg88xx_get_interrupt_table(const amg88xx_t *dev, uint8_t table[8]) {
     i2c_acquire(AMG88XX_I2C);
 
     if (i2c_read_regs(AMG88XX_I2C, AMG88XX_ADDR, AMG88XX_REG_INT0,
@@ -398,8 +374,7 @@ int amg88xx_get_interrupt_table(const amg88xx_t *dev, uint8_t table[8])
     return 0;
 }
 
-int amg88xx_get_status(const amg88xx_t *dev, uint8_t *status)
-{
+int amg88xx_get_status(const amg88xx_t *dev, uint8_t *status) {
     i2c_acquire(AMG88XX_I2C);
 
     if (i2c_read_regs(AMG88XX_I2C, AMG88XX_ADDR, AMG88XX_REG_STAT,
@@ -414,8 +389,7 @@ int amg88xx_get_status(const amg88xx_t *dev, uint8_t *status)
     return 0;
 }
 
-int amg88xx_clear_status(const amg88xx_t *dev)
-{
+int amg88xx_clear_status(const amg88xx_t *dev) {
     i2c_acquire(AMG88XX_I2C);
 
     if (i2c_write_reg(AMG88XX_I2C, AMG88XX_ADDR, AMG88XX_REG_SCLR,
@@ -431,14 +405,13 @@ int amg88xx_clear_status(const amg88xx_t *dev)
     return 0;
 }
 
-int amg88xx_init(amg88xx_t *dev, const amg88xx_params_t *params)
-{
-    /* initialize the device descriptor */
+int amg88xx_init(amg88xx_t *dev, const amg88xx_params_t *params) {
+    // initialize the device descriptor
     dev->params = *params;
     dev->mode = AMG88XX_MODE_SLEEP;
 
-    /* reset the device by changing its power mode to normal, which will
-     * perform a wakeup routine when the last mode is sleep */
+    // reset the device by changing its power mode to normal, which will
+    // perform a wakeup routine when the last mode is sleep
     unsigned int retries = 3;
 
     while (retries--) {
@@ -446,8 +419,8 @@ int amg88xx_init(amg88xx_t *dev, const amg88xx_params_t *params)
             return 0;
         }
 
-        /* communication is ready after at most 50 ms after power up, but only
-         * wait after a failed attempt */
+        // communication is ready after at most 50 ms after power up, but only
+        // wait after a failed attempt
         ztimer_sleep(ZTIMER_MSEC, 50);
     }
 

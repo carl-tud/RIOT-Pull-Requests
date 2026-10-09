@@ -1,13 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2016 Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2016 Takuo Yonezawa <Yonezawa-T2@mail.dnp.co.jp>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- */
+/// @{
+///
+/// @file
 #include <errno.h>
 #include <stdlib.h>
 
@@ -27,24 +23,21 @@ static gnrc_pktsnip_t zero_snip = {
     .type = GNRC_NETTYPE_UNDEF,
 };
 
-static void test_gnrc_udp__csum_null(void)
-{
+static void test_gnrc_udp__csum_null(void) {
     gnrc_pktsnip_t *hdr = NULL;
     gnrc_pktsnip_t *pseudo_hdr = NULL;
 
     TEST_ASSERT_EQUAL_INT(-EFAULT, gnrc_udp_calc_csum(hdr, pseudo_hdr));
 }
 
-static void test_gnrc_udp__csum_not_a_udp(void)
-{
+static void test_gnrc_udp__csum_not_a_udp(void) {
     gnrc_pktsnip_t hdr = zero_snip;
     gnrc_pktsnip_t pseudo_hdr = zero_snip;
 
     TEST_ASSERT_EQUAL_INT(-EBADMSG, gnrc_udp_calc_csum(&hdr, &pseudo_hdr));
 }
 
-static void test_gnrc_udp__csum_not_a_ipv6(void)
-{
+static void test_gnrc_udp__csum_not_a_ipv6(void) {
     gnrc_pktsnip_t payload = zero_snip;
     uint8_t payload_data[] = { 0 };
     gnrc_pktsnip_t hdr = zero_snip;
@@ -64,7 +57,7 @@ static void test_gnrc_udp__csum_not_a_ipv6(void)
         .dst = IPV6_ADDR_UNSPECIFIED,
     };
 
-    pseudo_hdr.type = GNRC_NETTYPE_UNDEF; /* This should result in ENOENT */
+    pseudo_hdr.type = GNRC_NETTYPE_UNDEF; // This should result in ENOENT
     pseudo_hdr.data = &pseudo_hdr_data;
     pseudo_hdr.size = sizeof(pseudo_hdr_data);
     pseudo_hdr.next = &hdr;
@@ -80,17 +73,15 @@ static void test_gnrc_udp__csum_not_a_ipv6(void)
     TEST_ASSERT_EQUAL_INT(-ENOENT, gnrc_udp_calc_csum(&hdr, &pseudo_hdr));
 }
 
-/**
- * @brief computes UDP checksum for given UDP payload and checksum.
- *
- * @param[in] payload_data UDP payload
- * @param[in] size         The size of the payload
- * @param[in] checksum     Checksum field of the UDP packet.
- *                         Will be overridden with the computed checksum.
- *
- * @return  0 on success
- * @return  non-zero on failure
- */
+/// @brief computes UDP checksum for given UDP payload and checksum.
+///
+/// @param[in] payload_data UDP payload
+/// @param[in] size         The size of the payload
+/// @param[in] checksum     Checksum field of the UDP packet.
+///                         Will be overridden with the computed checksum.
+///
+/// @return  0 on success
+/// @return  non-zero on failure
 static uint16_t _compute_checksum(uint8_t *payload_data, size_t size, uint16_t *checksum) {
     gnrc_pktsnip_t payload = zero_snip;
 
@@ -132,8 +123,7 @@ static uint16_t _compute_checksum(uint8_t *payload_data, size_t size, uint16_t *
     return status;
 }
 
-static void test_gnrc_udp__csum_simple1(void)
-{
+static void test_gnrc_udp__csum_simple1(void) {
     uint8_t payload_data[] = {
         0x00, 0x01, 0xFF, 0xE2,
     };
@@ -146,8 +136,7 @@ static void test_gnrc_udp__csum_simple1(void)
     TEST_ASSERT_EQUAL_INT((~0x0001) & 0xFFFF, checksum);
 }
 
-static void test_gnrc_udp__csum_simple2(void)
-{
+static void test_gnrc_udp__csum_simple2(void) {
     uint8_t payload_data[] = {
         0x00, 0x02, 0xFF, 0xE2,
     };
@@ -160,8 +149,7 @@ static void test_gnrc_udp__csum_simple2(void)
     TEST_ASSERT_EQUAL_INT((~0x0002) & 0xFFFF, checksum);
 }
 
-static void test_gnrc_udp__csum_applying_twice_yields_ffff(void)
-{
+static void test_gnrc_udp__csum_applying_twice_yields_ffff(void) {
     uint8_t payload_data[] = {
         0x00, 0x02, 0xFF, 0xE2,
     };
@@ -176,8 +164,7 @@ static void test_gnrc_udp__csum_applying_twice_yields_ffff(void)
     TEST_ASSERT_EQUAL_INT(0xFFFF, checksum);
 }
 
-static void test_gnrc_udp__csum_ffff(void)
-{
+static void test_gnrc_udp__csum_ffff(void) {
     uint8_t payload_data[] = {
         0x00, 0x00, 0xFF, 0xE2,
     };
@@ -190,8 +177,7 @@ static void test_gnrc_udp__csum_ffff(void)
     TEST_ASSERT_EQUAL_INT(0xFFFF, checksum);
 }
 
-static void test_gnrc_udp__csum_zero(void)
-{
+static void test_gnrc_udp__csum_zero(void) {
     uint8_t payload_data[] = {
         0xFF, 0xFF, 0xFF, 0xE2,
     };
@@ -201,16 +187,14 @@ static void test_gnrc_udp__csum_zero(void)
     int status = _compute_checksum(payload_data, sizeof(payload_data), &checksum);
 
     TEST_ASSERT_EQUAL_INT(0, status);
-    /* https://tools.ietf.org/html/rfc8200#section-8.1
-     * bullet 4
-     * "if that computation yields a result of zero, it must be changed
-     * to hex FFFF for placement in the UDP header."
-     */
+    // https://tools.ietf.org/html/rfc8200#section-8.1
+    // bullet 4
+    // "if that computation yields a result of zero, it must be changed
+    // to hex FFFF for placement in the UDP header."
     TEST_ASSERT_EQUAL_INT(0xFFFF, checksum);
 }
 
-static void test_gnrc_udp__csum_all(void)
-{
+static void test_gnrc_udp__csum_all(void) {
     uint8_t payload_data[] = {
         0x00, 0x00, 0xFF, 0xE2,
     };
@@ -225,11 +209,10 @@ static void test_gnrc_udp__csum_all(void)
 
         TEST_ASSERT_EQUAL_INT(0, status);
         if (i == 0xFFFF) {
-            /* https://tools.ietf.org/html/rfc8200#section-8.1
-             * bullet 4
-             * "if that computation yields a result of zero, it must be changed
-             * to hex FFFF for placement in the UDP header."
-             */
+            // https://tools.ietf.org/html/rfc8200#section-8.1
+            // bullet 4
+            // "if that computation yields a result of zero, it must be changed
+            // to hex FFFF for placement in the UDP header."
             TEST_ASSERT_EQUAL_INT(0xFFFF, checksum);
         } else {
             TEST_ASSERT_EQUAL_INT(0xFFFF - i, checksum);
@@ -237,8 +220,7 @@ static void test_gnrc_udp__csum_all(void)
     }
 }
 
-Test *tests_gnrc_udp_tests(void)
-{
+Test *tests_gnrc_udp_tests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_gnrc_udp__csum_null),
         new_TestFixture(test_gnrc_udp__csum_not_a_udp),
@@ -256,8 +238,7 @@ Test *tests_gnrc_udp_tests(void)
     return (Test *)&gnrc_udp_tests;
 }
 
-void tests_gnrc_udp(void)
-{
+void tests_gnrc_udp(void) {
     TESTS_RUN(tests_gnrc_udp_tests());
 }
-/** @} */
+/// @}

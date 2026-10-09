@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests IPv6 fragmentation header handling of gnrc stack.
- *
- * @author      Martine S. Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests IPv6 fragmentation header handling of gnrc stack.
+///
+/// @author      Martine S. Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <assert.h>
 #include <stddef.h>
@@ -74,8 +70,8 @@
 #define TEST_HL             (64U)
 
 extern int udp_cmd(int argc, char **argv);
-/* shell_test_cmd is used to test weird snip configurations,
- * the rest can just use udp_cmd */
+// shell_test_cmd is used to test weird snip configurations,
+// the rest can just use udp_cmd
 static int shell_test_cmd(int argc, char **argv);
 
 static netdev_test_t mock_netdev;
@@ -92,14 +88,12 @@ static const uint8_t _test_frag1[] = TEST_FRAG1;
 static const uint8_t _test_frag2[] = TEST_FRAG2;
 static const uint8_t _test_frag3[] = TEST_FRAG3;
 
-static void tear_down_tests(void)
-{
+static void tear_down_tests(void) {
     gnrc_ipv6_ext_frag_init();
     gnrc_pktbuf_init();
 }
 
-static void test_ipv6_ext_frag_rbuf_get(void)
-{
+static void test_ipv6_ext_frag_rbuf_get(void) {
     static ipv6_hdr_t ipv6 = { .src = { .u8 = TEST_SRC },
                                .dst = { .u8 = TEST_DST } };
     gnrc_ipv6_ext_frag_rbuf_t *rbuf = gnrc_ipv6_ext_frag_rbuf_get(&ipv6,
@@ -109,7 +103,7 @@ static void test_ipv6_ext_frag_rbuf_get(void)
     TEST_ASSERT_EQUAL_INT(TEST_ID, rbuf->id);
     TEST_ASSERT_MESSAGE(&ipv6 == rbuf->ipv6, "IPv6 header is not the same");
 
-    /* check that reassembly buffer never gets full */
+    // check that reassembly buffer never gets full
     for (unsigned i = 1; i < (2 * CONFIG_GNRC_IPV6_EXT_FRAG_RBUF_SIZE); i++) {
         rbuf = gnrc_ipv6_ext_frag_rbuf_get(
                 &ipv6, TEST_ID + i
@@ -120,8 +114,7 @@ static void test_ipv6_ext_frag_rbuf_get(void)
     }
 }
 
-static void test_ipv6_ext_frag_rbuf_free(void)
-{
+static void test_ipv6_ext_frag_rbuf_free(void) {
     static ipv6_hdr_t ipv6 = { .src = { .u8 = TEST_SRC },
                                .dst = { .u8 = TEST_DST } };
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, &ipv6, sizeof(ipv6),
@@ -139,8 +132,7 @@ static void test_ipv6_ext_frag_rbuf_free(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_ipv6_ext_frag_rbuf_del(void)
-{
+static void test_ipv6_ext_frag_rbuf_del(void) {
     static ipv6_hdr_t ipv6 = { .src = { .u8 = TEST_SRC },
                                .dst = { .u8 = TEST_DST } };
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, &ipv6, sizeof(ipv6),
@@ -157,8 +149,7 @@ static void test_ipv6_ext_frag_rbuf_del(void)
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_ipv6_ext_frag_rbuf_gc(void)
-{
+static void test_ipv6_ext_frag_rbuf_gc(void) {
     static ipv6_hdr_t ipv6 = { .src = { .u8 = TEST_SRC },
                                .dst = { .u8 = TEST_DST } };
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(NULL, &ipv6, sizeof(ipv6),
@@ -178,8 +169,7 @@ static void test_ipv6_ext_frag_rbuf_gc(void)
     TEST_ASSERT_NULL(rbuf->limits.next);
 }
 
-static void test_ipv6_ext_frag_reass_in_order(void)
-{
+static void test_ipv6_ext_frag_reass_in_order(void) {
     gnrc_pktsnip_t *ipv6_snip = gnrc_ipv6_hdr_build(NULL, &_src, &_dst);
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(ipv6_snip, _test_frag1,
                                           sizeof(_test_frag1),
@@ -198,7 +188,7 @@ static void test_ipv6_ext_frag_reass_in_order(void)
     ipv6_ext_frag_set_more(frag);
     frag->id = byteorder_htonl(TEST_ID);
 
-    /* receive 1st fragment */
+    // receive 1st fragment
     TEST_ASSERT_NULL(gnrc_ipv6_ext_frag_reass(pkt));
     TEST_ASSERT_NOT_NULL((rbuf = gnrc_ipv6_ext_frag_rbuf_get(ipv6, TEST_ID)));
     TEST_ASSERT_NOT_NULL(rbuf->pkt);
@@ -216,7 +206,7 @@ static void test_ipv6_ext_frag_reass_in_order(void)
     TEST_ASSERT(((clist_node_t *)ptr) == rbuf->limits.next);
     TEST_ASSERT(memcmp(_exp_payload, rbuf->pkt->data, rbuf->pkt->size) == 0);
 
-    /* prepare 2nd fragment */
+    // prepare 2nd fragment
     ipv6_snip = gnrc_ipv6_hdr_build(NULL, &_src, &_dst);
     pkt = gnrc_pktbuf_add(ipv6_snip, _test_frag2,
                           sizeof(_test_frag2),
@@ -233,7 +223,7 @@ static void test_ipv6_ext_frag_reass_in_order(void)
     ipv6_ext_frag_set_more(frag);
     frag->id = byteorder_htonl(TEST_ID);
 
-    /* receive 2nd fragment */
+    // receive 2nd fragment
     TEST_ASSERT_NULL(gnrc_ipv6_ext_frag_reass(pkt));
     TEST_ASSERT_NOT_NULL(rbuf->pkt);
     TEST_ASSERT_EQUAL_INT(sizeof(_test_frag1) + sizeof(_test_frag2) -
@@ -255,7 +245,7 @@ static void test_ipv6_ext_frag_reass_in_order(void)
     TEST_ASSERT(((clist_node_t *)ptr) == rbuf->limits.next);
     TEST_ASSERT(memcmp(_exp_payload, rbuf->pkt->data, rbuf->pkt->size) == 0);
 
-    /* prepare 3rd fragment */
+    // prepare 3rd fragment
     ipv6_snip = gnrc_ipv6_hdr_build(NULL, &_src, &_dst);
     pkt = gnrc_pktbuf_add(ipv6_snip, _test_frag3,
                           sizeof(_test_frag3),
@@ -271,9 +261,9 @@ static void test_ipv6_ext_frag_reass_in_order(void)
     ipv6_ext_frag_set_offset(frag, TEST_FRAG3_OFFSET);
     frag->id = byteorder_htonl(TEST_ID);
 
-    /* receive 3rd fragment */
+    // receive 3rd fragment
     TEST_ASSERT_NOT_NULL((pkt = gnrc_ipv6_ext_frag_reass(pkt)));
-    /* reassembly buffer should be deleted */
+    // reassembly buffer should be deleted
     TEST_ASSERT_NULL(rbuf->ipv6);
     TEST_ASSERT_EQUAL_INT(sizeof(_exp_payload), pkt->size);
     TEST_ASSERT(memcmp(_exp_payload, pkt->data, pkt->size) == 0);
@@ -284,12 +274,11 @@ static void test_ipv6_ext_frag_reass_in_order(void)
     TEST_ASSERT_EQUAL_INT(pkt->size, byteorder_ntohs(ipv6->len));
     TEST_ASSERT_NULL(pkt->next->next);
     gnrc_pktbuf_release(pkt);
-    /* and packet handled (and thus released) */
+    // and packet handled (and thus released)
     gnrc_pktbuf_is_empty();
 }
 
-static void test_ipv6_ext_frag_reass_out_of_order(void)
-{
+static void test_ipv6_ext_frag_reass_out_of_order(void) {
     gnrc_pktsnip_t *ipv6_snip = gnrc_ipv6_hdr_build(NULL, &_src, &_dst);
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(ipv6_snip, _test_frag3,
                                           sizeof(_test_frag3),
@@ -307,7 +296,7 @@ static void test_ipv6_ext_frag_reass_out_of_order(void)
     ipv6_ext_frag_set_offset(frag, TEST_FRAG3_OFFSET);
     frag->id = byteorder_htonl(TEST_ID);
 
-    /* receive 3rd fragment */
+    // receive 3rd fragment
     TEST_ASSERT_NULL(gnrc_ipv6_ext_frag_reass(pkt));
     TEST_ASSERT_NOT_NULL((rbuf = gnrc_ipv6_ext_frag_rbuf_get(ipv6, TEST_ID)));
     TEST_ASSERT_NOT_NULL(rbuf->pkt);
@@ -325,7 +314,7 @@ static void test_ipv6_ext_frag_reass_out_of_order(void)
                        (uint8_t *)rbuf->pkt->data + TEST_FRAG3_OFFSET,
                        rbuf->pkt->size - TEST_FRAG3_OFFSET) == 0);
 
-    /* prepare 2nd fragment */
+    // prepare 2nd fragment
     ipv6_snip = gnrc_ipv6_hdr_build(NULL, &_src, &_dst);
     pkt = gnrc_pktbuf_add(ipv6_snip, _test_frag2,
                           sizeof(_test_frag2),
@@ -342,7 +331,7 @@ static void test_ipv6_ext_frag_reass_out_of_order(void)
     ipv6_ext_frag_set_more(frag);
     frag->id = byteorder_htonl(TEST_ID);
 
-    /* receive 2nd fragment */
+    // receive 2nd fragment
     TEST_ASSERT_NULL(gnrc_ipv6_ext_frag_reass(pkt));
     TEST_ASSERT_NOT_NULL(rbuf->pkt);
     TEST_ASSERT_EQUAL_INT(sizeof(_exp_payload), rbuf->pkt->size);
@@ -363,7 +352,7 @@ static void test_ipv6_ext_frag_reass_out_of_order(void)
                        (uint8_t *)rbuf->pkt->data + TEST_FRAG2_OFFSET,
                        rbuf->pkt->size - TEST_FRAG2_OFFSET) == 0);
 
-    /* prepare 1st fragment */
+    // prepare 1st fragment
     ipv6_snip = gnrc_ipv6_hdr_build(NULL, &_src, &_dst);
     pkt = gnrc_pktbuf_add(ipv6_snip, _test_frag1,
                           sizeof(_test_frag2),
@@ -379,9 +368,9 @@ static void test_ipv6_ext_frag_reass_out_of_order(void)
     ipv6_ext_frag_set_offset(frag, TEST_FRAG1_OFFSET);
     ipv6_ext_frag_set_more(frag);
     frag->id = byteorder_htonl(TEST_ID);
-    /* receive 1st fragment */
+    // receive 1st fragment
     TEST_ASSERT_NOT_NULL((pkt = gnrc_ipv6_ext_frag_reass(pkt)));
-    /* reassembly buffer should be deleted */
+    // reassembly buffer should be deleted
     TEST_ASSERT_NULL(rbuf->ipv6);
     TEST_ASSERT_EQUAL_INT(sizeof(_exp_payload), pkt->size);
     TEST_ASSERT(memcmp(_exp_payload, pkt->data, pkt->size) == 0);
@@ -392,12 +381,11 @@ static void test_ipv6_ext_frag_reass_out_of_order(void)
     TEST_ASSERT_EQUAL_INT(pkt->size, byteorder_ntohs(ipv6->len));
     TEST_ASSERT_NULL(pkt->next->next);
     gnrc_pktbuf_release(pkt);
-    /* and packet handled (and thus released) */
+    // and packet handled (and thus released)
     gnrc_pktbuf_is_empty();
 }
 
-static void test_ipv6_ext_frag_reass_out_of_order_rbuf_full(void)
-{
+static void test_ipv6_ext_frag_reass_out_of_order_rbuf_full(void) {
     gnrc_pktsnip_t *ipv6_snip = gnrc_ipv6_hdr_build(NULL, &_src, &_dst);
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(ipv6_snip, _test_frag3,
                                           sizeof(_test_frag3),
@@ -409,7 +397,7 @@ static void test_ipv6_ext_frag_reass_out_of_order_rbuf_full(void)
     static const uint32_t foreign_id = TEST_ID + 44U;
 
     TEST_ASSERT_EQUAL_INT(1, CONFIG_GNRC_IPV6_EXT_FRAG_RBUF_SIZE);
-    /* prepare fragment from a from a foreign datagram */
+    // prepare fragment from a from a foreign datagram
     ipv6->nh = PROTNUM_IPV6_EXT_FRAG;
     ipv6->hl = TEST_HL;
     ipv6->len = byteorder_htons(pkt->size);
@@ -418,7 +406,7 @@ static void test_ipv6_ext_frag_reass_out_of_order_rbuf_full(void)
     ipv6_ext_frag_set_offset(frag, TEST_FRAG3_OFFSET);
     frag->id = byteorder_htonl(foreign_id);
 
-    /* receive a fragment from a foreign datagram first */
+    // receive a fragment from a foreign datagram first
     TEST_ASSERT_NULL(gnrc_ipv6_ext_frag_reass(pkt));
     TEST_ASSERT_NOT_NULL((rbuf = gnrc_ipv6_ext_frag_rbuf_get(ipv6,
                                                              foreign_id)));
@@ -437,13 +425,12 @@ static void test_ipv6_ext_frag_reass_out_of_order_rbuf_full(void)
                        (uint8_t *)rbuf->pkt->data + TEST_FRAG3_OFFSET,
                        rbuf->pkt->size - TEST_FRAG3_OFFSET) == 0);
 
-    /* redo test_ipv6_ext_frag_reass_one_frag but now rbuf is full and oldest
-     * entry should be cycled out */
+    // redo test_ipv6_ext_frag_reass_one_frag but now rbuf is full and oldest
+    // entry should be cycled out
     test_ipv6_ext_frag_reass_out_of_order();
 }
 
-static void test_ipv6_ext_frag_reass_one_frag(void)
-{
+static void test_ipv6_ext_frag_reass_one_frag(void) {
     gnrc_pktsnip_t *ipv6_snip = gnrc_ipv6_hdr_build(NULL, &_src, &_dst);
     gnrc_pktsnip_t *pkt = gnrc_pktbuf_add(ipv6_snip, _test_frag1,
                                           sizeof(_test_frag1),
@@ -459,9 +446,9 @@ static void test_ipv6_ext_frag_reass_one_frag(void)
     ipv6_ext_frag_set_offset(frag, TEST_FRAG1_OFFSET);
     frag->id = byteorder_htonl(TEST_ID);
 
-    /* receive 1st fragment */
+    // receive 1st fragment
     TEST_ASSERT_NOT_NULL((pkt = gnrc_ipv6_ext_frag_reass(pkt)));
-    /* reassembly buffer already consumed */
+    // reassembly buffer already consumed
     TEST_ASSERT_EQUAL_INT(sizeof(_test_frag1) - sizeof(ipv6_ext_frag_t),
                           pkt->size);
     TEST_ASSERT(memcmp(_exp_payload, pkt->data, pkt->size) == 0);
@@ -472,12 +459,11 @@ static void test_ipv6_ext_frag_reass_one_frag(void)
     TEST_ASSERT_EQUAL_INT(pkt->size, byteorder_ntohs(ipv6->len));
     TEST_ASSERT_NULL(pkt->next->next);
     gnrc_pktbuf_release(pkt);
-    /* and packet handled (and thus released) */
+    // and packet handled (and thus released)
     gnrc_pktbuf_is_empty();
 }
 
-static void run_unittests(void)
-{
+static void run_unittests(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_ipv6_ext_frag_rbuf_get),
         new_TestFixture(test_ipv6_ext_frag_rbuf_free),
@@ -497,8 +483,7 @@ static void run_unittests(void)
 
 static gnrc_pktsnip_t *_build_udp_packet(const ipv6_addr_t *dst,
                                          unsigned payload_size,
-                                         gnrc_pktsnip_t *payload)
-{
+                                         gnrc_pktsnip_t *payload) {
     udp_hdr_t *udp_hdr;
     ipv6_hdr_t *ipv6_hdr;
     gnrc_netif_hdr_t *netif_hdr;
@@ -555,8 +540,7 @@ static gnrc_pktsnip_t *_build_udp_packet(const ipv6_addr_t *dst,
     return hdr;
 }
 
-static void test_ipv6_ext_frag_send_pkt_single_frag(const ipv6_addr_t *dst)
-{
+static void test_ipv6_ext_frag_send_pkt_single_frag(const ipv6_addr_t *dst) {
     gnrc_pktsnip_t *pkt;
 
     TEST_ASSERT_NOT_NULL(local_addr);
@@ -565,13 +549,12 @@ static void test_ipv6_ext_frag_send_pkt_single_frag(const ipv6_addr_t *dst)
     gnrc_ipv6_ext_frag_send_pkt(pkt, eth_netif->ipv6.mtu);
 }
 
-static void test_ipv6_ext_frag_payload_snips_not_divisible_of_8(const ipv6_addr_t *dst)
-{
+static void test_ipv6_ext_frag_payload_snips_not_divisible_of_8(const ipv6_addr_t *dst) {
     gnrc_pktsnip_t *pkt, *payload = NULL;
     unsigned payload_size = 0;
 
     TEST_ASSERT_NOT_NULL(local_addr);
-    /* TEST_SAMPLE's string length is not a multiple of 8*/
+    // TEST_SAMPLE's string length is not a multiple of 8
     TEST_ASSERT((sizeof(TEST_SAMPLE) - 1) & 0x7);
 
     while (payload_size <= eth_netif->ipv6.mtu) {
@@ -586,8 +569,7 @@ static void test_ipv6_ext_frag_payload_snips_not_divisible_of_8(const ipv6_addr_
     gnrc_ipv6_ext_frag_send_pkt(pkt, eth_netif->ipv6.mtu);
 }
 
-static int shell_test_cmd(int argc, char **argv)
-{
+static int shell_test_cmd(int argc, char **argv) {
     static ipv6_addr_t dst;
     static void (* const _shell_tests[])(const ipv6_addr_t *) = {
         test_ipv6_ext_frag_send_pkt_single_frag,
@@ -610,8 +592,7 @@ static int shell_test_cmd(int argc, char **argv)
     return 0;
 }
 
-static int send_test_pkt(int argc, char **argv)
-{
+static int send_test_pkt(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
@@ -624,8 +605,7 @@ static int send_test_pkt(int argc, char **argv)
     return 0;
 }
 
-static int unittests(int argc, char** argv)
-{
+static int unittests(int argc, char** argv) {
     (void) argc;
     (void) argv;
 
@@ -633,18 +613,16 @@ static int unittests(int argc, char** argv)
     return 0;
 }
 
-/* TODO: test if forwarded packet is not fragmented */
+// TODO: test if forwarded packet is not fragmented
 
-static int mock_get_device_type(netdev_t *dev, void *value, size_t max_len)
-{
+static int mock_get_device_type(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     expect(max_len == sizeof(uint16_t));
     *((uint16_t *)value) = NETDEV_TYPE_TEST;
     return sizeof(uint16_t);
 }
 
-static int mock_get_max_packet_size(netdev_t *dev, void *value, size_t max_len)
-{
+static int mock_get_max_packet_size(netdev_t *dev, void *value, size_t max_len) {
     (void)dev;
     expect(max_len == sizeof(uint16_t));
     expect(eth_netif != NULL);
@@ -652,8 +630,7 @@ static int mock_get_max_packet_size(netdev_t *dev, void *value, size_t max_len)
     return sizeof(uint16_t);
 }
 
-static int mock_send(netdev_t *dev, const iolist_t *iolist)
-{
+static int mock_send(netdev_t *dev, const iolist_t *iolist) {
     (void)dev;
     int res = 0;
     while (iolist != NULL) {
@@ -673,10 +650,9 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     eth_netif = gnrc_netif_iter(NULL);
-    /* create mock netif to test forwarding too large fragments */
+    // create mock netif to test forwarding too large fragments
     netdev_test_setup(&mock_netdev, 0);
     netdev_test_set_get_cb(&mock_netdev, NETOPT_DEVICE_TYPE,
                             mock_get_device_type);

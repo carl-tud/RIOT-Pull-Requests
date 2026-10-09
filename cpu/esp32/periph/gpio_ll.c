@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2021 Gunar Schorcht
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021 Gunar Schorcht
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_esp32
- * @ingroup     drivers_periph_gpio_ll
- * @{
- *
- * @file
- * @brief       Peripheral GPIO Low-Level API implementation for the ESP32
- *
- * @author      Gunar Schorcht <gunar@schorcht.net>
- * @}
- */
+/// @ingroup     cpu_esp32
+/// @ingroup     drivers_periph_gpio_ll
+/// @{
+///
+/// @file
+/// @brief       Peripheral GPIO Low-Level API implementation for the ESP32
+///
+/// @author      Gunar Schorcht <gunar@schorcht.net>
+/// @}
 
 #define ENABLE_DEBUG 0
 #include "debug.h"
@@ -36,13 +32,12 @@
 #  include "fmt.h"
 #else
 #  include <stdio.h>
-static inline void print_str(const char *str)
-{
+static inline void print_str(const char *str) {
     fputs(str, stdout);
 }
 #endif
 
-/* variables that have to be used together with periph/gpio */
+// variables that have to be used together with periph/gpio
 #ifdef ESP_PM_WUP_PINS
 extern bool _gpio_pin_pu[GPIO_PIN_NUMOF];
 extern bool _gpio_pin_pd[GPIO_PIN_NUMOF];
@@ -50,8 +45,7 @@ extern bool _gpio_pin_pd[GPIO_PIN_NUMOF];
 
 static gpio_conf_t _gpio_conf[GPIO_PIN_NUMOF] = { };
 
-int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
-{
+int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf) {
     assert(is_gpio_port_num_valid(port));
     assert(pin < GPIO_PORT_PIN_NUMOF(port));
 
@@ -94,37 +88,37 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
         return -ENOTSUP;
     }
 
-    /* Some ESP32x GPIOs may not be available at all */
+    // Some ESP32x GPIOs may not be available at all
     if (cfg.pin_bit_mask & ~SOC_GPIO_VALID_GPIO_MASK) {
         return -ENOTSUP;
     }
 
-    /* Some ESP32x GPIOs may have limited features (input only and no pull-up/-down) */
+    // Some ESP32x GPIOs may have limited features (input only and no pull-up/-down)
     if ((cfg.pin_bit_mask & ~SOC_GPIO_VALID_OUTPUT_GPIO_MASK) &&
         ((cfg.mode & GPIO_MODE_DEF_OUTPUT) || cfg.pull_up_en || cfg.pull_down_en)) {
         return -ENOTSUP;
     }
 
 #ifdef ESP_PM_WUP_PINS
-    /* for saving the pullup/pulldown settings of wakeup pins in deep sleep mode */
+    // for saving the pullup/pulldown settings of wakeup pins in deep sleep mode
     _gpio_pin_pu[pin] = cfg.pull_up_en;
     _gpio_pin_pd[pin] = cfg.pull_down_en;
 #endif
 
     if (conf.state == GPIO_DISCONNECT) {
-        /* reset the pin to disconnects any other peripheral output configured
-           via GPIO Matrix, the pin is reconfigured according to given conf */
+        // reset the pin to disconnects any other peripheral output configured
+        //    via GPIO Matrix, the pin is reconfigured according to given conf
         gpio_reset_pin(gpio);
     }
 
-    /* since we can't read back the configuration, we have to save it */
+    // since we can't read back the configuration, we have to save it
     _gpio_conf[gpio] = conf;
 
     if (gpio_config(&cfg) != ESP_OK) {
         return -ENOTSUP;
     }
 
-    /* if output pin, try to set drive strength */
+    // if output pin, try to set drive strength
     gpio_drive_cap_t strength;
     switch (conf.drive_strength) {
     case GPIO_DRIVE_WEAKEST:
@@ -157,8 +151,7 @@ int gpio_ll_init(gpio_port_t port, uint8_t pin, gpio_conf_t conf)
     return 0;
 }
 
-gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
-{
+gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin) {
     gpio_conf_t result;
 
     unsigned state = irq_disable();
@@ -175,8 +168,7 @@ gpio_conf_t gpio_ll_query_conf(gpio_port_t port, uint8_t pin)
     return result;
 }
 
-void gpio_ll_print_conf(gpio_conf_t conf)
-{
+void gpio_ll_print_conf(gpio_conf_t conf) {
     static const char *drive_strs[] = {
         [GPIO_DRIVE_WEAKEST] = "weakest",
         [GPIO_DRIVE_WEAK] = "weak",

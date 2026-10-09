@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019 Kaspar Schleiser <kaspar@schleiser.de>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Peripheral timer test application
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Peripheral timer test application
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdint.h>
@@ -26,9 +22,9 @@
 
 #include "periph/timer.h"
 
-/* recreate logic to obtain valid XTIMER_DEV used in xtimer.h, but don't include
- * xtimer.h, as this leads to issues on some boards when the xtimer module is
- * not used */
+// recreate logic to obtain valid XTIMER_DEV used in xtimer.h, but don't include
+// xtimer.h, as this leads to issues on some boards when the xtimer module is
+// not used
 #ifndef XTIMER_DEV
 # define XTIMER_DEV         TIMER_DEV(0)
 #endif
@@ -43,7 +39,7 @@
 # else
 #  define XTIMER_WIDTH      (32)
 # endif
-#endif /* !defined(XTIMER_WIDTH) */
+#endif // !defined(XTIMER_WIDTH)
 
 #ifndef TEST_TIMER_FREQ
 # define TEST_TIMER_DEV     XTIMER_DEV
@@ -61,14 +57,12 @@
 # define TEST_TIMER_MAX      ((1UL << TEST_TIMER_WIDTH) - 1)
 #endif
 
-static void cb(void *arg, int chan)
-{
+static void cb(void *arg, int chan) {
     (void)chan;
     thread_flags_set(arg, 1);
 }
 
-int main(void)
-{
+int main(void) {
     puts("\nTest for peripheral TIMER short timer_set()\n");
 
     printf("This test tries timer_set() with decreasing intervals down to 0.\n"

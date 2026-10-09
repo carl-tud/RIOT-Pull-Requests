@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Manual test application for the EEPROM peripheral drivers
- *
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Manual test application for the EEPROM peripheral drivers
+///
+/// @author      Alexandre Abadie <alexandre.abadie@inria.fr>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -31,8 +27,7 @@
 
 static char buffer[BUFFER_SIZE + 1];
 
-static int cmd_info(int argc, char **argv)
-{
+static int cmd_info(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
@@ -44,8 +39,7 @@ static int cmd_info(int argc, char **argv)
     return 0;
 }
 
-static int cmd_read(int argc, char **argv)
-{
+static int cmd_read(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <pos> <count>\n", argv[0]);
         return 1;
@@ -77,8 +71,7 @@ static int cmd_read(int argc, char **argv)
     return 0;
 }
 
-static int cmd_read_byte(int argc, char **argv)
-{
+static int cmd_read_byte(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s <pos>\n", argv[0]);
         return 1;
@@ -97,8 +90,7 @@ static int cmd_read_byte(int argc, char **argv)
     return 0;
 }
 
-static int cmd_write(int argc, char **argv)
-{
+static int cmd_write(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <pos> <data>\n", argv[0]);
         return 1;
@@ -117,8 +109,7 @@ static int cmd_write(int argc, char **argv)
     return 0;
 }
 
-static int cmd_write_byte(int argc, char **argv)
-{
+static int cmd_write_byte(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <pos> <byte>\n", argv[0]);
         return 1;
@@ -137,8 +128,7 @@ static int cmd_write_byte(int argc, char **argv)
     return 0;
 }
 
-static int cmd_set(int argc, char **argv)
-{
+static int cmd_set(int argc, char **argv) {
     if (argc < 4) {
         printf("usage: %s <pos> <char> <count>\n", argv[0]);
         return 1;
@@ -165,8 +155,7 @@ static int cmd_set(int argc, char **argv)
     return 0;
 }
 
-static int cmd_clear(int argc, char **argv)
-{
+static int cmd_clear(int argc, char **argv) {
     if (argc < 3) {
         printf("usage: %s <pos> <count>\n", argv[0]);
         return 1;
@@ -186,8 +175,7 @@ static int cmd_clear(int argc, char **argv)
     return 0;
 }
 
-static int cmd_erase(int argc, char **argv)
-{
+static int cmd_erase(int argc, char **argv) {
     if (argc != 1) {
         printf("usage: %s\n", argv[0]);
         return 1;
@@ -205,8 +193,7 @@ static int cmd_erase(int argc, char **argv)
     return 0;
 }
 
-static int cmd_test(int argc, char **argv)
-{
+static int cmd_test(int argc, char **argv) {
     (void)argv;
 
     if (argc != 1) {
@@ -216,9 +203,9 @@ static int cmd_test(int argc, char **argv)
 
     const char *expected = "test";
 
-    /* test read/write function */
+    // test read/write function
 
-    /* read/write from beginning of EEPROM */
+    // read/write from beginning of EEPROM
     size_t ret = eeprom_write(0, (uint8_t *)expected, 4);
     expect(ret == 4);
 
@@ -227,7 +214,7 @@ static int cmd_test(int argc, char **argv)
     expect(memcmp(result, expected, 4) == 0);
     expect(ret == 4);
 
-    /* read/write at end of EEPROM */
+    // read/write at end of EEPROM
     ret = eeprom_write(EEPROM_SIZE - 4, (uint8_t *)expected, 4);
     expect(ret == 4);
     memset(result, 0, 4);
@@ -235,7 +222,7 @@ static int cmd_test(int argc, char **argv)
     expect(memcmp(result, expected, 4) == 0);
     expect(ret == 4);
 
-    /* read/write single byte */
+    // read/write single byte
     eeprom_write_byte(0, 'A');
     expect(eeprom_read_byte(0) == 'A');
     eeprom_write_byte(EEPROM_SIZE - 1, 'A');
@@ -243,7 +230,7 @@ static int cmd_test(int argc, char **argv)
     eeprom_write_byte(EEPROM_SIZE / 2, 'A');
     expect(eeprom_read_byte(EEPROM_SIZE / 2) == 'A');
 
-    /* clear some bytes */
+    // clear some bytes
     const uint8_t cleared[4] = {
         EEPROM_CLEAR_BYTE, EEPROM_CLEAR_BYTE,
         EEPROM_CLEAR_BYTE, EEPROM_CLEAR_BYTE,
@@ -259,7 +246,7 @@ static int cmd_test(int argc, char **argv)
     expect(memcmp(result, cleared, 4) == 0);
     expect(ret == 4);
 
-    /* set some bytes */
+    // set some bytes
     eeprom_set(0, 'A', 4);
     ret = eeprom_read(0, (uint8_t *)result, 4);
     expect(memcmp(result, "AAAA", 4) == 0);
@@ -288,14 +275,13 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     puts("EEPROM read write test\n");
     puts("Please refer to the README.md for more details\n");
 
     cmd_info(0, NULL);
 
-    /* run the shell */
+    // run the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
     return 0;

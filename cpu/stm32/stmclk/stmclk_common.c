@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Freie Universität Berlin
- * SPDX-FileCopyrightText: 2017 OTA keys S.A.
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Freie Universität Berlin
+// SPDX-FileCopyrightText: 2017 OTA keys S.A.
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_stm32
- * @{
- *
- * @file
- * @brief       Implementation of common STM32 clock configuration functions
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- * @author      Vincent Dupont <vincent@otakeys.com>
- * @}
- */
+/// @ingroup     cpu_stm32
+/// @{
+///
+/// @file
+/// @brief       Implementation of common STM32 clock configuration functions
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+/// @author      Vincent Dupont <vincent@otakeys.com>
+/// @}
 
 #include "cpu.h"
 #include "stmclk.h"
@@ -74,26 +70,23 @@
 #define RCC_CFGR_SWS_HSI        RCC_CFGR_SWS_0
 #endif
 
-void stmclk_enable_hsi(void)
-{
+void stmclk_enable_hsi(void) {
     RCC->CR |= RCC_CR_HSION;
     while (!(RCC->CR & RCC_CR_HSIRDY)) {}
 }
 
-void stmclk_disable_hsi(void)
-{
+void stmclk_disable_hsi(void) {
     RCC->CR &= ~RCC_CR_HSION;
 }
 
-void stmclk_enable_lfclk(void)
-{
+void stmclk_enable_lfclk(void) {
     if (IS_ACTIVE(CONFIG_BOARD_HAS_LSE)) {
         stmclk_dbp_unlock();
         RCC->REG_LSE |= BIT_LSEON;
         while (!(RCC->REG_LSE & BIT_LSERDY)) {}
 
-    /* Set LSE system clock enable bit. This is required if LSE is to be used by
-       USARTx, LPUARTx, LPTIMx, TIMx, RNG, system LSCO, MCO, MSI PLL mode */
+    // Set LSE system clock enable bit. This is required if LSE is to be used by
+    //    USARTx, LPUARTx, LPTIMx, TIMx, RNG, system LSCO, MCO, MSI PLL mode
 #if defined(CPU_FAM_STM32WL) || defined (CPU_FAM_STM32L5) || \
     defined(CPU_FAM_STM32U3) || defined (CPU_FAM_STM32U5)
         RCC->BDCR |= RCC_BDCR_LSESYSEN;
@@ -112,8 +105,7 @@ void stmclk_enable_lfclk(void)
     }
 }
 
-void stmclk_disable_lfclk(void)
-{
+void stmclk_disable_lfclk(void) {
     if (IS_ACTIVE(CONFIG_BOARD_HAS_LSE)) {
         stmclk_dbp_unlock();
         RCC->REG_LSE &= ~(BIT_LSEON);
@@ -129,27 +121,24 @@ void stmclk_disable_lfclk(void)
     }
 }
 
-void stmclk_dbp_unlock(void)
-{
-#if !defined(CPU_FAM_STM32C0) /* CPU_FAM_STM32C0 does not support DBP */
+void stmclk_dbp_unlock(void) {
+#if !defined(CPU_FAM_STM32C0) // CPU_FAM_STM32C0 does not support DBP
     PWR->REG_PWR_CR |= BIT_CR_DBP;
 #endif
 }
 
-void stmclk_dbp_lock(void)
-{
-#if !defined(CPU_FAM_STM32C0) /* CPU_FAM_STM32C0 does not support DBP */
+void stmclk_dbp_lock(void) {
+#if !defined(CPU_FAM_STM32C0) // CPU_FAM_STM32C0 does not support DBP
     if (!IS_ACTIVE(CPU_HAS_BACKUP_RAM)) {
-/*  The DBP must be unlocked all the time, if we modify
-    backup RAM content by comfortable BACKUP_RAM variables */
+// The DBP must be unlocked all the time, if we modify
+//     backup RAM content by comfortable BACKUP_RAM variables
         PWR->REG_PWR_CR &= ~(BIT_CR_DBP);
     }
 #endif
 }
 
-bool stmclk_dbp_is_locked(void)
-{
-#if !defined(CPU_FAM_STM32C0) /* CPU_FAM_STM32C0 does not support DBP */
+bool stmclk_dbp_is_locked(void) {
+#if !defined(CPU_FAM_STM32C0) // CPU_FAM_STM32C0 does not support DBP
     return !(PWR->REG_PWR_CR & BIT_CR_DBP);
 #else
     return 0;

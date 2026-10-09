@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021-2023 Gerson Fernando Budke <nandojve@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2021-2023 Gerson Fernando Budke <nandojve@gmail.com>
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_atxmega
- * @ingroup     cpu_atxmega_periph
- * @{
- *
- * @file
- * @brief       Low-level GPIO driver implementation
- *
- * @author      Gerson Fernando Budke <nandojve@gmail.com>
- *
- * @}
- */
+/// @ingroup     cpu_atxmega
+/// @ingroup     cpu_atxmega_periph
+/// @{
+///
+/// @file
+/// @brief       Low-level GPIO driver implementation
+///
+/// @author      Gerson Fernando Budke <nandojve@gmail.com>
+///
+/// @}
 
 #include <avr/interrupt.h>
 #include <stdio.h>
@@ -28,53 +24,39 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/**
- * @brief     GPIO port base
- *
- * GPIO_PORT_BASE resides in the IO address space and must be 16 bits.
- */
+/// @brief     GPIO port base
+///
+/// GPIO_PORT_BASE resides in the IO address space and must be 16 bits.
 #define GPIO_PORT_BASE      ((uint16_t)&PORTA)
 
-/**
- * @brief     GPIO port structure offset
- *
- * The PORT_t struct it is not complete filled and it is necessary define the
- * address offset manually.
- */
+/// @brief     GPIO port structure offset
+///
+/// The PORT_t struct it is not complete filled and it is necessary define the
+/// address offset manually.
 #define GPIO_PORT_OFFSET    (0x20)
 
 static gpio_isr_ctx_t config_ctx[GPIO_EXT_INT_NUMOF];
 static uint8_t config_irq[GPIO_EXT_INT_NUMOF];
 
-/**
- * @brief     Extract the pin number of the given pin
- */
-static inline uint8_t _pin_mask(gpio_t pin)
-{
+/// @brief     Extract the pin number of the given pin
+static inline uint8_t _pin_mask(gpio_t pin) {
     return (pin & 0xff);
 }
 
-/**
- * @brief     Extract the port number of the given pin
- */
-static inline uint8_t _port_num(gpio_t pin)
-{
+/// @brief     Extract the port number of the given pin
+static inline uint8_t _port_num(gpio_t pin) {
     return (pin >> 8) & 0x0f;
 }
 
-/**
- * @brief     Generate the PORTx address of the give pin in the IO address space
- */
-static inline PORT_t *_port_addr(gpio_t pin)
-{
+/// @brief     Generate the PORTx address of the give pin in the IO address space
+static inline PORT_t *_port_addr(gpio_t pin) {
     uint8_t port_num = _port_num(pin);
     uint16_t port_addr = GPIO_PORT_BASE + (port_num * GPIO_PORT_OFFSET);
 
     return (PORT_t *) port_addr;
 }
 
-static inline void _print_config(gpio_t pin)
-{
+static inline void _print_config(gpio_t pin) {
     PORT_t *port = _port_addr(pin);
     uint8_t pin_mask = _pin_mask(pin);
     volatile uint8_t *pin_ctrl = &port->PIN0CTRL;
@@ -91,8 +73,7 @@ static inline void _print_config(gpio_t pin)
 
 static inline void _gpio_pinctrl_set(gpio_t pin, gpio_mode_t mode,
                                      gpio_flank_t flank, gpio_cb_t cb,
-                                     void *arg)
-{
+                                     void *arg) {
     uint8_t pin_mask = _pin_mask(pin);
     uint8_t port_num = _port_num(pin);
     PORT_t *port = _port_addr(pin);
@@ -152,7 +133,7 @@ static inline void _gpio_pinctrl_set(gpio_t pin, gpio_mode_t mode,
 
         port->INTFLAGS = PORT_INT1IF_bm;
 
-        /* Get mask from INT 0 and apply new INT 1 mask */
+        // Get mask from INT 0 and apply new INT 1 mask
         port->INTCTRL = (port->INTCTRL & PORT_INT0LVL_gm)
                         | config_irq[port_num + PORT_MAX];
     }
@@ -171,7 +152,7 @@ static inline void _gpio_pinctrl_set(gpio_t pin, gpio_mode_t mode,
 
         port->INTFLAGS = PORT_INT0IF_bm;
 
-        /* Get mask from INT 1 and apply new INT 0 mask */
+        // Get mask from INT 1 and apply new INT 0 mask
         port->INTCTRL = (port->INTCTRL & PORT_INT1LVL_gm)
                         | config_irq[port_num];
     }
@@ -179,8 +160,7 @@ static inline void _gpio_pinctrl_set(gpio_t pin, gpio_mode_t mode,
     irq_restore(irq_state);
 }
 
-int gpio_init(gpio_t pin, gpio_mode_t mode)
-{
+int gpio_init(gpio_t pin, gpio_mode_t mode) {
     DEBUG("gpio_init pin = 0x%02x mode = 0x%02x\n", pin, mode);
 
     _gpio_pinctrl_set(pin, mode, GPIO_INT_DISABLED_ALL, NULL, NULL);
@@ -189,8 +169,7 @@ int gpio_init(gpio_t pin, gpio_mode_t mode)
 }
 
 int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
-                  gpio_cb_t cb, void *arg)
-{
+                  gpio_cb_t cb, void *arg) {
     DEBUG("gpio_init_int pin = 0x%02x mode = 0x%02x flank = 0x%02x\n", pin,
           mode, flank);
 
@@ -208,8 +187,7 @@ int gpio_init_int(gpio_t pin, gpio_mode_t mode, gpio_flank_t flank,
     return 0;
 }
 
-void gpio_irq_enable(gpio_t pin)
-{
+void gpio_irq_enable(gpio_t pin) {
     DEBUG("gpio_irq_enable pin = 0x%04x \n", pin);
 
     uint8_t pin_mask = _pin_mask(pin);
@@ -230,8 +208,7 @@ void gpio_irq_enable(gpio_t pin)
     }
 }
 
-void gpio_irq_disable(gpio_t pin)
-{
+void gpio_irq_disable(gpio_t pin) {
     DEBUG("gpio_irq_disable pin = 0x%04x \n", pin);
 
     uint8_t pin_mask = _pin_mask(pin);
@@ -249,8 +226,7 @@ void gpio_irq_disable(gpio_t pin)
     }
 }
 
-bool gpio_read(gpio_t pin)
-{
+bool gpio_read(gpio_t pin) {
     PORT_t *port = _port_addr(pin);
     uint8_t pin_mask = _pin_mask(pin);
 
@@ -261,8 +237,7 @@ bool gpio_read(gpio_t pin)
     return port->IN & pin_mask;
 }
 
-void gpio_set(gpio_t pin)
-{
+void gpio_set(gpio_t pin) {
     DEBUG("gpio_set pin = 0x%04x \n", pin);
 
     PORT_t *port = _port_addr(pin);
@@ -275,8 +250,7 @@ void gpio_set(gpio_t pin)
     }
 }
 
-void gpio_clear(gpio_t pin)
-{
+void gpio_clear(gpio_t pin) {
     DEBUG("gpio_clear pin = 0x%04x \n", pin);
 
     PORT_t *port = _port_addr(pin);
@@ -289,8 +263,7 @@ void gpio_clear(gpio_t pin)
     }
 }
 
-void gpio_toggle(gpio_t pin)
-{
+void gpio_toggle(gpio_t pin) {
     DEBUG("gpio_toggle pin = 0x%04x \n", pin);
 
     PORT_t *port = _port_addr(pin);
@@ -303,8 +276,7 @@ void gpio_toggle(gpio_t pin)
     }
 }
 
-void gpio_write(gpio_t pin, bool value)
-{
+void gpio_write(gpio_t pin, bool value) {
     DEBUG("gpio_write pin = 0x%04x, value = 0x%02x \n", pin, value);
 
     if (value) {
@@ -315,8 +287,7 @@ void gpio_write(gpio_t pin, bool value)
     }
 }
 
-static inline void irq_handler(uint8_t port_num, uint8_t isr_vct_num)
-{
+static inline void irq_handler(uint8_t port_num, uint8_t isr_vct_num) {
     DEBUG("irq_handler port = 0x%02x, vct_num = %d \n", port_num, isr_vct_num);
 
     if (isr_vct_num) {

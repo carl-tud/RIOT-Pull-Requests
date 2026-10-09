@@ -1,18 +1,14 @@
-/*
- * SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Otto-von-Guericke-Universität Magdeburg
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for at86rf2xx security module (AES)
- *
- * @author      Fabian Hüßler <fabian.huessler@ovgu.de>
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for at86rf2xx security module (AES)
+///
+/// @author      Fabian Hüßler <fabian.huessler@ovgu.de>
+/// @}
 #include <stdio.h>
 #include <string.h>
 
@@ -99,9 +95,8 @@
                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
 #endif
 
-static void _irq_cb(void *arg)
-{
-    /* Ignore interrupts */
+static void _irq_cb(void *arg) {
+    // Ignore interrupts
     (void)arg;
 }
 
@@ -109,8 +104,7 @@ static void _ecb(at86rf2xx_t *dev,
                  aes_block_t *plain,
                  uint8_t key[AT86RF2XX_AES_KEY_LENGTH],
                  aes_block_t *cipher,
-                 uint8_t nblocks)
-{
+                 uint8_t nblocks) {
     at86rf2xx_aes_key_write_encrypt(dev, key);
     at86rf2xx_aes_ecb_encrypt(dev, cipher, key, (void*)plain, nblocks);
     memset(plain, 0, AT86RF2XX_AES_BLOCK_SIZE * nblocks);
@@ -123,8 +117,7 @@ static void _cbc(at86rf2xx_t *dev,
                  uint8_t key[AT86RF2XX_AES_BLOCK_SIZE],
                  uint8_t iv[AT86RF2XX_AES_BLOCK_SIZE],
                  aes_block_t *cipher,
-                 uint8_t nblocks)
-{
+                 uint8_t nblocks) {
     at86rf2xx_aes_key_write_encrypt(dev, key);
     at86rf2xx_aes_cbc_encrypt(dev, cipher, key, iv, (void*)plain, nblocks);
     memset(plain, 0, AT86RF2XX_AES_BLOCK_SIZE * nblocks);
@@ -132,9 +125,8 @@ static void _cbc(at86rf2xx_t *dev,
     at86rf2xx_aes_cbc_decrypt(dev, plain, key, iv, (void*)cipher, nblocks);
 }
 
-int main(void)
-{
-    /* initialize descriptors to zero */
+int main(void) {
+    // initialize descriptors to zero
     ieee802154_dev_t hal = {0};
     at86rf2xx_t dev = {0};
 

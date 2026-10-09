@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2024 TU Dresden
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2024 TU Dresden
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @{
- *
- * @file
- * @brief   monitor heap memory usage (calls to malloc/realloc/free)
- * @author  Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
- */
+/// @{
+///
+/// @file
+/// @brief   monitor heap memory usage (calls to malloc/realloc/free)
+/// @author  Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
 
 #include <stdio.h>
 #include <string.h>
@@ -42,11 +38,10 @@ static struct {
     .high_watermark = 0,
 };
 
-/* guards access to malloc_monitor */
+// guards access to malloc_monitor
 static mutex_t _lock;
 
-void malloc_monitor_add(void *ptr, size_t size, uinttxtptr_t pc, char *func_prefix)
-{
+void malloc_monitor_add(void *ptr, size_t size, uinttxtptr_t pc, char *func_prefix) {
     if (ptr == NULL) {
         return;
     }
@@ -75,8 +70,7 @@ void malloc_monitor_add(void *ptr, size_t size, uinttxtptr_t pc, char *func_pref
     (void)pc;
 }
 
-void malloc_monitor_rm(void *ptr, uinttxtptr_t pc)
-{
+void malloc_monitor_rm(void *ptr, uinttxtptr_t pc) {
     if (ptr == NULL) {
         return;
     }
@@ -97,8 +91,7 @@ void malloc_monitor_rm(void *ptr, uinttxtptr_t pc)
     printf("malloc_monitor: free(%p) @ 0x%" PRIxTXTPTR " invalid\n", ptr, pc);
 }
 
-void malloc_monitor_mv(void *ptr_old, void *ptr_new, size_t size_new, uinttxtptr_t pc)
-{
+void malloc_monitor_mv(void *ptr_old, void *ptr_new, size_t size_new, uinttxtptr_t pc) {
     if (ptr_old == NULL) {
         malloc_monitor_add(ptr_new, size_new, pc, "re");
         return;
@@ -138,8 +131,7 @@ void malloc_monitor_mv(void *ptr_old, void *ptr_new, size_t size_new, uinttxtptr
     printf("malloc_monitor: realloc(%p) @ 0x%" PRIxTXTPTR " invalid\n", ptr_old, pc);
 }
 
-size_t malloc_monitor_get_usage_current(void)
-{
+size_t malloc_monitor_get_usage_current(void) {
     assert(!irq_is_in());
     mutex_lock(&_lock);
     size_t ret = malloc_monitor.current;
@@ -147,8 +139,7 @@ size_t malloc_monitor_get_usage_current(void)
     return ret;
 }
 
-size_t malloc_monitor_get_usage_high_watermark(void)
-{
+size_t malloc_monitor_get_usage_high_watermark(void) {
     assert(!irq_is_in());
     mutex_lock(&_lock);
     size_t ret = malloc_monitor.high_watermark;
@@ -156,12 +147,11 @@ size_t malloc_monitor_get_usage_high_watermark(void)
     return ret;
 }
 
-void malloc_monitor_reset_high_watermark(void)
-{
+void malloc_monitor_reset_high_watermark(void) {
     assert(!irq_is_in());
     mutex_lock(&_lock);
     malloc_monitor.high_watermark = malloc_monitor.current;
     mutex_unlock(&_lock);
 }
 
-/** @} */
+/// @}

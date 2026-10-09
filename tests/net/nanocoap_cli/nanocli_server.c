@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Ken Bannister
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Ken Bannister
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       nanocoap test server
- *
- * @author      Ken Bannister <kb2ma@runbox.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       nanocoap test server
+///
+/// @author      Ken Bannister <kb2ma@runbox.com>
+///
+/// @}
 
 #include <stdio.h>
 #include <string.h>
@@ -26,13 +22,10 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-/*
- * Customized implementation of nanocoap_server() to ignore a count of
- * requests. Allows testing confirmable messaging.
- */
+// Customized implementation of nanocoap_server() to ignore a count of
+// requests. Allows testing confirmable messaging.
 static int _nanocoap_server(sock_udp_ep_t *local, uint8_t *buf, size_t bufsize,
-                            int ignore_count)
-{
+                            int ignore_count) {
     sock_udp_t sock;
     sock_udp_ep_t remote;
 
@@ -78,15 +71,13 @@ static int _nanocoap_server(sock_udp_ep_t *local, uint8_t *buf, size_t bufsize,
     return 0;
 }
 
-static void _start_server(uint16_t port, int ignore_count)
-{
+static void _start_server(uint16_t port, int ignore_count) {
     uint8_t buf[128];
     sock_udp_ep_t local = { .port=port, .family=AF_INET6 };
     _nanocoap_server(&local, buf, sizeof(buf), ignore_count);
 }
 
-static int _cmd_server(int argc, char **argv)
-{
+static int _cmd_server(int argc, char **argv) {
     if (argc < 2) {
         goto error;
     }
@@ -98,7 +89,7 @@ static int _cmd_server(int argc, char **argv)
     int arg_pos = 2;
     int ignore_count = 0;
     if ((argc >= (arg_pos+1)) && (strcmp(argv[arg_pos], "-i") == 0)) {
-        /* need count of requests to ignore*/
+        // need count of requests to ignore
         if (argc == 3) {
             goto error;
         }
@@ -124,7 +115,7 @@ static int _cmd_server(int argc, char **argv)
     printf("starting server on port %u\n", port);
     _start_server(port, ignore_count);
 
-    /* server executes run loop; never reaches this point*/
+    // server executes run loop; never reaches this point
     return 0;
 
     error:

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2017 DAI Labor Technische Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 DAI Labor Technische Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     boards_firefly
- * @{
- *
- * @file
- * @brief       Peripheral MCU configuration for the Firefly  board revision A
- *
- * @author      Anon Mall <anon.mall@gt-arc.com>
- */
+/// @ingroup     boards_firefly
+/// @{
+///
+/// @file
+/// @brief       Peripheral MCU configuration for the Firefly  board revision A
+///
+/// @author      Anon Mall <anon.mall@gt-arc.com>
 
 #include "cfg_adc_default.h"
 #include "cfg_clk_default.h"
@@ -25,10 +21,8 @@
 extern "C" {
 #endif
 
-/**
- * @name SPI configuration
- * @{
- */
+/// @name SPI configuration
+/// @{
 static const spi_conf_t spi_config[] = {
     {
         .num      = 0,
@@ -47,10 +41,10 @@ static const spi_conf_t spi_config[] = {
 };
 
 #define SPI_NUMOF           ARRAY_SIZE(spi_config)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
-} /* end extern "C" */
+} // end extern "C"
 #endif
 
-/** @} */
+/// @}

@@ -1,30 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2018 UC Berkeley
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 UC Berkeley
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup     drivers_fxos8700
- * @{
- *
- * @file
- * @brief       Register definitions for FXOS8700 devices
- *
- * @author      Michael Andersen <m.andersen@cs.berkeley.edu>
- * @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
- */
+/// @ingroup     drivers_fxos8700
+/// @{
+///
+/// @file
+/// @brief       Register definitions for FXOS8700 devices
+///
+/// @author      Michael Andersen <m.andersen@cs.berkeley.edu>
+/// @author      Hyung-Sin Kim <hs.kim@cs.berkeley.edu>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-/**
- * @name FXOS8700 register addresses
- * @{
- */
+/// @name FXOS8700 register addresses
+/// @{
 #define FXOS8700_REG_STATUS             (0x00)
 #define FXOS8700_REG_OUT_X_MSB          (0x01)
 #define FXOS8700_REG_OUT_X_LSB          (0x02)
@@ -140,27 +134,21 @@ extern "C"
 #define FXOS8700_REG_A_FFMT_THS_Y_LSB   (0x76)
 #define FXOS8700_REG_A_FFMT_THS_Z_MSB   (0x77)
 #define FXOS8700_REG_A_FFMT_THS_Z_LSB   (0x78)
-/** @} */
+/// @}
 
-/**
- * @name Device ID
- * @{
- */
+/// @name Device ID
+/// @{
 #define FXOS8700_WHO_AM_I_VAL           (0xC7)
-/** @} */
+/// @}
 
-/**
- * @name Data ready status
- * @{
- */
+/// @name Data ready status
+/// @{
 #define FXOS8700_REG_STATUS_MASK__XYZ_READY      (0x08)
 #define FXOS8700_REG_M_DR_STATUS_MASK__XYZ_READY (0x08)
-/** @} */
+/// @}
 
-/**
- * @name Output data rate (ODR) and Active mode configuration
- * @{
- */
+/// @name Output data rate (ODR) and Active mode configuration
+/// @{
 #define FXOS8700_REG_CTRL_REG1_MASK__ODR    (0x38)
 #define FXOS8700_REG_CTRL_REG1_ODR__400HZ   (0x00)
 #define FXOS8700_REG_CTRL_REG1_ODR__200HZ   (0x08)
@@ -169,37 +157,31 @@ extern "C"
 #define FXOS8700_REG_CTRL_REG1_ODR__25HZ    (0x20)
 
 #define FXOS8700_REG_CTRL_REG1_MASK__ACTIVE (0x01)
-/** @} */
+/// @}
 
-/**
- * @name Sensing mode configuration
- * @{
- */
+/// @name Sensing mode configuration
+/// @{
 #define FXOS8700_REG_M_CTRL_REG1_MASK__HMS     (0x03)
 #define FXOS8700_REG_M_CTRL_REG1_HMS__ACC_ONLY (0x00)
 #define FXOS8700_REG_M_CTRL_REG1_HMS__MAG_ONLY (0x01)
 #define FXOS8700_REG_M_CTRL_REG1_HMS__HYBRID   (0x03)
-/** @} */
+/// @}
 
-/**
- * @name Burst-read mode configuration
- * @{
- */
+/// @name Burst-read mode configuration
+/// @{
 #define FXOS8700_REG_M_CTRL_REG2_MASK__HYB_AUTOINC_MODE (0x20)
-/** @} */
+/// @}
 
-/**
- * @name Accelerator full-scale range configuration
- * @{
- */
+/// @name Accelerator full-scale range configuration
+/// @{
 #define FXOS8700_REG_XYZ_DATA_CFG_MASK__FS (0x03)
 #define FXOS8700_REG_XYZ_DATA_CFG_FS__2G   (0x00)
 #define FXOS8700_REG_XYZ_DATA_CFG_FS__4G   (0x01)
 #define FXOS8700_REG_XYZ_DATA_CFG_FS__8G   (0x02)
-/** @} */
+/// @}
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

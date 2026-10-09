@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2017 Josua Arndt, Steffen Robertz, RWTH Aachen
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2017 Josua Arndt, Steffen Robertz, RWTH Aachen
+// SPDX-License-Identifier: LGPL-2.1-only
 
 #pragma once
 
-/**
- * @ingroup         cpu_atmega128rfa1
- * @{
- *
- * @file
- * @brief           Default timer configuration
- *
- * @author          Josua Arndt <jarndt@ias.rwth-aachen.de>
- * @author          Steffen Robertz <steffen.robertz@rwth-aachen.de>
- */
+/// @ingroup         cpu_atmega128rfa1
+/// @{
+///
+/// @file
+/// @brief           Default timer configuration
+///
+/// @author          Josua Arndt <jarndt@ias.rwth-aachen.de>
+/// @author          Steffen Robertz <steffen.robertz@rwth-aachen.de>
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,10 +40,10 @@ extern "C" {
 #define TIMER_2_ISRA        TIMER1_COMPA_vect
 #define TIMER_2_ISRB        TIMER1_COMPB_vect
 #define TIMER_2_ISRC        TIMER1_COMPC_vect
-#endif /* TIMER_NUMOF */
+#endif // TIMER_NUMOF
 
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */
+/// @}

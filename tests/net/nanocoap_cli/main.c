@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2018 Ken Bannister
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Ken Bannister
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       nanocoap test app
- *
- * @author      Ken Bannister <kb2ma@runbox.com>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       nanocoap test app
+///
+/// @author      Ken Bannister <kb2ma@runbox.com>
+///
+/// @}
 
 #include <stdio.h>
 #include "msg.h"
@@ -42,10 +38,9 @@ static const credman_credential_t credential = {
 };
 #endif
 
-/* _list_all_inet6() and _print_addr() derived from sc_gnrc_netif.c */
+// _list_all_inet6() and _print_addr() derived from sc_gnrc_netif.c
 #ifdef MODULE_GNRC_IPV6
-static void _print_addr(ipv6_addr_t *addr, uint8_t flags)
-{
+static void _print_addr(ipv6_addr_t *addr, uint8_t flags) {
     char addr_str[IPV6_ADDR_MAX_STR_LEN];
 
     printf("          inet6 addr: ");
@@ -80,8 +75,7 @@ static void _print_addr(ipv6_addr_t *addr, uint8_t flags)
     printf("\n");
 }
 
-static int _cmd_inet6(int argc, char **argv)
-{
+static int _cmd_inet6(int argc, char **argv) {
     (void)argc;
     (void)argv;
     gnrc_netif_t *netif = NULL;
@@ -96,10 +90,10 @@ static int _cmd_inet6(int argc, char **argv)
             uint8_t ipv6_addrs_flags[CONFIG_GNRC_NETIF_IPV6_ADDRS_NUMOF];
 
             memset(ipv6_addrs_flags, 0, sizeof(ipv6_addrs_flags));
-            /* assume it to succeed (otherwise array will stay 0) */
+            // assume it to succeed (otherwise array will stay 0)
             gnrc_netapi_get(netif->pid, NETOPT_IPV6_ADDR_FLAGS, 0,
                             ipv6_addrs_flags, sizeof(ipv6_addrs_flags));
-            /* yes, the res of NETOPT_IPV6_ADDR is meant to be here ;-) */
+            // yes, the res of NETOPT_IPV6_ADDR is meant to be here ;-)
             for (unsigned i = 0; i < (res / sizeof(ipv6_addr_t)); i++) {
                 _print_addr(&ipv6_addrs[i], ipv6_addrs_flags[i]);
                 addr_qty++;
@@ -115,9 +109,8 @@ static int _cmd_inet6(int argc, char **argv)
 SHELL_COMMAND(inet6, "IPv6 addresses", _cmd_inet6);
 #endif
 
-int main(void)
-{
-    /* for the thread running the shell */
+int main(void) {
+    // for the thread running the shell
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
     puts("nanocoap test app");
 
@@ -129,11 +122,11 @@ int main(void)
     }
 #endif
 
-    /* start shell */
+    // start shell
     puts("All up, running the shell now");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
 
-    /* should never be reached */
+    // should never be reached
     return 0;
 }

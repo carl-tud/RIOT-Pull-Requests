@@ -1,24 +1,20 @@
-/*
- * Copyright (C) 2019 Inria
- *               2019 Freie Universität Berlin
- *               2019 Kaspar Schleiser <kaspar@schleiser.de>
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
+// Copyright (C) 2019 Inria
+//               2019 Freie Universität Berlin
+//               2019 Kaspar Schleiser <kaspar@schleiser.de>
+//
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/**
- * @ingroup     sys_riotboot_flashwrite
- * @{
- *
- * @file
- * @brief       Firmware update helper functions
- *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- *
- * @}
- */
+/// @ingroup     sys_riotboot_flashwrite
+/// @{
+///
+/// @file
+/// @brief       Firmware update helper functions
+///
+/// @author      Kaspar Schleiser <kaspar@schleiser.de>
+///
+/// @}
 
 #include <assert.h>
 #include <string.h>
@@ -31,27 +27,24 @@
 #define LOG_PREFIX "riotboot_flashwrite: "
 #include "log.h"
 
-static inline size_t min(size_t a, size_t b)
-{
+static inline size_t min(size_t a, size_t b) {
     return a <= b ? a : b;
 }
 
 size_t riotboot_flashwrite_slotsize(
-    const riotboot_flashwrite_t *state)
-{
+    const riotboot_flashwrite_t *state) {
     return riotboot_slot_size(state->target_slot);
 }
 
 int riotboot_flashwrite_init_raw(riotboot_flashwrite_t *state, int target_slot,
-                                 size_t offset)
-{
+                                 size_t offset) {
 #ifdef FLASHPAGE_SIZE
     assert(offset <= FLASHPAGE_SIZE);
-    /* the flashpage size must be a multiple of the riotboot flashpage buffer */
+    // the flashpage size must be a multiple of the riotboot flashpage buffer
     static_assert(!(FLASHPAGE_SIZE % RIOTBOOT_FLASHPAGE_BUFFER_SIZE),
                   "Flashpage size must be a multiple of riotboot flashpage buffer.");
 #else
-    /* The flashpage buffer must be a multiple of the write block size */
+    // The flashpage buffer must be a multiple of the write block size
     static_assert(!(RIOTBOOT_FLASHPAGE_BUFFER_SIZE %
                     FLASHPAGE_WRITE_BLOCK_SIZE),
                   "Flashpage buffer must be a multiple of write block size.");
@@ -68,18 +61,17 @@ int riotboot_flashwrite_init_raw(riotboot_flashwrite_t *state, int target_slot,
         flashpage_page((void *)riotboot_slot_get_hdr(target_slot));
 
     if (CONFIG_RIOTBOOT_FLASHWRITE_RAW && offset) {
-        /* Erase the first page only if the offset (!=0) specifies that there is
-         * a checksum or other mechanism at the start of the page. */
+        // Erase the first page only if the offset (!=0) specifies that there is
+        // a checksum or other mechanism at the start of the page.
         flashpage_erase(state->flashpage);
     }
 
     return 0;
 }
 
-int riotboot_flashwrite_flush(riotboot_flashwrite_t *state)
-{
+int riotboot_flashwrite_flush(riotboot_flashwrite_t *state) {
     if (CONFIG_RIOTBOOT_FLASHWRITE_RAW) {
-        /* Check if there is leftover data in the buffer */
+        // Check if there is leftover data in the buffer
         size_t flashwrite_buffer_pos = state->offset %
                                        RIOTBOOT_FLASHPAGE_BUFFER_SIZE;
         if (flashwrite_buffer_pos == 0) {
@@ -87,9 +79,9 @@ int riotboot_flashwrite_flush(riotboot_flashwrite_t *state)
         }
         uint8_t *slot_start =
             (uint8_t *)riotboot_slot_get_hdr(state->target_slot);
-        /* Get the offset of the remaining chunk */
+        // Get the offset of the remaining chunk
         size_t flashpage_pos = state->offset - flashwrite_buffer_pos;
-        /* Write remaining chunk */
+        // Write remaining chunk
         flashpage_write(slot_start + flashpage_pos,
                         state->flashpage_buf,
                         RIOTBOOT_FLASHPAGE_BUFFER_SIZE);
@@ -106,14 +98,13 @@ int riotboot_flashwrite_flush(riotboot_flashwrite_t *state)
 }
 
 int riotboot_flashwrite_putbytes(riotboot_flashwrite_t *state,
-                                 const uint8_t *bytes, size_t len, bool more)
-{
+                                 const uint8_t *bytes, size_t len, bool more) {
     LOG_DEBUG(LOG_PREFIX "processing bytes %" PRIuSIZE "-%" PRIuSIZE "\n", state->offset,
               state->offset + len - 1);
 
     while (len) {
-        /* Position within the page, calculated from state->offset by
-         * subtracting the start offset of the current page */
+        // Position within the page, calculated from state->offset by
+        // subtracting the start offset of the current page
         size_t flashpage_pos = state->offset -
                                (flashpage_addr(state->flashpage) -
                                 (void *)riotboot_slot_get_hdr(
@@ -127,7 +118,7 @@ int riotboot_flashwrite_putbytes(riotboot_flashwrite_t *state,
 
         if (CONFIG_RIOTBOOT_FLASHWRITE_RAW &&
             flashpage_pos == flashpage_size(state->flashpage)) {
-            /* Erase the next page */
+            // Erase the next page
             state->flashpage++;
             flashpage_pos = 0;
             flashpage_erase(state->flashpage);
@@ -144,12 +135,12 @@ int riotboot_flashwrite_putbytes(riotboot_flashwrite_t *state,
         bytes += to_copy;
         len -= to_copy;
         if ((!flashpage_avail) || (!more)) {
-#if CONFIG_RIOTBOOT_FLASHWRITE_RAW  /* Guards access to state::firstblock_buf */
+#if CONFIG_RIOTBOOT_FLASHWRITE_RAW  // Guards access to state::firstblock_buf
             void *addr = flashpage_addr(state->flashpage);
             if (addr == riotboot_slot_get_hdr(state->target_slot) &&
                 state->offset == RIOTBOOT_FLASHPAGE_BUFFER_SIZE) {
-                /* Skip flashing the first block, store it for later to flash it
-                 * during the flashwrite_finish function */
+                // Skip flashing the first block, store it for later to flash it
+                // during the flashwrite_finish function
                 memcpy(state->firstblock_buf,
                        state->flashpage_buf, RIOTBOOT_FLASHPAGE_BUFFER_SIZE);
             }
@@ -174,8 +165,7 @@ int riotboot_flashwrite_putbytes(riotboot_flashwrite_t *state,
     return 0;
 }
 
-int riotboot_flashwrite_invalidate(int slot)
-{
+int riotboot_flashwrite_invalidate(int slot) {
     if (riotboot_slot_numof == 1) {
         LOG_WARNING(LOG_PREFIX "abort, only one slot configured\n");
         return -1;
@@ -187,9 +177,9 @@ int riotboot_flashwrite_invalidate(int slot)
         return -2;
     }
 
-    /* invalidate header (checksum and magic number must be invalidated),
-       write the whole header to avoid running in memory alignment issues
-       with FLASHPAGE_WRITE_BLOCK_SIZE */
+    // invalidate header (checksum and magic number must be invalidated),
+    //    write the whole header to avoid running in memory alignment issues
+    //    with FLASHPAGE_WRITE_BLOCK_SIZE
     riotboot_hdr_t tmp_hdr;
 
     memset(&tmp_hdr, (~FLASHPAGE_ERASE_STATE), sizeof(riotboot_hdr_t));
@@ -200,8 +190,7 @@ int riotboot_flashwrite_invalidate(int slot)
     return 0;
 }
 
-int riotboot_flashwrite_invalidate_latest(void)
-{
+int riotboot_flashwrite_invalidate_latest(void) {
     int _slot_to_revert;
 
     _slot_to_revert = (riotboot_slot_get_hdr(riotboot_slot_other())->version
@@ -211,8 +200,7 @@ int riotboot_flashwrite_invalidate_latest(void)
 }
 
 int riotboot_flashwrite_finish_raw(riotboot_flashwrite_t *state,
-                                   const uint8_t *bytes, size_t len)
-{
+                                   const uint8_t *bytes, size_t len) {
 #ifndef PERIPH_FLASHPAGE_CUSTOM_PAGESIZES
     assert(len <= FLASHPAGE_SIZE);
 #endif
@@ -245,6 +233,6 @@ int riotboot_flashwrite_finish_raw(riotboot_flashwrite_t *state,
         LOG_ERROR(LOG_PREFIX "re-flashing first block failed!\n");
         return -1;
     }
-#endif /* !CONFIG_RIOTBOOT_FLASHWRITE_RAW */
+#endif // !CONFIG_RIOTBOOT_FLASHWRITE_RAW
     return 0;
 }

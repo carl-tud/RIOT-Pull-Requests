@@ -1,17 +1,13 @@
-/*
- * SPDX-FileCopyrightText: 2018 Inria
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2018 Inria
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup    tests
- * @{
- *
- * @file
- * @brief      Tests for module riotboot_hdr
- *
- * @author     Francisco Acosta <francisco.acosta@inria.fr>
- */
+/// @ingroup    tests
+/// @{
+///
+/// @file
+/// @brief      Tests for module riotboot_hdr
+///
+/// @author     Francisco Acosta <francisco.acosta@inria.fr>
 
 #include <stdio.h>
 
@@ -39,36 +35,31 @@ const riotboot_hdr_t riotboot_hdr_bad_chksum = {
     .chksum = 0x02000000
 };
 
-static void test_riotboot_hdr_01(void)
-{
+static void test_riotboot_hdr_01(void) {
     int ret = riotboot_hdr_validate(&riotboot_hdr_good);
 
     TEST_ASSERT_EQUAL_INT(0, ret);
 }
 
-static void test_riotboot_hdr_02(void)
-{
+static void test_riotboot_hdr_02(void) {
     int ret = riotboot_hdr_validate(&riotboot_hdr_bad_magic);
 
     TEST_ASSERT_EQUAL_INT(-1, ret);
 }
 
-static void test_riotboot_hdr_03(void)
-{
+static void test_riotboot_hdr_03(void) {
     int ret = riotboot_hdr_validate(&riotboot_hdr_bad_chksum);
 
     TEST_ASSERT_EQUAL_INT(-1, ret);
 }
 
-static void test_riotboot_hdr_04(void)
-{
+static void test_riotboot_hdr_04(void) {
     uint32_t chksum = riotboot_hdr_checksum(&riotboot_hdr_good);
 
     TEST_ASSERT_EQUAL_INT(0x02eda672, chksum);
 }
 
-Test *tests_riotboot_hdr(void)
-{
+Test *tests_riotboot_hdr(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_riotboot_hdr_01),
         new_TestFixture(test_riotboot_hdr_02),
@@ -81,8 +72,7 @@ Test *tests_riotboot_hdr(void)
     return (Test *)&riotboot_hdr_tests;
 }
 
-int main(void)
-{
+int main(void) {
     TESTS_START();
     TESTS_RUN(tests_riotboot_hdr());
     TESTS_END();

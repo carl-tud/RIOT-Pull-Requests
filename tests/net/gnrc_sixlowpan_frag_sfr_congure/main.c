@@ -1,20 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2019-2021 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2019-2021 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Tests 6LoWPAN Selective Fragment Recovery with Congestion
- *              Control
- *
- * @author      Martine S. Lenders <m.lenders@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Tests 6LoWPAN Selective Fragment Recovery with Congestion
+///              Control
+///
+/// @author      Martine S. Lenders <m.lenders@fu-berlin.de>
+///
+/// @}
 
 #include <errno.h>
 #include <stdio.h>
@@ -37,7 +33,7 @@
 #include "net/gnrc/sixlowpan/iphc.h"
 #include "net/netdev_test.h"
 #ifdef MODULE_OD
-/* for debugging _target_buf */
+// for debugging _target_buf
 #include "od.h"
 #endif
 #include "utlist.h"
@@ -64,27 +60,27 @@ enum {
 #define TEST_FULL_ACK           ((intptr_t)0xff)
 
 static const uint8_t _test_ack[] = {
-        0xea,       /* RFRAG-ACK | no ECN */
-        0xf1,       /* tag: 0xf1 */
-        /* randomly set bitmap */
+        0xea,       // RFRAG-ACK | no ECN
+        0xf1,       // tag: 0xf1
+        // randomly set bitmap
         0xbb, 0x6d, 0x5d, 0x94
     };
 static const uint8_t _test_send_ipv6[] = {
-        /* IPv6 header: payload length = 158,
-         * next header = ICMPv6 (58), hop limit = 64 */
+        // IPv6 header: payload length = 158,
+        // next header = ICMPv6 (58), hop limit = 64
         0x60, 0x00, 0x00, 0x00, 0x00, 0x9e, 0x3a, 0x40,
-        /* Source: Global address generated from LOC_L2 */
+        // Source: Global address generated from LOC_L2
         0x20, 0x01, 0x0d, 0xb8, 0xd3, 0x35, 0x91, 0x7e,
         _LL0 ^ 0x2, _LL1, _LL2, _LL3, _LL4, _LL5, _LL6, _LL7,
-        /* Destination: Global address generated from REM_L2 */
+        // Destination: Global address generated from REM_L2
         0x20, 0x01, 0x0d, 0xb8, 0xd3, 0x35, 0x91, 0x7e,
         _LL0 ^ 0x2, _LL1, _LL2, _LL3, _LL4, _LL5, _LL6, _LL7 + 1,
     };
 static const uint8_t _test_send_icmpv6[] = {
-        /* ICMPv6 Echo request (128), Code 0, (Random) checksum: 0x7269,
-         * random identifier: 0x59be, random sequence number: 15804 */
+        // ICMPv6 Echo request (128), Code 0, (Random) checksum: 0x7269,
+        // random identifier: 0x59be, random sequence number: 15804
         0x80, 0x00, 0x72, 0x69, 0x59, 0xbe, 0x3d, 0xbc,
-        /* random payload */
+        // random payload
         0x49, 0x19, 0xe8, 0x0b, 0x25, 0xbb, 0x00, 0x13,
         0x45, 0x85, 0xbd, 0x4a, 0xbb, 0xf1, 0x3d, 0xe3,
         0x36, 0xff, 0x52, 0xea, 0xe8, 0xec, 0xec, 0x82,
@@ -106,21 +102,21 @@ static const uint8_t _test_send_icmpv6[] = {
         0x6c, 0x28, 0x16, 0x59, 0xcc, 0x06
     };
 static const uint8_t _test_send_frag1[] = {
-        0xe8,       /* RFRAG | no ECN */
-        TEST_SEND_DATAGRAM_TAG, /* tag: TEST_SEND_DATAGRAM_TAG */
-        0x00, 0x5b, /* no ACK REQ | sequence: 0 | fragment_size: 91 */
-        /* compressed datagram size: 143 */
+        0xe8,       // RFRAG | no ECN
+        TEST_SEND_DATAGRAM_TAG, // tag: TEST_SEND_DATAGRAM_TAG
+        0x00, 0x5b, // no ACK REQ | sequence: 0 | fragment_size: 91
+        // compressed datagram size: 143
         0x00, TEST_SEND_COMP_DATAGRAM_SIZE,
-        /* IPHC: TF: 0b11, NH: 0b0 (inline), HLIM: 0b10 (64), CID: 0b0,
-         * Source: uncompressed (SAC: 0b0, SAM: 0b00),
-         * Destination: uncompressed (M:0, DAC: 0b0, DAM: 0b00) */
+        // IPHC: TF: 0b11, NH: 0b0 (inline), HLIM: 0b10 (64), CID: 0b0,
+        // Source: uncompressed (SAC: 0b0, SAM: 0b00),
+        // Destination: uncompressed (M:0, DAC: 0b0, DAM: 0b00)
         0x7a, 0x00,
-        /* Next header: ICMPv6 (58) */
+        // Next header: ICMPv6 (58)
         0x3a,
-        /* (uncompressed) Source: Global address generated from LOC_L2 */
+        // (uncompressed) Source: Global address generated from LOC_L2
         0x20, 0x01, 0x0d, 0xb8, 0xd3, 0x35, 0x91, 0x7e,
         _LL0 ^ 0x2, _LL1, _LL2, _LL3, _LL4, _LL5, _LL6, _LL7,
-        /* (uncompressed) Destination: Global address generated from REM_L2 */
+        // (uncompressed) Destination: Global address generated from REM_L2
         0x20, 0x01, 0x0d, 0xb8, 0xd3, 0x35, 0x91, 0x7e,
         _LL0 ^ 0x2, _LL1, _LL2, _LL3, _LL4, _LL5, _LL6, _LL7 + 1,
         0x80, 0x00, 0x72, 0x69, 0x59, 0xbe, 0x3d, 0xbc,
@@ -132,10 +128,10 @@ static const uint8_t _test_send_frag1[] = {
         0xb0, 0xdc, 0x18, 0xff, 0xcd, 0xfa, 0xa7, 0x72,
     };
 static const uint8_t _test_send_frag2[] = {
-        0xe8,       /* RFRAG | no ECN */
-        TEST_SEND_DATAGRAM_TAG, /* tag: TEST_SEND_DATAGRAM_TAG */
-        0x04, 0x60, /* no ACK REQ | sequence: 1 | fragment_size: 96 */
-        0x00, 0x5b, /* offset: 91 */
+        0xe8,       // RFRAG | no ECN
+        TEST_SEND_DATAGRAM_TAG, // tag: TEST_SEND_DATAGRAM_TAG
+        0x04, 0x60, // no ACK REQ | sequence: 1 | fragment_size: 96
+        0x00, 0x5b, // offset: 91
         0x4b, 0xcf, 0x7c, 0xf7, 0x7c, 0x8b, 0x65, 0x78,
         0xb0, 0xa8, 0xe7, 0x8f, 0xbc, 0x1e, 0xba, 0x4a,
         0x92, 0x13, 0x81, 0x5e, 0x23, 0xd1, 0xde, 0x09,
@@ -150,10 +146,10 @@ static const uint8_t _test_send_frag2[] = {
         0x20, 0xf4, 0xc8, 0xc4, 0xef, 0x1d, 0x9e, 0x13,
     };
 static const uint8_t _test_send_frag3[] = {
-        0xe8,       /* RFRAG | no ECN */
-        TEST_SEND_DATAGRAM_TAG, /* tag: TEST_SEND_DATAGRAM_TAG */
-        0x08, 0x06, /* no ACK REQ | sequence: 2 | fragment_size: 6 */
-        0x00, 0xbb, /* offset: 187 */
+        0xe8,       // RFRAG | no ECN
+        TEST_SEND_DATAGRAM_TAG, // tag: TEST_SEND_DATAGRAM_TAG
+        0x08, 0x06, // no ACK REQ | sequence: 2 | fragment_size: 6
+        0x00, 0xbb, // offset: 187
         0x6c, 0x28, 0x16, 0x59, 0xcc, 0x06
     };
 static const uint8_t _rem_l2[] = REM_L2;
@@ -169,8 +165,8 @@ static const gnrc_sixlowpan_frag_rb_base_t _vrbe_base = {
 static congure_mock_snd_t _sfr_congure_mocks[CONFIG_GNRC_SIXLOWPAN_FRAG_FB_SIZE];
 static uint8_t _target_buf[128U];
 static uint8_t _target_buf_len;
-/* to protect _target_buf and _target_buf_len */
-/* to wait for new data in _target_buf */
+// to protect _target_buf and _target_buf_len
+// to wait for new data in _target_buf
 static mutex_t _target_buf_filled = MUTEX_INIT_LOCKED;
 static mutex_t _target_buf_barrier = MUTEX_INIT;
 uint32_t _last_sent_frame;
@@ -205,8 +201,7 @@ static const congure_snd_driver_t _congure_test_driver = {
     .report_msg_acked = _congure_report_msg_acked,
 };
 
-congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void)
-{
+congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void) {
     for (unsigned i = 0; i < ARRAY_SIZE(_sfr_congure_mocks); i++) {
         if (_sfr_congure_mocks[i].super.driver == NULL) {
             congure_mock_snd_setup(&_sfr_congure_mocks[i],
@@ -217,9 +212,8 @@ congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void)
     return NULL;
 }
 
-static void _set_up(void)
-{
-    /* reset data-structures */
+static void _set_up(void) {
+    // reset data-structures
     _last_sent_frame = xtimer_now_usec() - CONFIG_GNRC_SIXLOWPAN_SFR_INTER_FRAME_GAP_US;
     gnrc_sixlowpan_frag_rb_reset();
     gnrc_sixlowpan_frag_vrb_reset();
@@ -231,25 +225,23 @@ static void _set_up(void)
     _in_flight_frags = 0U;
     gnrc_ipv6_nib_init();
     gnrc_ipv6_nib_init_iface(_mock_netif);
-    /* re-init for syncing */
+    // re-init for syncing
     mutex_init(&_target_buf_filled);
     mutex_lock(&_target_buf_filled);
     mutex_init(&_target_buf_barrier);
 }
 
-static void _tear_down(void)
-{
+static void _tear_down(void) {
     netdev_test_set_send_cb((netdev_test_t *)_mock_netif->dev, NULL);
     mutex_unlock(&_target_buf_barrier);
-    /* wait in case mutex in _mock_netdev_send was already entered */
+    // wait in case mutex in _mock_netdev_send was already entered
     mutex_lock(&_target_buf_barrier);
     memset(_target_buf, 0, sizeof(_target_buf));
     _target_buf_len = 0;
     mutex_unlock(&_target_buf_barrier);
 }
 
-static int _check_congure_snd_msgs_list(clist_node_t *node, void *arg)
-{
+static int _check_congure_snd_msgs_list(clist_node_t *node, void *arg) {
     (void)arg;
     _check_congure_snd_msg((congure_snd_msg_t *)node);
     return 0;
@@ -257,8 +249,7 @@ static int _check_congure_snd_msgs_list(clist_node_t *node, void *arg)
 
 static void _test_send_frag(unsigned frag_seq, const uint8_t acked_frags,
                             const uint8_t ack_req, uint8_t *tag,
-                            uint8_t *res_bitmap, bool *finished)
-{
+                            uint8_t *res_bitmap, bool *finished) {
     static void (*const _check_send_func[])(size_t, bool, bool *) = {
         _check_send_frag1,
         _check_send_frag2,
@@ -275,7 +266,7 @@ static void _test_send_frag(unsigned frag_seq, const uint8_t acked_frags,
 
     *finished = false;
     TEST_ASSERT((mhr_len = _wait_for_packet(exp_size[frag_seq])));
-    /* tags are generated by the stack so don't check */
+    // tags are generated by the stack so don't check
     _check_send_func[frag_seq](mhr_len, ack_req & (1 << frag_seq),
                                &send_func_finished);
     TEST_ASSERT(send_func_finished);
@@ -287,7 +278,7 @@ static void _test_send_frag(unsigned frag_seq, const uint8_t acked_frags,
         TEST_ASSERT_EQUAL_INT(*tag, hdr->base.tag);
     }
     if (res_bitmap && (acked_frags & (1 << frag_seq))) {
-        /* simulate successful reception for this fragment */
+        // simulate successful reception for this fragment
         bf_set(res_bitmap, sixlowpan_sfr_rfrag_get_seq(hdr));
     }
     _target_buf_len = 0;
@@ -296,12 +287,11 @@ static void _test_send_frag(unsigned frag_seq, const uint8_t acked_frags,
 
 static void _test_initial_send(const uint8_t acked_frags, const uint8_t ack_req,
                                uint8_t *tag, uint8_t *res_bitmap,
-                               bool *finished)
-{
+                               bool *finished) {
     gnrc_pktsnip_t *pkt;
 
     *finished = false;
-    /* window is large enough to send all fragments at once */
+    // window is large enough to send all fragments at once
     TEST_ASSERT(3 <= CONFIG_GNRC_SIXLOWPAN_SFR_OPT_WIN_SIZE);
     TEST_ASSERT_NOT_NULL((pkt = _create_send_datagram(false, true)));
 
@@ -310,7 +300,7 @@ static void _test_initial_send(const uint8_t acked_frags, const uint8_t ack_req,
     TEST_ASSERT(0 < gnrc_netapi_dispatch_send(GNRC_NETTYPE_SIXLOWPAN,
                                               GNRC_NETREG_DEMUX_CTX_ALL,
                                               pkt));
-    /* test send for fragments 1 to 3 */
+    // test send for fragments 1 to 3
     for (unsigned frag_seq = TEST_SEND_FRAG_SEQ1;
          frag_seq <= TEST_SEND_FRAG_SEQ3;
          frag_seq++) {
@@ -323,8 +313,7 @@ static void _test_initial_send(const uint8_t acked_frags, const uint8_t ack_req,
 }
 
 static void _recv_ack(const uint8_t *ack_bitmap, uint8_t tag, bool ecn,
-                      bool *finished)
-{
+                      bool *finished) {
     gnrc_pktsnip_t *pkt;
     sixlowpan_sfr_ack_t *ack_hdr;
 
@@ -390,8 +379,7 @@ static void _recv_ack(const uint8_t *ack_bitmap, uint8_t tag, bool ecn,
     TEST_ASSERT_NOT_NULL((cong)->report_msg_acked_args.msg); \
     TEST_ASSERT_NOT_NULL((cong)->report_msg_acked_args.ack)
 
-static void test_sixlo_send__no_ack(void)
-{
+static void test_sixlo_send__no_ack(void) {
     gnrc_sixlowpan_frag_fb_t *fbuf;
     congure_mock_snd_t *c = NULL;
     congure_snd_msg_t *msgs = NULL;
@@ -403,76 +391,73 @@ static void test_sixlo_send__no_ack(void)
     TEST_ASSERT(sent_frags_correct);
     for (unsigned i = 0; i < CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES; i++) {
         TEST_ASSERT_FBUF_CONGURE_EXISTS(fbuf, c);
-        /* three fragments wait for potential re-sending */
+        // three fragments wait for potential re-sending
         TEST_ASSERT_EQUAL_INT(3U, clist_count(&fbuf->sfr.window));
-        /* report_msg_sent has been called 3 * (i + 1) times:
-         * - 3 for each initial send of the fragments
-         * - 3 each retry (while only fragment 3 is sent, 1 and 2 are also
-         *   marked as in flight)
-         */
+        // report_msg_sent has been called 3 * (i + 1) times:
+        // - 3 for each initial send of the fragments
+        // - 3 each retry (while only fragment 3 is sent, 1 and 2 are also
+        //   marked as in flight)
         TEST_ASSERT_REPORT_MSG_SENT(c, 3U * (i + 1));
         gnrc_sixlowpan_frag_sfr_arq_timeout(fbuf);
-        /* resend of fragment 3 */
+        // resend of fragment 3
         _test_send_frag(TEST_SEND_FRAG_SEQ3, 0, ack_req, &tag,
                         NULL, &sent_frags_correct);
         TEST_ASSERT(sent_frags_correct);
-        /* report_msg_timeout was called i + 1 times; once for each ARQ
-         * timeout */
+        // report_msg_timeout was called i + 1 times; once for each ARQ
+        // timeout
         TEST_ASSERT_REPORT_MSGS_TIMEOUT(c, i + 1U, msgs);
-        /* there is one message for each fragment */
+        // there is one message for each fragment
         TEST_ASSERT_EQUAL_INT(3U, clist_count(&msgs->super));
         clist_foreach(&msgs->super, _check_congure_snd_msgs_list, NULL);
-        /* first fragment has no resends */
+        // first fragment has no resends
         TEST_ASSERT_EQUAL_INT(
             0, ((congure_snd_msg_t *)msgs->super.next->next)->resends
         );
-        /* second fragment has no resends */
+        // second fragment has no resends
         TEST_ASSERT_EQUAL_INT(
             0, ((congure_snd_msg_t *)msgs->super.next->next->next)->resends
         );
-        /* third fragment has i + 1 resends */
+        // third fragment has i + 1 resends
         TEST_ASSERT_EQUAL_INT(
             i + 1,
             ((congure_snd_msg_t *)msgs->super.next->next->next->next)->resends
         );
-        /* there are three fragments in flight */
+        // there are three fragments in flight
         TEST_ASSERT_EQUAL_INT(3U, _in_flight_frags);
     }
     gnrc_sixlowpan_frag_sfr_arq_timeout(fbuf);
-    /* should time out */
+    // should time out
     TEST_ASSERT_EQUAL_INT(0, _wait_for_packet(sizeof(_test_send_frag3)));
-    /* fragmentation buffer and congure state should have been destroyed and
-     * freed after CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES retries */
+    // fragmentation buffer and congure state should have been destroyed and
+    // freed after CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES retries
     TEST_ASSERT_FBUF_CONGURE_DESTROYED(fbuf, c);
-    /* report_msg_sent has been called 3 * (RETRIES + 1) times:
-     * - 3 for each initial send of the fragments
-     * - 3 each retry (while only fragment 3 is sent, 1 and 2 are marked as
-     *   in flight)
-     */
+    // report_msg_sent has been called 3 * (RETRIES + 1) times:
+    // - 3 for each initial send of the fragments
+    // - 3 each retry (while only fragment 3 is sent, 1 and 2 are marked as
+    //   in flight)
     TEST_ASSERT_REPORT_MSG_SENT(
         c, 3U * (CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES + 1)
     );
-    /* report_msg_timeout was called CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES + 1
-     * times; once for each ARQ timeout */
+    // report_msg_timeout was called CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES + 1
+    // times; once for each ARQ timeout
     TEST_ASSERT_REPORT_MSGS_TIMEOUT(c,
                                     CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES + 1U,
                                     msgs);
-    /* inter_msg_interval was called several times to calculate inter-frame gap
-     * TODO */
+    // inter_msg_interval was called several times to calculate inter-frame gap
+    // TODO
     TEST_ASSERT(0 < c->inter_msg_interval_calls);
-    /* none of the other CongURE report methods should have been called */
+    // none of the other CongURE report methods should have been called
     TEST_ASSERT_EQUAL_INT(0, c->report_msg_discarded_calls);
     TEST_ASSERT_EQUAL_INT(0, c->report_msgs_lost_calls);
     TEST_ASSERT_EQUAL_INT(0, c->report_msg_acked_calls);
     TEST_ASSERT_EQUAL_INT(0, c->report_ecn_ce_calls);
-    /* no fragments reported in flight anymore */
+    // no fragments reported in flight anymore
     TEST_ASSERT_EQUAL_INT(0, _in_flight_frags);
     TEST_ASSERT(gnrc_pktbuf_is_sane());
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_sixlo_send__first_ackd(void)
-{
+static void test_sixlo_send__first_ackd(void) {
     gnrc_sixlowpan_frag_fb_t *fbuf;
     congure_mock_snd_t *c;
     congure_snd_msg_t *msgs = NULL;
@@ -486,114 +471,109 @@ static void test_sixlo_send__first_ackd(void)
                        &sent_frags_correct);
     TEST_ASSERT(sent_frags_correct);
     TEST_ASSERT_FBUF_CONGURE_EXISTS(fbuf, c);
-    /* three fragments wait for potential re-sending */
+    // three fragments wait for potential re-sending
     TEST_ASSERT_EQUAL_INT(3U, clist_count(&fbuf->sfr.window));
     _recv_ack(ack_bitmap, tag, false, &ack_received);
     TEST_ASSERT(ack_received);
-    /* resend of fragment 2 (fragment 1 is ACK'd so not resent) */
+    // resend of fragment 2 (fragment 1 is ACK'd so not resent)
     _test_send_frag(TEST_SEND_FRAG_SEQ2, acked_frags, ack_req, &tag, ack_bitmap,
                     &sent_frags_correct);
     TEST_ASSERT(sent_frags_correct);
-    /* resend of fragment 3 */
+    // resend of fragment 3
     _test_send_frag(TEST_SEND_FRAG_SEQ3, 0, ack_req, &tag,
                     NULL, &sent_frags_correct);
     TEST_ASSERT(sent_frags_correct);
     TEST_ASSERT_FBUF_CONGURE_EXISTS(fbuf, c);
-    /* two fragments wait for potential re-sending */
+    // two fragments wait for potential re-sending
     TEST_ASSERT_EQUAL_INT(2U, clist_count(&fbuf->sfr.window));
-    /* fragments 2 and 3 were reported lost (in one call) */
+    // fragments 2 and 3 were reported lost (in one call)
     TEST_ASSERT_REPORT_MSGS_LOST(c, 1U, msgs);
-    /* msgs is `not_received` in SFR code which is allocated on stack,
-     * so we can't safely check the contents */
-    /* fragment 1 was ACK'd */
+    // msgs is `not_received` in SFR code which is allocated on stack,
+    // so we can't safely check the contents
+    // fragment 1 was ACK'd
     TEST_ASSERT_REPORT_MSG_ACKED(c, 1U);
-    /* report_msg_sent has been called 5 times:
-     * - 3 for each initial send of the fragments
-     * - 2 for resends of fragments 2 and 3 which were marked lost in the ACK
-     */
+    // report_msg_sent has been called 5 times:
+    // - 3 for each initial send of the fragments
+    // - 2 for resends of fragments 2 and 3 which were marked lost in the ACK
     TEST_ASSERT_REPORT_MSG_SENT(c, 5U);
     TEST_ASSERT_FBUF_CONGURE_EXISTS(fbuf, c);
-    /* Due to the ACK, we only expect RETRIES - 1 retries so start iteration
-     * with 1 */
+    // Due to the ACK, we only expect RETRIES - 1 retries so start iteration
+    // with 1
     for (unsigned i = 1U; i < CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES; i++) {
         gnrc_sixlowpan_frag_sfr_arq_timeout(fbuf);
-        /* resend of fragment 3 */
+        // resend of fragment 3
         _test_send_frag(TEST_SEND_FRAG_SEQ3, 0, ack_req, &tag,
                         NULL, &sent_frags_correct);
         TEST_ASSERT(sent_frags_correct);
         TEST_ASSERT_FBUF_CONGURE_EXISTS(fbuf, c);
-        /* two fragments wait for potential re-sending */
+        // two fragments wait for potential re-sending
         TEST_ASSERT_EQUAL_INT(2U, clist_count(&fbuf->sfr.window));
-        /* nothing should have changed for report_msgs_lost */
+        // nothing should have changed for report_msgs_lost
         TEST_ASSERT_REPORT_MSGS_LOST(c, 1U, msgs);
-        /* nothing should have changed for report_msg_acked */
+        // nothing should have changed for report_msg_acked
         TEST_ASSERT_REPORT_MSG_ACKED(c, 1U);
-        /* report_msg_sent has been called 5 + (2 * i) times:
-         * - 3 for each initial send of the fragments
-         * - 2 for resends of fragments 2 and 3 which were marked lost in the ACK
-         * - 3 each retry (while only fragment 3 is sent, 2 is also marked as
-         *   in flight)
-         */
+        // report_msg_sent has been called 5 + (2 * i) times:
+        // - 3 for each initial send of the fragments
+        // - 2 for resends of fragments 2 and 3 which were marked lost in the ACK
+        // - 3 each retry (while only fragment 3 is sent, 2 is also marked as
+        //   in flight)
         TEST_ASSERT_REPORT_MSG_SENT(c, 5U + (2U * i));
-        /* report_msg_timeout was called i times; once for each ARQ
-         * timeout */
+        // report_msg_timeout was called i times; once for each ARQ
+        // timeout
         TEST_ASSERT_REPORT_MSGS_TIMEOUT(c, i, msgs);
-        /* fbuf and thus msgs will be deleted in second to last iteration due to
-         * fragment 3 having been resent too many times already. */
+        // fbuf and thus msgs will be deleted in second to last iteration due to
+        // fragment 3 having been resent too many times already.
         if (i <= (CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES - 1)) {
-            /* there is one message for each fragment 2 and 3 */
+            // there is one message for each fragment 2 and 3
             TEST_ASSERT_EQUAL_INT(2U, clist_count(&msgs->super));
             clist_foreach(&msgs->super, _check_congure_snd_msgs_list, NULL);
-            /* second fragment has 1 resends (due to the ACK) */
+            // second fragment has 1 resends (due to the ACK)
             TEST_ASSERT_EQUAL_INT(
                 1, ((congure_snd_msg_t *)msgs->super.next->next)->resends
             );
-            /* third fragment has i + 1 resends (one due to the ACK, one due to
-             * the timeout) */
+            // third fragment has i + 1 resends (one due to the ACK, one due to
+            // the timeout)
             TEST_ASSERT_EQUAL_INT(
                 i + 1,
                 ((congure_snd_msg_t *)msgs->super.next->next->next)->resends
             );
         }
     }
-    /* generate final timeout */
+    // generate final timeout
     gnrc_sixlowpan_frag_sfr_arq_timeout(fbuf);
-    /* should time out */
+    // should time out
     TEST_ASSERT_EQUAL_INT(0, _wait_for_packet(sizeof(_test_send_frag3)));
-    /* nothing should have changed for report_msgs_lost */
+    // nothing should have changed for report_msgs_lost
     TEST_ASSERT_REPORT_MSGS_LOST(c, 1U, msgs);
-    /* nothing should have changed for report_msg_acked */
+    // nothing should have changed for report_msg_acked
     TEST_ASSERT_REPORT_MSG_ACKED(c, 1U);
-    /* report_msg_timeout was called CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES
-     * times; once for each ARQ timeout */
+    // report_msg_timeout was called CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES
+    // times; once for each ARQ timeout
     TEST_ASSERT_REPORT_MSGS_TIMEOUT(
         c, CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES, msgs
     );
-    /* report_msg_sent has been called 3 + (2 * RETRIES) times:
-     * - 3 for each initial send of the fragments
-     * - 2 each retry due to ACK or timeout (1 was ACK'd so is not sent anymore
-     *   and while only fragment 3 is sent, 2 is marked as in flight)
-     */
+    // report_msg_sent has been called 3 + (2 * RETRIES) times:
+    // - 3 for each initial send of the fragments
+    // - 2 each retry due to ACK or timeout (1 was ACK'd so is not sent anymore
+    //   and while only fragment 3 is sent, 2 is marked as in flight)
     TEST_ASSERT_REPORT_MSG_SENT(
         c, 3U + (2U * CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES)
     );
-    /* fragmentation buffer and congure state should have been destroyed and
-     * freed after CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES retries */
+    // fragmentation buffer and congure state should have been destroyed and
+    // freed after CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES retries
     TEST_ASSERT_FBUF_CONGURE_DESTROYED(fbuf, c);
-    /* inter_msg_interval was called several times to calculate inter-frame gap
-     */
+    // inter_msg_interval was called several times to calculate inter-frame gap
     TEST_ASSERT(0 < c->inter_msg_interval_calls);
-    /* none of the other CongURE report methods should have been called */
+    // none of the other CongURE report methods should have been called
     TEST_ASSERT_EQUAL_INT(0, c->report_msg_discarded_calls);
     TEST_ASSERT_EQUAL_INT(0, c->report_ecn_ce_calls);
-    /* no fragments reported in flight anymore */
+    // no fragments reported in flight anymore
     TEST_ASSERT_EQUAL_INT(0, _in_flight_frags);
     TEST_ASSERT(gnrc_pktbuf_is_sane());
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_sixlo_send__last_ackd_ecn(void)
-{
+static void test_sixlo_send__last_ackd_ecn(void) {
     gnrc_sixlowpan_frag_fb_t *fbuf;
     congure_mock_snd_t *c;
     congure_snd_msg_t *msgs = NULL;
@@ -612,114 +592,109 @@ static void test_sixlo_send__last_ackd_ecn(void)
     TEST_ASSERT_EQUAL_INT(3U, clist_count(&fbuf->sfr.window));
     _recv_ack(ack_bitmap, tag, true, &ack_received);
     TEST_ASSERT(ack_received);
-    /* resend of fragment 1 */
+    // resend of fragment 1
     _test_send_frag(TEST_SEND_FRAG_SEQ1, acked_frags, ack_req, &tag, ack_bitmap,
                     &sent_frags_correct);
     TEST_ASSERT(sent_frags_correct);
-    /* resend of fragment 2 (which now requests an ACK) */
+    // resend of fragment 2 (which now requests an ACK)
     _test_send_frag(TEST_SEND_FRAG_SEQ2, 0, 1 << TEST_SEND_FRAG_SEQ2, &tag,
                     NULL, &sent_frags_correct);
     TEST_ASSERT(sent_frags_correct);
-    /* (fragment 3 is ACK'd so not resent) */
+    // (fragment 3 is ACK'd so not resent)
     TEST_ASSERT_FBUF_CONGURE_EXISTS(fbuf, c);
-    /* two fragments wait for potential re-sending */
+    // two fragments wait for potential re-sending
     TEST_ASSERT_EQUAL_INT(2U, clist_count(&fbuf->sfr.window));
-    /* fragments 1 and 2 were reported lost (in one call) */
+    // fragments 1 and 2 were reported lost (in one call)
     TEST_ASSERT_REPORT_MSGS_LOST(c, 1U, msgs);
-    /* msgs is `not_received` in SFR code which is allocated on stack,
-     * so we can't safely check the contents */
-    /* fragment 3 was ACK'd */
+    // msgs is `not_received` in SFR code which is allocated on stack,
+    // so we can't safely check the contents
+    // fragment 3 was ACK'd
     TEST_ASSERT_REPORT_MSG_ACKED(c, 1U);
-    /* report_ecn_ce was called with a timestamp after the time we sent the
-     * original message */
+    // report_ecn_ce was called with a timestamp after the time we sent the
+    // original message
     TEST_ASSERT_EQUAL_INT(1U, c->report_ecn_ce_calls);
     TEST_ASSERT((xtimer_now_usec() / US_PER_MS) >= pre_send_time);
     TEST_ASSERT(c->report_ecn_ce_args.time >= pre_send_time);
-    /* report_msg_sent has been called 5 times:
-     * - 3 for each initial send of the fragments
-     * - 2 for resends of fragments 2 and 3 which were marked lost in the ACK
-     */
+    // report_msg_sent has been called 5 times:
+    // - 3 for each initial send of the fragments
+    // - 2 for resends of fragments 2 and 3 which were marked lost in the ACK
     TEST_ASSERT_REPORT_MSG_SENT(c, 5U);
-    /* Due to the ACK, we only expect RETRIES - 1 retries so start iteration
-     * with 1 */
+    // Due to the ACK, we only expect RETRIES - 1 retries so start iteration
+    // with 1
     for (unsigned i = 1U; i < CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES; i++) {
         gnrc_sixlowpan_frag_sfr_arq_timeout(fbuf);
-        /* resend of fragment 2 */
+        // resend of fragment 2
         _test_send_frag(TEST_SEND_FRAG_SEQ2, 0, 1 << TEST_SEND_FRAG_SEQ2, &tag,
                         NULL, &sent_frags_correct);
         TEST_ASSERT(sent_frags_correct);
         TEST_ASSERT_FBUF_CONGURE_EXISTS(fbuf, c);
-        /* two fragments wait for potential re-sending */
+        // two fragments wait for potential re-sending
         TEST_ASSERT_EQUAL_INT(2U, clist_count(&fbuf->sfr.window));
-        /* nothing should have changed for report_msgs_lost */
+        // nothing should have changed for report_msgs_lost
         TEST_ASSERT_REPORT_MSGS_LOST(c, 1U, msgs);
-        /* nothing should have changed for report_msg_acked */
+        // nothing should have changed for report_msg_acked
         TEST_ASSERT_REPORT_MSG_ACKED(c, 1U);
-        /* report_msg_sent has been called 5 + (2 * i) times:
-         * - 3 for each initial send of the fragments
-         * - 2 for resends of fragments 1 and 2 which were marked lost in the ACK
-         * - 3 each retry (while only fragment 3 is sent, 2 is also marked as
-         *   in flight)
-         */
+        // report_msg_sent has been called 5 + (2 * i) times:
+        // - 3 for each initial send of the fragments
+        // - 2 for resends of fragments 1 and 2 which were marked lost in the ACK
+        // - 3 each retry (while only fragment 3 is sent, 2 is also marked as
+        //   in flight)
         TEST_ASSERT_REPORT_MSG_SENT(c, 5U + (2U * i));
-        /* report_msg_timeout was called i times; once for each ARQ
-         * timeout */
+        // report_msg_timeout was called i times; once for each ARQ
+        // timeout
         TEST_ASSERT_REPORT_MSGS_TIMEOUT(c, i, msgs);
-        /* fbuf and thus msgs will be deleted in second to last iteration due to
-         * fragment 3 having been resent too many times already. */
+        // fbuf and thus msgs will be deleted in second to last iteration due to
+        // fragment 3 having been resent too many times already.
         if (i <= (CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES - 1)) {
-            /* there is one message for each fragment 2 and 3 */
+            // there is one message for each fragment 2 and 3
             TEST_ASSERT_EQUAL_INT(2U, clist_count(&msgs->super));
             clist_foreach(&msgs->super, _check_congure_snd_msgs_list, NULL);
-            /* second fragment has 1 resends (due to the ACK) */
+            // second fragment has 1 resends (due to the ACK)
             TEST_ASSERT_EQUAL_INT(
                 1, ((congure_snd_msg_t *)msgs->super.next->next)->resends
             );
-            /* third fragment has i + 1 resends (one due to the ACK, one due to
-             * the timeout) */
+            // third fragment has i + 1 resends (one due to the ACK, one due to
+            // the timeout)
             TEST_ASSERT_EQUAL_INT(
                 i + 1,
                 ((congure_snd_msg_t *)msgs->super.next->next->next)->resends
             );
         }
     }
-    /* generate final timeout */
+    // generate final timeout
     gnrc_sixlowpan_frag_sfr_arq_timeout(fbuf);
-    /* should time out */
+    // should time out
     TEST_ASSERT_EQUAL_INT(0, _wait_for_packet(sizeof(_test_send_frag3)));
-    /* nothing should have changed for report_msgs_lost */
+    // nothing should have changed for report_msgs_lost
     TEST_ASSERT_REPORT_MSGS_LOST(c, 1U, msgs);
-    /* nothing should have changed for report_msg_acked */
+    // nothing should have changed for report_msg_acked
     TEST_ASSERT_REPORT_MSG_ACKED(c, 1U);
-    /* report_msg_timeout was called CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES
-     * times; once for each ARQ timeout */
+    // report_msg_timeout was called CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES
+    // times; once for each ARQ timeout
     TEST_ASSERT_REPORT_MSGS_TIMEOUT(
         c, CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES, msgs
     );
-    /* report_msg_sent has been called 3 + (2 * RETRIES) times:
-     * - 3 for each initial send of the fragments
-     * - 2 each retry due to ACK or timeout (1 was ACK'd so is not sent anymore
-     *   and while only fragment 2 is sent, 1 is marked as in flight)
-     */
+    // report_msg_sent has been called 3 + (2 * RETRIES) times:
+    // - 3 for each initial send of the fragments
+    // - 2 each retry due to ACK or timeout (1 was ACK'd so is not sent anymore
+    //   and while only fragment 2 is sent, 1 is marked as in flight)
     TEST_ASSERT_REPORT_MSG_SENT(
         c, 3U + (2U * CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES)
     );
-    /* fragmentation buffer and congure state should have been destroyed and
-     * freed after CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES retries */
+    // fragmentation buffer and congure state should have been destroyed and
+    // freed after CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES retries
     TEST_ASSERT_FBUF_CONGURE_DESTROYED(fbuf, c);
-    /* inter_msg_interval was called several times to calculate inter-frame gap
-     */
+    // inter_msg_interval was called several times to calculate inter-frame gap
     TEST_ASSERT(0 < c->inter_msg_interval_calls);
-    /* none of the other CongURE report methods should have been called */
+    // none of the other CongURE report methods should have been called
     TEST_ASSERT_EQUAL_INT(0, c->report_msg_discarded_calls);
-    /* no fragments reported in flight anymore */
+    // no fragments reported in flight anymore
     TEST_ASSERT_EQUAL_INT(0, _in_flight_frags);
     TEST_ASSERT(gnrc_pktbuf_is_sane());
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void _test_sixlo_send__all_or_FULL_ackd(const uint8_t acked_frags)
-{
+static void _test_sixlo_send__all_or_FULL_ackd(const uint8_t acked_frags) {
     gnrc_sixlowpan_frag_fb_t *fbuf;
     BITFIELD(ack_bitmap, 32U) = { 0 };
     congure_mock_snd_t *c;
@@ -743,31 +718,29 @@ static void _test_sixlo_send__all_or_FULL_ackd(const uint8_t acked_frags)
         _recv_ack(ack_bitmap, tag, false, &ack_received);
     }
     TEST_ASSERT(ack_received);
-    /* all three fragments were reported as sent exactly once */
+    // all three fragments were reported as sent exactly once
     TEST_ASSERT_REPORT_MSG_SENT(c, 3U);
-    /* all three fragments were ACK'd */
+    // all three fragments were ACK'd
     TEST_ASSERT_REPORT_MSG_ACKED(c, 3U);
-    /* should time out */
+    // should time out
     TEST_ASSERT_EQUAL_INT(0, _wait_for_packet(sizeof(_test_send_frag3)));
-    /* fragmentation buffer and congure state should have been destroyed and
-     * freed after CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES retries */
+    // fragmentation buffer and congure state should have been destroyed and
+    // freed after CONFIG_GNRC_SIXLOWPAN_SFR_FRAG_RETRIES retries
     TEST_ASSERT_FBUF_CONGURE_DESTROYED(fbuf, c);
-    /* inter_msg_interval was called several times to calculate inter-frame gap
-     */
+    // inter_msg_interval was called several times to calculate inter-frame gap
     TEST_ASSERT(0 < c->inter_msg_interval_calls);
-    /* none of the other CongURE report methods should have been called */
+    // none of the other CongURE report methods should have been called
     TEST_ASSERT_EQUAL_INT(0, c->report_msg_discarded_calls);
     TEST_ASSERT_EQUAL_INT(0, c->report_msgs_timeout_calls);
     TEST_ASSERT_EQUAL_INT(0, c->report_msgs_lost_calls);
     TEST_ASSERT_EQUAL_INT(0, c->report_msgs_timeout_calls);
-    /* no fragments reported in flight anymore */
+    // no fragments reported in flight anymore
     TEST_ASSERT_EQUAL_INT(0, _in_flight_frags);
     TEST_ASSERT(gnrc_pktbuf_is_sane());
     TEST_ASSERT(gnrc_pktbuf_is_empty());
 }
 
-static void test_sixlo_send__all_ackd(void)
-{
+static void test_sixlo_send__all_ackd(void) {
     _test_sixlo_send__all_or_FULL_ackd(
             (1 << TEST_SEND_FRAG_SEQ1) |
             (1 << TEST_SEND_FRAG_SEQ2) |
@@ -775,13 +748,11 @@ static void test_sixlo_send__all_ackd(void)
         );
 }
 
-static void test_sixlo_send__FULL_ack_recv(void)
-{
+static void test_sixlo_send__FULL_ack_recv(void) {
     _test_sixlo_send__all_or_FULL_ackd(TEST_FULL_ACK);
 }
 
-static Test *tests_gnrc_sixlowpan_frag_sfr_congure_integration(void)
-{
+static Test *tests_gnrc_sixlowpan_frag_sfr_congure_integration(void) {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_sixlo_send__no_ack),
         new_TestFixture(test_sixlo_send__first_ackd),
@@ -795,12 +766,11 @@ static Test *tests_gnrc_sixlowpan_frag_sfr_congure_integration(void)
     return (Test *)&tests;
 }
 
-int main(void)
-{
+int main(void) {
     _tests_init();
 
-    /* work around issue in _check_congure_snd_msg(): the assert for
-     * time > o will not work when the time is 0 */
+    // work around issue in _check_congure_snd_msg(): the assert for
+    // time > o will not work when the time is 0
     while (xtimer_now_usec() / US_PER_MS == 0) { }
 
     TESTS_START();
@@ -809,53 +779,46 @@ int main(void)
     return 0;
 }
 
-static void _congure_init(congure_snd_t *cong, void *ctx)
-{
+static void _congure_init(congure_snd_t *cong, void *ctx) {
     cong->ctx = ctx;
     cong->cwnd = CONFIG_GNRC_SIXLOWPAN_SFR_OPT_WIN_SIZE;
 }
 
-static void _congure_report_msg_sent(congure_snd_t *cong, unsigned msg_size)
-{
+static void _congure_report_msg_sent(congure_snd_t *cong, unsigned msg_size) {
     (void)cong;
     _in_flight_frags += msg_size;
 }
 
 static void _congure_report_msg_discarded(congure_snd_t *cong,
-                                          unsigned msg_size)
-{
+                                          unsigned msg_size) {
     (void)cong;
     _in_flight_frags -= msg_size;
 }
 
-static int _report_msg_discarded(clist_node_t *node, void *arg)
-{
+static int _report_msg_discarded(clist_node_t *node, void *arg) {
     congure_snd_msg_t *msg = container_of(node, congure_snd_msg_t, super);
     _congure_report_msg_discarded(arg, msg->size);
     return 0;
 }
 
 static void _congure_report_msgs_timeout_lost(congure_snd_t *cong,
-                                             congure_snd_msg_t *msgs)
-{
+                                             congure_snd_msg_t *msgs) {
     (void)cong;
     clist_foreach(&msgs->super, _report_msg_discarded, cong);
 }
 
 static void _congure_report_msg_acked(congure_snd_t *cong,
                                       congure_snd_msg_t *msg,
-                                      congure_snd_ack_t *ack)
-{
+                                      congure_snd_ack_t *ack) {
     (void)cong;
     (void)ack;
     _in_flight_frags -= msg->size;
 }
 
-static congure_mock_snd_t *_get_congure_by_fb(const gnrc_sixlowpan_frag_fb_t *fb)
-{
+static congure_mock_snd_t *_get_congure_by_fb(const gnrc_sixlowpan_frag_fb_t *fb) {
     for (unsigned i = 0; i < ARRAY_SIZE(_sfr_congure_mocks); i++) {
         if ((_sfr_congure_mocks[i].super.driver != NULL) &&
-            /* ctx is set to the fragment buffer */
+            // ctx is set to the fragment buffer
             (_sfr_congure_mocks[i].super.ctx == fb)) {
             return &_sfr_congure_mocks[i];
         }
@@ -864,8 +827,7 @@ static congure_mock_snd_t *_get_congure_by_fb(const gnrc_sixlowpan_frag_fb_t *fb
 }
 
 static gnrc_pktsnip_t *_create_recv_ack(const void *ack_data,
-                                        size_t ack_size)
-{
+                                        size_t ack_size) {
     gnrc_pktsnip_t *netif;
     gnrc_netif_hdr_t *netif_hdr;
 
@@ -880,8 +842,7 @@ static gnrc_pktsnip_t *_create_recv_ack(const void *ack_data,
                            GNRC_NETTYPE_SIXLOWPAN);
 }
 
-static gnrc_pktsnip_t *_create_send_datagram(bool compressed, bool payload)
-{
+static gnrc_pktsnip_t *_create_send_datagram(bool compressed, bool payload) {
     gnrc_pktsnip_t *pkt1 = NULL, *pkt2;
     gnrc_netif_hdr_t *netif_hdr;
 
@@ -893,7 +854,7 @@ static gnrc_pktsnip_t *_create_send_datagram(bool compressed, bool payload)
         }
     }
     if (compressed) {
-        /* Use IPHC header from expected data */
+        // Use IPHC header from expected data
         pkt2 = gnrc_pktbuf_add(pkt1,
                                &_test_send_frag1[TEST_SEND_FRAG1_PAYLOAD_POS],
                                TEST_SEND_FRAG1_PAYLOAD_SIZE,
@@ -920,8 +881,7 @@ static gnrc_pktsnip_t *_create_send_datagram(bool compressed, bool payload)
     return pkt2;
 }
 
-static size_t _wait_for_packet(size_t exp_size)
-{
+static size_t _wait_for_packet(size_t exp_size) {
     size_t mhr_len;
     uint32_t now = 0U;
 
@@ -935,19 +895,19 @@ static size_t _wait_for_packet(size_t exp_size)
             puts("Sent packet: ");
             od_hex_dump(_target_buf, _target_buf_len, OD_WIDTH_DEFAULT);
         }
-#endif /* MODULE_OD */
+#endif // MODULE_OD
         if ((sizeof(sixlowpan_sfr_ack_t) == size) &&
             (sixlowpan_sfr_ack_is((sixlowpan_sfr_t *)&_target_buf[mhr_len]))) {
-            /* found ACK */
+            // found ACK
             break;
         }
         if (exp_size == size) {
-            /* found expected packet */
+            // found expected packet
             break;
         }
-        /* let packets in again at the device */
+        // let packets in again at the device
         mutex_unlock(&_target_buf_barrier);
-        /* wait for next packet */
+        // wait for next packet
         if (xtimer_mutex_lock_timeout(&_target_buf_filled,
                                       SEND_PACKET_TIMEOUT) < 0) {
             return 0;
@@ -964,8 +924,7 @@ static size_t _wait_for_packet(size_t exp_size)
     return mhr_len;
 }
 
-static void _check_send_frag_datagram_fields(size_t mhr_len)
-{
+static void _check_send_frag_datagram_fields(size_t mhr_len) {
     sixlowpan_sfr_rfrag_t *frag_hdr = (sixlowpan_sfr_rfrag_t *)&_target_buf[mhr_len];
 
     if (sixlowpan_sfr_rfrag_get_seq(frag_hdr) == 0) {
@@ -974,8 +933,7 @@ static void _check_send_frag_datagram_fields(size_t mhr_len)
     }
 }
 
-static void _check_send_frag1(size_t mhr_len, bool ack_req, bool *finished)
-{
+static void _check_send_frag1(size_t mhr_len, bool ack_req, bool *finished) {
     sixlowpan_sfr_rfrag_t *frag_hdr;
 
     *finished = false;
@@ -997,8 +955,7 @@ static void _check_send_frag1(size_t mhr_len, bool ack_req, bool *finished)
     *finished = true;
 }
 
-static void _check_send_frag2(size_t mhr_len, bool ack_req, bool *finished)
-{
+static void _check_send_frag2(size_t mhr_len, bool ack_req, bool *finished) {
     sixlowpan_sfr_rfrag_t *frag_hdr;
 
     *finished = false;
@@ -1024,8 +981,7 @@ static void _check_send_frag2(size_t mhr_len, bool ack_req, bool *finished)
     *finished = true;
 }
 
-static void _check_send_frag3(size_t mhr_len, bool ack_req, bool *finished)
-{
+static void _check_send_frag3(size_t mhr_len, bool ack_req, bool *finished) {
     sixlowpan_sfr_rfrag_t *frag_hdr;
 
     *finished = false;
@@ -1051,14 +1007,12 @@ static void _check_send_frag3(size_t mhr_len, bool ack_req, bool *finished)
     *finished = true;
 }
 
-static void _check_congure_snd_msg(congure_snd_msg_t *msg)
-{
+static void _check_congure_snd_msg(congure_snd_msg_t *msg) {
     TEST_ASSERT(msg->send_time > 0U);
     TEST_ASSERT_EQUAL_INT(msg->size, 1);
 }
 
-static int _mock_netdev_send(netdev_t *dev, const iolist_t *iolist)
-{
+static int _mock_netdev_send(netdev_t *dev, const iolist_t *iolist) {
     (void)dev;
     mutex_lock(&_target_buf_barrier);
     _target_buf_len = 0;
@@ -1069,7 +1023,7 @@ static int _mock_netdev_send(netdev_t *dev, const iolist_t *iolist)
         memcpy(&_target_buf[_target_buf_len], ptr->iol_base, ptr->iol_len);
         _target_buf_len += ptr->iol_len;
     }
-    /* wake-up test thread */
+    // wake-up test thread
     mutex_unlock(&_target_buf_filled);
     return _target_buf_len;
 }

@@ -1,19 +1,15 @@
-/*
- * SPDX-FileCopyrightText: 2020 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2020 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     tests
- * @{
- *
- * @file
- * @brief       Test application for the DS3231 RTC driver
- *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
- *
- * @}
- */
+/// @ingroup     tests
+/// @{
+///
+/// @file
+/// @brief       Test application for the DS3231 RTC driver
+///
+/// @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+///
+/// @}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +26,7 @@
 
 static ds3231_t _dev;
 
-/* 2010-09-22T15:10:42 is the author date of RIOT's initial commit */
+// 2010-09-22T15:10:42 is the author date of RIOT's initial commit
 static struct tm _riot_bday = {
     .tm_sec = 42,
     .tm_min = 10,
@@ -41,9 +37,8 @@ static struct tm _riot_bday = {
     .tm_year = 110
 };
 
-/* parse ISO date string (YYYY-MM-DDTHH:mm:ss) to struct tm */
-static int _tm_from_str(const char *str, struct tm *time)
-{
+// parse ISO date string (YYYY-MM-DDTHH:mm:ss) to struct tm
+static int _tm_from_str(const char *str, struct tm *time) {
     char tmp[5];
 
     if (strlen(str) != ISOSTR_LEN - 1) {
@@ -84,8 +79,7 @@ static int _tm_from_str(const char *str, struct tm *time)
     return 0;
 }
 
-static int _cmd_get(int argc, char **argv)
-{
+static int _cmd_get(int argc, char **argv) {
     (void)argc;
     (void)argv;
     char dstr[ISOSTR_LEN];
@@ -105,8 +99,7 @@ static int _cmd_get(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_set(int argc, char **argv)
-{
+static int _cmd_set(int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s <iso-date-str YYYY-MM-DDTHH:mm:ss>\n", argv[0]);
         return 1;
@@ -134,8 +127,7 @@ static int _cmd_set(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_temp(int argc, char **argv)
-{
+static int _cmd_temp(int argc, char **argv) {
     (void)argc;
     (void)argv;
     int16_t temp;
@@ -153,8 +145,7 @@ static int _cmd_temp(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_aging(int argc, char **argv)
-{
+static int _cmd_aging(int argc, char **argv) {
     int8_t val;
     int res;
 
@@ -179,8 +170,7 @@ static int _cmd_aging(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_bat(int argc, char **argv)
-{
+static int _cmd_bat(int argc, char **argv) {
     int res;
 
     if (argc != 2) {
@@ -214,8 +204,7 @@ static int _cmd_bat(int argc, char **argv)
     return 0;
 }
 
-static int _cmd_test(int argc, char **argv)
-{
+static int _cmd_test(int argc, char **argv) {
     (void)argc;
     (void)argv;
     int res;
@@ -223,14 +212,14 @@ static int _cmd_test(int argc, char **argv)
 
     puts("testing device now");
 
-    /* set time to RIOT birthdate */
+    // set time to RIOT birthdate
     res = ds3231_set_time(&_dev, &_riot_bday);
     if (res != 0) {
         puts("error: unable to set time");
         return 1;
     }
 
-    /* read time and compare to initial value */
+    // read time and compare to initial value
     res = ds3231_get_time(&_dev, &time);
     if (res != 0) {
         puts("error: unable to read time");
@@ -242,7 +231,7 @@ static int _cmd_test(int argc, char **argv)
         return 1;
     }
 
-    /* wait a short while and check if time has progressed */
+    // wait a short while and check if time has progressed
     xtimer_sleep(TEST_DELAY);
     res = ds3231_get_time(&_dev, &time);
     if (res != 0) {
@@ -255,14 +244,14 @@ static int _cmd_test(int argc, char **argv)
         return 1;
     }
 
-    /* clear all existing alarm flag */
+    // clear all existing alarm flag
     res = ds3231_clear_alarm_1_flag(&_dev);
     if (res != 0) {
         puts("error: unable to clear alarm flag");
         return 1;
     }
 
-    /* get time to set up next alarm*/
+    // get time to set up next alarm
     res = ds3231_get_time(&_dev, &time);
     if (res != 0) {
         puts("error: unable to read time");
@@ -272,7 +261,7 @@ static int _cmd_test(int argc, char **argv)
     time.tm_sec += TEST_DELAY;
     mktime(&time);
 
-    /* set alarm */
+    // set alarm
     res = ds3231_set_alarm_1(&_dev, &time, DS3231_AL1_TRIG_H_M_S);
     if (res != 0) {
         puts("error: unable to program alarm");
@@ -281,7 +270,7 @@ static int _cmd_test(int argc, char **argv)
 
 #ifdef MODULE_DS3231_INT
 
-    /* wait for an alarm with GPIO interrupt */
+    // wait for an alarm with GPIO interrupt
     res = ds3231_await_alarm(&_dev);
     if (res < 0){
         puts("error: unable to program GPIO interrupt or to clear alarm flag");
@@ -296,12 +285,12 @@ static int _cmd_test(int argc, char **argv)
 
 #else
 
-    /* wait for the alarm to trigger */
+    // wait for the alarm to trigger
     xtimer_sleep(TEST_DELAY);
 
     bool alarm;
 
-    /* check if alarm flag is on */
+    // check if alarm flag is on
     res = ds3231_get_alarm_1_flag(&_dev, &alarm);
     if (res != 0) {
         puts("error: unable to get alarm flag");
@@ -312,7 +301,7 @@ static int _cmd_test(int argc, char **argv)
         puts("error: alarm was not triggered");
     }
 
-    /* clear alarm flag */
+    // clear alarm flag
     res = ds3231_clear_alarm_1_flag(&_dev);
     if (res != 0) {
         puts("error: unable to clear alarm flag");
@@ -335,13 +324,12 @@ static const shell_command_t shell_commands[] = {
     { NULL, NULL, NULL }
 };
 
-int main(void)
-{
+int main(void) {
     int res;
 
     puts("DS3231 RTC test\n");
 
-    /* initialize the device */
+    // initialize the device
     ds3231_params_t params= ds3231_params[0];
     params.opt     = DS3231_OPT_BAT_ENABLE;
     params.opt    |= DS3231_OPT_INTER_ENABLE;
@@ -351,7 +339,7 @@ int main(void)
         return 1;
     }
 
-    /* start the shell */
+    // start the shell
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

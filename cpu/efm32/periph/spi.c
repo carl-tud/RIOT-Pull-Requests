@@ -1,21 +1,17 @@
-/*
- * SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
- * SPDX-License-Identifier: LGPL-2.1-only
- */
+// SPDX-FileCopyrightText: 2014-2016 Freie Universität Berlin
+// SPDX-License-Identifier: LGPL-2.1-only
 
-/**
- * @ingroup     cpu_efm32
- * @ingroup     drivers_periph_spi
- * @{
- *
- * @file
- * @brief       Low-level SPI driver implementation
- *
- * @author      Ryan Kurte <ryankurte@gmail.com>
- * @author      Bas Stottelaar <basstottelaar@gmail.com>
- * @author      Christian Amsüss <c@amsuess.com>
- * @}
- */
+/// @ingroup     cpu_efm32
+/// @ingroup     drivers_periph_spi
+/// @{
+///
+/// @file
+/// @brief       Low-level SPI driver implementation
+///
+/// @author      Ryan Kurte <ryankurte@gmail.com>
+/// @author      Bas Stottelaar <basstottelaar@gmail.com>
+/// @author      Christian Amsüss <c@amsuess.com>
+/// @}
 
 #include <assert.h>
 
@@ -34,20 +30,18 @@
 
 static mutex_t spi_lock[SPI_NUMOF];
 
-void spi_init(spi_t bus)
-{
+void spi_init(spi_t bus) {
     assert(bus < SPI_NUMOF);
 
-    /* initialize lock */
+    // initialize lock
     mutex_init(&spi_lock[bus]);
 
-    /* initialize pins */
+    // initialize pins
     spi_init_pins(bus);
 }
 
-void spi_init_pins(spi_t bus)
-{
-    /* configure the pins */
+void spi_init_pins(spi_t bus) {
+    // configure the pins
     gpio_init(spi_config[bus].clk_pin, GPIO_OUT);
     gpio_init(spi_config[bus].mosi_pin, GPIO_OUT);
     gpio_init(spi_config[bus].miso_pin, GPIO_IN_PD);
@@ -57,14 +51,13 @@ void spi_init_pins(spi_t bus)
 #define GET_PORT(x) (x >> 4)
 #define USART_NUM(ref) ((ref == USART0) ? 0 : -1)
 
-void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
-{
+void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk) {
     (void)cs;
     assert((unsigned)bus < SPI_NUMOF);
 
     mutex_lock(&spi_lock[bus]);
 
-    /* power on spi bus */
+    // power on spi bus
 #if defined(_SILICON_LABS_32B_SERIES_0) || defined(_SILICON_LABS_32B_SERIES_1)
     CMU_ClockEnable(cmuClock_HFPER, true);
 #endif
@@ -78,7 +71,7 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
 
     USART_InitSync(spi_config[bus].dev, &init);
 
-    /* configure pin functions */
+    // configure pin functions
 #if defined(_SILICON_LABS_32B_SERIES_0)
     spi_config[bus].dev->ROUTE = (spi_config[bus].loc |
                                   USART_ROUTE_RXPEN |
@@ -104,17 +97,15 @@ void spi_acquire(spi_t bus, spi_cs_t cs, spi_mode_t mode, spi_clk_t clk)
 #endif
 }
 
-void spi_release(spi_t bus)
-{
-    /* power off spi bus */
+void spi_release(spi_t bus) {
+    // power off spi bus
     CMU_ClockEnable(spi_config[bus].cmu, false);
 
     mutex_unlock(&spi_lock[bus]);
 }
 
 void spi_transfer_bytes(spi_t bus, spi_cs_t cs, bool cont,
-                        const void *out, void *in, size_t len)
-{
+                        const void *out, void *in, size_t len) {
     uint8_t *out_buf = (uint8_t *)out;
     uint8_t *in_buf = (uint8_t *)in;
 
