@@ -25,6 +25,15 @@ extern "C" {
 #endif
 
 /**
+ * @def PACKED
+ * @brief The *PACKED* keyword tells the compiler to pack the members of
+ *        a struct without padding.
+ */
+#ifndef PACKED
+#  define PACKED __attribute__((packed))
+#endif
+
+/**
  * @def NORETURN
  * @brief The *NORETURN* keyword tells the compiler to assume that the function
  *        cannot return.
@@ -48,6 +57,42 @@ extern "C" {
 #    define NONSTRING __attribute__((nonstring))
 #  else
 #    define NONSTRING
+#  endif
+#endif
+
+/**
+ * @def COUNTED_BY
+ * @brief The `COUNTED_BY` attribute applied to a pointer/array parameter 
+ *        or flexible array struct member indicates that the buffer 
+ *        or array contains at the lest
+ *        this number of elements
+ *
+ * @param member The name of the member array or parameter pointer/array that
+ *               counts elements in the collection
+ *
+ * ## Example
+ * ```c
+ * void fill_array_with_indices(uint8_t* COUNTED_BY(count) buffer, size_t count) {
+ *     // ...
+ * }
+ * ```
+ * ```c
+ * void fill_array_with_indices(uint8_t[] COUNTED_BY(count) buffer, size_t count) {
+ *     // ...
+ * }
+ * ```
+ * ```c
+ * typedef struct {
+ *     size_t provider_count;
+ *     uint32_t provider_as_numbers[] COUNTED_BY(provider_count);
+ * } aspa_record_t;
+ * ```
+ */
+#ifndef COUNTED_BY
+#  if defined(__has_feature) && __has_feature(bounds_attributes)
+#    define COUNTED_BY(member)  __attribute__((__counted_by__(member)))
+#  else
+#    define COUNTED_BY(member)
 #  endif
 #endif
 
