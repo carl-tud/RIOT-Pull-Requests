@@ -150,6 +150,12 @@ ifneq (,$(filter shell_cmd_coap,$(USEMODULE)))
   USEMODULE += unicoap
   USEMODULE += unicoap_client
   USEMODULE += unicoap_client_uri
+  ifneq (,$(filter sock_udp,$(USEMODULE)))
+    USEMODULE += unicoap_driver_udp
+  endif
+  ifneq (,$(filter sock_dtls,$(USEMODULE)))
+    USEMODULE += unicoap_driver_dtls
+  endif
 endif
 ifneq (,$(filter shell_cmd_conn_can,$(USEMODULE)))
   USEMODULE += conn_can
